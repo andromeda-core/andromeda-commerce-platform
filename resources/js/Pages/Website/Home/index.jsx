@@ -1310,7 +1310,7 @@ export default function index({ google_map_api_key }) {
                                                             <img
                                                                 src={post.post_image_urls[0]}
                                                                 alt="Post main"
-                                                                className="relative z-10 max-h-full max-w-full object-cover"
+                                                                className="absolute inset-0 z-10 h-full w-full object-cover"
                                                             />
                                                         </>
                                                     ) : (
