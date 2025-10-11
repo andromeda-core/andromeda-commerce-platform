@@ -50,6 +50,11 @@
         @apply font-outfit;
     }
 
+    html,
+    body {
+        overscroll-behavior-y: contain;
+    }
+
     /* Chrome, Edge, Safari */
     ::-webkit-scrollbar {
         @apply h-2 w-2;

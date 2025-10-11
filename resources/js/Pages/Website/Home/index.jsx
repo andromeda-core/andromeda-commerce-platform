@@ -992,13 +992,18 @@ export default function index({ google_map_api_key }) {
 
                                     {/* Scrollable Container */}
                                     <div
-                                        className="relative z-10 h-[100dvh] w-full snap-y snap-mandatory overflow-y-scroll bg-deepcharcoal scrollbar-none"
+                                        className="h-screen w-full snap-y snap-proximity overflow-y-scroll bg-deepcharcoal scrollbar-none"
+                                        style={{
+                                            WebkitOverflowScrolling: 'touch',
+                                            scrollBehavior: 'smooth',
+                                        }}
                                         onScroll={(e) => {
                                             setElipsisShowDropdown(false);
-                                            const scrollTop = e.currentTarget.scrollTop;
-                                            const index = Math.round(
-                                                scrollTop / window.innerHeight,
-                                            );
+
+                                            const container = e.currentTarget;
+                                            const scrollTop = container.scrollTop;
+                                            const containerHeight = container.clientHeight;
+                                            const index = Math.round(scrollTop / containerHeight);
 
                                             if (index !== selectedPostIndex && posts[index]) {
                                                 setSelectedPostIndex(index);
@@ -1011,11 +1016,26 @@ export default function index({ google_map_api_key }) {
                                                     generateURL(post),
                                                 );
 
-                                                // load more when near bottom
                                                 if (index >= posts.length - 5 && nextPageUrl) {
                                                     fetchMorePosts();
                                                 }
                                             }
+
+                                            clearTimeout(container._snapTimer);
+                                            container._snapTimer = setTimeout(() => {
+                                                const remainder = scrollTop % containerHeight;
+
+                                                // if user left mid-way (not close to snap point)
+                                                if (
+                                                    remainder > containerHeight * 0.15 &&
+                                                    remainder < containerHeight * 0.85
+                                                ) {
+                                                    container.scrollTo({
+                                                        top: index * containerHeight,
+                                                        behavior: 'smooth',
+                                                    });
+                                                }
+                                            }, 150);
                                         }}
                                         ref={mobilePostContainerRef}
                                     >
@@ -1690,7 +1710,7 @@ export default function index({ google_map_api_key }) {
                                         )}
 
                                         {/* Scrollable Bottom Section */}
-                                        <div className="flex-1 space-y-3 overflow-hidden p-4 scrollbar-none">
+                                        <div className="flex-1 space-y-3 overflow-y-auto p-4 scrollbar-none">
                                             <h2 className="text-sm font-semibold">
                                                 {viewablePost?.title || 'Post Title'}
                                             </h2>
