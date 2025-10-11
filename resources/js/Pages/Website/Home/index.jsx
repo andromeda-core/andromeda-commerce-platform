@@ -999,44 +999,53 @@ export default function index({ google_map_api_key }) {
                                             overscrollBehavior: 'contain',
                                         }}
                                         onScroll={(e) => {
-                                            setElipsisShowDropdown(false);
-
                                             const container = e.currentTarget;
                                             const scrollTop = container.scrollTop;
                                             const containerHeight = container.clientHeight;
-                                            const index = Math.round(scrollTop / containerHeight);
 
-                                            if (index !== selectedPostIndex && posts[index]) {
-                                                setSelectedPostIndex(index);
+                                            const currentIndex = selectedPostIndex;
+                                            const exactIndex = scrollTop / containerHeight;
+                                            const direction =
+                                                exactIndex > currentIndex
+                                                    ? 1
+                                                    : exactIndex < currentIndex
+                                                      ? -1
+                                                      : 0;
 
-                                                const post = posts[index];
-                                                setViewablePost(post);
-                                                window.history.replaceState(
-                                                    {},
-                                                    '',
-                                                    generateURL(post),
-                                                );
+                                            clearTimeout(container._scrollTimer);
+                                            container._scrollTimer = setTimeout(() => {
+                                                let newIndex = currentIndex + direction;
 
-                                                if (index >= posts.length - 5 && nextPageUrl) {
-                                                    fetchMorePosts();
-                                                }
-                                            }
+                                                if (newIndex < 0) newIndex = 0;
+                                                if (newIndex > posts.length - 1)
+                                                    newIndex = posts.length - 1;
 
-                                            clearTimeout(container._snapTimer);
-                                            container._snapTimer = setTimeout(() => {
-                                                const remainder = scrollTop % containerHeight;
+                                                // Snap smoothly to the new post
+                                                container.scrollTo({
+                                                    top: newIndex * containerHeight,
+                                                    behavior: 'smooth',
+                                                });
 
-                                                // if user left mid-way (not close to snap point)
                                                 if (
-                                                    remainder > containerHeight * 0.15 &&
-                                                    remainder < containerHeight * 0.85
+                                                    newIndex !== selectedPostIndex &&
+                                                    posts[newIndex]
                                                 ) {
-                                                    container.scrollTo({
-                                                        top: index * containerHeight,
-                                                        behavior: 'smooth',
-                                                    });
+                                                    setSelectedPostIndex(newIndex);
+                                                    const post = posts[newIndex];
+                                                    setViewablePost(post);
+                                                    window.history.replaceState(
+                                                        {},
+                                                        '',
+                                                        generateURL(post),
+                                                    );
+                                                    if (
+                                                        newIndex >= posts.length - 5 &&
+                                                        nextPageUrl
+                                                    ) {
+                                                        fetchMorePosts();
+                                                    }
                                                 }
-                                            }, 150);
+                                            }, 120); // triggers shortly after user stops swiping
                                         }}
                                         ref={mobilePostContainerRef}
                                     >
