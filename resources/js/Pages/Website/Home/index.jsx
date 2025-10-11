@@ -399,6 +399,21 @@ export default function index({ google_map_api_key }) {
         }
     }, [isMobilePostViewer]);
 
+    useEffect(() => {
+        if (isMobilePostViewer && viewablePost !== '') {
+            // If there's no prior modal state, push one so back button is enabled
+            const hasModalInHistory = window.history.state?.modal === 'post-viewer';
+
+            if (!hasModalInHistory) {
+                window.history.pushState({ modal: 'post-viewer' }, '');
+            }
+
+            requestAnimationFrame(() => {
+                focusRef.current?.focus();
+            });
+        }
+    }, [isMobilePostViewer, viewablePost]);
+
     return (
         <MainLayout>
             <Head title="Home" />
@@ -979,59 +994,49 @@ export default function index({ google_map_api_key }) {
                                     <div
                                         className="scroll-damped h-screen w-full snap-y snap-mandatory overflow-y-scroll bg-deepcharcoal scrollbar-none"
                                         style={{
-                                            WebkitOverflowScrolling: 'touch',
+                                            WebkitOverflowScrolling: 'auto',
                                             scrollBehavior: 'smooth',
                                             overscrollBehavior: 'contain',
-                                            touchAction: 'pan-y',
                                         }}
                                         onScroll={(e) => {
+                                            setElipsisShowDropdown(false);
+
                                             const container = e.currentTarget;
                                             const scrollTop = container.scrollTop;
                                             const containerHeight = container.clientHeight;
+                                            const index = Math.round(scrollTop / containerHeight);
 
-                                            const currentIndex = selectedPostIndex;
-                                            const exactIndex = scrollTop / containerHeight;
-                                            const direction =
-                                                exactIndex > currentIndex
-                                                    ? 1
-                                                    : exactIndex < currentIndex
-                                                      ? -1
-                                                      : 0;
+                                            if (index !== selectedPostIndex && posts[index]) {
+                                                setSelectedPostIndex(index);
 
-                                            clearTimeout(container._scrollTimer);
-                                            container._scrollTimer = setTimeout(() => {
-                                                let newIndex = currentIndex + direction;
+                                                const post = posts[index];
+                                                setViewablePost(post);
+                                                window.history.replaceState(
+                                                    {},
+                                                    '',
+                                                    generateURL(post),
+                                                );
 
-                                                if (newIndex < 0) newIndex = 0;
-                                                if (newIndex > posts.length - 1)
-                                                    newIndex = posts.length - 1;
-
-                                                // Snap smoothly to the new post
-                                                container.scrollTo({
-                                                    top: newIndex * containerHeight,
-                                                    behavior: 'smooth',
-                                                });
-
-                                                if (
-                                                    newIndex !== selectedPostIndex &&
-                                                    posts[newIndex]
-                                                ) {
-                                                    setSelectedPostIndex(newIndex);
-                                                    const post = posts[newIndex];
-                                                    setViewablePost(post);
-                                                    window.history.replaceState(
-                                                        {},
-                                                        '',
-                                                        generateURL(post),
-                                                    );
-                                                    if (
-                                                        newIndex >= posts.length - 5 &&
-                                                        nextPageUrl
-                                                    ) {
-                                                        fetchMorePosts();
-                                                    }
+                                                if (index >= posts.length - 5 && nextPageUrl) {
+                                                    fetchMorePosts();
                                                 }
-                                            }, 120); // triggers shortly after user stops swiping
+                                            }
+
+                                            clearTimeout(container._snapTimer);
+                                            container._snapTimer = setTimeout(() => {
+                                                const remainder = scrollTop % containerHeight;
+
+                                                // if user left mid-way (not close to snap point)
+                                                if (
+                                                    remainder > containerHeight * 0.15 &&
+                                                    remainder < containerHeight * 0.85
+                                                ) {
+                                                    container.scrollTo({
+                                                        top: index * containerHeight,
+                                                        behavior: 'smooth',
+                                                    });
+                                                }
+                                            }, 150);
                                         }}
                                         ref={mobilePostContainerRef}
                                     >
