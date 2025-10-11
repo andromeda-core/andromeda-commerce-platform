@@ -22,7 +22,6 @@ const getCookie = (name) => {
 };
 
 export default function index({ google_map_api_key }) {
-    console.log(window.location.search);
     const [isPostLoaded, setIsPostLoaded] = useState(false);
     const [posts, setPosts] = useState(null);
     const [nextPageUrl, setNextPageUrl] = useState(null);
@@ -66,7 +65,8 @@ export default function index({ google_map_api_key }) {
     const isDarkMode = useDarkMode();
 
     const windowSize = useWindowSize();
-    const [showDetails, setShowDetails] = useState(false);
+
+    const [showDetailsPostIds, setShowDetailsPostIds] = useState([]);
 
     // Set Media items For Media Viewer In the bottom bar
     const [mediaItems, setMediaItems] = useState([]);
@@ -1317,7 +1317,7 @@ export default function index({ google_map_api_key }) {
                                                             post.post_video_urls.length > 0)
                                                             ? 'bottom-0 right-0'
                                                             : 'right-10 top-10'
-                                                    } ${showDetails ? 'bg-deepcharcoal/80' : 'bg-deepcharcoal/40'} left-0 z-[10] p-4`}
+                                                    } ${showDetailsPostIds.includes(post.id) ? 'bg-deepcharcoal/80' : 'bg-deepcharcoal/40'} left-0 z-[10] p-4`}
                                                 >
                                                     {/* Username */}
                                                     <div className="mb-2 flex items-center space-x-2">
@@ -1342,17 +1342,27 @@ export default function index({ google_map_api_key }) {
                                                                 __html: post?.content,
                                                             }}
                                                             className={`prose overflow-hidden break-words text-xs text-white/80 transition-all duration-100 ease-in-out [-webkit-box-orient:vertical] [display:-webkit-box] ${
-                                                                showDetails
+                                                                showDetailsPostIds.includes(post.id)
                                                                     ? '[-webkit-line-clamp:5]'
                                                                     : '[-webkit-line-clamp:3]'
                                                             }`}
-                                                            onClick={() =>
-                                                                setShowDetails(!showDetails)
-                                                            }
+                                                            onClick={() => {
+                                                                setShowDetailsPostIds((prev) =>
+                                                                    prev.includes(post.id)
+                                                                        ? prev.filter(
+                                                                              (id) =>
+                                                                                  id !== post.id,
+                                                                          )
+                                                                        : [...prev, post.id],
+                                                                );
+                                                            }}
                                                             style={{
-                                                                maxHeight: showDetails
-                                                                    ? '10rem'
-                                                                    : '4rem',
+                                                                maxHeight:
+                                                                    showDetailsPostIds.includes(
+                                                                        post.id,
+                                                                    )
+                                                                        ? '10rem'
+                                                                        : '4rem',
                                                             }}
                                                         ></div>
                                                     ) : (
@@ -1365,14 +1375,16 @@ export default function index({ google_map_api_key }) {
                                                     )}
 
                                                     {/* Learn More Button */}
-                                                    {showDetails && (
+                                                    {showDetailsPostIds.includes(post.id) && (
                                                         <div className="mb-0 flex items-center justify-end">
                                                             <button
                                                                 className="rounded-md bg-white p-1 text-[10px] font-semibold hover:bg-white/80"
                                                                 onClick={() => {
                                                                     setIsMobilePostGallery(true);
                                                                     window.history.pushState(
-                                                                        { modal: 'post-gallery' },
+                                                                        {
+                                                                            modal: 'post-gallery',
+                                                                        },
                                                                         '',
                                                                     );
                                                                 }}
@@ -1382,7 +1394,7 @@ export default function index({ google_map_api_key }) {
                                                         </div>
                                                     )}
 
-                                                    {!showDetails &&
+                                                    {!showDetailsPostIds.includes(post.id) &&
                                                         Array.isArray(post.post_image_urls) &&
                                                         post.post_image_urls.length < 1 &&
                                                         Array.isArray(post.post_video_urls) &&
@@ -1678,7 +1690,7 @@ export default function index({ google_map_api_key }) {
                                         )}
 
                                         {/* Scrollable Bottom Section */}
-                                        <div className="flex-1 space-y-3 overflow-y-auto p-4 scrollbar-none">
+                                        <div className="flex-1 space-y-3 overflow-hidden p-4 scrollbar-none">
                                             <h2 className="text-sm font-semibold">
                                                 {viewablePost?.title || 'Post Title'}
                                             </h2>
@@ -1733,11 +1745,7 @@ export default function index({ google_map_api_key }) {
                                     role="dialog"
                                     aria-modal="true"
                                     aria-labelledby="qrCodeTitle"
-                                    className={`relative z-[101] w-full max-w-sm rounded-2xl p-6 shadow-xl sm:max-w-md ${
-                                        isDesktopPostViewer
-                                            ? 'bg-white text-gray-900 dark:bg-deepcharcoal dark:text-gray-100'
-                                            : 'bg-gray-950 text-white/80'
-                                    }`}
+                                    className={`relative z-[101] w-full max-w-sm rounded-2xl bg-white/50 p-6 text-gray-900 shadow-xl sm:max-w-md`}
                                 >
                                     <div className="flex justify-end">
                                         <button onClick={() => setShowQrCode(false)}>✕</button>
@@ -1751,9 +1759,13 @@ export default function index({ google_map_api_key }) {
                                         </h2>
                                         <div className="flex justify-center">
                                             <QRCode
-                                                className="size-40 sm:size-52 md:size-60"
-                                                value={generateURL(viewablePost)}
+                                                className="size-48 sm:size-52 md:size-60"
+                                                value={route('home') + generateURL(viewablePost)}
                                                 viewBox="0 0 256 256"
+                                                level="H"
+                                                includeMargin
+                                                bgColor="#ffffff"
+                                                fgColor="#000000"
                                             />
                                         </div>
                                     </div>
