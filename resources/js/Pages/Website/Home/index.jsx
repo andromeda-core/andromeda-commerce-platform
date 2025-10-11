@@ -992,10 +992,11 @@ export default function index({ google_map_api_key }) {
 
                                     {/* Scrollable Container */}
                                     <div
-                                        className="h-screen w-full snap-y snap-proximity overflow-y-scroll bg-deepcharcoal scrollbar-none"
+                                        className="scroll-damped h-screen w-full snap-y snap-proximity overflow-y-scroll bg-deepcharcoal scrollbar-none"
                                         style={{
-                                            WebkitOverflowScrolling: 'touch',
+                                            WebkitOverflowScrolling: 'auto',
                                             scrollBehavior: 'smooth',
+                                            overscrollBehavior: 'contain',
                                         }}
                                         onScroll={(e) => {
                                             setElipsisShowDropdown(false);

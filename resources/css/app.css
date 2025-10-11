@@ -287,3 +287,10 @@
 .animate-slideUp {
     animation: slideUp 0.25s ease-in forwards;
 }
+
+.scroll-damped {
+    -webkit-overflow-scrolling: auto !important; /* disables flick momentum */
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+}
