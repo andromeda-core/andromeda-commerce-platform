@@ -992,7 +992,7 @@ export default function index({ google_map_api_key }) {
 
                                     {/* Scrollable Container */}
                                     <div
-                                        className="relative z-10 h-[100dvh] w-full snap-y snap-mandatory overflow-y-scroll bg-deepcharcoal scrollbar-none"
+                                        className="relative z-10 h-screen w-full snap-y snap-mandatory overflow-y-scroll bg-deepcharcoal scrollbar-none"
                                         onScroll={(e) => {
                                             setElipsisShowDropdown(false);
                                             const scrollTop = e.currentTarget.scrollTop;
