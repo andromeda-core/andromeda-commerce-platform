@@ -992,7 +992,7 @@ export default function index({ google_map_api_key }) {
 
                                     {/* Scrollable Container */}
                                     <div
-                                        className="scroll-damped h-screen w-full snap-y snap-proximity overflow-y-scroll bg-deepcharcoal scrollbar-none"
+                                        className="scroll-damped h-screen w-full snap-y snap-mandatory overflow-y-scroll bg-deepcharcoal scrollbar-none"
                                         style={{
                                             WebkitOverflowScrolling: 'auto',
                                             scrollBehavior: 'smooth',
