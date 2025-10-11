@@ -399,21 +399,6 @@ export default function index({ google_map_api_key }) {
         }
     }, [isMobilePostViewer]);
 
-    useEffect(() => {
-        if (isMobilePostViewer && viewablePost !== '') {
-            // If there's no prior modal state, push one so back button is enabled
-            const hasModalInHistory = window.history.state?.modal === 'post-viewer';
-
-            if (!hasModalInHistory) {
-                window.history.pushState({ modal: 'post-viewer' }, '');
-            }
-
-            requestAnimationFrame(() => {
-                focusRef.current?.focus();
-            });
-        }
-    }, [isMobilePostViewer, viewablePost]);
-
     return (
         <MainLayout>
             <Head title="Home" />
@@ -994,9 +979,10 @@ export default function index({ google_map_api_key }) {
                                     <div
                                         className="scroll-damped h-screen w-full snap-y snap-mandatory overflow-y-scroll bg-deepcharcoal scrollbar-none"
                                         style={{
-                                            WebkitOverflowScrolling: 'auto',
+                                            WebkitOverflowScrolling: 'touch',
                                             scrollBehavior: 'smooth',
                                             overscrollBehavior: 'contain',
+                                            touchAction: 'pan-y',
                                         }}
                                         onScroll={(e) => {
                                             const container = e.currentTarget;
