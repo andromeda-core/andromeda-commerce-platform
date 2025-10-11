@@ -22,6 +22,7 @@ const getCookie = (name) => {
 };
 
 export default function index({ google_map_api_key }) {
+    console.log(window.location.search);
     const [isPostLoaded, setIsPostLoaded] = useState(false);
     const [posts, setPosts] = useState(null);
     const [nextPageUrl, setNextPageUrl] = useState(null);
@@ -52,6 +53,7 @@ export default function index({ google_map_api_key }) {
     }, []);
 
     const [viewablePost, setViewablePost] = useState('');
+
     const [selectedPostIndex, setSelectedPostIndex] = useState(0);
     const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
 
@@ -99,30 +101,6 @@ export default function index({ google_map_api_key }) {
         );
     };
 
-    // For Now Not Needed
-    // const openFullscreen = () => {
-    //     const elem = document.documentElement; // whole page
-    //     if (elem.requestFullscreen) {
-    //         elem.requestFullscreen();
-    //     } else if (elem.webkitRequestFullscreen) {
-    //         // Safari
-    //         elem.webkitRequestFullscreen();
-    //     } else if (elem.msRequestFullscreen) {
-    //         // older IE/Edge
-    //         elem.msRequestFullscreen();
-    //     }
-    // };
-
-    // const closeFullscreen = () => {
-    //     if (document.exitFullscreen) {
-    //         document.exitFullscreen();
-    //     } else if (document.webkitExitFullscreen) {
-    //         document.webkitExitFullscreen();
-    //     } else if (document.msExitFullscreen) {
-    //         document.msExitFullscreen();
-    //     }
-    // };
-
     // Auto Select Post From Mobile Post Container Logic
 
     const scrollToPost = (post) => {
@@ -138,21 +116,6 @@ export default function index({ google_map_api_key }) {
             scrollToPost(viewablePost);
         }
     }, [isMobilePostViewer]);
-
-    // When fullscreen toggles
-    // const handleFullscreenChange = () => {
-    //     if (document.fullscreenElement) {
-    //         scrollToPost(viewablePost);
-    //     } else {
-    //         if (viewablePost !== '') {
-    //             setViewablePost('');
-    //             setIsDesktopPostViewer(false);
-    //             setIsMobilePostViewer(false);
-    //             setIsMobilePostGallery(false);
-    //             window.history.replaceState({}, '', window.location.pathname);
-    //         }
-    //     }
-    // };
 
     const setPostViewerBasedOnWidth = (windowSize) => {
         if (windowSize.width < 1024) {
@@ -231,12 +194,12 @@ export default function index({ google_map_api_key }) {
         };
 
         window.addEventListener('popstate', handlePopState);
-        router.on('before', preventInertiaNavigation);
+        const removeRouterEvent = router.on('before', preventInertiaNavigation);
         // document.addEventListener('fullscreenchange', handleFullscreenChange);
         return () => {
             document.body.classList.remove('overflow-hidden');
             window.removeEventListener('popstate', handlePopState);
-
+            if (removeRouterEvent) removeRouterEvent();
             // document.removeEventListener('fullscreenchange', handleFullscreenChange);
         };
     }, [viewablePost, isMobilePostGallery, isMobilePostViewer, isDesktopPostViewer]);
@@ -924,9 +887,7 @@ export default function index({ google_map_api_key }) {
                                                                 <button
                                                                     onClick={(e) => {
                                                                         const url =
-                                                                            route(
-                                                                                'website.posts.index',
-                                                                            ) +
+                                                                            route('home') +
                                                                             generateURL(
                                                                                 viewablePost,
                                                                             );
@@ -1252,7 +1213,7 @@ export default function index({ google_map_api_key }) {
                                                                                     ) => {
                                                                                         const url =
                                                                                             route(
-                                                                                                'website.posts.index',
+                                                                                                'home',
                                                                                             ) +
                                                                                             generateURL(
                                                                                                 viewablePost,
@@ -1567,7 +1528,7 @@ export default function index({ google_map_api_key }) {
                                                             className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
                                                             onClick={(e) => {
                                                                 const url =
-                                                                    route('website.posts.index') +
+                                                                    route('home') +
                                                                     generateURL(viewablePost);
                                                                 navigator.clipboard.writeText(
                                                                     url.trim(),
