@@ -155,7 +155,7 @@ export default function MainLayout({ children }) {
                     }`}
                 >
                     {/* Main Content */}
-                    <main className="min-h-screen flex-1 pt-2 dark:bg-zinc-950/70 lg:px-6">
+                    <main className="min-h-screen flex-1 px-3 pt-2 dark:bg-zinc-950/70 lg:px-6">
                         {children ? (
                             children
                         ) : (

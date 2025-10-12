@@ -74,7 +74,6 @@ export default function RadiusMap({
                     () => {
                         const newRadius = Math.round(circleRef.current.getRadius());
                         setRadius(newRadius);
-                        onRadiusChange?.(newRadius);
                     },
                 );
             }, 1000);
@@ -99,6 +98,11 @@ export default function RadiusMap({
         };
     }, [lat, lng, isModalOpen]);
 
+    const radiusConfirmed = () => {
+        onRadiusChange(radius);
+        setIsModalOpen(false);
+    };
+
     if (!isModalOpen) return null;
 
     return createPortal(
@@ -109,7 +113,7 @@ export default function RadiusMap({
             ></div>
 
             {/* Modal content */}
-            <div className="dark:bg-deepcharcoal relative z-10 max-h-full w-full max-w-4xl overflow-y-auto rounded-2xl bg-white/95 p-8 shadow-2xl dark:text-white/80">
+            <div className="relative z-10 max-h-full w-full max-w-4xl overflow-y-auto rounded-2xl bg-white/95 p-8 shadow-2xl dark:bg-deepcharcoal dark:text-white/80">
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
@@ -151,12 +155,19 @@ export default function RadiusMap({
                 </div>
 
                 {/* Footer */}
-                <div className="flex justify-end gap-3 border-t border-gray-200 px-4 py-3 dark:border-gray-700">
+                <div className="flex justify-center gap-3 border-t border-gray-200 px-4 py-3 dark:border-gray-700">
                     <button
                         onClick={() => setIsModalOpen(false)}
                         className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600"
                     >
-                        Cancel
+                        Close
+                    </button>
+
+                    <button
+                        onClick={() => radiusConfirmed()}
+                        className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white/80 hover:bg-indigo-500"
+                    >
+                        Save Radius
                     </button>
                 </div>
             </div>

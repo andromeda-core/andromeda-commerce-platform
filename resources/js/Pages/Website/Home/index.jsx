@@ -473,7 +473,7 @@ export default function index({ google_map_api_key }) {
                                     return (
                                         <article
                                             key={post?.id}
-                                            className="group relative mb-1 cursor-pointer break-inside-avoid overflow-hidden rounded-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:opacity-80"
+                                            className="group relative mb-1 cursor-pointer break-inside-avoid overflow-hidden rounded-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
                                             style={{ animationDelay: `${index * 100}ms` }}
                                             onClick={() => {
                                                 setViewablePost(post);
@@ -496,12 +496,21 @@ export default function index({ google_map_api_key }) {
                                                         src={post?.images[0]?.url}
                                                         alt={post?.title}
                                                         loading="lazy"
-                                                        className="w-full object-cover text-[10px] text-gray-700 transition-all duration-500 group-hover:scale-105 dark:text-white/80"
+                                                        className="w-full object-cover text-[10px] text-gray-700 transition-all duration-500 group-hover:scale-105 dark:text-white/80 dark:opacity-80"
                                                     />
+
+                                                    {/* Title */}
+                                                    <div className="absolute left-3 top-3">
+                                                        <h2 className="line-clamp-2 text-[8px] font-semibold text-white drop-shadow-lg sm:text-[9px] md:text-[10px] lg:text-lg">
+                                                            {post?.title.length > 20
+                                                                ? post?.title.slice(0, 20) + '...'
+                                                                : post?.title}
+                                                        </h2>
+                                                    </div>
 
                                                     {/* Share Button */}
                                                     <button
-                                                        className="absolute right-3 top-3 text-white opacity-80 hover:opacity-100"
+                                                        className="absolute right-3 top-3 text-white opacity-80 drop-shadow-lg hover:opacity-100"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             const url =
@@ -533,9 +542,6 @@ export default function index({ google_map_api_key }) {
 
                                                     {/* Title + Meta */}
                                                     <div className="absolute inset-x-0 bottom-0 p-4">
-                                                        <h2 className="line-clamp-2 text-[8px] font-semibold text-white drop-shadow-lg sm:text-[9px] md:text-[10px] lg:text-lg">
-                                                            {post?.title}
-                                                        </h2>
                                                         <div className="mt-1 flex items-center justify-between text-[6px] font-bold text-gray-200 drop-shadow-sm sm:text-[7px] md:text-[8px] lg:text-xs">
                                                             <span className="text-white drop-shadow-md">
                                                                 {post?.tag}
@@ -1047,7 +1053,7 @@ export default function index({ google_map_api_key }) {
                                                 className="relative h-[100dvh] w-full snap-start overflow-hidden"
                                             >
                                                 {/* Top Bar */}
-                                                <div className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between bg-deepcharcoal/50 px-4 py-3 text-white backdrop-blur-sm">
+                                                <div className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between px-4 py-3 font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
                                                     <button
                                                         onClick={() => {
                                                             setViewablePost('');
@@ -1062,7 +1068,7 @@ export default function index({ google_map_api_key }) {
                                                         className="rounded-full p-1 hover:bg-gray-300/20"
                                                     >
                                                         {/* back icon */}
-                                                        <svg
+                                                        {/* <svg
                                                             xmlns="http://www.w3.org/2000/svg"
                                                             fill="none"
                                                             viewBox="0 0 24 24"
@@ -1075,7 +1081,12 @@ export default function index({ google_map_api_key }) {
                                                                 strokeLinejoin="round"
                                                                 d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
                                                             />
-                                                        </svg>
+                                                        </svg> */}
+
+                                                        {/* Title */}
+                                                        <span className="prose break-words text-sm text-white/80">
+                                                            {post?.title}
+                                                        </span>
                                                     </button>
 
                                                     <div className="flex items-center space-x-3">
@@ -1277,7 +1288,7 @@ export default function index({ google_map_api_key }) {
                                                             )}
 
                                                         {/* Filter button */}
-                                                        <button className="rounded-full p-1 hover:bg-gray-300/20">
+                                                        {/* <button className="p-1 rounded-full hover:bg-gray-300/20">
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
                                                                 fill="none"
@@ -1292,7 +1303,7 @@ export default function index({ google_map_api_key }) {
                                                                     d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
                                                                 />
                                                             </svg>
-                                                        </button>
+                                                        </button> */}
                                                     </div>
                                                 </div>
 
@@ -1338,18 +1349,29 @@ export default function index({ google_map_api_key }) {
                                                             post.post_video_urls.length > 0)
                                                             ? 'bottom-0 right-0'
                                                             : 'right-10 top-10'
-                                                    } ${showDetailsPostIds.includes(post.id) ? 'bg-deepcharcoal/80' : 'bg-deepcharcoal/40'} left-0 z-[10] p-4`}
+                                                    } left-0 z-[10] p-4 font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]`}
                                                 >
-                                                    {/* Username */}
-                                                    <div className="mb-2 flex items-center space-x-2">
-                                                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-xs text-gray-900">
-                                                            {viewablePost.user?.avatar}
-                                                        </div>
-                                                        <span className="text-xs font-medium text-white/80">
-                                                            {post.user?.name.length > 6
-                                                                ? post.user?.name.substring(0, 6) +
-                                                                  '...'
-                                                                : post.user?.name}
+                                                    {/* Hashtag */}
+                                                    <div
+                                                        className="mb-2 flex items-center justify-between space-x-2"
+                                                        onClick={() => {
+                                                            setShowDetailsPostIds((prev) =>
+                                                                prev.includes(post.id)
+                                                                    ? prev.filter(
+                                                                          (id) => id !== post.id,
+                                                                      )
+                                                                    : [...prev, post.id],
+                                                            );
+                                                        }}
+                                                    >
+                                                        <span className="text-sm text-white/80">
+                                                            {post?.tag}
+                                                        </span>
+
+                                                        <span className="text-sm text-white/80">
+                                                            {post?.added_at +
+                                                                ' ' +
+                                                                post?.created_at_time}
                                                         </span>
                                                     </div>
 
@@ -1397,9 +1419,24 @@ export default function index({ google_map_api_key }) {
 
                                                     {/* Learn More Button */}
                                                     {showDetailsPostIds.includes(post.id) && (
-                                                        <div className="mb-0 flex items-center justify-end">
+                                                        <div className="mb-0 mt-3 flex items-center justify-between">
+                                                            {/* Username */}
+                                                            <div className="mb-0 flex items-center space-x-2">
+                                                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-gray-900">
+                                                                    {viewablePost.user?.avatar}
+                                                                </div>
+                                                                <span className="text-xs font-medium text-white/80">
+                                                                    {post.user?.name.length > 6
+                                                                        ? post.user?.name.substring(
+                                                                              0,
+                                                                              6,
+                                                                          ) + '...'
+                                                                        : post.user?.name}
+                                                                </span>
+                                                            </div>
+
                                                             <button
-                                                                className="rounded-md bg-white p-1 text-[10px] font-semibold hover:bg-white/80"
+                                                                className="rounded-md bg-indigo-600 p-1 text-sm font-semibold hover:bg-indigo-400/80"
                                                                 onClick={() => {
                                                                     setIsMobilePostGallery(true);
                                                                     window.history.pushState(
@@ -1420,9 +1457,23 @@ export default function index({ google_map_api_key }) {
                                                         post.post_image_urls.length < 1 &&
                                                         Array.isArray(post.post_video_urls) &&
                                                         post.post_video_urls.length < 1 && (
-                                                            <div className="mt-2 flex items-center justify-end">
+                                                            <div className="mt-3 flex items-center justify-between">
+                                                                <div className="mb-0 flex items-center space-x-2">
+                                                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-gray-900">
+                                                                        {viewablePost.user?.avatar}
+                                                                    </div>
+                                                                    <span className="text-xs font-medium text-white/80">
+                                                                        {post.user?.name.length > 6
+                                                                            ? post.user?.name.substring(
+                                                                                  0,
+                                                                                  6,
+                                                                              ) + '...'
+                                                                            : post.user?.name}
+                                                                    </span>
+                                                                </div>
+
                                                                 <button
-                                                                    className="rounded-md bg-white p-1 text-[10px] font-semibold hover:bg-white/80"
+                                                                    className="rounded-md bg-indigo-600 p-1 text-sm font-semibold hover:bg-indigo-400/80"
                                                                     onClick={() => {
                                                                         setIsMobilePostGallery(
                                                                             true,
@@ -1605,9 +1656,9 @@ export default function index({ google_map_api_key }) {
                                             {/* Left side */}
                                             <div className="flex items-center space-x-2">
                                                 {/* Close */}
-                                                <button
+                                                {/* <button
                                                     onClick={() => setIsMobilePostGallery(false)}
-                                                    className="rounded-full p-1 hover:bg-gray-300/20"
+                                                    className="p-1 rounded-full hover:bg-gray-300/20"
                                                 >
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -1615,7 +1666,7 @@ export default function index({ google_map_api_key }) {
                                                         viewBox="0 0 24 24"
                                                         strokeWidth={1.5}
                                                         stroke="currentColor"
-                                                        className="h-6 w-6"
+                                                        className="w-6 h-6"
                                                     >
                                                         <path
                                                             strokeLinecap="round"
@@ -1623,26 +1674,17 @@ export default function index({ google_map_api_key }) {
                                                             d="M6 18 18 6M6 6l12 12"
                                                         />
                                                     </svg>
-                                                </button>
+                                                </button> */}
+
+                                                {/* Title */}
+                                                <h2 className="text-sm font-semibold">
+                                                    {viewablePost?.title || 'Post Title'}
+                                                </h2>
                                             </div>
 
                                             {/* Right side */}
 
                                             <div className="flex items-center space-x-3">
-                                                <div className="flex items-center space-x-2">
-                                                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-xs text-gray-900">
-                                                        {viewablePost.user?.avatar}
-                                                    </div>
-                                                    <span className="text-xs font-medium text-white/80">
-                                                        {viewablePost.user?.name.length > 6
-                                                            ? viewablePost.user?.name.substring(
-                                                                  0,
-                                                                  6,
-                                                              ) + '...'
-                                                            : viewablePost.user?.name}
-                                                    </span>
-                                                </div>
-
                                                 {/* Ellipsis */}
                                                 <button
                                                     className="rounded-full p-1 hover:bg-gray-300/20"
@@ -1678,15 +1720,15 @@ export default function index({ google_map_api_key }) {
                                                         >
                                                             {item.type === 'image' ? (
                                                                 <>
-                                                                    <img
+                                                                    {/* <img
                                                                         src={item.url}
                                                                         alt="Post background blur"
-                                                                        className="absolute inset-0 z-0 h-full w-full scale-110 object-cover blur-lg"
-                                                                    />
+                                                                        className="absolute inset-0 z-0 object-cover w-full h-full scale-110 blur-lg"
+                                                                    /> */}
                                                                     <img
                                                                         src={item.url}
                                                                         alt={`Media ${idx}`}
-                                                                        className="relative z-10 max-h-full max-w-full rounded-xl object-contain"
+                                                                        className="relative z-10 max-h-full max-w-full rounded-none object-contain"
                                                                     />
                                                                 </>
                                                             ) : (
@@ -1712,37 +1754,51 @@ export default function index({ google_map_api_key }) {
 
                                         {/* Scrollable Bottom Section */}
                                         <div className="flex-1 space-y-3 overflow-y-auto p-4 scrollbar-none">
-                                            <h2 className="text-sm font-semibold">
-                                                {viewablePost?.title || 'Post Title'}
-                                            </h2>
+                                            <div className="flex items-center justify-between">
+                                                {/* Tags */}
+                                                {viewablePost?.tag && (
+                                                    <div className="flex flex-wrap gap-2 text-sm text-indigo-400">
+                                                        {viewablePost?.tag}
+                                                    </div>
+                                                )}
+
+                                                <span className="w-38 rounded-full py-1 text-sm">
+                                                    {viewablePost?.added_at +
+                                                        ' ' +
+                                                        viewablePost?.created_at_time}
+                                                </span>
+                                            </div>
 
                                             <div
                                                 dangerouslySetInnerHTML={{
                                                     __html: viewablePost?.content,
                                                 }}
-                                                className="prose break-words text-xs text-white/80"
+                                                className="prose break-words text-sm text-white/80"
                                             ></div>
 
-                                            {/* Tags */}
-                                            {viewablePost?.tag && (
-                                                <div className="flex flex-wrap gap-2 text-[11px] text-indigo-400">
-                                                    {viewablePost?.tag}
-                                                </div>
-                                            )}
+                                            <div className="flex items-center justify-between gap-3">
+                                                {/* {Userprofile} */}
 
-                                            <div className="flex items-center gap-3">
+                                                <div className="flex items-center space-x-2">
+                                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-gray-900">
+                                                        {viewablePost.user?.avatar}
+                                                    </div>
+                                                    <span className="text-xs font-medium text-white/80">
+                                                        {viewablePost.user?.name.length > 6
+                                                            ? viewablePost.user?.name.substring(
+                                                                  0,
+                                                                  6,
+                                                              ) + '...'
+                                                            : viewablePost.user?.name}
+                                                    </span>
+                                                </div>
+
                                                 {/* Location */}
                                                 {viewablePost?.location_name && (
-                                                    <span className="rounded-full bg-gray-800/70 px-2 py-1 text-[10px]">
+                                                    <span className="rounded-full px-2 py-1 text-sm">
                                                         {viewablePost?.location_name}
                                                     </span>
                                                 )}
-
-                                                <span className="w-38 rounded-full bg-gray-800/70 px-2 py-1 text-[10px]">
-                                                    {viewablePost?.added_at +
-                                                        ' ' +
-                                                        viewablePost?.created_at_time}
-                                                </span>
                                             </div>
                                         </div>
                                     </div>

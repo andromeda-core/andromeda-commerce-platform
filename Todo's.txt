@@ -338,6 +338,48 @@ Additional Work:
 
   Dedicated Matching Hashtag Post Contianing Page for showing post when user clicks on hashtag of any post it it wil redirects to this archive page
 
+
+  New More Changes (
+    1: Remove Gray Backgrounds From Mobile Post Viewer From Header And Bottom ✅
+    2: On the gallery, background should be black color or null. ✅
+    3: When the back button is clicked in the main post filter, it should navigate to the homepage. ✅
+    4: Calendar needed center arrangement. Needed a button or function because After setting a range in the calendar,
+        there’s no OK or Save button, so from a UX perspective, users get confused about what to do next. ✅
+
+    5: After setting a range in the Map, there’s no OK or Save button, so from a UX perspective, users get confused about what to do next.
+        Since there’s an X icon, you can simply change it to a Save button ✅
+
+    6: Currently, when a search term is entered, an “Apply Search” button appears.
+        Please change it to the more common behavior as follows:
+        When entering a search term, perform the search by pressing the Enter key instead of showing a button.
+        Also, change the X icon in the search bar to white. ✅
+
+    7: Border value on the gallery should be 0. ✅
+
+    8: remove the magnifying glass icon. From Search Bar  ✅
+
+    9: On mobile, add padding to the left and right sides of the archive and search bar. ✅
+
+    10: remove the top search bar of home page on mobile  ✅
+
+
+    11: Mobile Post Viwer And Masonary Layout Design Enhancements As Shown in the Screenshots ✅
+
+    12: Progress bar and spinner should be white of inertia ✅
+
+    13: Move spatitemporal filters as well as the search bar also allow searching on popup and on search page  in a seprate pop up window ✅
+
+    14: remove outline of search abr when focused ✅
+
+
+
+
+  )
+
+
+
+
+
 Navigation (Latitude/Longitude concept):
 - On mobile, navigation should follow a map-like logic:
 - Up/Down (Latitude): switch between posts in the feed. ✅
