@@ -472,12 +472,13 @@ const GlobalSearch = ({
 
     // Post Filters State Checking And Appending Query If Modal Opens Of Post Filter
     useEffect(() => {
-        window.history.pushState({}, '', window.location.pathname);
         const url = new URL(window.location.href);
 
         if (isPostFilterSetting) {
+            window.history.pushState({}, '', window.location.pathname);
             url.searchParams.set('modal', 'filters');
         } else if (isSpatiotemporalFilters) {
+            window.history.pushState({}, '', window.location.pathname);
             url.searchParams.set('modal', 'spatiotemporal-filters');
         } else {
             url.searchParams.delete('modal');
@@ -1392,7 +1393,7 @@ const GlobalSearch = ({
                                     </div>
 
                                     {/* Content */}
-                                    <div className="my-4 flex-1 space-y-6 p-4">
+                                    <div className="flex-1 space-y-6">
                                         <section className="mt-4 w-full">
                                             {/* Search Bar */}
                                             <div className="z-[50] mx-auto w-full transition-all duration-300">
@@ -1425,7 +1426,7 @@ const GlobalSearch = ({
                                                                 ref={searchInputRef}
                                                                 type="search"
                                                                 placeholder="What happened...?"
-                                                                className="ml-2 flex-1 border-none bg-transparent text-xs text-gray-600 placeholder-gray-400 outline-none focus:outline-none focus:ring-0 dark:text-white/80 sm:text-base"
+                                                                className="ml-2 flex-1 border-none bg-transparent text-sm text-gray-600 placeholder-gray-400 outline-none focus:outline-none focus:ring-0 dark:text-white/80 sm:text-base"
                                                                 value={searchQuery}
                                                                 onChange={(e) => {
                                                                     if (
