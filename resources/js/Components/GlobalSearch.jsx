@@ -1393,7 +1393,7 @@ const GlobalSearch = ({
                                     </div>
 
                                     {/* Content */}
-                                    <div className="flex-1 space-y-6">
+                                    <div className="flex-1 space-y-6 px-2">
                                         <section className="mt-4 w-full">
                                             {/* Search Bar */}
                                             <div className="z-[50] mx-auto w-full transition-all duration-300">
