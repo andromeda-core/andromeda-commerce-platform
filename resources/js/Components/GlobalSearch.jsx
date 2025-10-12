@@ -1722,7 +1722,7 @@ const GlobalSearch = ({
                             <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
                                 <div className="text-center">
                                     <h2 className="text-lg font-medium text-gray-800 dark:text-white">
-                                        Please Wait While We Are Results For You
+                                        Please Wait While We Are Finding Results For You
                                     </h2>
 
                                     <div className="mt-5 flex items-center justify-center">

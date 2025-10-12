@@ -360,7 +360,6 @@ Additional Work:
 
     9: On mobile, add padding to the left and right sides of the archive and search bar. ✅
 
-    10: remove the top search bar of home page on mobile  ✅
 
 
     11: Mobile Post Viwer And Masonary Layout Design Enhancements As Shown in the Screenshots ✅
