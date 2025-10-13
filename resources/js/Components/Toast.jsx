@@ -114,10 +114,10 @@ export default function Toast({ flash }) {
                 {/* Info Toast */}
                 {showInfo && (
                     <div
-                        className="animate-slide-up flex w-full max-w-xl items-center rounded-lg bg-blue-500 p-4 text-white shadow-sm transition-all duration-500 ease-out"
+                        className="animate-slide-up flex w-full max-w-xl items-center rounded-lg bg-indigo-500 p-4 text-white shadow-sm transition-all duration-500 ease-out"
                         role="alert"
                     >
-                        <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-500">
+                        <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-500">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"

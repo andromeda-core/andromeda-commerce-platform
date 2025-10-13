@@ -209,7 +209,7 @@ export default function Table({
                     className="w-full rounded-full object-cover sm:h-20 sm:w-20"
                 />
             ) : (
-                <span className="flex w-full items-center justify-center rounded-full bg-blue-500 text-2xl text-white sm:h-20 sm:w-20">
+                <span className="flex w-full items-center justify-center rounded-full bg-indigo-500 text-2xl text-white sm:h-20 sm:w-20">
                     {item[column.default] ?? column.default}
                 </span>
             );
@@ -237,7 +237,7 @@ export default function Table({
 
     return (
         <>
-            <div className="rounded-2xl border border-gray-200 bg-white pt-4 dark:border-gray-900/10 dark:bg-gray-800/10">
+            <div className="rounded-2xl border border-gray-200 bg-white pt-4 dark:border-gray-900/10 dark:bg-zinc-950/50">
                 {/* Search and Bulk Actions (unchanged) */}
                 <div className="mb-4 flex flex-col gap-2 px-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                     <div ref={dropdownRefs.current['00000']}>
@@ -258,7 +258,7 @@ export default function Table({
                                     </p>
                                 </div>
                                 {openBulkActionDropdownOptions && (
-                                    <div className="z-10 w-44 divide-y divide-gray-100 rounded-lg bg-white shadow-sm dark:bg-gray-700">
+                                    <div className="z-10 w-44 divide-y divide-gray-100 rounded-lg bg-white shadow-sm dark:bg-zinc-900">
                                         <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
                                             <li>
                                                 <button
@@ -267,7 +267,7 @@ export default function Table({
                                                             true,
                                                         )
                                                     }
-                                                    className="flex w-full items-center px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                                                    className="flex w-full items-center px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-zinc-950/50 dark:hover:text-white"
                                                 >
                                                     Delete
                                                     <svg
@@ -333,7 +333,7 @@ export default function Table({
                                                     onChange={() => handleSelectAll()}
                                                     type="checkbox"
                                                     value=""
-                                                    className="mx-2 h-6 w-6 cursor-pointer rounded-lg border-slate-300 bg-slate-50 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-white"
+                                                    className="mx-2 h-6 w-6 cursor-pointer rounded-lg border-slate-300 bg-slate-50 text-indigo-600 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-white"
                                                     checked={
                                                         selectedIds.length === items.data.length &&
                                                         items.data.length !== 0
@@ -376,7 +376,7 @@ export default function Table({
                                                         <input
                                                             type="checkbox"
                                                             value={item.id}
-                                                            className="singleSelect mx-2 h-6 w-6 cursor-pointer rounded-lg border-slate-300 bg-slate-50 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-white"
+                                                            className="singleSelect mx-2 h-6 w-6 cursor-pointer rounded-lg border-slate-300 bg-slate-50 text-indigo-600 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-white"
                                                             onChange={() => handleSelect(item.id)}
                                                             checked={selectedIds.includes(item.id)}
                                                         />
@@ -417,7 +417,7 @@ export default function Table({
                                                                         : item.id,
                                                                 )
                                                             }
-                                                            className="inline-flex items-center rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white shadow-lg transition hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10 dark:focus:ring-gray-800"
+                                                            className="inline-flex items-center rounded-lg bg-indigo-700 px-5 py-2.5 text-sm font-medium text-white shadow-lg transition hover:bg-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-300 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10 dark:focus:ring-gray-800"
                                                         >
                                                             Action
                                                             <svg
@@ -440,7 +440,7 @@ export default function Table({
                                                         {openDropdownId === item.id &&
                                                             createPortal(
                                                                 <div
-                                                                    className="fixed z-[99999] w-44 rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800 sm:w-48"
+                                                                    className="fixed z-[99999] w-44 rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-zinc-900 sm:w-48"
                                                                     ref={(el) =>
                                                                         (dropdownElements.current[
                                                                             item.id
@@ -448,7 +448,7 @@ export default function Table({
                                                                     }
                                                                 >
                                                                     <ul
-                                                                        className="overflow-y-scroll py-1 text-sm text-gray-700 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-blue-500 dark:text-gray-200 dark:scrollbar-thumb-white"
+                                                                        className="overflow-y-scroll py-1 text-sm text-gray-700 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-indigo-500 dark:text-gray-200 dark:scrollbar-thumb-white"
                                                                         style={{
                                                                             maxHeight: '180px',
                                                                         }}
@@ -464,7 +464,7 @@ export default function Table({
                                                                                               ]
                                                                                             : item.id,
                                                                                     )}
-                                                                                    className="block px-3 py-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                                                                                    className="block px-3 py-2 transition-colors hover:bg-gray-100 dark:hover:bg-zinc-950/50 dark:hover:text-white"
                                                                                 >
                                                                                     Edit
                                                                                 </Link>
@@ -486,7 +486,7 @@ export default function Table({
                                                                                                     null,
                                                                                                 ); // Close dropdown after action
                                                                                             }}
-                                                                                            className="block w-full px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                                                                                            className="block w-full px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-zinc-950/50 dark:hover:text-white"
                                                                                         >
                                                                                             {
                                                                                                 action.label
@@ -500,7 +500,7 @@ export default function Table({
                                                                                             href={action.href(
                                                                                                 item,
                                                                                             )}
-                                                                                            className="block w-full px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                                                                                            className="block w-full px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-zinc-950/50 dark:hover:text-white"
                                                                                         >
                                                                                             {
                                                                                                 action.label
@@ -550,7 +550,7 @@ export default function Table({
                             </tbody>
                         </table>
                         {items?.data?.length === 0 && (
-                            <p className="align-center mb-20 flex justify-center bg-blue-200 p-5 text-center text-gray-900 dark:bg-white/5 dark:text-white">
+                            <p className="align-center mb-20 flex justify-center bg-indigo-200 p-5 text-center text-gray-900 dark:bg-white/5 dark:text-white">
                                 No data found
                             </p>
                         )}
@@ -593,8 +593,8 @@ export default function Table({
                                             disabled={!link.url || link.active}
                                             className={`text-theme-sm flex h-10 w-10 items-center justify-center rounded-lg font-medium ${
                                                 link.active
-                                                    ? 'bg-blue-800/[0.08] text-blue-500'
-                                                    : 'text-gray-700 hover:bg-blue-500/[0.08] hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-500'
+                                                    ? 'bg-indigo-800/[0.08] text-indigo-500'
+                                                    : 'text-gray-700 hover:bg-indigo-500/[0.08] hover:text-indigo-500 dark:text-gray-400 dark:hover:text-indigo-500'
                                             }`}
                                         >
                                             {link.label}
@@ -645,7 +645,7 @@ export default function Table({
                             ></div>
 
                             {/* Modal content */}
-                            <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-800 sm:p-8">
+                            <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
                                 <div className="text-center">
                                     <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
                                         Are You Sure?
@@ -723,7 +723,7 @@ export default function Table({
                             ></div>
 
                             {/* Modal content */}
-                            <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-800 sm:p-8">
+                            <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
                                 <div className="text-center">
                                     <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
                                         Are You Sure?

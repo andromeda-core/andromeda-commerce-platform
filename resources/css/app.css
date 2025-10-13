@@ -97,7 +97,7 @@
 
     /* Menu Item Active State */
     .menu-item-active {
-        @apply bg-blue-50 text-blue-500 dark:bg-blue-500/[0.12] dark:text-blue-400;
+        @apply bg-indigo-50 text-indigo-500 dark:bg-indigo-500/[0.12] dark:text-indigo-400;
     }
 
     /* Menu Item Inactive State */
@@ -107,7 +107,7 @@
 
     /* Menu Item Icon Active State */
     .menu-item-icon-active {
-        @apply fill-blue-500 dark:fill-blue-400;
+        @apply fill-indigo-500 dark:fill-indigo-400;
     }
 
     /* Menu Item Icon Inactive State */
@@ -122,7 +122,7 @@
 
     /* Menu Item Arrow Active State */
     .menu-item-arrow-active {
-        @apply rotate-180 stroke-blue-500 dark:stroke-blue-400;
+        @apply rotate-180 stroke-indigo-500 dark:stroke-indigo-400;
     }
 
     /* Menu Item Arrow Inactive State */
@@ -137,7 +137,7 @@
 
     /* Menu Dropdown Item Active State */
     .menu-dropdown-item-active {
-        @apply bg-blue-50 text-blue-500 dark:bg-blue-500/[0.12] dark:text-blue-400;
+        @apply bg-indigo-50 text-indigo-500 dark:bg-indigo-500/[0.12] dark:text-indigo-400;
     }
 
     /* Menu Dropdown Item Inactive State */
@@ -147,17 +147,17 @@
 
     /* Menu Dropdown Badge */
     .menu-dropdown-badge {
-        @apply block rounded-full px-2.5 py-0.5 text-xs font-medium uppercase text-blue-500 dark:text-blue-400;
+        @apply block rounded-full px-2.5 py-0.5 text-xs font-medium uppercase text-indigo-500 dark:text-indigo-400;
     }
 
     /* Menu Dropdown Badge Active State */
     .menu-dropdown-badge-active {
-        @apply bg-blue-100 dark:bg-blue-500/20;
+        @apply bg-indigo-100 dark:bg-indigo-500/20;
     }
 
     /* Menu Dropdown Badge Inactive State */
     .menu-dropdown-badge-inactive {
-        @apply bg-blue-50 group-hover:bg-blue-100 dark:bg-blue-500/15 dark:group-hover:bg-blue-500/20;
+        @apply bg-indigo-50 group-hover:bg-indigo-100 dark:bg-indigo-500/15 dark:group-hover:bg-indigo-500/20;
     }
 
     /* No Scrollbar Utility */
@@ -236,26 +236,28 @@
         display: flex;
     }
 
-    /* In your global CSS or Tailwind config layer */
     .dark .filepond--panel-root {
-        background-color: #111827 !important; /* Tailwind gray-800 */
-        color: #d1d5db !important; /* Tailwind gray-300 */
-    }
-
-    .dark .filepond--drop-label {
-        color: #d1d5db !important;
-    }
-
-    .dark .filepond--label-action {
-        color: #60a5fa !important; /* Tailwind blue-400 */
+        background-color: #0d0e12 !important;
+        color: #ffffff !important;
     }
 
     .dark .filepond--file {
-        background-color: #374151 !important; /* Tailwind gray-700 */
+        background-color: #1a1c24 !important;
+        color: #ffffff !important;
     }
 
-    .filepond--drip {
-        pointer-events: none !important;
+    .dark .filepond--label-action {
+        color: #ffffff !important;
+    }
+    .dark .filepond--label-action:hover {
+        color: #93c5fd !important; /* Lighter hover */
+    }
+
+    .dark .filepond--file-action-button {
+        color: #8b5cf6 !important; /* Purple accent */
+    }
+    .dark .filepond--file-action-button:hover {
+        color: #a78bfa !important;
     }
 }
 

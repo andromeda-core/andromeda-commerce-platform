@@ -561,7 +561,7 @@ export default function Dashboard({
                 Content={
                     <>
                         <div className="my-6 flex justify-center">
-                            <h3 className="text-3xl font-bold text-gray-900 dark:text-white">
+                            <h3 className="text-3xl font-bold text-gray-900 dark:text-white/80">
                                 Welcome back,
                                 <span className="ml-2 bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent">
                                     {auth.user.name}
@@ -573,7 +573,7 @@ export default function Dashboard({
                         {auth.user.role === 'Admin' && (
                             <>
                                 <div className="my-10 grid grid-cols-1 gap-5 md:grid-cols-3">
-                                    <div className="relative flex flex-col items-center justify-center space-y-5 rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-gray-900">
+                                    <div className="relative flex flex-col items-center justify-center space-y-5 rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
                                         {/* Icon */}
                                         <div className="rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 p-4 shadow-lg">
                                             <svg
@@ -602,7 +602,7 @@ export default function Dashboard({
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="relative flex flex-col items-center justify-center space-y-5 rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-gray-900">
+                                    <div className="relative flex flex-col items-center justify-center space-y-5 rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
                                         {/* Icon */}
                                         <div className="rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 p-4 shadow-lg">
                                             <svg
@@ -632,7 +632,7 @@ export default function Dashboard({
                                         </div>
                                     </div>
 
-                                    <div className="relative flex flex-col items-center justify-center space-y-5 rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-gray-900">
+                                    <div className="relative flex flex-col items-center justify-center space-y-5 rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
                                         {/* Icon */}
                                         <div className="rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 p-4 shadow-lg">
                                             <svg
@@ -662,7 +662,7 @@ export default function Dashboard({
                                         </div>
                                     </div>
 
-                                    <div className="relative flex flex-col items-center justify-center space-y-5 rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-gray-900">
+                                    <div className="relative flex flex-col items-center justify-center space-y-5 rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
                                         {/* Icon */}
                                         <div className="rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 p-4 shadow-lg">
                                             <svg
@@ -692,7 +692,7 @@ export default function Dashboard({
                                         </div>
                                     </div>
 
-                                    <div className="relative flex flex-col items-center justify-center space-y-5 rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-gray-900">
+                                    <div className="relative flex flex-col items-center justify-center space-y-5 rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
                                         {/* Icon */}
                                         <div className="rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 p-4 shadow-lg">
                                             <svg
@@ -722,7 +722,7 @@ export default function Dashboard({
                                         </div>
                                     </div>
 
-                                    <div className="relative flex flex-col items-center justify-center space-y-5 rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-gray-900">
+                                    <div className="relative flex flex-col items-center justify-center space-y-5 rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
                                         {/* Icon */}
                                         <div className="rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 p-4 shadow-lg">
                                             <svg
@@ -755,14 +755,14 @@ export default function Dashboard({
 
                                 {/* Doughnut Charts */}
                                 <div className="mx-5 my-10 grid grid-cols-1 place-items-center gap-5 sm:grid-cols-2 lg:grid-cols-2">
-                                    <div className="relative h-[400px] w-full max-w-sm rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-gray-900">
+                                    <div className="relative h-[400px] w-full max-w-sm rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
                                         <Doughnut
                                             data={purchasing_customers_type_data}
                                             options={purchasing_customers_type_options}
                                         />
                                     </div>
 
-                                    <div className="relative h-[400px] w-full max-w-sm rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-gray-900">
+                                    <div className="relative h-[400px] w-full max-w-sm rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
                                         <Doughnut
                                             data={shipping_statuses_data}
                                             options={shipping_statuses_options}
@@ -793,7 +793,7 @@ export default function Dashboard({
                                 </div>
 
                                 <div className="my-2 grid grid-cols-1 gap-5">
-                                    <div className="relative h-[500px] w-full rounded-xl bg-white p-6 shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-gray-900">
+                                    <div className="relative h-[500px] w-full rounded-xl bg-white p-6 shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
                                         <Line
                                             data={orders_chart_data}
                                             options={orders_chart_options}
@@ -803,7 +803,7 @@ export default function Dashboard({
 
                                 {/* Collaborator Performance Bar Chart */}
                                 <div className="my-10 grid grid-cols-1 gap-5">
-                                    <div className="relative h-[400px] w-full rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-gray-900">
+                                    <div className="relative h-[400px] w-full rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
                                         <Bar
                                             data={collaborators_performance_data}
                                             options={collaborators_performance_options}
@@ -813,7 +813,7 @@ export default function Dashboard({
 
                                 {/* Distributor Performance Bar Chart */}
                                 <div className="my-10 grid grid-cols-1 gap-5">
-                                    <div className="relative h-[400px] w-full rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-gray-900">
+                                    <div className="relative h-[400px] w-full rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
                                         <Bar
                                             data={distributors_performance_data}
                                             options={distributors_performance_options}
@@ -823,7 +823,7 @@ export default function Dashboard({
 
                                 {/* Suppliers Performance Bar Chart */}
                                 <div className="my-10 grid grid-cols-1 gap-5">
-                                    <div className="relative h-[400px] w-full rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-gray-900">
+                                    <div className="relative h-[400px] w-full rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
                                         <Bar
                                             data={suppliers_performance_data}
                                             options={suppliers_performance_options}

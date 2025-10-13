@@ -386,7 +386,7 @@ export default function create({ orders }) {
                                                     <div className="grid grid-cols-1 gap-4">
                                                         <div
                                                             key={data.package_video}
-                                                            className="flex max-w-lg items-center justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                                                            className="flex max-w-lg items-center justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal"
                                                         >
                                                             {/* Left side - Video icon */}
                                                             <div className="flex items-center gap-3">
@@ -504,7 +504,7 @@ export default function create({ orders }) {
                     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
                         <div className="fixed inset-0 bg-black/50" onClick={handleClose} />
 
-                        <div className="relative z-10 max-h-screen w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 text-gray-900 shadow-xl dark:bg-gray-800 dark:text-white/80 sm:p-8">
+                        <div className="relative z-10 max-h-screen w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 text-gray-900 shadow-xl dark:bg-deepcharcoal dark:text-white/80 sm:p-8">
                             {/* Header */}
                             <div className="mb-4 flex items-center justify-between border-b pb-4">
                                 <h3 className="text-lg font-semibold">Video Recorder</h3>

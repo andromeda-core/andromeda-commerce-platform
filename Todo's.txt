@@ -322,7 +322,7 @@ Additional Work:
   Website Whole Layout Changed 3 Times ✅
   Search Results Page ✅
   Search History
-  Restricting Post Creation title should be atleast 10 chars
+  Restricting Post Creation title should be atleast 10 chars ✅
   Ad Posts Will be made within the posts Table and its section
 
   1: The 3 new categories we discussed will be added, and the existing Posts and Products categories will be removed,  ✅

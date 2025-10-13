@@ -66,7 +66,7 @@ export default function edit({ collaborator }) {
                             </div>
 
                             <div className="mx-auto mt-10 max-w-3xl px-4">
-                                <div className="rounded-2xl bg-white p-8 shadow-xl dark:bg-gray-900 dark:text-white/80">
+                                <div className="rounded-2xl bg-white p-8 shadow-xl dark:bg-deepcharcoal dark:text-white/80">
                                     <div className="flex flex-col items-center justify-center md:flex-row md:items-start md:space-x-8">
                                         {/* Avatar */}
                                         <div className="mb-6 flex-shrink-0 text-center md:mb-0">
@@ -86,7 +86,7 @@ export default function edit({ collaborator }) {
                                                     type="text"
                                                     value={collaborator?.user?.name}
                                                     readOnly
-                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
 
@@ -99,7 +99,7 @@ export default function edit({ collaborator }) {
                                                     type="email"
                                                     value={collaborator?.user?.email}
                                                     readOnly
-                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
 
@@ -112,7 +112,7 @@ export default function edit({ collaborator }) {
                                                     type="text"
                                                     value={collaborator?.user?.phone}
                                                     readOnly
-                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
 
@@ -125,7 +125,7 @@ export default function edit({ collaborator }) {
                                                     type="text"
                                                     value={collaborator?.type}
                                                     readOnly
-                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
 
@@ -138,7 +138,7 @@ export default function edit({ collaborator }) {
                                                     type="text"
                                                     value={collaborator?.referral_code}
                                                     readOnly
-                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
 
@@ -151,7 +151,7 @@ export default function edit({ collaborator }) {
                                                     type="text"
                                                     value={collaborator?.bank_account_no}
                                                     readOnly
-                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
 
@@ -164,7 +164,7 @@ export default function edit({ collaborator }) {
                                                     type="text"
                                                     value={collaborator?.address}
                                                     readOnly
-                                                    className="w-full text-wrap break-words rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                                                    className="w-full text-wrap break-words rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
 

@@ -497,7 +497,7 @@ export default function show({ order }) {
                                                 order.order_items.map((item) => (
                                                     <div
                                                         key={item.id}
-                                                        className="flex flex-col gap-4 rounded-lg border bg-gray-50 p-4 dark:bg-gray-900 sm:flex-row sm:items-center sm:justify-between"
+                                                        className="flex flex-col gap-4 rounded-lg border bg-gray-50 p-4 dark:bg-deepcharcoal sm:flex-row sm:items-center sm:justify-between"
                                                     >
                                                         {/* Left side: image + details */}
                                                         <div className="flex items-center gap-4">
@@ -590,7 +590,7 @@ export default function show({ order }) {
                                                 </h3>
 
                                                 {order.payment_proof ? (
-                                                    <div className="group relative rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
+                                                    <div className="group relative rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-gray-700 dark:bg-deepcharcoal">
                                                         {/* File Icon */}
                                                         <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20">
                                                             <svg
@@ -651,7 +651,7 @@ export default function show({ order }) {
                                                                         order.payment_proof,
                                                                     )
                                                                 }
-                                                                className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-50 text-gray-600 transition-colors hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
+                                                                className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-50 text-gray-600 transition-colors hover:bg-gray-100 dark:bg-deepcharcoal dark:text-gray-400 dark:hover:bg-gray-600"
                                                             >
                                                                 <svg
                                                                     className="h-4 w-4"
@@ -670,8 +670,8 @@ export default function show({ order }) {
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div className="rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50 p-6 text-center dark:border-gray-700 dark:bg-gray-800/50">
-                                                        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700">
+                                                    <div className="rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50 p-6 text-center dark:border-gray-700 dark:bg-deepcharcoal">
+                                                        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-deepcharcoal">
                                                             <svg
                                                                 className="h-6 w-6 text-gray-400"
                                                                 fill="none"
@@ -704,7 +704,7 @@ export default function show({ order }) {
                                                 </h3>
 
                                                 {order.courier_invoice ? (
-                                                    <div className="group relative rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
+                                                    <div className="group relative rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-gray-700 dark:bg-deepcharcoal">
                                                         {/* PDF Icon */}
                                                         <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20">
                                                             <svg
@@ -777,7 +777,7 @@ export default function show({ order }) {
                                                                         order.courier_invoice,
                                                                     )
                                                                 }
-                                                                className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-50 text-gray-600 transition-colors hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
+                                                                className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-50 text-gray-600 transition-colors hover:bg-gray-100 dark:bg-deepcharcoal dark:text-gray-400 dark:hover:bg-gray-600"
                                                             >
                                                                 <svg
                                                                     className="h-4 w-4"
@@ -796,8 +796,8 @@ export default function show({ order }) {
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div className="rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50 p-6 text-center dark:border-gray-700 dark:bg-gray-800/50">
-                                                        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700">
+                                                    <div className="rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50 p-6 text-center dark:border-gray-700 dark:bg-deepcharcoal">
+                                                        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-deepcharcoal">
                                                             <svg
                                                                 className="h-6 w-6 text-gray-400"
                                                                 fill="none"
@@ -921,7 +921,7 @@ export default function show({ order }) {
                                                             return (
                                                                 <div
                                                                     key={index}
-                                                                    className="group relative rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
+                                                                    className="group relative rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-gray-700 dark:bg-deepcharcoal"
                                                                 >
                                                                     {/* File Icon */}
                                                                     <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-lg bg-gradient-to-br from-red-50 to-red-100 dark:from-green-900/20 dark:to-red-800/20">
@@ -985,7 +985,7 @@ export default function show({ order }) {
                                                                                     item.package_video,
                                                                                 )
                                                                             }
-                                                                            className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-50 text-gray-600 transition-colors hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600"
+                                                                            className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-50 text-gray-600 transition-colors hover:bg-gray-100 dark:bg-zinc-900/80 dark:text-gray-400 dark:hover:bg-zinc-900/50"
                                                                         >
                                                                             <svg
                                                                                 className="h-4 w-4"
@@ -1007,8 +1007,8 @@ export default function show({ order }) {
                                                         },
                                                     )
                                                 ) : (
-                                                    <div className="rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50 p-6 text-center dark:border-gray-700 dark:bg-gray-800/50">
-                                                        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700">
+                                                    <div className="rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50 p-6 text-center dark:border-gray-700 dark:bg-deepcharcoal">
+                                                        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-deepcharcoal">
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
                                                                 fill="none"
@@ -1337,7 +1337,7 @@ export default function show({ order }) {
                                         </div>
 
                                         {/* Bank Account Information */}
-                                        <div className="mb-6 rounded-lg border bg-gray-50 p-4 dark:bg-gray-900">
+                                        <div className="mb-6 rounded-lg border bg-gray-50 p-4 dark:bg-deepcharcoal">
                                             <h4 className="mb-3 flex items-center text-sm font-medium text-gray-900 dark:text-white/90">
                                                 <svg
                                                     className="mr-2 h-4 w-4 text-gray-600 dark:text-white/90"
@@ -1433,7 +1433,7 @@ export default function show({ order }) {
                         <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                         {/* Modal content */}
-                        <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-800 sm:p-8">
+                        <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
                             <div className="text-center">
                                 <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                     Please Wait While We Are Dowloading File For You
@@ -1471,7 +1471,7 @@ export default function show({ order }) {
                         <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                         {/* Modal content */}
-                        <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-800 sm:p-8">
+                        <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
                             <div className="text-center">
                                 <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                     Please Wait While We Are Uploading Package Video
@@ -1508,7 +1508,7 @@ export default function show({ order }) {
                     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
                         <div className="fixed inset-0 bg-black/50" onClick={handleClose} />
 
-                        <div className="relative z-10 max-h-screen w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 text-gray-900 shadow-xl dark:bg-gray-800 dark:text-white/80 sm:p-8">
+                        <div className="relative z-10 max-h-screen w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 text-gray-900 shadow-xl dark:bg-deepcharcoal dark:text-white/80 sm:p-8">
                             {/* Header */}
                             <div className="mb-4 flex items-center justify-between border-b pb-4">
                                 <h3 className="text-lg font-semibold">Video Recorder</h3>

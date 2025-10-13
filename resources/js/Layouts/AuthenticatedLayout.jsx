@@ -65,7 +65,7 @@ export default function AuthenticatedLayout({ children }) {
 
     return (
         <>
-            <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-gray-900">
+            <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-deepcharcoal">
                 <Preloader loaded={loaded} setLoaded={setLoaded} />
 
                 <Sidebar
@@ -75,7 +75,7 @@ export default function AuthenticatedLayout({ children }) {
                     ApplicationLogoDark={ApplicationLogoDark}
                 />
 
-                <div className="relative flex flex-col flex-1 overflow-x-hidden overflow-y-auto">
+                <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
                     <Overlay sidebarToggle={sidebarToggle} setSidebarToggle={setSidebarToggle} />
 
                     <Header

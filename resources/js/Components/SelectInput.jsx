@@ -68,7 +68,7 @@ export default function SelectInput({
             ...base,
             backgroundColor: '#ffffff', // white
             color: '#111827', // gray-900
-            borderColor: state.isFocused ? '#2563eb' : '#d1d5db', // blue-600 or gray-300
+            borderColor: state.isFocused ? '#2563eb' : '#d1d5db', // indigo-600 or gray-300
             boxShadow: 'none',
             '&:hover': {
                 borderColor: '#2563eb',

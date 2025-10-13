@@ -47,7 +47,7 @@ export default function Sidebar({
             <aside
                 className={`${
                     sidebarToggle ? 'translate-x-0 lg:w-[90px]' : '-translate-x-full'
-                } sidebar fixed left-0 top-0 z-[12] flex h-screen w-[290px] flex-col overflow-y-hidden border-r border-gray-200 bg-white px-5 dark:border-gray-800 dark:bg-gray-900 lg:static lg:translate-x-0`}
+                } sidebar fixed left-0 top-0 z-[12] flex h-screen w-[290px] flex-col overflow-y-hidden border-r border-gray-200 bg-white px-5 dark:border-gray-800 dark:bg-deepcharcoal lg:static lg:translate-x-0`}
             >
                 <div
                     className={`flex items-center ${sidebarToggle ? 'justify-center' : 'justify-between'} sidebar-header gap-2 pb-7 pt-8`}
@@ -69,7 +69,7 @@ export default function Sidebar({
                     </Link>
 
                     <button
-                        className={`${sidebarToggle ? 'bg-gray-100 dark:bg-gray-800 lg:bg-transparent dark:lg:bg-transparent' : ''} z-99999 flex h-10 w-10 items-center justify-center rounded-lg border-gray-200 text-gray-500 dark:border-gray-800 dark:text-gray-400 lg:hidden lg:h-11 lg:w-11 lg:border`}
+                        className={`${sidebarToggle ? 'bg-gray-100 hover:bg-gray-200 dark:bg-zinc-900/80 dark:hover:bg-zinc-900/50 lg:bg-transparent dark:lg:bg-transparent' : ''} z-99999 flex h-10 w-10 items-center justify-center rounded-lg border-gray-200 text-gray-500 dark:border-gray-800 dark:text-gray-400 lg:hidden lg:h-11 lg:w-11 lg:border`}
                         onClick={() => setSidebarToggle(!sidebarToggle)}
                     >
                         <svg

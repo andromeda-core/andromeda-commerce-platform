@@ -570,7 +570,7 @@ export default function create({ floors, googleMapSetting }) {
                         <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                         {/* Modal content */}
-                        <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-800 sm:p-8">
+                        <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
                             <div className="text-center">
                                 <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                     Please Wait While We Are Uploading Your Files
@@ -610,7 +610,7 @@ export default function create({ floors, googleMapSetting }) {
                         ></div>
 
                         {/* Modal content */}
-                        <div className="relative z-10 max-h-[95vh] w-full max-w-4xl overflow-visible rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-800 sm:p-8">
+                        <div className="relative z-10 max-h-[95vh] w-full max-w-4xl overflow-visible rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
                             <div className="text-center">
                                 <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                     Please Search And Select Your Location
@@ -633,7 +633,7 @@ export default function create({ floors, googleMapSetting }) {
                                     />
 
                                     {showDropdown && (
-                                        <ul className="relative z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-gray-700">
+                                        <ul className="relative z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-deepcharcoal">
                                             {autoCompletionLoading ? (
                                                 <li className="flex items-center justify-center px-4 py-4">
                                                     <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"></div>
@@ -642,7 +642,7 @@ export default function create({ floors, googleMapSetting }) {
                                                 autoCompletionResults.map((item, index) => (
                                                     <li
                                                         key={index}
-                                                        className="cursor-pointer px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-600"
+                                                        className="cursor-pointer px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-zinc-900/50"
                                                         onClick={() => {
                                                             setSelectedPlaceId(item.place_id);
                                                             setShowDropdown(false);
@@ -668,7 +668,7 @@ export default function create({ floors, googleMapSetting }) {
                         <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                         {/* Modal content */}
-                        <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-800 sm:p-8">
+                        <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
                             <div className="text-center">
                                 <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                     Please Wait While We Are Setting up Location
@@ -709,7 +709,7 @@ export default function create({ floors, googleMapSetting }) {
                         ></div>
 
                         {/* Modal content */}
-                        <div className="relative z-10 max-h-[95vh] w-full max-w-4xl overflow-auto rounded-2xl bg-white p-4 shadow-xl dark:bg-gray-800 sm:max-w-3xl sm:p-6 md:max-w-2xl lg:max-w-6xl">
+                        <div className="relative z-10 max-h-[95vh] w-full max-w-4xl overflow-auto rounded-2xl bg-white p-4 shadow-xl dark:bg-deepcharcoal sm:max-w-3xl sm:p-6 md:max-w-2xl lg:max-w-6xl">
                             {/* Title */}
                             <div className="text-center">
                                 <h2 className="text-lg font-medium text-gray-800 dark:text-white">

@@ -17,9 +17,9 @@ export default function ShowCategory({ category }) {
 
             <div className="mx-auto max-w-5xl space-y-8 p-6">
                 {/* Category Card */}
-                <div className="overflow-hidden rounded-2xl bg-white shadow dark:bg-gray-800">
+                <div className="overflow-hidden rounded-2xl bg-white shadow dark:bg-zinc-900">
                     {/* Thumbnail */}
-                    <div className="flex h-64 w-full items-center justify-center bg-gray-100 dark:bg-gray-700">
+                    <div className="flex h-64 w-full items-center justify-center bg-gray-100 dark:bg-deepcharcoal">
                         {category?.thumbnail_url ? (
                             <img
                                 src={category.thumbnail_url}
@@ -53,7 +53,7 @@ export default function ShowCategory({ category }) {
                 </div>
 
                 {/* smartphones List */}
-                <div className="overflow-hidden rounded-2xl bg-white p-6 shadow dark:bg-gray-800">
+                <div className="overflow-hidden rounded-2xl bg-white p-6 shadow dark:bg-deepcharcoal">
                     <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
                         Smartphones in this Category
                     </h2>
@@ -68,9 +68,9 @@ export default function ShowCategory({ category }) {
                                         )
                                     }
                                     key={smartphone.id}
-                                    className="cursor-pointer rounded-xl border border-gray-200 bg-gray-50 p-4 shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-gray-900"
+                                    className="cursor-pointer rounded-xl border border-gray-200 bg-gray-50 p-4 shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-deepcharcoal"
                                 >
-                                    <div className="flex h-40 w-full items-center justify-center overflow-hidden rounded-lg bg-white dark:bg-gray-800">
+                                    <div className="flex h-40 w-full items-center justify-center overflow-hidden rounded-lg bg-white dark:bg-deepcharcoal">
                                         {smartphone.smartphone_image_urls ? (
                                             <img
                                                 src={smartphone.smartphone_image_urls[0]}

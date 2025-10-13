@@ -52,7 +52,7 @@ export default function manage({ all_permissions, assigned_permissions = [], rol
                                     type="checkbox"
                                     className={
                                         selected.length === all_permissions.length
-                                            ? 'mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] border-blue-500 bg-blue-500 dark:border-gray-700'
+                                            ? 'mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] border-indigo-500 bg-indigo-500 dark:border-gray-700'
                                             : 'mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] border-gray-300 bg-transparent'
                                     }
                                     checked={selected.length === getAllIds().length}
@@ -100,12 +100,12 @@ export default function manage({ all_permissions, assigned_permissions = [], rol
                                 return (
                                     <div
                                         key={index}
-                                        className="w-full rounded-2xl border bg-white p-6 shadow-md dark:bg-gray-900"
+                                        className="w-full rounded-2xl border bg-white p-6 shadow-md dark:bg-deepcharcoal"
                                     >
                                         {/* Header with Icon + Parent Name */}
                                         <div className="mb-4 flex items-center gap-3">
                                             {Icon && (
-                                                <Icon className="h-6 w-6 text-blue-600 dark:text-white" />
+                                                <Icon className="h-6 w-6 text-indigo-600 dark:text-white" />
                                             )}
                                             <h2 className="text-lg font-semibold text-gray-800 dark:text-white/80">
                                                 {permissionGroup.parent_name}
@@ -123,7 +123,7 @@ export default function manage({ all_permissions, assigned_permissions = [], rol
                                                         type="checkbox"
                                                         className={
                                                             selected.includes(item.id)
-                                                                ? 'mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] border-blue-500 bg-blue-500 dark:border-gray-700'
+                                                                ? 'mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] border-indigo-500 bg-indigo-500 dark:border-gray-700'
                                                                 : 'mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] border-gray-300 bg-transparent'
                                                         }
                                                         checked={selected.includes(item.id)}

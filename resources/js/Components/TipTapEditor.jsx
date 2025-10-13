@@ -81,8 +81,8 @@ export default function TipTapEditor({ Label, Id, Action, Value, Required = fals
     if (!editor) return null;
 
     const buttonClass = (isActive) =>
-        `w-10 rounded-md border px-2 py-1 dark:border-gray-600 dark:bg-gray-800 dark:text-black ${
-            isActive ? 'bg-blue-100 dark:bg-white  font-bold' : 'bg-white dark:text-white'
+        `w-10 rounded-md border px-2 py-1 dark:border-gray-600 dark:bg-deepcharcoal dark:text-black ${
+            isActive ? 'bg-indigo-100 dark:bg-white  font-bold' : 'bg-white dark:text-white'
         }`;
 
     return (
@@ -97,7 +97,7 @@ export default function TipTapEditor({ Label, Id, Action, Value, Required = fals
                 </label>
             )}
 
-            <div className="rounded-lg p-2 shadow-2xl dark:bg-gray-900">
+            <div className="rounded-lg p-2 shadow-2xl dark:bg-deepcharcoal">
                 {/* Toolbar */}
                 <div className="m-1 flex flex-wrap gap-2">
                     <button
@@ -155,7 +155,7 @@ export default function TipTapEditor({ Label, Id, Action, Value, Required = fals
 
                 {/* Editor */}
                 <div
-                    className="max-h-[500px] min-h-[200px] cursor-text resize-y overflow-auto rounded-lg border bg-white p-4 shadow-sm scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-900 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                    className="max-h-[500px] min-h-[200px] cursor-text resize-y overflow-auto rounded-lg border bg-white p-4 shadow-sm scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-900 dark:border-gray-600 dark:bg-deepcharcoal dark:text-white"
                     onClick={() => editor.chain().focus().run()}
                 >
                     <EditorContent editor={editor} className="h-auto" id={Id} />

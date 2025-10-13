@@ -43,7 +43,7 @@ const Sidebar = ({
     return (
         <div className="flex min-h-screen">
             <aside
-                className={`dark:bg-deepcharcoal fixed left-0 top-0 z-[50] flex h-full flex-col overflow-y-auto bg-white transition-all duration-300 ${
+                className={`fixed left-0 top-0 z-[50] flex h-full flex-col overflow-y-auto bg-white transition-all duration-300 dark:bg-deepcharcoal ${
                     isCollapsed ? 'w-20' : 'w-64'
                 }`}
             >
@@ -77,8 +77,8 @@ const Sidebar = ({
                                     isCollapsed ? 'justify-center px-0' : 'gap-3 px-4'
                                 } rounded-full py-2.5 text-sm transition-colors ${
                                     route().current() === 'home'
-                                        ? 'bg-indigo-600 text-white dark:bg-gray-800/70'
-                                        : 'text-gray-600 hover:bg-gray-100 dark:text-white/80 dark:hover:bg-gray-800/70'
+                                        ? 'menu-item-active'
+                                        : 'menu-item-inactive'
                                 }`}
                             >
                                 <svg
@@ -142,8 +142,8 @@ const Sidebar = ({
                                     isCollapsed ? 'justify-center px-0' : 'gap-3 px-4'
                                 } rounded-full py-2.5 text-sm transition-colors ${
                                     route().current() === 'website.global-search.index'
-                                        ? 'bg-indigo-600 text-white dark:bg-gray-800/70'
-                                        : 'text-gray-600 hover:bg-gray-100 dark:text-white/80 dark:hover:bg-gray-800/70'
+                                        ? 'menu-item-active'
+                                        : 'menu-item-inactive'
                                 }`}
                             >
                                 <svg
@@ -169,7 +169,7 @@ const Sidebar = ({
                                 href="#"
                                 className={`flex w-full items-center ${
                                     isCollapsed ? 'justify-center px-0' : 'gap-3 px-4'
-                                } rounded-full py-2.5 text-sm text-gray-600 transition-colors hover:bg-gray-100 dark:text-white/80 dark:hover:bg-gray-800/70`}
+                                } menu-item-inactive rounded-full py-2.5 text-sm transition-colors`}
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -194,7 +194,7 @@ const Sidebar = ({
                                 href="#"
                                 className={`flex w-full items-center ${
                                     isCollapsed ? 'justify-center px-0' : 'gap-3 px-4'
-                                } rounded-full py-2.5 text-sm text-gray-600 transition-colors hover:bg-gray-100 dark:text-white/80 dark:hover:bg-gray-800/70`}
+                                } menu-item-inactive rounded-full py-2.5 text-sm transition-colors`}
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -226,7 +226,7 @@ const Sidebar = ({
                                     onClick={() => setMoreDropdown(!moreDropdown)}
                                     className={`group flex w-full items-center ${
                                         isCollapsed ? 'justify-center px-0' : 'gap-3 px-4'
-                                    } rounded-full py-3 text-sm text-gray-600 transition-colors hover:bg-gray-100 dark:text-white/80 dark:hover:bg-gray-800/70`}
+                                    } menu-item-inactive rounded-full py-3 transition-colors`}
                                 >
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -266,7 +266,7 @@ const Sidebar = ({
                                 {moreDropdown &&
                                     createPortal(
                                         <div
-                                            className={`dark:bg-deepcharcoal absolute bottom-0 z-[9999] w-56 rounded-lg bg-white py-2 shadow-lg transition-transform duration-300 ease-in-out`}
+                                            className={`absolute bottom-0 z-[9999] w-56 rounded-lg bg-white py-2 shadow-lg transition-transform duration-300 ease-in-out dark:bg-deepcharcoal`}
                                             style={{
                                                 position: 'fixed',
                                                 transform: isCollapsed
@@ -280,7 +280,7 @@ const Sidebar = ({
                                                         <li>
                                                             <a
                                                                 href="#"
-                                                                className={`flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm text-gray-600 hover:bg-gray-100 dark:text-white/80 dark:hover:bg-gray-800/70`}
+                                                                className={`menu-item-inactive flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                                             >
                                                                 <svg
                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -307,7 +307,7 @@ const Sidebar = ({
                                                         <li>
                                                             <a
                                                                 href="#"
-                                                                className={`flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm text-gray-600 hover:bg-gray-100 dark:text-white/80 dark:hover:bg-gray-800/70`}
+                                                                className={`menu-item-inactive flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                                             >
                                                                 <svg
                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -330,7 +330,7 @@ const Sidebar = ({
                                                         <li>
                                                             <a
                                                                 href="#"
-                                                                className={`flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm text-gray-600 hover:bg-gray-100 dark:text-white/80 dark:hover:bg-gray-800/70`}
+                                                                className={`menu-item-inactive flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                                             >
                                                                 <svg
                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -356,7 +356,7 @@ const Sidebar = ({
                                                     <li>
                                                         <Link
                                                             href={route('login')}
-                                                            className={`flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm text-gray-600 hover:bg-gray-100 dark:text-white/80 dark:hover:bg-gray-800/70`}
+                                                            className={`menu-item-inactive flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                                         >
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -379,7 +379,7 @@ const Sidebar = ({
 
                                                 <li>
                                                     <button
-                                                        className={`flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm text-gray-600 hover:bg-gray-100 dark:text-white/80 dark:hover:bg-gray-800/70`}
+                                                        className={`menu-item-inactive flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                                     >
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
@@ -401,7 +401,7 @@ const Sidebar = ({
 
                                                 <li>
                                                     <button
-                                                        className={`flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm text-gray-600 hover:bg-gray-100 dark:text-white/80 dark:hover:bg-gray-800/70`}
+                                                        className={`menu-item-inactive flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                                         onClick={() => {
                                                             setDarkMode(!darkMode);
                                                             localStorage.setItem(
@@ -443,6 +443,32 @@ const Sidebar = ({
                                                         </div>
                                                     </button>
                                                 </li>
+
+                                                {user && user?.role === 'Admin' && (
+                                                    <li>
+                                                        <Link
+                                                            href={route('dashboard')}
+                                                            className={`menu-item-inactive flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
+                                                        >
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                strokeWidth={1.5}
+                                                                stroke="currentColor"
+                                                                className={`${isCollapsed ? 'size-4' : 'size-5'} `}
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"
+                                                                />
+                                                            </svg>
+
+                                                            <span>Dashboard</span>
+                                                        </Link>
+                                                    </li>
+                                                )}
 
                                                 {user && (
                                                     <li>

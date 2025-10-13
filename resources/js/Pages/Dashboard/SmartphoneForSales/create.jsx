@@ -113,7 +113,7 @@ export default function create({ smartphones, additional_fee_lists }) {
                                                         Type={'button'}
                                                         Id={'scan_smartphone'}
                                                         ClassName={
-                                                            'dark:bg-gray-900 mt-2 dark:text-white p-2  rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
+                                                            'dark:bg-deepcharcoal mt-2 dark:text-white p-2  rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
                                                         }
                                                         Icon={
                                                             <svg
@@ -376,7 +376,7 @@ export default function create({ smartphones, additional_fee_lists }) {
                             <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                             {/* Modal content */}
-                            <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-800 sm:p-8">
+                            <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
                                 <div className="text-center">
                                     <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                         Place The Camera On The Barcode

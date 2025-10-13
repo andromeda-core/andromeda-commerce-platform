@@ -37,7 +37,7 @@ export default function create() {
                 <Card
                     Content={
                         <>
-                            <div className="flex flex-wrap justify-end my-3">
+                            <div className="my-3 flex flex-wrap justify-end">
                                 <LinkButton
                                     Text={'Back To Storage Locations'}
                                     URL={route('dashboard.settings.storage_locations.index')}
@@ -87,7 +87,7 @@ export default function create() {
                                                     <textarea
                                                         id="address"
                                                         rows="1"
-                                                        className="dark:bg-dark-900 shadow-theme-xs focus:ring-3 focus:outline-hidden h-[42px] w-full min-w-0 max-w-full rounded-lg border border-gray-300 bg-transparent py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-blue-300 focus:ring-blue-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-blue-800"
+                                                        className="dark:bg-dark-900 shadow-theme-xs focus:ring-3 focus:outline-hidden h-[42px] w-full min-w-0 max-w-full rounded-lg border border-gray-300 bg-transparent py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-blue-300 focus:ring-blue-500/10 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-blue-800"
                                                         placeholder="Enter Storage Location Address"
                                                         value={data.address}
                                                         onChange={(e) =>

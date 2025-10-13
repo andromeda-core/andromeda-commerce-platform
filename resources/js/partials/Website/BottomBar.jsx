@@ -32,15 +32,13 @@ const BottomBar = ({ darkMode, setDarkMode }) => {
     return (
         <div className="fixed bottom-0 left-0 right-0 z-10 p-1 lg:hidden">
             {/* Navigation bar */}
-            <nav className="dark:bg-deepcharcoal rounded-md border-b border-gray-200 bg-white shadow-md backdrop-blur-lg dark:border-t dark:border-gray-800">
+            <nav className="rounded-md border-b border-gray-200 bg-white shadow-md backdrop-blur-lg dark:border-t dark:border-gray-800 dark:bg-deepcharcoal">
                 <div className="flex items-center justify-around px-4 py-2">
                     {/* Home */}
                     <Link
                         href={route('home')}
                         className={`flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${
-                            route().current() === 'home'
-                                ? 'rounded-lg bg-indigo-600 text-white/80 dark:bg-gray-800/70 dark:text-gray-200'
-                                : 'text-gray-700 hover:text-gray-600 dark:text-white/80 dark:hover:text-white/60'
+                            route().current() === 'home' ? 'menu-item-active' : 'menu-item-inactive'
                         }`}
                         prefetch
                     >
@@ -70,8 +68,8 @@ const BottomBar = ({ darkMode, setDarkMode }) => {
                         href={route('website.global-search.index')}
                         className={`relative flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${
                             route().current() === 'website.global-search.index'
-                                ? 'rounded-lg bg-indigo-600 text-white/80 dark:bg-gray-800/70 dark:text-gray-200'
-                                : 'text-gray-600 hover:text-gray-600 dark:text-white/80 dark:hover:text-white/60'
+                                ? 'menu-item-active'
+                                : 'menu-item-inactive'
                         }`}
                     >
                         <svg
