@@ -651,7 +651,7 @@ export default function show({ order }) {
                                                                         order.payment_proof,
                                                                     )
                                                                 }
-                                                                className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-50 text-gray-600 transition-colors hover:bg-gray-100 dark:bg-deepcharcoal dark:text-gray-400 dark:hover:bg-gray-600"
+                                                                className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-50 text-gray-600 transition-colors hover:bg-gray-100 dark:bg-zinc-900/80 dark:text-gray-400 dark:hover:bg-zinc-900/50"
                                                             >
                                                                 <svg
                                                                     className="h-4 w-4"
@@ -777,7 +777,7 @@ export default function show({ order }) {
                                                                         order.courier_invoice,
                                                                     )
                                                                 }
-                                                                className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-50 text-gray-600 transition-colors hover:bg-gray-100 dark:bg-deepcharcoal dark:text-gray-400 dark:hover:bg-gray-600"
+                                                                className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-50 text-gray-600 transition-colors hover:bg-gray-100 dark:bg-zinc-900/80 dark:text-gray-400 dark:hover:bg-zinc-900/50"
                                                             >
                                                                 <svg
                                                                     className="h-4 w-4"
