@@ -1529,7 +1529,7 @@ export default function index({ google_map_api_key }) {
                                                 ref={elipsisDropDownRef}
                                                 data-elipsis-dropdown
                                                 onClick={(e) => e.stopPropagation()}
-                                                className="absolute right-0 top-12 z-[9999] mt-2 w-44 rounded-lg border border-gray-900 bg-deepcharcoal shadow-xl sm:w-48"
+                                                className="absolute right-0 top-12 z-[9999] mt-2 w-48 rounded-lg border border-gray-900 bg-deepcharcoal shadow-xl sm:w-48"
                                             >
                                                 <ul
                                                     className="overflow-y-scroll py-1 text-sm text-gray-200 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white"
@@ -1658,6 +1658,19 @@ export default function index({ google_map_api_key }) {
                                                             </svg>
                                                             Copy Link
                                                         </button>
+                                                    </li>
+
+                                                    <li>
+                                                        <div className="flex w-full flex-col items-center gap-1 px-3 py-2 transition-colors hover:text-white">
+                                                            <span className="rounded-full text-xs">
+                                                                Post Created Date
+                                                            </span>
+                                                            <span className="rounded-full pb-1 text-xs">
+                                                                {viewablePost?.added_at +
+                                                                    ' ' +
+                                                                    viewablePost?.created_at_time}
+                                                            </span>
+                                                        </div>
                                                     </li>
                                                 </ul>
                                             </div>
