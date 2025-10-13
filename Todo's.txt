@@ -370,6 +370,8 @@ Additional Work:
 
     14: remove outline of search abr when focused ✅
 
+    15: Dashboard Theme Fully Synced With website Theme Also Updated The webiste Some Design ✅
+
 
 
 
