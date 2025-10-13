@@ -520,7 +520,7 @@ const GlobalSearch = ({
         <>
             <div className="lg:max-w-8xl sticky top-0 z-[50] mx-auto w-full backdrop-blur-md transition-all duration-300 sm:px-6 lg:px-8">
                 <div className="mx-auto py-2 sm:py-3">
-                    <div className="flex w-full items-center rounded-xl border border-gray-300 bg-white/90 p-1.5 shadow-md dark:border-gray-700 dark:bg-deepcharcoal dark:shadow-white/20 sm:p-2">
+                    <div className="flex w-full items-center rounded-xl border border-gray-300 bg-white/90 p-1.5 dark:border-gray-700 dark:bg-deepcharcoal sm:p-2">
                         {/* <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
@@ -1060,7 +1060,7 @@ const GlobalSearch = ({
                                     {/* Header */}
                                     <div className="flex items-center justify-between border-b border-gray-200 pb-4 dark:border-gray-700">
                                         <h2 className="text-xl font-semibold tracking-tight text-gray-600 dark:text-white/80">
-                                            Spatiotemporal Filters
+                                            Advanced Search
                                         </h2>
                                         <button
                                             onClick={() => setIsSpatiotemporalFilters(false)}
@@ -1388,7 +1388,7 @@ const GlobalSearch = ({
                                         </button>
 
                                         <h2 className="mx-10 text-xl font-semibold tracking-tight text-gray-800 dark:text-gray-100">
-                                            Spatiotemporal Filters
+                                            Advanced Search
                                         </h2>
                                     </div>
 

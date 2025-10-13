@@ -372,8 +372,13 @@ Additional Work:
 
     15: Dashboard Theme Fully Synced With website Theme Also Updated The webiste Some Design ✅
 
+  )
 
-
+  More Changes (
+    1:  Removing Shadow From Global Search Bar ✅
+    2:  Changing The Heading  From Spatiotemporal Filters Modal to Advanced Search ✅
+    3:  Adding Post And Product Toggles For Main Archive Page
+    4:  Relocating The Things On Mobile Post Viewer As Per Screenshots ✅
 
   )
 

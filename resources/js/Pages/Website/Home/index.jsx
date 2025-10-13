@@ -1084,8 +1084,13 @@ export default function index({ google_map_api_key }) {
                                                         </svg> */}
 
                                                         {/* Title */}
-                                                        <span className="prose break-words text-sm text-white/80">
+                                                        {/* <span className="text-sm prose break-words text-white/80">
                                                             {post?.title}
+                                                        </span> */}
+
+                                                        {/* hashtag */}
+                                                        <span className="text-sm text-white/80">
+                                                            {post?.tag}
                                                         </span>
                                                     </button>
 
@@ -1353,7 +1358,7 @@ export default function index({ google_map_api_key }) {
                                                 >
                                                     {/* Hashtag */}
                                                     <div
-                                                        className="mb-2 flex items-center justify-between space-x-2"
+                                                        className="mb-2 flex items-center justify-end space-x-2"
                                                         onClick={() => {
                                                             setShowDetailsPostIds((prev) =>
                                                                 prev.includes(post.id)
@@ -1364,15 +1369,27 @@ export default function index({ google_map_api_key }) {
                                                             );
                                                         }}
                                                     >
-                                                        <span className="text-sm text-white/80">
+                                                        {/* <span className="text-sm text-white/80">
                                                             {post?.tag}
-                                                        </span>
+                                                        </span> */}
 
-                                                        <span className="text-sm text-white/80">
-                                                            {post?.added_at +
-                                                                ' ' +
-                                                                post?.created_at_time}
-                                                        </span>
+                                                        {post?.location_name && (
+                                                            <span className="text-sm text-white/80">
+                                                                {post?.location_name
+                                                                    ? post.location_name.length > 7
+                                                                        ? post.location_name.slice(
+                                                                              0,
+                                                                              7,
+                                                                          )
+                                                                        : post.location_name
+                                                                    : ''}
+                                                                {post?.location_name ? ' ' : ''}
+                                                                {post?.added_at
+                                                                    ? post.added_at + ' '
+                                                                    : ''}
+                                                                {post?.created_at_time || ''}
+                                                            </span>
+                                                        )}
                                                     </div>
 
                                                     {/* Content */}
@@ -1677,9 +1694,16 @@ export default function index({ google_map_api_key }) {
                                                 </button> */}
 
                                                 {/* Title */}
-                                                <h2 className="text-sm font-semibold">
+                                                {/* <h2 className="text-sm font-semibold">
                                                     {viewablePost?.title || 'Post Title'}
-                                                </h2>
+                                                </h2> */}
+
+                                                {/* Tags */}
+                                                {viewablePost?.tag && (
+                                                    <div className="flex flex-wrap gap-2 text-sm text-indigo-400">
+                                                        {viewablePost?.tag}
+                                                    </div>
+                                                )}
                                             </div>
 
                                             {/* Right side */}
@@ -1754,19 +1778,31 @@ export default function index({ google_map_api_key }) {
 
                                         {/* Scrollable Bottom Section */}
                                         <div className="flex-1 space-y-3 overflow-y-auto p-4 scrollbar-none">
-                                            <div className="flex items-center justify-between">
+                                            <div className="flex items-center justify-end">
                                                 {/* Tags */}
-                                                {viewablePost?.tag && (
+                                                {/* {viewablePost?.tag && (
                                                     <div className="flex flex-wrap gap-2 text-sm text-indigo-400">
                                                         {viewablePost?.tag}
                                                     </div>
-                                                )}
+                                                )} */}
 
-                                                <span className="w-38 rounded-full py-1 text-sm">
-                                                    {viewablePost?.added_at +
-                                                        ' ' +
-                                                        viewablePost?.created_at_time}
-                                                </span>
+                                                {viewablePost?.location_name && (
+                                                    <span className="text-sm text-white/80">
+                                                        {viewablePost?.location_name
+                                                            ? viewablePost.location_name.length > 7
+                                                                ? viewablePost.location_name.slice(
+                                                                      0,
+                                                                      7,
+                                                                  )
+                                                                : viewablePost.location_name
+                                                            : ''}
+                                                        {viewablePost?.location_name ? ' ' : ''}
+                                                        {viewablePost?.added_at
+                                                            ? viewablePost.added_at + ' '
+                                                            : ''}
+                                                        {viewablePost?.created_at_time || ''}
+                                                    </span>
+                                                )}
                                             </div>
 
                                             <div
@@ -1776,7 +1812,7 @@ export default function index({ google_map_api_key }) {
                                                 className="prose break-words text-sm text-white/80"
                                             ></div>
 
-                                            <div className="flex items-center justify-between gap-3">
+                                            <div className="flex items-center justify-start gap-3">
                                                 {/* {Userprofile} */}
 
                                                 <div className="flex items-center space-x-2">
@@ -1794,11 +1830,11 @@ export default function index({ google_map_api_key }) {
                                                 </div>
 
                                                 {/* Location */}
-                                                {viewablePost?.location_name && (
-                                                    <span className="rounded-full px-2 py-1 text-sm">
+                                                {/* {viewablePost?.location_name && (
+                                                    <span className="px-2 py-1 text-sm rounded-full">
                                                         {viewablePost?.location_name}
                                                     </span>
-                                                )}
+                                                )} */}
                                             </div>
                                         </div>
                                     </div>
