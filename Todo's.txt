@@ -321,7 +321,7 @@ Additional Work:
   Swiping the text left or right with a finger doesn’t work. ✅
   Website Whole Layout Changed 3 Times ✅
   Search Results Page ✅
-  Search History
+  Search History ✅
   Restricting Post Creation title should be atleast 10 chars ✅
   Ad Posts Will be made within the posts Table and its section
 

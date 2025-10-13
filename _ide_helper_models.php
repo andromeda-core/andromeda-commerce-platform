@@ -821,6 +821,33 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
+ * @property int $user_id
+ * @property string|null $query
+ * @property string|null $filters
+ * @property string|null $filter_summary
+ * @property string|null $filters_hash
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read mixed $added_at
+ * @property-read \App\Models\User $user
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchHistory newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchHistory newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchHistory query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchHistory whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchHistory whereFilterSummary($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchHistory whereFilters($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchHistory whereFiltersHash($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchHistory whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchHistory whereQuery($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchHistory whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchHistory whereUserId($value)
+ */
+	class SearchHistory extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
  * @property array<array-key, mixed> $color_ids
  * @property int|null $model_name_id
  * @property int|null $capacity_id

@@ -1,16 +1,18 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Website;
 
+use App\Http\Controllers\Controller;
 use App\Repositories\Floors\Interface\IFloorRepostitory;
 use App\Repositories\GlobalSearch\Repository\GlobalSearchRepository;
 use App\Repositories\Posts\Repository\PostRepository;
+use App\Repositories\SearchHistories\Repository\SearchHistoryRepository;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class GlobalSearchController extends Controller
 {
-    public function __construct(private PostRepository $post, private GlobalSearchRepository $globalSearch, private IFloorRepostitory $floor) {}
+    public function __construct(private PostRepository $post, private GlobalSearchRepository $globalSearch, private IFloorRepostitory $floor, private SearchHistoryRepository $searchHistory) {}
 
     /**
      * @Perfect But Joseph Changed The Filter Logic
@@ -24,13 +26,15 @@ class GlobalSearchController extends Controller
 
     // }
 
-    public function index()
+    public function index(Request $request)
     {
         $floors = $this->floor->getFloorsForSearch();
-
         $google_map_api_key = $this->globalSearch->getGoogleMapApiKey();
+        $search_history = $this->searchHistory->getHistory($request);
 
-        return Inertia::render('Website/Search/index', compact('floors', 'google_map_api_key'));
+        // dd($search_history->toArray());
+
+        return Inertia::render('Website/Search/index', compact('floors', 'google_map_api_key', 'search_history'));
     }
 
     public function autoCompletion(Request $request)
@@ -94,8 +98,9 @@ class GlobalSearchController extends Controller
         $pagination = $data['pagination'];
 
         $google_map_api_key = $this->globalSearch->getGoogleMapApiKey();
+        $search_history = $this->searchHistory->getHistory($request);
 
-        return Inertia::render('Website/Result/index', compact('results', 'query', 'google_map_api_key', 'post_filters', 'pagination'));
+        return Inertia::render('Website/Result/index', compact('results', 'query', 'google_map_api_key', 'post_filters', 'pagination', 'search_history'));
     }
 
     public function searchSessionDestroy()
@@ -136,5 +141,13 @@ class GlobalSearchController extends Controller
                 'pagination' => $pagination,
             ]);
         }
+    }
+
+    public function destroyHistory(Request $request)
+    {
+
+        $response = $this->searchHistory->destroyHistory($request, $request->input('id'));
+
+        return response()->json($response);
     }
 }

@@ -28,7 +28,7 @@ const Sidebar = ({
                 setDarkMode(parsed);
 
                 if (darkMode) {
-                    document.body.classList.add('dark', 'bg-gray-900');
+                    document.body.classList.add('dark', 'bg-deepcharcoal');
                 } else {
                     document.body.classList = '';
                 }

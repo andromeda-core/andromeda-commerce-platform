@@ -36,6 +36,8 @@ use App\Repositories\Posts\Interface\IPostRepository;
 use App\Repositories\Posts\Repository\PostRepository;
 use App\Repositories\RewardPoints\Interface\IRewardPointRepository;
 use App\Repositories\RewardPoints\Repository\RewardPointRepository;
+use App\Repositories\SearchHistories\Interface\ISearchHistoryRepository;
+use App\Repositories\SearchHistories\Repository\SearchHistoryRepository;
 use App\Repositories\Settings\Interface\ISettingRepository;
 use App\Repositories\Settings\Repository\SettingRepository;
 use App\Repositories\SmartphoneForSales\Interface\ISmartphoneForSaleRepository;
@@ -77,6 +79,7 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(IDistributorCommissionRepository::class, DistributorCommissionRepository::class);
         $this->app->bind(IDashboardRepository::class, DashboardRepository::class);
         $this->app->bind(IGlobalSearchRepository::class, GlobalSearchRepository::class);
+        $this->app->bind(ISearchHistoryRepository::class, SearchHistoryRepository::class);
 
     }
 

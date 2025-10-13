@@ -21,7 +21,7 @@ const getCookie = (name) => {
     return null;
 };
 
-export default function index({ google_map_api_key }) {
+export default function index({ google_map_api_key, search_history }) {
     const [isPostLoaded, setIsPostLoaded] = useState(false);
     const [posts, setPosts] = useState(null);
     const [nextPageUrl, setNextPageUrl] = useState(null);
@@ -461,6 +461,7 @@ export default function index({ google_map_api_key }) {
                             setNextPageUrl(null);
                             fetchPosts();
                         }}
+                        search_history={search_history}
                     />
 
                     {/* Masonry Layout */}

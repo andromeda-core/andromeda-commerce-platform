@@ -22,7 +22,7 @@ use App\Http\Controllers\Dashboard\SmartphoneController;
 use App\Http\Controllers\Dashboard\SmartphoneForSaleController;
 use App\Http\Controllers\Dashboard\SupplierController;
 use App\Http\Controllers\Dashboard\UserController;
-use App\Http\Controllers\GlobalSearchController;
+use App\Http\Controllers\Website\GlobalSearchController;
 use App\Http\Controllers\Website\HomeController as WebsiteHomeController;
 use App\Http\Controllers\Website\PostController as WebsitePostController;
 use Illuminate\Support\Facades\Route;
@@ -54,6 +54,7 @@ Route::group(['as' => 'website.'], function () {
         Route::match(['get', 'post'], 'global-search-results', 'results')->name('results');
         Route::get('/global-search-getmoreresults', 'getMoreResults')->name('getmoreresults');
         Route::delete('/global-search-search-session-destroy', 'searchSessionDestroy')->name('search-session-destroy');
+        Route::delete('global-search-destroy-history', 'destroyHistory')->name('search-history-destroy');
     });
 });
 

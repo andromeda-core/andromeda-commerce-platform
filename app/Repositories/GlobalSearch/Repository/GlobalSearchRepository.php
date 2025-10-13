@@ -3,6 +3,7 @@
 namespace App\Repositories\GlobalSearch\Repository;
 
 use App\Models\Post;
+use App\Models\SearchHistory;
 use App\Models\Smartphone;
 use App\Repositories\GlobalSearch\Interface\IGlobalSearchRepository;
 use Cache;
@@ -15,7 +16,8 @@ class GlobalSearchRepository implements IGlobalSearchRepository
 {
     public function __construct(
         private Post $post,
-        private Smartphone $smartphone
+        private Smartphone $smartphone,
+        private SearchHistory $searchHistory
 
     ) {}
 
@@ -445,6 +447,50 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                 }
             }
 
+            // Storing Search History
+            if ($request->user() && (! empty($query) || (! empty($post_filters['address']['lat']) && ! empty($post_filters['address']['lng'])))) {
+
+                $normalizedFilters = ! empty($post_filters['address']['lat']) && ! empty($post_filters['address']['lng'])
+        ? json_encode($post_filters, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+        : null;
+
+                $filtersHash = $this->stableJsonHash($post_filters);
+
+                $previous_search = $this->searchHistory
+                    ->where('user_id', $request->user()->id)
+                    ->where(function ($q) use ($query, $filtersHash) {
+                        if (! empty($query) && empty($filtersHash)) {
+
+                            $q->where('query', $query);
+                        } elseif (empty($query) && ! empty($filtersHash)) {
+
+                            $q->where('filters_hash', $filtersHash);
+                        } elseif (! empty($query) && ! empty($filtersHash)) {
+
+                            $q->where('query', $query)->where('filters_hash', $filtersHash);
+                        }
+                    })
+                    ->first();
+
+                // info([
+                //     'query' => $query,
+                //     'filtersHash' => $filtersHash,
+                //     'previous_search' => optional($previous_search)->filters_hash,
+                // ]);
+
+                if (empty($previous_search)) {
+                    $this->searchHistory->create([
+                        'user_id' => $request->user()->id,
+                        'query' => $query ?: null,
+                        'filters' => $normalizedFilters,
+                        'filters_hash' => $filtersHash,
+                        'filter_summary' => ! empty($post_filters['address']['lat'])
+                            ? "Advanced Filter You Applied: {$post_filters['address']['lat']}, {$post_filters['address']['lng']}"
+                            : null,
+                    ]);
+                }
+            }
+
             $hasMore = ($results->where('type', 'posts')->count() === $perPage) || ($results->where('type', 'smartphones')->count() === $perPage);
             $queryParams = [
                 'page' => $page + 1,
@@ -478,5 +524,25 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                 'message' => $e->getMessage(),
             ];
         }
+    }
+
+    private function stableJsonHash(?array $filters = null): ?string
+    {
+        if (empty($filters['address']['lat']) || empty($filters['address']['lng'])) {
+            return null;
+        }
+
+        // Sort array recursively by keys to ensure consistent encoding
+        ksort($filters);
+        foreach ($filters as &$value) {
+            if (is_array($value)) {
+                ksort($value);
+            }
+        }
+
+        // Encode with fixed options and hash
+        $normalizedJson = json_encode($filters, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+        return md5($normalizedJson);
     }
 }

@@ -26,9 +26,17 @@ const GlobalSearch = ({
     resultsPage = false,
     defaultPostFilters = {},
     defaultFiltersCleared = false,
+    search_history = [],
 }) => {
     const windowSize = useWindowSize();
     const [searchApplying, setSearchApplying] = useState(false);
+    const [searchHistory, setSearchHistory] = useState(search_history);
+
+    const [searchHistoryLoading, setSearchHistoryLoading] = useState(false);
+    const [searchHistoryOpen, setSearchHistoryOpen] = useState(false);
+    const [mobileSearchHistoryOpen, setMobileSearchHistoryOpen] = useState(false);
+    const [filterModalSearchHistoryOpen, setFilterModalSearchHistoryOpen] = useState(false);
+
     // Filter Setting
     const [isPostFilterSetting, setIsPostFilterSetting] = useState(false);
 
@@ -310,13 +318,13 @@ const GlobalSearch = ({
     }, [searchQuery]);
 
     // Focusing On Component Mount If Search Query Already Exists
-    useEffect(() => {
-        if (searchQueryRef.current !== '') {
-            searchInputRef.current.focus();
-        }
-    }, []);
+    // useEffect(() => {
+    //     if (searchQueryRef.current !== '') {
+    //         searchInputRef.current.focus();
+    //     }
+    // }, []);
 
-    const ApplyFilter = async (type) => {
+    const ApplyFilter = async (type, search_history = []) => {
         document.cookie = `post_preferences=${JSON.stringify(postPreferences)};path=/;max-age=31536000;SameSite=Lax;`;
 
         const isAnyAdditionalFilterApplied = Object.values(postFilters).some((value) => {
@@ -375,6 +383,45 @@ const GlobalSearch = ({
 
                 return;
             }
+        }
+
+        if (type == 'search_history') {
+            setSearchApplying(true);
+            if (postFilters.from_floor_id != '' && postFilters.to_floor_id == '') {
+                toast.error('Please Select (To Floor) ');
+                return;
+            } else if (postFilters.to_floor_id != '' && postFilters.from_floor_id == '') {
+                toast.error('Please Select (From Floor) ');
+                return;
+            }
+
+            await clearSession();
+            await axios
+                .post(
+                    route('website.global-search.results'),
+                    {
+                        post_filters: search_history.filters ?? postFilters,
+                        post_preferences: postPreferences,
+                        query: search_history.query,
+                    },
+                    {
+                        headers: { 'X-Inertia': true },
+                    },
+                )
+                .then((response) => {
+                    router.replace(response.data);
+                    window.history.replaceState({}, '', route('website.global-search.results'));
+                })
+                .catch((error) => {
+                    toast.error(error.message);
+                })
+                .finally(() => {
+                    setSearchApplying(false);
+                });
+
+            setIsPrefChanged(false);
+
+            return;
         }
 
         if (type !== 'filter') {
@@ -516,72 +563,146 @@ const GlobalSearch = ({
         };
     }, [isPostFilterSetting, isSpatiotemporalFilters]);
 
+    // Delete Search History and fetching new onces
+    const deleteSearchHistory = (id) => {
+        setSearchHistoryLoading(true);
+        axios
+            .delete(route('website.global-search.search-history-destroy', { id: id }))
+            .then((res) => {
+                if (res.data.status) {
+                    setSearchHistory(res.data.data);
+                } else {
+                    toast.error(res.data.message);
+                }
+            })
+            .catch((e) => {
+                toast.error(e.message || 'Something went wrong');
+            })
+            .finally(() => {
+                setSearchHistoryLoading(false);
+            });
+    };
+
     return (
         <>
             <div className="lg:max-w-8xl sticky top-0 z-[50] mx-auto w-full backdrop-blur-md transition-all duration-300 sm:px-6 lg:px-8">
                 <div className="mx-auto py-2 sm:py-3">
-                    <div className="flex w-full items-center rounded-xl border border-gray-300 bg-white/90 p-1.5 dark:border-gray-700 dark:bg-deepcharcoal sm:p-2">
-                        {/* <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="ml-1.5 h-5 w-5 text-gray-500 dark:text-gray-300 sm:ml-2 sm:h-6 sm:w-6"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-                            />
-                        </svg> */}
+                    <div className="relative flex w-full items-center rounded-xl border border-gray-300 bg-white/90 p-1.5 dark:border-gray-700 dark:bg-deepcharcoal sm:p-2">
+                        <div className="relative w-full">
+                            <div className="relative flex w-full items-center rounded-xl">
+                                {searchQuery !== '' && (
+                                    <svg
+                                        onClick={() => {
+                                            setSearchQuery('');
+                                            setIsPrefChanged(true);
+                                            searchInputRef.current?.focus();
+                                        }}
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth={1.5}
+                                        stroke="currentColor"
+                                        className="absolute right-3 size-4 cursor-pointer hover:text-black/80 dark:text-white/80 hover:dark:text-white/50"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M6 18 18 6M6 6l12 12"
+                                        />
+                                    </svg>
+                                )}
 
-                        <div className="relative flex w-full items-center rounded-xl">
-                            {searchQuery !== '' && (
-                                <svg
-                                    onClick={() => {
-                                        setSearchQuery('');
-                                        setIsPrefChanged(true);
-                                        searchInputRef.current?.focus();
+                                <input
+                                    ref={searchInputRef}
+                                    type="search"
+                                    placeholder="What happened...?"
+                                    className="ml-2 flex-1 border-none bg-transparent text-xs text-gray-600 placeholder-gray-400 outline-none focus:outline-none focus:ring-0 dark:text-white/80 sm:text-base"
+                                    value={searchQuery}
+                                    onChange={(e) => {
+                                        if (e.target.value.trim().length > 0) {
+                                            setSearchQuery(e.target.value);
+                                            if (!isPrefChanged) setIsPrefChanged(true);
+                                        } else if (
+                                            e.target.value.trim().length === 0 &&
+                                            defaultQuery === ''
+                                        ) {
+                                            setSearchQuery('');
+                                            if (isPrefChanged) setIsPrefChanged(false);
+                                        } else {
+                                            setSearchQuery('');
+                                            if (!isPrefChanged) setIsPrefChanged(true);
+                                        }
                                     }}
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth={1.5}
-                                    stroke="currentColor"
-                                    className="absolute right-3 size-4 cursor-pointer hover:text-black/80 dark:text-white/80 hover:dark:text-white/50"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M6 18 18 6M6 6l12 12"
-                                    />
-                                </svg>
-                            )}
-
-                            <input
-                                ref={searchInputRef}
-                                type="search"
-                                placeholder="What happened...?"
-                                className="ml-2 flex-1 border-none bg-transparent text-xs text-gray-600 placeholder-gray-400 outline-none focus:outline-none focus:ring-0 dark:text-white/80 sm:text-base"
-                                value={searchQuery}
-                                onChange={(e) => {
-                                    if (e.target.value.trim().length > 0) {
-                                        setSearchQuery(e.target.value);
-                                        if (!isPrefChanged) setIsPrefChanged(true);
-                                    } else if (
-                                        e.target.value.trim().length === 0 &&
-                                        defaultQuery === ''
-                                    ) {
-                                        setSearchQuery('');
-                                        if (isPrefChanged) setIsPrefChanged(false);
-                                    } else {
-                                        setSearchQuery('');
-                                        if (!isPrefChanged) setIsPrefChanged(true);
-                                    }
-                                }}
-                            />
+                                    onFocus={() => {
+                                        setSearchHistoryOpen(true);
+                                    }}
+                                    onBlur={() => {
+                                        if (!searchHistoryLoading) setSearchHistoryOpen(false);
+                                    }}
+                                />
+                            </div>
                         </div>
+
+                        {/* Search History Dropdown */}
+                        {searchHistoryOpen && searchHistory.length > 0 && (
+                            <div className="absolute left-0 right-0 top-full z-50 mt-2 rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-700 dark:bg-deepcharcoal sm:left-2 sm:right-2">
+                                {/* Title */}
+                                <div className="border-b border-gray-200 px-4 py-2 text-xs font-semibold text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                                    Your Recent Searches
+                                </div>
+
+                                <ul className="max-h-60 overflow-y-auto">
+                                    {searchHistoryLoading ? (
+                                        <li className="flex items-center justify-center px-4 py-4">
+                                            <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"></div>
+                                        </li>
+                                    ) : (
+                                        searchHistory.map((item, index) => (
+                                            <li
+                                                key={index}
+                                                className="cursor-pointer px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-900"
+                                                onMouseDown={(e) => {
+                                                    e.preventDefault();
+                                                    ApplyFilter('search_history', item);
+                                                    setSearchHistoryOpen(false);
+                                                }}
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    {item.query || item.filter_summary}
+
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            deleteSearchHistory(item.id);
+                                                        }}
+                                                        onMouseDown={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                        }}
+                                                        className="rounded-lg bg-gray-200 p-2 hover:bg-gray-100 dark:bg-zinc-900/80 dark:hover:bg-zinc-800/50"
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            strokeWidth={1.5}
+                                                            stroke="currentColor"
+                                                            className="size-4"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            </li>
+                                        ))
+                                    )}
+                                </ul>
+                            </div>
+                        )}
 
                         {additional_filters && (
                             <button
@@ -1084,7 +1205,7 @@ const GlobalSearch = ({
                                     </div>
 
                                     {/* Content */}
-                                    <div className="mt-6 max-h-[70vh] space-y-8 overflow-y-auto pr-1">
+                                    <div className="mt-6 max-h-[100vh] space-y-8 overflow-y-auto pr-1">
                                         <section className="mt-4 w-full">
                                             {/* Search Bar */}
                                             <div className="z-[50] mx-auto w-full transition-all duration-300">
@@ -1143,8 +1264,126 @@ const GlobalSearch = ({
                                                                             setIsPrefChanged(true);
                                                                     }
                                                                 }}
+                                                                onFocus={() => {
+                                                                    setFilterModalSearchHistoryOpen(
+                                                                        true,
+                                                                    );
+                                                                }}
+                                                                onBlur={() => {
+                                                                    if (!searchHistoryLoading)
+                                                                        setFilterModalSearchHistoryOpen(
+                                                                            false,
+                                                                        );
+                                                                }}
                                                             />
                                                         </div>
+
+                                                        {/* Search History Dropdown */}
+                                                        {filterModalSearchHistoryOpen &&
+                                                            searchHistory.length > 0 &&
+                                                            createPortal(
+                                                                <div
+                                                                    className="fixed z-[9999] rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-700 dark:bg-deepcharcoal"
+                                                                    style={{
+                                                                        top:
+                                                                            searchInputRef.current?.getBoundingClientRect()
+                                                                                .bottom +
+                                                                            8 +
+                                                                            'px',
+                                                                        left:
+                                                                            searchInputRef.current?.getBoundingClientRect()
+                                                                                .left + 'px',
+                                                                        width:
+                                                                            searchInputRef.current?.getBoundingClientRect()
+                                                                                .width + 'px',
+                                                                    }}
+                                                                >
+                                                                    {/* Title */}
+                                                                    <div className="border-b border-gray-200 px-4 py-2 text-xs font-semibold text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                                                                        Your Recent Searches
+                                                                    </div>
+
+                                                                    <ul className="max-h-60 overflow-y-auto">
+                                                                        {searchHistoryLoading ? (
+                                                                            <li className="flex items-center justify-center px-4 py-4">
+                                                                                <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"></div>
+                                                                            </li>
+                                                                        ) : (
+                                                                            searchHistory.map(
+                                                                                (item, index) => (
+                                                                                    <li
+                                                                                        key={index}
+                                                                                        className="cursor-pointer px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-900"
+                                                                                    >
+                                                                                        <div
+                                                                                            className="flex items-center justify-between"
+                                                                                            onMouseDown={(
+                                                                                                e,
+                                                                                            ) => {
+                                                                                                if (
+                                                                                                    e.target.closest(
+                                                                                                        'button',
+                                                                                                    )
+                                                                                                )
+                                                                                                    return;
+                                                                                                e.preventDefault();
+                                                                                                ApplyFilter(
+                                                                                                    'search_history',
+                                                                                                    item,
+                                                                                                );
+                                                                                                setFilterModalSearchHistoryOpen(
+                                                                                                    false,
+                                                                                                );
+                                                                                            }}
+                                                                                        >
+                                                                                            <span className="flex-1">
+                                                                                                {item.query ||
+                                                                                                    item.filter_summary}
+                                                                                            </span>
+
+                                                                                            <button
+                                                                                                onClick={(
+                                                                                                    e,
+                                                                                                ) => {
+                                                                                                    e.stopPropagation();
+                                                                                                    deleteSearchHistory(
+                                                                                                        item.id,
+                                                                                                    );
+                                                                                                }}
+                                                                                                onMouseDown={(
+                                                                                                    e,
+                                                                                                ) => {
+                                                                                                    e.preventDefault();
+                                                                                                    e.stopPropagation();
+                                                                                                }}
+                                                                                                className="rounded-lg bg-gray-200 p-2 hover:bg-gray-100 dark:bg-zinc-900/80 dark:hover:bg-zinc-800/50"
+                                                                                            >
+                                                                                                <svg
+                                                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                                                    fill="none"
+                                                                                                    viewBox="0 0 24 24"
+                                                                                                    strokeWidth={
+                                                                                                        1.5
+                                                                                                    }
+                                                                                                    stroke="currentColor"
+                                                                                                    className="size-4"
+                                                                                                >
+                                                                                                    <path
+                                                                                                        strokeLinecap="round"
+                                                                                                        strokeLinejoin="round"
+                                                                                                        d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                                                                                                    />
+                                                                                                </svg>
+                                                                                            </button>
+                                                                                        </div>
+                                                                                    </li>
+                                                                                ),
+                                                                            )
+                                                                        )}
+                                                                    </ul>
+                                                                </div>,
+                                                                document.body,
+                                                            )}
                                                     </div>
                                                 </div>
                                             </div>
@@ -1452,8 +1691,126 @@ const GlobalSearch = ({
                                                                             setIsPrefChanged(true);
                                                                     }
                                                                 }}
+                                                                onFocus={() => {
+                                                                    setMobileSearchHistoryOpen(
+                                                                        true,
+                                                                    );
+                                                                }}
+                                                                onBlur={() => {
+                                                                    if (!searchHistoryLoading)
+                                                                        setMobileSearchHistoryOpen(
+                                                                            false,
+                                                                        );
+                                                                }}
                                                             />
                                                         </div>
+
+                                                        {/* Search History Dropdown */}
+                                                        {mobileSearchHistoryOpen &&
+                                                            searchHistory.length > 0 &&
+                                                            createPortal(
+                                                                <div
+                                                                    className="fixed z-[9999] rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-700 dark:bg-deepcharcoal"
+                                                                    style={{
+                                                                        top:
+                                                                            searchInputRef.current?.getBoundingClientRect()
+                                                                                .bottom +
+                                                                            8 +
+                                                                            'px',
+                                                                        left:
+                                                                            searchInputRef.current?.getBoundingClientRect()
+                                                                                .left + 'px',
+                                                                        width:
+                                                                            searchInputRef.current?.getBoundingClientRect()
+                                                                                .width + 'px',
+                                                                    }}
+                                                                >
+                                                                    {/* Title */}
+                                                                    <div className="border-b border-gray-200 px-4 py-2 text-xs font-semibold text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                                                                        Your Recent Searches
+                                                                    </div>
+
+                                                                    <ul className="max-h-36 overflow-y-auto">
+                                                                        {searchHistoryLoading ? (
+                                                                            <li className="flex items-center justify-center px-4 py-4">
+                                                                                <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"></div>
+                                                                            </li>
+                                                                        ) : (
+                                                                            searchHistory.map(
+                                                                                (item, index) => (
+                                                                                    <li
+                                                                                        key={index}
+                                                                                        className="cursor-pointer px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-900"
+                                                                                    >
+                                                                                        <div
+                                                                                            className="flex items-center justify-between"
+                                                                                            onMouseDown={(
+                                                                                                e,
+                                                                                            ) => {
+                                                                                                if (
+                                                                                                    e.target.closest(
+                                                                                                        'button',
+                                                                                                    )
+                                                                                                )
+                                                                                                    return;
+                                                                                                e.preventDefault();
+                                                                                                ApplyFilter(
+                                                                                                    'search_history',
+                                                                                                    item,
+                                                                                                );
+                                                                                                setMobileSearchHistoryOpen(
+                                                                                                    false,
+                                                                                                );
+                                                                                            }}
+                                                                                        >
+                                                                                            <span className="flex-1">
+                                                                                                {item.query ||
+                                                                                                    item.filter_summary}
+                                                                                            </span>
+
+                                                                                            <button
+                                                                                                onClick={(
+                                                                                                    e,
+                                                                                                ) => {
+                                                                                                    e.stopPropagation();
+                                                                                                    deleteSearchHistory(
+                                                                                                        item.id,
+                                                                                                    );
+                                                                                                }}
+                                                                                                onMouseDown={(
+                                                                                                    e,
+                                                                                                ) => {
+                                                                                                    e.preventDefault();
+                                                                                                    e.stopPropagation();
+                                                                                                }}
+                                                                                                className="rounded-lg bg-gray-200 p-2 hover:bg-gray-100 dark:bg-zinc-900/80 dark:hover:bg-zinc-800/50"
+                                                                                            >
+                                                                                                <svg
+                                                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                                                    fill="none"
+                                                                                                    viewBox="0 0 24 24"
+                                                                                                    strokeWidth={
+                                                                                                        1.5
+                                                                                                    }
+                                                                                                    stroke="currentColor"
+                                                                                                    className="size-4"
+                                                                                                >
+                                                                                                    <path
+                                                                                                        strokeLinecap="round"
+                                                                                                        strokeLinejoin="round"
+                                                                                                        d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                                                                                                    />
+                                                                                                </svg>
+                                                                                            </button>
+                                                                                        </div>
+                                                                                    </li>
+                                                                                ),
+                                                                            )
+                                                                        )}
+                                                                    </ul>
+                                                                </div>,
+                                                                document.body,
+                                                            )}
                                                     </div>
                                                 </div>
                                             </div>

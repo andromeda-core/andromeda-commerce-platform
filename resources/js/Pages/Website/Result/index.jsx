@@ -6,7 +6,14 @@ import axios from 'axios';
 import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 
-const index = ({ results, query, google_map_api_key, post_filters, pagination }) => {
+const index = ({
+    results,
+    query,
+    google_map_api_key,
+    post_filters,
+    pagination,
+    search_history,
+}) => {
     const [defaultPostFilters, setDefaultPostFilters] = useState(post_filters || []);
     const [defaultFiltersCleared, setDefaultFiltersCleared] = useState(false);
     const [AllResults, setAllResults] = useState(results || []);
@@ -209,6 +216,7 @@ const index = ({ results, query, google_map_api_key, post_filters, pagination })
                 defaultQuery={query}
                 defaultPostFilters={defaultPostFilters}
                 defaultFiltersCleared={defaultFiltersCleared}
+                search_history={search_history}
             />
 
             <div className="pb-20 sm:pb-20">
