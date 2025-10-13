@@ -379,6 +379,7 @@ Additional Work:
     2:  Changing The Heading  From Spatiotemporal Filters Modal to Advanced Search ✅
     3:  Adding Post And Product Toggles For Main Archive Page
     4:  Relocating The Things On Mobile Post Viewer As Per Screenshots ✅
+    5:  Post Creation Date added On Posts Mobile's Gallery in Dropdown menu  ✅
 
   )
 

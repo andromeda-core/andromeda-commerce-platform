@@ -1661,7 +1661,7 @@ export default function index({ google_map_api_key }) {
                                                     </li>
 
                                                     <li>
-                                                        <div className="flex w-full flex-col items-center gap-1 px-3 py-2 transition-colors hover:text-white">
+                                                        <div className="flex w-full flex-col items-start gap-1 px-4 py-2 transition-colors hover:text-white">
                                                             <span className="rounded-full text-xs">
                                                                 Post Created Date
                                                             </span>
