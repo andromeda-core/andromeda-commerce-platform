@@ -1662,10 +1662,10 @@ export default function index({ google_map_api_key }) {
 
                                                     <li>
                                                         <div className="flex w-full flex-col items-start gap-1 px-4 py-2 transition-colors hover:text-white">
-                                                            <span className="rounded-full text-xs">
+                                                            <span className="rounded-full text-[10px]">
                                                                 Post Created Date
                                                             </span>
-                                                            <span className="rounded-full pb-1 text-xs">
+                                                            <span className="rounded-full pb-1 text-[10px]">
                                                                 {viewablePost?.added_at +
                                                                     ' ' +
                                                                     viewablePost?.created_at_time}
