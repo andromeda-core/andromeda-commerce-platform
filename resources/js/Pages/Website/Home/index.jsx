@@ -479,9 +479,10 @@ export default function index({ google_map_api_key, search_history }) {
 
             const handleTouchStart = (e) => {
                 if (scrollLock.current) return;
+
                 isDragging.current = true;
                 touchStartY.current = e.touches[0].clientY;
-                startScrollTop.current = container.scrollTop;
+                currentY.current = e.touches[0].clientY;
             };
 
             const handleTouchMove = (e) => {
@@ -491,31 +492,27 @@ export default function index({ google_map_api_key, search_history }) {
                 const deltaY = touchStartY.current - y;
                 const containerHeight = container.clientHeight;
 
-                // ✨ limit drag movement to 40% of screen height (prevents layout jerk)
-                const maxDrag = containerHeight * 0.4;
-                let limitedDelta = deltaY;
-                if (Math.abs(deltaY) > maxDrag) {
-                    limitedDelta = maxDrag * Math.sign(deltaY);
-                }
+                // If user holds or moves slightly, let it follow finger but limited
+                const maxMove = containerHeight * 0.35; // Limit drag distance to 35%
+                const limitedDelta = Math.max(-maxMove, Math.min(maxMove, deltaY));
 
-                // move smoothly with finger
-                container.scrollTop = startScrollTop.current + limitedDelta;
+                container.scrollTop = selectedPostIndex * containerHeight + limitedDelta;
+
+                currentY.current = y;
             };
 
-            const handleTouchEnd = (e) => {
+            const handleTouchEnd = () => {
                 if (!isDragging.current || scrollLock.current) return;
                 isDragging.current = false;
 
-                const yEnd = e.changedTouches[0].clientY;
-                const deltaY = touchStartY.current - yEnd;
                 const containerHeight = container.clientHeight;
-
-                // 🔹 decide direction and threshold
-                const direction = deltaY > 0 ? 1 : -1;
-                const threshold = containerHeight * 0.15; // 15% threshold to change post
+                const deltaY = touchStartY.current - currentY.current;
+                const threshold = containerHeight * 0.18; // swipe threshold ~18% height
                 let nextIndex = selectedPostIndex;
 
+                // If swipe is long enough → only move ONE post
                 if (Math.abs(deltaY) > threshold) {
+                    const direction = deltaY > 0 ? 1 : -1;
                     nextIndex = Math.max(
                         0,
                         Math.min(posts.length - 1, selectedPostIndex + direction),
@@ -524,19 +521,19 @@ export default function index({ google_map_api_key, search_history }) {
 
                 scrollLock.current = true;
 
-                // 🔹 Smoothly snap to exactly one post
+                // Snap animation
                 container.scrollTo({
                     top: nextIndex * containerHeight,
                     behavior: 'smooth',
                 });
 
-                // 🔹 Update UI and history
                 setSelectedPostIndex(nextIndex);
                 setViewablePost(posts[nextIndex]);
                 window.history.replaceState({}, '', generateURL(posts[nextIndex]));
 
                 if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
 
+                // Unlock after transition
                 setTimeout(() => {
                     scrollLock.current = false;
                 }, 450);
