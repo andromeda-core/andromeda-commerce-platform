@@ -487,19 +487,14 @@ export default function index({ google_map_api_key, search_history }) {
             };
 
             const handleTouchMove = (e) => {
-                if (scrollLock.current || !isDragging.current) return;
+                if (!isDragging.current || scrollLock.current) return;
 
                 const container = mobilePostContainerRef.current;
                 const y = e.touches[0].clientY;
                 const deltaY = touchStartY.current - y;
 
-                // Apply resistance factor: less movement for small drags
-                const containerHeight = container.clientHeight;
-                const resistance = Math.min(Math.abs(deltaY) / (containerHeight * 0.5), 1) ** 0.6; // smooth damping
-                const adjusted = deltaY * resistance;
-
-                // Follow finger with resistance
-                container.scrollTop = startScrollTop.current + adjusted;
+                // follow the finger smoothly (no snapping here)
+                container.scrollTop = startScrollTop.current + deltaY;
             };
 
             const handleTouchEnd = (e) => {
@@ -510,10 +505,11 @@ export default function index({ google_map_api_key, search_history }) {
                 const deltaY = touchStartY.current - e.changedTouches[0].clientY;
                 const containerHeight = container.clientHeight;
 
+                // direction
                 const direction = deltaY > 0 ? 1 : -1;
                 let nextIndex = selectedPostIndex;
 
-                // Trigger next/prev only if scrolled enough
+                // only move post if swiped past threshold
                 if (Math.abs(deltaY) > containerHeight * 0.25) {
                     nextIndex = Math.max(
                         0,
@@ -523,37 +519,24 @@ export default function index({ google_map_api_key, search_history }) {
 
                 scrollLock.current = true;
 
-                // Snap animation
-                const targetScroll = nextIndex * containerHeight;
-                const start = container.scrollTop;
-                const distance = targetScroll - start;
-                const startTime = performance.now();
-                const duration = 350;
+                // instantly move to next or back to current post
+                container.scrollTo({
+                    top: nextIndex * containerHeight,
+                    behavior: 'smooth',
+                });
 
-                const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+                // update state
+                setSelectedPostIndex(nextIndex);
+                setViewablePost(posts[nextIndex]);
+                window.history.replaceState({}, '', generateURL(posts[nextIndex]));
 
-                const animate = (now) => {
-                    const elapsed = now - startTime;
-                    const progress = Math.min(elapsed / duration, 1);
-                    const eased = easeOutCubic(progress);
+                if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
 
-                    container.scrollTop = start + distance * eased;
-
-                    if (progress < 1) {
-                        requestAnimationFrame(animate);
-                    } else {
-                        // Snap finished
-                        setSelectedPostIndex(nextIndex);
-                        setViewablePost(posts[nextIndex]);
-                        window.history.replaceState({}, '', generateURL(posts[nextIndex]));
-                        if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
-                        scrollLock.current = false;
-                    }
-                };
-
-                requestAnimationFrame(animate);
+                // small delay to avoid double-swiping
+                setTimeout(() => {
+                    scrollLock.current = false;
+                }, 300);
             };
-
             // attach events
             window.addEventListener('wheel', handleWheel, { passive: false });
             container.addEventListener('touchstart', handleTouchStart, { passive: false });
