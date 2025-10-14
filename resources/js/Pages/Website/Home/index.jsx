@@ -447,43 +447,25 @@ export default function index({ google_map_api_key, search_history }) {
             if (targetIndex === selectedPostIndex) return;
 
             isScrollingRef.current = true;
-            container.style.overflow = 'hidden';
 
-            const targetScrollTop = targetIndex * container.clientHeight;
-            const startTime = performance.now();
-            const startScroll = container.scrollTop;
-            const distance = targetScrollTop - startScroll;
-            const duration = 300;
+            // Use native smooth scroll for browser-optimized smoothness on mobile
+            container.scrollTo({
+                top: targetIndex * container.clientHeight,
+                behavior: 'smooth',
+            });
 
-            const animateScroll = (currentTime) => {
-                const elapsed = currentTime - startTime;
-                const progress = Math.min(elapsed / duration, 1);
+            // Update state after a delay matching approx scroll duration
+            setTimeout(() => {
+                setSelectedPostIndex(targetIndex);
+                const post = posts[targetIndex];
+                setViewablePost(post);
+                window.history.replaceState({}, '', generateURL(post));
 
-                const easeProgress =
-                    progress < 0.5 ? 2 * progress * progress : -1 + (4 - 2 * progress) * progress;
-
-                container.scrollTop = startScroll + distance * easeProgress;
-
-                if (progress < 1) {
-                    requestAnimationFrame(animateScroll);
-                } else {
-                    setSelectedPostIndex(targetIndex);
-                    const post = posts[targetIndex];
-                    setViewablePost(post);
-                    window.history.replaceState({}, '', generateURL(post));
-
-                    if (targetIndex >= posts.length - 5 && nextPageUrl) {
-                        fetchMorePosts();
-                    }
-
-                    setTimeout(() => {
-                        container.style.overflow = 'auto';
-                        isScrollingRef.current = false;
-                    }, 100);
+                if (targetIndex >= posts.length - 5 && nextPageUrl) {
+                    fetchMorePosts();
                 }
-            };
-
-            requestAnimationFrame(animateScroll);
+                isScrollingRef.current = false;
+            }, 300); // Adjust to match perceived smooth duration
         };
 
         const handleTouchStart = (e) => {
@@ -505,26 +487,23 @@ export default function index({ google_map_api_key, search_history }) {
             if (isScrollingRef.current) return;
 
             const touchEndY = e.changedTouches[0].clientY;
-            const touchEndTime = Date.now();
-
             const deltaY = touchStartY - touchEndY;
-            const deltaTime = touchEndTime - touchStartTime;
-            const velocity = Math.abs(deltaY) / deltaTime;
+            const absDeltaY = Math.abs(deltaY);
 
-            // Dynamic threshold: 15% of container height for distance, adjust velocity if needed
             const dynamicThreshold = container.clientHeight * 0.15;
-            const velocityThreshold = 0.3; // Could also dynamize, e.g., 0.3 + (1 / container.clientHeight) * 100
+            const velocity = absDeltaY / (Date.now() - touchStartTime);
+            const velocityThreshold = 0.3;
 
-            const isSwipe = Math.abs(deltaY) > dynamicThreshold || velocity > velocityThreshold;
-
-            if (isSwipe) {
-                if (deltaY > 0) {
-                    scrollToIndex(selectedPostIndex + 1);
-                } else {
-                    scrollToIndex(selectedPostIndex - 1);
-                }
+            if (absDeltaY > dynamicThreshold || velocity > velocityThreshold) {
+                // Swipe to next/prev
+                scrollToIndex(selectedPostIndex + (deltaY > 0 ? 1 : -1));
+            } else {
+                // Snap back to current with native smooth
+                container.scrollTo({
+                    top: selectedPostIndex * container.clientHeight,
+                    behavior: 'smooth',
+                });
             }
-            // What about resetting touchStartY here or handling no-swipe snap-back? Would adding a gentle scrollTo current index improve smoothness?
         };
 
         const handleWheel = (e) => {
@@ -567,6 +546,16 @@ export default function index({ google_map_api_key, search_history }) {
                 }, 80);
             }
         };
+
+        const handleResize = () => {
+            if (!isMobilePostViewer) return;
+            // Maintain current index on viewport change
+            container.scrollTo({
+                top: selectedPostIndex * container.clientHeight,
+                behavior: 'instant', // Or 'auto' to avoid visible jump
+            });
+        };
+        window.addEventListener('resize', handleResize);
 
         const preventDefaultScroll = (e) => {
             if (isScrollingRef.current) {
