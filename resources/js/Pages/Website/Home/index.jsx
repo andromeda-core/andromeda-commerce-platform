@@ -477,7 +477,9 @@ export default function index({ google_map_api_key, search_history }) {
                 touchStartY.current = e.touches[0].clientY;
             };
 
-            const handleTouchMove = (e) => {};
+            const handleTouchMove = (e) => {
+                e.preventDefault();
+            };
 
             const handleTouchEnd = (e) => {
                 if (scrollLock.current) return;
@@ -514,7 +516,7 @@ export default function index({ google_map_api_key, search_history }) {
                 // 🔹 release after animation ends
                 setTimeout(() => {
                     scrollLock.current = false;
-                }, 400);
+                }, 300);
             };
 
             // attach events
