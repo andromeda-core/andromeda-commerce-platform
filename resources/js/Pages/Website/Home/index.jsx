@@ -511,8 +511,11 @@ export default function index({ google_map_api_key, search_history }) {
             const deltaTime = touchEndTime - touchStartTime;
             const velocity = Math.abs(deltaY) / deltaTime;
 
-            const threshold = 40;
-            const isSwipe = Math.abs(deltaY) > threshold || velocity > 0.3;
+            // Dynamic threshold: 15% of container height for distance, adjust velocity if needed
+            const dynamicThreshold = container.clientHeight * 0.15;
+            const velocityThreshold = 0.3; // Could also dynamize, e.g., 0.3 + (1 / container.clientHeight) * 100
+
+            const isSwipe = Math.abs(deltaY) > dynamicThreshold || velocity > velocityThreshold;
 
             if (isSwipe) {
                 if (deltaY > 0) {
@@ -521,6 +524,7 @@ export default function index({ google_map_api_key, search_history }) {
                     scrollToIndex(selectedPostIndex - 1);
                 }
             }
+            // What about resetting touchStartY here or handling no-swipe snap-back? Would adding a gentle scrollTo current index improve smoothness?
         };
 
         const handleWheel = (e) => {
