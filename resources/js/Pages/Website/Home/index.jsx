@@ -498,10 +498,11 @@ export default function index({ google_map_api_key, search_history }) {
 
                 container.scrollTop = currentScroll.current + dy;
 
-                // compute velocity
+                // smooth velocity tracking
                 const now = performance.now();
                 const dt = now - lastTime.current;
-                velocity.current = (lastY.current - y) / dt;
+                const v = (lastY.current - y) / dt;
+                velocity.current = velocity.current * 0.7 + v * 0.3; // dampen noise
                 lastY.current = y;
                 lastTime.current = now;
             };
@@ -513,30 +514,46 @@ export default function index({ google_map_api_key, search_history }) {
                 const containerHeight = container.clientHeight;
                 const index = container.scrollTop / containerHeight;
 
-                // predict next based on velocity and delta
-                let nextIndex = Math.round(index + velocity.current * 8); // inertia factor
-                nextIndex = Math.max(0, Math.min(posts.length - 1, nextIndex));
+                const swipeVelocity = velocity.current;
+                const swipeDistance = Math.abs(deltaY);
+
+                // ✅ Determine direction
+                const direction = deltaY > 0 ? 1 : -1;
+
+                // ✅ Base next index
+                let nextIndex = selectedPostIndex;
+
+                // ✅ Threshold logic: small movement → snap back
+                if (swipeDistance > containerHeight * 0.2 || Math.abs(swipeVelocity) > 0.5) {
+                    nextIndex = Math.max(
+                        0,
+                        Math.min(posts.length - 1, selectedPostIndex + direction),
+                    );
+                }
 
                 scrollLock.current = true;
 
+                // ✅ Spring-like snap animation
                 const targetScroll = nextIndex * containerHeight;
                 const start = container.scrollTop;
                 const distance = targetScroll - start;
-                const duration = 280; // ms for snap
 
-                let startTime = null;
+                const startTime = performance.now();
+                const duration = Math.min(450, 180 + Math.abs(distance) * 0.25); // dynamic duration
 
-                const animate = (timestamp) => {
-                    if (!startTime) startTime = timestamp;
-                    const progress = Math.min((timestamp - startTime) / duration, 1);
-                    const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+                const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+
+                const animate = (now) => {
+                    const elapsed = now - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const eased = easeOutCubic(progress);
 
                     container.scrollTop = start + distance * eased;
 
                     if (progress < 1) {
                         requestAnimationFrame(animate);
                     } else {
-                        // snap finished
+                        // Snap complete
                         setSelectedPostIndex(nextIndex);
                         setViewablePost(posts[nextIndex]);
                         window.history.replaceState({}, '', generateURL(posts[nextIndex]));
