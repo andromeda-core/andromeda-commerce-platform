@@ -487,36 +487,34 @@ export default function index({ google_map_api_key, search_history }) {
                 const touchEndY = e.changedTouches[0].clientY;
                 const deltaY = touchStartY.current - touchEndY;
 
-                // 🔹 prevent tiny swipes
                 if (Math.abs(deltaY) < 50) return;
 
                 scrollLock.current = true;
 
-                // 🔹 detect direction
                 const direction = deltaY > 0 ? 1 : -1;
                 let nextIndex = Math.max(
                     0,
                     Math.min(posts.length - 1, selectedPostIndex + direction),
                 );
 
-                // 🔹 manually control scroll
                 container.scrollTo({
                     top: nextIndex * container.clientHeight,
-                    behavior: 'smooth',
+                    behavior: 'instant',
                 });
 
-                // 🔹 update post + URL
-                console.log(nextIndex);
+                setTimeout(() => {
+                    container.style.scrollBehavior = 'smooth';
+                }, 100);
+
                 setSelectedPostIndex(nextIndex);
                 setViewablePost(posts[nextIndex]);
                 window.history.replaceState({}, '', generateURL(posts[nextIndex]));
 
                 if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
 
-                // 🔹 release after animation ends
                 setTimeout(() => {
                     scrollLock.current = false;
-                }, 300);
+                }, 250);
             };
 
             // attach events
