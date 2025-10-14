@@ -541,6 +541,7 @@ export default function index({ google_map_api_key, search_history }) {
     const momentumCheck = useRef(null);
     const isTouching = useRef(false);
     const scrollLock = useRef(false);
+    const lastChangedIndex = useRef(null);
 
     useEffect(() => {
         if (!isMobilePostViewer || viewablePost === '' || isMobilePostGallery) return;
@@ -608,24 +609,6 @@ export default function index({ google_map_api_key, search_history }) {
             lastMoveTime.current = now;
         };
 
-        // Track momentum after finger leaves screen
-        const waitForMomentumEnd = (callback) => {
-            let last = container.scrollTop;
-            let stableFrames = 0;
-
-            const check = () => {
-                const now = container.scrollTop;
-                if (Math.abs(now - last) < 1) stableFrames++;
-                else stableFrames = 0;
-                last = now;
-
-                if (stableFrames > 4) callback();
-                else momentumCheck.current = requestAnimationFrame(check);
-            };
-
-            momentumCheck.current = requestAnimationFrame(check);
-        };
-
         // Touch end
         const handleTouchEnd = () => {
             if (!isTouching.current || scrollLock.current) return;
@@ -636,31 +619,35 @@ export default function index({ google_map_api_key, search_history }) {
             const currentTop = selectedPostIndex * containerHeight;
             let delta = currentScroll - currentTop;
 
-            // ✅ Step 0: Clamp delta so it never exceeds one post height
+            // ✅ Limit delta range
             if (delta > containerHeight) delta = containerHeight;
             if (delta < -containerHeight) delta = -containerHeight;
 
             const normalizedProgress = Math.abs(delta / containerHeight);
 
-            // Step 1: Stop native momentum immediately
+            // ✅ Stop momentum instantly
             container.style.overflowY = 'hidden';
-            container.scrollTop = currentScroll; // freeze exactly where it is
+            container.scrollTop = currentScroll;
 
-            // Step 2: Decide whether to switch
+            // ✅ Determine new index
             let nextIndex = selectedPostIndex;
             if (normalizedProgress > 0.25) {
                 const direction = delta > 0 ? 1 : -1;
                 nextIndex = Math.max(0, Math.min(posts.length - 1, selectedPostIndex + direction));
             }
 
-            // Step 3: Animate to the correct post
+            // ✅ Prevent same gesture from triggering twice
+            if (lastChangedIndex.current === nextIndex && scrollLock.current) return;
+            lastChangedIndex.current = nextIndex;
+
+            // ✅ Animate
             scrollLock.current = true;
             container.scrollTo({
                 top: nextIndex * containerHeight,
                 behavior: 'smooth',
             });
 
-            // Step 4: Update state
+            // ✅ Update only once
             if (nextIndex !== selectedPostIndex) {
                 setSelectedPostIndex(nextIndex);
                 setViewablePost(posts[nextIndex]);
@@ -668,10 +655,11 @@ export default function index({ google_map_api_key, search_history }) {
                 if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
             }
 
-            // Step 5: Restore scroll after snap
+            // ✅ Unlock safely
             setTimeout(() => {
                 container.style.overflowY = 'scroll';
                 scrollLock.current = false;
+                lastChangedIndex.current = null; // reset so next gesture works
             }, 450);
         };
 
