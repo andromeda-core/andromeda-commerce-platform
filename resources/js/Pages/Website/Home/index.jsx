@@ -585,8 +585,10 @@ export default function index({ google_map_api_key, search_history }) {
         };
 
         // Touch move
+        // ===== Touch Move =====
         const handleTouchMove = (e) => {
             if (!isTouching.current || scrollLock.current) return;
+
             const y = e.touches[0].clientY;
             const now = performance.now();
             const dt = Math.max(1, now - lastMoveTime.current);
@@ -595,28 +597,42 @@ export default function index({ google_map_api_key, search_history }) {
             velocity.current = 0.9 * velocity.current + 0.1 * (dy / dt);
 
             const containerHeight = container.clientHeight;
-            const minScroll = selectedPostIndex * containerHeight - containerHeight;
-            const maxScroll = selectedPostIndex * containerHeight + containerHeight;
+            const baseTop = selectedPostIndex * containerHeight;
+            const minScroll = baseTop - containerHeight;
+            const maxScroll = baseTop + containerHeight;
 
-            // Soft resistance beyond one post
-            if (container.scrollTop < minScroll)
+            // ✅ Soft-limit user drag between current and next post
+            if (container.scrollTop < minScroll) {
                 container.scrollTop = minScroll + (container.scrollTop - minScroll) * 0.3;
-            else if (container.scrollTop > maxScroll)
+            } else if (container.scrollTop > maxScroll) {
                 container.scrollTop = maxScroll + (container.scrollTop - maxScroll) * 0.3;
+            }
 
             lastTouchY.current = y;
             lastMoveTime.current = now;
         };
 
-        // Track momentum after finger leaves screen
+        // ===== Momentum limiter =====
         const waitForMomentumEnd = (callback) => {
+            const containerHeight = container.clientHeight;
+            const baseTop = selectedPostIndex * containerHeight;
+            const minScroll = baseTop - containerHeight;
+            const maxScroll = baseTop + containerHeight;
+
             let last = container.scrollTop;
             let stableFrames = 0;
 
             const check = () => {
                 const now = container.scrollTop;
-                if (Math.abs(now - last) < 1) stableFrames++;
+
+                // ✅ Hard cap: never allow native momentum to scroll beyond one post
+                if (now < minScroll) container.scrollTop = minScroll;
+                if (now > maxScroll) container.scrollTop = maxScroll;
+
+                // Track stability for when momentum ends
+                if (Math.abs(now - last) < 0.5) stableFrames++;
                 else stableFrames = 0;
+
                 last = now;
 
                 if (stableFrames > 4) callback();
