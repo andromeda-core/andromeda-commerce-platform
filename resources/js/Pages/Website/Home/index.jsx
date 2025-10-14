@@ -417,7 +417,16 @@ export default function index({ google_map_api_key, search_history }) {
     const touchStartY = useRef(0);
     const scrollLock = useRef(false);
 
-    // console.log(mobilePostContainerRef.current);
+    useEffect(() => {
+        if (!isPostLoaded) return;
+        if (viewablePost && isMobilePostViewer && posts.length > 0) {
+            const currentIndex = posts.findIndex((p) => p.id === viewablePost.id);
+
+            if (currentIndex !== -1 && currentIndex !== selectedPostIndex) {
+                setSelectedPostIndex(currentIndex);
+            }
+        }
+    }, [posts, isPostLoaded, viewablePost]);
 
     useEffect(() => {
         // guard: only activate when viewer is open and post exists
@@ -461,7 +470,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                 if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
 
-                setTimeout(() => (scrollLock.current = false), 300);
+                setTimeout(() => (scrollLock.current = false), 400);
             };
 
             const handleTouchStart = (e) => {
@@ -495,6 +504,7 @@ export default function index({ google_map_api_key, search_history }) {
                 });
 
                 // 🔹 update post + URL
+                console.log(nextIndex);
                 setSelectedPostIndex(nextIndex);
                 setViewablePost(posts[nextIndex]);
                 window.history.replaceState({}, '', generateURL(posts[nextIndex]));
@@ -504,7 +514,7 @@ export default function index({ google_map_api_key, search_history }) {
                 // 🔹 release after animation ends
                 setTimeout(() => {
                     scrollLock.current = false;
-                }, 300);
+                }, 400);
             };
 
             // attach events
