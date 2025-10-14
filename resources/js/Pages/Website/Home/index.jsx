@@ -452,7 +452,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                 container.scrollTo({
                     top: nextIndex * container.clientHeight,
-                    behavior: 'auto',
+                    behavior: 'smooth',
                 });
 
                 setSelectedPostIndex(nextIndex);
@@ -491,7 +491,7 @@ export default function index({ google_map_api_key, search_history }) {
                 // 🔹 manually control scroll
                 container.scrollTo({
                     top: nextIndex * container.clientHeight,
-                    behavior: 'auto',
+                    behavior: 'smooth',
                 });
 
                 // 🔹 update post + URL
