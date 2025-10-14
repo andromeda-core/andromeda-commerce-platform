@@ -414,6 +414,52 @@ export default function index({ google_map_api_key, search_history }) {
         }
     }, [isMobilePostViewer, viewablePost]);
 
+    // Scroll Control Of Post Viewer Of Mobile Logic
+    const scrollLock = useRef(false);
+
+    const handleScroll = (e) => {
+        const container = e.currentTarget;
+        if (scrollLock.current) return;
+
+        const scrollTop = container.scrollTop;
+        const containerHeight = container.clientHeight;
+
+        // determine current index
+        const index = Math.round(scrollTop / containerHeight);
+
+        // detect scroll direction
+        const delta = scrollTop - containerHeight * index;
+
+        let targetIndex = index;
+
+        if (Math.abs(delta) > containerHeight * 0.1) {
+            // small scroll threshold to avoid accidental triggers
+            if (delta > 0 && index < posts.length - 1) targetIndex = index + 1;
+            if (delta < 0 && index > 0) targetIndex = index - 1;
+        }
+
+        scrollLock.current = true;
+        container.scrollTo({
+            top: targetIndex * containerHeight,
+            behavior: 'smooth',
+        });
+
+        // release lock after scroll ends
+        setTimeout(() => {
+            setElipsisShowDropdown(false);
+            scrollLock.current = false;
+            setSelectedPostIndex(targetIndex);
+            const post = posts[targetIndex];
+            setViewablePost(post);
+            window.history.replaceState({}, '', generateURL(post));
+
+            // Load more posts if near end
+            if (targetIndex >= posts.length - 5 && nextPageUrl) {
+                fetchMorePosts();
+            }
+        }, 800); // lock for ~0.8s to prevent rapid scrolling
+    };
+
     return (
         <MainLayout>
             <Head title="Home" />
@@ -1005,47 +1051,47 @@ export default function index({ google_map_api_key, search_history }) {
                                             scrollBehavior: 'smooth',
                                             overscrollBehavior: 'contain',
                                         }}
-                                        onScroll={(e) => {
-                                            setElipsisShowDropdown(false);
-
-                                            const container = e.currentTarget;
-                                            const scrollTop = container.scrollTop;
-                                            const containerHeight = container.clientHeight;
-                                            const index = Math.round(scrollTop / containerHeight);
-
-                                            if (index !== selectedPostIndex && posts[index]) {
-                                                setSelectedPostIndex(index);
-
-                                                const post = posts[index];
-                                                setViewablePost(post);
-                                                window.history.replaceState(
-                                                    {},
-                                                    '',
-                                                    generateURL(post),
-                                                );
-
-                                                if (index >= posts.length - 5 && nextPageUrl) {
-                                                    fetchMorePosts();
-                                                }
-                                            }
-
-                                            clearTimeout(container._snapTimer);
-                                            container._snapTimer = setTimeout(() => {
-                                                const remainder = scrollTop % containerHeight;
-
-                                                // if user left mid-way (not close to snap point)
-                                                if (
-                                                    remainder > containerHeight * 0.15 &&
-                                                    remainder < containerHeight * 0.85
-                                                ) {
-                                                    container.scrollTo({
-                                                        top: index * containerHeight,
-                                                        behavior: 'smooth',
-                                                    });
-                                                }
-                                            }, 150);
-                                        }}
+                                        onScroll={handleScroll}
                                         ref={mobilePostContainerRef}
+                                        // onScroll={(e) => {
+
+                                        //     const container = e.currentTarget;
+                                        //     const scrollTop = container.scrollTop;
+                                        //     const containerHeight = container.clientHeight;
+                                        //     const index = Math.round(scrollTop / containerHeight);
+
+                                        //     if (index !== selectedPostIndex && posts[index]) {
+                                        //         setSelectedPostIndex(index);
+
+                                        //         const post = posts[index];
+                                        //         setViewablePost(post);
+                                        //         window.history.replaceState(
+                                        //             {},
+                                        //             '',
+                                        //             generateURL(post),
+                                        //         );
+
+                                        //         if (index >= posts.length - 5 && nextPageUrl) {
+                                        //             fetchMorePosts();
+                                        //         }
+                                        //     }
+
+                                        //     clearTimeout(container._snapTimer);
+                                        //     container._snapTimer = setTimeout(() => {
+                                        //         const remainder = scrollTop % containerHeight;
+
+                                        //         // if user left mid-way (not close to snap point)
+                                        //         if (
+                                        //             remainder > containerHeight * 0.15 &&
+                                        //             remainder < containerHeight * 0.85
+                                        //         ) {
+                                        //             container.scrollTo({
+                                        //                 top: index * containerHeight,
+                                        //                 behavior: 'smooth',
+                                        //             });
+                                        //         }
+                                        //     }, 150);
+                                        // }}
                                     >
                                         {posts.map((post, index) => (
                                             <div
