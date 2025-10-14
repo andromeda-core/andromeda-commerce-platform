@@ -538,6 +538,7 @@ export default function index({ google_map_api_key, search_history }) {
     const lastTouchY = useRef(0);
     const lastMoveTime = useRef(0);
     const velocity = useRef(0);
+    const momentumCheck = useRef(null);
     const isTouching = useRef(false);
     const scrollLock = useRef(false);
 
@@ -546,6 +547,7 @@ export default function index({ google_map_api_key, search_history }) {
         const container = mobilePostContainerRef.current;
         if (!container) return;
 
+        // Desktop scroll
         const handleWheel = (e) => {
             if (e.ctrlKey || e.metaKey) return;
             e.preventDefault();
@@ -558,7 +560,10 @@ export default function index({ google_map_api_key, search_history }) {
                 Math.min(posts.length - 1, selectedPostIndex + direction),
             );
 
-            container.scrollTo({ top: nextIndex * container.clientHeight, behavior: 'smooth' });
+            container.scrollTo({
+                top: nextIndex * container.clientHeight,
+                behavior: 'smooth',
+            });
             setSelectedPostIndex(nextIndex);
             setViewablePost(posts[nextIndex]);
             window.history.replaceState({}, '', generateURL(posts[nextIndex]));
@@ -567,6 +572,7 @@ export default function index({ google_map_api_key, search_history }) {
             setTimeout(() => (scrollLock.current = false), 400);
         };
 
+        // Touch start
         const handleTouchStart = (e) => {
             if (scrollLock.current) return;
             isTouching.current = true;
@@ -575,11 +581,12 @@ export default function index({ google_map_api_key, search_history }) {
             lastTouchY.current = e.touches[0].clientY;
             lastMoveTime.current = performance.now();
             velocity.current = 0;
+            cancelAnimationFrame(momentumCheck.current);
         };
 
+        // Touch move
         const handleTouchMove = (e) => {
             if (!isTouching.current || scrollLock.current) return;
-
             const y = e.touches[0].clientY;
             const now = performance.now();
             const dt = Math.max(1, now - lastMoveTime.current);
@@ -591,43 +598,58 @@ export default function index({ google_map_api_key, search_history }) {
             const minScroll = selectedPostIndex * containerHeight - containerHeight;
             const maxScroll = selectedPostIndex * containerHeight + containerHeight;
 
-            // ✅ Soft clamp but allow natural feel
-            if (container.scrollTop < minScroll - 30)
-                container.scrollTop = minScroll - 30 + (container.scrollTop - minScroll) * 0.4;
-            if (container.scrollTop > maxScroll + 30)
-                container.scrollTop = maxScroll + 30 + (container.scrollTop - maxScroll) * 0.4;
+            // Soft resistance beyond one post
+            if (container.scrollTop < minScroll)
+                container.scrollTop = minScroll + (container.scrollTop - minScroll) * 0.3;
+            else if (container.scrollTop > maxScroll)
+                container.scrollTop = maxScroll + (container.scrollTop - maxScroll) * 0.3;
 
             lastTouchY.current = y;
             lastMoveTime.current = now;
         };
 
+        // Track momentum after finger leaves screen
+        const waitForMomentumEnd = (callback) => {
+            let last = container.scrollTop;
+            let stableFrames = 0;
+
+            const check = () => {
+                const now = container.scrollTop;
+                if (Math.abs(now - last) < 1) stableFrames++;
+                else stableFrames = 0;
+                last = now;
+
+                if (stableFrames > 4) callback();
+                else momentumCheck.current = requestAnimationFrame(check);
+            };
+
+            momentumCheck.current = requestAnimationFrame(check);
+        };
+
+        // Touch end
         const handleTouchEnd = () => {
             if (!isTouching.current || scrollLock.current) return;
             isTouching.current = false;
 
             const containerHeight = container.clientHeight;
-            const currentScroll = container.scrollTop;
-            const currentTop = selectedPostIndex * containerHeight;
-            const delta = currentScroll - currentTop;
-            const normalizedProgress = Math.abs(delta / containerHeight);
-            const speed = Math.abs(velocity.current);
-
-            // ✅ Gentle momentum limiter
-            const cappedSpeed = Math.min(speed, 0.5);
-            const shouldChange =
-                normalizedProgress > 0.25 || (normalizedProgress > 0.15 && cappedSpeed > 0.2);
-
-            // ✅ Always only 1 post difference
-            let nextIndex = selectedPostIndex;
-            if (shouldChange) {
-                const direction = delta > 0 ? 1 : -1;
-                nextIndex = Math.max(0, Math.min(posts.length - 1, selectedPostIndex + direction));
-            }
-
             scrollLock.current = true;
 
-            // ✅ Let inertia end first, then snap (prevents jerk)
-            setTimeout(() => {
+            // ✅ Wait until native momentum scroll finishes
+            waitForMomentumEnd(() => {
+                const currentScroll = container.scrollTop;
+                const currentTop = selectedPostIndex * containerHeight;
+                const delta = currentScroll - currentTop;
+                const normalizedProgress = Math.abs(delta / containerHeight);
+
+                let nextIndex = selectedPostIndex;
+                if (normalizedProgress > 0.25) {
+                    const direction = delta > 0 ? 1 : -1;
+                    nextIndex = Math.max(
+                        0,
+                        Math.min(posts.length - 1, selectedPostIndex + direction),
+                    );
+                }
+
                 container.scrollTo({
                     top: nextIndex * containerHeight,
                     behavior: 'smooth',
@@ -640,8 +662,8 @@ export default function index({ google_map_api_key, search_history }) {
                     if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
                 }
 
-                setTimeout(() => (scrollLock.current = false), 400);
-            }, 100); // wait ~100ms after touch end — allows natural flick to settle
+                setTimeout(() => (scrollLock.current = false), 450);
+            });
         };
 
         window.addEventListener('wheel', handleWheel, { passive: false });
@@ -654,6 +676,7 @@ export default function index({ google_map_api_key, search_history }) {
             container.removeEventListener('touchstart', handleTouchStart);
             container.removeEventListener('touchmove', handleTouchMove);
             container.removeEventListener('touchend', handleTouchEnd);
+            cancelAnimationFrame(momentumCheck.current);
         };
     }, [
         isMobilePostViewer,
