@@ -610,66 +610,66 @@ export default function index({ google_map_api_key, search_history }) {
         };
 
         // Touch end
-        const handleTouchEnd = () => {
-            if (!isTouching.current || scrollLock.current) return;
-            isTouching.current = false;
+        // const handleTouchEnd = () => {
+        //     if (!isTouching.current || scrollLock.current) return;
+        //     isTouching.current = false;
 
-            const containerHeight = container.clientHeight;
-            const currentScroll = container.scrollTop;
-            const currentTop = selectedPostIndex * containerHeight;
-            let delta = currentScroll - currentTop;
+        //     const containerHeight = container.clientHeight;
+        //     const currentScroll = container.scrollTop;
+        //     const currentTop = selectedPostIndex * containerHeight;
+        //     let delta = currentScroll - currentTop;
 
-            // ✅ Limit delta range
-            if (delta > containerHeight) delta = containerHeight;
-            if (delta < -containerHeight) delta = -containerHeight;
+        //     // ✅ Limit delta range
+        //     if (delta > containerHeight) delta = containerHeight;
+        //     if (delta < -containerHeight) delta = -containerHeight;
 
-            const normalizedProgress = Math.abs(delta / containerHeight);
+        //     const normalizedProgress = Math.abs(delta / containerHeight);
 
-            // ✅ Stop momentum instantly
-            container.style.overflowY = 'hidden';
-            container.scrollTop = currentScroll;
+        //     // ✅ Stop momentum instantly
+        //     container.style.overflowY = 'hidden';
+        //     container.scrollTop = currentScroll;
 
-            // ✅ Determine new index
-            let nextIndex = selectedPostIndex;
-            if (normalizedProgress > 0.25) {
-                const direction = delta > 0 ? 1 : -1;
-                nextIndex = Math.max(0, Math.min(posts.length - 1, selectedPostIndex + direction));
-            }
+        //     // ✅ Determine new index
+        //     let nextIndex = selectedPostIndex;
+        //     if (normalizedProgress > 0.25) {
+        //         const direction = delta > 0 ? 1 : -1;
+        //         nextIndex = Math.max(0, Math.min(posts.length - 1, selectedPostIndex + direction));
+        //     }
 
-            // ✅ Prevent same gesture from triggering twice
-            if (lastChangedIndex.current === nextIndex && scrollLock.current) return;
-            lastChangedIndex.current = nextIndex;
+        //     // ✅ Prevent same gesture from triggering twice
+        //     if (lastChangedIndex.current === nextIndex && scrollLock.current) return;
+        //     lastChangedIndex.current = nextIndex;
 
-            // ✅ Animate
-            scrollLock.current = true;
-            container.scrollTo({
-                top: nextIndex * containerHeight,
-                behavior: 'smooth',
-            });
+        //     // ✅ Animate
+        //     scrollLock.current = true;
+        //     container.scrollTo({
+        //         top: nextIndex * containerHeight,
+        //         behavior: 'smooth',
+        //     });
 
-            // ✅ Update only once
-            if (nextIndex !== selectedPostIndex) {
-                setSelectedPostIndex(nextIndex);
-                setViewablePost(posts[nextIndex]);
-                window.history.replaceState({}, '', generateURL(posts[nextIndex]));
-                if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
-            }
+        //     // ✅ Update only once
+        //     if (nextIndex !== selectedPostIndex) {
+        //         setSelectedPostIndex(nextIndex);
+        //         setViewablePost(posts[nextIndex]);
+        //         window.history.replaceState({}, '', generateURL(posts[nextIndex]));
+        //         if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
+        //     }
 
-            // ✅ Unlock safely
-            setTimeout(() => {
-                container.style.overflowY = 'scroll';
-                scrollLock.current = false;
-                lastChangedIndex.current = null; // reset so next gesture works
-            }, 450);
-        };
+        //     // ✅ Unlock safely
+        //     setTimeout(() => {
+        //         container.style.overflowY = 'scroll';
+        //         scrollLock.current = false;
+        //         lastChangedIndex.current = null; // reset so next gesture works
+        //     }, 450);
+        // };
 
-        // window.addEventListener('wheel', handleWheel, { passive: false });
+        window.addEventListener('wheel', handleWheel, { passive: false });
         container.addEventListener('touchstart', handleTouchStart, { passive: true });
         container.addEventListener('touchmove', handleTouchMove, { passive: true });
         container.addEventListener('touchend', handleTouchEnd, { passive: true });
 
         return () => {
-            // window.removeEventListener('wheel', handleWheel);
+            window.removeEventListener('wheel', handleWheel);
             container.removeEventListener('touchstart', handleTouchStart);
             container.removeEventListener('touchmove', handleTouchMove);
             container.removeEventListener('touchend', handleTouchEnd);
