@@ -478,36 +478,48 @@ export default function index({ google_map_api_key, search_history }) {
 
                 setTimeout(() => (scrollLock.current = false), 400);
             };
+            const touchStartY = useRef(0);
+            const startScrollTop = useRef(0);
+            const scrollLock = useRef(false);
+            const isDragging = useRef(false);
 
             const handleTouchStart = (e) => {
                 if (scrollLock.current) return;
+
                 const y = e.touches[0].clientY;
                 touchStartY.current = y;
                 startScrollTop.current = mobilePostContainerRef.current.scrollTop;
+                isDragging.current = true;
             };
 
             const handleTouchMove = (e) => {
-                if (scrollLock.current) return;
+                if (scrollLock.current || !isDragging.current) return;
 
                 const container = mobilePostContainerRef.current;
                 const y = e.touches[0].clientY;
                 const deltaY = touchStartY.current - y;
 
-                // follow finger
-                container.scrollTop = startScrollTop.current + deltaY;
+                // Apply resistance factor: less movement for small drags
+                const containerHeight = container.clientHeight;
+                const resistance = Math.min(Math.abs(deltaY) / (containerHeight * 0.5), 1) ** 0.6; // smooth damping
+                const adjusted = deltaY * resistance;
+
+                // Follow finger with resistance
+                container.scrollTop = startScrollTop.current + adjusted;
             };
+
             const handleTouchEnd = (e) => {
-                if (scrollLock.current) return;
+                if (scrollLock.current || !isDragging.current) return;
+                isDragging.current = false;
 
                 const container = mobilePostContainerRef.current;
                 const deltaY = touchStartY.current - e.changedTouches[0].clientY;
                 const containerHeight = container.clientHeight;
 
-                // decide direction
                 const direction = deltaY > 0 ? 1 : -1;
                 let nextIndex = selectedPostIndex;
 
-                // threshold for moving to next post
+                // Trigger next/prev only if scrolled enough
                 if (Math.abs(deltaY) > containerHeight * 0.25) {
                     nextIndex = Math.max(
                         0,
@@ -517,7 +529,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                 scrollLock.current = true;
 
-                // animate to snap position
+                // Snap animation
                 const targetScroll = nextIndex * containerHeight;
                 const start = container.scrollTop;
                 const distance = targetScroll - start;
@@ -536,7 +548,7 @@ export default function index({ google_map_api_key, search_history }) {
                     if (progress < 1) {
                         requestAnimationFrame(animate);
                     } else {
-                        // snap finished
+                        // Snap finished
                         setSelectedPostIndex(nextIndex);
                         setViewablePost(posts[nextIndex]);
                         window.history.replaceState({}, '', generateURL(posts[nextIndex]));
