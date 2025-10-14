@@ -428,151 +428,115 @@ export default function index({ google_map_api_key, search_history }) {
     }, [posts, isPostLoaded, viewablePost]);
 
     const touchStartY = useRef(0);
-    const startScrollTop = useRef(0);
+    const currentY = useRef(0);
     const isDragging = useRef(false);
     const scrollLock = useRef(false);
+    const dragDelta = useRef(0);
 
     useEffect(() => {
-        // guard: only activate when viewer is open and post exists
         if (!isMobilePostViewer || viewablePost === '') return;
 
-        let container = null;
-        let observer = null;
+        const container = mobilePostContainerRef.current;
+        if (!container) return;
 
-        const initListeners = () => {
-            container = mobilePostContainerRef.current;
-            if (!container) return; // still not mounted
+        // ---- Desktop wheel (same as yours) ----
+        const handleWheel = (e) => {
+            if (e.ctrlKey || e.metaKey) return;
+            e.preventDefault();
+            if (scrollLock.current) return;
 
-            setTimeout(() => {
-                container?.focus();
-            }, 50);
+            scrollLock.current = true;
+            const direction = e.deltaY > 0 ? 1 : -1;
+            const nextIndex = Math.max(
+                0,
+                Math.min(posts.length - 1, selectedPostIndex + direction),
+            );
 
-            // ----- WHEEL SCROLL HANDLER -----
-            const handleWheel = (e) => {
-                if (e.ctrlKey || e.metaKey) return;
+            container.scrollTo({
+                top: nextIndex * container.clientHeight,
+                behavior: 'smooth',
+            });
 
-                e.preventDefault();
+            setSelectedPostIndex(nextIndex);
+            setViewablePost(posts[nextIndex]);
+            window.history.replaceState({}, '', generateURL(posts[nextIndex]));
+            if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
 
-                if (scrollLock.current) return;
-
-                scrollLock.current = true;
-
-                const direction = e.deltaY > 0 ? 1 : -1;
-                let nextIndex = Math.max(
-                    0,
-                    Math.min(posts.length - 1, selectedPostIndex + direction),
-                );
-
-                container.scrollTo({
-                    top: nextIndex * container.clientHeight,
-                    behavior: 'smooth',
-                });
-
-                setSelectedPostIndex(nextIndex);
-                setViewablePost(posts[nextIndex]);
-                window.history.replaceState({}, '', generateURL(posts[nextIndex]));
-
-                if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
-
-                setTimeout(() => (scrollLock.current = false), 400);
-            };
-
-            const handleTouchStart = (e) => {
-                if (scrollLock.current) return;
-
-                isDragging.current = true;
-                touchStartY.current = e.touches[0].clientY;
-                currentY.current = e.touches[0].clientY;
-            };
-
-            const handleTouchMove = (e) => {
-                if (!isDragging.current || scrollLock.current) return;
-
-                const y = e.touches[0].clientY;
-                const deltaY = touchStartY.current - y;
-                const containerHeight = container.clientHeight;
-
-                // If user holds or moves slightly, let it follow finger but limited
-                const maxMove = containerHeight * 0.35; // Limit drag distance to 35%
-                const limitedDelta = Math.max(-maxMove, Math.min(maxMove, deltaY));
-
-                container.scrollTop = selectedPostIndex * containerHeight + limitedDelta;
-
-                currentY.current = y;
-            };
-
-            const handleTouchEnd = () => {
-                if (!isDragging.current || scrollLock.current) return;
-                isDragging.current = false;
-
-                const containerHeight = container.clientHeight;
-                const deltaY = touchStartY.current - currentY.current;
-                const threshold = containerHeight * 0.18; // swipe threshold ~18% height
-                let nextIndex = selectedPostIndex;
-
-                // If swipe is long enough → only move ONE post
-                if (Math.abs(deltaY) > threshold) {
-                    const direction = deltaY > 0 ? 1 : -1;
-                    nextIndex = Math.max(
-                        0,
-                        Math.min(posts.length - 1, selectedPostIndex + direction),
-                    );
-                }
-
-                scrollLock.current = true;
-
-                // Snap animation
-                container.scrollTo({
-                    top: nextIndex * containerHeight,
-                    behavior: 'smooth',
-                });
-
-                setSelectedPostIndex(nextIndex);
-                setViewablePost(posts[nextIndex]);
-                window.history.replaceState({}, '', generateURL(posts[nextIndex]));
-
-                if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
-
-                // Unlock after transition
-                setTimeout(() => {
-                    scrollLock.current = false;
-                }, 450);
-            };
-
-            // ======= Attach Listeners =======
-            window.addEventListener('wheel', handleWheel, { passive: false });
-            container.addEventListener('touchstart', handleTouchStart, { passive: true });
-            container.addEventListener('touchmove', handleTouchMove, { passive: true });
-            container.addEventListener('touchend', handleTouchEnd, { passive: true });
-
-            // cleanup
-            return () => {
-                window.removeEventListener('wheel', handleWheel);
-                container.removeEventListener('touchstart', handleTouchStart);
-                container.removeEventListener('touchmove', handleTouchMove);
-                container.removeEventListener('touchend', handleTouchEnd);
-            };
+            setTimeout(() => (scrollLock.current = false), 400);
         };
 
-        // If ref exists, attach immediately
-        if (mobilePostContainerRef.current) {
-            const cleanup = initListeners();
-            return cleanup;
-        }
+        // ---- Mobile gestures ----
+        const handleTouchStart = (e) => {
+            if (scrollLock.current) return;
+            isDragging.current = true;
+            touchStartY.current = e.touches[0].clientY;
+            currentY.current = e.touches[0].clientY;
+            dragDelta.current = 0;
+        };
 
-        // If not yet mounted, observe until it appears
-        observer = new MutationObserver(() => {
-            if (mobilePostContainerRef.current) {
-                const cleanup = initListeners();
-                observer.disconnect();
-                return cleanup;
+        const handleTouchMove = (e) => {
+            if (!isDragging.current || scrollLock.current) return;
+
+            const y = e.touches[0].clientY;
+            const deltaY = touchStartY.current - y;
+            const containerHeight = container.clientHeight;
+
+            // Apply a soft limit (max drag distance)
+            const maxDrag = containerHeight * 0.4;
+            const limitedDelta = Math.max(-maxDrag, Math.min(maxDrag, deltaY));
+
+            // Allow following finger naturally
+            container.style.scrollBehavior = 'auto';
+            container.scrollTop = selectedPostIndex * containerHeight + limitedDelta;
+            dragDelta.current = limitedDelta;
+            currentY.current = y;
+        };
+
+        const handleTouchEnd = () => {
+            if (!isDragging.current || scrollLock.current) return;
+            isDragging.current = false;
+
+            const containerHeight = container.clientHeight;
+            const deltaY = dragDelta.current;
+            const threshold = containerHeight * 0.15; // ~15% for one swipe
+            let nextIndex = selectedPostIndex;
+
+            // Decide if swipe was valid enough to change post
+            if (Math.abs(deltaY) > threshold) {
+                const direction = deltaY > 0 ? 1 : -1;
+                nextIndex = Math.max(0, Math.min(posts.length - 1, selectedPostIndex + direction));
             }
-        });
 
-        observer.observe(document.body, { childList: true, subtree: true });
+            // Lock and smoothly snap
+            scrollLock.current = true;
+            container.style.scrollBehavior = 'smooth';
+            container.scrollTo({
+                top: nextIndex * containerHeight,
+                behavior: 'smooth',
+            });
 
-        // Cleanup observer
-        return () => observer && observer.disconnect();
+            setSelectedPostIndex(nextIndex);
+            setViewablePost(posts[nextIndex]);
+            window.history.replaceState({}, '', generateURL(posts[nextIndex]));
+            if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
+
+            setTimeout(() => {
+                scrollLock.current = false;
+            }, 450);
+        };
+
+        // ---- Attach listeners ----
+        window.addEventListener('wheel', handleWheel, { passive: false });
+        container.addEventListener('touchstart', handleTouchStart, { passive: true });
+        container.addEventListener('touchmove', handleTouchMove, { passive: true });
+        container.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+        return () => {
+            window.removeEventListener('wheel', handleWheel);
+            container.removeEventListener('touchstart', handleTouchStart);
+            container.removeEventListener('touchmove', handleTouchMove);
+            container.removeEventListener('touchend', handleTouchEnd);
+        };
     }, [isMobilePostViewer, viewablePost, posts, selectedPostIndex, nextPageUrl]);
 
     return (
