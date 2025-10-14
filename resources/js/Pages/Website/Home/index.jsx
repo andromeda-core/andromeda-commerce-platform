@@ -1222,7 +1222,7 @@ export default function index({ google_map_api_key, search_history }) {
                                             <div
                                                 key={post.id}
                                                 ref={(el) => (postsRefs.current[index] = el)}
-                                                className="relative h-[100dvh] w-full overflow-hidden"
+                                                className="relative h-[100dvh] w-full snap-start overflow-hidden"
                                             >
                                                 {/* Top Bar */}
                                                 <div className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between px-4 py-3 font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
