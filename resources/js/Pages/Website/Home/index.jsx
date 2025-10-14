@@ -415,10 +415,8 @@ export default function index({ google_map_api_key, search_history }) {
     }, [isMobilePostViewer, viewablePost]);
 
     const touchStartY = useRef(0);
-    const currentScroll = useRef(0);
-    const velocity = useRef(0);
-    const lastY = useRef(0);
-    const lastTime = useRef(0);
+    const startScrollTop = useRef(0);
+    const isDragging = useRef(false);
     const scrollLock = useRef(false);
 
     // Setting Post Index After Refresh To Start Scrolling From There
@@ -478,10 +476,6 @@ export default function index({ google_map_api_key, search_history }) {
 
                 setTimeout(() => (scrollLock.current = false), 400);
             };
-            const touchStartY = useRef(0);
-            const startScrollTop = useRef(0);
-            const scrollLock = useRef(false);
-            const isDragging = useRef(false);
 
             const handleTouchStart = (e) => {
                 if (scrollLock.current) return;
