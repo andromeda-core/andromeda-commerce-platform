@@ -426,9 +426,10 @@ export default function index({ google_map_api_key, search_history }) {
             }
         }
     }, [posts, isPostLoaded, viewablePost]);
+
     const touchStartY = useRef(0);
-    const lastY = useRef(0);
-    const isTouching = useRef(false);
+    const touchCurrentY = useRef(0);
+    const isDragging = useRef(false);
     const scrollLock = useRef(false);
 
     useEffect(() => {
@@ -437,7 +438,7 @@ export default function index({ google_map_api_key, search_history }) {
         const container = mobilePostContainerRef.current;
         if (!container) return;
 
-        // ===== Wheel Scroll (desktop) =====
+        // ===== Desktop Wheel =====
         const handleWheel = (e) => {
             if (e.ctrlKey || e.metaKey) return;
             e.preventDefault();
@@ -462,63 +463,64 @@ export default function index({ google_map_api_key, search_history }) {
         // ===== Touch Start =====
         const handleTouchStart = (e) => {
             if (scrollLock.current) return;
-            isTouching.current = true;
-            touchStartY.current = e.touches[0].clientY;
-            lastY.current = e.touches[0].clientY;
-            container.style.scrollBehavior = 'auto';
 
-            // stop all browser scroll inertia immediately
+            isDragging.current = true;
+            touchStartY.current = e.touches[0].clientY;
+            touchCurrentY.current = e.touches[0].clientY;
+
+            // Disable native bounce and momentum
+            container.style.scrollBehavior = 'auto';
             container.style.overscrollBehavior = 'none';
         };
 
         // ===== Touch Move =====
         const handleTouchMove = (e) => {
-            if (!isTouching.current || scrollLock.current) return;
+            if (!isDragging.current || scrollLock.current) return;
             e.preventDefault();
 
             const y = e.touches[0].clientY;
             const deltaY = touchStartY.current - y;
             const containerHeight = container.clientHeight;
 
-            // Limit drag to ± one post height
-            const maxDrag = containerHeight * 0.98;
-            const clampedDelta = Math.max(-maxDrag, Math.min(maxDrag, deltaY));
+            // Clamp to ± one post height (hard boundary)
+            const maxOffset = containerHeight;
+            const clamped = Math.max(-maxOffset, Math.min(maxOffset, deltaY));
 
-            const baseTop = selectedPostIndex * containerHeight;
-            const target = baseTop + clampedDelta;
+            const currentTop = selectedPostIndex * containerHeight;
+            container.scrollTop = currentTop + clamped;
 
-            // Stop natural momentum scroll (completely disables long scroll)
-            cancelAnimationFrame(container._momentumRAF);
-            container.scrollTop = target;
-
-            lastY.current = y;
+            touchCurrentY.current = y;
         };
 
         // ===== Touch End =====
         const handleTouchEnd = () => {
-            if (!isTouching.current || scrollLock.current) return;
-            isTouching.current = false;
+            if (!isDragging.current || scrollLock.current) return;
+            isDragging.current = false;
 
             const containerHeight = container.clientHeight;
-            const deltaY = touchStartY.current - lastY.current;
-            const threshold = containerHeight * 0.18; // swipe threshold ~18%
+            const delta = touchStartY.current - touchCurrentY.current;
+            const threshold = containerHeight * 0.18; // must swipe 18% to switch
 
             let nextIndex = selectedPostIndex;
-            if (Math.abs(deltaY) > threshold) {
-                const direction = deltaY > 0 ? 1 : -1;
+
+            if (Math.abs(delta) > threshold) {
+                const direction = delta > 0 ? 1 : -1;
                 nextIndex = Math.max(0, Math.min(posts.length - 1, selectedPostIndex + direction));
             }
 
             scrollLock.current = true;
             container.style.scrollBehavior = 'smooth';
-            container.scrollTo({ top: nextIndex * containerHeight, behavior: 'smooth' });
+            container.scrollTo({
+                top: nextIndex * containerHeight,
+                behavior: 'smooth',
+            });
 
             setSelectedPostIndex(nextIndex);
             setViewablePost(posts[nextIndex]);
             window.history.replaceState({}, '', generateURL(posts[nextIndex]));
             if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
 
-            setTimeout(() => (scrollLock.current = false), 400);
+            setTimeout(() => (scrollLock.current = false), 450);
         };
 
         // ===== Attach Listeners =====
@@ -527,7 +529,6 @@ export default function index({ google_map_api_key, search_history }) {
         container.addEventListener('touchmove', handleTouchMove, { passive: false });
         container.addEventListener('touchend', handleTouchEnd, { passive: false });
 
-        // ===== Cleanup =====
         return () => {
             window.removeEventListener('wheel', handleWheel);
             container.removeEventListener('touchstart', handleTouchStart);
