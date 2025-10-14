@@ -428,17 +428,16 @@ export default function index({ google_map_api_key, search_history }) {
     }, [posts, isPostLoaded, viewablePost]);
 
     const touchStartY = useRef(0);
-    const touchCurrentY = useRef(0);
-    const isDragging = useRef(false);
+    const startScroll = useRef(0);
+    const isTouching = useRef(false);
     const scrollLock = useRef(false);
 
     useEffect(() => {
         if (!isMobilePostViewer || viewablePost === '') return;
-
         const container = mobilePostContainerRef.current;
         if (!container) return;
 
-        // ===== Desktop Wheel =====
+        // Desktop wheel (same logic)
         const handleWheel = (e) => {
             if (e.ctrlKey || e.metaKey) return;
             e.preventDefault();
@@ -450,66 +449,63 @@ export default function index({ google_map_api_key, search_history }) {
                 0,
                 Math.min(posts.length - 1, selectedPostIndex + direction),
             );
-
             container.scrollTo({ top: nextIndex * container.clientHeight, behavior: 'smooth' });
             setSelectedPostIndex(nextIndex);
             setViewablePost(posts[nextIndex]);
             window.history.replaceState({}, '', generateURL(posts[nextIndex]));
             if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
-
             setTimeout(() => (scrollLock.current = false), 400);
         };
 
-        // ===== Touch Start =====
+        // Touch start — record initial scroll and finger position
         const handleTouchStart = (e) => {
             if (scrollLock.current) return;
-
-            isDragging.current = true;
+            isTouching.current = true;
             touchStartY.current = e.touches[0].clientY;
-            touchCurrentY.current = e.touches[0].clientY;
-
-            // Disable native bounce and momentum
-            container.style.scrollBehavior = 'auto';
-            container.style.overscrollBehavior = 'none';
+            startScroll.current = container.scrollTop;
         };
 
-        // ===== Touch Move =====
+        // Touch move — observe natural scroll but clamp within ±1 post
         const handleTouchMove = (e) => {
-            if (!isDragging.current || scrollLock.current) return;
-            e.preventDefault();
+            if (!isTouching.current || scrollLock.current) return;
 
-            const y = e.touches[0].clientY;
-            const deltaY = touchStartY.current - y;
             const containerHeight = container.clientHeight;
+            const minScroll = selectedPostIndex * containerHeight - containerHeight;
+            const maxScroll = selectedPostIndex * containerHeight + containerHeight;
 
-            // Clamp to ± one post height (hard boundary)
-            const maxOffset = containerHeight;
-            const clamped = Math.max(-maxOffset, Math.min(maxOffset, deltaY));
-
-            const currentTop = selectedPostIndex * containerHeight;
-            container.scrollTop = currentTop + clamped;
-
-            touchCurrentY.current = y;
+            // Let native scroll run freely but clamp if out of range
+            if (container.scrollTop < minScroll) {
+                container.scrollTop = minScroll;
+            } else if (container.scrollTop > maxScroll) {
+                container.scrollTop = maxScroll;
+            }
         };
 
-        // ===== Touch End =====
+        // Touch end — determine if user scrolled far enough for next post
         const handleTouchEnd = () => {
-            if (!isDragging.current || scrollLock.current) return;
-            isDragging.current = false;
+            if (!isTouching.current || scrollLock.current) return;
+            isTouching.current = false;
 
             const containerHeight = container.clientHeight;
-            const delta = touchStartY.current - touchCurrentY.current;
-            const threshold = containerHeight * 0.18; // must swipe 18% to switch
+            const currentScroll = container.scrollTop;
+            const currentIndex = Math.round(currentScroll / containerHeight);
+            const currentTop = selectedPostIndex * containerHeight;
+            const delta = currentScroll - currentTop;
 
+            // Decide whether to move next/prev based on distance
             let nextIndex = selectedPostIndex;
+            const threshold = containerHeight * 0.2;
 
             if (Math.abs(delta) > threshold) {
-                const direction = delta > 0 ? 1 : -1;
-                nextIndex = Math.max(0, Math.min(posts.length - 1, selectedPostIndex + direction));
+                nextIndex =
+                    delta > 0
+                        ? Math.min(posts.length - 1, selectedPostIndex + 1)
+                        : Math.max(0, selectedPostIndex - 1);
             }
 
             scrollLock.current = true;
-            container.style.scrollBehavior = 'smooth';
+
+            // Snap to target post
             container.scrollTo({
                 top: nextIndex * containerHeight,
                 behavior: 'smooth',
@@ -520,14 +516,14 @@ export default function index({ google_map_api_key, search_history }) {
             window.history.replaceState({}, '', generateURL(posts[nextIndex]));
             if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
 
-            setTimeout(() => (scrollLock.current = false), 450);
+            setTimeout(() => (scrollLock.current = false), 400);
         };
 
-        // ===== Attach Listeners =====
+        // Attach listeners
         window.addEventListener('wheel', handleWheel, { passive: false });
-        container.addEventListener('touchstart', handleTouchStart, { passive: false });
-        container.addEventListener('touchmove', handleTouchMove, { passive: false });
-        container.addEventListener('touchend', handleTouchEnd, { passive: false });
+        container.addEventListener('touchstart', handleTouchStart, { passive: true });
+        container.addEventListener('touchmove', handleTouchMove, { passive: true });
+        container.addEventListener('touchend', handleTouchEnd, { passive: true });
 
         return () => {
             window.removeEventListener('wheel', handleWheel);
