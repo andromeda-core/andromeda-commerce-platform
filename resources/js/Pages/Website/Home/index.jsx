@@ -634,29 +634,33 @@ export default function index({ google_map_api_key, search_history }) {
             const containerHeight = container.clientHeight;
             const currentScroll = container.scrollTop;
             const currentTop = selectedPostIndex * containerHeight;
-            const delta = currentScroll - currentTop;
+            let delta = currentScroll - currentTop;
+
+            // ✅ Step 0: Clamp delta so it never exceeds one post height
+            if (delta > containerHeight) delta = containerHeight;
+            if (delta < -containerHeight) delta = -containerHeight;
+
             const normalizedProgress = Math.abs(delta / containerHeight);
 
-            // Step 1: Immediately stop native momentum
-            // This kills browser inertia cleanly (prevents "fight" and "fling past multiple posts")
+            // Step 1: Stop native momentum immediately
             container.style.overflowY = 'hidden';
-            container.scrollTop = currentScroll; // freeze at current point
+            container.scrollTop = currentScroll; // freeze exactly where it is
 
-            // Step 2: Decide direction
+            // Step 2: Decide whether to switch
             let nextIndex = selectedPostIndex;
             if (normalizedProgress > 0.25) {
                 const direction = delta > 0 ? 1 : -1;
                 nextIndex = Math.max(0, Math.min(posts.length - 1, selectedPostIndex + direction));
             }
 
-            // Step 3: Manually animate scroll to next or current post
+            // Step 3: Animate to the correct post
             scrollLock.current = true;
             container.scrollTo({
                 top: nextIndex * containerHeight,
                 behavior: 'smooth',
             });
 
-            // Step 4: Update post logic only once animation starts
+            // Step 4: Update state
             if (nextIndex !== selectedPostIndex) {
                 setSelectedPostIndex(nextIndex);
                 setViewablePost(posts[nextIndex]);
@@ -664,7 +668,7 @@ export default function index({ google_map_api_key, search_history }) {
                 if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
             }
 
-            // Step 5: Restore scroll after animation ends
+            // Step 5: Restore scroll after snap
             setTimeout(() => {
                 container.style.overflowY = 'scroll';
                 scrollLock.current = false;
