@@ -137,6 +137,7 @@ const Sidebar = ({
 
                         <li>
                             <Link
+                                prefetch
                                 href={route('website.global-search.index')}
                                 className={`flex w-full items-center ${
                                     isCollapsed ? 'justify-center px-0' : 'gap-3 px-4'

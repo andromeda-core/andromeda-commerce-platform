@@ -65,6 +65,7 @@ const BottomBar = ({ darkMode, setDarkMode }) => {
 
                     {/* Search */}
                     <Link
+                        prefetch
                         href={route('website.global-search.index')}
                         className={`relative flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${
                             route().current() === 'website.global-search.index'
