@@ -499,7 +499,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                 container.scrollTo({
                     top: nextIndex * container.clientHeight,
-                    behavior: 'instant',
+                    behavior: 'auto',
                 });
 
                 setTimeout(() => {
