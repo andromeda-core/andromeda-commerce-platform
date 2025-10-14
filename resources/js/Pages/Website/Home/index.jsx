@@ -427,211 +427,82 @@ export default function index({ google_map_api_key, search_history }) {
         }
     }, [posts, isPostLoaded, viewablePost]);
 
-    //     const touchStartY = useRef(0);
-    //     const startScrollTop = useRef(0);
-    //     const isDragging = useRef(false);
-    //     const scrollLock = useRef(false);
-
-    // useEffect(() => {
-    //     // guard: only activate when viewer is open and post exists
-    //     if (!isMobilePostViewer || viewablePost === '') return;
-
-    //     let container = null;
-    //     let observer = null;
-
-    //     const initListeners = () => {
-    //         container = mobilePostContainerRef.current;
-    //         if (!container) return; // still not mounted
-
-    //         setTimeout(() => {
-    //             container?.focus();
-    //         }, 50);
-
-    //         // ----- WHEEL SCROLL HANDLER -----
-    //         const handleWheel = (e) => {
-    //             if (e.ctrlKey || e.metaKey) return;
-
-    //             e.preventDefault();
-
-    //             if (scrollLock.current) return;
-
-    //             scrollLock.current = true;
-
-    //             const direction = e.deltaY > 0 ? 1 : -1;
-    //             let nextIndex = Math.max(
-    //                 0,
-    //                 Math.min(posts.length - 1, selectedPostIndex + direction),
-    //             );
-
-    //             container.scrollTo({
-    //                 top: nextIndex * container.clientHeight,
-    //                 behavior: 'smooth',
-    //             });
-
-    //             setSelectedPostIndex(nextIndex);
-    //             setViewablePost(posts[nextIndex]);
-    //             window.history.replaceState({}, '', generateURL(posts[nextIndex]));
-
-    //             if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
-
-    //             setTimeout(() => (scrollLock.current = false), 400);
-    //         };
-
-    //         const handleTouchStart = (e) => {
-    //             if (scrollLock.current) return;
-
-    //             const y = e.touches[0].clientY;
-    //             touchStartY.current = y;
-    //             startScrollTop.current = mobilePostContainerRef.current.scrollTop;
-    //             isDragging.current = true;
-    //         };
-
-    //         const handleTouchMove = (e) => {
-    //             if (!isDragging.current || scrollLock.current) return;
-
-    //             const container = mobilePostContainerRef.current;
-    //             const y = e.touches[0].clientY;
-    //             const deltaY = touchStartY.current - y;
-
-    //             // follow the finger smoothly (no snapping here)
-    //             container.scrollTop = startScrollTop.current + deltaY;
-    //         };
-
-    //         const handleTouchEnd = (e) => {
-    //             if (scrollLock.current || !isDragging.current) return;
-    //             isDragging.current = false;
-
-    //             const container = mobilePostContainerRef.current;
-    //             const deltaY = touchStartY.current - e.changedTouches[0].clientY;
-    //             const containerHeight = container.clientHeight;
-
-    //             // direction
-    //             const direction = deltaY > 0 ? 1 : -1;
-    //             let nextIndex = selectedPostIndex;
-
-    //             // only move post if swiped past threshold
-    //             if (Math.abs(deltaY) > containerHeight * 0.25) {
-    //                 nextIndex = Math.max(
-    //                     0,
-    //                     Math.min(posts.length - 1, selectedPostIndex + direction),
-    //                 );
-    //             }
-
-    //             scrollLock.current = true;
-
-    //             // instantly move to next or back to current post
-    //             container.scrollTo({
-    //                 top: nextIndex * containerHeight,
-    //                 behavior: 'smooth',
-    //             });
-
-    //             // update state
-    //             setSelectedPostIndex(nextIndex);
-    //             setViewablePost(posts[nextIndex]);
-    //             window.history.replaceState({}, '', generateURL(posts[nextIndex]));
-
-    //             if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
-
-    //             // small delay to avoid double-swiping
-    //             setTimeout(() => {
-    //                 scrollLock.current = false;
-    //             }, 300);
-    //         };
-    //         // attach events
-    //         window.addEventListener('wheel', handleWheel, { passive: false });
-    //         container.addEventListener('touchstart', handleTouchStart, { passive: false });
-    //         container.addEventListener('touchmove', handleTouchMove, { passive: false });
-    //         container.addEventListener('touchend', handleTouchEnd, { passive: false });
-
-    //         // cleanup
-    //         return () => {
-    //             window.removeEventListener('wheel', handleWheel);
-    //             container.removeEventListener('touchstart', handleTouchStart);
-    //             container.removeEventListener('touchmove', handleTouchMove);
-    //             container.removeEventListener('touchend', handleTouchEnd);
-    //         };
-    //     };
-
-    //     // If ref exists, attach immediately
-    //     if (mobilePostContainerRef.current) {
-    //         const cleanup = initListeners();
-    //         return cleanup;
-    //     }
-
-    //     // If not yet mounted, observe until it appears
-    //     observer = new MutationObserver(() => {
-    //         if (mobilePostContainerRef.current) {
-    //             const cleanup = initListeners();
-    //             observer.disconnect();
-    //             return cleanup;
-    //         }
-    //     });
-
-    //     observer.observe(document.body, { childList: true, subtree: true });
-
-    //     // Cleanup observer
-    //     return () => observer && observer.disconnect();
-    // }, [isMobilePostViewer, viewablePost, posts, selectedPostIndex, nextPageUrl]);
-
     useEffect(() => {
         if (!isMobilePostViewer || viewablePost === '') return;
 
         const container = mobilePostContainerRef.current;
         if (!container) return;
 
-        let isScrolling = false;
-        let scrollLockTimeout = null;
         let touchStartY = 0;
         let touchStartTime = 0;
+        let wheelTimeout = null;
+        const wheelAccumulatorRef = { current: 0 };
+        const lastWheelTimeRef = { current: 0 };
+        const isScrollingRef = { current: false };
 
         const scrollToIndex = (index) => {
-            if (isScrolling) return;
+            if (isScrollingRef.current) return;
 
             const targetIndex = Math.max(0, Math.min(index, posts.length - 1));
+            if (targetIndex === selectedPostIndex) return;
 
-            isScrolling = true;
-            container.style.scrollSnapType = 'none';
+            isScrollingRef.current = true;
+            container.style.overflow = 'hidden';
 
-            container.scrollTo({
-                top: targetIndex * container.clientHeight,
-                behavior: 'smooth',
-            });
+            const targetScrollTop = targetIndex * container.clientHeight;
+            const startTime = performance.now();
+            const startScroll = container.scrollTop;
+            const distance = targetScrollTop - startScroll;
+            const duration = 300;
 
-            setSelectedPostIndex(targetIndex);
-            const post = posts[targetIndex];
-            setViewablePost(post);
-            window.history.replaceState({}, '', generateURL(post));
+            const animateScroll = (currentTime) => {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
 
-            // Fetch more if needed
-            if (targetIndex >= posts.length - 5 && nextPageUrl) {
-                fetchMorePosts();
-            }
+                const easeProgress =
+                    progress < 0.5 ? 2 * progress * progress : -1 + (4 - 2 * progress) * progress;
 
-            clearTimeout(scrollLockTimeout);
-            scrollLockTimeout = setTimeout(() => {
-                isScrolling = false;
-                container.style.scrollSnapType = 'y mandatory';
-            }, 500);
+                container.scrollTop = startScroll + distance * easeProgress;
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateScroll);
+                } else {
+                    setSelectedPostIndex(targetIndex);
+                    const post = posts[targetIndex];
+                    setViewablePost(post);
+                    window.history.replaceState({}, '', generateURL(post));
+
+                    if (targetIndex >= posts.length - 5 && nextPageUrl) {
+                        fetchMorePosts();
+                    }
+
+                    setTimeout(() => {
+                        container.style.overflow = 'auto';
+                        isScrollingRef.current = false;
+                    }, 100);
+                }
+            };
+
+            requestAnimationFrame(animateScroll);
         };
 
         const handleTouchStart = (e) => {
-            if (isScrolling) {
+            if (isScrollingRef.current) {
                 e.preventDefault();
                 return;
             }
             touchStartY = e.touches[0].clientY;
             touchStartTime = Date.now();
-            touchStartYRef.current = touchStartY;
         };
 
         const handleTouchMove = (e) => {
-            if (isScrolling) {
+            if (isScrollingRef.current) {
                 e.preventDefault();
             }
         };
 
         const handleTouchEnd = (e) => {
-            if (isScrolling) return;
+            if (isScrollingRef.current) return;
 
             const touchEndY = e.changedTouches[0].clientY;
             const touchEndTime = Date.now();
@@ -640,8 +511,8 @@ export default function index({ google_map_api_key, search_history }) {
             const deltaTime = touchEndTime - touchStartTime;
             const velocity = Math.abs(deltaY) / deltaTime;
 
-            // 30px threshold or fast swipe
-            const isSwipe = Math.abs(deltaY) > 30 || velocity > 0.5;
+            const threshold = 40;
+            const isSwipe = Math.abs(deltaY) > threshold || velocity > 0.3;
 
             if (isSwipe) {
                 if (deltaY > 0) {
@@ -649,20 +520,54 @@ export default function index({ google_map_api_key, search_history }) {
                 } else {
                     scrollToIndex(selectedPostIndex - 1);
                 }
-            } else {
-                scrollToIndex(selectedPostIndex);
             }
         };
 
-        // For desktop mouse wheel
         const handleWheel = (e) => {
             e.preventDefault();
-            if (isScrolling) return;
+            e.stopPropagation();
 
-            if (e.deltaY > 0) {
-                scrollToIndex(selectedPostIndex + 1);
+            if (isScrollingRef.current) return;
+
+            const now = performance.now();
+            const timeSinceLastWheel = now - lastWheelTimeRef.current;
+
+            if (timeSinceLastWheel > 150) {
+                wheelAccumulatorRef.current = 0;
+            }
+
+            lastWheelTimeRef.current = now;
+            wheelAccumulatorRef.current += e.deltaY;
+
+            clearTimeout(wheelTimeout);
+
+            const threshold = 50;
+
+            if (Math.abs(wheelAccumulatorRef.current) >= threshold) {
+                if (wheelAccumulatorRef.current > 0) {
+                    scrollToIndex(selectedPostIndex + 1);
+                } else {
+                    scrollToIndex(selectedPostIndex - 1);
+                }
+                wheelAccumulatorRef.current = 0;
             } else {
-                scrollToIndex(selectedPostIndex - 1);
+                wheelTimeout = setTimeout(() => {
+                    if (Math.abs(wheelAccumulatorRef.current) > 5) {
+                        if (wheelAccumulatorRef.current > 0) {
+                            scrollToIndex(selectedPostIndex + 1);
+                        } else {
+                            scrollToIndex(selectedPostIndex - 1);
+                        }
+                    }
+                    wheelAccumulatorRef.current = 0;
+                }, 80);
+            }
+        };
+
+        const preventDefaultScroll = (e) => {
+            if (isScrollingRef.current) {
+                e.preventDefault();
+                e.stopPropagation();
             }
         };
 
@@ -670,16 +575,17 @@ export default function index({ google_map_api_key, search_history }) {
         container.addEventListener('touchmove', handleTouchMove, { passive: false });
         container.addEventListener('touchend', handleTouchEnd, { passive: true });
         container.addEventListener('wheel', handleWheel, { passive: false });
+        container.addEventListener('scroll', preventDefaultScroll, { passive: false });
 
         return () => {
             container.removeEventListener('touchstart', handleTouchStart);
             container.removeEventListener('touchmove', handleTouchMove);
             container.removeEventListener('touchend', handleTouchEnd);
             container.removeEventListener('wheel', handleWheel);
-            clearTimeout(scrollLockTimeout);
+            container.removeEventListener('scroll', preventDefaultScroll);
+            clearTimeout(wheelTimeout);
         };
     }, [isMobilePostViewer, viewablePost, posts, selectedPostIndex, nextPageUrl]);
-
     return (
         <MainLayout>
             <Head title="Home" />
@@ -1268,7 +1174,6 @@ export default function index({ google_map_api_key, search_history }) {
                                         tabIndex={0}
                                         className="h-screen w-full overflow-y-scroll bg-deepcharcoal scrollbar-none"
                                         style={{
-                                            scrollSnapType: 'y mandatory',
                                             overscrollBehavior: 'contain',
                                         }}
                                         ref={mobilePostContainerRef}
@@ -1317,7 +1222,7 @@ export default function index({ google_map_api_key, search_history }) {
                                             <div
                                                 key={post.id}
                                                 ref={(el) => (postsRefs.current[index] = el)}
-                                                className="relative h-[100dvh] w-full snap-start overflow-hidden"
+                                                className="relative h-[100dvh] w-full overflow-hidden"
                                             >
                                                 {/* Top Bar */}
                                                 <div className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between px-4 py-3 font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
