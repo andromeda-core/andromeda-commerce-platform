@@ -485,27 +485,37 @@ export default function index({ google_map_api_key, search_history }) {
             };
 
             const handleTouchMove = (e) => {
-                // Let browser scroll naturally, no preventDefault()
                 if (!isDragging.current || scrollLock.current) return;
+
+                const y = e.touches[0].clientY;
+                const deltaY = touchStartY.current - y;
+                const containerHeight = container.clientHeight;
+
+                // ✨ limit drag movement to 40% of screen height (prevents layout jerk)
+                const maxDrag = containerHeight * 0.4;
+                let limitedDelta = deltaY;
+                if (Math.abs(deltaY) > maxDrag) {
+                    limitedDelta = maxDrag * Math.sign(deltaY);
+                }
+
+                // move smoothly with finger
+                container.scrollTop = startScrollTop.current + limitedDelta;
             };
 
             const handleTouchEnd = (e) => {
                 if (!isDragging.current || scrollLock.current) return;
                 isDragging.current = false;
 
-                const deltaY = touchStartY.current - e.changedTouches[0].clientY;
+                const yEnd = e.changedTouches[0].clientY;
+                const deltaY = touchStartY.current - yEnd;
                 const containerHeight = container.clientHeight;
-                const rawScrollTop = container.scrollTop;
 
-                // Figure out current logical post index
-                const currentIndex = Math.round(rawScrollTop / containerHeight);
-
-                // Determine direction of swipe
+                // 🔹 decide direction and threshold
                 const direction = deltaY > 0 ? 1 : -1;
-
-                // Apply threshold for valid swipe
+                const threshold = containerHeight * 0.15; // 15% threshold to change post
                 let nextIndex = selectedPostIndex;
-                if (Math.abs(deltaY) > containerHeight * 0.15) {
+
+                if (Math.abs(deltaY) > threshold) {
                     nextIndex = Math.max(
                         0,
                         Math.min(posts.length - 1, selectedPostIndex + direction),
@@ -514,19 +524,19 @@ export default function index({ google_map_api_key, search_history }) {
 
                 scrollLock.current = true;
 
-                // 🔹 Smoothly snap back to exactly one post
+                // 🔹 Smoothly snap to exactly one post
                 container.scrollTo({
                     top: nextIndex * containerHeight,
                     behavior: 'smooth',
                 });
 
-                // update logic
+                // 🔹 Update UI and history
                 setSelectedPostIndex(nextIndex);
                 setViewablePost(posts[nextIndex]);
                 window.history.replaceState({}, '', generateURL(posts[nextIndex]));
+
                 if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
 
-                // release lock slightly after animation
                 setTimeout(() => {
                     scrollLock.current = false;
                 }, 450);
