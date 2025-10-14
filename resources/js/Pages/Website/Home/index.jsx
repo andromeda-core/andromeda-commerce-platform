@@ -414,11 +414,6 @@ export default function index({ google_map_api_key, search_history }) {
         }
     }, [isMobilePostViewer, viewablePost]);
 
-    const touchStartY = useRef(0);
-    const startScrollTop = useRef(0);
-    const isDragging = useRef(false);
-    const scrollLock = useRef(false);
-
     // Setting Post Index After Refresh To Start Scrolling From There
 
     useEffect(() => {
@@ -432,145 +427,204 @@ export default function index({ google_map_api_key, search_history }) {
         }
     }, [posts, isPostLoaded, viewablePost]);
 
+    //     const touchStartY = useRef(0);
+    //     const startScrollTop = useRef(0);
+    //     const isDragging = useRef(false);
+    //     const scrollLock = useRef(false);
+
+    // useEffect(() => {
+    //     // guard: only activate when viewer is open and post exists
+    //     if (!isMobilePostViewer || viewablePost === '') return;
+
+    //     let container = null;
+    //     let observer = null;
+
+    //     const initListeners = () => {
+    //         container = mobilePostContainerRef.current;
+    //         if (!container) return; // still not mounted
+
+    //         setTimeout(() => {
+    //             container?.focus();
+    //         }, 50);
+
+    //         // ----- WHEEL SCROLL HANDLER -----
+    //         const handleWheel = (e) => {
+    //             if (e.ctrlKey || e.metaKey) return;
+
+    //             e.preventDefault();
+
+    //             if (scrollLock.current) return;
+
+    //             scrollLock.current = true;
+
+    //             const direction = e.deltaY > 0 ? 1 : -1;
+    //             let nextIndex = Math.max(
+    //                 0,
+    //                 Math.min(posts.length - 1, selectedPostIndex + direction),
+    //             );
+
+    //             container.scrollTo({
+    //                 top: nextIndex * container.clientHeight,
+    //                 behavior: 'smooth',
+    //             });
+
+    //             setSelectedPostIndex(nextIndex);
+    //             setViewablePost(posts[nextIndex]);
+    //             window.history.replaceState({}, '', generateURL(posts[nextIndex]));
+
+    //             if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
+
+    //             setTimeout(() => (scrollLock.current = false), 400);
+    //         };
+
+    //         const handleTouchStart = (e) => {
+    //             if (scrollLock.current) return;
+
+    //             const y = e.touches[0].clientY;
+    //             touchStartY.current = y;
+    //             startScrollTop.current = mobilePostContainerRef.current.scrollTop;
+    //             isDragging.current = true;
+    //         };
+
+    //         const handleTouchMove = (e) => {
+    //             if (!isDragging.current || scrollLock.current) return;
+
+    //             const container = mobilePostContainerRef.current;
+    //             const y = e.touches[0].clientY;
+    //             const deltaY = touchStartY.current - y;
+
+    //             // follow the finger smoothly (no snapping here)
+    //             container.scrollTop = startScrollTop.current + deltaY;
+    //         };
+
+    //         const handleTouchEnd = (e) => {
+    //             if (scrollLock.current || !isDragging.current) return;
+    //             isDragging.current = false;
+
+    //             const container = mobilePostContainerRef.current;
+    //             const deltaY = touchStartY.current - e.changedTouches[0].clientY;
+    //             const containerHeight = container.clientHeight;
+
+    //             // direction
+    //             const direction = deltaY > 0 ? 1 : -1;
+    //             let nextIndex = selectedPostIndex;
+
+    //             // only move post if swiped past threshold
+    //             if (Math.abs(deltaY) > containerHeight * 0.25) {
+    //                 nextIndex = Math.max(
+    //                     0,
+    //                     Math.min(posts.length - 1, selectedPostIndex + direction),
+    //                 );
+    //             }
+
+    //             scrollLock.current = true;
+
+    //             // instantly move to next or back to current post
+    //             container.scrollTo({
+    //                 top: nextIndex * containerHeight,
+    //                 behavior: 'smooth',
+    //             });
+
+    //             // update state
+    //             setSelectedPostIndex(nextIndex);
+    //             setViewablePost(posts[nextIndex]);
+    //             window.history.replaceState({}, '', generateURL(posts[nextIndex]));
+
+    //             if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
+
+    //             // small delay to avoid double-swiping
+    //             setTimeout(() => {
+    //                 scrollLock.current = false;
+    //             }, 300);
+    //         };
+    //         // attach events
+    //         window.addEventListener('wheel', handleWheel, { passive: false });
+    //         container.addEventListener('touchstart', handleTouchStart, { passive: false });
+    //         container.addEventListener('touchmove', handleTouchMove, { passive: false });
+    //         container.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+    //         // cleanup
+    //         return () => {
+    //             window.removeEventListener('wheel', handleWheel);
+    //             container.removeEventListener('touchstart', handleTouchStart);
+    //             container.removeEventListener('touchmove', handleTouchMove);
+    //             container.removeEventListener('touchend', handleTouchEnd);
+    //         };
+    //     };
+
+    //     // If ref exists, attach immediately
+    //     if (mobilePostContainerRef.current) {
+    //         const cleanup = initListeners();
+    //         return cleanup;
+    //     }
+
+    //     // If not yet mounted, observe until it appears
+    //     observer = new MutationObserver(() => {
+    //         if (mobilePostContainerRef.current) {
+    //             const cleanup = initListeners();
+    //             observer.disconnect();
+    //             return cleanup;
+    //         }
+    //     });
+
+    //     observer.observe(document.body, { childList: true, subtree: true });
+
+    //     // Cleanup observer
+    //     return () => observer && observer.disconnect();
+    // }, [isMobilePostViewer, viewablePost, posts, selectedPostIndex, nextPageUrl]);
+
     useEffect(() => {
-        // guard: only activate when viewer is open and post exists
         if (!isMobilePostViewer || viewablePost === '') return;
 
-        let container = null;
-        let observer = null;
+        const container = mobilePostContainerRef.current;
+        if (!container) return;
 
-        const initListeners = () => {
-            container = mobilePostContainerRef.current;
-            if (!container) return; // still not mounted
+        let scrollTimeout = null;
+        let lastIndex = selectedPostIndex;
 
-            setTimeout(() => {
-                container?.focus();
-            }, 50);
+        // Handle scroll end
+        const handleScroll = () => {
+            clearTimeout(scrollTimeout);
 
-            // ----- WHEEL SCROLL HANDLER -----
-            const handleWheel = (e) => {
-                if (e.ctrlKey || e.metaKey) return;
-
-                e.preventDefault();
-
-                if (scrollLock.current) return;
-
-                scrollLock.current = true;
-
-                const direction = e.deltaY > 0 ? 1 : -1;
-                let nextIndex = Math.max(
-                    0,
-                    Math.min(posts.length - 1, selectedPostIndex + direction),
-                );
-
-                container.scrollTo({
-                    top: nextIndex * container.clientHeight,
-                    behavior: 'smooth',
-                });
-
-                setSelectedPostIndex(nextIndex);
-                setViewablePost(posts[nextIndex]);
-                window.history.replaceState({}, '', generateURL(posts[nextIndex]));
-
-                if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
-
-                setTimeout(() => (scrollLock.current = false), 400);
-            };
-
-            const handleTouchStart = (e) => {
-                if (scrollLock.current) return;
-
-                const y = e.touches[0].clientY;
-                touchStartY.current = y;
-                startScrollTop.current = mobilePostContainerRef.current.scrollTop;
-                isDragging.current = true;
-            };
-
-            const handleTouchMove = (e) => {
-                if (!isDragging.current || scrollLock.current) return;
-
-                const container = mobilePostContainerRef.current;
-                const y = e.touches[0].clientY;
-                const deltaY = touchStartY.current - y;
-
-                // follow the finger smoothly (no snapping here)
-                container.scrollTop = startScrollTop.current + deltaY;
-            };
-
-            const handleTouchEnd = (e) => {
-                if (scrollLock.current || !isDragging.current) return;
-                isDragging.current = false;
-
-                const container = mobilePostContainerRef.current;
-                const deltaY = touchStartY.current - e.changedTouches[0].clientY;
+            scrollTimeout = setTimeout(() => {
                 const containerHeight = container.clientHeight;
+                const index = Math.round(container.scrollTop / containerHeight);
 
-                // direction
-                const direction = deltaY > 0 ? 1 : -1;
-                let nextIndex = selectedPostIndex;
+                if (index !== lastIndex && posts[index]) {
+                    lastIndex = index;
+                    setSelectedPostIndex(index);
+                    const post = posts[index];
+                    setViewablePost(post);
+                    window.history.replaceState({}, '', generateURL(post));
 
-                // only move post if swiped past threshold
-                if (Math.abs(deltaY) > containerHeight * 0.25) {
-                    nextIndex = Math.max(
-                        0,
-                        Math.min(posts.length - 1, selectedPostIndex + direction),
-                    );
+                    if (index >= posts.length - 5 && nextPageUrl) {
+                        fetchMorePosts();
+                    }
                 }
-
-                scrollLock.current = true;
-
-                // instantly move to next or back to current post
-                container.scrollTo({
-                    top: nextIndex * containerHeight,
-                    behavior: 'smooth',
-                });
-
-                // update state
-                setSelectedPostIndex(nextIndex);
-                setViewablePost(posts[nextIndex]);
-                window.history.replaceState({}, '', generateURL(posts[nextIndex]));
-
-                if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
-
-                // small delay to avoid double-swiping
-                setTimeout(() => {
-                    scrollLock.current = false;
-                }, 300);
-            };
-            // attach events
-            window.addEventListener('wheel', handleWheel, { passive: false });
-            container.addEventListener('touchstart', handleTouchStart, { passive: false });
-            container.addEventListener('touchmove', handleTouchMove, { passive: false });
-            container.addEventListener('touchend', handleTouchEnd, { passive: false });
-
-            // cleanup
-            return () => {
-                window.removeEventListener('wheel', handleWheel);
-                container.removeEventListener('touchstart', handleTouchStart);
-                container.removeEventListener('touchmove', handleTouchMove);
-                container.removeEventListener('touchend', handleTouchEnd);
-            };
+            }, 120);
         };
 
-        // If ref exists, attach immediately
-        if (mobilePostContainerRef.current) {
-            const cleanup = initListeners();
-            return cleanup;
-        }
-
-        // If not yet mounted, observe until it appears
-        observer = new MutationObserver(() => {
-            if (mobilePostContainerRef.current) {
-                const cleanup = initListeners();
-                observer.disconnect();
-                return cleanup;
+        // prevent overscroll bounce
+        const handleTouchMove = (e) => {
+            const { scrollTop, scrollHeight, clientHeight } = container;
+            const atTop = scrollTop <= 0;
+            const atBottom = scrollTop + clientHeight >= scrollHeight;
+            if (
+                (atTop && e.touches[0].clientY > touchStartY.current) ||
+                (atBottom && e.touches[0].clientY < touchStartY.current)
+            ) {
+                e.preventDefault();
             }
-        });
+        };
 
-        observer.observe(document.body, { childList: true, subtree: true });
+        container.addEventListener('scroll', handleScroll, { passive: true });
+        container.addEventListener('touchmove', handleTouchMove, { passive: false });
 
-        // Cleanup observer
-        return () => observer && observer.disconnect();
+        return () => {
+            container.removeEventListener('scroll', handleScroll);
+            container.removeEventListener('touchmove', handleTouchMove);
+            clearTimeout(scrollTimeout);
+        };
     }, [isMobilePostViewer, viewablePost, posts, selectedPostIndex, nextPageUrl]);
 
     return (
@@ -1159,10 +1213,9 @@ export default function index({ google_map_api_key, search_history }) {
                                     {/* Scrollable Container */}
                                     <div
                                         tabIndex={0}
-                                        className="scroll-damped h-screen w-full snap-y snap-mandatory overflow-y-scroll bg-deepcharcoal scrollbar-none"
+                                        className="h-screen w-full overflow-y-scroll bg-deepcharcoal scrollbar-none"
                                         style={{
-                                            WebkitOverflowScrolling: 'auto',
-                                            scrollBehavior: 'smooth',
+                                            scrollSnapType: 'y mandatory',
                                             overscrollBehavior: 'contain',
                                         }}
                                         ref={mobilePostContainerRef}
