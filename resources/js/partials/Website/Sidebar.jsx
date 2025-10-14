@@ -72,7 +72,6 @@ const Sidebar = ({
                         <li>
                             <Link
                                 href={route('home')}
-                                prefetch
                                 className={`flex w-full items-center ${
                                     isCollapsed ? 'justify-center px-0' : 'gap-3 px-4'
                                 } rounded-full py-2.5 text-sm transition-colors ${
@@ -137,7 +136,6 @@ const Sidebar = ({
 
                         <li>
                             <Link
-                                prefetch
                                 href={route('website.global-search.index')}
                                 className={`flex w-full items-center ${
                                     isCollapsed ? 'justify-center px-0' : 'gap-3 px-4'

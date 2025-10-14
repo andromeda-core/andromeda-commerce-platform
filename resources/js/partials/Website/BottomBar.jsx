@@ -40,7 +40,6 @@ const BottomBar = ({ darkMode, setDarkMode }) => {
                         className={`flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${
                             route().current() === 'home' ? 'menu-item-active' : 'menu-item-inactive'
                         }`}
-                        prefetch
                     >
                         <svg
                             className={`size-8`}
@@ -65,7 +64,6 @@ const BottomBar = ({ darkMode, setDarkMode }) => {
 
                     {/* Search */}
                     <Link
-                        prefetch
                         href={route('website.global-search.index')}
                         className={`relative flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${
                             route().current() === 'website.global-search.index'
