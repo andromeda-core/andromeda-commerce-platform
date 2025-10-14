@@ -13,6 +13,8 @@ class SearchHistory extends Model
         'filters',
         'filter_summary',
         'filters_hash',
+        'results_count',
+        'results',
     ];
 
     // Attributes

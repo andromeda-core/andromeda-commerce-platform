@@ -452,7 +452,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                 container.scrollTo({
                     top: nextIndex * container.clientHeight,
-                    behavior: 'smooth',
+                    behavior: 'auto',
                 });
 
                 setSelectedPostIndex(nextIndex);
@@ -461,17 +461,14 @@ export default function index({ google_map_api_key, search_history }) {
 
                 if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
 
-                setTimeout(() => (scrollLock.current = false), 500);
+                setTimeout(() => (scrollLock.current = false), 300);
             };
 
             const handleTouchStart = (e) => {
                 touchStartY.current = e.touches[0].clientY;
             };
 
-            const handleTouchMove = (e) => {
-                // prevent the native bounce / momentum
-                e.preventDefault();
-            };
+            const handleTouchMove = (e) => {};
 
             const handleTouchEnd = (e) => {
                 if (scrollLock.current) return;
@@ -494,7 +491,7 @@ export default function index({ google_map_api_key, search_history }) {
                 // 🔹 manually control scroll
                 container.scrollTo({
                     top: nextIndex * container.clientHeight,
-                    behavior: 'smooth',
+                    behavior: 'auto',
                 });
 
                 // 🔹 update post + URL
@@ -507,7 +504,7 @@ export default function index({ google_map_api_key, search_history }) {
                 // 🔹 release after animation ends
                 setTimeout(() => {
                     scrollLock.current = false;
-                }, 500);
+                }, 300);
             };
 
             // attach events

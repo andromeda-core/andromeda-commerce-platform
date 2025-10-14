@@ -479,6 +479,17 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                 // ]);
 
                 if (empty($previous_search)) {
+
+                    $results_for_history = [];
+
+                    if (! empty($results->where('type', 'posts')->first())) {
+                        $results_for_history[] = $results->where('type', 'posts')->first();
+                    } elseif (! empty($results->where('type', 'smartphones')->first())) {
+                        $results_for_history[] = $results->where('type', 'smartphones')->first();
+                    } else {
+                        $results_for_history = null;
+                    }
+
                     $this->searchHistory->create([
                         'user_id' => $request->user()->id,
                         'query' => $query ?: null,

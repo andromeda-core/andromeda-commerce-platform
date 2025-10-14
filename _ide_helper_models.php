@@ -828,6 +828,8 @@ namespace App\Models{
  * @property string|null $filters_hash
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int $results_count
+ * @property string|null $results
  * @property-read mixed $added_at
  * @property-read \App\Models\User $user
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchHistory newModelQuery()
@@ -839,6 +841,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchHistory whereFiltersHash($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchHistory whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchHistory whereQuery($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchHistory whereResults($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchHistory whereResultsCount($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchHistory whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SearchHistory whereUserId($value)
  */
