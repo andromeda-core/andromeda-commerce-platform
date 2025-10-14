@@ -610,13 +610,25 @@ export default function index({ google_map_api_key, search_history }) {
 
         // Track momentum after finger leaves screen
         const waitForMomentumEnd = (callback) => {
+            const containerHeight = container.clientHeight;
+            const baseTop = selectedPostIndex * containerHeight;
+            const minScroll = baseTop - containerHeight * 0.9; // small allowance
+            const maxScroll = baseTop + containerHeight * 0.9;
+
             let last = container.scrollTop;
             let stableFrames = 0;
 
             const check = () => {
                 const now = container.scrollTop;
-                if (Math.abs(now - last) < 1) stableFrames++;
+
+                // ✅ Soft clamp during momentum
+                if (now < minScroll) container.scrollTop += (minScroll - now) * 0.08;
+                else if (now > maxScroll) container.scrollTop -= (now - maxScroll) * 0.08;
+
+                // detect stop
+                if (Math.abs(now - last) < 0.5) stableFrames++;
                 else stableFrames = 0;
+
                 last = now;
 
                 if (stableFrames > 4) callback();
