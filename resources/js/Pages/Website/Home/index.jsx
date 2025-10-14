@@ -579,51 +579,104 @@ export default function index({ google_map_api_key, search_history }) {
         const container = mobilePostContainerRef.current;
         if (!container) return;
 
-        let scrollTimeout = null;
-        let lastIndex = selectedPostIndex;
+        let isScrolling = false;
+        let scrollLockTimeout = null;
+        let touchStartY = 0;
+        let touchStartTime = 0;
 
-        // Handle scroll end
-        const handleScroll = () => {
-            clearTimeout(scrollTimeout);
+        const scrollToIndex = (index) => {
+            if (isScrolling) return;
 
-            scrollTimeout = setTimeout(() => {
-                const containerHeight = container.clientHeight;
-                const index = Math.round(container.scrollTop / containerHeight);
+            const targetIndex = Math.max(0, Math.min(index, posts.length - 1));
 
-                if (index !== lastIndex && posts[index]) {
-                    lastIndex = index;
-                    setSelectedPostIndex(index);
-                    const post = posts[index];
-                    setViewablePost(post);
-                    window.history.replaceState({}, '', generateURL(post));
+            isScrolling = true;
+            container.style.scrollSnapType = 'none';
 
-                    if (index >= posts.length - 5 && nextPageUrl) {
-                        fetchMorePosts();
-                    }
-                }
-            }, 120);
+            container.scrollTo({
+                top: targetIndex * container.clientHeight,
+                behavior: 'smooth',
+            });
+
+            setSelectedPostIndex(targetIndex);
+            const post = posts[targetIndex];
+            setViewablePost(post);
+            window.history.replaceState({}, '', generateURL(post));
+
+            // Fetch more if needed
+            if (targetIndex >= posts.length - 5 && nextPageUrl) {
+                fetchMorePosts();
+            }
+
+            clearTimeout(scrollLockTimeout);
+            scrollLockTimeout = setTimeout(() => {
+                isScrolling = false;
+                container.style.scrollSnapType = 'y mandatory';
+            }, 500);
         };
 
-        // prevent overscroll bounce
+        const handleTouchStart = (e) => {
+            if (isScrolling) {
+                e.preventDefault();
+                return;
+            }
+            touchStartY = e.touches[0].clientY;
+            touchStartTime = Date.now();
+            touchStartYRef.current = touchStartY;
+        };
+
         const handleTouchMove = (e) => {
-            const { scrollTop, scrollHeight, clientHeight } = container;
-            const atTop = scrollTop <= 0;
-            const atBottom = scrollTop + clientHeight >= scrollHeight;
-            if (
-                (atTop && e.touches[0].clientY > touchStartY.current) ||
-                (atBottom && e.touches[0].clientY < touchStartY.current)
-            ) {
+            if (isScrolling) {
                 e.preventDefault();
             }
         };
 
-        container.addEventListener('scroll', handleScroll, { passive: true });
+        const handleTouchEnd = (e) => {
+            if (isScrolling) return;
+
+            const touchEndY = e.changedTouches[0].clientY;
+            const touchEndTime = Date.now();
+
+            const deltaY = touchStartY - touchEndY;
+            const deltaTime = touchEndTime - touchStartTime;
+            const velocity = Math.abs(deltaY) / deltaTime;
+
+            // 30px threshold or fast swipe
+            const isSwipe = Math.abs(deltaY) > 30 || velocity > 0.5;
+
+            if (isSwipe) {
+                if (deltaY > 0) {
+                    scrollToIndex(selectedPostIndex + 1);
+                } else {
+                    scrollToIndex(selectedPostIndex - 1);
+                }
+            } else {
+                scrollToIndex(selectedPostIndex);
+            }
+        };
+
+        // For desktop mouse wheel
+        const handleWheel = (e) => {
+            e.preventDefault();
+            if (isScrolling) return;
+
+            if (e.deltaY > 0) {
+                scrollToIndex(selectedPostIndex + 1);
+            } else {
+                scrollToIndex(selectedPostIndex - 1);
+            }
+        };
+
+        container.addEventListener('touchstart', handleTouchStart, { passive: false });
         container.addEventListener('touchmove', handleTouchMove, { passive: false });
+        container.addEventListener('touchend', handleTouchEnd, { passive: true });
+        container.addEventListener('wheel', handleWheel, { passive: false });
 
         return () => {
-            container.removeEventListener('scroll', handleScroll);
+            container.removeEventListener('touchstart', handleTouchStart);
             container.removeEventListener('touchmove', handleTouchMove);
-            clearTimeout(scrollTimeout);
+            container.removeEventListener('touchend', handleTouchEnd);
+            container.removeEventListener('wheel', handleWheel);
+            clearTimeout(scrollLockTimeout);
         };
     }, [isMobilePostViewer, viewablePost, posts, selectedPostIndex, nextPageUrl]);
 
