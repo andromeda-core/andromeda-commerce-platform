@@ -533,7 +533,6 @@ export default function index({ google_map_api_key, search_history }) {
     //         container.removeEventListener('touchend', handleTouchEnd);
     //     };
     // }, [isMobilePostViewer, viewablePost, posts, selectedPostIndex, nextPageUrl]);
-
     const touchStartY = useRef(0);
     const startScroll = useRef(0);
     const lastTouchY = useRef(0);
@@ -586,16 +585,18 @@ export default function index({ google_map_api_key, search_history }) {
             const dt = now - lastMoveTime.current;
             const dy = lastTouchY.current - y;
 
-            // Update velocity (smoothed)
-            velocity.current = 0.9 * velocity.current + 0.1 * (dy / dt);
+            velocity.current = 0.85 * velocity.current + 0.15 * (dy / dt);
 
             const containerHeight = container.clientHeight;
             const minScroll = selectedPostIndex * containerHeight - containerHeight;
             const maxScroll = selectedPostIndex * containerHeight + containerHeight;
 
-            // Soft clamp — no hard flicker
-            if (container.scrollTop < minScroll - 40) container.scrollTop = minScroll - 40;
-            if (container.scrollTop > maxScroll + 40) container.scrollTop = maxScroll + 40;
+            // Soft clamp with resistance near edges
+            if (container.scrollTop < minScroll) {
+                container.scrollTop = minScroll + (container.scrollTop - minScroll) * 0.35;
+            } else if (container.scrollTop > maxScroll) {
+                container.scrollTop = maxScroll + (container.scrollTop - maxScroll) * 0.35;
+            }
 
             lastTouchY.current = y;
             lastMoveTime.current = now;
@@ -609,15 +610,15 @@ export default function index({ google_map_api_key, search_history }) {
             const currentScroll = container.scrollTop;
             const currentTop = selectedPostIndex * containerHeight;
             const delta = currentScroll - currentTop;
-
-            // Measure distance proportion and speed
             const normalizedProgress = Math.abs(delta / containerHeight);
             const speed = Math.abs(velocity.current);
 
-            // ✅ Post should change if:
-            // - user scrolled >25% of screen
-            // - or swipe was fast (velocity high)
-            const shouldChange = normalizedProgress > 0.25 || speed > 0.7;
+            // Cap speed to avoid massive overshoots
+            const cappedSpeed = Math.min(speed, 1.2);
+
+            // Require both — not just one — for more stable detection
+            const shouldChange =
+                normalizedProgress > 0.25 || (normalizedProgress > 0.15 && cappedSpeed > 0.4);
 
             let nextIndex = selectedPostIndex;
             if (shouldChange) {
@@ -627,21 +628,23 @@ export default function index({ google_map_api_key, search_history }) {
 
             scrollLock.current = true;
 
-            // ✅ wait for 1 frame to absorb native momentum
+            // Wait 2 frames to absorb momentum before snapping
             requestAnimationFrame(() => {
-                container.scrollTo({
-                    top: nextIndex * containerHeight,
-                    behavior: 'smooth',
+                requestAnimationFrame(() => {
+                    container.scrollTo({
+                        top: nextIndex * containerHeight,
+                        behavior: 'smooth',
+                    });
+
+                    if (nextIndex !== selectedPostIndex) {
+                        setSelectedPostIndex(nextIndex);
+                        setViewablePost(posts[nextIndex]);
+                        window.history.replaceState({}, '', generateURL(posts[nextIndex]));
+                        if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
+                    }
+
+                    setTimeout(() => (scrollLock.current = false), 450);
                 });
-
-                if (nextIndex !== selectedPostIndex) {
-                    setSelectedPostIndex(nextIndex);
-                    setViewablePost(posts[nextIndex]);
-                    window.history.replaceState({}, '', generateURL(posts[nextIndex]));
-                    if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
-                }
-
-                setTimeout(() => (scrollLock.current = false), 450);
             });
         };
 
