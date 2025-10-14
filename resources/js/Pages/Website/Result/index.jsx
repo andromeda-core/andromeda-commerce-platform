@@ -161,6 +161,7 @@ const index = ({
     }
 
     const generateURL = (post) => {
+        console.log(post);
         return (
             `?slug=${post?.slug}&planet=earth${post?.latitude != null ? '&lat=' + post?.latitude : ''}` +
             `${post?.longitude != null ? '&lng=' + post?.longitude : ''}` +
@@ -417,7 +418,7 @@ const index = ({
                                             onClick={() => {
                                                 item.type === 'posts'
                                                     ? navigator.clipboard.writeText(
-                                                          route('home', generateURL(item)),
+                                                          route('home') + generateURL(item),
                                                       )
                                                     : navigator.clipboard.writeText('Pending');
                                                 toast.success('Link copied to clipboard');
@@ -443,7 +444,7 @@ const index = ({
                                             title="Open"
                                             href={
                                                 item.type === 'posts'
-                                                    ? route('home', generateURL(item))
+                                                    ? route('home') + generateURL(item)
                                                     : 'Pending'
                                             }
                                             target="_blank"
