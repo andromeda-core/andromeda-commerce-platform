@@ -467,11 +467,9 @@ export default function index({ google_map_api_key, search_history }) {
             const handleTouchStart = (e) => {
                 touchStartY.current = e.touches[0].clientY;
                 touchStartTime.current = Date.now();
-                alert('MOBILE POST VIEWER SCROLL starts');
             };
 
             const handleTouchEnd = (e) => {
-                alert('MOBILE POST VIEWER SCROLL End');
                 const touchEndY = e.changedTouches[0].clientY;
                 const deltaY = touchStartY.current - touchEndY;
                 const elapsed = Date.now() - touchStartTime.current;
