@@ -415,8 +415,11 @@ export default function index({ google_map_api_key, search_history }) {
     }, [isMobilePostViewer, viewablePost]);
 
     const touchStartY = useRef(0);
-    const scrollLock = useRef(false);
     const currentScroll = useRef(0);
+    const velocity = useRef(0);
+    const lastY = useRef(0);
+    const lastTime = useRef(0);
+    const scrollLock = useRef(false);
 
     // Setting Post Index After Refresh To Start Scrolling From There
 
@@ -477,57 +480,72 @@ export default function index({ google_map_api_key, search_history }) {
             };
 
             const handleTouchStart = (e) => {
-                touchStartY.current = e.touches[0].clientY;
+                const y = e.touches[0].clientY;
+                touchStartY.current = y;
                 currentScroll.current = mobilePostContainerRef.current.scrollTop;
+                lastY.current = y;
+                lastTime.current = performance.now();
+                velocity.current = 0;
             };
 
             const handleTouchMove = (e) => {
                 if (scrollLock.current) return;
-
                 e.preventDefault();
 
                 const container = mobilePostContainerRef.current;
-                const deltaY = touchStartY.current - e.touches[0].clientY;
+                const y = e.touches[0].clientY;
+                const dy = touchStartY.current - y;
 
-                container.scrollTop = currentScroll.current + deltaY;
+                container.scrollTop = currentScroll.current + dy;
+
+                // compute velocity
+                const now = performance.now();
+                const dt = now - lastTime.current;
+                velocity.current = (lastY.current - y) / dt;
+                lastY.current = y;
+                lastTime.current = now;
             };
             const handleTouchEnd = (e) => {
                 if (scrollLock.current) return;
 
                 const container = mobilePostContainerRef.current;
-                const touchEndY = e.changedTouches[0].clientY;
-                const deltaY = touchStartY.current - touchEndY;
+                const deltaY = touchStartY.current - e.changedTouches[0].clientY;
                 const containerHeight = container.clientHeight;
+                const index = container.scrollTop / containerHeight;
 
-                const index = Math.round(container.scrollTop / containerHeight);
-                let nextIndex = index;
-
-                // small threshold swipe = next/prev
-                if (Math.abs(deltaY) > 60) {
-                    const direction = deltaY > 0 ? 1 : -1;
-                    nextIndex = Math.max(
-                        0,
-                        Math.min(posts.length - 1, selectedPostIndex + direction),
-                    );
-                }
+                // predict next based on velocity and delta
+                let nextIndex = Math.round(index + velocity.current * 8); // inertia factor
+                nextIndex = Math.max(0, Math.min(posts.length - 1, nextIndex));
 
                 scrollLock.current = true;
 
-                container.style.scrollBehavior = 'auto';
-                container.scrollTo({
-                    top: nextIndex * containerHeight,
-                    behavior: 'auto',
-                });
+                const targetScroll = nextIndex * containerHeight;
+                const start = container.scrollTop;
+                const distance = targetScroll - start;
+                const duration = 280; // ms for snap
 
-                setSelectedPostIndex(nextIndex);
-                setViewablePost(posts[nextIndex]);
-                window.history.replaceState({}, '', generateURL(posts[nextIndex]));
+                let startTime = null;
 
-                if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
+                const animate = (timestamp) => {
+                    if (!startTime) startTime = timestamp;
+                    const progress = Math.min((timestamp - startTime) / duration, 1);
+                    const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
 
-                setTimeout(() => {
-                    scrollLock.current = false;
-                }, 200);
+                    container.scrollTop = start + distance * eased;
+
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        // snap finished
+                        setSelectedPostIndex(nextIndex);
+                        setViewablePost(posts[nextIndex]);
+                        window.history.replaceState({}, '', generateURL(posts[nextIndex]));
+                        if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
+                        scrollLock.current = false;
+                    }
+                };
+
+                requestAnimationFrame(animate);
             };
 
             // attach events
