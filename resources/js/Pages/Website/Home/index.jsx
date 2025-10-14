@@ -585,10 +585,8 @@ export default function index({ google_map_api_key, search_history }) {
         };
 
         // Touch move
-        // ===== Touch Move =====
         const handleTouchMove = (e) => {
             if (!isTouching.current || scrollLock.current) return;
-
             const y = e.touches[0].clientY;
             const now = performance.now();
             const dt = Math.max(1, now - lastMoveTime.current);
@@ -597,42 +595,28 @@ export default function index({ google_map_api_key, search_history }) {
             velocity.current = 0.9 * velocity.current + 0.1 * (dy / dt);
 
             const containerHeight = container.clientHeight;
-            const baseTop = selectedPostIndex * containerHeight;
-            const minScroll = baseTop - containerHeight;
-            const maxScroll = baseTop + containerHeight;
+            const minScroll = selectedPostIndex * containerHeight - containerHeight;
+            const maxScroll = selectedPostIndex * containerHeight + containerHeight;
 
-            // ✅ Soft-limit user drag between current and next post
-            if (container.scrollTop < minScroll) {
+            // Soft resistance beyond one post
+            if (container.scrollTop < minScroll)
                 container.scrollTop = minScroll + (container.scrollTop - minScroll) * 0.3;
-            } else if (container.scrollTop > maxScroll) {
+            else if (container.scrollTop > maxScroll)
                 container.scrollTop = maxScroll + (container.scrollTop - maxScroll) * 0.3;
-            }
 
             lastTouchY.current = y;
             lastMoveTime.current = now;
         };
 
-        // ===== Momentum limiter =====
+        // Track momentum after finger leaves screen
         const waitForMomentumEnd = (callback) => {
-            const containerHeight = container.clientHeight;
-            const baseTop = selectedPostIndex * containerHeight;
-            const minScroll = baseTop - containerHeight;
-            const maxScroll = baseTop + containerHeight;
-
             let last = container.scrollTop;
             let stableFrames = 0;
 
             const check = () => {
                 const now = container.scrollTop;
-
-                // ✅ Hard cap: never allow native momentum to scroll beyond one post
-                if (now < minScroll) container.scrollTop = minScroll;
-                if (now > maxScroll) container.scrollTop = maxScroll;
-
-                // Track stability for when momentum ends
-                if (Math.abs(now - last) < 0.5) stableFrames++;
+                if (Math.abs(now - last) < 1) stableFrames++;
                 else stableFrames = 0;
-
                 last = now;
 
                 if (stableFrames > 4) callback();
@@ -642,50 +626,44 @@ export default function index({ google_map_api_key, search_history }) {
             momentumCheck.current = requestAnimationFrame(check);
         };
 
-        // Touch end – manual controlled momentum instead of waiting for native
+        // Touch end
         const handleTouchEnd = () => {
             if (!isTouching.current || scrollLock.current) return;
             isTouching.current = false;
 
             const containerHeight = container.clientHeight;
-            const baseTop = selectedPostIndex * containerHeight;
-            const currentScroll = container.scrollTop;
-            const delta = currentScroll - baseTop;
-
-            // determine flick direction and "energy"
-            const direction = delta > 0 ? 1 : -1;
-            const speed = Math.min(Math.abs(velocity.current), 0.8);
-            const momentumDistance = speed * containerHeight * 0.5; // 0.5 gives soft momentum
-
-            // calculate target scroll position within ± one post
-            let targetScroll = baseTop + delta + momentumDistance * direction;
-            const minScroll = baseTop - containerHeight;
-            const maxScroll = baseTop + containerHeight;
-            targetScroll = Math.max(minScroll, Math.min(maxScroll, targetScroll));
-
-            // decide if next/prev should trigger
-            const normalizedProgress = Math.abs(targetScroll - baseTop) / containerHeight;
-            let nextIndex = selectedPostIndex;
-            if (normalizedProgress > 0.25) {
-                nextIndex = Math.max(0, Math.min(posts.length - 1, selectedPostIndex + direction));
-            }
-
-            // lock and animate smoothly
             scrollLock.current = true;
-            container.style.scrollBehavior = 'smooth';
-            container.scrollTo({
-                top: nextIndex * containerHeight,
-                behavior: 'smooth',
+
+            // ✅ Wait until native momentum scroll finishes
+            waitForMomentumEnd(() => {
+                const currentScroll = container.scrollTop;
+                const currentTop = selectedPostIndex * containerHeight;
+                const delta = currentScroll - currentTop;
+                const normalizedProgress = Math.abs(delta / containerHeight);
+
+                let nextIndex = selectedPostIndex;
+                if (normalizedProgress > 0.25) {
+                    const direction = delta > 0 ? 1 : -1;
+                    nextIndex = Math.max(
+                        0,
+                        Math.min(posts.length - 1, selectedPostIndex + direction),
+                    );
+                }
+
+                container.scrollTo({
+                    top: nextIndex * containerHeight,
+                    behavior: 'smooth',
+                });
+
+                if (nextIndex !== selectedPostIndex) {
+                    setSelectedPostIndex(nextIndex);
+                    setViewablePost(posts[nextIndex]);
+                    window.history.replaceState({}, '', generateURL(posts[nextIndex]));
+                    if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
+                }
+
+                setTimeout(() => (scrollLock.current = false), 450);
             });
-
-            if (nextIndex !== selectedPostIndex) {
-                setSelectedPostIndex(nextIndex);
-                setViewablePost(posts[nextIndex]);
-                window.history.replaceState({}, '', generateURL(posts[nextIndex]));
-                if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
-            }
-
-            setTimeout(() => (scrollLock.current = false), 400);
         };
 
         window.addEventListener('wheel', handleWheel, { passive: false });
@@ -1298,6 +1276,10 @@ export default function index({ google_map_api_key, search_history }) {
                                         className="h-screen w-full snap-y snap-mandatory overflow-y-scroll bg-deepcharcoal scrollbar-none"
                                         style={{
                                             overscrollBehavior: 'contain',
+                                            scrollSnapType: 'y mandatory',
+                                            scrollBehavior: 'smooth',
+                                            WebkitOverflowScrolling: 'touch',
+                                            touchAction: 'pan-y pinch-zoom',
                                         }}
                                         ref={mobilePostContainerRef}
                                         onFocus={() => mobilePostContainerRef.current?.focus()}
