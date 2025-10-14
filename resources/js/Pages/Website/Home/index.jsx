@@ -538,11 +538,13 @@ export default function index({ google_map_api_key, search_history }) {
     const startScroll = useRef(0);
     const isTouching = useRef(false);
     const scrollLock = useRef(false);
+
     useEffect(() => {
         if (!isMobilePostViewer || viewablePost === '') return;
         const container = mobilePostContainerRef.current;
         if (!container) return;
 
+        // ===== Desktop Wheel =====
         const handleWheel = (e) => {
             if (e.ctrlKey || e.metaKey) return;
             e.preventDefault();
@@ -564,6 +566,7 @@ export default function index({ google_map_api_key, search_history }) {
             setTimeout(() => (scrollLock.current = false), 400);
         };
 
+        // ===== Touch Start =====
         const handleTouchStart = (e) => {
             if (scrollLock.current) return;
             isTouching.current = true;
@@ -571,18 +574,14 @@ export default function index({ google_map_api_key, search_history }) {
             startScroll.current = container.scrollTop;
         };
 
+        // ===== Touch Move =====
         const handleTouchMove = () => {
+            // ✅ Don't clamp here — allow full native scroll.
+            // Just observe. We’ll decide on touchend.
             if (!isTouching.current || scrollLock.current) return;
-
-            const containerHeight = container.clientHeight;
-            const minScroll = selectedPostIndex * containerHeight - containerHeight * 1.2;
-            const maxScroll = selectedPostIndex * containerHeight + containerHeight * 1.2;
-
-            // Let user scroll slightly beyond boundaries (natural elasticity)
-            if (container.scrollTop < minScroll) container.scrollTop = minScroll;
-            if (container.scrollTop > maxScroll) container.scrollTop = maxScroll;
         };
 
+        // ===== Touch End =====
         const handleTouchEnd = () => {
             if (!isTouching.current || scrollLock.current) return;
             isTouching.current = false;
@@ -592,25 +591,29 @@ export default function index({ google_map_api_key, search_history }) {
             const currentTop = selectedPostIndex * containerHeight;
             const delta = currentScroll - currentTop;
 
-            // Make small scrolls “wasted” (don’t trigger switch)
-            const changeThreshold = containerHeight * 0.3; // must scroll 30 % of height
-            const elasticZone = containerHeight * 0.1; // 10 % dead zone for softness
             let nextIndex = selectedPostIndex;
 
-            if (Math.abs(delta) > changeThreshold) {
-                nextIndex =
-                    delta > 0
-                        ? Math.min(posts.length - 1, selectedPostIndex + 1)
-                        : Math.max(0, selectedPostIndex - 1);
+            // --- Step 1: If user scrolled less than 25%, stay ---
+            const threshold = containerHeight * 0.25;
+
+            if (Math.abs(delta) <= threshold) {
+                // just snap back to current post
+                nextIndex = selectedPostIndex;
+            } else {
+                // --- Step 2: Determine direction ---
+                const direction = delta > 0 ? 1 : -1;
+                nextIndex = Math.max(0, Math.min(posts.length - 1, selectedPostIndex + direction));
             }
 
-            scrollLock.current = true;
+            // --- Step 3: Soft-limit overscroll (user might’ve scrolled >1 post) ---
+            const targetTop = nextIndex * containerHeight;
+            const maxDistance = containerHeight; // one post only
+            const diff = Math.max(-maxDistance, Math.min(maxDistance, currentScroll - currentTop));
+            const safeTarget = currentTop + diff * 0.6; // little resistance
 
-            // Snap naturally back or forward
-            container.scrollTo({
-                top: nextIndex * containerHeight,
-                behavior: 'smooth',
-            });
+            // --- Step 4: Smooth snap to final post ---
+            scrollLock.current = true;
+            container.scrollTo({ top: targetTop, behavior: 'smooth' });
 
             setSelectedPostIndex(nextIndex);
             setViewablePost(posts[nextIndex]);
@@ -620,11 +623,13 @@ export default function index({ google_map_api_key, search_history }) {
             setTimeout(() => (scrollLock.current = false), 450);
         };
 
+        // ===== Attach Listeners =====
         window.addEventListener('wheel', handleWheel, { passive: false });
         container.addEventListener('touchstart', handleTouchStart, { passive: true });
         container.addEventListener('touchmove', handleTouchMove, { passive: true });
         container.addEventListener('touchend', handleTouchEnd, { passive: true });
 
+        // ===== Cleanup =====
         return () => {
             window.removeEventListener('wheel', handleWheel);
             container.removeEventListener('touchstart', handleTouchStart);
