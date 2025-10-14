@@ -414,11 +414,6 @@ export default function index({ google_map_api_key, search_history }) {
         }
     }, [isMobilePostViewer, viewablePost]);
 
-    const touchStartY = useRef(0);
-    const startScrollTop = useRef(0);
-    const isDragging = useRef(false);
-    const scrollLock = useRef(false);
-
     // Setting Post Index After Refresh To Start Scrolling From There
 
     useEffect(() => {
@@ -431,6 +426,11 @@ export default function index({ google_map_api_key, search_history }) {
             }
         }
     }, [posts, isPostLoaded, viewablePost]);
+
+    const touchStartY = useRef(0);
+    const startScrollTop = useRef(0);
+    const isDragging = useRef(false);
+    const scrollLock = useRef(false);
 
     useEffect(() => {
         // guard: only activate when viewer is open and post exists
@@ -479,38 +479,33 @@ export default function index({ google_map_api_key, search_history }) {
 
             const handleTouchStart = (e) => {
                 if (scrollLock.current) return;
-
-                const y = e.touches[0].clientY;
-                touchStartY.current = y;
-                startScrollTop.current = mobilePostContainerRef.current.scrollTop;
                 isDragging.current = true;
+                touchStartY.current = e.touches[0].clientY;
+                startScrollTop.current = container.scrollTop;
             };
 
             const handleTouchMove = (e) => {
+                // Let browser scroll naturally, no preventDefault()
                 if (!isDragging.current || scrollLock.current) return;
-
-                const container = mobilePostContainerRef.current;
-                const y = e.touches[0].clientY;
-                const deltaY = touchStartY.current - y;
-
-                // follow the finger smoothly (no snapping here)
-                container.scrollTop = startScrollTop.current + deltaY;
             };
 
             const handleTouchEnd = (e) => {
-                if (scrollLock.current || !isDragging.current) return;
+                if (!isDragging.current || scrollLock.current) return;
                 isDragging.current = false;
 
-                const container = mobilePostContainerRef.current;
                 const deltaY = touchStartY.current - e.changedTouches[0].clientY;
                 const containerHeight = container.clientHeight;
+                const rawScrollTop = container.scrollTop;
 
-                // direction
+                // Figure out current logical post index
+                const currentIndex = Math.round(rawScrollTop / containerHeight);
+
+                // Determine direction of swipe
                 const direction = deltaY > 0 ? 1 : -1;
-                let nextIndex = selectedPostIndex;
 
-                // only move post if swiped past threshold
-                if (Math.abs(deltaY) > containerHeight * 0.25) {
+                // Apply threshold for valid swipe
+                let nextIndex = selectedPostIndex;
+                if (Math.abs(deltaY) > containerHeight * 0.15) {
                     nextIndex = Math.max(
                         0,
                         Math.min(posts.length - 1, selectedPostIndex + direction),
@@ -519,29 +514,29 @@ export default function index({ google_map_api_key, search_history }) {
 
                 scrollLock.current = true;
 
-                // instantly move to next or back to current post
+                // 🔹 Smoothly snap back to exactly one post
                 container.scrollTo({
                     top: nextIndex * containerHeight,
                     behavior: 'smooth',
                 });
 
-                // update state
+                // update logic
                 setSelectedPostIndex(nextIndex);
                 setViewablePost(posts[nextIndex]);
                 window.history.replaceState({}, '', generateURL(posts[nextIndex]));
-
                 if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
 
-                // small delay to avoid double-swiping
+                // release lock slightly after animation
                 setTimeout(() => {
                     scrollLock.current = false;
-                }, 300);
+                }, 450);
             };
-            // attach events
+
+            // ======= Attach Listeners =======
             window.addEventListener('wheel', handleWheel, { passive: false });
-            container.addEventListener('touchstart', handleTouchStart, { passive: false });
-            container.addEventListener('touchmove', handleTouchMove, { passive: false });
-            container.addEventListener('touchend', handleTouchEnd, { passive: false });
+            container.addEventListener('touchstart', handleTouchStart, { passive: true });
+            container.addEventListener('touchmove', handleTouchMove, { passive: true });
+            container.addEventListener('touchend', handleTouchEnd, { passive: true });
 
             // cleanup
             return () => {
