@@ -663,13 +663,13 @@ export default function index({ google_map_api_key, search_history }) {
             }, 450);
         };
 
-        window.addEventListener('wheel', handleWheel, { passive: false });
+        // window.addEventListener('wheel', handleWheel, { passive: false });
         container.addEventListener('touchstart', handleTouchStart, { passive: true });
         container.addEventListener('touchmove', handleTouchMove, { passive: true });
         container.addEventListener('touchend', handleTouchEnd, { passive: true });
 
         return () => {
-            window.removeEventListener('wheel', handleWheel);
+            // window.removeEventListener('wheel', handleWheel);
             container.removeEventListener('touchstart', handleTouchStart);
             container.removeEventListener('touchmove', handleTouchMove);
             container.removeEventListener('touchend', handleTouchEnd);
