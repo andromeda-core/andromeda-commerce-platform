@@ -608,27 +608,28 @@ export default function index({ google_map_api_key, search_history }) {
             lastMoveTime.current = now;
         };
 
+        const currentTop = selectedPostIndex * container.clientHeight;
+
+        // Clamp the maximum fling travel to one post above or below
+        const maxFlingTop = Math.min(
+            Math.max(container.scrollTop, currentTop - container.clientHeight),
+            currentTop + container.clientHeight,
+        );
+
+        container.scrollTo({
+            top: maxFlingTop,
+            behavior: 'smooth',
+        });
+
         // Track momentum after finger leaves screen
         const waitForMomentumEnd = (callback) => {
-            const containerHeight = container.clientHeight;
-            const baseTop = selectedPostIndex * containerHeight;
-            const minScroll = baseTop - containerHeight * 0.9; // small allowance
-            const maxScroll = baseTop + containerHeight * 0.9;
-
             let last = container.scrollTop;
             let stableFrames = 0;
 
             const check = () => {
                 const now = container.scrollTop;
-
-                // ✅ Soft clamp during momentum
-                if (now < minScroll) container.scrollTop += (minScroll - now) * 0.08;
-                else if (now > maxScroll) container.scrollTop -= (now - maxScroll) * 0.08;
-
-                // detect stop
-                if (Math.abs(now - last) < 0.5) stableFrames++;
+                if (Math.abs(now - last) < 1) stableFrames++;
                 else stableFrames = 0;
-
                 last = now;
 
                 if (stableFrames > 4) callback();
