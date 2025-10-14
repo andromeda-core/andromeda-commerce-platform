@@ -576,16 +576,12 @@ export default function index({ google_map_api_key, search_history }) {
             if (!isTouching.current || scrollLock.current) return;
 
             const containerHeight = container.clientHeight;
-            const minScroll = selectedPostIndex * containerHeight - containerHeight * 1.2;
-            const maxScroll = selectedPostIndex * containerHeight + containerHeight * 1.2;
+            const minScroll = selectedPostIndex * containerHeight - containerHeight;
+            const maxScroll = selectedPostIndex * containerHeight + containerHeight;
 
-            // ✅ Instead of forcing every frame, only softly clamp when user really overshoots
-            if (container.scrollTop < minScroll - 30) {
-                container.scrollTop = minScroll;
-            } else if (container.scrollTop > maxScroll + 30) {
-                container.scrollTop = maxScroll;
-            }
-            // Otherwise, let native scroll run naturally
+            // Allow natural scroll, but softly clamp if user goes beyond one post
+            if (container.scrollTop < minScroll - 20) container.scrollTop = minScroll - 20;
+            if (container.scrollTop > maxScroll + 20) container.scrollTop = maxScroll + 20;
         };
 
         const handleTouchEnd = () => {
@@ -597,27 +593,32 @@ export default function index({ google_map_api_key, search_history }) {
             const currentTop = selectedPostIndex * containerHeight;
             const delta = currentScroll - currentTop;
 
-            const changeThreshold = containerHeight * 0.3;
+            // new: proportional threshold — ensures post change only after visible shift
+            const normalizedProgress = Math.abs(delta / containerHeight);
+            const shouldChange = normalizedProgress > 0.25; // must scroll at least 25% of post height
+
             let nextIndex = selectedPostIndex;
 
-            if (Math.abs(delta) > changeThreshold) {
-                nextIndex =
-                    delta > 0
-                        ? Math.min(posts.length - 1, selectedPostIndex + 1)
-                        : Math.max(0, selectedPostIndex - 1);
+            if (shouldChange) {
+                const direction = delta > 0 ? 1 : -1;
+                nextIndex = Math.max(0, Math.min(posts.length - 1, selectedPostIndex + direction));
             }
 
             scrollLock.current = true;
 
+            // Snap to the final position cleanly
             container.scrollTo({
                 top: nextIndex * containerHeight,
                 behavior: 'smooth',
             });
 
-            setSelectedPostIndex(nextIndex);
-            setViewablePost(posts[nextIndex]);
-            window.history.replaceState({}, '', generateURL(posts[nextIndex]));
-            if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
+            // ✅ Only update post if the visual scroll actually passed the threshold
+            if (nextIndex !== selectedPostIndex) {
+                setSelectedPostIndex(nextIndex);
+                setViewablePost(posts[nextIndex]);
+                window.history.replaceState({}, '', generateURL(posts[nextIndex]));
+                if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
+            }
 
             setTimeout(() => (scrollLock.current = false), 450);
         };
