@@ -642,44 +642,50 @@ export default function index({ google_map_api_key, search_history }) {
             momentumCheck.current = requestAnimationFrame(check);
         };
 
-        // Touch end
+        // Touch end – manual controlled momentum instead of waiting for native
         const handleTouchEnd = () => {
             if (!isTouching.current || scrollLock.current) return;
             isTouching.current = false;
 
             const containerHeight = container.clientHeight;
+            const baseTop = selectedPostIndex * containerHeight;
+            const currentScroll = container.scrollTop;
+            const delta = currentScroll - baseTop;
+
+            // determine flick direction and "energy"
+            const direction = delta > 0 ? 1 : -1;
+            const speed = Math.min(Math.abs(velocity.current), 0.8);
+            const momentumDistance = speed * containerHeight * 0.5; // 0.5 gives soft momentum
+
+            // calculate target scroll position within ± one post
+            let targetScroll = baseTop + delta + momentumDistance * direction;
+            const minScroll = baseTop - containerHeight;
+            const maxScroll = baseTop + containerHeight;
+            targetScroll = Math.max(minScroll, Math.min(maxScroll, targetScroll));
+
+            // decide if next/prev should trigger
+            const normalizedProgress = Math.abs(targetScroll - baseTop) / containerHeight;
+            let nextIndex = selectedPostIndex;
+            if (normalizedProgress > 0.25) {
+                nextIndex = Math.max(0, Math.min(posts.length - 1, selectedPostIndex + direction));
+            }
+
+            // lock and animate smoothly
             scrollLock.current = true;
-
-            // ✅ Wait until native momentum scroll finishes
-            waitForMomentumEnd(() => {
-                const currentScroll = container.scrollTop;
-                const currentTop = selectedPostIndex * containerHeight;
-                const delta = currentScroll - currentTop;
-                const normalizedProgress = Math.abs(delta / containerHeight);
-
-                let nextIndex = selectedPostIndex;
-                if (normalizedProgress > 0.25) {
-                    const direction = delta > 0 ? 1 : -1;
-                    nextIndex = Math.max(
-                        0,
-                        Math.min(posts.length - 1, selectedPostIndex + direction),
-                    );
-                }
-
-                container.scrollTo({
-                    top: nextIndex * containerHeight,
-                    behavior: 'smooth',
-                });
-
-                if (nextIndex !== selectedPostIndex) {
-                    setSelectedPostIndex(nextIndex);
-                    setViewablePost(posts[nextIndex]);
-                    window.history.replaceState({}, '', generateURL(posts[nextIndex]));
-                    if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
-                }
-
-                setTimeout(() => (scrollLock.current = false), 450);
+            container.style.scrollBehavior = 'smooth';
+            container.scrollTo({
+                top: nextIndex * containerHeight,
+                behavior: 'smooth',
             });
+
+            if (nextIndex !== selectedPostIndex) {
+                setSelectedPostIndex(nextIndex);
+                setViewablePost(posts[nextIndex]);
+                window.history.replaceState({}, '', generateURL(posts[nextIndex]));
+                if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
+            }
+
+            setTimeout(() => (scrollLock.current = false), 400);
         };
 
         window.addEventListener('wheel', handleWheel, { passive: false });
