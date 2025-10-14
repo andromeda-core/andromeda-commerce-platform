@@ -647,58 +647,208 @@ const GlobalSearch = ({
                         {searchHistoryOpen && searchHistory.length > 0 && (
                             <div className="absolute left-0 right-0 top-full z-50 mt-2 rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-700 dark:bg-deepcharcoal sm:left-2 sm:right-2">
                                 {/* Title */}
-                                <div className="border-b border-gray-200 px-4 py-2 text-xs font-semibold text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                                <div className="flex gap-2 border-b border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 dark:border-gray-700 dark:text-gray-300">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth={1.5}
+                                        stroke="currentColor"
+                                        className="size-5"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                                        />
+                                    </svg>
                                     Your Recent Searches
                                 </div>
-
                                 <ul className="max-h-60 overflow-y-auto">
                                     {searchHistoryLoading ? (
                                         <li className="flex items-center justify-center px-4 py-4">
                                             <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"></div>
                                         </li>
                                     ) : (
-                                        searchHistory.map((item, index) => (
-                                            <li
-                                                key={index}
-                                                className="cursor-pointer px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-900"
-                                                onMouseDown={(e) => {
-                                                    e.preventDefault();
-                                                    ApplyFilter('search_history', item);
-                                                    setSearchHistoryOpen(false);
-                                                }}
-                                            >
-                                                <div className="flex items-center justify-between">
-                                                    {item.query || item.filter_summary}
+                                        searchHistory.map((item, index) => {
+                                            // Check if item has results
+                                            const hasResults =
+                                                item.results &&
+                                                Array.isArray(item.results) &&
+                                                item.results.length > 0;
+                                            const result = hasResults ? item.results[0] : null;
+                                            const count = item.count || item.results?.length || 0;
 
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            deleteSearchHistory(item.id);
-                                                        }}
-                                                        onMouseDown={(e) => {
-                                                            e.preventDefault();
-                                                            e.stopPropagation();
-                                                        }}
-                                                        className="rounded-lg bg-gray-200 p-2 hover:bg-gray-100 dark:bg-zinc-900/80 dark:hover:bg-zinc-800/50"
-                                                    >
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            strokeWidth={1.5}
-                                                            stroke="currentColor"
-                                                            className="size-4"
+                                            return (
+                                                <li
+                                                    key={index}
+                                                    className="cursor-pointer border-b border-gray-100 px-4 py-3 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900"
+                                                    onMouseDown={(e) => {
+                                                        e.preventDefault();
+                                                        ApplyFilter('search_history', item);
+                                                        setSearchHistoryOpen(false);
+                                                    }}
+                                                >
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        {/* Left side - Search info with thumbnail */}
+                                                        <div className="flex flex-1 items-center gap-3">
+                                                            {/* Thumbnail - only show if result exists */}
+                                                            {hasResults && result?.image ? (
+                                                                <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-md bg-gray-100 dark:bg-zinc-900/80">
+                                                                    <img
+                                                                        src={result.image}
+                                                                        alt={
+                                                                            result.title ||
+                                                                            result.name ||
+                                                                            'Result'
+                                                                        }
+                                                                        className="h-full w-full object-cover"
+                                                                        onError={(e) => {
+                                                                            e.target.style.display =
+                                                                                'none';
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex h-full items-center justify-center rounded-lg bg-indigo-600 p-3 text-sm text-white/80 dark:bg-indigo-500">
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        fill="none"
+                                                                        viewBox="0 0 24 24"
+                                                                        strokeWidth={1.5}
+                                                                        stroke="currentColor"
+                                                                        className="size-6"
+                                                                    >
+                                                                        <path
+                                                                            strokeLinecap="round"
+                                                                            strokeLinejoin="round"
+                                                                            d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+                                                                        />
+                                                                    </svg>
+                                                                </div>
+                                                            )}
+
+                                                            {/* Text content */}
+                                                            <div className="flex flex-1 flex-col">
+                                                                {/* Query or title Hastag with count */}
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="flex flex-col font-medium text-gray-900 dark:text-gray-100">
+                                                                        <span className="truncate">
+                                                                            {hasResults
+                                                                                ? result.title ||
+                                                                                  result.name
+                                                                                : item.query ||
+                                                                                  'Search'}
+
+                                                                            <span className="mx-2 mb-1 text-sm text-gray-500 dark:text-gray-400">
+                                                                                ({count})
+                                                                            </span>
+                                                                        </span>
+
+                                                                        {result?.tag && (
+                                                                            <span className="text-xs font-normal text-gray-500 dark:text-gray-400">
+                                                                                {result.tag}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Result details - only if exists */}
+                                                                {hasResults && (
+                                                                    <div className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                                                                        {result.type === 'post' && (
+                                                                            <>
+                                                                                {result.location_name && (
+                                                                                    <span>
+                                                                                        {
+                                                                                            result.location_name
+                                                                                        }
+                                                                                    </span>
+                                                                                )}
+                                                                                {result.location_name &&
+                                                                                    result.added_at && (
+                                                                                        <span className="mx-1">
+                                                                                            •
+                                                                                        </span>
+                                                                                    )}
+                                                                                {result.added_at && (
+                                                                                    <span>
+                                                                                        {
+                                                                                            result.added_at
+                                                                                        }
+                                                                                    </span>
+                                                                                )}
+                                                                            </>
+                                                                        )}
+                                                                        {result.type ===
+                                                                            'smartphone' && (
+                                                                            <>
+                                                                                {result.capacity && (
+                                                                                    <span>
+                                                                                        {
+                                                                                            result.capacity
+                                                                                        }
+                                                                                    </span>
+                                                                                )}
+                                                                                {result.capacity &&
+                                                                                    result.added_at && (
+                                                                                        <span className="mx-1">
+                                                                                            •
+                                                                                        </span>
+                                                                                    )}
+                                                                                {result.added_at && (
+                                                                                    <span>
+                                                                                        {
+                                                                                            result.added_at
+                                                                                        }
+                                                                                    </span>
+                                                                                )}
+                                                                            </>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+
+                                                                {/* Fallback - show filter_summary if no results */}
+                                                                {!hasResults &&
+                                                                    item.filter_summary && (
+                                                                        <div className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                                                                            {item.filter_summary}
+                                                                        </div>
+                                                                    )}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Delete button */}
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                deleteSearchHistory(item.id);
+                                                            }}
+                                                            onMouseDown={(e) => {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                            }}
+                                                            className="flex-shrink-0 rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
                                                         >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                                                            />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            </li>
-                                        ))
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                strokeWidth={1.5}
+                                                                stroke="currentColor"
+                                                                className="h-5 w-5"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                </li>
+                                            );
+                                        })
                                     )}
                                 </ul>
                             </div>
@@ -1310,74 +1460,231 @@ const GlobalSearch = ({
                                                                             </li>
                                                                         ) : (
                                                                             searchHistory.map(
-                                                                                (item, index) => (
-                                                                                    <li
-                                                                                        key={index}
-                                                                                        className="cursor-pointer px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-900"
-                                                                                    >
-                                                                                        <div
-                                                                                            className="flex items-center justify-between"
+                                                                                (item, index) => {
+                                                                                    // Check if item has results
+                                                                                    const hasResults =
+                                                                                        item.results &&
+                                                                                        Array.isArray(
+                                                                                            item.results,
+                                                                                        ) &&
+                                                                                        item.results
+                                                                                            .length >
+                                                                                            0;
+                                                                                    const result =
+                                                                                        hasResults
+                                                                                            ? item
+                                                                                                  .results[0]
+                                                                                            : null;
+                                                                                    const count =
+                                                                                        item.count ||
+                                                                                        item.results
+                                                                                            ?.length ||
+                                                                                        0;
+
+                                                                                    return (
+                                                                                        <li
+                                                                                            key={
+                                                                                                index
+                                                                                            }
+                                                                                            className="cursor-pointer border-b border-gray-100 px-4 py-3 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900"
                                                                                             onMouseDown={(
                                                                                                 e,
                                                                                             ) => {
-                                                                                                if (
-                                                                                                    e.target.closest(
-                                                                                                        'button',
-                                                                                                    )
-                                                                                                )
-                                                                                                    return;
                                                                                                 e.preventDefault();
                                                                                                 ApplyFilter(
                                                                                                     'search_history',
                                                                                                     item,
                                                                                                 );
-                                                                                                setFilterModalSearchHistoryOpen(
+                                                                                                setSearchHistoryOpen(
                                                                                                     false,
                                                                                                 );
                                                                                             }}
                                                                                         >
-                                                                                            <span className="flex-1">
-                                                                                                {item.query ||
-                                                                                                    item.filter_summary}
-                                                                                            </span>
+                                                                                            <div className="flex items-center justify-between gap-3">
+                                                                                                {/* Left side - Search info with thumbnail */}
+                                                                                                <div className="flex flex-1 items-center gap-3">
+                                                                                                    {/* Thumbnail - only show if result exists */}
+                                                                                                    {hasResults &&
+                                                                                                    result?.image ? (
+                                                                                                        <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-md bg-gray-100 dark:bg-zinc-900/80">
+                                                                                                            <img
+                                                                                                                src={
+                                                                                                                    result.image
+                                                                                                                }
+                                                                                                                alt={
+                                                                                                                    result.title ||
+                                                                                                                    result.name ||
+                                                                                                                    'Result'
+                                                                                                                }
+                                                                                                                className="h-full w-full object-cover"
+                                                                                                                onError={(
+                                                                                                                    e,
+                                                                                                                ) => {
+                                                                                                                    e.target.style.display =
+                                                                                                                        'none';
+                                                                                                                }}
+                                                                                                            />
+                                                                                                        </div>
+                                                                                                    ) : (
+                                                                                                        <div className="flex h-full items-center justify-center rounded-lg bg-indigo-600 p-3 text-sm text-white/80 dark:bg-indigo-500">
+                                                                                                            <svg
+                                                                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                                                                fill="none"
+                                                                                                                viewBox="0 0 24 24"
+                                                                                                                strokeWidth={
+                                                                                                                    1.5
+                                                                                                                }
+                                                                                                                stroke="currentColor"
+                                                                                                                className="size-6"
+                                                                                                            >
+                                                                                                                <path
+                                                                                                                    strokeLinecap="round"
+                                                                                                                    strokeLinejoin="round"
+                                                                                                                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+                                                                                                                />
+                                                                                                            </svg>
+                                                                                                        </div>
+                                                                                                    )}
 
-                                                                                            <button
-                                                                                                onClick={(
-                                                                                                    e,
-                                                                                                ) => {
-                                                                                                    e.stopPropagation();
-                                                                                                    deleteSearchHistory(
-                                                                                                        item.id,
-                                                                                                    );
-                                                                                                }}
-                                                                                                onMouseDown={(
-                                                                                                    e,
-                                                                                                ) => {
-                                                                                                    e.preventDefault();
-                                                                                                    e.stopPropagation();
-                                                                                                }}
-                                                                                                className="rounded-lg bg-gray-200 p-2 hover:bg-gray-100 dark:bg-zinc-900/80 dark:hover:bg-zinc-800/50"
-                                                                                            >
-                                                                                                <svg
-                                                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                                                    fill="none"
-                                                                                                    viewBox="0 0 24 24"
-                                                                                                    strokeWidth={
-                                                                                                        1.5
-                                                                                                    }
-                                                                                                    stroke="currentColor"
-                                                                                                    className="size-4"
+                                                                                                    {/* Text content */}
+                                                                                                    <div className="flex flex-1 flex-col">
+                                                                                                        {/* Query or title Hastag with count */}
+                                                                                                        <div className="flex items-center gap-2">
+                                                                                                            <div className="flex flex-col font-medium text-gray-900 dark:text-gray-100">
+                                                                                                                <span className="truncate">
+                                                                                                                    {hasResults
+                                                                                                                        ? result.title ||
+                                                                                                                          result.name
+                                                                                                                        : item.query ||
+                                                                                                                          'Search'}
+
+                                                                                                                    <span className="mx-2 mb-1 text-sm text-gray-500 dark:text-gray-400">
+                                                                                                                        (
+                                                                                                                        {
+                                                                                                                            count
+                                                                                                                        }
+
+                                                                                                                        )
+                                                                                                                    </span>
+                                                                                                                </span>
+
+                                                                                                                {result?.tag && (
+                                                                                                                    <span className="text-xs font-normal text-gray-500 dark:text-gray-400">
+                                                                                                                        {
+                                                                                                                            result.tag
+                                                                                                                        }
+                                                                                                                    </span>
+                                                                                                                )}
+                                                                                                            </div>
+                                                                                                        </div>
+
+                                                                                                        {/* Result details - only if exists */}
+                                                                                                        {hasResults && (
+                                                                                                            <div className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                                                                                                                {result.type ===
+                                                                                                                    'post' && (
+                                                                                                                    <>
+                                                                                                                        {result.location_name && (
+                                                                                                                            <span>
+                                                                                                                                {
+                                                                                                                                    result.location_name
+                                                                                                                                }
+                                                                                                                            </span>
+                                                                                                                        )}
+                                                                                                                        {result.location_name &&
+                                                                                                                            result.added_at && (
+                                                                                                                                <span className="mx-1">
+                                                                                                                                    •
+                                                                                                                                </span>
+                                                                                                                            )}
+                                                                                                                        {result.added_at && (
+                                                                                                                            <span>
+                                                                                                                                {
+                                                                                                                                    result.added_at
+                                                                                                                                }
+                                                                                                                            </span>
+                                                                                                                        )}
+                                                                                                                    </>
+                                                                                                                )}
+                                                                                                                {result.type ===
+                                                                                                                    'smartphone' && (
+                                                                                                                    <>
+                                                                                                                        {result.capacity && (
+                                                                                                                            <span>
+                                                                                                                                {
+                                                                                                                                    result.capacity
+                                                                                                                                }
+                                                                                                                            </span>
+                                                                                                                        )}
+                                                                                                                        {result.capacity &&
+                                                                                                                            result.added_at && (
+                                                                                                                                <span className="mx-1">
+                                                                                                                                    •
+                                                                                                                                </span>
+                                                                                                                            )}
+                                                                                                                        {result.added_at && (
+                                                                                                                            <span>
+                                                                                                                                {
+                                                                                                                                    result.added_at
+                                                                                                                                }
+                                                                                                                            </span>
+                                                                                                                        )}
+                                                                                                                    </>
+                                                                                                                )}
+                                                                                                            </div>
+                                                                                                        )}
+
+                                                                                                        {/* Fallback - show filter_summary if no results */}
+                                                                                                        {!hasResults &&
+                                                                                                            item.filter_summary && (
+                                                                                                                <div className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                                                                                                                    {
+                                                                                                                        item.filter_summary
+                                                                                                                    }
+                                                                                                                </div>
+                                                                                                            )}
+                                                                                                    </div>
+                                                                                                </div>
+
+                                                                                                {/* Delete button */}
+                                                                                                <button
+                                                                                                    onClick={(
+                                                                                                        e,
+                                                                                                    ) => {
+                                                                                                        e.stopPropagation();
+                                                                                                        deleteSearchHistory(
+                                                                                                            item.id,
+                                                                                                        );
+                                                                                                    }}
+                                                                                                    onMouseDown={(
+                                                                                                        e,
+                                                                                                    ) => {
+                                                                                                        e.preventDefault();
+                                                                                                        e.stopPropagation();
+                                                                                                    }}
+                                                                                                    className="flex-shrink-0 rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
                                                                                                 >
-                                                                                                    <path
-                                                                                                        strokeLinecap="round"
-                                                                                                        strokeLinejoin="round"
-                                                                                                        d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                                                                                                    />
-                                                                                                </svg>
-                                                                                            </button>
-                                                                                        </div>
-                                                                                    </li>
-                                                                                ),
+                                                                                                    <svg
+                                                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                                                        fill="none"
+                                                                                                        viewBox="0 0 24 24"
+                                                                                                        strokeWidth={
+                                                                                                            1.5
+                                                                                                        }
+                                                                                                        stroke="currentColor"
+                                                                                                        className="h-5 w-5"
+                                                                                                    >
+                                                                                                        <path
+                                                                                                            strokeLinecap="round"
+                                                                                                            strokeLinejoin="round"
+                                                                                                            d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                                                                                                        />
+                                                                                                    </svg>
+                                                                                                </button>
+                                                                                            </div>
+                                                                                        </li>
+                                                                                    );
+                                                                                },
                                                                             )
                                                                         )}
                                                                     </ul>
@@ -1737,74 +2044,230 @@ const GlobalSearch = ({
                                                                             </li>
                                                                         ) : (
                                                                             searchHistory.map(
-                                                                                (item, index) => (
-                                                                                    <li
-                                                                                        key={index}
-                                                                                        className="cursor-pointer px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-900"
-                                                                                    >
-                                                                                        <div
-                                                                                            className="flex items-center justify-between"
+                                                                                (item, index) => {
+                                                                                    // Check if item has results
+                                                                                    const hasResults =
+                                                                                        item.results &&
+                                                                                        Array.isArray(
+                                                                                            item.results,
+                                                                                        ) &&
+                                                                                        item.results
+                                                                                            .length >
+                                                                                            0;
+                                                                                    const result =
+                                                                                        hasResults
+                                                                                            ? item
+                                                                                                  .results[0]
+                                                                                            : null;
+                                                                                    const count =
+                                                                                        item.count ||
+                                                                                        item.results
+                                                                                            ?.length ||
+                                                                                        0;
+
+                                                                                    return (
+                                                                                        <li
+                                                                                            key={
+                                                                                                index
+                                                                                            }
+                                                                                            className="cursor-pointer border-b border-gray-100 px-4 py-3 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900"
                                                                                             onMouseDown={(
                                                                                                 e,
                                                                                             ) => {
-                                                                                                if (
-                                                                                                    e.target.closest(
-                                                                                                        'button',
-                                                                                                    )
-                                                                                                )
-                                                                                                    return;
                                                                                                 e.preventDefault();
                                                                                                 ApplyFilter(
                                                                                                     'search_history',
                                                                                                     item,
                                                                                                 );
-                                                                                                setMobileSearchHistoryOpen(
+                                                                                                setSearchHistoryOpen(
                                                                                                     false,
                                                                                                 );
                                                                                             }}
                                                                                         >
-                                                                                            <span className="flex-1">
-                                                                                                {item.query ||
-                                                                                                    item.filter_summary}
-                                                                                            </span>
+                                                                                            <div className="flex items-center justify-between gap-3">
+                                                                                                {/* Left side - Search info with thumbnail */}
+                                                                                                <div className="flex flex-1 items-center gap-3">
+                                                                                                    {/* Thumbnail - only show if result exists */}
+                                                                                                    {hasResults &&
+                                                                                                    result?.image ? (
+                                                                                                        <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-md bg-gray-100 dark:bg-zinc-900/80">
+                                                                                                            <img
+                                                                                                                src={
+                                                                                                                    result.image
+                                                                                                                }
+                                                                                                                alt={
+                                                                                                                    result.title ||
+                                                                                                                    result.name ||
+                                                                                                                    'Result'
+                                                                                                                }
+                                                                                                                className="h-full w-full object-cover"
+                                                                                                                onError={(
+                                                                                                                    e,
+                                                                                                                ) => {
+                                                                                                                    e.target.style.display =
+                                                                                                                        'none';
+                                                                                                                }}
+                                                                                                            />
+                                                                                                        </div>
+                                                                                                    ) : (
+                                                                                                        <div className="flex h-full items-center justify-center rounded-lg bg-indigo-600 p-3 text-sm text-white/80 dark:bg-indigo-500">
+                                                                                                            <svg
+                                                                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                                                                fill="none"
+                                                                                                                viewBox="0 0 24 24"
+                                                                                                                strokeWidth={
+                                                                                                                    1.5
+                                                                                                                }
+                                                                                                                stroke="currentColor"
+                                                                                                                className="size-6"
+                                                                                                            >
+                                                                                                                <path
+                                                                                                                    strokeLinecap="round"
+                                                                                                                    strokeLinejoin="round"
+                                                                                                                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+                                                                                                                />
+                                                                                                            </svg>
+                                                                                                        </div>
+                                                                                                    )}
 
-                                                                                            <button
-                                                                                                onClick={(
-                                                                                                    e,
-                                                                                                ) => {
-                                                                                                    e.stopPropagation();
-                                                                                                    deleteSearchHistory(
-                                                                                                        item.id,
-                                                                                                    );
-                                                                                                }}
-                                                                                                onMouseDown={(
-                                                                                                    e,
-                                                                                                ) => {
-                                                                                                    e.preventDefault();
-                                                                                                    e.stopPropagation();
-                                                                                                }}
-                                                                                                className="rounded-lg bg-gray-200 p-2 hover:bg-gray-100 dark:bg-zinc-900/80 dark:hover:bg-zinc-800/50"
-                                                                                            >
-                                                                                                <svg
-                                                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                                                    fill="none"
-                                                                                                    viewBox="0 0 24 24"
-                                                                                                    strokeWidth={
-                                                                                                        1.5
-                                                                                                    }
-                                                                                                    stroke="currentColor"
-                                                                                                    className="size-4"
+                                                                                                    {/* Text content */}
+                                                                                                    <div className="flex flex-1 flex-col">
+                                                                                                        {/* Query or title Hastag with count */}
+                                                                                                        <div className="flex items-center gap-2">
+                                                                                                            <div className="flex flex-col font-medium text-gray-900 dark:text-gray-100">
+                                                                                                                <span className="truncate">
+                                                                                                                    {hasResults
+                                                                                                                        ? result.title ||
+                                                                                                                          result.name
+                                                                                                                        : item.query ||
+                                                                                                                          'Search'}
+
+                                                                                                                    <span className="mx-2 mb-1 text-sm text-gray-500 dark:text-gray-400">
+                                                                                                                        (
+                                                                                                                        {
+                                                                                                                            count
+                                                                                                                        }
+                                                                                                                        )
+                                                                                                                    </span>
+                                                                                                                </span>
+
+                                                                                                                {result?.tag && (
+                                                                                                                    <span className="text-xs font-normal text-gray-500 dark:text-gray-400">
+                                                                                                                        {
+                                                                                                                            result.tag
+                                                                                                                        }
+                                                                                                                    </span>
+                                                                                                                )}
+                                                                                                            </div>
+                                                                                                        </div>
+
+                                                                                                        {/* Result details - only if exists */}
+                                                                                                        {hasResults && (
+                                                                                                            <div className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                                                                                                                {result.type ===
+                                                                                                                    'post' && (
+                                                                                                                    <>
+                                                                                                                        {result.location_name && (
+                                                                                                                            <span>
+                                                                                                                                {
+                                                                                                                                    result.location_name
+                                                                                                                                }
+                                                                                                                            </span>
+                                                                                                                        )}
+                                                                                                                        {result.location_name &&
+                                                                                                                            result.added_at && (
+                                                                                                                                <span className="mx-1">
+                                                                                                                                    •
+                                                                                                                                </span>
+                                                                                                                            )}
+                                                                                                                        {result.added_at && (
+                                                                                                                            <span>
+                                                                                                                                {
+                                                                                                                                    result.added_at
+                                                                                                                                }
+                                                                                                                            </span>
+                                                                                                                        )}
+                                                                                                                    </>
+                                                                                                                )}
+                                                                                                                {result.type ===
+                                                                                                                    'smartphone' && (
+                                                                                                                    <>
+                                                                                                                        {result.capacity && (
+                                                                                                                            <span>
+                                                                                                                                {
+                                                                                                                                    result.capacity
+                                                                                                                                }
+                                                                                                                            </span>
+                                                                                                                        )}
+                                                                                                                        {result.capacity &&
+                                                                                                                            result.added_at && (
+                                                                                                                                <span className="mx-1">
+                                                                                                                                    •
+                                                                                                                                </span>
+                                                                                                                            )}
+                                                                                                                        {result.added_at && (
+                                                                                                                            <span>
+                                                                                                                                {
+                                                                                                                                    result.added_at
+                                                                                                                                }
+                                                                                                                            </span>
+                                                                                                                        )}
+                                                                                                                    </>
+                                                                                                                )}
+                                                                                                            </div>
+                                                                                                        )}
+
+                                                                                                        {/* Fallback - show filter_summary if no results */}
+                                                                                                        {!hasResults &&
+                                                                                                            item.filter_summary && (
+                                                                                                                <div className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                                                                                                                    {
+                                                                                                                        item.filter_summary
+                                                                                                                    }
+                                                                                                                </div>
+                                                                                                            )}
+                                                                                                    </div>
+                                                                                                </div>
+
+                                                                                                {/* Delete button */}
+                                                                                                <button
+                                                                                                    onClick={(
+                                                                                                        e,
+                                                                                                    ) => {
+                                                                                                        e.stopPropagation();
+                                                                                                        deleteSearchHistory(
+                                                                                                            item.id,
+                                                                                                        );
+                                                                                                    }}
+                                                                                                    onMouseDown={(
+                                                                                                        e,
+                                                                                                    ) => {
+                                                                                                        e.preventDefault();
+                                                                                                        e.stopPropagation();
+                                                                                                    }}
+                                                                                                    className="flex-shrink-0 rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
                                                                                                 >
-                                                                                                    <path
-                                                                                                        strokeLinecap="round"
-                                                                                                        strokeLinejoin="round"
-                                                                                                        d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                                                                                                    />
-                                                                                                </svg>
-                                                                                            </button>
-                                                                                        </div>
-                                                                                    </li>
-                                                                                ),
+                                                                                                    <svg
+                                                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                                                        fill="none"
+                                                                                                        viewBox="0 0 24 24"
+                                                                                                        strokeWidth={
+                                                                                                            1.5
+                                                                                                        }
+                                                                                                        stroke="currentColor"
+                                                                                                        className="h-5 w-5"
+                                                                                                    >
+                                                                                                        <path
+                                                                                                            strokeLinecap="round"
+                                                                                                            strokeLinejoin="round"
+                                                                                                            d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                                                                                                        />
+                                                                                                    </svg>
+                                                                                                </button>
+                                                                                            </div>
+                                                                                        </li>
+                                                                                    );
+                                                                                },
                                                                             )
                                                                         )}
                                                                     </ul>

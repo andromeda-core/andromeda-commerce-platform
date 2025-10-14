@@ -481,11 +481,29 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                 if (empty($previous_search)) {
 
                     $results_for_history = [];
+                    $post = $results->where('type', 'posts')->first();
+                    $smartphone = $results->where('type', 'smartphones')->first();
 
-                    if (! empty($results->where('type', 'posts')->first())) {
-                        $results_for_history[] = $results->where('type', 'posts')->first();
-                    } elseif (! empty($results->where('type', 'smartphones')->first())) {
-                        $results_for_history[] = $results->where('type', 'smartphones')->first();
+                    if (! empty($post)) {
+                        $results_for_history[] = [
+                            'type' => 'post',
+                            'id' => $post['id'] ?? null,
+                            'title' => $post['title'] ?? null,
+                            'tag' => $post['tag'] ?? null,
+                            'image' => ! empty($post['image']) ? $post['image'] : null,
+                            'location_name' => $post['location_name'] ?? null,
+                            'added_at' => $post['created_at'] ?? null,
+
+                        ];
+                    } elseif (! empty($smartphone)) {
+                        $results_for_history[] = [
+                            'type' => 'smartphone',
+                            'id' => $smartphone['id'] ?? null,
+                            'name' => $smartphone['name'] ?? null,
+                            'capacity' => $smartphone['capacity'] ?? null,
+                            'image' => ! empty($smartphone['image']) ? $smartphone['image'] : null,
+                            'added_at' => $smartphone['created_at'] ?? null,
+                        ];
                     } else {
                         $results_for_history = null;
                     }
@@ -498,6 +516,8 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                         'filter_summary' => ! empty($post_filters['address']['lat'])
                             ? "Advanced Filter You Applied: {$post_filters['address']['lat']}, {$post_filters['address']['lng']}"
                             : null,
+                        'results' => json_encode($results_for_history),
+                        'results_count' => $results->count(),
                     ]);
                 }
             }

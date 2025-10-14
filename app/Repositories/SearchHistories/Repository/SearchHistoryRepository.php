@@ -29,6 +29,10 @@ class SearchHistoryRepository implements ISearchHistoryRepository
                     $history->filters = json_decode($history->filters);
                 }
 
+                if (! empty($history->results)) {
+                    $history->results = json_decode($history->results);
+                }
+
                 return $history;
             });
     }
