@@ -414,51 +414,119 @@ export default function index({ google_map_api_key, search_history }) {
         }
     }, [isMobilePostViewer, viewablePost]);
 
-    // Scroll Control Of Post Viewer Of Mobile Logic
     const scrollLock = useRef(false);
+    const touchStartY = useRef(0);
 
-    const handleScroll = (e) => {
-        const container = e.currentTarget;
-        if (scrollLock.current) return;
+    // console.log(mobilePostContainerRef.current);
 
-        const scrollTop = container.scrollTop;
-        const containerHeight = container.clientHeight;
+    useEffect(() => {
+        // guard: only activate when viewer is open and post exists
+        if (!isMobilePostViewer || viewablePost === '') return;
 
-        // determine current index
-        const index = Math.round(scrollTop / containerHeight);
+        let container = null;
+        let observer = null;
 
-        // detect scroll direction
-        const delta = scrollTop - containerHeight * index;
+        const initListeners = () => {
+            container = mobilePostContainerRef.current;
+            if (!container) return; // still not mounted
 
-        let targetIndex = index;
+            setTimeout(() => {
+                container?.focus();
+            }, 50);
 
-        if (Math.abs(delta) > containerHeight * 0.1) {
-            // small scroll threshold to avoid accidental triggers
-            if (delta > 0 && index < posts.length - 1) targetIndex = index + 1;
-            if (delta < 0 && index > 0) targetIndex = index - 1;
+            // ----- WHEEL SCROLL HANDLER -----
+            const handleWheel = (e) => {
+                if (e.ctrlKey || e.metaKey) return;
+
+                e.preventDefault();
+
+                if (scrollLock.current) return;
+
+                scrollLock.current = true;
+
+                const direction = e.deltaY > 0 ? 1 : -1;
+                let nextIndex = Math.max(
+                    0,
+                    Math.min(posts.length - 1, selectedPostIndex + direction),
+                );
+
+                container.scrollTo({
+                    top: nextIndex * container.clientHeight,
+                    behavior: 'smooth',
+                });
+
+                setSelectedPostIndex(nextIndex);
+                setViewablePost(posts[nextIndex]);
+                window.history.replaceState({}, '', generateURL(posts[nextIndex]));
+
+                if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
+
+                setTimeout(() => (scrollLock.current = false), 900);
+            };
+
+            const handleTouchStart = (e) => {
+                touchStartY.current = e.touches[0].clientY;
+            };
+
+            const handleTouchEnd = (e) => {
+                const touchEndY = e.changedTouches[0].clientY;
+                const deltaY = touchStartY.current - touchEndY;
+                if (Math.abs(deltaY) < 50 || scrollLock.current) return;
+
+                scrollLock.current = true;
+                const direction = deltaY > 0 ? 1 : -1;
+                let nextIndex = Math.max(
+                    0,
+                    Math.min(posts.length - 1, selectedPostIndex + direction),
+                );
+
+                container.scrollTo({
+                    top: nextIndex * container.clientHeight,
+                    behavior: 'smooth',
+                });
+
+                setSelectedPostIndex(nextIndex);
+                setViewablePost(posts[nextIndex]);
+                window.history.replaceState({}, '', generateURL(posts[nextIndex]));
+
+                if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
+
+                setTimeout(() => (scrollLock.current = false), 900);
+            };
+
+            // attach events
+            window.addEventListener('wheel', handleWheel, { passive: false });
+            container.addEventListener('touchstart', handleTouchStart, { passive: true });
+            container.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+            // cleanup
+            return () => {
+                window.removeEventListener('wheel', handleWheel);
+                container.removeEventListener('touchstart', handleTouchStart);
+                container.removeEventListener('touchend', handleTouchEnd);
+            };
+        };
+
+        // If ref exists, attach immediately
+        if (mobilePostContainerRef.current) {
+            const cleanup = initListeners();
+            return cleanup;
         }
 
-        scrollLock.current = true;
-        container.scrollTo({
-            top: targetIndex * containerHeight,
-            behavior: 'smooth',
+        // If not yet mounted, observe until it appears
+        observer = new MutationObserver(() => {
+            if (mobilePostContainerRef.current) {
+                const cleanup = initListeners();
+                observer.disconnect();
+                return cleanup;
+            }
         });
 
-        // release lock after scroll ends
-        setTimeout(() => {
-            setElipsisShowDropdown(false);
-            scrollLock.current = false;
-            setSelectedPostIndex(targetIndex);
-            const post = posts[targetIndex];
-            setViewablePost(post);
-            window.history.replaceState({}, '', generateURL(post));
+        observer.observe(document.body, { childList: true, subtree: true });
 
-            // Load more posts if near end
-            if (targetIndex >= posts.length - 5 && nextPageUrl) {
-                fetchMorePosts();
-            }
-        }, 800); // lock for ~0.8s to prevent rapid scrolling
-    };
+        // Cleanup observer
+        return () => observer && observer.disconnect();
+    }, [isMobilePostViewer, viewablePost, posts, selectedPostIndex, nextPageUrl]);
 
     return (
         <MainLayout>
@@ -1045,14 +1113,15 @@ export default function index({ google_map_api_key, search_history }) {
 
                                     {/* Scrollable Container */}
                                     <div
+                                        tabIndex={0}
                                         className="scroll-damped h-screen w-full snap-y snap-mandatory overflow-y-scroll bg-deepcharcoal scrollbar-none"
                                         style={{
                                             WebkitOverflowScrolling: 'auto',
                                             scrollBehavior: 'smooth',
                                             overscrollBehavior: 'contain',
                                         }}
-                                        onScroll={handleScroll}
                                         ref={mobilePostContainerRef}
+                                        onFocus={() => mobilePostContainerRef.current?.focus()}
                                         // onScroll={(e) => {
 
                                         //     const container = e.currentTarget;
