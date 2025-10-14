@@ -416,6 +416,9 @@ export default function index({ google_map_api_key, search_history }) {
 
     const touchStartY = useRef(0);
     const scrollLock = useRef(false);
+    const currentScroll = useRef(0);
+
+    // Setting Post Index After Refresh To Start Scrolling From There
 
     useEffect(() => {
         if (!isPostLoaded) return;
@@ -475,36 +478,46 @@ export default function index({ google_map_api_key, search_history }) {
 
             const handleTouchStart = (e) => {
                 touchStartY.current = e.touches[0].clientY;
+                currentScroll.current = mobilePostContainerRef.current.scrollTop;
             };
 
             const handleTouchMove = (e) => {
-                e.preventDefault();
-            };
+                if (scrollLock.current) return;
 
+                e.preventDefault();
+
+                const container = mobilePostContainerRef.current;
+                const deltaY = touchStartY.current - e.touches[0].clientY;
+
+                container.scrollTop = currentScroll.current + deltaY;
+            };
             const handleTouchEnd = (e) => {
                 if (scrollLock.current) return;
 
+                const container = mobilePostContainerRef.current;
                 const touchEndY = e.changedTouches[0].clientY;
                 const deltaY = touchStartY.current - touchEndY;
+                const containerHeight = container.clientHeight;
 
-                if (Math.abs(deltaY) < 50) return;
+                const index = Math.round(container.scrollTop / containerHeight);
+                let nextIndex = index;
+
+                // small threshold swipe = next/prev
+                if (Math.abs(deltaY) > 60) {
+                    const direction = deltaY > 0 ? 1 : -1;
+                    nextIndex = Math.max(
+                        0,
+                        Math.min(posts.length - 1, selectedPostIndex + direction),
+                    );
+                }
 
                 scrollLock.current = true;
 
-                const direction = deltaY > 0 ? 1 : -1;
-                let nextIndex = Math.max(
-                    0,
-                    Math.min(posts.length - 1, selectedPostIndex + direction),
-                );
-
+                container.style.scrollBehavior = 'auto';
                 container.scrollTo({
-                    top: nextIndex * container.clientHeight,
+                    top: nextIndex * containerHeight,
                     behavior: 'auto',
                 });
-
-                setTimeout(() => {
-                    container.style.scrollBehavior = 'smooth';
-                }, 100);
 
                 setSelectedPostIndex(nextIndex);
                 setViewablePost(posts[nextIndex]);
@@ -514,7 +527,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                 setTimeout(() => {
                     scrollLock.current = false;
-                }, 250);
+                }, 200);
             };
 
             // attach events
