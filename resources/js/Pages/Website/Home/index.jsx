@@ -426,12 +426,10 @@ export default function index({ google_map_api_key, search_history }) {
             }
         }
     }, [posts, isPostLoaded, viewablePost]);
-
     const touchStartY = useRef(0);
-    const touchEndY = useRef(0);
-    const isTouching = useRef(false);
+    const currentY = useRef(0);
+    const isDragging = useRef(false);
     const scrollLock = useRef(false);
-    const allowScroll = useRef(true);
 
     useEffect(() => {
         if (!isMobilePostViewer || viewablePost === '') return;
@@ -439,6 +437,7 @@ export default function index({ google_map_api_key, search_history }) {
         const container = mobilePostContainerRef.current;
         if (!container) return;
 
+        // ===== Desktop Wheel (same) =====
         const handleWheel = (e) => {
             if (e.ctrlKey || e.metaKey) return;
             e.preventDefault();
@@ -450,56 +449,61 @@ export default function index({ google_map_api_key, search_history }) {
                 0,
                 Math.min(posts.length - 1, selectedPostIndex + direction),
             );
-            container.scrollTo({ top: nextIndex * container.clientHeight, behavior: 'smooth' });
+
+            container.scrollTo({
+                top: nextIndex * container.clientHeight,
+                behavior: 'smooth',
+            });
+
             setSelectedPostIndex(nextIndex);
             setViewablePost(posts[nextIndex]);
             window.history.replaceState({}, '', generateURL(posts[nextIndex]));
             if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
+
             setTimeout(() => (scrollLock.current = false), 400);
         };
 
-        // ---- Touch Start ----
+        // ===== Touch Start =====
         const handleTouchStart = (e) => {
             if (scrollLock.current) return;
-            isTouching.current = true;
+
+            isDragging.current = true;
             touchStartY.current = e.touches[0].clientY;
-            allowScroll.current = true;
+            currentY.current = e.touches[0].clientY;
+
+            // disable native momentum
             container.style.scrollBehavior = 'auto';
         };
 
-        // ---- Touch Move ----
+        // ===== Touch Move =====
         const handleTouchMove = (e) => {
-            if (!isTouching.current || scrollLock.current) return;
+            if (!isDragging.current || scrollLock.current) return;
+            e.preventDefault();
 
+            const y = e.touches[0].clientY;
+            const deltaY = touchStartY.current - y;
             const containerHeight = container.clientHeight;
-            const minScroll = (selectedPostIndex - 1) * containerHeight;
-            const maxScroll = (selectedPostIndex + 1) * containerHeight;
 
-            // Let the browser scroll freely — natural scrolling feel
-            // But clamp to one post up or down
-            if (container.scrollTop < minScroll) {
-                container.scrollTop = minScroll;
-                allowScroll.current = false;
-            } else if (container.scrollTop > maxScroll) {
-                container.scrollTop = maxScroll;
-                allowScroll.current = false;
-            } else {
-                allowScroll.current = true;
-            }
+            // Allow natural drag but clamp strictly to ±1 post
+            const maxDrag = containerHeight * 1; // 100% of one post height
+            const clampedDelta = Math.max(-maxDrag, Math.min(maxDrag, deltaY));
 
-            touchEndY.current = e.touches[0].clientY;
+            const targetTop = selectedPostIndex * containerHeight + clampedDelta;
+
+            container.scrollTop = targetTop;
+            currentY.current = y;
         };
 
-        // ---- Touch End ----
+        // ===== Touch End =====
         const handleTouchEnd = () => {
-            if (!isTouching.current || scrollLock.current) return;
-            isTouching.current = false;
+            if (!isDragging.current || scrollLock.current) return;
 
+            isDragging.current = false;
             const containerHeight = container.clientHeight;
-            const deltaY = touchStartY.current - touchEndY.current;
-            const threshold = containerHeight * 0.18; // how much swipe needed to go next
-            let nextIndex = selectedPostIndex;
+            const deltaY = touchStartY.current - currentY.current;
+            const threshold = containerHeight * 0.15; // swipe threshold (15%)
 
+            let nextIndex = selectedPostIndex;
             if (Math.abs(deltaY) > threshold) {
                 const direction = deltaY > 0 ? 1 : -1;
                 nextIndex = Math.max(0, Math.min(posts.length - 1, selectedPostIndex + direction));
@@ -507,21 +511,24 @@ export default function index({ google_map_api_key, search_history }) {
 
             scrollLock.current = true;
             container.style.scrollBehavior = 'smooth';
-            container.scrollTo({ top: nextIndex * containerHeight, behavior: 'smooth' });
+            container.scrollTo({
+                top: nextIndex * containerHeight,
+                behavior: 'smooth',
+            });
 
             setSelectedPostIndex(nextIndex);
             setViewablePost(posts[nextIndex]);
             window.history.replaceState({}, '', generateURL(posts[nextIndex]));
             if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
 
-            setTimeout(() => (scrollLock.current = false), 450);
+            setTimeout(() => (scrollLock.current = false), 400);
         };
 
-        // ---- Attach Listeners ----
+        // ===== Attach Listeners =====
         window.addEventListener('wheel', handleWheel, { passive: false });
-        container.addEventListener('touchstart', handleTouchStart, { passive: true });
-        container.addEventListener('touchmove', handleTouchMove, { passive: true });
-        container.addEventListener('touchend', handleTouchEnd, { passive: true });
+        container.addEventListener('touchstart', handleTouchStart, { passive: false });
+        container.addEventListener('touchmove', handleTouchMove, { passive: false });
+        container.addEventListener('touchend', handleTouchEnd, { passive: false });
 
         return () => {
             window.removeEventListener('wheel', handleWheel);
