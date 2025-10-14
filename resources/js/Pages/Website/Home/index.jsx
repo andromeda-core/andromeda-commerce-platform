@@ -480,31 +480,21 @@ export default function index({ google_map_api_key, search_history }) {
             };
 
             const handleTouchStart = (e) => {
+                if (scrollLock.current) return;
                 const y = e.touches[0].clientY;
                 touchStartY.current = y;
-                currentScroll.current = mobilePostContainerRef.current.scrollTop;
-                lastY.current = y;
-                lastTime.current = performance.now();
-                velocity.current = 0;
+                startScrollTop.current = mobilePostContainerRef.current.scrollTop;
             };
 
             const handleTouchMove = (e) => {
                 if (scrollLock.current) return;
-                e.preventDefault();
 
                 const container = mobilePostContainerRef.current;
                 const y = e.touches[0].clientY;
-                const dy = touchStartY.current - y;
+                const deltaY = touchStartY.current - y;
 
-                container.scrollTop = currentScroll.current + dy;
-
-                // smooth velocity tracking
-                const now = performance.now();
-                const dt = now - lastTime.current;
-                const v = (lastY.current - y) / dt;
-                velocity.current = velocity.current * 0.7 + v * 0.3; // dampen noise
-                lastY.current = y;
-                lastTime.current = now;
+                // follow finger
+                container.scrollTop = startScrollTop.current + deltaY;
             };
             const handleTouchEnd = (e) => {
                 if (scrollLock.current) return;
@@ -512,14 +502,13 @@ export default function index({ google_map_api_key, search_history }) {
                 const container = mobilePostContainerRef.current;
                 const deltaY = touchStartY.current - e.changedTouches[0].clientY;
                 const containerHeight = container.clientHeight;
-                const swipeVelocity = velocity.current;
-                const swipeDistance = Math.abs(deltaY);
-                const direction = deltaY > 0 ? 1 : -1;
 
+                // decide direction
+                const direction = deltaY > 0 ? 1 : -1;
                 let nextIndex = selectedPostIndex;
 
-                // only change post if swipe passes threshold
-                if (swipeDistance > containerHeight * 0.2 || Math.abs(swipeVelocity) > 0.5) {
+                // threshold for moving to next post
+                if (Math.abs(deltaY) > containerHeight * 0.25) {
                     nextIndex = Math.max(
                         0,
                         Math.min(posts.length - 1, selectedPostIndex + direction),
@@ -528,32 +517,26 @@ export default function index({ google_map_api_key, search_history }) {
 
                 scrollLock.current = true;
 
-                // --- Physics-like snap (with overshoot + bounce) ---
-                const target = nextIndex * containerHeight;
+                // animate to snap position
+                const targetScroll = nextIndex * containerHeight;
                 const start = container.scrollTop;
-                const distance = target - start;
-
+                const distance = targetScroll - start;
                 const startTime = performance.now();
-                const duration = 400; // total animation time
+                const duration = 350;
 
-                // ✨ spring easing (easeOutBack)
-                const easeOutBack = (t) => {
-                    const c1 = 1.70158;
-                    const c3 = c1 + 1;
-                    return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
-                };
+                const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 
                 const animate = (now) => {
                     const elapsed = now - startTime;
                     const progress = Math.min(elapsed / duration, 1);
-                    const eased = easeOutBack(progress);
+                    const eased = easeOutCubic(progress);
 
                     container.scrollTop = start + distance * eased;
 
                     if (progress < 1) {
                         requestAnimationFrame(animate);
                     } else {
-                        // Snap finished
+                        // snap finished
                         setSelectedPostIndex(nextIndex);
                         setViewablePost(posts[nextIndex]);
                         window.history.replaceState({}, '', generateURL(posts[nextIndex]));
