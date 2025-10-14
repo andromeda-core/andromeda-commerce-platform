@@ -582,21 +582,20 @@ export default function index({ google_map_api_key, search_history }) {
 
             const y = e.touches[0].clientY;
             const now = performance.now();
-            const dt = now - lastMoveTime.current;
+            const dt = Math.max(1, now - lastMoveTime.current);
             const dy = lastTouchY.current - y;
 
-            velocity.current = 0.85 * velocity.current + 0.15 * (dy / dt);
+            velocity.current = 0.9 * velocity.current + 0.1 * (dy / dt);
 
             const containerHeight = container.clientHeight;
             const minScroll = selectedPostIndex * containerHeight - containerHeight;
             const maxScroll = selectedPostIndex * containerHeight + containerHeight;
 
-            // Soft clamp with resistance near edges
-            if (container.scrollTop < minScroll) {
-                container.scrollTop = minScroll + (container.scrollTop - minScroll) * 0.35;
-            } else if (container.scrollTop > maxScroll) {
-                container.scrollTop = maxScroll + (container.scrollTop - maxScroll) * 0.35;
-            }
+            // ✅ Soft clamp but allow natural feel
+            if (container.scrollTop < minScroll - 30)
+                container.scrollTop = minScroll - 30 + (container.scrollTop - minScroll) * 0.4;
+            if (container.scrollTop > maxScroll + 30)
+                container.scrollTop = maxScroll + 30 + (container.scrollTop - maxScroll) * 0.4;
 
             lastTouchY.current = y;
             lastMoveTime.current = now;
@@ -613,13 +612,12 @@ export default function index({ google_map_api_key, search_history }) {
             const normalizedProgress = Math.abs(delta / containerHeight);
             const speed = Math.abs(velocity.current);
 
-            // Cap speed to avoid massive overshoots
-            const cappedSpeed = Math.min(speed, 1.2);
-
-            // Require both — not just one — for more stable detection
+            // ✅ Gentle momentum limiter
+            const cappedSpeed = Math.min(speed, 0.5);
             const shouldChange =
-                normalizedProgress > 0.25 || (normalizedProgress > 0.15 && cappedSpeed > 0.4);
+                normalizedProgress > 0.25 || (normalizedProgress > 0.15 && cappedSpeed > 0.2);
 
+            // ✅ Always only 1 post difference
             let nextIndex = selectedPostIndex;
             if (shouldChange) {
                 const direction = delta > 0 ? 1 : -1;
@@ -628,24 +626,22 @@ export default function index({ google_map_api_key, search_history }) {
 
             scrollLock.current = true;
 
-            // Wait 2 frames to absorb momentum before snapping
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    container.scrollTo({
-                        top: nextIndex * containerHeight,
-                        behavior: 'smooth',
-                    });
-
-                    if (nextIndex !== selectedPostIndex) {
-                        setSelectedPostIndex(nextIndex);
-                        setViewablePost(posts[nextIndex]);
-                        window.history.replaceState({}, '', generateURL(posts[nextIndex]));
-                        if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
-                    }
-
-                    setTimeout(() => (scrollLock.current = false), 450);
+            // ✅ Let inertia end first, then snap (prevents jerk)
+            setTimeout(() => {
+                container.scrollTo({
+                    top: nextIndex * containerHeight,
+                    behavior: 'smooth',
                 });
-            });
+
+                if (nextIndex !== selectedPostIndex) {
+                    setSelectedPostIndex(nextIndex);
+                    setViewablePost(posts[nextIndex]);
+                    window.history.replaceState({}, '', generateURL(posts[nextIndex]));
+                    if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
+                }
+
+                setTimeout(() => (scrollLock.current = false), 400);
+            }, 100); // wait ~100ms after touch end — allows natural flick to settle
         };
 
         window.addEventListener('wheel', handleWheel, { passive: false });
