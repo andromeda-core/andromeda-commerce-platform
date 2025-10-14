@@ -573,107 +573,35 @@ export default function index({ google_map_api_key, search_history }) {
             setTimeout(() => (scrollLock.current = false), 400);
         };
 
-        // Touch start
-        const handleTouchStart = (e) => {
-            if (scrollLock.current) return;
-            isTouching.current = true;
-            touchStartY.current = e.touches[0].clientY;
-            startScroll.current = container.scrollTop;
-            lastTouchY.current = e.touches[0].clientY;
-            lastMoveTime.current = performance.now();
-            velocity.current = 0;
-            cancelAnimationFrame(momentumCheck.current);
+        let scrollTimeout;
+        const handleScroll = () => {
+            // Clear any existing timeout
+            clearTimeout(scrollTimeout);
+
+            scrollTimeout = setTimeout(() => {
+                const scrollTop = container.scrollTop;
+                const containerHeight = container.clientHeight;
+                const newIndex = Math.round(scrollTop / containerHeight);
+
+                if (newIndex !== selectedPostIndex && posts[newIndex]) {
+                    setSelectedPostIndex(newIndex);
+                    setViewablePost(posts[newIndex]);
+                    window.history.replaceState({}, '', generateURL(posts[newIndex]));
+
+                    if (newIndex >= posts.length - 5 && nextPageUrl) {
+                        fetchMorePosts();
+                    }
+                }
+            }, 150);
         };
-
-        // Touch move
-        const handleTouchMove = (e) => {
-            if (!isTouching.current || scrollLock.current) return;
-            const y = e.touches[0].clientY;
-            const now = performance.now();
-            const dt = Math.max(1, now - lastMoveTime.current);
-            const dy = lastTouchY.current - y;
-
-            velocity.current = 0.9 * velocity.current + 0.1 * (dy / dt);
-
-            const containerHeight = container.clientHeight;
-            const minScroll = selectedPostIndex * containerHeight - containerHeight;
-            const maxScroll = selectedPostIndex * containerHeight + containerHeight;
-
-            // Soft resistance beyond one post
-            if (container.scrollTop < minScroll)
-                container.scrollTop = minScroll + (container.scrollTop - minScroll) * 0.3;
-            else if (container.scrollTop > maxScroll)
-                container.scrollTop = maxScroll + (container.scrollTop - maxScroll) * 0.3;
-
-            lastTouchY.current = y;
-            lastMoveTime.current = now;
-        };
-
-        // Touch end
-        // const handleTouchEnd = () => {
-        //     if (!isTouching.current || scrollLock.current) return;
-        //     isTouching.current = false;
-
-        //     const containerHeight = container.clientHeight;
-        //     const currentScroll = container.scrollTop;
-        //     const currentTop = selectedPostIndex * containerHeight;
-        //     let delta = currentScroll - currentTop;
-
-        //     // ✅ Limit delta range
-        //     if (delta > containerHeight) delta = containerHeight;
-        //     if (delta < -containerHeight) delta = -containerHeight;
-
-        //     const normalizedProgress = Math.abs(delta / containerHeight);
-
-        //     // ✅ Stop momentum instantly
-        //     container.style.overflowY = 'hidden';
-        //     container.scrollTop = currentScroll;
-
-        //     // ✅ Determine new index
-        //     let nextIndex = selectedPostIndex;
-        //     if (normalizedProgress > 0.25) {
-        //         const direction = delta > 0 ? 1 : -1;
-        //         nextIndex = Math.max(0, Math.min(posts.length - 1, selectedPostIndex + direction));
-        //     }
-
-        //     // ✅ Prevent same gesture from triggering twice
-        //     if (lastChangedIndex.current === nextIndex && scrollLock.current) return;
-        //     lastChangedIndex.current = nextIndex;
-
-        //     // ✅ Animate
-        //     scrollLock.current = true;
-        //     container.scrollTo({
-        //         top: nextIndex * containerHeight,
-        //         behavior: 'smooth',
-        //     });
-
-        //     // ✅ Update only once
-        //     if (nextIndex !== selectedPostIndex) {
-        //         setSelectedPostIndex(nextIndex);
-        //         setViewablePost(posts[nextIndex]);
-        //         window.history.replaceState({}, '', generateURL(posts[nextIndex]));
-        //         if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
-        //     }
-
-        //     // ✅ Unlock safely
-        //     setTimeout(() => {
-        //         container.style.overflowY = 'scroll';
-        //         scrollLock.current = false;
-        //         lastChangedIndex.current = null; // reset so next gesture works
-        //     }, 450);
-        // };
 
         window.addEventListener('wheel', handleWheel, { passive: false });
-        container.addEventListener('touchstart', handleTouchStart, { passive: true });
-        container.addEventListener('touchmove', handleTouchMove, { passive: true });
-        // container.addEventListener('touchend', handleTouchEnd, { passive: true });
+        container.addEventListener('scroll', handleScroll, { passive: true });
 
         return () => {
             window.removeEventListener('wheel', handleWheel);
-            container.removeEventListener('touchstart', handleTouchStart);
-            container.removeEventListener('touchmove', handleTouchMove);
-            // container.removeEventListener('touchend', handleTouchEnd);
-            cancelAnimationFrame(momentumCheck.current);
+            container.removeEventListener('scroll', handleScroll, { passive: true });
+            clearTimeout(scrollTimeout);
         };
     }, [
         isMobilePostViewer,
@@ -1270,13 +1198,12 @@ export default function index({ google_map_api_key, search_history }) {
                                     {/* Scrollable Container */}
                                     <div
                                         tabIndex={0}
-                                        className="h-screen w-full snap-y snap-mandatory overflow-y-scroll bg-deepcharcoal scrollbar-none"
+                                        className="h-screen w-full snap-y snap-mandatory overflow-y-scroll scrollbar-none"
                                         style={{
                                             overscrollBehavior: 'contain',
                                             scrollSnapType: 'y mandatory',
-                                            scrollBehavior: 'smooth',
+                                            scrollSnapStop: 'always',
                                             WebkitOverflowScrolling: 'touch',
-                                            touchAction: 'pan-y pinch-zoom',
                                         }}
                                         ref={mobilePostContainerRef}
                                         onFocus={() => mobilePostContainerRef.current?.focus()}
@@ -1324,7 +1251,11 @@ export default function index({ google_map_api_key, search_history }) {
                                             <div
                                                 key={post.id}
                                                 ref={(el) => (postsRefs.current[index] = el)}
-                                                className="relative h-[100dvh] w-full snap-start overflow-hidden"
+                                                className="relative h-[100dvh] w-full snap-start snap-always"
+                                                style={{
+                                                    scrollSnapAlign: 'start',
+                                                    scrollSnapStop: 'always',
+                                                }}
                                             >
                                                 {/* Top Bar */}
                                                 <div className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between px-4 py-3 font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
