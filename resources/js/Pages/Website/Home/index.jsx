@@ -429,11 +429,8 @@ export default function index({ google_map_api_key, search_history }) {
 
     const touchStartY = useRef(0);
     const lastTouchY = useRef(0);
-    const lastMoveTime = useRef(0);
-    const velocity = useRef(0);
     const scrollLock = useRef(false);
     const isDragging = useRef(false);
-    const raf = useRef(null);
 
     useEffect(() => {
         if (!isMobilePostViewer || viewablePost === '') return;
@@ -441,7 +438,7 @@ export default function index({ google_map_api_key, search_history }) {
         const container = mobilePostContainerRef.current;
         if (!container) return;
 
-        // ---- Desktop wheel (same as before) ----
+        // ---------- Desktop wheel (unchanged) ----------
         const handleWheel = (e) => {
             if (e.ctrlKey || e.metaKey) return;
             e.preventDefault();
@@ -462,49 +459,24 @@ export default function index({ google_map_api_key, search_history }) {
             setSelectedPostIndex(nextIndex);
             setViewablePost(posts[nextIndex]);
             window.history.replaceState({}, '', generateURL(posts[nextIndex]));
+
             if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
 
             setTimeout(() => (scrollLock.current = false), 400);
         };
 
-        // ---- Mobile gestures ----
+        // ---------- Mobile gestures ----------
         const handleTouchStart = (e) => {
             if (scrollLock.current) return;
-
             isDragging.current = true;
             touchStartY.current = e.touches[0].clientY;
             lastTouchY.current = e.touches[0].clientY;
-            lastMoveTime.current = performance.now();
-            velocity.current = 0;
-
-            cancelAnimationFrame(raf.current);
-            container.style.scrollBehavior = 'auto';
         };
 
         const handleTouchMove = (e) => {
+            // Don’t manually scroll here; just track the movement
             if (!isDragging.current || scrollLock.current) return;
-
-            const y = e.touches[0].clientY;
-            const now = performance.now();
-            const deltaY = touchStartY.current - y;
-            const dy = lastTouchY.current - y;
-            const dt = now - lastMoveTime.current;
-
-            // calculate smoothed velocity
-            velocity.current = 0.8 * velocity.current + 0.2 * (dy / dt);
-
-            const containerHeight = container.clientHeight;
-            const maxDrag = containerHeight * 0.4;
-            const limited = Math.max(-maxDrag, Math.min(maxDrag, deltaY));
-
-            // Use rAF to prevent flickering and layout trashing
-            cancelAnimationFrame(raf.current);
-            raf.current = requestAnimationFrame(() => {
-                container.scrollTop = selectedPostIndex * containerHeight + limited;
-            });
-
-            lastTouchY.current = y;
-            lastMoveTime.current = now;
+            lastTouchY.current = e.touches[0].clientY;
         };
 
         const handleTouchEnd = () => {
@@ -512,21 +484,19 @@ export default function index({ google_map_api_key, search_history }) {
             isDragging.current = false;
 
             const containerHeight = container.clientHeight;
-            const totalDelta = touchStartY.current - lastTouchY.current;
-            const speed = Math.abs(velocity.current);
-            const threshold = containerHeight * 0.15; // distance
-            const velocityThreshold = 0.4; // flick sensitivity
+            const deltaY = touchStartY.current - lastTouchY.current;
+            const threshold = containerHeight * 0.15; // 15% threshold
             let nextIndex = selectedPostIndex;
 
-            // Move only one post based on distance OR speed
-            if (Math.abs(totalDelta) > threshold || speed > velocityThreshold) {
-                const direction = totalDelta > 0 ? 1 : -1;
+            // Change post only if swipe passed threshold
+            if (Math.abs(deltaY) > threshold) {
+                const direction = deltaY > 0 ? 1 : -1;
                 nextIndex = Math.max(0, Math.min(posts.length - 1, selectedPostIndex + direction));
             }
 
             scrollLock.current = true;
 
-            container.style.scrollBehavior = 'smooth';
+            // Snap to exactly the target post
             container.scrollTo({
                 top: nextIndex * containerHeight,
                 behavior: 'smooth',
@@ -535,14 +505,14 @@ export default function index({ google_map_api_key, search_history }) {
             setSelectedPostIndex(nextIndex);
             setViewablePost(posts[nextIndex]);
             window.history.replaceState({}, '', generateURL(posts[nextIndex]));
+
             if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
 
             setTimeout(() => {
                 scrollLock.current = false;
-            }, 450);
+            }, 400);
         };
 
-        // ---- Attach listeners ----
         window.addEventListener('wheel', handleWheel, { passive: false });
         container.addEventListener('touchstart', handleTouchStart, { passive: true });
         container.addEventListener('touchmove', handleTouchMove, { passive: true });
@@ -553,7 +523,6 @@ export default function index({ google_map_api_key, search_history }) {
             container.removeEventListener('touchstart', handleTouchStart);
             container.removeEventListener('touchmove', handleTouchMove);
             container.removeEventListener('touchend', handleTouchEnd);
-            cancelAnimationFrame(raf.current);
         };
     }, [isMobilePostViewer, viewablePost, posts, selectedPostIndex, nextPageUrl]);
 
