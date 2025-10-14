@@ -608,19 +608,6 @@ export default function index({ google_map_api_key, search_history }) {
             lastMoveTime.current = now;
         };
 
-        const currentTop = selectedPostIndex * container.clientHeight;
-
-        // Clamp the maximum fling travel to one post above or below
-        const maxFlingTop = Math.min(
-            Math.max(container.scrollTop, currentTop - container.clientHeight),
-            currentTop + container.clientHeight,
-        );
-
-        container.scrollTo({
-            top: maxFlingTop,
-            behavior: 'smooth',
-        });
-
         // Track momentum after finger leaves screen
         const waitForMomentumEnd = (callback) => {
             let last = container.scrollTop;
@@ -645,38 +632,43 @@ export default function index({ google_map_api_key, search_history }) {
             isTouching.current = false;
 
             const containerHeight = container.clientHeight;
+            const currentScroll = container.scrollTop;
+            const currentTop = selectedPostIndex * containerHeight;
+            const delta = currentScroll - currentTop;
+            const normalizedProgress = Math.abs(delta / containerHeight);
+
+            // Step 1: Immediately stop native momentum
+            // This kills browser inertia cleanly (prevents "fight" and "fling past multiple posts")
+            container.style.overflowY = 'hidden';
+            container.scrollTop = currentScroll; // freeze at current point
+
+            // Step 2: Decide direction
+            let nextIndex = selectedPostIndex;
+            if (normalizedProgress > 0.25) {
+                const direction = delta > 0 ? 1 : -1;
+                nextIndex = Math.max(0, Math.min(posts.length - 1, selectedPostIndex + direction));
+            }
+
+            // Step 3: Manually animate scroll to next or current post
             scrollLock.current = true;
-
-            // ✅ Wait until native momentum scroll finishes
-            waitForMomentumEnd(() => {
-                const currentScroll = container.scrollTop;
-                const currentTop = selectedPostIndex * containerHeight;
-                const delta = currentScroll - currentTop;
-                const normalizedProgress = Math.abs(delta / containerHeight);
-
-                let nextIndex = selectedPostIndex;
-                if (normalizedProgress > 0.25) {
-                    const direction = delta > 0 ? 1 : -1;
-                    nextIndex = Math.max(
-                        0,
-                        Math.min(posts.length - 1, selectedPostIndex + direction),
-                    );
-                }
-
-                container.scrollTo({
-                    top: nextIndex * containerHeight,
-                    behavior: 'smooth',
-                });
-
-                if (nextIndex !== selectedPostIndex) {
-                    setSelectedPostIndex(nextIndex);
-                    setViewablePost(posts[nextIndex]);
-                    window.history.replaceState({}, '', generateURL(posts[nextIndex]));
-                    if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
-                }
-
-                setTimeout(() => (scrollLock.current = false), 450);
+            container.scrollTo({
+                top: nextIndex * containerHeight,
+                behavior: 'smooth',
             });
+
+            // Step 4: Update post logic only once animation starts
+            if (nextIndex !== selectedPostIndex) {
+                setSelectedPostIndex(nextIndex);
+                setViewablePost(posts[nextIndex]);
+                window.history.replaceState({}, '', generateURL(posts[nextIndex]));
+                if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
+            }
+
+            // Step 5: Restore scroll after animation ends
+            setTimeout(() => {
+                container.style.overflowY = 'scroll';
+                scrollLock.current = false;
+            }, 450);
         };
 
         window.addEventListener('wheel', handleWheel, { passive: false });
