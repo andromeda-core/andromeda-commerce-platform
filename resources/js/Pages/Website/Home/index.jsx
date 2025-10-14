@@ -538,6 +538,7 @@ export default function index({ google_map_api_key, search_history }) {
     const startScroll = useRef(0);
     const isTouching = useRef(false);
     const scrollLock = useRef(false);
+
     useEffect(() => {
         if (!isMobilePostViewer || viewablePost === '') return;
         const container = mobilePostContainerRef.current;
@@ -578,9 +579,13 @@ export default function index({ google_map_api_key, search_history }) {
             const minScroll = selectedPostIndex * containerHeight - containerHeight * 1.2;
             const maxScroll = selectedPostIndex * containerHeight + containerHeight * 1.2;
 
-            // Let user scroll slightly beyond boundaries (natural elasticity)
-            if (container.scrollTop < minScroll) container.scrollTop = minScroll;
-            if (container.scrollTop > maxScroll) container.scrollTop = maxScroll;
+            // ✅ Instead of forcing every frame, only softly clamp when user really overshoots
+            if (container.scrollTop < minScroll - 30) {
+                container.scrollTop = minScroll;
+            } else if (container.scrollTop > maxScroll + 30) {
+                container.scrollTop = maxScroll;
+            }
+            // Otherwise, let native scroll run naturally
         };
 
         const handleTouchEnd = () => {
@@ -592,9 +597,7 @@ export default function index({ google_map_api_key, search_history }) {
             const currentTop = selectedPostIndex * containerHeight;
             const delta = currentScroll - currentTop;
 
-            // Make small scrolls “wasted” (don’t trigger switch)
-            const changeThreshold = containerHeight * 0.3; // must scroll 30 % of height
-            const elasticZone = containerHeight * 0.1; // 10 % dead zone for softness
+            const changeThreshold = containerHeight * 0.3;
             let nextIndex = selectedPostIndex;
 
             if (Math.abs(delta) > changeThreshold) {
@@ -606,7 +609,6 @@ export default function index({ google_map_api_key, search_history }) {
 
             scrollLock.current = true;
 
-            // Snap naturally back or forward
             container.scrollTo({
                 top: nextIndex * containerHeight,
                 behavior: 'smooth',
