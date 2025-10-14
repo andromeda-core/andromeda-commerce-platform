@@ -466,32 +466,45 @@ export default function index({ google_map_api_key, search_history }) {
 
             const handleTouchStart = (e) => {
                 touchStartY.current = e.touches[0].clientY;
+                touchStartTime.current = Date.now();
             };
 
             const handleTouchEnd = (e) => {
                 const touchEndY = e.changedTouches[0].clientY;
                 const deltaY = touchStartY.current - touchEndY;
-                if (Math.abs(deltaY) < 50 || scrollLock.current) return;
+                const elapsed = Date.now() - touchStartTime.current;
+
+                // 🔹 ignore small flicks or slow scrolls
+                if (Math.abs(deltaY) < 60 || elapsed > 500 || scrollLock.current) return;
 
                 scrollLock.current = true;
+
+                // 🔹 detect direction
                 const direction = deltaY > 0 ? 1 : -1;
+
+                // 🔹 compute target index
                 let nextIndex = Math.max(
                     0,
                     Math.min(posts.length - 1, selectedPostIndex + direction),
                 );
 
+                // 🔹 trigger single smooth snap
                 container.scrollTo({
                     top: nextIndex * container.clientHeight,
                     behavior: 'smooth',
                 });
 
+                // 🔹 update state once
                 setSelectedPostIndex(nextIndex);
                 setViewablePost(posts[nextIndex]);
                 window.history.replaceState({}, '', generateURL(posts[nextIndex]));
 
                 if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
 
-                setTimeout(() => (scrollLock.current = false), 900);
+                // 🔹 add longer lock for hard flicks
+                setTimeout(() => {
+                    scrollLock.current = false;
+                }, 1100);
             };
 
             // attach events
