@@ -536,18 +536,21 @@ export default function index({ google_map_api_key, search_history }) {
 
     const touchStartY = useRef(0);
     const startScroll = useRef(0);
+    const lastTouchY = useRef(0);
+    const lastMoveTime = useRef(0);
+    const velocity = useRef(0);
     const isTouching = useRef(false);
     const scrollLock = useRef(false);
 
     useEffect(() => {
-        if (!isMobilePostViewer || viewablePost === '') return;
+        if (!isMobilePostViewer || viewablePost === '' || isMobilePostGallery) return;
         const container = mobilePostContainerRef.current;
         if (!container) return;
 
         const handleWheel = (e) => {
             if (e.ctrlKey || e.metaKey) return;
             e.preventDefault();
-            if (scrollLock.current) return;
+            if (scrollLock.current || isMobilePostGallery) return;
 
             scrollLock.current = true;
             const direction = e.deltaY > 0 ? 1 : -1;
@@ -570,18 +573,32 @@ export default function index({ google_map_api_key, search_history }) {
             isTouching.current = true;
             touchStartY.current = e.touches[0].clientY;
             startScroll.current = container.scrollTop;
+            lastTouchY.current = e.touches[0].clientY;
+            lastMoveTime.current = performance.now();
+            velocity.current = 0;
         };
 
-        const handleTouchMove = () => {
+        const handleTouchMove = (e) => {
             if (!isTouching.current || scrollLock.current) return;
+
+            const y = e.touches[0].clientY;
+            const now = performance.now();
+            const dt = now - lastMoveTime.current;
+            const dy = lastTouchY.current - y;
+
+            // Update velocity (smoothed)
+            velocity.current = 0.9 * velocity.current + 0.1 * (dy / dt);
 
             const containerHeight = container.clientHeight;
             const minScroll = selectedPostIndex * containerHeight - containerHeight;
             const maxScroll = selectedPostIndex * containerHeight + containerHeight;
 
-            // Allow natural scroll, but softly clamp if user goes beyond one post
-            if (container.scrollTop < minScroll - 20) container.scrollTop = minScroll - 20;
-            if (container.scrollTop > maxScroll + 20) container.scrollTop = maxScroll + 20;
+            // Soft clamp — no hard flicker
+            if (container.scrollTop < minScroll - 40) container.scrollTop = minScroll - 40;
+            if (container.scrollTop > maxScroll + 40) container.scrollTop = maxScroll + 40;
+
+            lastTouchY.current = y;
+            lastMoveTime.current = now;
         };
 
         const handleTouchEnd = () => {
@@ -593,12 +610,16 @@ export default function index({ google_map_api_key, search_history }) {
             const currentTop = selectedPostIndex * containerHeight;
             const delta = currentScroll - currentTop;
 
-            // new: proportional threshold — ensures post change only after visible shift
+            // Measure distance proportion and speed
             const normalizedProgress = Math.abs(delta / containerHeight);
-            const shouldChange = normalizedProgress > 0.25; // must scroll at least 25% of post height
+            const speed = Math.abs(velocity.current);
+
+            // ✅ Post should change if:
+            // - user scrolled >25% of screen
+            // - or swipe was fast (velocity high)
+            const shouldChange = normalizedProgress > 0.25 || speed > 0.7;
 
             let nextIndex = selectedPostIndex;
-
             if (shouldChange) {
                 const direction = delta > 0 ? 1 : -1;
                 nextIndex = Math.max(0, Math.min(posts.length - 1, selectedPostIndex + direction));
@@ -606,21 +627,22 @@ export default function index({ google_map_api_key, search_history }) {
 
             scrollLock.current = true;
 
-            // Snap to the final position cleanly
-            container.scrollTo({
-                top: nextIndex * containerHeight,
-                behavior: 'smooth',
+            // ✅ wait for 1 frame to absorb native momentum
+            requestAnimationFrame(() => {
+                container.scrollTo({
+                    top: nextIndex * containerHeight,
+                    behavior: 'smooth',
+                });
+
+                if (nextIndex !== selectedPostIndex) {
+                    setSelectedPostIndex(nextIndex);
+                    setViewablePost(posts[nextIndex]);
+                    window.history.replaceState({}, '', generateURL(posts[nextIndex]));
+                    if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
+                }
+
+                setTimeout(() => (scrollLock.current = false), 450);
             });
-
-            // ✅ Only update post if the visual scroll actually passed the threshold
-            if (nextIndex !== selectedPostIndex) {
-                setSelectedPostIndex(nextIndex);
-                setViewablePost(posts[nextIndex]);
-                window.history.replaceState({}, '', generateURL(posts[nextIndex]));
-                if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
-            }
-
-            setTimeout(() => (scrollLock.current = false), 450);
         };
 
         window.addEventListener('wheel', handleWheel, { passive: false });
@@ -634,7 +656,14 @@ export default function index({ google_map_api_key, search_history }) {
             container.removeEventListener('touchmove', handleTouchMove);
             container.removeEventListener('touchend', handleTouchEnd);
         };
-    }, [isMobilePostViewer, viewablePost, posts, selectedPostIndex, nextPageUrl]);
+    }, [
+        isMobilePostViewer,
+        viewablePost,
+        posts,
+        selectedPostIndex,
+        nextPageUrl,
+        isMobilePostGallery,
+    ]);
 
     return (
         <MainLayout>
