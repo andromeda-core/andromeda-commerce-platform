@@ -380,7 +380,7 @@ Additional Work:
     3:  Adding Post And Product Toggles For Main Archive Page
     4:  Relocating The Things On Mobile Post Viewer As Per Screenshots ✅
     5:  Post Creation Date added On Posts Mobile's Gallery in Dropdown menu  ✅
-    6:  Post Mobile Viewer Scroll Speed Reduced Also Its Swipe and fetching more posts logic enhanced
+    6:  Post Mobile Viewer Scroll Speed Reduced Also Its Swipe and fetching more posts logic enhanced ✅
 
   )
 

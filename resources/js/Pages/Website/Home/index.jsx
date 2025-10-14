@@ -461,7 +461,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                 if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
 
-                setTimeout(() => (scrollLock.current = false), 900);
+                setTimeout(() => (scrollLock.current = false), 500);
             };
 
             const handleTouchStart = (e) => {
@@ -507,7 +507,7 @@ export default function index({ google_map_api_key, search_history }) {
                 // 🔹 release after animation ends
                 setTimeout(() => {
                     scrollLock.current = false;
-                }, 900);
+                }, 500);
             };
 
             // attach events
