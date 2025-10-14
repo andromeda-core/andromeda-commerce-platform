@@ -415,7 +415,7 @@ export default function index({ google_map_api_key, search_history }) {
     }, [isMobilePostViewer, viewablePost]);
 
     const touchStartY = useRef(0);
-    const touchStartTime = useRef(0);
+    const scrollLock = useRef(false);
 
     // console.log(mobilePostContainerRef.current);
 
@@ -466,56 +466,61 @@ export default function index({ google_map_api_key, search_history }) {
 
             const handleTouchStart = (e) => {
                 touchStartY.current = e.touches[0].clientY;
-                touchStartTime.current = Date.now();
+            };
+
+            const handleTouchMove = (e) => {
+                // prevent the native bounce / momentum
+                e.preventDefault();
             };
 
             const handleTouchEnd = (e) => {
+                if (scrollLock.current) return;
+
                 const touchEndY = e.changedTouches[0].clientY;
                 const deltaY = touchStartY.current - touchEndY;
-                const elapsed = Date.now() - touchStartTime.current;
 
-                // 🔹 ignore small flicks or slow scrolls
-                if (Math.abs(deltaY) < 60 || elapsed > 500 || scrollLock.current) return;
+                // 🔹 prevent tiny swipes
+                if (Math.abs(deltaY) < 50) return;
 
                 scrollLock.current = true;
 
                 // 🔹 detect direction
                 const direction = deltaY > 0 ? 1 : -1;
-
-                // 🔹 compute target index
                 let nextIndex = Math.max(
                     0,
                     Math.min(posts.length - 1, selectedPostIndex + direction),
                 );
 
-                // 🔹 trigger single smooth snap
+                // 🔹 manually control scroll
                 container.scrollTo({
                     top: nextIndex * container.clientHeight,
                     behavior: 'smooth',
                 });
 
-                // 🔹 update state once
+                // 🔹 update post + URL
                 setSelectedPostIndex(nextIndex);
                 setViewablePost(posts[nextIndex]);
                 window.history.replaceState({}, '', generateURL(posts[nextIndex]));
 
                 if (nextIndex >= posts.length - 5 && nextPageUrl) fetchMorePosts();
 
-                // 🔹 add longer lock for hard flicks
+                // 🔹 release after animation ends
                 setTimeout(() => {
                     scrollLock.current = false;
-                }, 1100);
+                }, 900);
             };
 
             // attach events
             window.addEventListener('wheel', handleWheel, { passive: false });
-            container.addEventListener('touchstart', handleTouchStart, { passive: true });
-            container.addEventListener('touchend', handleTouchEnd, { passive: true });
+            container.addEventListener('touchstart', handleTouchStart, { passive: false });
+            container.addEventListener('touchmove', handleTouchMove, { passive: false });
+            container.addEventListener('touchend', handleTouchEnd, { passive: false });
 
             // cleanup
             return () => {
                 window.removeEventListener('wheel', handleWheel);
                 container.removeEventListener('touchstart', handleTouchStart);
+                container.removeEventListener('touchmove', handleTouchMove);
                 container.removeEventListener('touchend', handleTouchEnd);
             };
         };
