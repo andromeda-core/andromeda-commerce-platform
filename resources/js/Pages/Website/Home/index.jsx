@@ -332,20 +332,6 @@ export default function index({ google_map_api_key, search_history }) {
         }
     };
 
-    useEffect(() => {
-        // Run only when we have a valid post and no viewer open
-        if (viewablePost && !relatedViewer && (!relatedPosts || relatedPosts.length <= 2)) {
-            const timer = setTimeout(() => {
-                if (viewablePost && !relatedViewer && (!relatedPosts || relatedPosts.length <= 2)) {
-                    fetchRelatedPosts();
-                }
-            }, 700);
-
-            return () => clearTimeout(timer);
-        }
-    }, [viewablePost?.slug, relatedViewer, relatedPosts?.length]);
-
-    console.log(nextPageRelatedPostUrlRef.current);
     // Infinite Scroll Observer
     useEffect(() => {
         if (!loaderRef.current || !nextPageUrl) return;
@@ -575,8 +561,10 @@ export default function index({ google_map_api_key, search_history }) {
     const handleHorizontalScroll = (mainPost, relatedPosts, e) => {
         const el = e.currentTarget;
         const index = Math.round(el.scrollLeft / el.clientWidth);
+
         if (index > 0) {
             const relatedPost = relatedPosts[index - 1];
+
             if (relatedPost && relatedPost.id !== relatedViewer?.id) {
                 setRelatedViewer(relatedPost);
                 const newUrl = `${route('home')}${generateURL(relatedPost)}`;
@@ -584,17 +572,17 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             const remaining = relatedPosts?.length - index;
-            if (
-                remaining <= 3 &&
-                !isFetchingRef.current &&
-                (nextPageRelatedPostUrlRef.current ||
-                    (!nextPageRelatedPostUrlRef.current && relatedPosts.length <= 2))
-            ) {
+
+            if (!nextPageRelatedPostUrlRef.current && !isFetchingRef.current) {
+                fetchRelatedPosts();
+                return;
+            }
+
+            if (remaining <= 5 && nextPageRelatedPostUrlRef.current && !isFetchingRef.current) {
                 fetchRelatedPosts();
             }
         } else if (index === 0 && relatedViewer) {
             setRelatedViewer(null);
-
             const mainUrl = `${route('home')}${generateURL(mainPost)}`;
             window.history.replaceState({}, '', mainUrl);
         }

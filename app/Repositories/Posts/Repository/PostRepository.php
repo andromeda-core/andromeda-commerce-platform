@@ -104,7 +104,7 @@ class PostRepository implements IPostRepository
             })
             ->where('status', true)
             ->with(['floor', 'user'])
-            ->take(2)
+            ->take(5)
             ->get();
 
         $post->related_posts = $related_posts;
@@ -658,7 +658,7 @@ class PostRepository implements IPostRepository
                 })
                 ->where('status', true)
                 ->with(['floor', 'user'])
-                ->take(2);
+                ->take(5);
 
             $post->related_posts = $related_posts->get();
 
@@ -741,7 +741,7 @@ class PostRepository implements IPostRepository
                 })
                 ->where('status', true)
                 ->with(['floor', 'user'])
-                ->take(2)
+                ->take(5)
                 ->get();
 
             $post->related_posts = $related_posts;
@@ -810,7 +810,7 @@ class PostRepository implements IPostRepository
                 })
                 ->where('status', true)
                 ->with(['floor', 'user'])
-                ->paginate(5);
+                ->paginate(10);
 
             return [
                 'status' => true,
