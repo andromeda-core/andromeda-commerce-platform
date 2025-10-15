@@ -26,9 +26,9 @@ export default function index({ google_map_api_key, search_history }) {
     const [posts, setPosts] = useState(null);
     const [relatedPosts, setRelatedPosts] = useState(null);
     const [relatedPostsNextPageUrl, setRelatedPostsNextPageUrl] = useState(null);
+
     const [nextPageUrl, setNextPageUrl] = useState(null);
 
-    console.log(getCookie('post_preferences'));
     const fetchPosts = async () => {
         const cookieValue = getCookie('post_preferences');
         try {
@@ -538,8 +538,6 @@ export default function index({ google_map_api_key, search_history }) {
         nextPageUrl,
         isMobilePostGallery,
     ]);
-
-    console.log(relatedPosts);
 
     return (
         <MainLayout>
@@ -1190,7 +1188,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                         {/* hashtag */}
                                                         <span className="text-sm text-white/80">
-                                                            {post?.tag}
+                                                            {viewablePost?.tag}
                                                         </span>
                                                     </button>
 
@@ -1526,10 +1524,15 @@ export default function index({ google_map_api_key, search_history }) {
                                                 {/* Bottom Overlay */}
                                                 <div
                                                     className={`absolute ${
-                                                        (Array.isArray(post.post_image_urls) &&
-                                                            post.post_image_urls.length > 0) ||
-                                                        (Array.isArray(post.post_video_urls) &&
-                                                            post.post_video_urls.length > 0)
+                                                        (Array.isArray(
+                                                            viewablePost.post_image_urls,
+                                                        ) &&
+                                                            viewablePost.post_image_urls.length >
+                                                                0) ||
+                                                        (Array.isArray(
+                                                            viewablePost.post_video_urls,
+                                                        ) &&
+                                                            viewablePost.post_video_urls.length > 0)
                                                             ? 'bottom-0 right-0'
                                                             : 'right-10 top-10'
                                                     } left-0 z-[10] p-4 font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]`}
@@ -1539,11 +1542,13 @@ export default function index({ google_map_api_key, search_history }) {
                                                         className="mb-2 flex items-center justify-end space-x-2"
                                                         onClick={() => {
                                                             setShowDetailsPostIds((prev) =>
-                                                                prev.includes(post.id)
+                                                                prev.includes(viewablePost.id)
                                                                     ? prev.filter(
-                                                                          (id) => id !== post.id,
+                                                                          (id) =>
+                                                                              id !==
+                                                                              viewablePost.id,
                                                                       )
-                                                                    : [...prev, post.id],
+                                                                    : [...prev, viewablePost.id],
                                                             );
                                                         }}
                                                     >
@@ -1551,21 +1556,25 @@ export default function index({ google_map_api_key, search_history }) {
                                                             {post?.tag}
                                                         </span> */}
 
-                                                        {post?.location_name && (
+                                                        {viewablePost?.location_name && (
                                                             <span className="text-sm text-white/80">
-                                                                {post?.location_name
-                                                                    ? post.location_name.length > 7
-                                                                        ? post.location_name.slice(
+                                                                {viewablePost?.location_name
+                                                                    ? viewablePost.location_name
+                                                                          .length > 7
+                                                                        ? viewablePost.location_name.slice(
                                                                               0,
                                                                               7,
                                                                           )
-                                                                        : post.location_name
+                                                                        : viewablePost.location_name
                                                                     : ''}
-                                                                {post?.location_name ? ' ' : ''}
-                                                                {post?.added_at
-                                                                    ? post.added_at + ' '
+                                                                {viewablePost?.location_name
+                                                                    ? ' '
                                                                     : ''}
-                                                                {post?.created_at_time || ''}
+                                                                {viewablePost?.added_at
+                                                                    ? viewablePost.added_at + ' '
+                                                                    : ''}
+                                                                {viewablePost?.created_at_time ||
+                                                                    ''}
                                                             </span>
                                                         )}
                                                     </div>
@@ -2086,3 +2095,5 @@ export default function index({ google_map_api_key, search_history }) {
 // Remeaning Checking And Implemeting Proper X Scroll Logic
 // setting related post in first time posts fecthing and in get more and in single fetch done
 // Just relatedfetchmore logic implementation also remeaning
+
+// Post changing in x axis But Appening its URL in the Search Params and adding it to viewable post state remeaning
