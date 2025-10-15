@@ -513,21 +513,23 @@ export default function index({ google_map_api_key, search_history }) {
             const newIndex = Math.round(scrollTop / containerHeight);
 
             if (newIndex !== selectedPostIndex && posts[newIndex]) {
-                const horizontalContainers = document.querySelectorAll(
-                    '.horizontal-scroll-container',
-                );
-                horizontalContainers.forEach((container) => {
-                    container.scrollTo({
-                        left: 0,
-                        behavior: 'auto',
-                    });
-                });
-
                 setSelectedPostIndex(newIndex);
                 setViewablePost(posts[newIndex]);
                 setRelatedViewer(null);
                 setRelatedPosts(posts[newIndex]?.related_posts);
                 window.history.replaceState({}, '', generateURL(posts[newIndex]));
+
+                setTimeout(() => {
+                    const horizontalContainers = document.querySelectorAll(
+                        '.horizontal-scroll-container',
+                    );
+                    horizontalContainers.forEach((container) => {
+                        container.scrollTo({
+                            left: 0,
+                            behavior: 'auto',
+                        });
+                    });
+                }, 50);
 
                 if (newIndex >= posts.length - 5 && nextPageUrl) {
                     fetchMorePosts();
