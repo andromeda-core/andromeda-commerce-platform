@@ -1467,7 +1467,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                     </div>
                                                 )}
 
-                                                {relatedViewer && (
+                                                {!isFetchingRelated && relatedViewer && (
                                                     <div className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between px-4 py-3 font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
                                                         <button
                                                             onClick={() => {
@@ -1849,8 +1849,14 @@ export default function index({ google_map_api_key, search_history }) {
                                                         ))}
 
                                                     {isFetchingRelated && (
-                                                        <div className="relative inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-[1px]">
-                                                            <div className="h-8 w-8 animate-spin rounded-full border-4 border-white/30 border-t-white"></div>
+                                                        <div className="relative h-full min-w-full flex-shrink-0 snap-start snap-always opacity-100 transition-opacity duration-300 ease-out">
+                                                            <div className="relative flex h-full w-full items-center justify-center">
+                                                                <div className="flex animate-pulse flex-col items-center justify-center space-y-3">
+                                                                    <div className="h-64 w-64 rounded-xl bg-gray-700/40"></div>
+                                                                    <div className="h-4 w-40 rounded bg-gray-600/60"></div>
+                                                                    <div className="h-4 w-24 rounded bg-gray-600/40"></div>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     )}
                                                 </div>
@@ -2029,7 +2035,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                     </div>
                                                 )}
 
-                                                {relatedViewer && (
+                                                {!isFetchingRelated && relatedViewer && (
                                                     <div
                                                         className={`absolute ${
                                                             (Array.isArray(
