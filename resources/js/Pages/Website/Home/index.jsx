@@ -279,13 +279,11 @@ export default function index({ google_map_api_key, search_history }) {
         }
     };
 
-    const fetchedSlugsGlobal = useRef(new Set());
     const isFetchingRef = useRef(false);
     const [isFetchingRelated, setIsFetchingRelated] = useState(false);
 
-    const fetchRelatedPosts = async (isInitial = false) => {
+    const fetchRelatedPosts = async () => {
         if (isFetchingRef.current) return;
-        if (isInitial && fetchedSlugsGlobal.current.has(viewablePost.slug)) return;
 
         isFetchingRef.current = true;
         setIsFetchingRelated(true);
@@ -312,24 +310,23 @@ export default function index({ google_map_api_key, search_history }) {
         } finally {
             isFetchingRef.current = false;
             setIsFetchingRelated(false);
-
-            if (isInitial) {
-                fetchedSlugsGlobal.current.add(viewablePost.slug);
-            }
         }
     };
 
     useEffect(() => {
-        if (
-            viewablePost &&
-            !relatedViewer &&
-            relatedPosts?.length <= 2 &&
-            !fetchedSlugsGlobal.current.has(viewablePost.slug)
-        ) {
-            const timer = setTimeout(() => fetchRelatedPosts(true), 1000);
+        // Run only when we have a valid post and no viewer open
+        if (viewablePost && !relatedViewer && (!relatedPosts || relatedPosts.length <= 2)) {
+            // Short delay to ensure viewablePost and relatedPosts are ready (mobile fix)
+            const timer = setTimeout(() => {
+                // Double-check again right before fetching
+                if (viewablePost && !relatedViewer && (!relatedPosts || relatedPosts.length <= 2)) {
+                    fetchRelatedPosts();
+                }
+            }, 1500); // slightly increased for mobile
+
             return () => clearTimeout(timer);
         }
-    }, [viewablePost, relatedViewer]);
+    }, [viewablePost?.slug, relatedViewer, relatedPosts?.length]);
 
     // Infinite Scroll Observer
     useEffect(() => {
