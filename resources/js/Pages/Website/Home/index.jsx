@@ -280,11 +280,12 @@ export default function index({ google_map_api_key, search_history }) {
     };
 
     const isFetchingRef = useRef(false);
+    const [isFetchingRelated, setIsFetchingRelated] = useState(false);
 
     const fetchRelatedPosts = async () => {
         if (isFetchingRef.current || fetchedSlugsGlobal.has(viewablePost.slug)) return;
         isFetchingRef.current = true;
-
+        setIsFetchingRelated(true);
         try {
             const cookieValue = getCookie('post_preferences');
             const parsed = JSON.parse(decodeURIComponent(cookieValue));
@@ -1755,7 +1756,6 @@ export default function index({ google_map_api_key, search_history }) {
                                                     )}
                                                  </div>  */}
 
-                                                {/* Left and Right Scroll Container */}
                                                 {/* Main Post + Related Posts Horizontal Scroll */}
                                                 <div
                                                     onScroll={(e) =>
@@ -1775,7 +1775,6 @@ export default function index({ google_map_api_key, search_history }) {
                                                         scrollBehavior: 'smooth',
                                                     }}
                                                 >
-                                                    {/* 1️⃣ Current main post */}
                                                     <div className="relative h-full min-w-full flex-shrink-0 snap-start snap-always">
                                                         <div className="relative flex h-full w-full items-center justify-center text-white">
                                                             {Array.isArray(post.post_image_urls) &&
@@ -1802,7 +1801,6 @@ export default function index({ google_map_api_key, search_history }) {
                                                         </div>
                                                     </div>
 
-                                                    {/* 2️⃣ Related posts */}
                                                     {relatedPosts?.length > 0 &&
                                                         relatedPosts.map((related, i) => (
                                                             <div
@@ -1844,6 +1842,18 @@ export default function index({ google_map_api_key, search_history }) {
                                                                 </div>
                                                             </div>
                                                         ))}
+
+                                                    {isFetchingRelated && (
+                                                        <div className="relative h-full min-w-full flex-shrink-0 snap-start snap-always">
+                                                            <div className="relative flex h-full w-full items-center justify-center">
+                                                                <div className="flex flex-col items-center justify-center space-y-3">
+                                                                    <div className="h-64 w-64 animate-pulse rounded-xl bg-gray-700/40"></div>
+                                                                    <div className="h-4 w-40 animate-pulse rounded bg-gray-600/60"></div>
+                                                                    <div className="h-4 w-24 animate-pulse rounded bg-gray-600/40"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 {/* Bottom Overlay */}

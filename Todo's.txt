@@ -326,7 +326,7 @@ Additional Work:
   Ad Posts Will be made within the posts Table and its section
 
   1: The 3 new categories we discussed will be added, and the existing Posts and Products categories will be removed,  ✅
-  2: If spatiotemporal information is applied in the filter, we’ll display it below the search bar as a reference,
+  2: If spatiotemporal information is applied in the filter, we’ll display it below the search bar as a reference, ✅
   3: We’ll also update the category enabling/disabling logic to work with these new categories.  ✅
   4: Implementing AutoLoading Results In Results Page When Scroll✅
 
