@@ -512,6 +512,18 @@ export default function index({ google_map_api_key, search_history }) {
             const containerHeight = container.clientHeight;
             const newIndex = Math.round(scrollTop / containerHeight);
 
+            if (relatedViewer) {
+                const horizontalContainers = document.querySelectorAll(
+                    '.horizontal-scroll-container',
+                );
+                horizontalContainers.forEach((container) => {
+                    container.scrollTo({
+                        left: 0,
+                        behavior: 'auto',
+                    });
+                });
+            }
+
             if (newIndex !== selectedPostIndex && posts[newIndex]) {
                 setSelectedPostIndex(newIndex);
                 setViewablePost(posts[newIndex]);
@@ -558,18 +570,6 @@ export default function index({ google_map_api_key, search_history }) {
             window.history.replaceState({}, '', mainUrl);
         }
     };
-
-    useEffect(() => {
-        // Reset horizontal scroll position on every post or viewer change
-        const horizontalContainers = document.querySelectorAll('.horizontal-scroll-container');
-
-        horizontalContainers.forEach((container) => {
-            container.scrollTo({
-                left: 0,
-                behavior: 'instant' || 'auto',
-            });
-        });
-    }, [viewablePost, relatedViewer]);
 
     return (
         <MainLayout>
