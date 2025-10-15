@@ -1474,7 +1474,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                 {relatedViewer && (
                                                     <div className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between px-4 py-3 font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
-                                                        <button
+                                                        {/* <button
                                                             onClick={() => {
                                                                 setViewablePost('');
                                                                 setRelatedPosts(null);
@@ -1488,10 +1488,10 @@ export default function index({ google_map_api_key, search_history }) {
                                                                     window.location.pathname,
                                                                 );
                                                             }}
-                                                            className="rounded-full p-1 hover:bg-gray-300/20"
+                                                            className="p-1 rounded-full hover:bg-gray-300/20"
                                                         >
-                                                            {/* back icon */}
-                                                            {/* <svg
+
+                                                            <svg
                                                             xmlns="http://www.w3.org/2000/svg"
                                                             fill="none"
                                                             viewBox="0 0 24 24"
@@ -1504,18 +1504,20 @@ export default function index({ google_map_api_key, search_history }) {
                                                                 strokeLinejoin="round"
                                                                 d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
                                                             />
-                                                        </svg> */}
+                                                        </svg>
 
-                                                            {/* Title */}
-                                                            {/* <span className="text-sm prose break-words text-white/80">
+
+                                                            <span className="text-sm prose break-words text-white/80">
                                                             {relatedViewer?.title}
-                                                        </span> */}
+                                                        </span>
 
-                                                            {/* hashtag */}
-                                                            <span className="text-sm text-white/80">
-                                                                {relatedViewer?.tag}
-                                                            </span>
-                                                        </button>
+
+                                                        </button> */}
+
+                                                        {/* hashtag */}
+                                                        <span className="text-sm text-white/80">
+                                                            {relatedViewer?.tag}
+                                                        </span>
 
                                                         <div className="flex items-center space-x-3">
                                                             {/* Elipsis button */}
