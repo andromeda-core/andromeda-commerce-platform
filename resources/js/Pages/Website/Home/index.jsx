@@ -470,28 +470,24 @@ export default function index({ google_map_api_key, search_history }) {
             // Unlock after animation completes
             setTimeout(() => {
                 scrollLock.current = false;
-            }, 50);
+            }, 100);
         };
 
         let scrollTimeout;
         const handleScroll = () => {
-            clearTimeout(scrollTimeout);
+            const scrollTop = container.scrollTop;
+            const containerHeight = container.clientHeight;
+            const newIndex = Math.round(scrollTop / containerHeight);
 
-            scrollTimeout = setTimeout(() => {
-                const scrollTop = container.scrollTop;
-                const containerHeight = container.clientHeight;
-                const newIndex = Math.round(scrollTop / containerHeight);
+            if (newIndex !== selectedPostIndex && posts[newIndex]) {
+                setSelectedPostIndex(newIndex);
+                setViewablePost(posts[newIndex]);
+                window.history.replaceState({}, '', generateURL(posts[newIndex]));
 
-                if (newIndex !== selectedPostIndex && posts[newIndex]) {
-                    setSelectedPostIndex(newIndex);
-                    setViewablePost(posts[newIndex]);
-                    window.history.replaceState({}, '', generateURL(posts[newIndex]));
-
-                    if (newIndex >= posts.length - 5 && nextPageUrl) {
-                        fetchMorePosts();
-                    }
+                if (newIndex >= posts.length - 5 && nextPageUrl) {
+                    fetchMorePosts();
                 }
-            }, 50);
+            }
         };
 
         window.addEventListener('wheel', handleWheel, { passive: false });
@@ -500,7 +496,6 @@ export default function index({ google_map_api_key, search_history }) {
         return () => {
             window.removeEventListener('wheel', handleWheel);
             container.removeEventListener('scroll', handleScroll, { passive: true });
-            clearTimeout(scrollTimeout);
         };
     }, [
         isMobilePostViewer,
