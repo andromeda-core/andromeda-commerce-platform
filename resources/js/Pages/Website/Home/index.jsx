@@ -584,6 +584,7 @@ export default function index({ google_map_api_key, search_history }) {
 
             // 🧠 If only 3 remaining and next page exists, fetch eagerly
             if (remaining <= 3 && relatedPostsNextPageUrl) {
+                alert('Fetching more related posts');
                 fetchRelatedPosts();
             }
         } else if (index === 0 && relatedViewer) {
