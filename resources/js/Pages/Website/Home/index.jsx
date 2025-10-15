@@ -581,10 +581,8 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             const remaining = relatedPosts.length - index;
-            alert(relatedPostsNextPageUrl);
-            // 🧠 If only 3 remaining and next page exists, fetch eagerly
-            if (remaining <= 3 && relatedPostsNextPageUrl) {
-                alert('Fetching more related posts');
+
+            if (remaining <= 3) {
                 fetchRelatedPosts();
             }
         } else if (index === 0 && relatedViewer) {
