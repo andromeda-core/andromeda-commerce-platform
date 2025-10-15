@@ -26,6 +26,7 @@ export default function index({ google_map_api_key, search_history }) {
     const [posts, setPosts] = useState(null);
     const [relatedPosts, setRelatedPosts] = useState(null);
     const [relatedPostsNextPageUrl, setRelatedPostsNextPageUrl] = useState(null);
+    const [relatedViewer, setRelatedViewer] = useState(null);
 
     const [nextPageUrl, setNextPageUrl] = useState(null);
 
@@ -539,27 +540,23 @@ export default function index({ google_map_api_key, search_history }) {
         isMobilePostGallery,
     ]);
 
-    const horizontalRefs = useRef([]);
-    const handleHorizontalScroll = (parentIndex, mainPost) => {
-        const el = horizontalRefs.current[parentIndex];
-        if (!el) return;
-
+    const handleHorizontalScroll = (mainPost, relatedPosts, e) => {
+        const el = e.currentTarget;
         const index = Math.round(el.scrollLeft / el.clientWidth);
-
-        const allPosts = [mainPost, ...(relatedPosts || [])];
-        const newPost = allPosts[index];
-
-        if (newPost && newPost.id !== viewablePost?.id) {
-            setViewablePost(newPost);
-            window.history.replaceState({}, '', generateURL(newPost));
+        if (index > 0) {
+            const relatedPost = relatedPosts[index - 1];
+            if (relatedPost && relatedPost.id !== relatedViewer?.id) {
+                setRelatedViewer(relatedPost);
+                const newUrl = `${route('home')}${generateURL(relatedPost)}`;
+                window.history.pushState({}, '', newUrl);
+            }
+        } else if (index === 0 && relatedViewer) {
+            // scrolled back to main post
+            setRelatedViewer(null);
+            const mainUrl = `${route('home')}${generateURL(mainPost)}`;
+            window.history.replaceState({}, '', mainUrl);
         }
     };
-
-    useEffect(() => {
-        return () => {
-            horizontalRefs.current = [];
-        };
-    }, []);
 
     return (
         <MainLayout>
@@ -1172,23 +1169,24 @@ export default function index({ google_map_api_key, search_history }) {
                                                 }}
                                             >
                                                 {/* Top Bar */}
-                                                <div className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between px-4 py-3 font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
-                                                    <button
-                                                        onClick={() => {
-                                                            setViewablePost('');
-                                                            setRelatedPosts(null);
-                                                            setIsDesktopPostViewer(false);
-                                                            setIsMobilePostViewer(false);
-                                                            window.history.replaceState(
-                                                                {},
-                                                                '',
-                                                                window.location.pathname,
-                                                            );
-                                                        }}
-                                                        className="rounded-full p-1 hover:bg-gray-300/20"
-                                                    >
-                                                        {/* back icon */}
-                                                        {/* <svg
+                                                {!relatedViewer && (
+                                                    <div className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between px-4 py-3 font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+                                                        <button
+                                                            onClick={() => {
+                                                                setViewablePost('');
+                                                                setRelatedPosts(null);
+                                                                setIsDesktopPostViewer(false);
+                                                                setIsMobilePostViewer(false);
+                                                                window.history.replaceState(
+                                                                    {},
+                                                                    '',
+                                                                    window.location.pathname,
+                                                                );
+                                                            }}
+                                                            className="rounded-full p-1 hover:bg-gray-300/20"
+                                                        >
+                                                            {/* back icon */}
+                                                            {/* <svg
                                                             xmlns="http://www.w3.org/2000/svg"
                                                             fill="none"
                                                             viewBox="0 0 24 24"
@@ -1203,147 +1201,77 @@ export default function index({ google_map_api_key, search_history }) {
                                                             />
                                                         </svg> */}
 
-                                                        {/* Title */}
-                                                        {/* <span className="text-sm prose break-words text-white/80">
+                                                            {/* Title */}
+                                                            {/* <span className="text-sm prose break-words text-white/80">
                                                             {post?.title}
                                                         </span> */}
 
-                                                        {/* hashtag */}
-                                                        <span className="text-sm text-white/80">
-                                                            {viewablePost?.tag}
-                                                        </span>
-                                                    </button>
-
-                                                    <div className="flex items-center space-x-3">
-                                                        {/* Elipsis button */}
-                                                        <button
-                                                            ref={elipsisButtonRef}
-                                                            data-elipsis-button
-                                                            className="rounded-full p-1 hover:bg-gray-300/20"
-                                                        >
-                                                            <svg
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                fill="none"
-                                                                viewBox="0 0 24 24"
-                                                                strokeWidth={1.5}
-                                                                stroke="currentColor"
-                                                                className="pointer-events-none size-6"
-                                                            >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
-                                                                    className="pointer-events-none"
-                                                                />
-                                                            </svg>
+                                                            {/* hashtag */}
+                                                            <span className="text-sm text-white/80">
+                                                                {post?.tag}
+                                                            </span>
                                                         </button>
 
-                                                        {/* Elipsis Dropdown Menu */}
-                                                        {showElipsisDropdown &&
-                                                            isMobilePostViewer && (
-                                                                <>
-                                                                    <div
-                                                                        ref={elipsisDropDownRef}
-                                                                        data-elipsis-dropdown
-                                                                        onClick={(e) =>
-                                                                            e.stopPropagation()
-                                                                        }
-                                                                        className="absolute right-0 top-full z-[99999] mt-2 w-36 rounded-lg border border-gray-900 bg-deepcharcoal shadow-xl sm:w-48"
-                                                                    >
-                                                                        <ul
-                                                                            className="overflow-y-scroll py-1 text-sm text-gray-200 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white"
-                                                                            style={{
-                                                                                maxHeight: '180px',
-                                                                            }}
-                                                                        >
-                                                                            <li>
-                                                                                <button
-                                                                                    onClick={(
-                                                                                        e,
-                                                                                    ) => {
-                                                                                        setShowQrCode(
-                                                                                            true,
-                                                                                        );
-                                                                                        setElipsisShowDropdown(
-                                                                                            false,
-                                                                                        );
-                                                                                    }}
-                                                                                    className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
-                                                                                >
-                                                                                    <svg
-                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                        fill="none"
-                                                                                        viewBox="0 0 24 24"
-                                                                                        strokeWidth={
-                                                                                            1.5
-                                                                                        }
-                                                                                        stroke="currentColor"
-                                                                                        className="size-6"
-                                                                                    >
-                                                                                        <path
-                                                                                            strokeLinecap="round"
-                                                                                            strokeLinejoin="round"
-                                                                                            d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z"
-                                                                                        />
-                                                                                        <path
-                                                                                            strokeLinecap="round"
-                                                                                            strokeLinejoin="round"
-                                                                                            d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z"
-                                                                                        />
-                                                                                    </svg>
-                                                                                    QR Code
-                                                                                </button>
-                                                                            </li>
+                                                        <div className="flex items-center space-x-3">
+                                                            {/* Elipsis button */}
+                                                            <button
+                                                                ref={elipsisButtonRef}
+                                                                data-elipsis-button
+                                                                className="rounded-full p-1 hover:bg-gray-300/20"
+                                                            >
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    fill="none"
+                                                                    viewBox="0 0 24 24"
+                                                                    strokeWidth={1.5}
+                                                                    stroke="currentColor"
+                                                                    className="pointer-events-none size-6"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
+                                                                        className="pointer-events-none"
+                                                                    />
+                                                                </svg>
+                                                            </button>
 
-                                                                            {auth?.user && (
+                                                            {/* Elipsis Dropdown Menu */}
+                                                            {showElipsisDropdown &&
+                                                                isMobilePostViewer && (
+                                                                    <>
+                                                                        <div
+                                                                            ref={elipsisDropDownRef}
+                                                                            data-elipsis-dropdown
+                                                                            onClick={(e) =>
+                                                                                e.stopPropagation()
+                                                                            }
+                                                                            className="absolute right-0 top-full z-[99999] mt-2 w-36 rounded-lg border border-gray-900 bg-deepcharcoal shadow-xl sm:w-48"
+                                                                        >
+                                                                            <ul
+                                                                                className="overflow-y-scroll py-1 text-sm text-gray-200 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white"
+                                                                                style={{
+                                                                                    maxHeight:
+                                                                                        '180px',
+                                                                                }}
+                                                                            >
                                                                                 <li>
                                                                                     <button
-                                                                                        className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
                                                                                         onClick={(
                                                                                             e,
                                                                                         ) => {
-                                                                                            e.stopPropagation();
-                                                                                            router.put(
-                                                                                                route(
-                                                                                                    'website.posts.bookmark',
-                                                                                                    viewablePost?.id,
-                                                                                                ),
-                                                                                                {
-                                                                                                    post_id:
-                                                                                                        viewablePost?.id,
-                                                                                                },
-                                                                                                {
-                                                                                                    onSuccess:
-                                                                                                        () => {
-                                                                                                            viewablePost.is_bookmarked =
-                                                                                                                !viewablePost.is_bookmarked;
-                                                                                                        },
-                                                                                                    onError:
-                                                                                                        (
-                                                                                                            e,
-                                                                                                        ) => {
-                                                                                                            toast.error(
-                                                                                                                e.message,
-                                                                                                            );
-                                                                                                        },
-
-                                                                                                    onFinish:
-                                                                                                        () => {
-                                                                                                            setElipsisShowDropdown(
-                                                                                                                false,
-                                                                                                            );
-                                                                                                        },
-                                                                                                },
+                                                                                            setShowQrCode(
+                                                                                                true,
+                                                                                            );
+                                                                                            setElipsisShowDropdown(
+                                                                                                false,
                                                                                             );
                                                                                         }}
+                                                                                        className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
                                                                                     >
                                                                                         <svg
                                                                                             xmlns="http://www.w3.org/2000/svg"
-                                                                                            fill={
-                                                                                                post?.is_bookmarked
-                                                                                                    ? '#FFFFFF'
-                                                                                                    : 'none'
-                                                                                            }
+                                                                                            fill="none"
                                                                                             viewBox="0 0 24 24"
                                                                                             strokeWidth={
                                                                                                 1.5
@@ -1354,66 +1282,137 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                             <path
                                                                                                 strokeLinecap="round"
                                                                                                 strokeLinejoin="round"
-                                                                                                d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"
+                                                                                                d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z"
+                                                                                            />
+                                                                                            <path
+                                                                                                strokeLinecap="round"
+                                                                                                strokeLinejoin="round"
+                                                                                                d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z"
                                                                                             />
                                                                                         </svg>
-                                                                                        Bookmark
+                                                                                        QR Code
                                                                                     </button>
                                                                                 </li>
-                                                                            )}
 
-                                                                            <li>
-                                                                                <button
-                                                                                    className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
-                                                                                    onClick={(
-                                                                                        e,
-                                                                                    ) => {
-                                                                                        const url =
-                                                                                            route(
-                                                                                                'home',
-                                                                                            ) +
-                                                                                            generateURL(
-                                                                                                viewablePost,
+                                                                                {auth?.user && (
+                                                                                    <li>
+                                                                                        <button
+                                                                                            className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
+                                                                                            onClick={(
+                                                                                                e,
+                                                                                            ) => {
+                                                                                                e.stopPropagation();
+                                                                                                router.put(
+                                                                                                    route(
+                                                                                                        'website.posts.bookmark',
+                                                                                                        post?.id,
+                                                                                                    ),
+                                                                                                    {
+                                                                                                        post_id:
+                                                                                                            post?.id,
+                                                                                                    },
+                                                                                                    {
+                                                                                                        onSuccess:
+                                                                                                            () => {
+                                                                                                                post.is_bookmarked =
+                                                                                                                    !post.is_bookmarked;
+                                                                                                            },
+                                                                                                        onError:
+                                                                                                            (
+                                                                                                                e,
+                                                                                                            ) => {
+                                                                                                                toast.error(
+                                                                                                                    e.message,
+                                                                                                                );
+                                                                                                            },
+
+                                                                                                        onFinish:
+                                                                                                            () => {
+                                                                                                                setElipsisShowDropdown(
+                                                                                                                    false,
+                                                                                                                );
+                                                                                                            },
+                                                                                                    },
+                                                                                                );
+                                                                                            }}
+                                                                                        >
+                                                                                            <svg
+                                                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                                                fill={
+                                                                                                    post?.is_bookmarked
+                                                                                                        ? '#FFFFFF'
+                                                                                                        : 'none'
+                                                                                                }
+                                                                                                viewBox="0 0 24 24"
+                                                                                                strokeWidth={
+                                                                                                    1.5
+                                                                                                }
+                                                                                                stroke="currentColor"
+                                                                                                className="size-6"
+                                                                                            >
+                                                                                                <path
+                                                                                                    strokeLinecap="round"
+                                                                                                    strokeLinejoin="round"
+                                                                                                    d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"
+                                                                                                />
+                                                                                            </svg>
+                                                                                            Bookmark
+                                                                                        </button>
+                                                                                    </li>
+                                                                                )}
+
+                                                                                <li>
+                                                                                    <button
+                                                                                        className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
+                                                                                        onClick={(
+                                                                                            e,
+                                                                                        ) => {
+                                                                                            const url =
+                                                                                                route(
+                                                                                                    'home',
+                                                                                                ) +
+                                                                                                generateURL(
+                                                                                                    post,
+                                                                                                );
+                                                                                            navigator.clipboard.writeText(
+                                                                                                url.trim(),
                                                                                             );
-                                                                                        navigator.clipboard.writeText(
-                                                                                            url.trim(),
-                                                                                        );
 
-                                                                                        toast.success(
-                                                                                            'Copied to clipboard',
-                                                                                        );
+                                                                                            toast.success(
+                                                                                                'Copied to clipboard',
+                                                                                            );
 
-                                                                                        setElipsisShowDropdown(
-                                                                                            false,
-                                                                                        );
-                                                                                    }}
-                                                                                >
-                                                                                    <svg
-                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                        fill="none"
-                                                                                        viewBox="0 0 24 24"
-                                                                                        strokeWidth={
-                                                                                            1.5
-                                                                                        }
-                                                                                        stroke="currentColor"
-                                                                                        className="size-6"
+                                                                                            setElipsisShowDropdown(
+                                                                                                false,
+                                                                                            );
+                                                                                        }}
                                                                                     >
-                                                                                        <path
-                                                                                            strokeLinecap="round"
-                                                                                            strokeLinejoin="round"
-                                                                                            d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75"
-                                                                                        />
-                                                                                    </svg>
-                                                                                    Copy Link
-                                                                                </button>
-                                                                            </li>
-                                                                        </ul>
-                                                                    </div>
-                                                                </>
-                                                            )}
+                                                                                        <svg
+                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                            fill="none"
+                                                                                            viewBox="0 0 24 24"
+                                                                                            strokeWidth={
+                                                                                                1.5
+                                                                                            }
+                                                                                            stroke="currentColor"
+                                                                                            className="size-6"
+                                                                                        >
+                                                                                            <path
+                                                                                                strokeLinecap="round"
+                                                                                                strokeLinejoin="round"
+                                                                                                d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75"
+                                                                                            />
+                                                                                        </svg>
+                                                                                        Copy Link
+                                                                                    </button>
+                                                                                </li>
+                                                                            </ul>
+                                                                        </div>
+                                                                    </>
+                                                                )}
 
-                                                        {/* Filter button */}
-                                                        {/* <button className="p-1 rounded-full hover:bg-gray-300/20">
+                                                            {/* Filter button */}
+                                                            {/* <button className="p-1 rounded-full hover:bg-gray-300/20">
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
                                                                 fill="none"
@@ -1429,8 +1428,273 @@ export default function index({ google_map_api_key, search_history }) {
                                                                 />
                                                             </svg>
                                                         </button> */}
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                )}
+
+                                                {relatedViewer && (
+                                                    <div className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between px-4 py-3 font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+                                                        <button
+                                                            onClick={() => {
+                                                                setViewablePost('');
+                                                                setRelatedPosts(null);
+                                                                setRelatedViewer(null);
+                                                                setIsDesktopPostViewer(false);
+                                                                setIsMobilePostViewer(false);
+                                                                window.history.replaceState(
+                                                                    {},
+                                                                    '',
+                                                                    window.location.pathname,
+                                                                );
+                                                            }}
+                                                            className="rounded-full p-1 hover:bg-gray-300/20"
+                                                        >
+                                                            {/* back icon */}
+                                                            {/* <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            strokeWidth={1.5}
+                                                            stroke="currentColor"
+                                                            className="size-6"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+                                                            />
+                                                        </svg> */}
+
+                                                            {/* Title */}
+                                                            {/* <span className="text-sm prose break-words text-white/80">
+                                                            {relatedViewer?.title}
+                                                        </span> */}
+
+                                                            {/* hashtag */}
+                                                            <span className="text-sm text-white/80">
+                                                                {relatedViewer?.tag}
+                                                            </span>
+                                                        </button>
+
+                                                        <div className="flex items-center space-x-3">
+                                                            {/* Elipsis button */}
+                                                            <button
+                                                                ref={elipsisButtonRef}
+                                                                data-elipsis-button
+                                                                className="rounded-full p-1 hover:bg-gray-300/20"
+                                                            >
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    fill="none"
+                                                                    viewBox="0 0 24 24"
+                                                                    strokeWidth={1.5}
+                                                                    stroke="currentColor"
+                                                                    className="pointer-events-none size-6"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
+                                                                        className="pointer-events-none"
+                                                                    />
+                                                                </svg>
+                                                            </button>
+
+                                                            {/* Elipsis Dropdown Menu */}
+                                                            {showElipsisDropdown &&
+                                                                isMobilePostViewer && (
+                                                                    <>
+                                                                        <div
+                                                                            ref={elipsisDropDownRef}
+                                                                            data-elipsis-dropdown
+                                                                            onClick={(e) =>
+                                                                                e.stopPropagation()
+                                                                            }
+                                                                            className="absolute right-0 top-full z-[99999] mt-2 w-36 rounded-lg border border-gray-900 bg-deepcharcoal shadow-xl sm:w-48"
+                                                                        >
+                                                                            <ul
+                                                                                className="overflow-y-scroll py-1 text-sm text-gray-200 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white"
+                                                                                style={{
+                                                                                    maxHeight:
+                                                                                        '180px',
+                                                                                }}
+                                                                            >
+                                                                                <li>
+                                                                                    <button
+                                                                                        onClick={(
+                                                                                            e,
+                                                                                        ) => {
+                                                                                            setShowQrCode(
+                                                                                                true,
+                                                                                            );
+                                                                                            setElipsisShowDropdown(
+                                                                                                false,
+                                                                                            );
+                                                                                        }}
+                                                                                        className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
+                                                                                    >
+                                                                                        <svg
+                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                            fill="none"
+                                                                                            viewBox="0 0 24 24"
+                                                                                            strokeWidth={
+                                                                                                1.5
+                                                                                            }
+                                                                                            stroke="currentColor"
+                                                                                            className="size-6"
+                                                                                        >
+                                                                                            <path
+                                                                                                strokeLinecap="round"
+                                                                                                strokeLinejoin="round"
+                                                                                                d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z"
+                                                                                            />
+                                                                                            <path
+                                                                                                strokeLinecap="round"
+                                                                                                strokeLinejoin="round"
+                                                                                                d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z"
+                                                                                            />
+                                                                                        </svg>
+                                                                                        QR Code
+                                                                                    </button>
+                                                                                </li>
+
+                                                                                {auth?.user && (
+                                                                                    <li>
+                                                                                        <button
+                                                                                            className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
+                                                                                            onClick={(
+                                                                                                e,
+                                                                                            ) => {
+                                                                                                e.stopPropagation();
+                                                                                                router.put(
+                                                                                                    route(
+                                                                                                        'website.posts.bookmark',
+                                                                                                        relatedViewer?.id,
+                                                                                                    ),
+                                                                                                    {
+                                                                                                        post_id:
+                                                                                                            relatedViewer?.id,
+                                                                                                    },
+                                                                                                    {
+                                                                                                        onSuccess:
+                                                                                                            () => {
+                                                                                                                relatedViewer.is_bookmarked =
+                                                                                                                    !relatedViewer.is_bookmarked;
+                                                                                                            },
+                                                                                                        onError:
+                                                                                                            (
+                                                                                                                e,
+                                                                                                            ) => {
+                                                                                                                toast.error(
+                                                                                                                    e.message,
+                                                                                                                );
+                                                                                                            },
+
+                                                                                                        onFinish:
+                                                                                                            () => {
+                                                                                                                setElipsisShowDropdown(
+                                                                                                                    false,
+                                                                                                                );
+                                                                                                            },
+                                                                                                    },
+                                                                                                );
+                                                                                            }}
+                                                                                        >
+                                                                                            <svg
+                                                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                                                fill={
+                                                                                                    relatedViewer?.is_bookmarked
+                                                                                                        ? '#FFFFFF'
+                                                                                                        : 'none'
+                                                                                                }
+                                                                                                viewBox="0 0 24 24"
+                                                                                                strokeWidth={
+                                                                                                    1.5
+                                                                                                }
+                                                                                                stroke="currentColor"
+                                                                                                className="size-6"
+                                                                                            >
+                                                                                                <path
+                                                                                                    strokeLinecap="round"
+                                                                                                    strokeLinejoin="round"
+                                                                                                    d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"
+                                                                                                />
+                                                                                            </svg>
+                                                                                            Bookmark
+                                                                                        </button>
+                                                                                    </li>
+                                                                                )}
+
+                                                                                <li>
+                                                                                    <button
+                                                                                        className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
+                                                                                        onClick={(
+                                                                                            e,
+                                                                                        ) => {
+                                                                                            const url =
+                                                                                                route(
+                                                                                                    'home',
+                                                                                                ) +
+                                                                                                generateURL(
+                                                                                                    relatedViewer,
+                                                                                                );
+                                                                                            navigator.clipboard.writeText(
+                                                                                                url.trim(),
+                                                                                            );
+
+                                                                                            toast.success(
+                                                                                                'Copied to clipboard',
+                                                                                            );
+
+                                                                                            setElipsisShowDropdown(
+                                                                                                false,
+                                                                                            );
+                                                                                        }}
+                                                                                    >
+                                                                                        <svg
+                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                            fill="none"
+                                                                                            viewBox="0 0 24 24"
+                                                                                            strokeWidth={
+                                                                                                1.5
+                                                                                            }
+                                                                                            stroke="currentColor"
+                                                                                            className="size-6"
+                                                                                        >
+                                                                                            <path
+                                                                                                strokeLinecap="round"
+                                                                                                strokeLinejoin="round"
+                                                                                                d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75"
+                                                                                            />
+                                                                                        </svg>
+                                                                                        Copy Link
+                                                                                    </button>
+                                                                                </li>
+                                                                            </ul>
+                                                                        </div>
+                                                                    </>
+                                                                )}
+
+                                                            {/* Filter button */}
+                                                            {/* <button className="p-1 rounded-full hover:bg-gray-300/20">
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                strokeWidth={1.5}
+                                                                stroke="currentColor"
+                                                                className="size-6"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
+                                                                />
+                                                            </svg>
+                                                        </button> */}
+                                                        </div>
+                                                    </div>
+                                                )}
 
                                                 {/* Normal Media Viewer */}
                                                 {/* <div className="relative flex items-center justify-center w-full h-full text-white">
@@ -1464,11 +1728,12 @@ export default function index({ google_map_api_key, search_history }) {
                                                 {/* Left and Right Scroll Container */}
                                                 {/* Main Post + Related Posts Horizontal Scroll */}
                                                 <div
-                                                    ref={(el) =>
-                                                        (horizontalRefs.current[index] = el)
-                                                    }
-                                                    onScroll={() =>
-                                                        handleHorizontalScroll(index, post)
+                                                    onScroll={(e) =>
+                                                        handleHorizontalScroll(
+                                                            post,
+                                                            relatedPosts,
+                                                            e,
+                                                        )
                                                     }
                                                     className="relative flex h-full w-full select-none snap-x snap-mandatory overflow-x-scroll scrollbar-none"
                                                     style={{
@@ -1550,77 +1815,20 @@ export default function index({ google_map_api_key, search_history }) {
                                                 </div>
 
                                                 {/* Bottom Overlay */}
-                                                <div
-                                                    className={`absolute ${
-                                                        (Array.isArray(
-                                                            viewablePost.post_image_urls,
-                                                        ) &&
-                                                            viewablePost.post_image_urls.length >
-                                                                0) ||
-                                                        (Array.isArray(
-                                                            viewablePost.post_video_urls,
-                                                        ) &&
-                                                            viewablePost.post_video_urls.length > 0)
-                                                            ? 'bottom-0 right-0'
-                                                            : 'right-10 top-10'
-                                                    } left-0 z-[10] p-4 font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]`}
-                                                >
-                                                    {/* Hashtag */}
+                                                {!relatedViewer && (
                                                     <div
-                                                        className="mb-2 flex items-center justify-end space-x-2"
-                                                        onClick={() => {
-                                                            setShowDetailsPostIds((prev) =>
-                                                                prev.includes(viewablePost.id)
-                                                                    ? prev.filter(
-                                                                          (id) =>
-                                                                              id !==
-                                                                              viewablePost.id,
-                                                                      )
-                                                                    : [...prev, viewablePost.id],
-                                                            );
-                                                        }}
+                                                        className={`absolute ${
+                                                            (Array.isArray(post.post_image_urls) &&
+                                                                post.post_image_urls.length > 0) ||
+                                                            (Array.isArray(post.post_video_urls) &&
+                                                                post.post_video_urls.length > 0)
+                                                                ? 'bottom-0 right-0'
+                                                                : 'right-10 top-10'
+                                                        } left-0 z-[10] p-4 font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]`}
                                                     >
-                                                        {/* <span className="text-sm text-white/80">
-                                                            {post?.tag}
-                                                        </span> */}
-
-                                                        {viewablePost?.location_name && (
-                                                            <span className="text-sm text-white/80">
-                                                                {viewablePost?.location_name
-                                                                    ? viewablePost.location_name
-                                                                          .length > 7
-                                                                        ? viewablePost.location_name.slice(
-                                                                              0,
-                                                                              7,
-                                                                          )
-                                                                        : viewablePost.location_name
-                                                                    : ''}
-                                                                {viewablePost?.location_name
-                                                                    ? ' '
-                                                                    : ''}
-                                                                {viewablePost?.added_at
-                                                                    ? viewablePost.added_at + ' '
-                                                                    : ''}
-                                                                {viewablePost?.created_at_time ||
-                                                                    ''}
-                                                            </span>
-                                                        )}
-                                                    </div>
-
-                                                    {/* Content */}
-                                                    {(Array.isArray(post.post_image_urls) &&
-                                                        post.post_image_urls.length > 0) ||
-                                                    (Array.isArray(post.post_video_urls) &&
-                                                        post.post_video_urls.length > 0) ? (
+                                                        {/* Hashtag */}
                                                         <div
-                                                            dangerouslySetInnerHTML={{
-                                                                __html: post?.content,
-                                                            }}
-                                                            className={`prose overflow-hidden break-words text-xs text-white/80 transition-all duration-100 ease-in-out [-webkit-box-orient:vertical] [display:-webkit-box] ${
-                                                                showDetailsPostIds.includes(post.id)
-                                                                    ? '[-webkit-line-clamp:5]'
-                                                                    : '[-webkit-line-clamp:3]'
-                                                            }`}
+                                                            className="mb-2 flex items-center justify-end space-x-2"
                                                             onClick={() => {
                                                                 setShowDetailsPostIds((prev) =>
                                                                     prev.includes(post.id)
@@ -1631,68 +1839,83 @@ export default function index({ google_map_api_key, search_history }) {
                                                                         : [...prev, post.id],
                                                                 );
                                                             }}
-                                                            style={{
-                                                                maxHeight:
+                                                        >
+                                                            {/* <span className="text-sm text-white/80">
+                                                            {post?.tag}
+                                                        </span> */}
+
+                                                            {post?.location_name && (
+                                                                <span className="text-sm text-white/80">
+                                                                    {post?.location_name
+                                                                        ? post.location_name
+                                                                              .length > 7
+                                                                            ? post.location_name.slice(
+                                                                                  0,
+                                                                                  7,
+                                                                              )
+                                                                            : post.location_name
+                                                                        : ''}
+                                                                    {post?.location_name ? ' ' : ''}
+                                                                    {post?.added_at
+                                                                        ? post.added_at + ' '
+                                                                        : ''}
+                                                                    {post?.created_at_time || ''}
+                                                                </span>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Content */}
+                                                        {(Array.isArray(post.post_image_urls) &&
+                                                            post.post_image_urls.length > 0) ||
+                                                        (Array.isArray(post.post_video_urls) &&
+                                                            post.post_video_urls.length > 0) ? (
+                                                            <div
+                                                                dangerouslySetInnerHTML={{
+                                                                    __html: post?.content,
+                                                                }}
+                                                                className={`prose overflow-hidden break-words text-xs text-white/80 transition-all duration-100 ease-in-out [-webkit-box-orient:vertical] [display:-webkit-box] ${
                                                                     showDetailsPostIds.includes(
                                                                         post.id,
                                                                     )
-                                                                        ? '10rem'
-                                                                        : '4rem',
-                                                            }}
-                                                        ></div>
-                                                    ) : (
-                                                        <div
-                                                            dangerouslySetInnerHTML={{
-                                                                __html: post?.content,
-                                                            }}
-                                                            className={`prose overflow-hidden break-words text-xs text-white/80 transition-all duration-100 ease-in-out [-webkit-box-orient:vertical] [-webkit-line-clamp:5] [display:-webkit-box]`}
-                                                        ></div>
-                                                    )}
-
-                                                    {/* Learn More Button */}
-                                                    {showDetailsPostIds.includes(post.id) && (
-                                                        <div className="mb-0 mt-3 flex items-center justify-between">
-                                                            {/* Username */}
-                                                            <div className="mb-0 flex items-center space-x-2">
-                                                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-gray-900">
-                                                                    {viewablePost.user?.avatar}
-                                                                </div>
-                                                                <span className="text-xs font-medium text-white/80">
-                                                                    {post.user?.name.length > 6
-                                                                        ? post.user?.name.substring(
-                                                                              0,
-                                                                              6,
-                                                                          ) + '...'
-                                                                        : post.user?.name}
-                                                                </span>
-                                                            </div>
-
-                                                            <button
-                                                                className="rounded-md bg-indigo-600 p-1 text-sm font-semibold hover:bg-indigo-400/80"
+                                                                        ? '[-webkit-line-clamp:5]'
+                                                                        : '[-webkit-line-clamp:3]'
+                                                                }`}
                                                                 onClick={() => {
-                                                                    setIsMobilePostGallery(true);
-                                                                    window.history.pushState(
-                                                                        {
-                                                                            modal: 'post-gallery',
-                                                                        },
-                                                                        '',
+                                                                    setShowDetailsPostIds((prev) =>
+                                                                        prev.includes(post.id)
+                                                                            ? prev.filter(
+                                                                                  (id) =>
+                                                                                      id !==
+                                                                                      post.id,
+                                                                              )
+                                                                            : [...prev, post.id],
                                                                     );
                                                                 }}
-                                                            >
-                                                                More
-                                                            </button>
-                                                        </div>
-                                                    )}
+                                                                style={{
+                                                                    maxHeight:
+                                                                        showDetailsPostIds.includes(
+                                                                            post.id,
+                                                                        )
+                                                                            ? '10rem'
+                                                                            : '4rem',
+                                                                }}
+                                                            ></div>
+                                                        ) : (
+                                                            <div
+                                                                dangerouslySetInnerHTML={{
+                                                                    __html: post?.content,
+                                                                }}
+                                                                className={`prose overflow-hidden break-words text-xs text-white/80 transition-all duration-100 ease-in-out [-webkit-box-orient:vertical] [-webkit-line-clamp:5] [display:-webkit-box]`}
+                                                            ></div>
+                                                        )}
 
-                                                    {!showDetailsPostIds.includes(post.id) &&
-                                                        Array.isArray(post.post_image_urls) &&
-                                                        post.post_image_urls.length < 1 &&
-                                                        Array.isArray(post.post_video_urls) &&
-                                                        post.post_video_urls.length < 1 && (
-                                                            <div className="mt-3 flex items-center justify-between">
+                                                        {/* Learn More Button */}
+                                                        {showDetailsPostIds.includes(post.id) && (
+                                                            <div className="mb-0 mt-3 flex items-center justify-between">
+                                                                {/* Username */}
                                                                 <div className="mb-0 flex items-center space-x-2">
                                                                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-gray-900">
-                                                                        {viewablePost.user?.avatar}
+                                                                        {post.user?.avatar}
                                                                     </div>
                                                                     <span className="text-xs font-medium text-white/80">
                                                                         {post.user?.name.length > 6
@@ -1722,7 +1945,263 @@ export default function index({ google_map_api_key, search_history }) {
                                                                 </button>
                                                             </div>
                                                         )}
-                                                </div>
+
+                                                        {!showDetailsPostIds.includes(post.id) &&
+                                                            Array.isArray(post.post_image_urls) &&
+                                                            post.post_image_urls.length < 1 &&
+                                                            Array.isArray(post.post_video_urls) &&
+                                                            post.post_video_urls.length < 1 && (
+                                                                <div className="mt-3 flex items-center justify-between">
+                                                                    <div className="mb-0 flex items-center space-x-2">
+                                                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-gray-900">
+                                                                            {post.user?.avatar}
+                                                                        </div>
+                                                                        <span className="text-xs font-medium text-white/80">
+                                                                            {post.user?.name
+                                                                                .length > 6
+                                                                                ? post.user?.name.substring(
+                                                                                      0,
+                                                                                      6,
+                                                                                  ) + '...'
+                                                                                : post.user?.name}
+                                                                        </span>
+                                                                    </div>
+
+                                                                    <button
+                                                                        className="rounded-md bg-indigo-600 p-1 text-sm font-semibold hover:bg-indigo-400/80"
+                                                                        onClick={() => {
+                                                                            setIsMobilePostGallery(
+                                                                                true,
+                                                                            );
+                                                                            window.history.pushState(
+                                                                                {
+                                                                                    modal: 'post-gallery',
+                                                                                },
+                                                                                '',
+                                                                            );
+                                                                        }}
+                                                                    >
+                                                                        More
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                    </div>
+                                                )}
+
+                                                {relatedViewer && (
+                                                    <div
+                                                        className={`absolute ${
+                                                            (Array.isArray(
+                                                                relatedViewer.post_image_urls,
+                                                            ) &&
+                                                                relatedViewer.post_image_urls
+                                                                    .length > 0) ||
+                                                            (Array.isArray(
+                                                                relatedViewer.post_video_urls,
+                                                            ) &&
+                                                                relatedViewer.post_video_urls
+                                                                    .length > 0)
+                                                                ? 'bottom-0 right-0'
+                                                                : 'right-10 top-10'
+                                                        } left-0 z-[10] p-4 font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]`}
+                                                    >
+                                                        {/* Hashtag */}
+                                                        <div
+                                                            className="mb-2 flex items-center justify-end space-x-2"
+                                                            onClick={() => {
+                                                                setShowDetailsPostIds((prev) =>
+                                                                    prev.includes(relatedViewer.id)
+                                                                        ? prev.filter(
+                                                                              (id) =>
+                                                                                  id !==
+                                                                                  relatedViewer.id,
+                                                                          )
+                                                                        : [
+                                                                              ...prev,
+                                                                              relatedViewer.id,
+                                                                          ],
+                                                                );
+                                                            }}
+                                                        >
+                                                            {/* <span className="text-sm text-white/80">
+                                                            {relatedViewer?.tag}
+                                                        </span> */}
+
+                                                            {relatedViewer?.location_name && (
+                                                                <span className="text-sm text-white/80">
+                                                                    {relatedViewer?.location_name
+                                                                        ? relatedViewer
+                                                                              .location_name
+                                                                              .length > 7
+                                                                            ? relatedViewer.location_name.slice(
+                                                                                  0,
+                                                                                  7,
+                                                                              )
+                                                                            : relatedViewer.location_name
+                                                                        : ''}
+                                                                    {relatedViewer?.location_name
+                                                                        ? ' '
+                                                                        : ''}
+                                                                    {relatedViewer?.added_at
+                                                                        ? relatedViewer.added_at +
+                                                                          ' '
+                                                                        : ''}
+                                                                    {relatedViewer?.created_at_time ||
+                                                                        ''}
+                                                                </span>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Content */}
+                                                        {(Array.isArray(
+                                                            relatedViewer.post_image_urls,
+                                                        ) &&
+                                                            relatedViewer.post_image_urls.length >
+                                                                0) ||
+                                                        (Array.isArray(
+                                                            relatedViewer.post_video_urls,
+                                                        ) &&
+                                                            relatedViewer.post_video_urls.length >
+                                                                0) ? (
+                                                            <div
+                                                                dangerouslySetInnerHTML={{
+                                                                    __html: relatedViewer?.content,
+                                                                }}
+                                                                className={`prose overflow-hidden break-words text-xs text-white/80 transition-all duration-100 ease-in-out [-webkit-box-orient:vertical] [display:-webkit-box] ${
+                                                                    showDetailsPostIds.includes(
+                                                                        relatedViewer.id,
+                                                                    )
+                                                                        ? '[-webkit-line-clamp:5]'
+                                                                        : '[-webkit-line-clamp:3]'
+                                                                }`}
+                                                                onClick={() => {
+                                                                    setShowDetailsPostIds((prev) =>
+                                                                        prev.includes(
+                                                                            relatedViewer.id,
+                                                                        )
+                                                                            ? prev.filter(
+                                                                                  (id) =>
+                                                                                      id !==
+                                                                                      relatedViewer.id,
+                                                                              )
+                                                                            : [
+                                                                                  ...prev,
+                                                                                  relatedViewer.id,
+                                                                              ],
+                                                                    );
+                                                                }}
+                                                                style={{
+                                                                    maxHeight:
+                                                                        showDetailsPostIds.includes(
+                                                                            relatedViewer.id,
+                                                                        )
+                                                                            ? '10rem'
+                                                                            : '4rem',
+                                                                }}
+                                                            ></div>
+                                                        ) : (
+                                                            <div
+                                                                dangerouslySetInnerHTML={{
+                                                                    __html: relatedViewer?.content,
+                                                                }}
+                                                                className={`prose overflow-hidden break-words text-xs text-white/80 transition-all duration-100 ease-in-out [-webkit-box-orient:vertical] [-webkit-line-clamp:5] [display:-webkit-box]`}
+                                                            ></div>
+                                                        )}
+
+                                                        {/* Learn More Button */}
+                                                        {showDetailsPostIds.includes(
+                                                            relatedViewer.id,
+                                                        ) && (
+                                                            <div className="mb-0 mt-3 flex items-center justify-between">
+                                                                {/* Username */}
+                                                                <div className="mb-0 flex items-center space-x-2">
+                                                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-gray-900">
+                                                                        {relatedViewer.user?.avatar}
+                                                                    </div>
+                                                                    <span className="text-xs font-medium text-white/80">
+                                                                        {relatedViewer.user?.name
+                                                                            .length > 6
+                                                                            ? relatedViewer.user?.name.substring(
+                                                                                  0,
+                                                                                  6,
+                                                                              ) + '...'
+                                                                            : relatedViewer.user
+                                                                                  ?.name}
+                                                                    </span>
+                                                                </div>
+
+                                                                <button
+                                                                    className="rounded-md bg-indigo-600 p-1 text-sm font-semibold hover:bg-indigo-400/80"
+                                                                    onClick={() => {
+                                                                        setIsMobilePostGallery(
+                                                                            true,
+                                                                        );
+                                                                        window.history.pushState(
+                                                                            {
+                                                                                modal: 'post-gallery',
+                                                                            },
+                                                                            '',
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    More
+                                                                </button>
+                                                            </div>
+                                                        )}
+
+                                                        {!showDetailsPostIds.includes(
+                                                            relatedViewer.id,
+                                                        ) &&
+                                                            Array.isArray(
+                                                                relatedViewer.post_image_urls,
+                                                            ) &&
+                                                            relatedViewer.post_image_urls.length <
+                                                                1 &&
+                                                            Array.isArray(
+                                                                relatedViewer.post_video_urls,
+                                                            ) &&
+                                                            relatedViewer.post_video_urls.length <
+                                                                1 && (
+                                                                <div className="mt-3 flex items-center justify-between">
+                                                                    <div className="mb-0 flex items-center space-x-2">
+                                                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-gray-900">
+                                                                            {
+                                                                                relatedViewer.user
+                                                                                    ?.avatar
+                                                                            }
+                                                                        </div>
+                                                                        <span className="text-xs font-medium text-white/80">
+                                                                            {relatedViewer.user
+                                                                                ?.name.length > 6
+                                                                                ? relatedViewer.user?.name.substring(
+                                                                                      0,
+                                                                                      6,
+                                                                                  ) + '...'
+                                                                                : relatedViewer.user
+                                                                                      ?.name}
+                                                                        </span>
+                                                                    </div>
+
+                                                                    <button
+                                                                        className="rounded-md bg-indigo-600 p-1 text-sm font-semibold hover:bg-indigo-400/80"
+                                                                        onClick={() => {
+                                                                            setIsMobilePostGallery(
+                                                                                true,
+                                                                            );
+                                                                            window.history.pushState(
+                                                                                {
+                                                                                    modal: 'post-gallery',
+                                                                                },
+                                                                                '',
+                                                                            );
+                                                                        }}
+                                                                    >
+                                                                        More
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
