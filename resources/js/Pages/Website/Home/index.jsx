@@ -571,6 +571,7 @@ export default function index({ google_map_api_key, search_history }) {
             const relatedPost = relatedPosts[index - 1];
             if (relatedPost && relatedPost.id !== relatedViewer?.id) {
                 setRelatedViewer(relatedPost);
+                setViewablePost(relatedPost);
                 window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
             }
 
