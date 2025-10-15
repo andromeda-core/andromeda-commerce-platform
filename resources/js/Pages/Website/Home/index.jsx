@@ -578,7 +578,7 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             const remaining = relatedPosts.length - index;
-
+            alert(relatedPostsNextPageUrl);
             if (remaining <= 3) {
                 fetchRelatedPosts();
             }
