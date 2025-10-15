@@ -1098,6 +1098,7 @@ export default function index({ google_map_api_key, search_history }) {
                                             scrollSnapType: 'y mandatory',
                                             scrollSnapStop: 'always',
                                             WebkitOverflowScrolling: 'touch',
+                                            scrollBehavior: 'smooth',
                                         }}
                                         ref={mobilePostContainerRef}
                                         onFocus={() => mobilePostContainerRef.current?.focus()}
