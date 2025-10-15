@@ -382,6 +382,8 @@ Additional Work:
     5:  Post Creation Date added On Posts Mobile's Gallery in Dropdown menu  ✅
     6:  Post Mobile Viewer Scroll Speed Reduced Also Its Swipe and fetching more posts logic enhanced (HARD SPENT WHOLE DAY) ✅
     7:  Search History Should Show Results First Record With Post Hashtag if post found and total results count and  post or product info ✅
+    8:  Not Storing Searches Who Doesnt Have Results Logic Done  ✅
+    9:  Showing Searched Query Or Spatiotemporal Filter Searched Keywrod in search history ✅
 
   )
 

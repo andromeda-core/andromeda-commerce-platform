@@ -161,7 +161,6 @@ const index = ({
     }
 
     const generateURL = (post) => {
-        console.log(post);
         return (
             `?slug=${post?.slug}&planet=earth${post?.latitude != null ? '&lat=' + post?.latitude : ''}` +
             `${post?.longitude != null ? '&lng=' + post?.longitude : ''}` +
@@ -405,6 +404,9 @@ const index = ({
                                                 : item.capacity || ''}
                                         </p>
 
+                                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                                            {item.type === 'posts' ? item?.tag : ''}
+                                        </p>
                                         <p className="truncate text-xs text-gray-500 dark:text-gray-400">
                                             {item.created_at}
                                         </p>

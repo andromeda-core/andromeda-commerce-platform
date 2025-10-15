@@ -733,6 +733,10 @@ const GlobalSearch = ({
                                                                 {/* Query or title Hastag with count */}
                                                                 <div className="flex items-center gap-2">
                                                                     <div className="flex flex-col font-medium text-gray-900 dark:text-gray-100">
+                                                                        <span className="mb-1 text-sm text-gray-500 dark:text-gray-400">
+                                                                            {item.filter_summary ||
+                                                                                item.query}
+                                                                        </span>
                                                                         <span className="truncate">
                                                                             {hasResults
                                                                                 ? result.title ||
@@ -2147,6 +2151,7 @@ const GlobalSearch = ({
                                                                                                                         {
                                                                                                                             count
                                                                                                                         }
+
                                                                                                                         )
                                                                                                                     </span>
                                                                                                                 </span>
