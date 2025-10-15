@@ -66,10 +66,6 @@ class PostController extends Controller
     public function getSinglePostBySlug(?string $slug, Request $request)
     {
 
-        if (! $request->ajax()) {
-            return to_route('home');
-        }
-
         if (empty($slug)) {
             return response()->json(['status' => false]);
         }

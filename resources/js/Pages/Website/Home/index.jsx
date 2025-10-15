@@ -339,7 +339,7 @@ export default function index({ google_map_api_key, search_history }) {
                 if (viewablePost && !relatedViewer && (!relatedPosts || relatedPosts.length <= 2)) {
                     fetchRelatedPosts();
                 }
-            }, 1000);
+            }, 700);
 
             return () => clearTimeout(timer);
         }
