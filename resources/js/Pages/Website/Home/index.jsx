@@ -470,7 +470,7 @@ export default function index({ google_map_api_key, search_history }) {
             // Unlock after animation completes
             setTimeout(() => {
                 scrollLock.current = false;
-            }, 500);
+            }, 100);
         };
 
         let scrollTimeout;
@@ -491,7 +491,7 @@ export default function index({ google_map_api_key, search_history }) {
                         fetchMorePosts();
                     }
                 }
-            }, 150);
+            }, 100);
         };
 
         window.addEventListener('wheel', handleWheel, { passive: false });

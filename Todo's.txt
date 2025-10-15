@@ -384,6 +384,7 @@ Additional Work:
     7:  Search History Should Show Results First Record With Post Hashtag if post found and total results count and  post or product info ✅
     8:  Not Storing Searches Who Doesnt Have Results Logic Done  ✅
     9:  Showing Searched Query Or Spatiotemporal Filter Searched Keywrod in search history ✅
+    10: Scroll Speed Of Mobile Post Viewer Increased  ✅
 
   )
 
