@@ -21,7 +21,6 @@ const getCookie = (name) => {
     return null;
 };
 
-let fetchedSlugsGlobal = new Set();
 export default function index({ google_map_api_key, search_history }) {
     const [isPostLoaded, setIsPostLoaded] = useState(false);
     const [posts, setPosts] = useState(null);
@@ -187,6 +186,7 @@ export default function index({ google_map_api_key, search_history }) {
                 window.history.replaceState({}, '', window.location.pathname);
                 setViewablePost('');
                 setRelatedPosts(null);
+                setRelatedPostsNextPageUrl(null);
                 // if (document.fullscreenElement) closeFullscreen();
                 setIsDesktopPostViewer(false);
                 setIsMobilePostViewer(false);
@@ -279,11 +279,14 @@ export default function index({ google_map_api_key, search_history }) {
         }
     };
 
+    const fetchedSlugsGlobal = useRef(new Set());
     const isFetchingRef = useRef(false);
     const [isFetchingRelated, setIsFetchingRelated] = useState(false);
 
-    const fetchRelatedPosts = async () => {
-        if (isFetchingRef.current || fetchedSlugsGlobal.has(viewablePost.slug)) return;
+    const fetchRelatedPosts = async (isInitial = false) => {
+        if (isFetchingRef.current) return;
+        if (isInitial && fetchedSlugsGlobal.current.has(viewablePost.slug)) return;
+
         isFetchingRef.current = true;
         setIsFetchingRelated(true);
         try {
@@ -308,8 +311,11 @@ export default function index({ google_map_api_key, search_history }) {
             toast.error('Error fetching related posts');
         } finally {
             isFetchingRef.current = false;
-            fetchedSlugsGlobal.add(viewablePost.slug);
             setIsFetchingRelated(false);
+
+            if (isInitial) {
+                fetchedSlugsGlobal.current.add(viewablePost.slug);
+            }
         }
     };
 
@@ -318,9 +324,9 @@ export default function index({ google_map_api_key, search_history }) {
             viewablePost &&
             !relatedViewer &&
             relatedPosts?.length <= 2 &&
-            !fetchedSlugsGlobal.has(viewablePost.slug)
+            !fetchedSlugsGlobal.current.has(viewablePost.slug)
         ) {
-            const timer = setTimeout(fetchRelatedPosts, 1000);
+            const timer = setTimeout(() => fetchRelatedPosts(true), 1000);
             return () => clearTimeout(timer);
         }
     }, [viewablePost, relatedViewer]);
@@ -470,7 +476,6 @@ export default function index({ google_map_api_key, search_history }) {
     const scrollLock = useRef(false);
 
     // Related Post Stay timer ref for checking if user is stying than fetching more related posts for that post
-    const stayTimer = useRef(null);
     useEffect(() => {
         if (!isMobilePostViewer || viewablePost === '' || isMobilePostGallery) return;
         const container = mobilePostContainerRef.current;
@@ -1845,7 +1850,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                         ))}
 
                                                     {isFetchingRelated && (
-                                                        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-[1px]">
+                                                        <div className="relative inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-[1px]">
                                                             <div className="h-8 w-8 animate-spin rounded-full border-4 border-white/30 border-t-white"></div>
                                                         </div>
                                                     )}
