@@ -161,6 +161,19 @@ export default function index({ google_map_api_key, search_history }) {
         }
     }, [isPostLoaded, posts]);
 
+    // Reset Method Of X Axis Posts Container
+    const resetXaxisPostsContainer = () => {
+        setTimeout(() => {
+            const horizontalContainers = document.querySelectorAll('.horizontal-scroll-container');
+            horizontalContainers.forEach((container) => {
+                container.scrollTo({
+                    left: 0,
+                    behavior: 'auto',
+                });
+            });
+        }, 50);
+    };
+
     // Stopping Overflow Of Body When Modal is Open Also Preventing Inertia Navigation When Pressing browser Naviagtion buttons for Posts Viewer and gallery
 
     useEffect(() => {
@@ -184,6 +197,7 @@ export default function index({ google_map_api_key, search_history }) {
                 }
 
                 window.history.replaceState({}, '', window.location.pathname);
+                resetXaxisPostsContainer();
                 setViewablePost('');
                 setRelatedPosts(null);
                 setRelatedPostsNextPageUrl(null);
@@ -331,6 +345,7 @@ export default function index({ google_map_api_key, search_history }) {
         }
     }, [viewablePost?.slug, relatedViewer, relatedPosts?.length]);
 
+    console.log(nextPageRelatedPostUrlRef.current);
     // Infinite Scroll Observer
     useEffect(() => {
         if (!loaderRef.current || !nextPageUrl) return;
@@ -475,7 +490,6 @@ export default function index({ google_map_api_key, search_history }) {
 
     const scrollLock = useRef(false);
 
-    // Related Post Stay timer ref for checking if user is stying than fetching more related posts for that post
     useEffect(() => {
         if (!isMobilePostViewer || viewablePost === '' || isMobilePostGallery) return;
         const container = mobilePostContainerRef.current;
@@ -521,7 +535,6 @@ export default function index({ google_map_api_key, search_history }) {
             }, 100);
         };
 
-        let scrollTimeout;
         const handleScroll = () => {
             const scrollTop = container.scrollTop;
             const containerHeight = container.clientHeight;
@@ -535,17 +548,7 @@ export default function index({ google_map_api_key, search_history }) {
                 setRelatedPosts(posts[newIndex]?.related_posts);
                 window.history.replaceState({}, '', generateURL(posts[newIndex]));
 
-                setTimeout(() => {
-                    const horizontalContainers = document.querySelectorAll(
-                        '.horizontal-scroll-container',
-                    );
-                    horizontalContainers.forEach((container) => {
-                        container.scrollTo({
-                            left: 0,
-                            behavior: 'auto',
-                        });
-                    });
-                }, 50);
+                resetXaxisPostsContainer();
 
                 if (newIndex >= posts.length - 5 && nextPageUrl) {
                     fetchMorePosts();
@@ -1203,7 +1206,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                 {/* Top Bar */}
                                                 {!relatedViewer && (
                                                     <div className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between px-4 py-3 font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
-                                                        <button
+                                                        {/* <button
                                                             onClick={() => {
                                                                 setViewablePost('');
                                                                 setRelatedPosts(null);
@@ -1215,10 +1218,10 @@ export default function index({ google_map_api_key, search_history }) {
                                                                     window.location.pathname,
                                                                 );
                                                             }}
-                                                            className="rounded-full p-1 hover:bg-gray-300/20"
+                                                            className="p-1 rounded-full hover:bg-gray-300/20"
                                                         >
-                                                            {/* back icon */}
-                                                            {/* <svg
+
+                                                            <svg
                                                             xmlns="http://www.w3.org/2000/svg"
                                                             fill="none"
                                                             viewBox="0 0 24 24"
@@ -1231,18 +1234,18 @@ export default function index({ google_map_api_key, search_history }) {
                                                                 strokeLinejoin="round"
                                                                 d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
                                                             />
-                                                        </svg> */}
+                                                        </svg>
 
-                                                            {/* Title */}
-                                                            {/* <span className="text-sm prose break-words text-white/80">
+
+                                                            <span className="text-sm prose break-words text-white/80">
                                                             {post?.title}
-                                                        </span> */}
+                                                        </span>
+                                                        </button> */}
 
-                                                            {/* hashtag */}
-                                                            <span className="text-sm text-white/80">
-                                                                {post?.tag}
-                                                            </span>
-                                                        </button>
+                                                        {/* hashtag */}
+                                                        <span className="text-sm text-white/80">
+                                                            {post?.tag}
+                                                        </span>
 
                                                         <div className="flex items-center space-x-3">
                                                             {/* Elipsis button */}
