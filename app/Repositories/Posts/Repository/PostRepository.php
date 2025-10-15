@@ -767,7 +767,10 @@ class PostRepository implements IPostRepository
             $post = $this->post->where('slug', $slug)->where('status', true)->first();
 
             if (empty($post)) {
-                throw new Exception('Post Not Found');
+                return [
+                    'status' => true,
+                    'related_posts' => [],
+                ];
             }
 
             $images = $request->boolean('images');

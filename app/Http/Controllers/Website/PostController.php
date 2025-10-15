@@ -81,6 +81,16 @@ class PostController extends Controller
 
     public function getRelatedPosts(Request $request, ?string $slug)
     {
-        //
+
+        if (empty($slug)) {
+            return response()->json(['status' => false, 'message' => 'Post Not Found'], 400);
+        }
+
+        $posts = $this->post->getRelatedPosts($request, $slug);
+        if ($posts['status'] == false) {
+            return response()->json(['status' => false, 'message' => $posts['message']], 400);
+        }
+
+        return response()->json(['status' => true, 'posts' => $posts['related_posts']], 200);
     }
 }

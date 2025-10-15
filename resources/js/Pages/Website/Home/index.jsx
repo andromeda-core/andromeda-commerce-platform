@@ -21,6 +21,7 @@ const getCookie = (name) => {
     return null;
 };
 
+let fetchedSlugsGlobal = new Set();
 export default function index({ google_map_api_key, search_history }) {
     const [isPostLoaded, setIsPostLoaded] = useState(false);
     const [posts, setPosts] = useState(null);
@@ -278,30 +279,49 @@ export default function index({ google_map_api_key, search_history }) {
         }
     };
 
+    const isFetchingRef = useRef(false);
+
     const fetchRelatedPosts = async () => {
+        if (isFetchingRef.current || fetchedSlugsGlobal.has(viewablePost.slug)) return;
+        isFetchingRef.current = true;
+
         try {
             const cookieValue = getCookie('post_preferences');
-            const parsed = await JSON.parse(decodeURIComponent(cookieValue));
+            const parsed = JSON.parse(decodeURIComponent(cookieValue));
+            const url =
+                relatedPostsNextPageUrl ??
+                `${route('website.posts.getrelated', viewablePost.slug)}?${new URLSearchParams(parsed)}`;
 
-            await axios
-                .get(
-                    relatedPostsNextPageUrl ||
-                        route('website.posts.getrelated', {
-                            slug: viewablePost.slug,
-                            ...parsed,
-                            // images: postPre
-                        }),
-                )
-                .then((res) => {
-                    setRelatedPosts(res.data.posts);
-                })
-                .catch((err) => {
-                    toast.error('Error fetching related posts:', err);
+            const res = await axios.get(url);
+            const data = res.data;
+
+            if (data.status) {
+                const newPosts = data.posts?.data || data.posts || [];
+                setRelatedPosts((prev) => {
+                    const ids = new Set(prev.map((p) => p.id));
+                    return [...prev, ...newPosts.filter((p) => !ids.has(p.id))];
                 });
+                setRelatedPostsNextPageUrl(data.posts.next_page_url);
+            }
         } catch (err) {
-            toast.error('Error fetching related posts:', err);
+            toast.error('Error fetching related posts');
+        } finally {
+            isFetchingRef.current = false;
+            fetchedSlugsGlobal.add(viewablePost.slug);
         }
     };
+
+    useEffect(() => {
+        if (
+            viewablePost &&
+            !relatedViewer &&
+            relatedPosts?.length <= 2 &&
+            !fetchedSlugsGlobal.has(viewablePost.slug)
+        ) {
+            const timer = setTimeout(fetchRelatedPosts, 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [viewablePost, relatedViewer]);
 
     // Infinite Scroll Observer
     useEffect(() => {
@@ -383,20 +403,6 @@ export default function index({ google_map_api_key, search_history }) {
     useEffect(() => {
         const handleResize = () => setElipsisShowDropdown(false);
         const handleClickOutside = (e) => {
-            // Working But Too Greedy
-            // if (elipsisButtonRef.current && !e.target.closest('[data-elipsis-button]')) {
-            //     console.log('BUTTON LOGIC RUNS');
-            //     setElipsisShowDropdown(false);
-            // }
-
-            // if (
-            //     elipsisDropDownRef &&
-            //     !e.target.closest('[data-elipsis-button]') &&
-            //     e.target.closest('[data-elipsis-dropdown]')
-            // ) {
-            //     setElipsisShowDropdown(true);
-            // }
-
             const clickedButton = e.target.closest('[data-elipsis-button]');
             const clickedDropdown = e.target.closest('[data-elipsis-dropdown]');
 
@@ -461,6 +467,8 @@ export default function index({ google_map_api_key, search_history }) {
 
     const scrollLock = useRef(false);
 
+    // Related Post Stay timer ref for checking if user is stying than fetching more related posts for that post
+    const stayTimer = useRef(null);
     useEffect(() => {
         if (!isMobilePostViewer || viewablePost === '' || isMobilePostGallery) return;
         const container = mobilePostContainerRef.current;
@@ -516,6 +524,7 @@ export default function index({ google_map_api_key, search_history }) {
                 setSelectedPostIndex(newIndex);
                 setViewablePost(posts[newIndex]);
                 setRelatedViewer(null);
+                setRelatedPostsNextPageUrl(null);
                 setRelatedPosts(posts[newIndex]?.related_posts);
                 window.history.replaceState({}, '', generateURL(posts[newIndex]));
 
@@ -563,9 +572,16 @@ export default function index({ google_map_api_key, search_history }) {
                 const newUrl = `${route('home')}${generateURL(relatedPost)}`;
                 window.history.pushState({}, '', newUrl);
             }
+
+            const remaining = relatedPosts.length - index;
+
+            // 🧠 If only 3 remaining and next page exists, fetch eagerly
+            if (remaining <= 3 && relatedPostsNextPageUrl) {
+                fetchRelatedPosts();
+            }
         } else if (index === 0 && relatedViewer) {
-            // scrolled back to main post
             setRelatedViewer(null);
+
             const mainUrl = `${route('home')}${generateURL(mainPost)}`;
             window.history.replaceState({}, '', mainUrl);
         }
@@ -1452,6 +1468,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                 setViewablePost('');
                                                                 setRelatedPosts(null);
                                                                 setRelatedViewer(null);
+                                                                setRelatedPostsNextPageUrl(null);
                                                                 setIsDesktopPostViewer(false);
                                                                 setIsMobilePostViewer(false);
                                                                 window.history.replaceState(
