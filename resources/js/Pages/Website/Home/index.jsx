@@ -27,7 +27,7 @@ export default function index({ google_map_api_key, search_history }) {
     const [relatedPosts, setRelatedPosts] = useState(null);
     const [relatedPostsNextPageUrl, setRelatedPostsNextPageUrl] = useState(null);
     const [relatedViewer, setRelatedViewer] = useState(null);
-
+    const nextPageRelatedPostUrlRef = useRef(null);
     const [nextPageUrl, setNextPageUrl] = useState(null);
 
     const fetchPosts = async () => {
@@ -282,6 +282,10 @@ export default function index({ google_map_api_key, search_history }) {
     const isFetchingRef = useRef(false);
     const [isFetchingRelated, setIsFetchingRelated] = useState(false);
 
+    useEffect(() => {
+        nextPageRelatedPostUrlRef.current = relatedPostsNextPageUrl;
+    }, [relatedPostsNextPageUrl]);
+
     const fetchRelatedPosts = async () => {
         if (isFetchingRef.current) return;
 
@@ -304,6 +308,7 @@ export default function index({ google_map_api_key, search_history }) {
                     return [...prev, ...newPosts.filter((p) => !ids.has(p.id))];
                 });
                 setRelatedPostsNextPageUrl(data.posts.next_page_url);
+                nextPageRelatedPostUrlRef.current = data.posts.next_page_url;
             }
         } catch (err) {
             toast.error('Error fetching related posts');
@@ -326,7 +331,6 @@ export default function index({ google_map_api_key, search_history }) {
         }
     }, [viewablePost?.slug, relatedViewer, relatedPosts?.length]);
 
-    console.log(relatedPostsNextPageUrl);
     // Infinite Scroll Observer
     useEffect(() => {
         if (!loaderRef.current || !nextPageUrl) return;
@@ -577,10 +581,7 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             const remaining = relatedPosts?.length - index;
-            alert(relatedPostsNextPageUrl);
-            if (remaining <= 3) {
-                fetchRelatedPosts();
-            }
+            if (remaining <= 3 && nextPageRelatedPostUrlRef.current) fetchRelatedPosts();
         } else if (index === 0 && relatedViewer) {
             setRelatedViewer(null);
 
