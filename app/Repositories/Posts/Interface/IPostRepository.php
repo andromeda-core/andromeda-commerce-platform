@@ -32,4 +32,6 @@ interface IPostRepository
     public function getInfinityScrollablePostsForWebsite(Request $request);
 
     public function getGoogleMapSettings();
+
+    public function getRelatedPosts(Request $request, ?string $slug);
 }

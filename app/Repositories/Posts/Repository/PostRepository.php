@@ -71,6 +71,44 @@ class PostRepository implements IPostRepository
             })
             ->first();
 
+        $related_posts = $this->post
+            ->where('id', '!=', $post->id)
+            ->where(function ($q) use ($text, $images, $videos) {
+                if ($text) {
+
+                    $q->orWhere(function ($sub) {
+                        $sub->whereNull('images')
+                            ->whereNull('videos');
+                    });
+                }
+
+                if ($images) {
+
+                    $q->orWhere(function ($sub) {
+                        $sub->whereNotNull('images')
+                            ->whereNull('videos');
+                    });
+                }
+
+                if ($videos) {
+
+                    $q->orWhere(function ($sub) {
+                        $sub->whereNotNull('videos');
+                    });
+                }
+            })
+            ->where(function ($query) use ($post) {
+                $query->where('title', 'like', '%'.$post->title.'%')
+                    ->orWhere('content', 'like', '%'.$post->content.'%')
+                    ->orWhere('tag', 'like', '%'.$post->tag.'%');
+            })
+            ->where('status', true)
+            ->with(['floor', 'user'])
+            ->take(2)
+            ->get();
+
+        $post->related_posts = $related_posts;
+
         return $post;
     }
 
@@ -586,6 +624,47 @@ class PostRepository implements IPostRepository
             ->latest()
             ->paginate(10);
 
+        $posts->getCollection()->transform(function ($post) use ($images, $text, $videos) {
+            $related_posts = $this->post
+                ->where('id', '!=', $post->id)
+                ->where(function ($q) use ($text, $images, $videos) {
+                    if ($text) {
+
+                        $q->orWhere(function ($sub) {
+                            $sub->whereNull('images')
+                                ->whereNull('videos');
+                        });
+                    }
+
+                    if ($images) {
+
+                        $q->orWhere(function ($sub) {
+                            $sub->whereNotNull('images')
+                                ->whereNull('videos');
+                        });
+                    }
+
+                    if ($videos) {
+
+                        $q->orWhere(function ($sub) {
+                            $sub->whereNotNull('videos');
+                        });
+                    }
+                })
+                ->where(function ($query) use ($post) {
+                    $query->where('title', 'like', '%'.$post->title.'%')
+                        ->orWhere('content', 'like', '%'.$post->content.'%')
+                        ->orWhere('tag', 'like', '%'.$post->tag.'%');
+                })
+                ->where('status', true)
+                ->with(['floor', 'user'])
+                ->take(2);
+
+            $post->related_posts = $related_posts->get();
+
+            return $post;
+        });
+
         return [
             'posts' => $posts->items(),
             'next_page_url' => $posts->nextPageUrl(),
@@ -628,6 +707,48 @@ class PostRepository implements IPostRepository
             ->latest()
             ->paginate(10);
 
+        $posts->getCollection()->transform(function ($post) use ($images, $text, $videos) {
+            $related_posts = $this->post
+                ->where('id', '!=', $post->id)
+                ->where(function ($q) use ($text, $images, $videos) {
+                    if ($text) {
+
+                        $q->orWhere(function ($sub) {
+                            $sub->whereNull('images')
+                                ->whereNull('videos');
+                        });
+                    }
+
+                    if ($images) {
+
+                        $q->orWhere(function ($sub) {
+                            $sub->whereNotNull('images')
+                                ->whereNull('videos');
+                        });
+                    }
+
+                    if ($videos) {
+
+                        $q->orWhere(function ($sub) {
+                            $sub->whereNotNull('videos');
+                        });
+                    }
+                })
+                ->where(function ($query) use ($post) {
+                    $query->where('title', 'like', '%'.$post->title.'%')
+                        ->orWhere('content', 'like', '%'.$post->content.'%')
+                        ->orWhere('tag', 'like', '%'.$post->tag.'%');
+                })
+                ->where('status', true)
+                ->with(['floor', 'user'])
+                ->take(2)
+                ->get();
+
+            $post->related_posts = $related_posts;
+
+            return $post;
+        });
+
         return [
             'posts' => $posts->items(),
             'next_page_url' => $posts->nextPageUrl(),
@@ -638,5 +759,65 @@ class PostRepository implements IPostRepository
     public function getGoogleMapSettings()
     {
         return Cache::get('google_map_settings');
+    }
+
+    public function getRelatedPosts(Request $request, ?string $slug)
+    {
+        try {
+            $post = $this->post->where('slug', $slug)->where('status', true)->first();
+
+            if (empty($post)) {
+                throw new Exception('Post Not Found');
+            }
+
+            $images = $request->boolean('images');
+            $text = $request->boolean('text');
+            $videos = $request->boolean('videos');
+
+            $related_posts = $this->post
+                ->where('id', '!=', $post->id)
+                ->where(function ($q) use ($text, $images, $videos) {
+                    if ($text) {
+
+                        $q->orWhere(function ($sub) {
+                            $sub->whereNull('images')
+                                ->whereNull('videos');
+                        });
+                    }
+
+                    if ($images) {
+
+                        $q->orWhere(function ($sub) {
+                            $sub->whereNotNull('images')
+                                ->whereNull('videos');
+                        });
+                    }
+
+                    if ($videos) {
+
+                        $q->orWhere(function ($sub) {
+                            $sub->whereNotNull('videos');
+                        });
+                    }
+                })
+                ->where(function ($query) use ($post) {
+                    $query->where('title', 'like', '%'.$post->title.'%')
+                        ->orWhere('content', 'like', '%'.$post->content.'%')
+                        ->orWhere('tag', 'like', '%'.$post->tag.'%');
+                })
+                ->where('status', true)
+                ->with(['floor', 'user'])
+                ->paginate(5);
+
+            return [
+                'status' => true,
+                'related_posts' => $related_posts,
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
     }
 }

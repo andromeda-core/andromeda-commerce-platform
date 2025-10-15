@@ -78,4 +78,9 @@ class PostController extends Controller
 
         return response()->json(['status' => true, 'post' => $post]);
     }
+
+    public function getRelatedPosts(Request $request, ?string $slug)
+    {
+        //
+    }
 }
