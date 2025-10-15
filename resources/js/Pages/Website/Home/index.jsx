@@ -316,18 +316,17 @@ export default function index({ google_map_api_key, search_history }) {
     useEffect(() => {
         // Run only when we have a valid post and no viewer open
         if (viewablePost && !relatedViewer && (!relatedPosts || relatedPosts.length <= 2)) {
-            // Short delay to ensure viewablePost and relatedPosts are ready (mobile fix)
             const timer = setTimeout(() => {
-                // Double-check again right before fetching
                 if (viewablePost && !relatedViewer && (!relatedPosts || relatedPosts.length <= 2)) {
                     fetchRelatedPosts();
                 }
-            }, 1500); // slightly increased for mobile
+            }, 1000);
 
             return () => clearTimeout(timer);
         }
     }, [viewablePost?.slug, relatedViewer, relatedPosts?.length]);
 
+    console.log(relatedPostsNextPageUrl);
     // Infinite Scroll Observer
     useEffect(() => {
         if (!loaderRef.current || !nextPageUrl) return;
@@ -577,7 +576,7 @@ export default function index({ google_map_api_key, search_history }) {
                 window.history.pushState({}, '', newUrl);
             }
 
-            const remaining = relatedPosts.length - index;
+            const remaining = relatedPosts?.length - index;
             alert(relatedPostsNextPageUrl);
             if (remaining <= 3) {
                 fetchRelatedPosts();

@@ -66,6 +66,10 @@ class PostController extends Controller
     public function getSinglePostBySlug(?string $slug, Request $request)
     {
 
+        if (! $request->ajax()) {
+            return to_route('home');
+        }
+
         if (empty($slug)) {
             return response()->json(['status' => false]);
         }
@@ -81,6 +85,9 @@ class PostController extends Controller
 
     public function getRelatedPosts(Request $request, ?string $slug)
     {
+        if (! $request->ajax()) {
+            return to_route('home');
+        }
 
         if (empty($slug)) {
             return response()->json(['status' => false, 'message' => 'Post Not Found'], 400);
