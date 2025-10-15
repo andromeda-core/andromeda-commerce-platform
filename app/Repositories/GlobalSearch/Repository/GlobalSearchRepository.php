@@ -478,7 +478,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                 //     'previous_search' => optional($previous_search)->filters_hash,
                 // ]);
 
-                if (empty($previous_search)) {
+                if (empty($previous_search) && $results->isNotEmpty()) {
 
                     $results_for_history = [];
                     $post = $results->where('type', 'posts')->first();
