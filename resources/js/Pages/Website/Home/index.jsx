@@ -309,6 +309,7 @@ export default function index({ google_map_api_key, search_history }) {
         } finally {
             isFetchingRef.current = false;
             fetchedSlugsGlobal.add(viewablePost.slug);
+            setIsFetchingRelated(false);
         }
     };
 
@@ -1844,14 +1845,8 @@ export default function index({ google_map_api_key, search_history }) {
                                                         ))}
 
                                                     {isFetchingRelated && (
-                                                        <div className="relative h-full min-w-full flex-shrink-0 snap-start snap-always">
-                                                            <div className="relative flex h-full w-full items-center justify-center">
-                                                                <div className="flex flex-col items-center justify-center space-y-3">
-                                                                    <div className="h-64 w-64 animate-pulse rounded-xl bg-gray-700/40"></div>
-                                                                    <div className="h-4 w-40 animate-pulse rounded bg-gray-600/60"></div>
-                                                                    <div className="h-4 w-24 animate-pulse rounded bg-gray-600/40"></div>
-                                                                </div>
-                                                            </div>
+                                                        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-[1px]">
+                                                            <div className="h-8 w-8 animate-spin rounded-full border-4 border-white/30 border-t-white"></div>
                                                         </div>
                                                     )}
                                                 </div>
