@@ -27,7 +27,6 @@ export default function index({ google_map_api_key, search_history }) {
     const [relatedPosts, setRelatedPosts] = useState(null);
     const [relatedPostsNextPageUrl, setRelatedPostsNextPageUrl] = useState(null);
     const [relatedViewer, setRelatedViewer] = useState(null);
-    const nextPageRelatedPostUrlRef = useRef(null);
     const [nextPageUrl, setNextPageUrl] = useState(null);
 
     const fetchPosts = async () => {
@@ -295,24 +294,29 @@ export default function index({ google_map_api_key, search_history }) {
 
     const isFetchingRef = useRef(false);
     const [isFetchingRelated, setIsFetchingRelated] = useState(false);
+    const nextPageRelatedPostUrlRef = useRef(null);
+    const lastFetchedUrlRef = useRef(null); // NEW
 
     useEffect(() => {
         nextPageRelatedPostUrlRef.current = relatedPostsNextPageUrl;
     }, [relatedPostsNextPageUrl]);
 
     const fetchRelatedPosts = async () => {
-        if (isFetchingRef.current) return;
+        const currentUrl =
+            nextPageRelatedPostUrlRef.current ??
+            `${route('website.posts.getrelated', viewablePost.slug)}?${new URLSearchParams(
+                JSON.parse(decodeURIComponent(getCookie('post_preferences'))),
+            )}`;
+
+        // ✅ Avoid fetching the same page again
+        if (isFetchingRef.current || lastFetchedUrlRef.current === currentUrl) return;
 
         isFetchingRef.current = true;
+        lastFetchedUrlRef.current = currentUrl; // ✅ Remember this URL
         setIsFetchingRelated(true);
-        try {
-            const cookieValue = getCookie('post_preferences');
-            const parsed = JSON.parse(decodeURIComponent(cookieValue));
-            const url =
-                relatedPostsNextPageUrl ??
-                `${route('website.posts.getrelated', viewablePost.slug)}?${new URLSearchParams(parsed)}`;
 
-            const res = await axios.get(url);
+        try {
+            const res = await axios.get(currentUrl);
             const data = res.data;
 
             if (data.status) {
@@ -321,6 +325,7 @@ export default function index({ google_map_api_key, search_history }) {
                     const ids = new Set(prev.map((p) => p.id));
                     return [...prev, ...newPosts.filter((p) => !ids.has(p.id))];
                 });
+
                 setRelatedPostsNextPageUrl(data.posts.next_page_url);
                 nextPageRelatedPostUrlRef.current = data.posts.next_page_url;
             }
@@ -564,27 +569,31 @@ export default function index({ google_map_api_key, search_history }) {
 
         if (index > 0) {
             const relatedPost = relatedPosts[index - 1];
-
             if (relatedPost && relatedPost.id !== relatedViewer?.id) {
                 setRelatedViewer(relatedPost);
-                const newUrl = `${route('home')}${generateURL(relatedPost)}`;
-                window.history.pushState({}, '', newUrl);
+                window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
             }
 
             const remaining = relatedPosts?.length - index;
 
+            // ✅ Instant fetch on first swipe (if no pagination yet)
             if (!nextPageRelatedPostUrlRef.current && !isFetchingRef.current) {
                 fetchRelatedPosts();
                 return;
             }
 
-            if (remaining <= 5 && nextPageRelatedPostUrlRef.current && !isFetchingRef.current) {
+            // ✅ Fetch only ONCE per next page URL when near end
+            if (
+                remaining <= 5 &&
+                nextPageRelatedPostUrlRef.current &&
+                !isFetchingRef.current &&
+                lastFetchedUrlRef.current !== nextPageRelatedPostUrlRef.current
+            ) {
                 fetchRelatedPosts();
             }
         } else if (index === 0 && relatedViewer) {
             setRelatedViewer(null);
-            const mainUrl = `${route('home')}${generateURL(mainPost)}`;
-            window.history.replaceState({}, '', mainUrl);
+            window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
         }
     };
 
