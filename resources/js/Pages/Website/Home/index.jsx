@@ -514,6 +514,7 @@ export default function index({ google_map_api_key, search_history }) {
             if (newIndex !== selectedPostIndex && posts[newIndex]) {
                 setSelectedPostIndex(newIndex);
                 setViewablePost(posts[newIndex]);
+                setRelatedPosts(posts[nextIndex]?.related_posts);
                 window.history.replaceState({}, '', generateURL(posts[newIndex]));
 
                 if (newIndex >= posts.length - 5 && nextPageUrl) {
