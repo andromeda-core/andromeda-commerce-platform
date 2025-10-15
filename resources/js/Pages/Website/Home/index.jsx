@@ -559,6 +559,18 @@ export default function index({ google_map_api_key, search_history }) {
         }
     };
 
+    useEffect(() => {
+        // Reset horizontal scroll position on every post or viewer change
+        const horizontalContainers = document.querySelectorAll('.horizontal-scroll-container');
+
+        horizontalContainers.forEach((container) => {
+            container.scrollTo({
+                left: 0,
+                behavior: 'instant' || 'auto',
+            });
+        });
+    }, [viewablePost, relatedViewer]);
+
     return (
         <MainLayout>
             <Head title="Home" />
@@ -1736,10 +1748,12 @@ export default function index({ google_map_api_key, search_history }) {
                                                             e,
                                                         )
                                                     }
-                                                    className="relative flex h-full w-full select-none snap-x snap-mandatory overflow-x-scroll scrollbar-none"
+                                                    className="horizontal-scroll-container relative flex h-full w-full select-none snap-x snap-mandatory overflow-x-scroll scrollbar-none"
                                                     style={{
                                                         scrollSnapType: 'x mandatory',
                                                         overscrollBehaviorX: 'contain',
+                                                        overscrollBehaviorY: 'auto',
+                                                        touchAction: 'pan-y pan-x',
                                                         WebkitOverflowScrolling: 'touch',
                                                         scrollBehavior: 'smooth',
                                                     }}
