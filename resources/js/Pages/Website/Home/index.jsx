@@ -584,7 +584,8 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             const remaining = relatedPosts?.length - index;
-            if (remaining <= 3 && nextPageRelatedPostUrlRef.current) fetchRelatedPosts();
+            if (remaining <= 3 && nextPageRelatedPostUrlRef.current && !isFetchingRelated)
+                fetchRelatedPosts();
         } else if (index === 0 && relatedViewer) {
             setRelatedViewer(null);
 
