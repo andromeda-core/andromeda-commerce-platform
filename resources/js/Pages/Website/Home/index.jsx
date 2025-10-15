@@ -539,6 +539,28 @@ export default function index({ google_map_api_key, search_history }) {
         isMobilePostGallery,
     ]);
 
+    const horizontalRefs = useRef([]);
+    const handleHorizontalScroll = (parentIndex, mainPost) => {
+        const el = horizontalRefs.current[parentIndex];
+        if (!el) return;
+
+        const index = Math.round(el.scrollLeft / el.clientWidth);
+
+        const allPosts = [mainPost, ...(relatedPosts || [])];
+        const newPost = allPosts[index];
+
+        if (newPost && newPost.id !== viewablePost?.id) {
+            setViewablePost(newPost);
+            window.history.replaceState({}, '', generateURL(newPost));
+        }
+    };
+
+    useEffect(() => {
+        return () => {
+            horizontalRefs.current = [];
+        };
+    }, []);
+
     return (
         <MainLayout>
             <Head title="Home" />
@@ -1442,6 +1464,12 @@ export default function index({ google_map_api_key, search_history }) {
                                                 {/* Left and Right Scroll Container */}
                                                 {/* Main Post + Related Posts Horizontal Scroll */}
                                                 <div
+                                                    ref={(el) =>
+                                                        (horizontalRefs.current[index] = el)
+                                                    }
+                                                    onScroll={() =>
+                                                        handleHorizontalScroll(index, post)
+                                                    }
                                                     className="relative flex h-full w-full select-none snap-x snap-mandatory overflow-x-scroll scrollbar-none"
                                                     style={{
                                                         scrollSnapType: 'x mandatory',
