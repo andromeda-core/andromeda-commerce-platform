@@ -512,7 +512,7 @@ export default function index({ google_map_api_key, search_history }) {
             const containerHeight = container.clientHeight;
             const newIndex = Math.round(scrollTop / containerHeight);
 
-            if (relatedViewer) {
+            if (newIndex !== selectedPostIndex && posts[newIndex]) {
                 const horizontalContainers = document.querySelectorAll(
                     '.horizontal-scroll-container',
                 );
@@ -522,9 +522,7 @@ export default function index({ google_map_api_key, search_history }) {
                         behavior: 'auto',
                     });
                 });
-            }
 
-            if (newIndex !== selectedPostIndex && posts[newIndex]) {
                 setSelectedPostIndex(newIndex);
                 setViewablePost(posts[newIndex]);
                 setRelatedViewer(null);
