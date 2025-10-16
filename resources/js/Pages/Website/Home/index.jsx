@@ -314,7 +314,7 @@ export default function index({ google_map_api_key, search_history }) {
 
     const isFetchingRef = useRef(false);
     const [isFetchingRelated, setIsFetchingRelated] = useState(false);
-    const lastFetchedUrlRef = useRef(null);
+    const lastFetchedUrlRef = useRef({});
 
     const fetchRelatedPosts = async (slug) => {
         const currentUrl =
@@ -323,11 +323,11 @@ export default function index({ google_map_api_key, search_history }) {
                 JSON.parse(decodeURIComponent(getCookie('post_preferences'))),
             )}`;
 
-        alert(slug);
-        if (isFetchingRef.current || lastFetchedUrlRef.current === currentUrl || !slug) return;
+        if (isFetchingRef.current || lastFetchedUrlRef.current[slug] === currentUrl || !slug)
+            return;
 
         isFetchingRef.current = true;
-        lastFetchedUrlRef.current = currentUrl;
+        lastFetchedUrlRef.current[slug] = currentUrl;
 
         try {
             const res = await axios.get(currentUrl, {
@@ -669,7 +669,7 @@ export default function index({ google_map_api_key, search_history }) {
                     remaining <= 5 &&
                     nextPageUrl &&
                     !isFetchingRef.current &&
-                    lastFetchedUrlRef.current !== nextPageUrl
+                    lastFetchedUrlRef.current[slug] !== nextPageUrl
                 ) {
                     setIsFetchingRelated(true);
                     fetchRelatedPosts(slug);
