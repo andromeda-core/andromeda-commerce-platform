@@ -637,8 +637,6 @@ export default function index({ google_map_api_key, search_history }) {
             const currentViewer = relatedViewerMap[slug] || null;
             const nextPageUrl = relatedNextMap[slug] || null;
 
-            if (completedSlugsRef.current[slug]) return;
-
             const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
 
             if (index === lastIndex) return;
