@@ -389,7 +389,8 @@ Additional Work:
     12: Fetching More Post, single post and fecthig initial posts params sending logic Corected even no cookie exists than it will send handle defualt vlaues to true by backend ✅
     13: Showing Default User Name and Avatar Of User  If No User Name Exists In Post Both In PC and In Mobile  ✅
     14: Fixed Duplication Related post before it was Including the Main Post as well in related Post So Excluding that post logic is completed ✅
-    15: When clicking Open in new window in the search result list, it first moves to the post’s featured image screen.
+    15: X Axis Container Instantly makign inde x0 if Y Axis Scroll Happened means Post changes  ✅
+    16: When clicking Open in new window in the search result list, it first moves to the post’s featured image screen.
         >then to the post’s single page.
         >However, when clicking the Back button,
         >the PWA turns off
