@@ -567,17 +567,16 @@ export default function index({ google_map_api_key, search_history }) {
             const newIndex = Math.round(scrollTop / containerHeight);
 
             if (newIndex !== selectedPostIndex && posts[newIndex]) {
+                resetXaxisPostsContainer();
+
                 setSelectedPostIndex(newIndex);
                 setViewablePost(posts[newIndex]);
 
                 setRelatedPosts(posts[newIndex]?.related_posts);
-
                 // Setting Post Viewer Main Post Slug
                 setRelatedPostSlug(posts[newIndex]?.slug);
 
                 window.history.replaceState({}, '', generateURL(posts[newIndex]));
-
-                resetXaxisPostsContainer();
 
                 if (newIndex >= posts.length - 5 && nextPageUrl) {
                     fetchMorePosts();
