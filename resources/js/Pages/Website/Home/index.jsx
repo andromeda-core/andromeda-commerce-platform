@@ -163,12 +163,18 @@ export default function index({ google_map_api_key, search_history }) {
 
     // Reset Method Of X Axis Posts Container
     const resetXaxisPostsContainer = () => {
-        const horizontalContainers = document.querySelectorAll('.horizontal-scroll-container');
-        horizontalContainers.forEach((container) => {
+        const containers = document.querySelectorAll('.horizontal-scroll-container');
+
+        containers.forEach((container) => {
+            container.style.scrollBehavior = 'auto';
             container.style.visibility = 'hidden';
+
             container.scrollLeft = 0;
 
-            requestAnimationFrame(() => (container.style.visibility = 'visible'));
+            requestAnimationFrame(() => {
+                container.style.visibility = 'visible';
+                container.style.scrollBehavior = 'smooth';
+            });
         });
 
         setRelatedViewer(null);
