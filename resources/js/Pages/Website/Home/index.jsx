@@ -356,7 +356,6 @@ export default function index({ google_map_api_key, search_history }) {
                 }));
 
                 if (!data.posts.next_page_url) {
-                    alert('No More Related Posts');
                     completedSlugsRef.current[slug] = true;
                 }
             }
@@ -672,9 +671,6 @@ export default function index({ google_map_api_key, search_history }) {
                     if (now - lastTried < 10000) return;
                     lastTriedRef.current[slug] = now;
 
-                    setTimeout(() => {
-                        alert('FETCHING INITIALLY');
-                    }, 1000);
                     setIsFetchingRelated(true);
                     fetchRelatedPosts(slug);
                     return;
