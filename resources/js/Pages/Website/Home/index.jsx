@@ -633,6 +633,10 @@ export default function index({ google_map_api_key, search_history }) {
             if (index === lastIndex) return;
             lastHorizontalIndexRef.current[slug] = index;
 
+            setTimeout(() => {
+                alert(index);
+            }, 1000);
+
             if (index > 0) {
                 const relatedPost = relatedPosts[index - 1];
                 if (relatedPost && relatedPost.id !== currentViewer?.id) {
