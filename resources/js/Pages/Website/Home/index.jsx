@@ -335,7 +335,6 @@ export default function index({ google_map_api_key, search_history }) {
 
         isFetchingRef.current = true;
         lastFetchedUrlRef.current = currentUrl;
-        setIsFetchingRelated(true);
 
         try {
             const res = await axios.get(currentUrl);
@@ -601,6 +600,7 @@ export default function index({ google_map_api_key, search_history }) {
 
             // Instant fetch on first swipe (if no pagination yet)
             if (!nextPageRelatedPostUrlRef.current && !isFetchingRef.current) {
+                setIsFetchingRelated(true);
                 fetchRelatedPosts();
                 return;
             }
@@ -612,6 +612,7 @@ export default function index({ google_map_api_key, search_history }) {
                 !isFetchingRef.current &&
                 lastFetchedUrlRef.current !== nextPageRelatedPostUrlRef.current
             ) {
+                setIsFetchingRelated(true);
                 fetchRelatedPosts();
             }
         } else if (index === 0 && relatedViewer) {
