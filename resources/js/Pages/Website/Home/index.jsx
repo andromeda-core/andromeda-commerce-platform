@@ -316,6 +316,8 @@ export default function index({ google_map_api_key, search_history }) {
     const [isFetchingRelated, setIsFetchingRelated] = useState(false);
     const lastFetchedUrlRef = useRef({});
 
+    // If Post Already Fetches All Remeaning Related Posts And Dont Have More Pages so it will be marked as completed and wont be fetched
+    const completedSlugsRef = useRef({});
     const fetchRelatedPosts = async (slug) => {
         const currentUrl =
             relatedNextMap[slug] ??
@@ -352,6 +354,11 @@ export default function index({ google_map_api_key, search_history }) {
                     ...prev,
                     [slug]: data.posts.next_page_url,
                 }));
+
+                if (!data.posts.next_page_url) {
+                    alert('No More Related Posts');
+                    completedSlugsRef.current[slug] = true;
+                }
             }
         } catch (err) {
             toast.error('Error fetching related posts');
@@ -618,6 +625,7 @@ export default function index({ google_map_api_key, search_history }) {
     ]);
 
     const lastHorizontalIndexRef = useRef({});
+    const lastTriedRef = useRef({});
 
     const handleHorizontalScroll = useCallback(
         (mainPost, e) => {
@@ -628,6 +636,8 @@ export default function index({ google_map_api_key, search_history }) {
             const relatedPosts = relatedPostsMap[slug] || [];
             const currentViewer = relatedViewerMap[slug] || null;
             const nextPageUrl = relatedNextMap[slug] || null;
+
+            if (completedSlugsRef.current[slug]) return;
 
             const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
 
@@ -656,6 +666,12 @@ export default function index({ google_map_api_key, search_history }) {
 
                 // Instant fetch on first swipe (if no pagination yet)
                 if (!nextPageUrl && !isFetchingRef.current) {
+                    const now = Date.now();
+                    const lastTried = lastTriedRef.current[slug] || 0;
+
+                    if (now - lastTried < 10000) return;
+                    lastTriedRef.current[slug] = now;
+
                     setTimeout(() => {
                         alert('FETCHING INITIALLY');
                     }, 1000);
@@ -669,7 +685,8 @@ export default function index({ google_map_api_key, search_history }) {
                     remaining <= 5 &&
                     nextPageUrl &&
                     !isFetchingRef.current &&
-                    lastFetchedUrlRef.current[slug] !== nextPageUrl
+                    lastFetchedUrlRef.current[slug] !== nextPageUrl &&
+                    !completedSlugsRef.current[slug]
                 ) {
                     setIsFetchingRelated(true);
                     fetchRelatedPosts(slug);
