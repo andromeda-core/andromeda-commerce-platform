@@ -229,18 +229,40 @@ export default function index({ google_map_api_key, search_history }) {
         if (!nextPageUrl) return;
 
         try {
-            const params = new URLSearchParams(nextPageUrl.split('?')[1]);
+            const url = new URL(nextPageUrl);
+            const params = new URLSearchParams(url.search);
 
             const cookieValue = getCookie('post_preferences');
-            const parsed = await JSON.parse(decodeURIComponent(cookieValue));
 
-            if (parsed) {
-                Object.entries(parsed).forEach(([key, value]) => {
+            if (cookieValue && cookieValue.trim() !== '') {
+                try {
+                    const parsed = JSON.parse(decodeURIComponent(cookieValue));
+                    if (parsed && typeof parsed === 'object') {
+                        Object.entries(parsed).forEach(([key, value]) => {
+                            params.set(key, value ? 'true' : 'false');
+                        });
+                    }
+                } catch (err) {
+                    console.warn('Invalid cookie JSON:', err);
+                }
+            } else {
+                const page = params.get('page');
+
+                const cleanParams = new URLSearchParams();
+                if (page) cleanParams.set('page', page);
+                params.delete('images');
+                params.delete('text');
+                params.delete('videos');
+
+                // replace params object
+                for (const [key, value] of cleanParams.entries()) {
                     params.set(key, value);
-                });
+                }
             }
 
-            const res = await fetch(route('website.posts.getmore') + `?${params.toString()}`);
+            const finalUrl = `${route('website.posts.getmore')}?${params.toString()}`;
+
+            const res = await fetch(finalUrl);
             const data = await res.json();
 
             setPosts((prev) => {
@@ -262,6 +284,7 @@ export default function index({ google_map_api_key, search_history }) {
             const parsed = await JSON.parse(decodeURIComponent(cookieValue));
 
             const queryString = new URLSearchParams(parsed).toString();
+
             const res = await fetch(route('website.posts.getsingle', slug) + `?${queryString}`);
             const data = await res.json();
 
@@ -308,11 +331,10 @@ export default function index({ google_map_api_key, search_history }) {
                 JSON.parse(decodeURIComponent(getCookie('post_preferences'))),
             )}`;
 
-        // ✅ Avoid fetching the same page again
         if (isFetchingRef.current || lastFetchedUrlRef.current === currentUrl) return;
 
         isFetchingRef.current = true;
-        lastFetchedUrlRef.current = currentUrl; // ✅ Remember this URL
+        lastFetchedUrlRef.current = currentUrl;
         setIsFetchingRelated(true);
 
         try {
@@ -577,13 +599,13 @@ export default function index({ google_map_api_key, search_history }) {
 
             const remaining = relatedPosts?.length - index;
 
-            // ✅ Instant fetch on first swipe (if no pagination yet)
+            // Instant fetch on first swipe (if no pagination yet)
             if (!nextPageRelatedPostUrlRef.current && !isFetchingRef.current) {
                 fetchRelatedPosts();
                 return;
             }
 
-            // ✅ Fetch only ONCE per next page URL when near end
+            // Fetch only ONCE per next page URL when near end
             if (
                 remaining <= 5 &&
                 nextPageRelatedPostUrlRef.current &&

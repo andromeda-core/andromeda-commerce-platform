@@ -37,9 +37,9 @@ class PostRepository implements IPostRepository
 
     public function getSinglePostBySlug(string $slug, ?Request $request = null)
     {
-        $images = ! empty($request) ? ($request->has('images') ? $request->boolean('images') : false) : null;
-        $videos = ! empty($request) ? ($request->has('videos') ? $request->boolean('videos') : false) : null;
-        $text = ! empty($request) ? ($request->has('text') ? $request->boolean('text') : false) : null;
+        $images = ! empty($request) ? ($request->has('images') ? $request->boolean('images') : true) : null;
+        $videos = ! empty($request) ? ($request->has('videos') ? $request->boolean('videos') : true) : null;
+        $text = ! empty($request) ? ($request->has('text') ? $request->boolean('text') : true) : null;
 
         $post = $this->post->with(['floor', 'user'])
             ->where('slug', $slug)
@@ -71,43 +71,45 @@ class PostRepository implements IPostRepository
             })
             ->first();
 
-        $related_posts = $this->post
-            ->where('id', '!=', $post->id)
-            ->where(function ($q) use ($text, $images, $videos) {
-                if ($text) {
+        if (! empty($post)) {
+            $related_posts = $this->post
+                ->where('id', '!=', $post->id)
+                ->where(function ($q) use ($text, $images, $videos) {
+                    if ($text) {
 
-                    $q->orWhere(function ($sub) {
-                        $sub->whereNull('images')
-                            ->whereNull('videos');
-                    });
-                }
+                        $q->orWhere(function ($sub) {
+                            $sub->whereNull('images')
+                                ->whereNull('videos');
+                        });
+                    }
 
-                if ($images) {
+                    if ($images) {
 
-                    $q->orWhere(function ($sub) {
-                        $sub->whereNotNull('images')
-                            ->whereNull('videos');
-                    });
-                }
+                        $q->orWhere(function ($sub) {
+                            $sub->whereNotNull('images')
+                                ->whereNull('videos');
+                        });
+                    }
 
-                if ($videos) {
+                    if ($videos) {
 
-                    $q->orWhere(function ($sub) {
-                        $sub->whereNotNull('videos');
-                    });
-                }
-            })
-            ->where(function ($query) use ($post) {
-                $query->where('title', 'like', '%'.$post->title.'%')
-                    ->orWhere('content', 'like', '%'.$post->content.'%')
-                    ->orWhere('tag', 'like', '%'.$post->tag.'%');
-            })
-            ->where('status', true)
-            ->with(['floor', 'user'])
-            ->take(5)
-            ->get();
+                        $q->orWhere(function ($sub) {
+                            $sub->whereNotNull('videos');
+                        });
+                    }
+                })
+                ->where(function ($query) use ($post) {
+                    $query->where('title', 'like', '%'.$post->title.'%')
+                        ->orWhere('content', 'like', '%'.$post->content.'%')
+                        ->orWhere('tag', 'like', '%'.$post->tag.'%');
+                })
+                ->where('status', true)
+                ->with(['floor', 'user'])
+                ->take(5)
+                ->get();
 
-        $post->related_posts = $related_posts;
+            $post->related_posts = $related_posts;
+        }
 
         return $post;
     }
@@ -590,9 +592,9 @@ class PostRepository implements IPostRepository
     // Fetching Posts For Website
     public function getPostsForWebsite(Request $request)
     {
-        $images = $request->boolean('images');
-        $text = $request->boolean('text');
-        $videos = $request->boolean('videos');
+        $images = $request->boolean('images', true);
+        $text = $request->boolean('text', true);
+        $videos = $request->boolean('videos', true);
 
         $posts = $this->post
             ->where('status', true)
@@ -622,7 +624,12 @@ class PostRepository implements IPostRepository
             })
             ->with(['floor', 'user'])
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->appends([
+                'images' => $images,
+                'text' => $text,
+                'videos' => $videos,
+            ]);
 
         $posts->getCollection()->transform(function ($post) use ($images, $text, $videos) {
             $related_posts = $this->post
@@ -673,9 +680,10 @@ class PostRepository implements IPostRepository
 
     public function getInfinityScrollablePostsForWebsite(Request $request)
     {
-        $images = $request->boolean('images');
-        $text = $request->boolean('text');
-        $videos = $request->boolean('videos');
+
+        $images = $request->boolean('images', true);
+        $text = $request->boolean('text', true);
+        $videos = $request->boolean('videos', true);
 
         $posts = $this->post
             ->where('status', true)
@@ -705,7 +713,12 @@ class PostRepository implements IPostRepository
             })
             ->with(['floor', 'user'])
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->appends([
+                'images' => $images,
+                'text' => $text,
+                'videos' => $videos,
+            ]);
 
         $posts->getCollection()->transform(function ($post) use ($images, $text, $videos) {
             $related_posts = $this->post
@@ -773,9 +786,9 @@ class PostRepository implements IPostRepository
                 ];
             }
 
-            $images = $request->boolean('images');
-            $text = $request->boolean('text');
-            $videos = $request->boolean('videos');
+            $images = $request->boolean('images', true);
+            $text = $request->boolean('text', true);
+            $videos = $request->boolean('videos', true);
 
             $related_posts = $this->post
                 ->where('id', '!=', $post->id)
@@ -810,7 +823,12 @@ class PostRepository implements IPostRepository
                 })
                 ->where('status', true)
                 ->with(['floor', 'user'])
-                ->paginate(10);
+                ->paginate(10)
+                ->appends([
+                    'images' => $images,
+                    'text' => $text,
+                    'videos' => $videos,
+                ]);
 
             return [
                 'status' => true,

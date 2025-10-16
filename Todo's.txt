@@ -385,6 +385,8 @@ Additional Work:
     8:  Not Storing Searches Who Doesnt Have Results Logic Done  ✅
     9:  Showing Searched Query Or Spatiotemporal Filter Searched Keywrod in search history ✅
     10: Scroll Speed Of Mobile Post Viewer Increased  ✅
+    11: Left And Right related Post Fecthing Completed And Params Sending is Also Corrected ✅
+    12: Fetching More Post, single post and fecthig initial posts params sending logic Corected even no cookie exists than it will send handle defualt vlaues to true by backend ✅
 
   )
 
