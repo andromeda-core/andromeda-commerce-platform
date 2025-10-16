@@ -323,6 +323,7 @@ export default function index({ google_map_api_key, search_history }) {
                 JSON.parse(decodeURIComponent(getCookie('post_preferences'))),
             )}`;
 
+        alert(slug);
         if (isFetchingRef.current || lastFetchedUrlRef.current === currentUrl || !slug) return;
 
         isFetchingRef.current = true;
