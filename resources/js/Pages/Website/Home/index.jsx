@@ -4,7 +4,7 @@ import useDarkMode from '@/Hooks/useDarkMode';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, router, usePage } from '@inertiajs/react';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import QRCode from 'react-qr-code';
 import { toast } from 'react-toastify';
 import videoThumbnail from '../../../../../public/assets/images/video-thumb/general-video.png';
@@ -505,7 +505,6 @@ export default function index({ google_map_api_key, search_history }) {
         }
     }, [posts, isPostLoaded, viewablePost]);
 
-    // Done
     const scrollLock = useRef(false);
     useEffect(() => {
         if (!isMobilePostViewer || viewablePost === '' || isMobilePostGallery) return;
@@ -617,64 +616,79 @@ export default function index({ google_map_api_key, search_history }) {
         isMobilePostGallery,
     ]);
 
-    // Done
-    const handleHorizontalScroll = (mainPost, e) => {
-        const el = e.currentTarget;
-        const index = Math.round(el.scrollLeft / el.clientWidth);
+    const lastHorizontalIndexRef = useRef({});
 
-        const slug = mainPost.slug;
-        const relatedPosts = relatedPostsMap[slug] || [];
-        const currentViewer = relatedViewerMap[slug] || null;
-        const nextPageUrl = relatedNextMap[slug] || null;
+    const handleHorizontalScroll = useCallback(
+        (mainPost, e) => {
+            const el = e.currentTarget;
+            const index = Math.round(el.scrollLeft / el.clientWidth);
 
-        if (index > 0) {
-            const relatedPost = relatedPosts[index - 1];
+            const slug = mainPost.slug;
+            const relatedPosts = relatedPostsMap[slug] || [];
+            const currentViewer = relatedViewerMap[slug] || null;
+            const nextPageUrl = relatedNextMap[slug] || null;
 
-            if (relatedPost && relatedPost.id !== currentViewer?.id) {
-                setRelatedViewerMap((prev) => ({
-                    ...prev,
-                    [slug]: relatedPost,
-                }));
+            const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
 
+            if (index === lastIndex) return;
+            lastHorizontalIndexRef.current[slug] = index;
+
+            if (index > 0) {
+                const relatedPost = relatedPosts[index - 1];
+                if (relatedPost && relatedPost.id !== currentViewer?.id) {
+                    setRelatedViewerMap((prev) => ({
+                        ...prev,
+                        [slug]: relatedPost,
+                    }));
+
+                    setActiveViewerMap((prev) => ({
+                        ...prev,
+                        [slug]: 'related',
+                    }));
+
+                    setViewablePost(relatedPost);
+
+                    window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
+                }
+
+                const remaining = relatedPosts?.length - index;
+
+                // Instant fetch on first swipe (if no pagination yet)
+                if (!nextPageUrl && !isFetchingRef.current) {
+                    setIsFetchingRelated(true);
+                    fetchRelatedPosts(slug);
+                    return;
+                }
+
+                // Fetch's only ONCE per next page URL when near end
+                if (
+                    remaining <= 5 &&
+                    nextPageUrl &&
+                    !isFetchingRef.current &&
+                    lastFetchedUrlRef.current !== nextPageUrl
+                ) {
+                    setIsFetchingRelated(true);
+                    fetchRelatedPosts(slug);
+                }
+            } else if (index === 0 && currentViewer) {
                 setActiveViewerMap((prev) => ({
                     ...prev,
-                    [slug]: 'related',
+                    [slug]: 'main',
                 }));
 
-                setViewablePost(relatedPost);
-
-                window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
+                setViewablePost(mainPost);
+                window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
             }
-
-            const remaining = relatedPosts?.length - index;
-
-            // Instant fetch on first swipe (if no pagination yet)
-            if (!nextPageUrl && !isFetchingRef.current) {
-                setIsFetchingRelated(true);
-                fetchRelatedPosts(slug);
-                return;
-            }
-
-            // Fetch only ONCE per next page URL when near end
-            if (
-                remaining <= 5 &&
-                nextPageUrl &&
-                !isFetchingRef.current &&
-                lastFetchedUrlRef.current !== nextPageUrl
-            ) {
-                setIsFetchingRelated(true);
-                fetchRelatedPosts(slug);
-            }
-        } else if (index === 0 && currentViewer) {
-            setActiveViewerMap((prev) => ({
-                ...prev,
-                [slug]: 'main',
-            }));
-
-            setViewablePost(mainPost);
-            window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
-        }
-    };
+        },
+        [
+            relatedPostsMap,
+            relatedViewerMap,
+            relatedNextMap,
+            isFetchingRef,
+            lastFetchedUrlRef,
+            fetchRelatedPosts,
+        ],
+    );
 
     const updateRelatedPostsMap = (slug, newPosts = []) => {
         if (!slug || !Array.isArray(newPosts)) return;
