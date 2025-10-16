@@ -655,6 +655,9 @@ export default function index({ google_map_api_key, search_history }) {
 
                 // Instant fetch on first swipe (if no pagination yet)
                 if (!nextPageUrl && !isFetchingRef.current) {
+                    setTimeout(() => {
+                        alert('FETCHING INITIALLY');
+                    }, 1000);
                     setIsFetchingRelated(true);
                     fetchRelatedPosts(slug);
                     return;
