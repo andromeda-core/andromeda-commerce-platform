@@ -167,7 +167,7 @@ export default function index({ google_map_api_key, search_history }) {
             horizontalContainers.forEach((container) => {
                 container.scrollTo({
                     left: 0,
-                    behavior: 'auto',
+                    behavior: 'instant',
                 });
             });
         }, 50);
