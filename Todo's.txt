@@ -394,7 +394,7 @@ Additional Work:
         >then to the post’s single page.
         >However, when clicking the Back button,
         >the PWA turns off
-        or navigates to a different place each time instead of returning to the post’s featured image. screen.
+        or navigates to a different place each time instead of returning to the post’s featured image. screen. -> User Activation Logic Added ✅
 
     17: Fetching More Related Posts And Added Checks For Already Completed posts Fetchs and And Posts who havent fetched yet and added thres hold for
         fetch again to improve Application performance Also Added Caching

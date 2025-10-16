@@ -1,11 +1,12 @@
 import Preloader from '@/Components/Preloader';
 import useWindowSize from '@/Hooks/useWindowSize';
 import BottomBar from '@/partials/Website/BottomBar';
-import Footer from '@/partials/Website/Footer';
-import Header from '@/partials/Website/Header';
+
 import Sidebar from '@/partials/Website/Sidebar';
 import { usePage } from '@inertiajs/react';
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+
 import { ToastContainer, Bounce, toast } from 'react-toastify';
 
 export default function MainLayout({ children }) {
@@ -110,6 +111,26 @@ export default function MainLayout({ children }) {
         }
     }, [flash]);
 
+    const [CurrentUrl, setCurrentUrl] = useState(window.location.href);
+    const [needsActivation, setNeedsActivation] = useState(false);
+
+    useEffect(() => {
+        const nav = performance.getEntriesByType('navigation')[0];
+
+        const wasReload = nav?.type === 'reload';
+        const wasNavigated = nav?.type === 'navigate';
+        const cameExternally =
+            document.referrer && !document.referrer.startsWith(window.location.origin);
+
+        if (wasReload || cameExternally || wasNavigated) {
+            const url = new URL(CurrentUrl);
+
+            if (url.searchParams.get('slug')) {
+                setNeedsActivation(true);
+            }
+        }
+    }, []);
+
     return (
         <>
             <div className="relative min-h-screen w-full bg-slate-100 dark:bg-zinc-950/70">
@@ -156,6 +177,21 @@ export default function MainLayout({ children }) {
                 >
                     {/* Main Content */}
                     <main className="min-h-screen flex-1 px-3 pt-2 dark:bg-zinc-950/70 lg:px-6">
+                        {needsActivation &&
+                            createPortal(
+                                <div
+                                    className="fixed inset-0 z-[99999] flex cursor-pointer flex-col items-center justify-center bg-black/70 text-white"
+                                    onClick={() => {
+                                        setNeedsActivation(false);
+                                    }}
+                                >
+                                    <p className="mb-3 text-center text-sm opacity-80">
+                                        Tap anywhere to activate navigation
+                                    </p>
+                                </div>,
+                                document.body,
+                            )}
+
                         {children ? (
                             children
                         ) : (

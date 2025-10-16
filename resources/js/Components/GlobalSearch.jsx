@@ -66,6 +66,18 @@ const GlobalSearch = ({
                 console.error('Failed to parse post_preferences cookie', e);
             }
         }
+
+        const url = new URL(window.location.href);
+
+        const param = url.searchParams.get('modal');
+
+        if (param) {
+            if (param === 'filters') {
+                setIsPostFilterSetting(true);
+            } else if (param === 'spatiotemporal-filters') {
+                setIsSpatiotemporalFilters(true);
+            }
+        }
     }, []);
     const [searchQuery, setSearchQuery] = useState(defaultQuery || '');
 
@@ -520,6 +532,8 @@ const GlobalSearch = ({
     // Post Filters State Checking And Appending Query If Modal Opens Of Post Filter
     useEffect(() => {
         const url = new URL(window.location.href);
+
+        const param = url.searchParams.get('modal');
 
         if (isPostFilterSetting) {
             window.history.pushState({}, '', window.location.pathname);
@@ -2159,6 +2173,7 @@ const GlobalSearch = ({
                                                                                                                         {
                                                                                                                             count
                                                                                                                         }
+
                                                                                                                         )
                                                                                                                     </span>
                                                                                                                 </span>
