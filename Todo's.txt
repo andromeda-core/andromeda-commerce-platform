@@ -388,6 +388,13 @@ Additional Work:
     11: Left And Right related Post Fecthing Completed And Params Sending is Also Corrected ✅
     12: Fetching More Post, single post and fecthig initial posts params sending logic Corected even no cookie exists than it will send handle defualt vlaues to true by backend ✅
     13: Showing Default User Name and Avatar Of User  If No User Name Exists In Post Both In PC and In Mobile  ✅
+    14: When clicking Open in new window in the search result list, it first moves to the post’s featured image screen.
+        >then to the post’s single page.
+        >However, when clicking the Back button,
+        >the PWA turns off
+        or navigates to a different place each time instead of returning to the post’s featured image. screen.
+
+
 
   )
 

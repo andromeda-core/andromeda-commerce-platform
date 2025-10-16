@@ -27,6 +27,7 @@ export default function index({ google_map_api_key, search_history }) {
     const [relatedPosts, setRelatedPosts] = useState(null);
     const [relatedPostsNextPageUrl, setRelatedPostsNextPageUrl] = useState(null);
     const [relatedViewer, setRelatedViewer] = useState(null);
+    const [relatedPostSlug, setRelatedPostSlug] = useState(null);
     const [nextPageUrl, setNextPageUrl] = useState(null);
 
     const fetchPosts = async () => {
@@ -324,7 +325,7 @@ export default function index({ google_map_api_key, search_history }) {
         nextPageRelatedPostUrlRef.current = relatedPostsNextPageUrl;
     }, [relatedPostsNextPageUrl]);
 
-    const fetchRelatedPosts = async () => {
+    const fetchRelatedPosts = async (slug) => {
         const currentUrl =
             nextPageRelatedPostUrlRef.current ??
             `${route('website.posts.getrelated', viewablePost.slug)}?${new URLSearchParams(
@@ -337,7 +338,11 @@ export default function index({ google_map_api_key, search_history }) {
         lastFetchedUrlRef.current = currentUrl;
 
         try {
-            const res = await axios.get(currentUrl);
+            const res = await axios.get(currentUrl, {
+                params: {
+                    slug: slug,
+                },
+            });
             const data = res.data;
 
             if (data.status) {
@@ -497,6 +502,11 @@ export default function index({ google_map_api_key, search_history }) {
             if (currentIndex !== -1 && currentIndex !== selectedPostIndex) {
                 setSelectedPostIndex(currentIndex);
             }
+
+            // Setting Post Viewer Main Post Slug
+            if (relatedPostSlug == null) {
+                setRelatedPostSlug(viewablePost?.slug);
+            }
         }
     }, [posts, isPostLoaded, viewablePost]);
 
@@ -534,6 +544,8 @@ export default function index({ google_map_api_key, search_history }) {
                 setSelectedPostIndex(nextIndex);
                 setViewablePost(posts[nextIndex]);
                 setRelatedPosts(posts[nextIndex]?.related_posts);
+                // Setting Post Viewer Main Post Slug
+                setRelatedPostSlug(posts[nextIndex].slug);
                 window.history.replaceState({}, '', generateURL(posts[nextIndex]));
 
                 if (nextIndex >= posts.length - 5 && nextPageUrl) {
@@ -558,6 +570,10 @@ export default function index({ google_map_api_key, search_history }) {
                 setRelatedViewer(null);
                 setRelatedPostsNextPageUrl(null);
                 setRelatedPosts(posts[newIndex]?.related_posts);
+
+                // Setting Post Viewer Main Post Slug
+                setRelatedPostSlug(posts[newIndex]?.slug);
+
                 window.history.replaceState({}, '', generateURL(posts[newIndex]));
 
                 resetXaxisPostsContainer();
@@ -601,7 +617,7 @@ export default function index({ google_map_api_key, search_history }) {
             // Instant fetch on first swipe (if no pagination yet)
             if (!nextPageRelatedPostUrlRef.current && !isFetchingRef.current) {
                 setIsFetchingRelated(true);
-                fetchRelatedPosts();
+                fetchRelatedPosts(relatedPostSlug);
                 return;
             }
 
@@ -613,13 +629,19 @@ export default function index({ google_map_api_key, search_history }) {
                 lastFetchedUrlRef.current !== nextPageRelatedPostUrlRef.current
             ) {
                 setIsFetchingRelated(true);
-                fetchRelatedPosts();
+                fetchRelatedPosts(relatedPostSlug);
             }
         } else if (index === 0 && relatedViewer) {
             setRelatedViewer(null);
             window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
         }
+
+        setTimeout(() => {
+            alert(relatedPostSlug);
+        }, 100);
     };
+
+    console.log(relatedPostSlug);
 
     return (
         <MainLayout>
