@@ -163,15 +163,12 @@ export default function index({ google_map_api_key, search_history }) {
 
     // Reset Method Of X Axis Posts Container
     const resetXaxisPostsContainer = () => {
-        setTimeout(() => {
+        requestAnimationFrame(() => {
             const horizontalContainers = document.querySelectorAll('.horizontal-scroll-container');
             horizontalContainers.forEach((container) => {
-                container.scrollTo({
-                    left: 0,
-                    behavior: 'instant',
-                });
+                container.scrollLeft = 0;
             });
-        }, 50);
+        });
     };
 
     // Stopping Overflow Of Body When Modal is Open Also Preventing Inertia Navigation When Pressing browser Naviagtion buttons for Posts Viewer and gallery
