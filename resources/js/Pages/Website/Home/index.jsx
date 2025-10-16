@@ -170,6 +170,11 @@ export default function index({ google_map_api_key, search_history }) {
 
             requestAnimationFrame(() => (container.style.visibility = 'visible'));
         });
+
+        setRelatedViewer(null);
+        setRelatedPosts(null);
+        setRelatedPostsNextPageUrl(null);
+        setRelatedPostSlug(null);
     };
 
     // Stopping Overflow Of Body When Modal is Open Also Preventing Inertia Navigation When Pressing browser Naviagtion buttons for Posts Viewer and gallery
@@ -197,8 +202,7 @@ export default function index({ google_map_api_key, search_history }) {
                 window.history.replaceState({}, '', window.location.pathname);
                 resetXaxisPostsContainer();
                 setViewablePost('');
-                setRelatedPosts(null);
-                setRelatedPostsNextPageUrl(null);
+
                 // if (document.fullscreenElement) closeFullscreen();
                 setIsDesktopPostViewer(false);
                 setIsMobilePostViewer(false);
@@ -565,8 +569,7 @@ export default function index({ google_map_api_key, search_history }) {
             if (newIndex !== selectedPostIndex && posts[newIndex]) {
                 setSelectedPostIndex(newIndex);
                 setViewablePost(posts[newIndex]);
-                setRelatedViewer(null);
-                setRelatedPostsNextPageUrl(null);
+
                 setRelatedPosts(posts[newIndex]?.related_posts);
 
                 // Setting Post Viewer Main Post Slug
