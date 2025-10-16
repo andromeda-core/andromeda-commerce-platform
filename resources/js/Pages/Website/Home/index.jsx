@@ -633,13 +633,9 @@ export default function index({ google_map_api_key, search_history }) {
             if (index === lastIndex) return;
             lastHorizontalIndexRef.current[slug] = index;
 
-            setTimeout(() => {
-                alert(index);
-            }, 1000);
-
             if (index > 0) {
                 const relatedPost = relatedPosts[index - 1];
-                if (relatedPost && relatedPost.id !== currentViewer?.id) {
+                if (activeViewerMap[slug] !== 'related' || currentViewer?.id !== relatedPost.id) {
                     setRelatedViewerMap((prev) => ({
                         ...prev,
                         [slug]: relatedPost,
@@ -678,6 +674,11 @@ export default function index({ google_map_api_key, search_history }) {
                 setActiveViewerMap((prev) => ({
                     ...prev,
                     [slug]: 'main',
+                }));
+
+                setRelatedViewerMap((prev) => ({
+                    ...prev,
+                    [slug]: null,
                 }));
 
                 setViewablePost(mainPost);
