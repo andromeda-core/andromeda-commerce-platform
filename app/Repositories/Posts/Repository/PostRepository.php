@@ -774,8 +774,9 @@ class PostRepository implements IPostRepository
         return Cache::get('google_map_settings');
     }
 
-    public function getRelatedPosts(Request $request, ?string $slug)
+    public function getRelatedPosts(Request $request, ?string $slug = null)
     {
+
         try {
             $post = $this->post->where('slug', $slug)->where('status', true)->first();
 
@@ -824,11 +825,11 @@ class PostRepository implements IPostRepository
                 ->where('status', true)
                 ->with(['floor', 'user'])
                 ->paginate(10)
-                ->appends([
-                    'images' => $images,
-                    'text' => $text,
-                    'videos' => $videos,
-                ]);
+                ->appends(array_merge(
+                    $request->only(['images', 'text', 'videos']),
+                    ['slug' => $slug]
+                ))
+                ->withPath(route('website.posts.getrelated'));
 
             return [
                 'status' => true,

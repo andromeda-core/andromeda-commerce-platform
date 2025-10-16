@@ -47,7 +47,7 @@ export default function index({ google_map_api_key, search_history }) {
                     setIsPostLoaded(true);
                 });
         } catch (e) {
-            console.error('Failed to parse post_preferences cookie', e);
+            toast.error('Failed to parse post_preferences cookie', e);
         }
     };
 
@@ -244,7 +244,7 @@ export default function index({ google_map_api_key, search_history }) {
                         });
                     }
                 } catch (err) {
-                    console.warn('Invalid cookie JSON:', err);
+                    toast.error('Invalid cookie JSON:', err);
                 }
             } else {
                 const page = params.get('page');
@@ -328,11 +328,11 @@ export default function index({ google_map_api_key, search_history }) {
     const fetchRelatedPosts = async (slug) => {
         const currentUrl =
             nextPageRelatedPostUrlRef.current ??
-            `${route('website.posts.getrelated', viewablePost.slug)}?${new URLSearchParams(
+            `${route('website.posts.getrelated')}?${new URLSearchParams(
                 JSON.parse(decodeURIComponent(getCookie('post_preferences'))),
             )}`;
 
-        if (isFetchingRef.current || lastFetchedUrlRef.current === currentUrl) return;
+        if (isFetchingRef.current || lastFetchedUrlRef.current === currentUrl || !slug) return;
 
         isFetchingRef.current = true;
         lastFetchedUrlRef.current = currentUrl;
@@ -635,13 +635,7 @@ export default function index({ google_map_api_key, search_history }) {
             setRelatedViewer(null);
             window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
         }
-
-        setTimeout(() => {
-            alert(relatedPostSlug);
-        }, 100);
     };
-
-    console.log(relatedPostSlug);
 
     return (
         <MainLayout>
