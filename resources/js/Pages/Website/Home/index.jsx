@@ -163,11 +163,9 @@ export default function index({ google_map_api_key, search_history }) {
 
     // Reset Method Of X Axis Posts Container
     const resetXaxisPostsContainer = () => {
-        requestAnimationFrame(() => {
-            const horizontalContainers = document.querySelectorAll('.horizontal-scroll-container');
-            horizontalContainers.forEach((container) => {
-                container.scrollLeft = 0;
-            });
+        const horizontalContainers = document.querySelectorAll('.horizontal-scroll-container');
+        horizontalContainers.forEach((container) => {
+            container.scrollLeft = 0;
         });
     };
 
