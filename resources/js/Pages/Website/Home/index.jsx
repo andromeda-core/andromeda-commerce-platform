@@ -165,7 +165,10 @@ export default function index({ google_map_api_key, search_history }) {
     const resetXaxisPostsContainer = () => {
         const horizontalContainers = document.querySelectorAll('.horizontal-scroll-container');
         horizontalContainers.forEach((container) => {
+            container.style.visibility = 'hidden';
             container.scrollLeft = 0;
+
+            requestAnimationFrame(() => (container.style.visibility = 'visible'));
         });
     };
 
