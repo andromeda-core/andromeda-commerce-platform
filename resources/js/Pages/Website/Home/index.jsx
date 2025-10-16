@@ -318,7 +318,7 @@ export default function index({ google_map_api_key, search_history }) {
     const isFetchingRef = useRef(false);
     const [isFetchingRelated, setIsFetchingRelated] = useState(false);
     const nextPageRelatedPostUrlRef = useRef(null);
-    const lastFetchedUrlRef = useRef(null); // NEW
+    const lastFetchedUrlRef = useRef(null);
 
     useEffect(() => {
         nextPageRelatedPostUrlRef.current = relatedPostsNextPageUrl;
@@ -1011,6 +1011,9 @@ export default function index({ google_map_api_key, search_history }) {
                                                                               30,
                                                                           ) + '...'
                                                                         : viewablePost?.user?.name}
+
+                                                                    {!viewablePost?.user?.name &&
+                                                                        'User'}
                                                                 </span>
                                                             </div>
 
@@ -1877,20 +1880,17 @@ export default function index({ google_map_api_key, search_history }) {
                                                             </div>
                                                         ))}
 
-                                                    {relatedPosts?.length > 0 &&
-                                                        isFetchingRelated &&
-                                                        createPortal(
-                                                            <div className="relative flex h-full min-w-full flex-shrink-0 snap-start snap-always flex-col items-center justify-center bg-deepcharcoal text-white">
-                                                                <div className="absolute left-4 top-4 h-4 w-16 animate-pulse rounded bg-gray-700"></div>
-                                                                <div className="h-[70vh] w-[90%] animate-pulse rounded-2xl bg-gray-800/60"></div>
-                                                                <div className="absolute bottom-16 w-full space-y-2 px-6 text-center">
-                                                                    <div className="mx-auto h-4 w-2/3 animate-pulse rounded bg-gray-700"></div>
-                                                                    <div className="mx-auto h-4 w-1/2 animate-pulse rounded bg-gray-700/70"></div>
-                                                                    <div className="mx-auto h-4 w-1/3 animate-pulse rounded bg-gray-700/60"></div>
-                                                                </div>
-                                                            </div>,
-                                                            document.body,
-                                                        )}
+                                                    {isFetchingRelated && (
+                                                        <div className="fixed inset-0 flex h-full min-w-full flex-shrink-0 snap-start snap-always flex-col items-center justify-center bg-deepcharcoal text-white">
+                                                            <div className="absolute left-4 top-4 h-4 w-16 animate-pulse rounded bg-gray-700"></div>
+                                                            <div className="h-[70vh] w-[90%] animate-pulse rounded-2xl bg-gray-800/60"></div>
+                                                            <div className="absolute bottom-16 w-full space-y-2 px-6 text-center">
+                                                                <div className="mx-auto h-4 w-2/3 animate-pulse rounded bg-gray-700"></div>
+                                                                <div className="mx-auto h-4 w-1/2 animate-pulse rounded bg-gray-700/70"></div>
+                                                                <div className="mx-auto h-4 w-1/3 animate-pulse rounded bg-gray-700/60"></div>
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 {/* Bottom Overlay */}
@@ -1994,7 +1994,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                 {/* Username */}
                                                                 <div className="mb-0 flex items-center space-x-2">
                                                                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-gray-900">
-                                                                        {post.user?.avatar}
+                                                                        {post.user?.avatar || 'U'}
                                                                     </div>
                                                                     <span className="text-xs font-medium text-white/80">
                                                                         {post.user?.name.length > 6
@@ -2003,6 +2003,9 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                   6,
                                                                               ) + '...'
                                                                             : post.user?.name}
+
+                                                                        {!post?.user?.name &&
+                                                                            'User'}
                                                                     </span>
                                                                 </div>
 
@@ -2033,7 +2036,8 @@ export default function index({ google_map_api_key, search_history }) {
                                                                 <div className="mt-3 flex items-center justify-between">
                                                                     <div className="mb-0 flex items-center space-x-2">
                                                                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-gray-900">
-                                                                            {post.user?.avatar}
+                                                                            {post.user?.avatar ||
+                                                                                'U'}
                                                                         </div>
                                                                         <span className="text-xs font-medium text-white/80">
                                                                             {post.user?.name
@@ -2043,6 +2047,8 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                       6,
                                                                                   ) + '...'
                                                                                 : post.user?.name}
+                                                                            {!post?.user?.name &&
+                                                                                'User'}
                                                                         </span>
                                                                     </div>
 
@@ -2195,10 +2201,12 @@ export default function index({ google_map_api_key, search_history }) {
                                                                 {/* Username */}
                                                                 <div className="mb-0 flex items-center space-x-2">
                                                                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-gray-900">
-                                                                        {relatedViewer.user?.avatar}
+                                                                        {relatedViewer.user
+                                                                            ?.avatar || 'U'}
                                                                     </div>
                                                                     <span className="text-xs font-medium text-white/80">
-                                                                        {relatedViewer.user?.name
+                                                                        {relatedViewer?.user &&
+                                                                        relatedViewer.user?.name
                                                                             .length > 6
                                                                             ? relatedViewer.user?.name.substring(
                                                                                   0,
@@ -2206,6 +2214,9 @@ export default function index({ google_map_api_key, search_history }) {
                                                                               ) + '...'
                                                                             : relatedViewer.user
                                                                                   ?.name}
+
+                                                                        {!relatedViewer?.user &&
+                                                                            'User'}
                                                                     </span>
                                                                 </div>
 
@@ -2244,10 +2255,8 @@ export default function index({ google_map_api_key, search_history }) {
                                                                 <div className="mt-3 flex items-center justify-between">
                                                                     <div className="mb-0 flex items-center space-x-2">
                                                                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-gray-900">
-                                                                            {
-                                                                                relatedViewer.user
-                                                                                    ?.avatar
-                                                                            }
+                                                                            {relatedViewer.user
+                                                                                ?.avatar || 'U'}
                                                                         </div>
                                                                         <span className="text-xs font-medium text-white/80">
                                                                             {relatedViewer.user
@@ -2258,6 +2267,9 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                   ) + '...'
                                                                                 : relatedViewer.user
                                                                                       ?.name}
+
+                                                                            {!relatedViewer?.user &&
+                                                                                'User'}
                                                                         </span>
                                                                     </div>
 
@@ -2603,7 +2615,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                 <div className="flex items-center space-x-2">
                                                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-gray-900">
-                                                        {viewablePost.user?.avatar}
+                                                        {viewablePost.user?.avatar || 'U'}
                                                     </div>
                                                     <span className="text-xs font-medium text-white/80">
                                                         {viewablePost.user?.name.length > 6
@@ -2612,6 +2624,8 @@ export default function index({ google_map_api_key, search_history }) {
                                                                   6,
                                                               ) + '...'
                                                             : viewablePost.user?.name}
+
+                                                        {!viewablePost.user?.name && 'User'}
                                                     </span>
                                                 </div>
 

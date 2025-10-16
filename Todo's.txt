@@ -387,6 +387,7 @@ Additional Work:
     10: Scroll Speed Of Mobile Post Viewer Increased  ✅
     11: Left And Right related Post Fecthing Completed And Params Sending is Also Corrected ✅
     12: Fetching More Post, single post and fecthig initial posts params sending logic Corected even no cookie exists than it will send handle defualt vlaues to true by backend ✅
+    13: Showing Default User Name and Avatar Of User  If No User Name Exists In Post Both In PC and In Mobile  ✅
 
   )
 
