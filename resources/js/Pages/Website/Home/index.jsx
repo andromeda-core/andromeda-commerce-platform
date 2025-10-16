@@ -664,6 +664,8 @@ export default function index({ google_map_api_key, search_history }) {
 
                 // Instant fetch on first swipe (if no pagination yet)
                 if (!nextPageUrl && !isFetchingRef.current) {
+                    if (completedSlugsRef.current[slug]) return;
+
                     const now = Date.now();
                     const lastTried = lastTriedRef.current[slug] || 0;
 
