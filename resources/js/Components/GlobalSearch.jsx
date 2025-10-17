@@ -24,9 +24,11 @@ const GlobalSearch = ({
     OnPostFilterChange = () => {},
     defaultQuery = '',
     resultsPage = false,
+    hashtagPage = false,
     defaultPostFilters = {},
     defaultFiltersCleared = false,
     search_history = [],
+    hashtag = '',
 }) => {
     const windowSize = useWindowSize();
     const [searchApplying, setSearchApplying] = useState(false);
@@ -58,12 +60,19 @@ const GlobalSearch = ({
 
     useEffect(() => {
         const cookieValue = getCookie('post_preferences');
-        if (cookieValue) {
+
+        if (cookieValue && cookieValue !== 'null' && cookieValue !== 'undefined') {
             try {
-                const parsed = JSON.parse(decodeURIComponent(cookieValue));
-                setPostPreferences(parsed);
-            } catch (e) {
-                console.error('Failed to parse post_preferences cookie', e);
+                const decoded = decodeURIComponent(cookieValue);
+                const parsed = JSON.parse(decoded);
+
+                if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+                    setPostPreferences(parsed);
+                } else {
+                    console.warn('⚠️ post_preferences cookie had invalid structure, ignoring.');
+                }
+            } catch (error) {
+                console.warn('⚠️ Failed to parse post_preferences cookie, resetting it.', error);
             }
         }
 
@@ -79,6 +88,7 @@ const GlobalSearch = ({
             }
         }
     }, []);
+
     const [searchQuery, setSearchQuery] = useState(defaultQuery || '');
 
     // Google Auto Completion States
@@ -388,6 +398,34 @@ const GlobalSearch = ({
                 setIsPrefChanged(false);
             }
 
+            if (hashtagPage) {
+                setSearchApplying(true);
+                OnPostFilterChange(true);
+                await clearSession();
+                await axios
+                    .post(
+                        route('website.posts.hashtag-posts', encodeURIComponent(hashtag)),
+                        {
+                            post_preferences: postPreferences,
+                        },
+                        {
+                            headers: { 'X-Inertia': true },
+                        },
+                    )
+                    .then((response) => {
+                        router.replace(response.data);
+                        window.history.replaceState({}, '', route('website.posts.hashtag-posts'));
+                    })
+                    .catch((error) => {
+                        toast.error(error.message);
+                    })
+                    .finally(() => {
+                        setSearchApplying(false);
+                    });
+
+                setIsPrefChanged(false);
+            }
+
             if (!isAnyAdditionalFilterApplied) {
                 OnPostFilterChange(true);
                 setIsPrefChanged(false);
@@ -532,9 +570,6 @@ const GlobalSearch = ({
     // Post Filters State Checking And Appending Query If Modal Opens Of Post Filter
     useEffect(() => {
         const url = new URL(window.location.href);
-
-        const param = url.searchParams.get('modal');
-
         if (isPostFilterSetting) {
             window.history.pushState({}, '', window.location.pathname);
             url.searchParams.set('modal', 'filters');

@@ -843,15 +843,47 @@ class PostRepository implements IPostRepository
         }
     }
 
-    public function getHashtagPosts(Request $request, ?string $hashtag)
+    public function getHashtagPosts(Request $request, ?string $hashtag, array $preferences = [])
     {
         try {
-            $posts = $this->post->where('tag', $hashtag)->where('status', true)->paginate(10)->withQueryString();
+
+            $text = $preferences['text'] ?? true;
+            $images = $preferences['images'] ?? true;
+            $videos = $preferences['videos'] ?? true;
+
+            $posts = $this->post
+                ->where('tag', $hashtag)
+                ->where('status', true)
+                ->where(function ($q) use ($text, $images, $videos) {
+                    if ($text) {
+
+                        $q->orWhere(function ($sub) {
+                            $sub->whereNull('images')
+                                ->whereNull('videos');
+                        });
+                    }
+
+                    if ($images) {
+
+                        $q->orWhere(function ($sub) {
+                            $sub->whereNotNull('images')
+                                ->whereNull('videos');
+                        });
+                    }
+
+                    if ($videos) {
+
+                        $q->orWhere(function ($sub) {
+                            $sub->whereNotNull('videos');
+                        });
+                    }
+                })
+                ->paginate(10)
+                ->withQueryString();
 
             return [
                 'status' => true,
                 'posts' => $posts,
-                'next_page_url' => $posts->nextPageUrl(),
             ];
         } catch (Exception $e) {
             return [

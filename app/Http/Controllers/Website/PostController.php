@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Website;
 
 use App\Http\Controllers\Controller;
+use App\Repositories\GlobalSearch\Repository\GlobalSearchRepository;
 use App\Repositories\Posts\Interface\IPostRepository;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -10,7 +11,8 @@ use Inertia\Inertia;
 class PostController extends Controller
 {
     public function __construct(
-        private IPostRepository $post
+        private IPostRepository $post,
+        private GlobalSearchRepository $globalSearch,
     ) {}
 
     public function index(Request $request)
@@ -103,22 +105,36 @@ class PostController extends Controller
 
     public function hashtagPosts(Request $request, ?string $hashtag = null)
     {
-        info($hashtag);
+
+        $preferences = $request->input('post_preferences');
+
+        if (empty($preferences)) {
+            $preferences = ['text' => true, 'images' => true, 'videos' => true, 'show_posts' => true,
+                'show_products' => true];
+        }
+
+        if (is_string($preferences)) {
+            $decoded = json_decode($preferences, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $preferences = $decoded;
+            }
+        }
 
         if (empty($hashtag)) {
             return to_route('home');
         }
 
-        $data = $this->post->getHashtagPosts($request, $hashtag);
+        $data = $this->post->getHashtagPosts($request, $hashtag, $preferences);
         if ($data['status'] == false) {
             return to_route('home')->with('error', $data['message']);
         }
 
-        dd($data);
-        $posts = $data['posts'];
-        $next_page_url = $data['next_page_url'];
+        $posts = $data['posts']->items();
+        $next_page_url = $data['posts']->nextPageUrl();
 
-        return Inertia::render('Website/Posts/hashtagPosts', compact('posts', 'next_page_url'));
+        $google_map_api_key = $this->globalSearch->getGoogleMapApiKey();
+
+        return Inertia::render('Website/Posts/hashtagPosts', compact('posts', 'next_page_url', 'hashtag', 'google_map_api_key'));
 
     }
 }

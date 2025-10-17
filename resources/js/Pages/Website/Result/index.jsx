@@ -1,4 +1,5 @@
 import GlobalSearch from '@/Components/GlobalSearch';
+import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, router } from '@inertiajs/react';
 import axios from 'axios';
@@ -14,6 +15,8 @@ const index = ({
     pagination,
     search_history,
 }) => {
+    const windowSize = useWindowSize();
+
     const [defaultPostFilters, setDefaultPostFilters] = useState(post_filters || []);
     const [defaultFiltersCleared, setDefaultFiltersCleared] = useState(false);
     const [AllResults, setAllResults] = useState(results || []);
@@ -449,7 +452,7 @@ const index = ({
                                                     ? route('home') + generateURL(item)
                                                     : 'Pending'
                                             }
-                                            target="_blank"
+                                            {...(windowSize.width > 1024 && { target: '_blank' })}
                                             className="flex h-8 w-full items-center justify-center gap-2 rounded-full p-2 text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                                         >
                                             <svg

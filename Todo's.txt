@@ -397,7 +397,10 @@ Additional Work:
         fetch again to improve Application performance Also Added Caching
         For Storing Already Fetched Related Posts To Prevent Already Viewed Posts Fetching  ✅
 
-     18: Adding Checks For Mobile And P)C in Reuslts Page For Navigating Behalf Of if PC than refdirect with __Blank otherwise simple redirect
+     18: Adding Checks For Mobile And P)C in Reuslts Page For Navigating Behalf Of if PC than refdirect with __Blank otherwise simple redirect ✅
+     19: Added Cookie Filtering in Backend And in Frontend So Application Wont Break WhenCookie Value changed by user and attackers   ✅
+     20: Hashtag Archive Page backend Logic And Frontend With Cookie Value Validation On backend And Frontend Done  ✅
+     21: Hashtag Archive Page Ui Remeaning Just
 
   )
 

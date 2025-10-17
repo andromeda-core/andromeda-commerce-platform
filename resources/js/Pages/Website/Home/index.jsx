@@ -36,22 +36,44 @@ export default function index({ google_map_api_key, search_history }) {
 
     const fetchPosts = async () => {
         const cookieValue = getCookie('post_preferences');
-        try {
-            const parsed = await JSON.parse(decodeURIComponent(cookieValue));
+        let parsed = null;
 
-            await axios
-                .get(route('website.posts.index'), {
-                    params: parsed,
-                })
-                .then((res) => {
-                    setPosts(res.data.posts);
-                    setNextPageUrl(res.data.next_page_url);
-                })
-                .finally(() => {
-                    setIsPostLoaded(true);
-                });
-        } catch (e) {
-            toast.error('Failed to parse post_preferences cookie', e);
+        // ✅ Safe JSON parsing with fallback
+        if (cookieValue && cookieValue !== 'null' && cookieValue !== 'undefined') {
+            try {
+                parsed = JSON.parse(decodeURIComponent(cookieValue));
+            } catch (error) {
+                console.warn('⚠️ Invalid post_preferences cookie. Using defaults.', error);
+                toast.warning('Your saved preferences were invalid — defaults applied.');
+                parsed = null;
+            }
+        }
+
+        const defaultPreferences = {
+            text: true,
+            videos: true,
+            images: true,
+            show_posts: true,
+            show_products: true,
+        };
+
+        const finalPreferences =
+            parsed && typeof parsed === 'object'
+                ? { ...defaultPreferences, ...parsed }
+                : defaultPreferences;
+
+        try {
+            const res = await axios.get(route('website.posts.index'), {
+                params: finalPreferences,
+            });
+
+            setPosts(res.data.posts);
+            setNextPageUrl(res.data.next_page_url);
+        } catch (error) {
+            console.error('Failed to fetch posts:', error);
+            toast.error('Failed to fetch posts. Please try again later.');
+        } finally {
+            setIsPostLoaded(true);
         }
     };
 
@@ -739,6 +761,38 @@ export default function index({ google_map_api_key, search_history }) {
     const getRelatedPosts = (slug) => relatedPostsMap[slug] || [];
     const getRelatedViewer = (slug) => relatedViewerMap[slug] || null;
 
+    const navigateToHashtag = async (hashtag) => {
+        const tag = encodeURIComponent(hashtag);
+
+        const cookieValue = getCookie('post_preferences');
+        let postPreferences = null;
+
+        if (cookieValue && cookieValue !== 'null' && cookieValue !== 'undefined') {
+            try {
+                postPreferences = JSON.parse(decodeURIComponent(cookieValue));
+            } catch (error) {
+                console.warn('⚠️ Invalid post_preferences cookie, skipping preferences.', error);
+                toast.warn('Your saved preferences were invalid — using site defaults.');
+                postPreferences = null;
+            }
+        }
+
+        try {
+            const response = await axios.post(
+                route('website.posts.hashtag-posts', tag),
+                { post_preferences: postPreferences },
+                {
+                    headers: { 'X-Inertia': true },
+                },
+            );
+
+            router.replace(response.data);
+        } catch (error) {
+            console.error('Hashtag navigation failed:', error);
+            toast.error('Failed to load hashtag posts.');
+        }
+    };
+
     return (
         <MainLayout>
             <Head title="Home" />
@@ -1272,17 +1326,16 @@ export default function index({ google_map_api_key, search_history }) {
                                                         {/* Tag */}
                                                         <div>
                                                             {viewablePost?.tag && (
-                                                                <Link
-                                                                    href={route(
-                                                                        'website.posts.hashtag-posts',
-                                                                        encodeURIComponent(
+                                                                <button
+                                                                    onClick={() => {
+                                                                        navigateToHashtag(
                                                                             viewablePost?.tag,
-                                                                        ),
-                                                                    )}
+                                                                        );
+                                                                    }}
                                                                     className="text-[10px] font-semibold text-indigo-600 dark:text-white/80 sm:text-[11px] md:text-[12px] lg:text-[15px]"
                                                                 >
                                                                     {viewablePost?.tag}
-                                                                </Link>
+                                                                </button>
                                                             )}
                                                         </div>
 
@@ -1412,17 +1465,16 @@ export default function index({ google_map_api_key, search_history }) {
                                                             {/* hashtag */}
                                                             <div>
                                                                 {post?.tag && (
-                                                                    <Link
-                                                                        href={route(
-                                                                            'website.posts.hashtag-posts',
-                                                                            encodeURIComponent(
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            navigateToHashtag(
                                                                                 post?.tag,
-                                                                            ),
-                                                                        )}
+                                                                            );
+                                                                        }}
                                                                         className="text-sm text-white/80"
                                                                     >
                                                                         {post?.tag}
-                                                                    </Link>
+                                                                    </button>
                                                                 )}
                                                             </div>
 
@@ -1693,9 +1745,20 @@ export default function index({ google_map_api_key, search_history }) {
                                                         </button> */}
 
                                                                 {/* hashtag */}
-                                                                <span className="text-sm text-white/80">
-                                                                    {relatedViewer?.tag}
-                                                                </span>
+                                                                <div>
+                                                                    {post?.tag && (
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                navigateToHashtag(
+                                                                                    relatedViewer?.tag,
+                                                                                );
+                                                                            }}
+                                                                            className="text-sm text-white/80"
+                                                                        >
+                                                                            {relatedViewer?.tag}
+                                                                        </button>
+                                                                    )}
+                                                                </div>
 
                                                                 <div className="flex items-center space-x-3">
                                                                     {/* Elipsis button */}
@@ -2674,15 +2737,14 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                 {/* Tags */}
                                                 {viewablePost?.tag && (
-                                                    <Link
-                                                        href={route(
-                                                            'website.posts.hashtag-posts',
-                                                            encodeURIComponent(viewablePost?.tag),
-                                                        )}
+                                                    <button
+                                                        onClick={() => {
+                                                            navigateToHashtag(viewablePost?.tag);
+                                                        }}
                                                         className="flex flex-wrap gap-2 text-sm text-indigo-400"
                                                     >
                                                         {viewablePost?.tag}
-                                                    </Link>
+                                                    </button>
                                                 )}
                                             </div>
 
