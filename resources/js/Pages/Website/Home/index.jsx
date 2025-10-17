@@ -1271,17 +1271,19 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                         {/* Tag */}
                                                         <div>
-                                                            <Link
-                                                                href={route(
-                                                                    'website.posts.hashtag-posts',
-                                                                    encodeURIComponent(
-                                                                        viewablePost?.tag,
-                                                                    ),
-                                                                )}
-                                                                className="text-[10px] font-semibold text-indigo-600 dark:text-white/80 sm:text-[11px] md:text-[12px] lg:text-[15px]"
-                                                            >
-                                                                {viewablePost?.tag}
-                                                            </Link>
+                                                            {viewablePost?.tag && (
+                                                                <Link
+                                                                    href={route(
+                                                                        'website.posts.hashtag-posts',
+                                                                        encodeURIComponent(
+                                                                            viewablePost?.tag,
+                                                                        ),
+                                                                    )}
+                                                                    className="text-[10px] font-semibold text-indigo-600 dark:text-white/80 sm:text-[11px] md:text-[12px] lg:text-[15px]"
+                                                                >
+                                                                    {viewablePost?.tag}
+                                                                </Link>
+                                                            )}
                                                         </div>
 
                                                         <hr className="border-gray-200 dark:border-gray-700" />
@@ -1408,9 +1410,21 @@ export default function index({ google_map_api_key, search_history }) {
                                                         </button> */}
 
                                                             {/* hashtag */}
-                                                            <span className="text-sm text-white/80">
-                                                                {post?.tag}
-                                                            </span>
+                                                            <div>
+                                                                {post?.tag && (
+                                                                    <Link
+                                                                        href={route(
+                                                                            'website.posts.hashtag-posts',
+                                                                            encodeURIComponent(
+                                                                                post?.tag,
+                                                                            ),
+                                                                        )}
+                                                                        className="text-sm text-white/80"
+                                                                    >
+                                                                        {post?.tag}
+                                                                    </Link>
+                                                                )}
+                                                            </div>
 
                                                             <div className="flex items-center space-x-3">
                                                                 {/* Elipsis button */}
@@ -2660,9 +2674,15 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                 {/* Tags */}
                                                 {viewablePost?.tag && (
-                                                    <div className="flex flex-wrap gap-2 text-sm text-indigo-400">
+                                                    <Link
+                                                        href={route(
+                                                            'website.posts.hashtag-posts',
+                                                            encodeURIComponent(viewablePost?.tag),
+                                                        )}
+                                                        className="flex flex-wrap gap-2 text-sm text-indigo-400"
+                                                    >
                                                         {viewablePost?.tag}
-                                                    </div>
+                                                    </Link>
                                                 )}
                                             </div>
 
