@@ -287,7 +287,7 @@ export default function index({ google_map_api_key, search_history }) {
                         });
                     }
                 } catch (err) {
-                    toast.error('Invalid cookie JSON:', err.message);
+                    toast.warn('Invalid cookie JSON');
                 }
             } else {
                 const page = params.get('page');
@@ -317,7 +317,7 @@ export default function index({ google_map_api_key, search_history }) {
 
             setNextPageUrl(data.next_page_url);
         } catch (err) {
-            toast.error('Error fetching post ' + err.message);
+            toast.error('Error fetching post');
         }
     };
 
@@ -355,10 +355,10 @@ export default function index({ google_map_api_key, search_history }) {
                     return newPosts;
                 });
             } else {
-                toast.error('Post Not Found');
+                toast.info('Post Not Found');
             }
         } catch (err) {
-            toast.error('Error fetching post ' + err.message);
+            toast.error('Error fetching post');
         }
     };
 
