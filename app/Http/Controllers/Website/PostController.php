@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Website;
 use App\Http\Controllers\Controller;
 use App\Repositories\Posts\Interface\IPostRepository;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class PostController extends Controller
 {
@@ -98,5 +99,26 @@ class PostController extends Controller
         }
 
         return response()->json(['status' => true, 'posts' => $posts['related_posts']], 200);
+    }
+
+    public function hashtagPosts(Request $request, ?string $hashtag = null)
+    {
+        info($hashtag);
+
+        if (empty($hashtag)) {
+            return to_route('home');
+        }
+
+        $data = $this->post->getHashtagPosts($request, $hashtag);
+        if ($data['status'] == false) {
+            return to_route('home')->with('error', $data['message']);
+        }
+
+        dd($data);
+        $posts = $data['posts'];
+        $next_page_url = $data['next_page_url'];
+
+        return Inertia::render('Website/Posts/hashtagPosts', compact('posts', 'next_page_url'));
+
     }
 }

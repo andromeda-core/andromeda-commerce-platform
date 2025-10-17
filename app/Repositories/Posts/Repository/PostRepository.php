@@ -842,4 +842,22 @@ class PostRepository implements IPostRepository
             ];
         }
     }
+
+    public function getHashtagPosts(Request $request, ?string $hashtag)
+    {
+        try {
+            $posts = $this->post->where('tag', $hashtag)->where('status', true)->paginate(10)->withQueryString();
+
+            return [
+                'status' => true,
+                'posts' => $posts,
+                'next_page_url' => $posts->nextPageUrl(),
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
 }

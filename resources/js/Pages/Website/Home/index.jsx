@@ -3,7 +3,7 @@ import PostsGrid from '@/Components/PostsGrid';
 import useDarkMode from '@/Hooks/useDarkMode';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import QRCode from 'react-qr-code';
 import { toast } from 'react-toastify';
@@ -168,6 +168,28 @@ export default function index({ google_map_api_key, search_history }) {
         }
     }, [isPostLoaded, posts]);
 
+    const viewablePostRef = useRef('');
+    const isMobilePostGalleryRef = useRef(false);
+    const isDesktopPostViewerRef = useRef(false);
+    const isMobilePostViewerRef = useRef(false);
+
+    // Update refs whenever state changes
+    useEffect(() => {
+        viewablePostRef.current = viewablePost;
+    }, [viewablePost]);
+
+    useEffect(() => {
+        isMobilePostGalleryRef.current = isMobilePostGallery;
+    }, [isMobilePostGallery]);
+
+    useEffect(() => {
+        isDesktopPostViewerRef.current = isDesktopPostViewer;
+    }, [isDesktopPostViewer]);
+
+    useEffect(() => {
+        isMobilePostViewerRef.current = isMobilePostViewer;
+    }, [isMobilePostViewer]);
+
     // Stopping Overflow Of Body When Modal is Open Also Preventing Inertia Navigation When Pressing browser Naviagtion buttons for Posts Viewer and gallery
     useEffect(() => {
         if (viewablePost !== '') {
@@ -180,8 +202,8 @@ export default function index({ google_map_api_key, search_history }) {
 
         const handlePopState = (e) => {
             const currentState = window.history.state;
-            if (viewablePost !== '') {
-                if (isMobilePostGallery) {
+            if (viewablePostRef.current !== '') {
+                if (isMobilePostGalleryRef.current) {
                     setIsMobilePostGallery(false);
                     if (currentState?.modal === 'post-gallery') {
                         window.history.replaceState({ modal: 'post-viewer' }, '');
@@ -193,8 +215,6 @@ export default function index({ google_map_api_key, search_history }) {
                 window.history.replaceState({}, '', window.location.pathname);
 
                 setViewablePost('');
-
-                // if (document.fullscreenElement) closeFullscreen();
                 setIsDesktopPostViewer(false);
                 setIsMobilePostViewer(false);
                 return;
@@ -202,7 +222,15 @@ export default function index({ google_map_api_key, search_history }) {
         };
 
         const preventInertiaNavigation = (event) => {
-            if (viewablePost !== '' || isMobilePostGallery) {
+            const allowedRoutes = ['/hashtag/', '/posts-bookmark'];
+
+            const pathname = event.detail?.visit?.url?.pathname || '';
+            const isAllowedRoute = allowedRoutes.some((route) => pathname.includes(route));
+
+            if (
+                (viewablePostRef.current !== '' || isMobilePostGalleryRef.current) &&
+                !isAllowedRoute
+            ) {
                 event.preventDefault();
             }
         };
@@ -1243,9 +1271,17 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                         {/* Tag */}
                                                         <div>
-                                                            <span className="text-[10px] font-semibold text-indigo-600 dark:text-white/80 sm:text-[11px] md:text-[12px] lg:text-[15px]">
+                                                            <Link
+                                                                href={route(
+                                                                    'website.posts.hashtag-posts',
+                                                                    encodeURIComponent(
+                                                                        viewablePost?.tag,
+                                                                    ),
+                                                                )}
+                                                                className="text-[10px] font-semibold text-indigo-600 dark:text-white/80 sm:text-[11px] md:text-[12px] lg:text-[15px]"
+                                                            >
                                                                 {viewablePost?.tag}
-                                                            </span>
+                                                            </Link>
                                                         </div>
 
                                                         <hr className="border-gray-200 dark:border-gray-700" />

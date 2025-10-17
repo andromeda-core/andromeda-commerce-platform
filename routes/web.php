@@ -39,6 +39,7 @@ Route::group(['as' => 'website.'], function () {
         Route::get('posts-getrelated/{slug?}', 'getRelatedPosts')->name('getrelated');
         Route::get('/posts-getsingle/{slug?}', 'getSinglePostBySlug')->name('getsingle');
         Route::put('/posts-bookmark', 'bookmark')->name('bookmark')->middleware('auth');
+        Route::get('/hashtag/{hashtag?}/posts', 'hashtagPosts')->name('hashtag-posts');
     });
 
     // Global Search Route

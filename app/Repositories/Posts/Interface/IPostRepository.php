@@ -34,4 +34,6 @@ interface IPostRepository
     public function getGoogleMapSettings();
 
     public function getRelatedPosts(Request $request, ?string $slug);
+
+    public function getHashtagPosts(Request $request, ?string $hashtag);
 }
