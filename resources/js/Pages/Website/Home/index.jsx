@@ -696,6 +696,8 @@ export default function index({ google_map_api_key, search_history }) {
         };
 
         const handleTouchMove = (e) => {
+            if (scrollLock.current || isLooping.current) return;
+
             const currentY = e.touches[0].clientY;
             const deltaY = currentY - (handleScroll.startY || currentY);
 
@@ -704,6 +706,7 @@ export default function index({ google_map_api_key, search_history }) {
                 Math.ceil(container.scrollTop + container.clientHeight) >= container.scrollHeight;
 
             if (atTop && deltaY > 30 && !isLooping.current && selectedPostIndex === 0) {
+                scrollLock.current = true;
                 isLooping.current = true;
                 const newIndex = posts.length - 1;
                 container.scrollTo({
@@ -732,6 +735,7 @@ export default function index({ google_map_api_key, search_history }) {
                 !isLooping.current &&
                 selectedPostIndex === posts.length - 1
             ) {
+                scrollLock.current = true;
                 isLooping.current = true;
                 container.scrollTo({ top: 0, behavior: 'smooth' });
                 setSelectedPostIndex(0);
