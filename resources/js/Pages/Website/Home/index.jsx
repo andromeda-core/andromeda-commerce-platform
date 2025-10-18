@@ -680,6 +680,7 @@ export default function index({ google_map_api_key, search_history }) {
         }
 
         const handleScroll = () => {
+            // 🔧 CRITICAL: Block scroll handler during ANY loop phase
             if (scrollLock.current || isLooping.current || justCompletedLoop.current) return;
 
             const scrollTop = container.scrollTop;
@@ -767,17 +768,14 @@ export default function index({ google_map_api_key, search_history }) {
 
                 const newIndex = postsRef.current.length - 1;
 
+                // 🔧 Don't update index until scroll completes
                 container.scrollTo({
                     top: newIndex * container.clientHeight,
                     behavior: 'smooth',
                 });
 
-                setSelectedPostIndex(newIndex);
-                setViewablePost(postsRef.current[newIndex]);
-                setRelatedPostSlug(postsRef.current[newIndex].slug);
-
-                // 🔧 FIXED: Only check and reset when scroll actually completes
                 let lastScrollTop = container.scrollTop;
+                let checkCount = 0;
                 const unlockCheck = setInterval(() => {
                     const currentScrollTop = container.scrollTop;
                     const reachedBottom =
@@ -785,29 +783,40 @@ export default function index({ google_map_api_key, search_history }) {
                             container.scrollTop + container.clientHeight - container.scrollHeight,
                         ) < 8;
 
-                    // Check if scroll stopped (position didn't change)
+                    checkCount++;
+
+                    // Check if scroll stopped (position didn't change for 2 consecutive checks)
                     if (currentScrollTop === lastScrollTop && reachedBottom) {
                         clearInterval(unlockCheck);
+
+                        // 🔧 NOW update the UI after scroll completes
+                        setSelectedPostIndex(newIndex);
+                        setViewablePost(postsRef.current[newIndex]);
+                        setRelatedPostSlug(postsRef.current[newIndex].slug);
+
                         scrollLock.current = false;
                         isLooping.current = false;
                         justCompletedLoop.current = true;
                         container.style.touchAction = 'auto';
                         container.style.pointerEvents = 'auto';
 
-                        // Only reset the completion flag after delay
                         setTimeout(() => {
                             justCompletedLoop.current = false;
-                        }, 400);
+                        }, 600);
                         return;
                     }
                     lastScrollTop = currentScrollTop;
                 }, 100);
 
-                // 🔧 Safety timeout - but only if somehow interval didn't catch it
+                // 🔧 Safety timeout
                 setTimeout(() => {
                     clearInterval(unlockCheck);
-                    // Force reset if still stuck
                     if (isLooping.current) {
+                        // 🔧 Force update UI if loop is still active
+                        setSelectedPostIndex(newIndex);
+                        setViewablePost(postsRef.current[newIndex]);
+                        setRelatedPostSlug(postsRef.current[newIndex].slug);
+
                         scrollLock.current = false;
                         isLooping.current = false;
                         justCompletedLoop.current = true;
@@ -816,9 +825,9 @@ export default function index({ google_map_api_key, search_history }) {
 
                         setTimeout(() => {
                             justCompletedLoop.current = false;
-                        }, 400);
+                        }, 600);
                     }
-                }, 2000);
+                }, 2500);
 
                 return;
             }
@@ -833,41 +842,49 @@ export default function index({ google_map_api_key, search_history }) {
                 container.style.touchAction = 'none';
                 container.style.pointerEvents = 'none';
 
+                // 🔧 Don't update index until scroll completes
                 container.scrollTo({ top: 0, behavior: 'smooth' });
 
-                setSelectedPostIndex(0);
-                setViewablePost(postsRef.current[0]);
-                setRelatedPostSlug(postsRef.current[0].slug);
-
-                // 🔧 FIXED: Only check and reset when scroll actually completes
                 let lastScrollTop = container.scrollTop;
+                let checkCount = 0;
                 const unlockCheck = setInterval(() => {
                     const currentScrollTop = container.scrollTop;
                     const reachedTop = container.scrollTop <= 2;
 
-                    // Check if scroll stopped (position didn't change)
+                    checkCount++;
+
+                    // Check if scroll stopped (position didn't change for 2 consecutive checks)
                     if (currentScrollTop === lastScrollTop && reachedTop) {
                         clearInterval(unlockCheck);
+
+                        // 🔧 NOW update the UI after scroll completes
+                        setSelectedPostIndex(0);
+                        setViewablePost(postsRef.current[0]);
+                        setRelatedPostSlug(postsRef.current[0].slug);
+
                         scrollLock.current = false;
                         isLooping.current = false;
                         justCompletedLoop.current = true;
                         container.style.touchAction = 'auto';
                         container.style.pointerEvents = 'auto';
 
-                        // Only reset the completion flag after delay
                         setTimeout(() => {
                             justCompletedLoop.current = false;
-                        }, 400);
+                        }, 600);
                         return;
                     }
                     lastScrollTop = currentScrollTop;
                 }, 100);
 
-                // 🔧 Safety timeout - but only if somehow interval didn't catch it
+                // 🔧 Safety timeout
                 setTimeout(() => {
                     clearInterval(unlockCheck);
-                    // Force reset if still stuck
                     if (isLooping.current) {
+                        // 🔧 Force update UI if loop is still active
+                        setSelectedPostIndex(0);
+                        setViewablePost(postsRef.current[0]);
+                        setRelatedPostSlug(postsRef.current[0].slug);
+
                         scrollLock.current = false;
                         isLooping.current = false;
                         justCompletedLoop.current = true;
@@ -876,9 +893,9 @@ export default function index({ google_map_api_key, search_history }) {
 
                         setTimeout(() => {
                             justCompletedLoop.current = false;
-                        }, 400);
+                        }, 600);
                     }
-                }, 2000);
+                }, 2500);
 
                 return;
             }
