@@ -1294,26 +1294,22 @@ export default function index({ google_map_api_key, search_history }) {
             const waitForHorizontalSettle = (targetLeft, isEnd, callback) => {
                 let lastLeft = el.scrollLeft;
                 let stableCount = 0;
-                const requiredStable = 2; // Reduced from 3 for snappier response
-                let attempts = 0;
-                const maxAttempts = 80; // ~4 seconds safety limit
+                const requiredStable = 3;
 
                 const checkSettle = () => {
-                    attempts++;
                     const currentLeft = el.scrollLeft;
                     let atTarget;
 
                     if (isEnd) {
-                        // At end - check if near scrollWidth (more lenient threshold)
+                        // At end - check if near scrollWidth
                         atTarget =
-                            Math.abs(currentLeft + clientWidth - scrollWidth) < clientWidth * 0.2;
+                            Math.abs(currentLeft + clientWidth - scrollWidth) < clientWidth * 0.1;
                     } else {
-                        // At start - check if near 0 (more lenient threshold)
-                        atTarget = currentLeft < clientWidth * 0.2;
+                        // At start - check if near 0
+                        atTarget = currentLeft < clientWidth * 0.1;
                     }
 
-                    // More lenient settlement detection
-                    if (Math.abs(currentLeft - lastLeft) < 2 && atTarget) {
+                    if (currentLeft === lastLeft && atTarget) {
                         stableCount++;
                         if (stableCount >= requiredStable) {
                             callback();
@@ -1321,12 +1317,6 @@ export default function index({ google_map_api_key, search_history }) {
                         }
                     } else {
                         stableCount = 0;
-                    }
-
-                    // Safety: force callback if taking too long or stuck
-                    if (attempts >= maxAttempts || (lastLeft === currentLeft && attempts > 10)) {
-                        callback();
-                        return;
                     }
 
                     lastLeft = currentLeft;
@@ -1340,9 +1330,9 @@ export default function index({ google_map_api_key, search_history }) {
             if (index === 0 && isSwipingBackward && lastIndex === 0) {
                 horizontalLoopingRef.current[slug] = true;
 
-                const targetScroll = total * clientWidth;
+                const targetScroll = (total - 1) * clientWidth; // <-- FIXED: total * clientWidth was overshooting
                 el.scrollTo({ left: targetScroll, behavior: 'smooth' });
-                lastHorizontalIndexRef.current[slug] = total;
+                lastHorizontalIndexRef.current[slug] = total - 1;
 
                 waitForHorizontalSettle(targetScroll, true, () => {
                     const lastPost = relatedPosts[total - 1];
