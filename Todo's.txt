@@ -283,11 +283,12 @@ This milestone includes all dynamic settings and global configuration features r
 
 Milestone 7: Customer Website (Frontend + PWA + Posts + Orders + Meta OAuth)
 
-- UI & UX for the website
+- UI & UX for the website -> Partially Completed ✅
 - Header Footer And Appbar For Mobile Preview  with Fully Responsiveness ✅
 - PWA frontend integration for a mobile-friendly experience
 - Product listing and product detail pages
 - Cart Logic For Customers
+- Restricting Customer From Adding Items In Cart Who Belongs To Different Distributor
 - Customer checkout functionality
 - On checkout: FB/Instagram connect (Meta OAuth) to store the user’s Meta user ID
 - After checkout: the user will see the associated bank details along with an upload receipt
@@ -302,12 +303,10 @@ Milestone 7: Customer Website (Frontend + PWA + Posts + Orders + Meta OAuth)
 - (1) Privacy Policy and (2) Data Deletion Policy as separate pages on yesbigshop.com.
 	- https://docs.google.com/document/d/1d_0t4RXtx1Xrdj4U4KgTXFGfLaGZJ9Ykl5dyARDsBQU/edit?usp=sharing yesbigshop privacy policy and data deletion (korean)
 	- https://docs.google.com/document/d/1c7F1ohFgv_-ndouw3_GKkP0G5B1noJp4AG-pHp0Al3M/edit?usp=sharing yesbigshop privacy policy and data deletion (english)
-
 - Implementation of cryptocurrency payment (e.g., Bitcoin) for product purchases -> (new)
 - Customer Cannot Visit Dashboard Logic ✅
-- Restricting Customer From Adding Items Who Belongs To Different Distributor
 - Logic To Restrict Customer From Visiting Dashboard ✅
-- Overall Application Performance Enhancing
+- Overall Application Performance Enhancing -> Till The Current Work Its Done ✅
 - Updating Robot.txt File For Exposing Just Website Routes On Google Search Engine (Currently It Exposes Our Dashboard) ✅
 
 
@@ -323,7 +322,8 @@ Additional Work:
   Search Results Page ✅
   Search History ✅
   Restricting Post Creation title should be atleast 10 chars ✅
-  Ad Posts Will be made within the posts Table and its section
+
+- Ad Posts Will be made within the posts Table and its section
 
   1: The 3 new categories we discussed will be added, and the existing Posts and Products categories will be removed,  ✅
   2: If spatiotemporal information is applied in the filter, we’ll display it below the search bar as a reference, ✅
@@ -336,29 +336,32 @@ Additional Work:
     3: Search Terms → partial match (LIKE) across post title and content.
     4: Users → exact match (=) — to be implemented later.
 
-  Dedicated Matching Hashtag Post Contianing Page for showing post when user clicks on hashtag of any post it it wil redirects to this archive page
+  Implement simulated vertical loop navigation: when the user scrolls upward from the first post or downward from the last post,
+  instantly navigate to the opposite end within the already-loaded posts (no extra API calls),
+  ensuring smooth, continuous navigation aligned with the eager-loading system.
+
+
+  Implement circular horizontal navigation: make the related posts viewer
+  loop infinitely so that swiping right from the last post returns to the first, and swiping left from the first post returns to the last — similar to an infinite carousel,
+  and apply the same concept to top–bottom navigation for seamless looping.
+
+  Dedicated Matching Hashtag Post Contianing Page for showing post when user clicks on hashtag of any post it it wil redirects to this archive page -> Progress
 
 
   New More Changes (
     1: Remove Gray Backgrounds From Mobile Post Viewer From Header And Bottom ✅
     2: On the gallery, background should be black color or null. ✅
     3: When the back button is clicked in the main post filter, it should navigate to the homepage. ✅
-    4: Calendar needed center arrangement. Needed a button or function because After setting a range in the calendar,
-        there’s no OK or Save button, so from a UX perspective, users get confused about what to do next. ✅
+    4: Calendar needed center arrangement. Needed a button or function because After setting a range in the calendar, there’s no OK or Save button, so from a UX perspective, users get confused about what to do next. ✅
 
-    5: After setting a range in the Map, there’s no OK or Save button, so from a UX perspective, users get confused about what to do next.
-        Since there’s an X icon, you can simply change it to a Save button ✅
-
-    6: Currently, when a search term is entered, an “Apply Search” button appears.
-        Please change it to the more common behavior as follows:
-        When entering a search term, perform the search by pressing the Enter key instead of showing a button.
-        Also, change the X icon in the search bar to white. ✅
+    5: After setting a range in the Map, there’s no OK or Save button, so from a UX perspective, users get confused about what to do next. Since there’s an X icon, you can simply change it to a Save button ✅ When entering a search term, perform the search by pressing the Enter key instead of showing a button. Also, change the X icon in the search bar to white. ✅
 
     7: Border value on the gallery should be 0. ✅
 
     8: remove the magnifying glass icon. From Search Bar  ✅
 
     9: On mobile, add padding to the left and right sides of the archive and search bar. ✅
+
     11: Mobile Post Viwer And Masonary Layout Design Enhancements As Shown in the Screenshots ✅
 
     12: Progress bar and spinner should be white of inertia ✅
@@ -400,7 +403,7 @@ Additional Work:
      18: Adding Checks For Mobile And P)C in Reuslts Page For Navigating Behalf Of if PC than refdirect with __Blank otherwise simple redirect ✅
      19: Added Cookie Filtering in Backend And in Frontend So Application Wont Break WhenCookie Value changed by user and attackers   ✅
      20: Hashtag Archive Page backend Logic And Frontend With Cookie Value Validation On backend And Frontend Done  ✅
-     21: Hashtag Archive Page Ui Remeaning Just
+     21: Hashtag Archive Page Ui Remeaning Just ✅
 
   )
 
@@ -411,15 +414,11 @@ Additional Work:
 
 
 
-Navigation (Latitude/Longitude concept):
+Navigation (Latitude/Longitude concept): ✅
 - On mobile, navigation should follow a map-like logic:
-- Up/Down (Latitude): switch between posts in the feed. ✅
-- Left/Right (Longitude): navigate within the gallery/media of a single post. ✅
-- On desktop/PC, since swiping isn’t native, I suggest alternatives like:
-- Arrow keys / WASD controls for the same movement.
-- Or hover/click zones with directional arrows.
-- (Optionally, we could explore a small mini-map overlay to make the grid-style navigation more visual.)
-Also, about the PC website version (post archive and post single archive) — do you want these to remain exactly the same as now, or should the design/interaction on desktop also be adjusted differently from mobile?
+- Up/Down (Latitude): switch between posts in the feed.
+- Left/Right (Longitude): navigate within the gallery/media of a single post.
+
 
 Feed Travel Distance (Geo-based Exposure):
 The slider(s) define how far posts are visible based on latitude and longitude ranges.
@@ -444,7 +443,6 @@ So in short:
 
 
 
-  Post Create Functionality For All users
 
   Search Methods:
   1. Spatiotemporal Information: ✅

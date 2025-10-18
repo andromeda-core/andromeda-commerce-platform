@@ -222,7 +222,7 @@ const index = ({
                 search_history={search_history}
             />
 
-            <div className="pb-20 sm:pb-20">
+            <div className="pb-20 sm:px-6 sm:pb-20 lg:px-8">
                 <div className="rounded-xl bg-white px-3 text-gray-900 dark:bg-deepcharcoal dark:text-gray-100 sm:px-6 lg:px-8">
                     {/* Header */}
                     <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-slate-700">

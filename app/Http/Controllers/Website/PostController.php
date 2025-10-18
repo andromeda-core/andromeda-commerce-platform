@@ -125,12 +125,27 @@ class PostController extends Controller
         }
 
         $data = $this->post->getHashtagPosts($request, $hashtag, $preferences);
-        if ($data['status'] == false) {
+        if ($data['status'] == false && ! $request->header('X-Inertia')) {
             return to_route('home')->with('error', $data['message']);
+        }
+
+        if ($request->ajax() && $data['status'] == false && ! $request->header('X-Inertia')) {
+            return response()->json([
+                'status' => false,
+                'message' => $data['message'],
+            ], 400);
         }
 
         $posts = $data['posts']->items();
         $next_page_url = $data['posts']->nextPageUrl();
+
+        if ($request->ajax() && ! $request->header('X-Inertia')) {
+            return response()->json([
+                'status' => true,
+                'backend_retuned_posts' => $posts,
+                'backend_retuned_next_page_url' => $next_page_url,
+            ]);
+        }
 
         $google_map_api_key = $this->globalSearch->getGoogleMapApiKey();
 

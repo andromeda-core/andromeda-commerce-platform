@@ -878,8 +878,25 @@ class PostRepository implements IPostRepository
                         });
                     }
                 })
+                ->with(['floor', 'user'])
                 ->paginate(10)
                 ->withQueryString();
+
+            $posts->getCollection()->transform(function ($post) {
+                return [
+                    'id' => $post->id,
+                    'title' => Str::length($post->title) > 30 ? Str::limit($post->title, 30, '...') : $post->title,
+                    'slug' => $post->slug,
+                    'location_name' => $post->location_name,
+                    'latitude' => $post->latitude,
+                    'longitude' => $post->longitude,
+                    'image' => $post->post_image_urls && count($post->post_image_urls) > 0 ? $post->post_image_urls[0] : null,
+                    'tag' => $post->tag,
+                    'floor' => $post?->floor?->name,
+                    'created_at' => $post->created_at->format('Y-m-d g:i A '),
+                    'timestamp' => $post->created_at->timestamp,
+                ];
+            });
 
             return [
                 'status' => true,
