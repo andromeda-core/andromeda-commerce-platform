@@ -541,6 +541,12 @@ export default function index({ google_map_api_key, search_history }) {
     const fetchLock = useRef(false);
     const isLooping = useRef(false);
     const touchStartY = useRef(0);
+    const postsRef = useRef(posts); // 🔧 Track posts in ref
+
+    useEffect(() => {
+        postsRef.current = posts; // 🔧 Update ref whenever posts changes
+    }, [posts]);
+
     useEffect(() => {
         if (!isMobilePostViewer || viewablePost === '' || isMobilePostGallery) return;
         const container = mobilePostContainerRef.current;
@@ -576,7 +582,7 @@ export default function index({ google_map_api_key, search_history }) {
                 Math.ceil(container.scrollTop + container.clientHeight) >= container.scrollHeight;
 
             if (direction < 0 && atTop) {
-                nextIndex = posts.length - 1;
+                nextIndex = postsRef.current.length - 1;
                 isLooping.current = true;
 
                 const unlockCheck = setInterval(() => {
@@ -604,7 +610,7 @@ export default function index({ google_map_api_key, search_history }) {
                 }, 50);
             } else {
                 isLooping.current = false;
-                nextIndex = Math.max(0, Math.min(posts.length - 1, nextIndex));
+                nextIndex = Math.max(0, Math.min(postsRef.current.length - 1, nextIndex));
                 setTimeout(() => {
                     scrollLock.current = false;
                 }, 100);
@@ -615,7 +621,7 @@ export default function index({ google_map_api_key, search_history }) {
                 behavior: 'smooth',
             });
 
-            const post = posts[nextIndex];
+            const post = postsRef.current[nextIndex];
             const slug = post.slug;
             const newPosts = post.related_posts || [];
 
@@ -633,9 +639,10 @@ export default function index({ google_map_api_key, search_history }) {
             setRelatedPostSlug(slug);
             window.history.replaceState({}, '', generateURL(post));
 
+            // 🔧 FIXED: Don't fetch while looping
             if (
                 !isLooping.current &&
-                nextIndex >= posts.length - 5 &&
+                nextIndex >= postsRef.current.length - 5 &&
                 nextPageUrl &&
                 !fetchLock.current
             ) {
@@ -647,7 +654,6 @@ export default function index({ google_map_api_key, search_history }) {
         };
 
         // Mobile scroll
-        // Reset locks on mount/reopen
         scrollLock.current = false;
         isLooping.current = false;
         fetchLock.current = false;
@@ -665,20 +671,17 @@ export default function index({ google_map_api_key, search_history }) {
             const containerHeight = container.clientHeight;
             const newIndex = Math.round(scrollTop / containerHeight);
 
-            // --- simple top/bottom tolerance ---
             const atTop = scrollTop <= 1;
             const atBottom = Math.abs(scrollTop + containerHeight - container.scrollHeight) < 5;
 
-            // 🔓 unlock safely at edges
             if (atTop || atBottom) {
                 scrollLock.current = false;
                 isLooping.current = false;
             }
 
-            // --- normal index change ---
-            if (newIndex === selectedPostIndex || !posts[newIndex]) return;
+            if (newIndex === selectedPostIndex || !postsRef.current[newIndex]) return;
 
-            const post = posts[newIndex];
+            const post = postsRef.current[newIndex];
             const slug = post.slug;
             const newPosts = post.related_posts || [];
 
@@ -699,7 +702,7 @@ export default function index({ google_map_api_key, search_history }) {
             // ✅ only fetch when not looping
             if (
                 !isLooping.current &&
-                newIndex >= posts.length - 5 &&
+                newIndex >= postsRef.current.length - 5 &&
                 nextPageUrl &&
                 !fetchLock.current
             ) {
@@ -726,7 +729,6 @@ export default function index({ google_map_api_key, search_history }) {
 
         // --- TOUCH MOVE LOOPING ---
         const handleTouchMove = (e) => {
-            // ignore if locked or looping
             if (scrollLock.current || isLooping.current) {
                 e.preventDefault();
                 return;
@@ -748,7 +750,7 @@ export default function index({ google_map_api_key, search_history }) {
                 container.style.touchAction = 'none';
                 container.style.pointerEvents = 'none';
 
-                const newIndex = posts.length - 1;
+                const newIndex = postsRef.current.length - 1;
 
                 container.scrollTo({
                     top: newIndex * container.clientHeight,
@@ -756,10 +758,9 @@ export default function index({ google_map_api_key, search_history }) {
                 });
 
                 setSelectedPostIndex(newIndex);
-                setViewablePost(posts[newIndex]);
-                setRelatedPostSlug(posts[newIndex].slug);
+                setViewablePost(postsRef.current[newIndex]);
+                setRelatedPostSlug(postsRef.current[newIndex].slug);
 
-                // unlock once reached bottom
                 const unlockCheck = setInterval(() => {
                     const reachedBottom =
                         Math.abs(
@@ -774,7 +775,6 @@ export default function index({ google_map_api_key, search_history }) {
                     }
                 }, 50);
 
-                // safety unlock
                 setTimeout(() => {
                     clearInterval(unlockCheck);
                     scrollLock.current = false;
@@ -783,11 +783,11 @@ export default function index({ google_map_api_key, search_history }) {
                     container.style.pointerEvents = 'auto';
                 }, 1200);
 
-                return; // 🚫 stop normal scroll here
+                return;
             }
 
             // --- Loop from BOTTOM → TOP ---
-            if (atBottom && deltaY < -30 && selectedPostIndex === posts.length - 1) {
+            if (atBottom && deltaY < -30 && selectedPostIndex === postsRef.current.length - 1) {
                 scrollLock.current = true;
                 isLooping.current = true;
 
@@ -797,8 +797,8 @@ export default function index({ google_map_api_key, search_history }) {
                 container.scrollTo({ top: 0, behavior: 'smooth' });
 
                 setSelectedPostIndex(0);
-                setViewablePost(posts[0]);
-                setRelatedPostSlug(posts[0].slug);
+                setViewablePost(postsRef.current[0]);
+                setRelatedPostSlug(postsRef.current[0].slug);
 
                 const unlockCheck = setInterval(() => {
                     const reachedTop = container.scrollTop <= 2;
@@ -840,14 +840,7 @@ export default function index({ google_map_api_key, search_history }) {
                 window.removeEventListener('wheel', handleWheel);
             }
         };
-    }, [
-        isMobilePostViewer,
-        viewablePost,
-        posts,
-        selectedPostIndex,
-        nextPageUrl,
-        isMobilePostGallery,
-    ]);
+    }, [isMobilePostViewer, viewablePost, selectedPostIndex, nextPageUrl, isMobilePostGallery]);
 
     const lastHorizontalIndexRef = useRef({});
     const lastTriedRef = useRef({});
