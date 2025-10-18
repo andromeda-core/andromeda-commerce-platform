@@ -1274,10 +1274,12 @@ export default function index({ google_map_api_key, search_history }) {
             lastHorizontalIndexRef.current[slug] = index;
             lastScrollLeftRef.current[slug] = scrollLeft;
 
-            // CAROUSEL LOOP: User scrolled BACKWARDS past index 0
-            // Only trigger if they were at a related post (lastIndex > 0) and now at index 0
-            // AND the scroll direction is backwards (scrollLeft decreased from before)
-            if (index === 0 && lastIndex > 0 && scrollLeft < lastIndex * el.clientWidth * 0.5) {
+            // Detect swipe direction
+            const isSwipingBackward = scrollLeft < lastScrollLeft; // LEFT to RIGHT
+            const isSwipingForward = scrollLeft > lastScrollLeft; // RIGHT to LEFT
+
+            // CAROUSEL LOOP: At index 0 and swiping BACKWARD (LEFT to RIGHT)
+            if (index === 0 && isSwipingBackward && lastIndex === 0) {
                 horizontalScrollingRef.current[slug] = true;
 
                 const targetScroll = total * el.clientWidth;
@@ -1304,8 +1306,8 @@ export default function index({ google_map_api_key, search_history }) {
                 return;
             }
 
-            // CAROUSEL LOOP: User scrolled FORWARD past last post
-            if (index >= total && lastIndex < total) {
+            // CAROUSEL LOOP: At last post index and swiping FORWARD (RIGHT to LEFT)
+            if (index >= total && isSwipingForward && lastIndex >= total - 1) {
                 horizontalScrollingRef.current[slug] = true;
 
                 el.scrollTo({ left: 0, behavior: 'smooth' });
