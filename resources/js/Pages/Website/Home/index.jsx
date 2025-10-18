@@ -642,23 +642,28 @@ export default function index({ google_map_api_key, search_history }) {
 
             const scrollTop = container.scrollTop;
             const containerHeight = container.clientHeight;
-            let newIndex = Math.round(scrollTop / containerHeight);
-
             const atTop = scrollTop <= 0;
             const atBottom = Math.ceil(scrollTop + containerHeight) >= container.scrollHeight;
 
+            let newIndex = Math.round(scrollTop / containerHeight);
+
+            // Lock during programmatic scroll
             scrollLock.current = true;
 
-            // --- Loop from top → bottom
+            // --- Loop from TOP → BOTTOM
             if (atTop && selectedPostIndex === 0) {
-                newIndex = posts.length - 1;
                 isLooping.current = true;
+                newIndex = posts.length - 1;
+
+                container.scrollTo({
+                    top: newIndex * containerHeight,
+                    behavior: 'smooth',
+                });
 
                 const unlockCheck = setInterval(() => {
                     const reachedBottom =
                         Math.ceil(container.scrollTop + container.clientHeight) >=
                         container.scrollHeight;
-
                     if (reachedBottom) {
                         scrollLock.current = false;
                         isLooping.current = false;
@@ -666,18 +671,18 @@ export default function index({ google_map_api_key, search_history }) {
                     }
                 }, 50);
 
-                container.scrollTo({
-                    top: newIndex * containerHeight,
-                    behavior: 'smooth',
-                });
-
                 return;
             }
 
-            // --- Loop from bottom → top
+            // --- Loop from BOTTOM → TOP
             if (atBottom && selectedPostIndex === posts.length - 1) {
-                newIndex = 0;
                 isLooping.current = true;
+                newIndex = 0;
+
+                container.scrollTo({
+                    top: 0,
+                    behavior: 'smooth',
+                });
 
                 const unlockCheck = setInterval(() => {
                     const reachedTop = container.scrollTop <= 0;
@@ -688,21 +693,16 @@ export default function index({ google_map_api_key, search_history }) {
                     }
                 }, 50);
 
-                container.scrollTo({
-                    top: 0,
-                    behavior: 'smooth',
-                });
-
                 return;
             }
 
-            // --- Normal behavior
+            // --- Normal scrolling
             isLooping.current = false;
             setTimeout(() => {
                 scrollLock.current = false;
             }, 100);
 
-            // --- Regular logic below (your working one)
+            // --- Normal index handling
             if (newIndex !== selectedPostIndex && posts[newIndex]) {
                 const post = posts[newIndex];
                 const slug = post.slug;
