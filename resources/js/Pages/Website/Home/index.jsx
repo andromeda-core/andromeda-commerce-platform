@@ -638,7 +638,9 @@ export default function index({ google_map_api_key, search_history }) {
         };
 
         const handleScroll = () => {
-            alert('TOP');
+            alert(container.scrollTop);
+
+            // alert('TOP');
             if (scrollLock.current || isLooping.current) return;
 
             const scrollTop = container.scrollTop;
@@ -1544,7 +1546,7 @@ export default function index({ google_map_api_key, search_history }) {
                                         tabIndex={0}
                                         className="h-screen w-full snap-y snap-mandatory overflow-y-scroll scrollbar-none"
                                         style={{
-                                            overscrollBehavior: 'contain',
+                                            overscrollBehavior: 'none',
                                             scrollSnapType: 'y mandatory',
                                             scrollSnapStop: 'always',
                                             WebkitOverflowScrolling: 'touch',
