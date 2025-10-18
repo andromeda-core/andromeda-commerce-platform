@@ -1251,12 +1251,16 @@ export default function index({ google_map_api_key, search_history }) {
     const horizontalLooping = useRef({});
     const horizontalTouchStartX = useRef({});
 
-    // Helper: Check if horizontal scroll reached target
     const checkHorizontalScrollReachedTarget = (el, isStart) => {
+        const clientWidth = el.clientWidth;
+
         if (isStart) {
-            return el.scrollLeft <= 2;
+            return el.scrollLeft <= clientWidth * 0.1;
         }
-        return Math.abs(el.scrollLeft + el.clientWidth - el.scrollWidth) < 8;
+
+        const totalWidth = el.scrollWidth;
+        const currentPosition = el.scrollLeft + clientWidth;
+        return Math.abs(currentPosition - totalWidth) < clientWidth * 0.15;
     };
 
     // Helper: Wait for horizontal scroll animation to settle
@@ -1417,67 +1421,33 @@ export default function index({ google_map_api_key, search_history }) {
 
             const currentX = e.touches[0].clientX;
             const deltaX = currentX - (horizontalTouchStartX.current[slug] || currentX);
-
-            const scrollLeft = el.scrollLeft;
-            const atStart = scrollLeft <= 0;
-            const atEnd = Math.abs(scrollLeft + el.clientWidth - el.scrollWidth) < 5;
-            const currentIndex = Math.round(scrollLeft / el.clientWidth);
-
-            // Only loop if swipe is significant
             const swipeThreshold = 30;
 
-            // Loop from END → START (swipe right)
-            if (atEnd && deltaX > swipeThreshold) {
+            const scrollLeft = el.scrollLeft;
+            const clientWidth = el.clientWidth;
+            const scrollWidth = el.scrollWidth;
+
+            // Check if at START (main post visible)
+            const atStart = scrollLeft <= clientWidth * 0.2;
+
+            // Check if at END (last post visible)
+            const atEnd = scrollLeft >= scrollWidth - clientWidth * 1.2;
+
+            // LEFT SWIPE - if at START, loop to END
+            if (atStart && deltaX < -swipeThreshold) {
                 e.preventDefault();
-                horizontalScrollLock.current[slug] = true;
                 horizontalLooping.current[slug] = true;
 
+                // Jump to last post
+                const targetScroll = scrollWidth - clientWidth;
                 el.scrollTo({
-                    left: 0,
-                    behavior: 'smooth',
-                });
-
-                waitForHorizontalScrollSettle(el, true, () => {
-                    // Update state after scroll settles
-                    setActiveViewerMap((prev) => ({
-                        ...prev,
-                        [slug]: 'main',
-                    }));
-
-                    setRelatedViewerMap((prev) => ({
-                        ...prev,
-                        [slug]: null,
-                    }));
-
-                    setViewablePost(mainPost);
-                    window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
-                    lastHorizontalIndexRef.current[slug] = 0;
-
-                    horizontalScrollLock.current[slug] = false;
-                    horizontalLooping.current[slug] = false;
-                });
-
-                return;
-            }
-
-            // Loop from START → END (swipe left)
-            if (atStart && deltaX < -swipeThreshold && relatedPosts.length > 0) {
-                e.preventDefault();
-                horizontalScrollLock.current[slug] = true;
-                horizontalLooping.current[slug] = true;
-
-                // Scroll to the last post (index = length means we show the last item)
-                const targetScrollLeft = relatedPosts.length * el.clientWidth;
-
-                el.scrollTo({
-                    left: targetScrollLeft,
+                    left: targetScroll,
                     behavior: 'smooth',
                 });
 
                 waitForHorizontalScrollSettle(el, false, () => {
                     const lastPost = relatedPosts[relatedPosts.length - 1];
 
-                    // Update state after scroll settles
                     setRelatedViewerMap((prev) => ({
                         ...prev,
                         [slug]: lastPost,
@@ -1492,7 +1462,38 @@ export default function index({ google_map_api_key, search_history }) {
                     window.history.pushState({}, '', `${route('home')}${generateURL(lastPost)}`);
                     lastHorizontalIndexRef.current[slug] = relatedPosts.length;
 
-                    horizontalScrollLock.current[slug] = false;
+                    horizontalLooping.current[slug] = false;
+                });
+
+                return;
+            }
+
+            // RIGHT SWIPE - if at END, loop to START
+            if (atEnd && deltaX > swipeThreshold) {
+                e.preventDefault();
+                horizontalLooping.current[slug] = true;
+
+                // Jump to main post
+                el.scrollTo({
+                    left: 0,
+                    behavior: 'smooth',
+                });
+
+                waitForHorizontalScrollSettle(el, true, () => {
+                    setActiveViewerMap((prev) => ({
+                        ...prev,
+                        [slug]: 'main',
+                    }));
+
+                    setRelatedViewerMap((prev) => ({
+                        ...prev,
+                        [slug]: null,
+                    }));
+
+                    setViewablePost(mainPost);
+                    window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
+                    lastHorizontalIndexRef.current[slug] = 0;
+
                     horizontalLooping.current[slug] = false;
                 });
 
