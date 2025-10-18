@@ -851,6 +851,310 @@ export default function index({ google_map_api_key, search_history }) {
         };
     }, [isMobilePostViewer, viewablePost, selectedPostIndex, nextPageUrl, isMobilePostGallery]);
 
+    // Works But Breaks On Mobile Some places
+    // useEffect(() => {
+    //     if (!isMobilePostViewer || viewablePost === '' || isMobilePostGallery) return;
+    //     const container = mobilePostContainerRef.current;
+    //     if (!container) return;
+
+    //     scrollLock.current = false;
+    //     isLooping.current = false;
+    //     fetchLock.current = false;
+    //     lastFetchTriggerIndex.current = -1;
+
+    //     if (container) {
+    //         container.style.touchAction = 'auto';
+    //         container.style.pointerEvents = 'auto';
+    //     }
+
+    //     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+    //     // Helper: Check if scroll reached target
+    //     const checkScrollReachedTarget = (isTop) => {
+    //         if (isTop) {
+    //             return container.scrollTop <= 2;
+    //         }
+    //         return (
+    //             Math.abs(container.scrollTop + container.clientHeight - container.scrollHeight) < 8
+    //         );
+    //     };
+
+    //     // Helper: Wait for scroll animation to settle at target
+    //     const waitForScrollSettle = (isTop, callback) => {
+    //         let lastScrollTop = container.scrollTop;
+    //         let stableCount = 0;
+    //         const requiredStable = 2;
+
+    //         const checkSettle = () => {
+    //             const currentScrollTop = container.scrollTop;
+    //             const atTarget = checkScrollReachedTarget(isTop);
+
+    //             if (currentScrollTop === lastScrollTop && atTarget) {
+    //                 stableCount++;
+    //                 if (stableCount >= requiredStable) {
+    //                     callback();
+    //                     return;
+    //                 }
+    //             } else {
+    //                 stableCount = 0;
+    //             }
+
+    //             lastScrollTop = currentScrollTop;
+    //             setTimeout(checkSettle, 50);
+    //         };
+
+    //         checkSettle();
+    //     };
+
+    //     // Desktop scroll - Wheel
+    //     const handleWheel = (e) => {
+    //         if (e.ctrlKey || e.metaKey) return;
+
+    //         if (scrollLock.current) {
+    //             e.preventDefault();
+    //             return;
+    //         }
+
+    //         e.preventDefault();
+    //         scrollLock.current = true;
+
+    //         const direction = e.deltaY > 0 ? 1 : -1;
+    //         let nextIndex = selectedPostIndex + direction;
+
+    //         const atTop = container.scrollTop <= 0;
+    //         const atBottom = checkScrollReachedTarget(false);
+
+    //         if (direction < 0 && atTop) {
+    //             // Loop TOP → BOTTOM
+    //             nextIndex = postsRef.current.length - 1;
+    //             isLooping.current = true;
+
+    //             container.scrollTo({
+    //                 top: nextIndex * container.clientHeight,
+    //                 behavior: 'smooth',
+    //             });
+
+    //             waitForScrollSettle(false, () => {
+    //                 setSelectedPostIndex(nextIndex);
+    //                 setViewablePost(postsRef.current[nextIndex]);
+    //                 setRelatedPostSlug(postsRef.current[nextIndex].slug);
+
+    //                 scrollLock.current = false;
+    //                 isLooping.current = false;
+    //             });
+    //         } else if (direction > 0 && atBottom) {
+    //             // Loop BOTTOM → TOP
+    //             nextIndex = 0;
+    //             isLooping.current = true;
+
+    //             container.scrollTo({
+    //                 top: 0,
+    //                 behavior: 'smooth',
+    //             });
+
+    //             waitForScrollSettle(true, () => {
+    //                 setSelectedPostIndex(0);
+    //                 setViewablePost(postsRef.current[0]);
+    //                 setRelatedPostSlug(postsRef.current[0].slug);
+
+    //                 scrollLock.current = false;
+    //                 isLooping.current = false;
+    //             });
+    //         } else {
+    //             // Normal scroll
+    //             isLooping.current = false;
+    //             nextIndex = Math.max(0, Math.min(postsRef.current.length - 1, nextIndex));
+
+    //             container.scrollTo({
+    //                 top: nextIndex * container.clientHeight,
+    //                 behavior: 'smooth',
+    //             });
+
+    //             setTimeout(() => {
+    //                 scrollLock.current = false;
+    //             }, 100);
+    //         }
+
+    //         // Update state immediately for normal scrolls
+    //         if (!(direction < 0 && atTop) && !(direction > 0 && atBottom)) {
+    //             const post = postsRef.current[nextIndex];
+    //             const slug = post.slug;
+    //             const newPosts = post.related_posts || [];
+
+    //             setSelectedPostIndex(nextIndex);
+    //             setViewablePost(post);
+
+    //             setRelatedPostsMap((prev) => ({
+    //                 ...prev,
+    //                 [slug]: [
+    //                     ...(prev[slug] || []),
+    //                     ...newPosts.filter(
+    //                         (p) => !(prev[slug] || []).some((old) => old.id === p.id),
+    //                     ),
+    //                 ],
+    //             }));
+
+    //             setRelatedPostSlug(slug);
+    //             window.history.replaceState({}, '', generateURL(post));
+
+    //             if (
+    //                 nextIndex >= postsRef.current.length - 5 &&
+    //                 nextPageUrl &&
+    //                 !fetchLock.current &&
+    //                 lastFetchTriggerIndex.current !== nextIndex
+    //             ) {
+    //                 fetchLock.current = true;
+    //                 lastFetchTriggerIndex.current = nextIndex;
+
+    //                 fetchMorePosts().finally(() => {
+    //                     fetchLock.current = false;
+    //                 });
+    //             }
+    //         }
+    //     };
+
+    //     // Mobile scroll - Touch
+    //     const handleScroll = () => {
+    //         if (scrollLock.current || isLooping.current) return;
+
+    //         const scrollTop = container.scrollTop;
+    //         const containerHeight = container.clientHeight;
+    //         const newIndex = Math.round(scrollTop / containerHeight);
+
+    //         if (newIndex === selectedPostIndex || !postsRef.current[newIndex]) return;
+
+    //         const post = postsRef.current[newIndex];
+    //         const slug = post.slug;
+    //         const newPosts = post.related_posts || [];
+
+    //         setSelectedPostIndex(newIndex);
+    //         setViewablePost(post);
+
+    //         setRelatedPostsMap((prev) => ({
+    //             ...prev,
+    //             [slug]: [
+    //                 ...(prev[slug] || []),
+    //                 ...newPosts.filter((p) => !(prev[slug] || []).some((old) => old.id === p.id)),
+    //             ],
+    //         }));
+
+    //         setRelatedPostSlug(slug);
+    //         window.history.replaceState({}, '', generateURL(post));
+
+    //         // Only fetch when scrolling down
+    //         const isScrollingDown = newIndex > (selectedPostIndex || 0);
+
+    //         if (
+    //             isScrollingDown &&
+    //             newIndex >= postsRef.current.length - 5 &&
+    //             nextPageUrl &&
+    //             !fetchLock.current &&
+    //             lastFetchTriggerIndex.current !== newIndex
+    //         ) {
+    //             fetchLock.current = true;
+    //             lastFetchTriggerIndex.current = newIndex;
+
+    //             fetchMorePosts()
+    //                 .catch(() => {})
+    //                 .finally(() => {
+    //                     fetchLock.current = false;
+    //                 });
+    //         }
+    //     };
+
+    //     const handleTouchStart = (e) => {
+    //         touchStartY.current = e.touches[0].clientY;
+    //     };
+
+    //     const handleTouchMove = (e) => {
+    //         if (scrollLock.current || isLooping.current) {
+    //             e.preventDefault();
+    //             return;
+    //         }
+
+    //         const currentY = e.touches[0].clientY;
+    //         const deltaY = currentY - (touchStartY.current || currentY);
+
+    //         const scrollTop = container.scrollTop;
+    //         const atTop = scrollTop <= 0;
+    //         const atBottom =
+    //             Math.abs(scrollTop + container.clientHeight - container.scrollHeight) < 5;
+
+    //         // Loop from TOP → BOTTOM
+    //         if (atTop && deltaY > 30 && selectedPostIndex === 0) {
+    //             e.preventDefault();
+    //             scrollLock.current = true;
+    //             isLooping.current = true;
+
+    //             container.style.touchAction = 'none';
+    //             container.style.pointerEvents = 'none';
+
+    //             const newIndex = postsRef.current.length - 1;
+
+    //             container.scrollTo({
+    //                 top: newIndex * container.clientHeight,
+    //                 behavior: 'smooth',
+    //             });
+
+    //             waitForScrollSettle(false, () => {
+    //                 setSelectedPostIndex(newIndex);
+    //                 setViewablePost(postsRef.current[newIndex]);
+    //                 setRelatedPostSlug(postsRef.current[newIndex].slug);
+
+    //                 scrollLock.current = false;
+    //                 isLooping.current = false;
+    //                 container.style.touchAction = 'auto';
+    //                 container.style.pointerEvents = 'auto';
+    //             });
+
+    //             return;
+    //         }
+
+    //         // Loop from BOTTOM → TOP
+    //         if (atBottom && deltaY < -30 && selectedPostIndex === postsRef.current.length - 1) {
+    //             e.preventDefault();
+    //             scrollLock.current = true;
+    //             isLooping.current = true;
+
+    //             container.style.touchAction = 'none';
+    //             container.style.pointerEvents = 'none';
+
+    //             container.scrollTo({ top: 0, behavior: 'smooth' });
+
+    //             waitForScrollSettle(true, () => {
+    //                 setSelectedPostIndex(0);
+    //                 setViewablePost(postsRef.current[0]);
+    //                 setRelatedPostSlug(postsRef.current[0].slug);
+
+    //                 scrollLock.current = false;
+    //                 isLooping.current = false;
+    //                 container.style.touchAction = 'auto';
+    //                 container.style.pointerEvents = 'auto';
+    //             });
+
+    //             return;
+    //         }
+    //     };
+
+    //     if (isTouchDevice) {
+    //         container.addEventListener('scroll', handleScroll, { passive: false });
+    //         container.addEventListener('touchstart', handleTouchStart, { passive: false });
+    //         container.addEventListener('touchmove', handleTouchMove, { passive: false });
+    //     } else {
+    //         window.addEventListener('wheel', handleWheel, { passive: false });
+    //     }
+
+    //     return () => {
+    //         if (isTouchDevice) {
+    //             container.removeEventListener('scroll', handleScroll);
+    //             container.removeEventListener('touchstart', handleTouchStart);
+    //             container.removeEventListener('touchmove', handleTouchMove);
+    //         } else {
+    //             window.removeEventListener('wheel', handleWheel);
+    //         }
+    //     };
+    // }, [isMobilePostViewer, viewablePost, selectedPostIndex, nextPageUrl, isMobilePostGallery]);
+
     const lastHorizontalIndexRef = useRef({});
     const lastTriedRef = useRef({});
 
