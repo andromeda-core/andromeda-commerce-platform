@@ -541,6 +541,7 @@ export default function index({ google_map_api_key, search_history }) {
     const fetchLock = useRef(false);
     const isLooping = useRef(false);
     const touchStartY = useRef(0);
+    const touchStartX = useRef(0);
     const postsRef = useRef(posts);
     const lastFetchTriggerIndex = useRef(-1);
 
@@ -762,6 +763,7 @@ export default function index({ google_map_api_key, search_history }) {
         const handleTouchStart = (e) => {
             alert('hjandle TOcuh');
             touchStartY.current = e.touches[0].clientY;
+            touchStartX.current = e.touches[0].clientX;
         };
 
         const handleTouchMove = (e) => {
@@ -772,7 +774,15 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             const currentY = e.touches[0].clientY;
+            const currentX = e.touches[0].clientX;
             const deltaY = currentY - (touchStartY.current || currentY);
+            const deltaX = currentX - (touchStartX.current || currentX);
+
+            const isVerticalSwipe = Math.abs(deltaY) > Math.abs(deltaX) + 20;
+
+            if (!isVerticalSwipe) {
+                return;
+            }
 
             const scrollTop = container.scrollTop;
             const atTop = scrollTop <= 0;
