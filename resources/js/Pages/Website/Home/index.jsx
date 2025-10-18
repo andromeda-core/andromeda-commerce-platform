@@ -655,6 +655,7 @@ export default function index({ google_map_api_key, search_history }) {
                 isLooping.current = true;
                 newIndex = posts.length - 1;
 
+                container.style.scrollSnapType = 'none';
                 container.scrollTo({
                     top: newIndex * containerHeight,
                     behavior: 'smooth',
@@ -667,6 +668,7 @@ export default function index({ google_map_api_key, search_history }) {
                     if (reachedBottom) {
                         scrollLock.current = false;
                         isLooping.current = false;
+                        container.style.scrollSnapType = 'y mandatory';
                         clearInterval(unlockCheck);
                     }
                 }, 50);
@@ -679,6 +681,7 @@ export default function index({ google_map_api_key, search_history }) {
                 isLooping.current = true;
                 newIndex = 0;
 
+                container.style.scrollSnapType = 'none';
                 container.scrollTo({
                     top: 0,
                     behavior: 'smooth',
@@ -689,6 +692,7 @@ export default function index({ google_map_api_key, search_history }) {
                     if (reachedTop) {
                         scrollLock.current = false;
                         isLooping.current = false;
+                        container.style.scrollSnapType = 'y mandatory';
                         clearInterval(unlockCheck);
                     }
                 }, 50);
