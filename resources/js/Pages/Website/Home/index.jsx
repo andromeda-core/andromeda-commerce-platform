@@ -540,9 +540,9 @@ export default function index({ google_map_api_key, search_history }) {
     const scrollLock = useRef(false);
     const fetchLock = useRef(false);
     const isLooping = useRef(false);
-    const justCompletedLoop = useRef(false);
     const touchStartY = useRef(0);
     const postsRef = useRef(posts);
+    const lastFetchTriggerIndex = useRef(-1);
 
     useEffect(() => {
         postsRef.current = posts;
@@ -556,7 +556,7 @@ export default function index({ google_map_api_key, search_history }) {
         scrollLock.current = false;
         isLooping.current = false;
         fetchLock.current = false;
-        justCompletedLoop.current = false;
+        lastFetchTriggerIndex.current = -1;
 
         if (container) {
             container.style.touchAction = 'auto';
@@ -565,7 +565,44 @@ export default function index({ google_map_api_key, search_history }) {
 
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
-        // Desktop scroll
+        // Helper: Check if scroll reached target
+        const checkScrollReachedTarget = (isTop) => {
+            if (isTop) {
+                return container.scrollTop <= 2;
+            }
+            return (
+                Math.abs(container.scrollTop + container.clientHeight - container.scrollHeight) < 8
+            );
+        };
+
+        // Helper: Wait for scroll animation to settle at target
+        const waitForScrollSettle = (isTop, callback) => {
+            let lastScrollTop = container.scrollTop;
+            let stableCount = 0;
+            const requiredStable = 2;
+
+            const checkSettle = () => {
+                const currentScrollTop = container.scrollTop;
+                const atTarget = checkScrollReachedTarget(isTop);
+
+                if (currentScrollTop === lastScrollTop && atTarget) {
+                    stableCount++;
+                    if (stableCount >= requiredStable) {
+                        callback();
+                        return;
+                    }
+                } else {
+                    stableCount = 0;
+                }
+
+                lastScrollTop = currentScrollTop;
+                setTimeout(checkSettle, 50);
+            };
+
+            checkSettle();
+        };
+
+        // Desktop scroll - Wheel
         const handleWheel = (e) => {
             if (e.ctrlKey || e.metaKey) return;
 
@@ -581,119 +618,104 @@ export default function index({ google_map_api_key, search_history }) {
             let nextIndex = selectedPostIndex + direction;
 
             const atTop = container.scrollTop <= 0;
-            const atBottom =
-                Math.ceil(container.scrollTop + container.clientHeight) >= container.scrollHeight;
+            const atBottom = checkScrollReachedTarget(false);
 
             if (direction < 0 && atTop) {
+                // Loop TOP → BOTTOM
                 nextIndex = postsRef.current.length - 1;
                 isLooping.current = true;
-                justCompletedLoop.current = false;
 
-                const unlockCheck = setInterval(() => {
-                    const reachedBottom =
-                        Math.ceil(container.scrollTop + container.clientHeight) >=
-                        container.scrollHeight;
+                container.scrollTo({
+                    top: nextIndex * container.clientHeight,
+                    behavior: 'smooth',
+                });
 
-                    if (reachedBottom) {
-                        scrollLock.current = false;
-                        isLooping.current = false;
-                        justCompletedLoop.current = true;
-                        clearInterval(unlockCheck);
+                waitForScrollSettle(false, () => {
+                    setSelectedPostIndex(nextIndex);
+                    setViewablePost(postsRef.current[nextIndex]);
+                    setRelatedPostSlug(postsRef.current[nextIndex].slug);
 
-                        setTimeout(() => {
-                            justCompletedLoop.current = false;
-                        }, 500);
-                    }
-                }, 50);
+                    scrollLock.current = false;
+                    isLooping.current = false;
+                });
             } else if (direction > 0 && atBottom) {
+                // Loop BOTTOM → TOP
                 nextIndex = 0;
                 isLooping.current = true;
-                justCompletedLoop.current = false;
 
-                const unlockCheck = setInterval(() => {
-                    const reachedTop = container.scrollTop <= 0;
-                    if (reachedTop) {
-                        scrollLock.current = false;
-                        isLooping.current = false;
-                        justCompletedLoop.current = true;
-                        clearInterval(unlockCheck);
+                container.scrollTo({
+                    top: 0,
+                    behavior: 'smooth',
+                });
 
-                        setTimeout(() => {
-                            justCompletedLoop.current = false;
-                        }, 500);
-                    }
-                }, 50);
+                waitForScrollSettle(true, () => {
+                    setSelectedPostIndex(0);
+                    setViewablePost(postsRef.current[0]);
+                    setRelatedPostSlug(postsRef.current[0].slug);
+
+                    scrollLock.current = false;
+                    isLooping.current = false;
+                });
             } else {
+                // Normal scroll
                 isLooping.current = false;
-                justCompletedLoop.current = false;
                 nextIndex = Math.max(0, Math.min(postsRef.current.length - 1, nextIndex));
+
+                container.scrollTo({
+                    top: nextIndex * container.clientHeight,
+                    behavior: 'smooth',
+                });
+
                 setTimeout(() => {
                     scrollLock.current = false;
                 }, 100);
             }
 
-            container.scrollTo({
-                top: nextIndex * container.clientHeight,
-                behavior: 'smooth',
-            });
+            // Update state immediately for normal scrolls
+            if (!(direction < 0 && atTop) && !(direction > 0 && atBottom)) {
+                const post = postsRef.current[nextIndex];
+                const slug = post.slug;
+                const newPosts = post.related_posts || [];
 
-            const post = postsRef.current[nextIndex];
-            const slug = post.slug;
-            const newPosts = post.related_posts || [];
+                setSelectedPostIndex(nextIndex);
+                setViewablePost(post);
 
-            setSelectedPostIndex(nextIndex);
-            setViewablePost(post);
+                setRelatedPostsMap((prev) => ({
+                    ...prev,
+                    [slug]: [
+                        ...(prev[slug] || []),
+                        ...newPosts.filter(
+                            (p) => !(prev[slug] || []).some((old) => old.id === p.id),
+                        ),
+                    ],
+                }));
 
-            setRelatedPostsMap((prev) => ({
-                ...prev,
-                [slug]: [
-                    ...(prev[slug] || []),
-                    ...newPosts.filter((p) => !(prev[slug] || []).some((old) => old.id === p.id)),
-                ],
-            }));
+                setRelatedPostSlug(slug);
+                window.history.replaceState({}, '', generateURL(post));
 
-            setRelatedPostSlug(slug);
-            window.history.replaceState({}, '', generateURL(post));
+                if (
+                    nextIndex >= postsRef.current.length - 5 &&
+                    nextPageUrl &&
+                    !fetchLock.current &&
+                    lastFetchTriggerIndex.current !== nextIndex
+                ) {
+                    fetchLock.current = true;
+                    lastFetchTriggerIndex.current = nextIndex;
 
-            if (
-                !isLooping.current &&
-                !justCompletedLoop.current &&
-                nextIndex >= postsRef.current.length - 5 &&
-                nextPageUrl &&
-                !fetchLock.current
-            ) {
-                fetchLock.current = true;
-                fetchMorePosts().finally(() => {
-                    fetchLock.current = false;
-                });
+                    fetchMorePosts().finally(() => {
+                        fetchLock.current = false;
+                    });
+                }
             }
         };
 
-        scrollLock.current = false;
-        isLooping.current = false;
-        fetchLock.current = false;
-        justCompletedLoop.current = false;
-
-        if (container) {
-            container.style.touchAction = 'auto';
-            container.style.pointerEvents = 'auto';
-        }
-
+        // Mobile scroll - Touch
         const handleScroll = () => {
-            // 🔧 CRITICAL: Block scroll handler during ANY loop phase
-            if (scrollLock.current || isLooping.current || justCompletedLoop.current) return;
+            if (scrollLock.current || isLooping.current) return;
 
             const scrollTop = container.scrollTop;
             const containerHeight = container.clientHeight;
             const newIndex = Math.round(scrollTop / containerHeight);
-
-            const atTop = scrollTop <= 1;
-            const atBottom = Math.abs(scrollTop + containerHeight - container.scrollHeight) < 5;
-
-            if (atTop || atBottom) {
-                scrollLock.current = false;
-                isLooping.current = false;
-            }
 
             if (newIndex === selectedPostIndex || !postsRef.current[newIndex]) return;
 
@@ -715,25 +737,23 @@ export default function index({ google_map_api_key, search_history }) {
             setRelatedPostSlug(slug);
             window.history.replaceState({}, '', generateURL(post));
 
+            // Only fetch when scrolling down
+            const isScrollingDown = newIndex > (selectedPostIndex || 0);
+
             if (
-                !isLooping.current &&
-                !justCompletedLoop.current &&
+                isScrollingDown &&
                 newIndex >= postsRef.current.length - 5 &&
                 nextPageUrl &&
-                !fetchLock.current
+                !fetchLock.current &&
+                lastFetchTriggerIndex.current !== newIndex
             ) {
                 fetchLock.current = true;
+                lastFetchTriggerIndex.current = newIndex;
 
                 fetchMorePosts()
                     .catch(() => {})
                     .finally(() => {
                         fetchLock.current = false;
-                        scrollLock.current = false;
-                        isLooping.current = false;
-                        if (container) {
-                            container.style.touchAction = 'auto';
-                            container.style.pointerEvents = 'auto';
-                        }
                     });
             }
         };
@@ -743,7 +763,7 @@ export default function index({ google_map_api_key, search_history }) {
         };
 
         const handleTouchMove = (e) => {
-            if (scrollLock.current || isLooping.current || justCompletedLoop.current) {
+            if (scrollLock.current || isLooping.current) {
                 e.preventDefault();
                 return;
             }
@@ -761,73 +781,27 @@ export default function index({ google_map_api_key, search_history }) {
                 e.preventDefault();
                 scrollLock.current = true;
                 isLooping.current = true;
-                justCompletedLoop.current = false;
 
                 container.style.touchAction = 'none';
                 container.style.pointerEvents = 'none';
 
                 const newIndex = postsRef.current.length - 1;
 
-                // 🔧 Don't update index until scroll completes
                 container.scrollTo({
                     top: newIndex * container.clientHeight,
                     behavior: 'smooth',
                 });
 
-                let lastScrollTop = container.scrollTop;
-                let checkCount = 0;
-                const unlockCheck = setInterval(() => {
-                    const currentScrollTop = container.scrollTop;
-                    const reachedBottom =
-                        Math.abs(
-                            container.scrollTop + container.clientHeight - container.scrollHeight,
-                        ) < 8;
+                waitForScrollSettle(false, () => {
+                    setSelectedPostIndex(newIndex);
+                    setViewablePost(postsRef.current[newIndex]);
+                    setRelatedPostSlug(postsRef.current[newIndex].slug);
 
-                    checkCount++;
-
-                    // Check if scroll stopped (position didn't change for 2 consecutive checks)
-                    if (currentScrollTop === lastScrollTop && reachedBottom) {
-                        clearInterval(unlockCheck);
-
-                        // 🔧 NOW update the UI after scroll completes
-                        setSelectedPostIndex(newIndex);
-                        setViewablePost(postsRef.current[newIndex]);
-                        setRelatedPostSlug(postsRef.current[newIndex].slug);
-
-                        scrollLock.current = false;
-                        isLooping.current = false;
-                        justCompletedLoop.current = true;
-                        container.style.touchAction = 'auto';
-                        container.style.pointerEvents = 'auto';
-
-                        setTimeout(() => {
-                            justCompletedLoop.current = false;
-                        }, 600);
-                        return;
-                    }
-                    lastScrollTop = currentScrollTop;
-                }, 100);
-
-                // 🔧 Safety timeout
-                setTimeout(() => {
-                    clearInterval(unlockCheck);
-                    if (isLooping.current) {
-                        // 🔧 Force update UI if loop is still active
-                        setSelectedPostIndex(newIndex);
-                        setViewablePost(postsRef.current[newIndex]);
-                        setRelatedPostSlug(postsRef.current[newIndex].slug);
-
-                        scrollLock.current = false;
-                        isLooping.current = false;
-                        justCompletedLoop.current = true;
-                        container.style.touchAction = 'auto';
-                        container.style.pointerEvents = 'auto';
-
-                        setTimeout(() => {
-                            justCompletedLoop.current = false;
-                        }, 600);
-                    }
-                }, 2500);
+                    scrollLock.current = false;
+                    isLooping.current = false;
+                    container.style.touchAction = 'auto';
+                    container.style.pointerEvents = 'auto';
+                });
 
                 return;
             }
@@ -837,65 +811,22 @@ export default function index({ google_map_api_key, search_history }) {
                 e.preventDefault();
                 scrollLock.current = true;
                 isLooping.current = true;
-                justCompletedLoop.current = false;
 
                 container.style.touchAction = 'none';
                 container.style.pointerEvents = 'none';
 
-                // 🔧 Don't update index until scroll completes
                 container.scrollTo({ top: 0, behavior: 'smooth' });
 
-                let lastScrollTop = container.scrollTop;
-                let checkCount = 0;
-                const unlockCheck = setInterval(() => {
-                    const currentScrollTop = container.scrollTop;
-                    const reachedTop = container.scrollTop <= 2;
+                waitForScrollSettle(true, () => {
+                    setSelectedPostIndex(0);
+                    setViewablePost(postsRef.current[0]);
+                    setRelatedPostSlug(postsRef.current[0].slug);
 
-                    checkCount++;
-
-                    // Check if scroll stopped (position didn't change for 2 consecutive checks)
-                    if (currentScrollTop === lastScrollTop && reachedTop) {
-                        clearInterval(unlockCheck);
-
-                        // 🔧 NOW update the UI after scroll completes
-                        setSelectedPostIndex(0);
-                        setViewablePost(postsRef.current[0]);
-                        setRelatedPostSlug(postsRef.current[0].slug);
-
-                        scrollLock.current = false;
-                        isLooping.current = false;
-                        justCompletedLoop.current = true;
-                        container.style.touchAction = 'auto';
-                        container.style.pointerEvents = 'auto';
-
-                        setTimeout(() => {
-                            justCompletedLoop.current = false;
-                        }, 600);
-                        return;
-                    }
-                    lastScrollTop = currentScrollTop;
-                }, 100);
-
-                // 🔧 Safety timeout
-                setTimeout(() => {
-                    clearInterval(unlockCheck);
-                    if (isLooping.current) {
-                        // 🔧 Force update UI if loop is still active
-                        setSelectedPostIndex(0);
-                        setViewablePost(postsRef.current[0]);
-                        setRelatedPostSlug(postsRef.current[0].slug);
-
-                        scrollLock.current = false;
-                        isLooping.current = false;
-                        justCompletedLoop.current = true;
-                        container.style.touchAction = 'auto';
-                        container.style.pointerEvents = 'auto';
-
-                        setTimeout(() => {
-                            justCompletedLoop.current = false;
-                        }, 600);
-                    }
-                }, 2500);
+                    scrollLock.current = false;
+                    isLooping.current = false;
+                    container.style.touchAction = 'auto';
+                    container.style.pointerEvents = 'auto';
+                });
 
                 return;
             }
