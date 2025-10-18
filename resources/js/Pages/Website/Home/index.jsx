@@ -712,7 +712,6 @@ export default function index({ google_map_api_key, search_history }) {
 
         // Mobile scroll - Touch
         const handleScroll = () => {
-            alert('hjandleSCROLL');
             if (scrollLock.current || isLooping.current) return;
 
             const scrollTop = container.scrollTop;
@@ -761,13 +760,11 @@ export default function index({ google_map_api_key, search_history }) {
         };
 
         const handleTouchStart = (e) => {
-            alert('hjandle TOcuh');
             touchStartY.current = e.touches[0].clientY;
             touchStartX.current = e.touches[0].clientX;
         };
 
         const handleTouchMove = (e) => {
-            alert('handle Move');
             if (scrollLock.current || isLooping.current) {
                 e.preventDefault();
                 return;
