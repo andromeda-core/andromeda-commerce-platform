@@ -1257,14 +1257,16 @@ export default function index({ google_map_api_key, search_history }) {
 
     const lastHorizontalIndexRef = useRef({});
     const lastTriedRef = useRef({});
-    const horizontalScrollingRef = useRef({}); // Debounce flag
-    const lastScrollLeftRef = useRef({}); // Track scroll direction
+    const lastScrollLeftRef = useRef({}); // Track previous scroll position
+    const horizontalLoopingRef = useRef({}); // Track if currently looping
 
     const handleHorizontalScroll = useCallback(
         (mainPost, e) => {
             const el = e.currentTarget;
             const scrollLeft = el.scrollLeft;
-            const index = Math.round(scrollLeft / el.clientWidth);
+            const clientWidth = el.clientWidth;
+            const scrollWidth = el.scrollWidth;
+            const index = Math.round(scrollLeft / clientWidth);
 
             const slug = mainPost.slug;
             const relatedPosts = relatedPostsMap[slug] || [];
@@ -1275,70 +1277,110 @@ export default function index({ google_map_api_key, search_history }) {
             const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
             const lastScrollLeft = lastScrollLeftRef.current[slug] ?? scrollLeft;
 
-            // Skip if same index or currently animating
-            if (index === lastIndex || horizontalScrollingRef.current[slug]) {
+            // Skip if same index or currently looping
+            if (index === lastIndex || horizontalLoopingRef.current[slug]) {
                 lastScrollLeftRef.current[slug] = scrollLeft;
                 return;
             }
 
-            lastHorizontalIndexRef.current[slug] = index;
-            lastScrollLeftRef.current[slug] = scrollLeft;
-
-            // Detect swipe direction
+            // Detect scroll direction BEFORE updating lastScrollLeft
             const isSwipingBackward = scrollLeft < lastScrollLeft; // LEFT to RIGHT
             const isSwipingForward = scrollLeft > lastScrollLeft; // RIGHT to LEFT
 
+            lastHorizontalIndexRef.current[slug] = index;
+            lastScrollLeftRef.current[slug] = scrollLeft;
+
+            // Helper: Wait for horizontal scroll to settle
+            const waitForHorizontalSettle = (targetLeft, isEnd, callback) => {
+                let lastLeft = el.scrollLeft;
+                let stableCount = 0;
+                const requiredStable = 3;
+
+                const checkSettle = () => {
+                    const currentLeft = el.scrollLeft;
+                    let atTarget;
+
+                    if (isEnd) {
+                        // At end - check if near scrollWidth
+                        atTarget =
+                            Math.abs(currentLeft + clientWidth - scrollWidth) < clientWidth * 0.1;
+                    } else {
+                        // At start - check if near 0
+                        atTarget = currentLeft < clientWidth * 0.1;
+                    }
+
+                    if (currentLeft === lastLeft && atTarget) {
+                        stableCount++;
+                        if (stableCount >= requiredStable) {
+                            callback();
+                            return;
+                        }
+                    } else {
+                        stableCount = 0;
+                    }
+
+                    lastLeft = currentLeft;
+                    setTimeout(checkSettle, 50);
+                };
+
+                checkSettle();
+            };
+
             // CAROUSEL LOOP: At index 0 and swiping BACKWARD (LEFT to RIGHT)
             if (index === 0 && isSwipingBackward && lastIndex === 0) {
-                horizontalScrollingRef.current[slug] = true;
+                horizontalLoopingRef.current[slug] = true;
 
-                const targetScroll = total * el.clientWidth;
+                const targetScroll = total * clientWidth;
                 el.scrollTo({ left: targetScroll, behavior: 'smooth' });
                 lastHorizontalIndexRef.current[slug] = total;
 
-                const lastPost = relatedPosts[total - 1];
-                setRelatedViewerMap((prev) => ({
-                    ...prev,
-                    [slug]: lastPost,
-                }));
+                waitForHorizontalSettle(targetScroll, true, () => {
+                    const lastPost = relatedPosts[total - 1];
+                    setRelatedViewerMap((prev) => ({
+                        ...prev,
+                        [slug]: lastPost,
+                    }));
 
-                setActiveViewerMap((prev) => ({
-                    ...prev,
-                    [slug]: 'related',
-                }));
+                    setActiveViewerMap((prev) => ({
+                        ...prev,
+                        [slug]: 'related',
+                    }));
 
-                setViewablePost(lastPost);
-                window.history.pushState({}, '', `${route('home')}${generateURL(lastPost)}`);
+                    setViewablePost(lastPost);
+                    window.history.pushState({}, '', `${route('home')}${generateURL(lastPost)}`);
 
-                setTimeout(() => {
-                    horizontalScrollingRef.current[slug] = false;
-                }, 600);
+                    horizontalLoopingRef.current[slug] = false;
+                });
                 return;
             }
 
-            // CAROUSEL LOOP: At last post index and swiping FORWARD (RIGHT to LEFT)
-            if (index >= total && isSwipingForward && lastIndex >= total - 1) {
-                horizontalScrollingRef.current[slug] = true;
+            // CAROUSEL LOOP: At last position and swiping FORWARD (RIGHT to LEFT)
+            if (
+                scrollLeft > (total - 0.5) * clientWidth &&
+                isSwipingForward &&
+                lastIndex >= total - 1
+            ) {
+                horizontalLoopingRef.current[slug] = true;
 
                 el.scrollTo({ left: 0, behavior: 'smooth' });
                 lastHorizontalIndexRef.current[slug] = 0;
 
-                setActiveViewerMap((prev) => ({
-                    ...prev,
-                    [slug]: 'main',
-                }));
+                waitForHorizontalSettle(0, false, () => {
+                    setActiveViewerMap((prev) => ({
+                        ...prev,
+                        [slug]: 'main',
+                    }));
 
-                setRelatedViewerMap((prev) => ({
-                    ...prev,
-                    [slug]: null,
-                }));
+                    setRelatedViewerMap((prev) => ({
+                        ...prev,
+                        [slug]: null,
+                    }));
 
-                setViewablePost(mainPost);
-                window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
+                    setViewablePost(mainPost);
+                    window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
 
-                setTimeout(() => {
-                    horizontalScrollingRef.current[slug] = false;
-                }, 600);
+                    horizontalLoopingRef.current[slug] = false;
+                });
                 return;
             }
 
