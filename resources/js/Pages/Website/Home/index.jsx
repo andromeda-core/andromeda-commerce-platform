@@ -638,7 +638,6 @@ export default function index({ google_map_api_key, search_history }) {
         };
 
         const handleScroll = () => {
-            alert('SCROLL trying');
             if (scrollLock.current || isLooping.current) return;
 
             const scrollTop = container.scrollTop;
@@ -773,18 +772,16 @@ export default function index({ google_map_api_key, search_history }) {
         // };
 
         if (isTouchDevice) {
-            alert('TOUCH DEVIOE');
-            container.addEventListener('scroll', handleScroll, { passive: true });
+            container.addEventListener('scroll', handleScroll, { passive: false });
         } else {
-            alert('Non TOUCH DEVIOE');
             window.addEventListener('wheel', handleWheel, { passive: false });
         }
 
         return () => {
             if (isTouchDevice) {
-                container.removeEventListener('scroll', handleScroll, { passive: true });
+                container.removeEventListener('scroll', handleScroll, { passive: false });
             } else {
-                window.removeEventListener('wheel', handleWheel);
+                window.removeEventListener('wheel', handleWheel, { passive: false });
             }
         };
     }, [
