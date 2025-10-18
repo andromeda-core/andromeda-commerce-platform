@@ -2754,6 +2754,12 @@ export default function index({ google_map_api_key, search_history }) {
                                                         onScroll={(e) =>
                                                             handleHorizontalScroll(post, e)
                                                         }
+                                                        onTouchStart={(e) =>
+                                                            handleHorizontalTouchStart(post.slug, e)
+                                                        }
+                                                        onTouchMove={(e) =>
+                                                            handleHorizontalTouchMove(post, e)
+                                                        }
                                                         className="horizontal-scroll-container relative flex h-full w-full select-none snap-x snap-mandatory overflow-x-scroll scrollbar-none"
                                                         style={{
                                                             scrollSnapType: 'x mandatory',
