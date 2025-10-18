@@ -1287,11 +1287,7 @@ export default function index({ google_map_api_key, search_history }) {
             const isSwipingBackward = scrollLeft < lastScrollLeft; // LEFT to RIGHT
             const isSwipingForward = scrollLeft > lastScrollLeft; // RIGHT to LEFT
 
-            toast.success([
-                'Swiping',
-                isSwipingBackward ? 'LEFT' : 'RIGHT',
-                isSwipingBackward ? 'RIGHT' : 'LEFT',
-            ]);
+            toast.success(`Swiping ${isSwipingBackward ? 'LEFT ←' : 'RIGHT →'}`);
 
             lastHorizontalIndexRef.current[slug] = index;
             lastScrollLeftRef.current[slug] = scrollLeft;
