@@ -771,18 +771,22 @@ export default function index({ google_map_api_key, search_history }) {
         //     }
         // };
 
-        if (isTouchDevice) {
-            container.addEventListener('scroll', handleScroll, { passive: true });
-        } else {
-            window.addEventListener('wheel', handleWheel, { passive: false });
-        }
+        // if (isTouchDevice) {
+        //     container.addEventListener('scroll', handleScroll, { passive: true });
+        // } else {
+        //     window.addEventListener('wheel', handleWheel, { passive: false });
+        // }
+        container.addEventListener('scroll', handleScroll, { passive: true });
+        window.addEventListener('wheel', handleWheel, { passive: false });
 
         return () => {
-            if (isTouchDevice) {
-                container.removeEventListener('scroll', handleScroll, { passive: true });
-            } else {
-                window.removeEventListener('wheel', handleWheel);
-            }
+            // if (isTouchDevice) {
+            //     container.removeEventListener('scroll', handleScroll, { passive: true });
+            // } else {
+            //     window.removeEventListener('wheel', handleWheel);
+            // }
+            container.removeEventListener('scroll', handleScroll, { passive: true });
+            window.removeEventListener('wheel', handleWheel);
         };
     }, [
         isMobilePostViewer,
