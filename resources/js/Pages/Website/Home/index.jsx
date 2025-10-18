@@ -545,6 +545,14 @@ export default function index({ google_map_api_key, search_history }) {
         const container = mobilePostContainerRef.current;
         if (!container) return;
 
+        scrollLock.current = false;
+        isLooping.current = false;
+        fetchLock.current = false;
+        if (container) {
+            container.style.touchAction = 'auto';
+            container.style.pointerEvents = 'auto';
+        }
+
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
         // Desktop scroll
@@ -686,51 +694,67 @@ export default function index({ google_map_api_key, search_history }) {
                 ) {
                     fetchMorePosts().finally(() => {
                         fetchLock.current = false;
+                        scrollLock.current = false;
+                        isLooping.current = false;
+                        container.style.touchAction = 'auto';
+                        container.style.pointerEvents = 'auto';
                     });
                 }
             }
         };
 
         const handleTouchStart = (e) => {
+            // Store initial Y for swipe detection
             handleScroll.startY = e.touches[0].clientY;
         };
 
         const handleTouchMove = (e) => {
-            if (scrollLock.current || isLooping.current) return;
+            // Completely ignore touches during loop or lock
+            if (scrollLock.current || isLooping.current) {
+                e.preventDefault();
+                return;
+            }
 
             const currentY = e.touches[0].clientY;
             const deltaY = currentY - (handleScroll.startY || currentY);
 
-            const atTop = container.scrollTop <= 0;
-            const atBottom =
-                Math.ceil(container.scrollTop + container.clientHeight) >= container.scrollHeight;
+            const scrollTop = container.scrollTop;
+            const atTop = scrollTop <= 0;
+            const atBottom = scrollTop + container.clientHeight >= container.scrollHeight - 5; // ✅ add tolerance
 
+            // Swipe down from top → loop to bottom
             if (atTop && deltaY > 30 && !isLooping.current && selectedPostIndex === 0) {
                 scrollLock.current = true;
                 isLooping.current = true;
-                container.style.touchAction = 'none';
+                container.style.touchAction = 'none'; // ✅ block touch immediately
+                container.style.pointerEvents = 'none'; // ✅ prevent UI interference
+
                 const newIndex = posts.length - 1;
                 container.scrollTo({
                     top: newIndex * container.clientHeight,
                     behavior: 'smooth',
                 });
+
                 setSelectedPostIndex(newIndex);
                 setViewablePost(posts[newIndex]);
                 setRelatedPostSlug(posts[newIndex].slug);
+
                 const unlockCheck = setInterval(() => {
                     const reachedBottom =
-                        Math.ceil(container.scrollTop + container.clientHeight) >=
-                        container.scrollHeight;
-
+                        Math.abs(
+                            container.scrollTop + container.clientHeight - container.scrollHeight,
+                        ) < 10; // ✅ more robust
                     if (reachedBottom) {
+                        clearInterval(unlockCheck);
                         scrollLock.current = false;
                         isLooping.current = false;
                         container.style.touchAction = 'auto';
-                        clearInterval(unlockCheck);
+                        container.style.pointerEvents = 'auto';
                     }
                 }, 50);
             }
 
+            // Swipe up from bottom → loop to top
             if (
                 atBottom &&
                 deltaY < -30 &&
@@ -739,21 +763,22 @@ export default function index({ google_map_api_key, search_history }) {
             ) {
                 scrollLock.current = true;
                 isLooping.current = true;
-
                 container.style.touchAction = 'none';
+                container.style.pointerEvents = 'none';
 
                 container.scrollTo({ top: 0, behavior: 'smooth' });
                 setSelectedPostIndex(0);
                 setViewablePost(posts[0]);
                 setRelatedPostSlug(posts[0].slug);
+
                 const unlockCheck = setInterval(() => {
-                    const reachedTop = container.scrollTop <= 0;
+                    const reachedTop = container.scrollTop <= 2; // ✅ small tolerance
                     if (reachedTop) {
+                        clearInterval(unlockCheck);
                         scrollLock.current = false;
                         isLooping.current = false;
-
                         container.style.touchAction = 'auto';
-                        clearInterval(unlockCheck);
+                        container.style.pointerEvents = 'auto';
                     }
                 }, 50);
             }
