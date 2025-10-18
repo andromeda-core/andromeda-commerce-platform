@@ -638,6 +638,7 @@ export default function index({ google_map_api_key, search_history }) {
         };
 
         const handleScroll = () => {
+            alert('SCROLL trying');
             if (scrollLock.current || isLooping.current) return;
 
             const scrollTop = container.scrollTop;
