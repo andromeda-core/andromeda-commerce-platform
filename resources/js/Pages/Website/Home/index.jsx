@@ -1263,15 +1263,18 @@ export default function index({ google_map_api_key, search_history }) {
             if (relatedPosts.length === 0) return;
 
             const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
-            if (index === lastIndex) return; // skip duplicates
+            if (index === lastIndex) return;
             lastHorizontalIndexRef.current[slug] = index;
 
-            const atFirst = index === 0;
-            const atLast = index >= relatedPosts.length; // safe bound
             const total = relatedPosts.length;
+            const atFirst = index <= 0;
+            const atLast = index >= total - 1;
 
-            // --- Loop Right-to-Left (Last → First) ---
-            if (atLast) {
+            // --- Detect scroll direction ---
+            const direction = scrollLeft > lastIndex * clientWidth ? 'right' : 'left';
+
+            // --- Loop Left Swipe at Last → Jump to First ---
+            if (atLast && direction === 'right') {
                 el.scrollTo({ left: 0, behavior: 'smooth' });
                 lastHorizontalIndexRef.current[slug] = 0;
 
@@ -1290,9 +1293,10 @@ export default function index({ google_map_api_key, search_history }) {
                 return;
             }
 
-            // --- Loop Left-to-Right (First → Last) ---
-            if (atFirst && lastIndex === 0 && scrollLeft < clientWidth / 3) {
-                el.scrollTo({ left: total * clientWidth, behavior: 'smooth' });
+            // --- Loop Right Swipe at First → Jump to Last ---
+            if (atFirst && direction === 'left') {
+                const newLeft = (total - 1) * clientWidth;
+                el.scrollTo({ left: newLeft, behavior: 'smooth' });
                 lastHorizontalIndexRef.current[slug] = total - 1;
 
                 const relatedPost = relatedPosts[total - 1];
@@ -1311,7 +1315,7 @@ export default function index({ google_map_api_key, search_history }) {
                 return;
             }
 
-            // --- Normal horizontal scroll ---
+            // --- Normal horizontal scroll between posts ---
             if (index > 0) {
                 const relatedPost = relatedPosts[index - 1];
                 if (activeViewerMap[slug] !== 'related' || currentViewer?.id !== relatedPost.id) {
@@ -1329,7 +1333,7 @@ export default function index({ google_map_api_key, search_history }) {
                     window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
                 }
 
-                const remaining = relatedPosts?.length - index;
+                const remaining = total - index;
 
                 // Instant fetch if no pagination yet
                 if (!nextPageUrl && !isFetchingRef.current) {
