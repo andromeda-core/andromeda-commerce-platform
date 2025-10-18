@@ -1253,8 +1253,7 @@ export default function index({ google_map_api_key, search_history }) {
             const el = e.currentTarget;
             const scrollLeft = el.scrollLeft;
             const clientWidth = el.clientWidth;
-            const rawIndex = scrollLeft / clientWidth;
-            const index = Math.round(rawIndex);
+            const index = Math.round(scrollLeft / clientWidth);
 
             const slug = mainPost.slug;
             const relatedPosts = relatedPostsMap[slug] || [];
@@ -1264,21 +1263,18 @@ export default function index({ google_map_api_key, search_history }) {
 
             if (total === 0) return;
 
-            const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
+            const lastIndex = lastHorizontalIndexRef.current[slug] ?? -999;
 
-            // --- Prevent rapid triggers during a smooth scroll ---
-            if (Math.abs(rawIndex - lastIndex) < 0.1) return;
+            // Skip if same index (no movement)
+            if (index === lastIndex) return;
 
-            // --- Determine direction ---
-            const direction = scrollLeft > lastIndex * clientWidth ? 'right' : 'left';
-
-            // --- Save latest index ---
             lastHorizontalIndexRef.current[slug] = index;
 
-            // --- Loop: if trying to go BEFORE first (index < 0) ---
-            if (index < 0 || (index === 0 && direction === 'left' && lastIndex === 0)) {
-                const newLeft = (total - 1) * clientWidth;
-                el.scrollTo({ left: newLeft, behavior: 'smooth' });
+            // --- LOOP: Trying to go BEFORE first post (right swipe at start) ---
+            if (scrollLeft < clientWidth * 0.2 && lastIndex > 0) {
+                // Snap to last post
+                const targetLeft = (total - 1) * clientWidth;
+                el.scrollTo({ left: targetLeft, behavior: 'smooth' });
                 lastHorizontalIndexRef.current[slug] = total - 1;
 
                 const lastPost = relatedPosts[total - 1];
@@ -1286,17 +1282,12 @@ export default function index({ google_map_api_key, search_history }) {
                 setRelatedViewerMap((p) => ({ ...p, [slug]: lastPost }));
                 setViewablePost(lastPost);
                 window.history.pushState({}, '', `${route('home')}${generateURL(lastPost)}`);
-                setTimeout(() => {
-                    lastHorizontalIndexRef.current[slug] = total - 1;
-                }, 300);
                 return;
             }
 
-            // --- Loop: if trying to go AFTER last (index >= total) ---
-            if (
-                index >= total ||
-                (index === total - 1 && direction === 'right' && lastIndex === total - 1)
-            ) {
+            // --- LOOP: Trying to go AFTER last post (left swipe at end) ---
+            if (scrollLeft > (total - 1.2) * clientWidth && lastIndex < total - 1) {
+                // Snap to first post (main)
                 el.scrollTo({ left: 0, behavior: 'smooth' });
                 lastHorizontalIndexRef.current[slug] = 0;
 
@@ -1304,14 +1295,18 @@ export default function index({ google_map_api_key, search_history }) {
                 setRelatedViewerMap((p) => ({ ...p, [slug]: null }));
                 setViewablePost(mainPost);
                 window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
-                setTimeout(() => {
-                    lastHorizontalIndexRef.current[slug] = 0;
-                }, 300);
                 return;
             }
 
-            // --- Normal scroll between posts ---
-            if (index > 0 && index < total) {
+            // --- NORMAL SCROLL: Change post ---
+            if (index === 0 && currentViewer) {
+                // At main post
+                setActiveViewerMap((p) => ({ ...p, [slug]: 'main' }));
+                setRelatedViewerMap((p) => ({ ...p, [slug]: null }));
+                setViewablePost(mainPost);
+                window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
+            } else if (index > 0 && index <= total) {
+                // At related post
                 const relatedPost = relatedPosts[index - 1];
                 if (activeViewerMap[slug] !== 'related' || currentViewer?.id !== relatedPost.id) {
                     setRelatedViewerMap((p) => ({ ...p, [slug]: relatedPost }));
@@ -1320,6 +1315,7 @@ export default function index({ google_map_api_key, search_history }) {
                     window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
                 }
 
+                // Fetch more posts when near end
                 const remaining = total - index;
                 if (
                     !isFetchingRef.current &&
@@ -1331,11 +1327,6 @@ export default function index({ google_map_api_key, search_history }) {
                     setIsFetchingRelated(true);
                     fetchRelatedPosts(slug);
                 }
-            } else if (index === 0 && currentViewer) {
-                setActiveViewerMap((p) => ({ ...p, [slug]: 'main' }));
-                setRelatedViewerMap((p) => ({ ...p, [slug]: null }));
-                setViewablePost(mainPost);
-                window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
             }
         },
         [
@@ -1345,6 +1336,8 @@ export default function index({ google_map_api_key, search_history }) {
             isFetchingRef,
             lastFetchedUrlRef,
             fetchRelatedPosts,
+            activeViewerMap,
+            completedSlugsRef,
         ],
     );
 
