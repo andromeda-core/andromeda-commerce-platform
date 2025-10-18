@@ -1390,6 +1390,7 @@ export default function index({ google_map_api_key, search_history }) {
             lastFetchedUrlRef,
             completedSlugsRef,
             fetchRelatedPosts,
+            activeViewerMap,
         ],
     );
 
@@ -1421,10 +1422,12 @@ export default function index({ google_map_api_key, search_history }) {
             const atStart = scrollLeft <= 0;
             const atEnd = Math.abs(scrollLeft + el.clientWidth - el.scrollWidth) < 5;
             const currentIndex = Math.round(scrollLeft / el.clientWidth);
-            const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
+
+            // Only loop if swipe is significant
+            const swipeThreshold = 30;
 
             // Loop from END → START (swipe right)
-            if (atEnd && deltaX > 30 && currentIndex >= relatedPosts.length && lastIndex > 0) {
+            if (atEnd && deltaX > swipeThreshold) {
                 e.preventDefault();
                 horizontalScrollLock.current[slug] = true;
                 horizontalLooping.current[slug] = true;
@@ -1435,6 +1438,7 @@ export default function index({ google_map_api_key, search_history }) {
                 });
 
                 waitForHorizontalScrollSettle(el, true, () => {
+                    // Update state after scroll settles
                     setActiveViewerMap((prev) => ({
                         ...prev,
                         [slug]: 'main',
@@ -1457,27 +1461,23 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             // Loop from START → END (swipe left)
-            if (
-                atStart &&
-                deltaX < -30 &&
-                currentIndex === 0 &&
-                lastIndex === 0 &&
-                relatedPosts.length > 0
-            ) {
+            if (atStart && deltaX < -swipeThreshold && relatedPosts.length > 0) {
                 e.preventDefault();
                 horizontalScrollLock.current[slug] = true;
                 horizontalLooping.current[slug] = true;
 
-                const lastPostIndex = relatedPosts.length * el.clientWidth;
+                // Scroll to the last post (index = length means we show the last item)
+                const targetScrollLeft = relatedPosts.length * el.clientWidth;
 
                 el.scrollTo({
-                    left: lastPostIndex,
+                    left: targetScrollLeft,
                     behavior: 'smooth',
                 });
 
                 waitForHorizontalScrollSettle(el, false, () => {
                     const lastPost = relatedPosts[relatedPosts.length - 1];
 
+                    // Update state after scroll settles
                     setRelatedViewerMap((prev) => ({
                         ...prev,
                         [slug]: lastPost,
