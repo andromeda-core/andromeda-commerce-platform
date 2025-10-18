@@ -774,6 +774,8 @@ export default function index({ google_map_api_key, search_history }) {
         //     }
         // };
 
+        container.addEventListener('touchmove', () => alert('moving!'));
+
         if (isTouchDevice) {
             container.addEventListener('scroll', handleScroll, { passive: false });
         } else {
