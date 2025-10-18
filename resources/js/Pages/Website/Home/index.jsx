@@ -1245,11 +1245,11 @@ export default function index({ google_map_api_key, search_history }) {
     //     ],
     // );
 
-    // Horizontal scroll refs
+    const lastHorizontalIndexRef = useRef({});
+    const lastTriedRef = useRef({});
     const horizontalScrollLock = useRef({});
-    const horizontalFetchLock = useRef({});
     const horizontalLooping = useRef({});
-    const lastHorizontalFetchTriggerIndex = useRef({});
+    const horizontalTouchStartX = useRef({});
 
     // Helper: Check if horizontal scroll reached target
     const checkHorizontalScrollReachedTarget = (el, isStart) => {
@@ -1259,7 +1259,7 @@ export default function index({ google_map_api_key, search_history }) {
         return Math.abs(el.scrollLeft + el.clientWidth - el.scrollWidth) < 8;
     };
 
-    // Helper: Wait for horizontal scroll animation to settle at target
+    // Helper: Wait for horizontal scroll animation to settle
     const waitForHorizontalScrollSettle = (el, isStart, callback) => {
         let lastScrollLeft = el.scrollLeft;
         let stableCount = 0;
@@ -1300,28 +1300,25 @@ export default function index({ google_map_api_key, search_history }) {
     const handleHorizontalScroll = useCallback(
         (mainPost, e) => {
             const el = e.currentTarget;
-            const slug = mainPost.slug;
             const index = Math.round(el.scrollLeft / el.clientWidth);
 
+            const slug = mainPost.slug;
             const relatedPosts = relatedPostsMap[slug] || [];
             const currentViewer = relatedViewerMap[slug] || null;
             const nextPageUrl = relatedNextMap[slug] || null;
 
             const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
 
-            if (index === lastIndex) return;
-
-            // Initialize locks for this slug if needed
+            // Initialize locks if needed
             if (!horizontalScrollLock.current[slug]) {
                 horizontalScrollLock.current[slug] = false;
-                horizontalFetchLock.current[slug] = false;
                 horizontalLooping.current[slug] = false;
-                lastHorizontalFetchTriggerIndex.current[slug] = -1;
             }
 
-            // Don't process if already looping or locked
-            if (horizontalScrollLock.current[slug] || horizontalLooping.current[slug]) return;
+            // Don't process if looping
+            if (horizontalLooping.current[slug]) return;
 
+            if (index === lastIndex) return;
             lastHorizontalIndexRef.current[slug] = index;
 
             if (index > 0) {
@@ -1338,6 +1335,7 @@ export default function index({ google_map_api_key, search_history }) {
                     }));
 
                     setViewablePost(relatedPost);
+
                     window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
                 }
 
@@ -1358,71 +1356,30 @@ export default function index({ google_map_api_key, search_history }) {
                     return;
                 }
 
-                // Fetch only ONCE per next page URL when near end
+                // Fetch's only ONCE per next page URL when near end
                 if (
                     remaining <= 5 &&
                     nextPageUrl &&
                     !isFetchingRef.current &&
                     lastFetchedUrlRef.current[slug] !== nextPageUrl &&
-                    !completedSlugsRef.current[slug] &&
-                    lastHorizontalFetchTriggerIndex.current[slug] !== index
+                    !completedSlugsRef.current[slug]
                 ) {
-                    horizontalFetchLock.current[slug] = true;
-                    lastHorizontalFetchTriggerIndex.current[slug] = index;
-
                     setIsFetchingRelated(true);
-                    fetchRelatedPosts(slug).finally(() => {
-                        horizontalFetchLock.current[slug] = false;
-                        // Reset fetch trigger if no more pages
-                        if (!nextPageUrl) {
-                            lastHorizontalFetchTriggerIndex.current[slug] = -1;
-                        }
-                    });
+                    fetchRelatedPosts(slug);
                 }
             } else if (index === 0 && currentViewer) {
-                // Detect loop from END → START
-                const isLoopingBack = lastIndex > 0;
+                setActiveViewerMap((prev) => ({
+                    ...prev,
+                    [slug]: 'main',
+                }));
 
-                if (isLoopingBack) {
-                    horizontalLooping.current[slug] = true;
-                    horizontalScrollLock.current[slug] = true;
+                setRelatedViewerMap((prev) => ({
+                    ...prev,
+                    [slug]: null,
+                }));
 
-                    waitForHorizontalScrollSettle(el, true, () => {
-                        setActiveViewerMap((prev) => ({
-                            ...prev,
-                            [slug]: 'main',
-                        }));
-
-                        setRelatedViewerMap((prev) => ({
-                            ...prev,
-                            [slug]: null,
-                        }));
-
-                        setViewablePost(mainPost);
-                        window.history.replaceState(
-                            {},
-                            '',
-                            `${route('home')}${generateURL(mainPost)}`,
-                        );
-
-                        horizontalScrollLock.current[slug] = false;
-                        horizontalLooping.current[slug] = false;
-                    });
-                } else {
-                    // Normal scroll to start
-                    setActiveViewerMap((prev) => ({
-                        ...prev,
-                        [slug]: 'main',
-                    }));
-
-                    setRelatedViewerMap((prev) => ({
-                        ...prev,
-                        [slug]: null,
-                    }));
-
-                    setViewablePost(mainPost);
-                    window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
-                }
+                setViewablePost(mainPost);
+                window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
             }
         },
         [
@@ -1436,11 +1393,11 @@ export default function index({ google_map_api_key, search_history }) {
         ],
     );
 
-    // Hook to detect loop from END → START
-    const handleHorizontalTouchStart = useCallback((e, slug) => {
-        if (!horizontalScrollLock.current[slug]) {
-            horizontalScrollLock.current[slug] = false;
+    const handleHorizontalTouchStart = useCallback((slug, e) => {
+        if (!horizontalTouchStartX.current[slug]) {
+            horizontalTouchStartX.current[slug] = 0;
         }
+        horizontalTouchStartX.current[slug] = e.touches[0].clientX;
     }, []);
 
     const handleHorizontalTouchMove = useCallback(
@@ -1451,13 +1408,23 @@ export default function index({ google_map_api_key, search_history }) {
 
             if (!relatedPosts.length) return;
 
-            const currentIndex = Math.round(el.scrollLeft / el.clientWidth);
+            // Don't process if already looping
+            if (horizontalLooping.current[slug]) {
+                e.preventDefault();
+                return;
+            }
+
+            const currentX = e.touches[0].clientX;
+            const deltaX = currentX - (horizontalTouchStartX.current[slug] || currentX);
+
+            const scrollLeft = el.scrollLeft;
+            const atStart = scrollLeft <= 0;
+            const atEnd = Math.abs(scrollLeft + el.clientWidth - el.scrollWidth) < 5;
+            const currentIndex = Math.round(scrollLeft / el.clientWidth);
             const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
-            const atStart = el.scrollLeft <= 0;
-            const atEnd = Math.abs(el.scrollLeft + el.clientWidth - el.scrollWidth) < 5;
 
             // Loop from END → START (swipe right)
-            if (atEnd && currentIndex === relatedPosts.length && lastIndex > 0) {
+            if (atEnd && deltaX > 30 && currentIndex >= relatedPosts.length && lastIndex > 0) {
                 e.preventDefault();
                 horizontalScrollLock.current[slug] = true;
                 horizontalLooping.current[slug] = true;
@@ -1480,6 +1447,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                     setViewablePost(mainPost);
                     window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
+                    lastHorizontalIndexRef.current[slug] = 0;
 
                     horizontalScrollLock.current[slug] = false;
                     horizontalLooping.current[slug] = false;
@@ -1489,7 +1457,13 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             // Loop from START → END (swipe left)
-            if (atStart && currentIndex === 0 && lastIndex === 0 && relatedPosts.length > 0) {
+            if (
+                atStart &&
+                deltaX < -30 &&
+                currentIndex === 0 &&
+                lastIndex === 0 &&
+                relatedPosts.length > 0
+            ) {
                 e.preventDefault();
                 horizontalScrollLock.current[slug] = true;
                 horizontalLooping.current[slug] = true;
