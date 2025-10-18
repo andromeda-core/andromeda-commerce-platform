@@ -642,18 +642,16 @@ export default function index({ google_map_api_key, search_history }) {
 
             const scrollTop = container.scrollTop;
             const containerHeight = container.clientHeight;
+            let newIndex = Math.round(scrollTop / containerHeight);
+
             const atTop = scrollTop <= 0;
             const atBottom = Math.ceil(scrollTop + containerHeight) >= container.scrollHeight;
 
-            const direction = scrollTop > (handleScroll.lastScrollTop || 0) ? 1 : -1;
-            handleScroll.lastScrollTop = scrollTop;
-
             scrollLock.current = true;
 
-            let nextIndex = selectedPostIndex + direction;
-
-            if (direction < 0 && atTop) {
-                nextIndex = posts.length - 1;
+            // --- Loop from top → bottom
+            if (atTop && selectedPostIndex === 0) {
+                newIndex = posts.length - 1;
                 isLooping.current = true;
 
                 const unlockCheck = setInterval(() => {
@@ -667,8 +665,18 @@ export default function index({ google_map_api_key, search_history }) {
                         clearInterval(unlockCheck);
                     }
                 }, 50);
-            } else if (direction > 0 && atBottom) {
-                nextIndex = 0;
+
+                container.scrollTo({
+                    top: newIndex * containerHeight,
+                    behavior: 'smooth',
+                });
+
+                return;
+            }
+
+            // --- Loop from bottom → top
+            if (atBottom && selectedPostIndex === posts.length - 1) {
+                newIndex = 0;
                 isLooping.current = true;
 
                 const unlockCheck = setInterval(() => {
@@ -679,49 +687,85 @@ export default function index({ google_map_api_key, search_history }) {
                         clearInterval(unlockCheck);
                     }
                 }, 50);
-            } else {
-                isLooping.current = false;
-                nextIndex = Math.max(0, Math.min(posts.length - 1, nextIndex));
-                setTimeout(() => {
-                    scrollLock.current = false;
-                }, 100);
+
+                container.scrollTo({
+                    top: 0,
+                    behavior: 'smooth',
+                });
+
+                return;
             }
 
-            container.scrollTo({
-                top: nextIndex * container.clientHeight,
-                behavior: 'smooth',
-            });
+            // --- Normal behavior
+            isLooping.current = false;
+            setTimeout(() => {
+                scrollLock.current = false;
+            }, 100);
 
-            const post = posts[nextIndex];
-            const slug = post.slug;
-            const newPosts = post.related_posts || [];
+            // --- Regular logic below (your working one)
+            if (newIndex !== selectedPostIndex && posts[newIndex]) {
+                const post = posts[newIndex];
+                const slug = post.slug;
+                const newPosts = post.related_posts || [];
 
-            setSelectedPostIndex(nextIndex);
-            setViewablePost(post);
+                setSelectedPostIndex(newIndex);
+                setViewablePost(post);
 
-            setRelatedPostsMap((prev) => ({
-                ...prev,
-                [slug]: [
-                    ...(prev[slug] || []),
-                    ...newPosts.filter((p) => !(prev[slug] || []).some((old) => old.id === p.id)),
-                ],
-            }));
+                setRelatedPostsMap((prev) => ({
+                    ...prev,
+                    [slug]: [
+                        ...(prev[slug] || []),
+                        ...newPosts.filter(
+                            (p) => !(prev[slug] || []).some((old) => old.id === p.id),
+                        ),
+                    ],
+                }));
 
-            setRelatedPostSlug(slug);
-            window.history.replaceState({}, '', generateURL(post));
+                setRelatedPostSlug(slug);
+                window.history.replaceState({}, '', generateURL(post));
 
-            if (
-                !isLooping.current &&
-                nextIndex >= posts.length - 5 &&
-                nextPageUrl &&
-                !fetchLock.current
-            ) {
-                fetchLock.current = true;
-                fetchMorePosts().finally(() => {
-                    fetchLock.current = false;
-                });
+                if (newIndex >= posts.length - 5 && nextPageUrl && !fetchLock.current) {
+                    fetchLock.current = true;
+                    fetchMorePosts().finally(() => {
+                        fetchLock.current = false;
+                    });
+                }
             }
         };
+
+        // const handleScroll = () => {
+        //     const scrollTop = container.scrollTop;
+        //     const containerHeight = container.clientHeight;
+        //     const newIndex = Math.round(scrollTop / containerHeight);
+
+        //     if (newIndex !== selectedPostIndex && posts[newIndex]) {
+        //         const post = posts[newIndex];
+        //         const slug = post.slug;
+        //         const newPosts = post.related_posts || [];
+
+        //         setSelectedPostIndex(newIndex);
+        //         setViewablePost(post);
+
+        //         setRelatedPostsMap((prev) => ({
+        //             ...prev,
+        //             [slug]: [
+        //                 ...(prev[slug] || []),
+        //                 ...newPosts.filter(
+        //                     (p) => !(prev[slug] || []).some((old) => old.id === p.id),
+        //                 ),
+        //             ],
+        //         }));
+
+        //         // Setting Post Viewer Main Post Slug
+        //         setRelatedPostSlug(slug);
+
+        //         window.history.replaceState({}, '', generateURL(post));
+
+        //         if (newIndex >= posts.length - 5 && nextPageUrl) {
+        //             fetchMorePosts();
+        //         }
+        //     }
+        // };
 
         if (isTouchDevice) {
             container.addEventListener('scroll', handleScroll, { passive: true });
