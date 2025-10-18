@@ -2597,9 +2597,10 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                     {/* Main Post + Related Posts Horizontal Scroll */}
                                                     <div
-                                                        onScroll={(e) =>
-                                                            handleHorizontalScroll(post, e)
-                                                        }
+                                                        onScroll={(e) => {
+                                                            e.stopPropagation();
+                                                            handleHorizontalScroll(post, e);
+                                                        }}
                                                         className="horizontal-scroll-container relative flex h-full w-full select-none snap-x snap-mandatory overflow-x-scroll scrollbar-none"
                                                         style={{
                                                             scrollSnapType: 'x mandatory',
