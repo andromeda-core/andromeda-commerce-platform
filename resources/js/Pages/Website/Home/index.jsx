@@ -757,6 +757,7 @@ export default function index({ google_map_api_key, search_history }) {
 
             // Loop from TOP → BOTTOM
             if (atTop && deltaY > 30 && selectedPostIndex === 0) {
+                e.preventDefault();
                 scrollLock.current = true;
                 isLooping.current = true;
                 justCompletedLoop.current = false;
@@ -775,13 +776,38 @@ export default function index({ google_map_api_key, search_history }) {
                 setViewablePost(postsRef.current[newIndex]);
                 setRelatedPostSlug(postsRef.current[newIndex].slug);
 
+                // 🔧 FIXED: Only check and reset when scroll actually completes
+                let lastScrollTop = container.scrollTop;
                 const unlockCheck = setInterval(() => {
+                    const currentScrollTop = container.scrollTop;
                     const reachedBottom =
                         Math.abs(
                             container.scrollTop + container.clientHeight - container.scrollHeight,
                         ) < 8;
-                    if (reachedBottom) {
+
+                    // Check if scroll stopped (position didn't change)
+                    if (currentScrollTop === lastScrollTop && reachedBottom) {
                         clearInterval(unlockCheck);
+                        scrollLock.current = false;
+                        isLooping.current = false;
+                        justCompletedLoop.current = true;
+                        container.style.touchAction = 'auto';
+                        container.style.pointerEvents = 'auto';
+
+                        // Only reset the completion flag after delay
+                        setTimeout(() => {
+                            justCompletedLoop.current = false;
+                        }, 400);
+                        return;
+                    }
+                    lastScrollTop = currentScrollTop;
+                }, 100);
+
+                // 🔧 Safety timeout - but only if somehow interval didn't catch it
+                setTimeout(() => {
+                    clearInterval(unlockCheck);
+                    // Force reset if still stuck
+                    if (isLooping.current) {
                         scrollLock.current = false;
                         isLooping.current = false;
                         justCompletedLoop.current = true;
@@ -790,29 +816,16 @@ export default function index({ google_map_api_key, search_history }) {
 
                         setTimeout(() => {
                             justCompletedLoop.current = false;
-                        }, 500);
+                        }, 400);
                     }
-                }, 50);
+                }, 2000);
 
-                setTimeout(() => {
-                    if (unlockCheck) clearInterval(unlockCheck);
-                    scrollLock.current = false;
-                    isLooping.current = false;
-                    justCompletedLoop.current = true;
-                    container.style.touchAction = 'auto';
-                    container.style.pointerEvents = 'auto';
-
-                    setTimeout(() => {
-                        justCompletedLoop.current = false;
-                    }, 500);
-                }, 1500);
-
-                e.preventDefault();
                 return;
             }
 
             // Loop from BOTTOM → TOP
             if (atBottom && deltaY < -30 && selectedPostIndex === postsRef.current.length - 1) {
+                e.preventDefault();
                 scrollLock.current = true;
                 isLooping.current = true;
                 justCompletedLoop.current = false;
@@ -826,10 +839,35 @@ export default function index({ google_map_api_key, search_history }) {
                 setViewablePost(postsRef.current[0]);
                 setRelatedPostSlug(postsRef.current[0].slug);
 
+                // 🔧 FIXED: Only check and reset when scroll actually completes
+                let lastScrollTop = container.scrollTop;
                 const unlockCheck = setInterval(() => {
+                    const currentScrollTop = container.scrollTop;
                     const reachedTop = container.scrollTop <= 2;
-                    if (reachedTop) {
+
+                    // Check if scroll stopped (position didn't change)
+                    if (currentScrollTop === lastScrollTop && reachedTop) {
                         clearInterval(unlockCheck);
+                        scrollLock.current = false;
+                        isLooping.current = false;
+                        justCompletedLoop.current = true;
+                        container.style.touchAction = 'auto';
+                        container.style.pointerEvents = 'auto';
+
+                        // Only reset the completion flag after delay
+                        setTimeout(() => {
+                            justCompletedLoop.current = false;
+                        }, 400);
+                        return;
+                    }
+                    lastScrollTop = currentScrollTop;
+                }, 100);
+
+                // 🔧 Safety timeout - but only if somehow interval didn't catch it
+                setTimeout(() => {
+                    clearInterval(unlockCheck);
+                    // Force reset if still stuck
+                    if (isLooping.current) {
                         scrollLock.current = false;
                         isLooping.current = false;
                         justCompletedLoop.current = true;
@@ -838,24 +876,10 @@ export default function index({ google_map_api_key, search_history }) {
 
                         setTimeout(() => {
                             justCompletedLoop.current = false;
-                        }, 500);
+                        }, 400);
                     }
-                }, 50);
+                }, 2000);
 
-                setTimeout(() => {
-                    if (unlockCheck) clearInterval(unlockCheck);
-                    scrollLock.current = false;
-                    isLooping.current = false;
-                    justCompletedLoop.current = true;
-                    container.style.touchAction = 'auto';
-                    container.style.pointerEvents = 'auto';
-
-                    setTimeout(() => {
-                        justCompletedLoop.current = false;
-                    }, 500);
-                }, 1500);
-
-                e.preventDefault();
                 return;
             }
         };
