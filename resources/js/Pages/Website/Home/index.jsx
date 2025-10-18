@@ -1423,32 +1423,30 @@ export default function index({ google_map_api_key, search_history }) {
             const currentX = e.touches[0].clientX;
             const startX = horizontalTouchStartX.current[slug] || currentX;
             const deltaX = currentX - startX;
-            const swipeThreshold = 50; // Must swipe at least 50px
+            const swipeThreshold = 50;
 
             const scrollLeft = el.scrollLeft;
             const clientWidth = el.clientWidth;
             const scrollWidth = el.scrollWidth;
 
-            // Strict edge detection
-            const atStart = scrollLeft < 5; // Bilkul start pe
-            const atEnd = scrollLeft > scrollWidth - clientWidth - 5; // Bilkul end pe
+            // Get current viewing index
+            const currentIndex = Math.round(scrollLeft / clientWidth);
+            const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
 
-            console.log('Scroll:', {
-                scrollLeft,
-                clientWidth,
-                scrollWidth,
-                atStart,
-                atEnd,
-                deltaX,
-            });
+            // Check if at first post (index 0)
+            const atFirstPost = currentIndex === 0;
 
-            // LEFT SWIPE at START - loop to END
-            if (atStart && deltaX < -swipeThreshold) {
-                console.log('LEFT LOOP TRIGGERED');
+            // Check if at last post
+            const atLastPost = currentIndex >= relatedPosts.length;
+
+            // LEFT SWIPE at FIRST POST - loop to LAST
+            if (atFirstPost && deltaX < -swipeThreshold) {
                 e.preventDefault();
                 horizontalLooping.current[slug] = true;
 
-                const targetScroll = scrollWidth - clientWidth;
+                const lastPostIndex = relatedPosts.length;
+                const targetScroll = lastPostIndex * clientWidth;
+
                 el.scrollTo({
                     left: targetScroll,
                     behavior: 'smooth',
@@ -1469,7 +1467,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                     setViewablePost(lastPost);
                     window.history.pushState({}, '', `${route('home')}${generateURL(lastPost)}`);
-                    lastHorizontalIndexRef.current[slug] = relatedPosts.length;
+                    lastHorizontalIndexRef.current[slug] = lastPostIndex;
 
                     horizontalLooping.current[slug] = false;
                 });
@@ -1477,9 +1475,8 @@ export default function index({ google_map_api_key, search_history }) {
                 return;
             }
 
-            // RIGHT SWIPE at END - loop to START
-            if (atEnd && deltaX > swipeThreshold) {
-                console.log('RIGHT LOOP TRIGGERED');
+            // RIGHT SWIPE at LAST POST - loop to FIRST
+            if (atLastPost && deltaX > swipeThreshold) {
                 e.preventDefault();
                 horizontalLooping.current[slug] = true;
 
