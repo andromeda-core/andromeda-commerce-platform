@@ -1278,10 +1278,10 @@ export default function index({ google_map_api_key, search_history }) {
             const lastScrollLeft = lastScrollLeftRef.current[slug] ?? scrollLeft;
 
             // Skip if same index or currently looping
-            if (index === lastIndex || horizontalLoopingRef.current[slug]) {
-                lastScrollLeftRef.current[slug] = scrollLeft;
-                return;
-            }
+            // if (index === lastIndex || horizontalLoopingRef.current[slug]) {
+            //     lastScrollLeftRef.current[slug] = scrollLeft;
+            //     return;
+            // }
 
             // Detect scroll direction BEFORE updating lastScrollLeft
             const isSwipingBackward = scrollLeft < lastScrollLeft; // LEFT to RIGHT
