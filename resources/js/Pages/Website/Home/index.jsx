@@ -540,11 +540,12 @@ export default function index({ google_map_api_key, search_history }) {
     const scrollLock = useRef(false);
     const fetchLock = useRef(false);
     const isLooping = useRef(false);
+    const justCompletedLoop = useRef(false);
     const touchStartY = useRef(0);
-    const postsRef = useRef(posts); // 🔧 Track posts in ref
+    const postsRef = useRef(posts);
 
     useEffect(() => {
-        postsRef.current = posts; // 🔧 Update ref whenever posts changes
+        postsRef.current = posts;
     }, [posts]);
 
     useEffect(() => {
@@ -555,6 +556,8 @@ export default function index({ google_map_api_key, search_history }) {
         scrollLock.current = false;
         isLooping.current = false;
         fetchLock.current = false;
+        justCompletedLoop.current = false;
+
         if (container) {
             container.style.touchAction = 'auto';
             container.style.pointerEvents = 'auto';
@@ -584,6 +587,7 @@ export default function index({ google_map_api_key, search_history }) {
             if (direction < 0 && atTop) {
                 nextIndex = postsRef.current.length - 1;
                 isLooping.current = true;
+                justCompletedLoop.current = false;
 
                 const unlockCheck = setInterval(() => {
                     const reachedBottom =
@@ -593,23 +597,35 @@ export default function index({ google_map_api_key, search_history }) {
                     if (reachedBottom) {
                         scrollLock.current = false;
                         isLooping.current = false;
+                        justCompletedLoop.current = true;
                         clearInterval(unlockCheck);
+
+                        setTimeout(() => {
+                            justCompletedLoop.current = false;
+                        }, 500);
                     }
                 }, 50);
             } else if (direction > 0 && atBottom) {
                 nextIndex = 0;
                 isLooping.current = true;
+                justCompletedLoop.current = false;
 
                 const unlockCheck = setInterval(() => {
                     const reachedTop = container.scrollTop <= 0;
                     if (reachedTop) {
                         scrollLock.current = false;
                         isLooping.current = false;
+                        justCompletedLoop.current = true;
                         clearInterval(unlockCheck);
+
+                        setTimeout(() => {
+                            justCompletedLoop.current = false;
+                        }, 500);
                     }
                 }, 50);
             } else {
                 isLooping.current = false;
+                justCompletedLoop.current = false;
                 nextIndex = Math.max(0, Math.min(postsRef.current.length - 1, nextIndex));
                 setTimeout(() => {
                     scrollLock.current = false;
@@ -639,9 +655,9 @@ export default function index({ google_map_api_key, search_history }) {
             setRelatedPostSlug(slug);
             window.history.replaceState({}, '', generateURL(post));
 
-            // 🔧 FIXED: Don't fetch while looping
             if (
                 !isLooping.current &&
+                !justCompletedLoop.current &&
                 nextIndex >= postsRef.current.length - 5 &&
                 nextPageUrl &&
                 !fetchLock.current
@@ -653,19 +669,18 @@ export default function index({ google_map_api_key, search_history }) {
             }
         };
 
-        // Mobile scroll
         scrollLock.current = false;
         isLooping.current = false;
         fetchLock.current = false;
+        justCompletedLoop.current = false;
 
         if (container) {
             container.style.touchAction = 'auto';
             container.style.pointerEvents = 'auto';
         }
 
-        // --- NORMAL SCROLL HANDLER ---
         const handleScroll = () => {
-            if (scrollLock.current || isLooping.current) return;
+            if (scrollLock.current || isLooping.current || justCompletedLoop.current) return;
 
             const scrollTop = container.scrollTop;
             const containerHeight = container.clientHeight;
@@ -699,9 +714,9 @@ export default function index({ google_map_api_key, search_history }) {
             setRelatedPostSlug(slug);
             window.history.replaceState({}, '', generateURL(post));
 
-            // ✅ only fetch when not looping
             if (
                 !isLooping.current &&
+                !justCompletedLoop.current &&
                 newIndex >= postsRef.current.length - 5 &&
                 nextPageUrl &&
                 !fetchLock.current
@@ -722,14 +737,12 @@ export default function index({ google_map_api_key, search_history }) {
             }
         };
 
-        // --- TOUCH START ---
         const handleTouchStart = (e) => {
             touchStartY.current = e.touches[0].clientY;
         };
 
-        // --- TOUCH MOVE LOOPING ---
         const handleTouchMove = (e) => {
-            if (scrollLock.current || isLooping.current) {
+            if (scrollLock.current || isLooping.current || justCompletedLoop.current) {
                 e.preventDefault();
                 return;
             }
@@ -742,10 +755,11 @@ export default function index({ google_map_api_key, search_history }) {
             const atBottom =
                 Math.abs(scrollTop + container.clientHeight - container.scrollHeight) < 5;
 
-            // --- Loop from TOP → BOTTOM ---
+            // Loop from TOP → BOTTOM
             if (atTop && deltaY > 30 && selectedPostIndex === 0) {
                 scrollLock.current = true;
                 isLooping.current = true;
+                justCompletedLoop.current = false;
 
                 container.style.touchAction = 'none';
                 container.style.pointerEvents = 'none';
@@ -770,26 +784,38 @@ export default function index({ google_map_api_key, search_history }) {
                         clearInterval(unlockCheck);
                         scrollLock.current = false;
                         isLooping.current = false;
+                        justCompletedLoop.current = true;
                         container.style.touchAction = 'auto';
                         container.style.pointerEvents = 'auto';
+
+                        setTimeout(() => {
+                            justCompletedLoop.current = false;
+                        }, 500);
                     }
                 }, 50);
 
                 setTimeout(() => {
-                    clearInterval(unlockCheck);
+                    if (unlockCheck) clearInterval(unlockCheck);
                     scrollLock.current = false;
                     isLooping.current = false;
+                    justCompletedLoop.current = true;
                     container.style.touchAction = 'auto';
                     container.style.pointerEvents = 'auto';
-                }, 1200);
 
+                    setTimeout(() => {
+                        justCompletedLoop.current = false;
+                    }, 500);
+                }, 1500);
+
+                e.preventDefault();
                 return;
             }
 
-            // --- Loop from BOTTOM → TOP ---
+            // Loop from BOTTOM → TOP
             if (atBottom && deltaY < -30 && selectedPostIndex === postsRef.current.length - 1) {
                 scrollLock.current = true;
                 isLooping.current = true;
+                justCompletedLoop.current = false;
 
                 container.style.touchAction = 'none';
                 container.style.pointerEvents = 'none';
@@ -806,19 +832,30 @@ export default function index({ google_map_api_key, search_history }) {
                         clearInterval(unlockCheck);
                         scrollLock.current = false;
                         isLooping.current = false;
+                        justCompletedLoop.current = true;
                         container.style.touchAction = 'auto';
                         container.style.pointerEvents = 'auto';
+
+                        setTimeout(() => {
+                            justCompletedLoop.current = false;
+                        }, 500);
                     }
                 }, 50);
 
                 setTimeout(() => {
-                    clearInterval(unlockCheck);
+                    if (unlockCheck) clearInterval(unlockCheck);
                     scrollLock.current = false;
                     isLooping.current = false;
+                    justCompletedLoop.current = true;
                     container.style.touchAction = 'auto';
                     container.style.pointerEvents = 'auto';
-                }, 1200);
 
+                    setTimeout(() => {
+                        justCompletedLoop.current = false;
+                    }, 500);
+                }, 1500);
+
+                e.preventDefault();
                 return;
             }
         };
