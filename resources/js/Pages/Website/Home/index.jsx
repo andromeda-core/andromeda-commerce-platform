@@ -772,8 +772,10 @@ export default function index({ google_map_api_key, search_history }) {
         // };
 
         if (isTouchDevice) {
+            alert('TOUCH DEVIOE');
             container.addEventListener('scroll', handleScroll, { passive: true });
         } else {
+            alert('Non TOUCH DEVIOE');
             window.addEventListener('wheel', handleWheel, { passive: false });
         }
 
