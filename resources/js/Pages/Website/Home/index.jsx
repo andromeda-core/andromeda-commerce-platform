@@ -1319,12 +1319,13 @@ export default function index({ google_map_api_key, search_history }) {
                 horizontalLooping.current[slug] = false;
             }
 
-            // Don't process if looping
+            // Don't process if looping (swipe loop, not normal scroll)
             if (horizontalLooping.current[slug]) return;
 
             if (index === lastIndex) return;
             lastHorizontalIndexRef.current[slug] = index;
 
+            // NORMAL SCROLL - sirf 1 post change karo
             if (index > 0) {
                 const relatedPost = relatedPosts[index - 1];
                 if (activeViewerMap[slug] !== 'related' || currentViewer?.id !== relatedPost.id) {
@@ -1339,7 +1340,6 @@ export default function index({ google_map_api_key, search_history }) {
                     }));
 
                     setViewablePost(relatedPost);
-
                     window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
                 }
 
@@ -1372,6 +1372,7 @@ export default function index({ google_map_api_key, search_history }) {
                     fetchRelatedPosts(slug);
                 }
             } else if (index === 0 && currentViewer) {
+                // Back to main post (normal scroll, not loop)
                 setActiveViewerMap((prev) => ({
                     ...prev,
                     [slug]: 'main',
