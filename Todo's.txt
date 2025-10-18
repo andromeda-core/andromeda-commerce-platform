@@ -345,7 +345,9 @@ Additional Work:
   loop infinitely so that swiping right from the last post returns to the first, and swiping left from the first post returns to the last — similar to an infinite carousel,
   and apply the same concept to top–bottom navigation for seamless looping.
 
-  Dedicated Matching Hashtag Post Contianing Page for showing post when user clicks on hashtag of any post it it wil redirects to this archive page -> Progress
+  Dedicated Matching Hashtag Post Contianing Page for showing post when user clicks on hashtag of any post it it wil redirects to this archive page ✅
+
+  Infinity Loop For Posts Top to Bottom and wiseversa bottom to top If Wheeled On PC Or Scrolled On Mobile For Y Axis Posts
 
 
   New More Changes (

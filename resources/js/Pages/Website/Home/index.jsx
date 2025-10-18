@@ -538,14 +538,18 @@ export default function index({ google_map_api_key, search_history }) {
     }, [posts, isPostLoaded, viewablePost]);
 
     const scrollLock = useRef(false);
+    const fetchLock = useRef(false);
+    const isLooping = useRef(false);
     useEffect(() => {
         if (!isMobilePostViewer || viewablePost === '' || isMobilePostGallery) return;
         const container = mobilePostContainerRef.current;
         if (!container) return;
 
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
         // Desktop scroll
         const handleWheel = (e) => {
-            if (e.ctrlKey || e.metaKey) return; // Allow zoom
+            if (e.ctrlKey || e.metaKey) return;
 
             if (scrollLock.current) {
                 e.preventDefault();
@@ -556,88 +560,181 @@ export default function index({ google_map_api_key, search_history }) {
             scrollLock.current = true;
 
             const direction = e.deltaY > 0 ? 1 : -1;
-            const nextIndex = Math.max(
-                0,
-                Math.min(posts.length - 1, selectedPostIndex + direction),
-            );
+            let nextIndex = selectedPostIndex + direction;
 
-            if (nextIndex !== selectedPostIndex) {
-                container.scrollTo({
-                    top: nextIndex * container.clientHeight,
-                    behavior: 'smooth',
-                });
+            const atTop = container.scrollTop <= 0;
+            const atBottom =
+                Math.ceil(container.scrollTop + container.clientHeight) >= container.scrollHeight;
 
-                const post = posts[nextIndex];
-                const slug = post.slug;
-                const newPosts = post.related_posts || [];
+            if (direction < 0 && atTop) {
+                nextIndex = posts.length - 1;
+                isLooping.current = true;
 
-                setSelectedPostIndex(nextIndex);
-                setViewablePost(post);
+                const unlockCheck = setInterval(() => {
+                    const reachedBottom =
+                        Math.ceil(container.scrollTop + container.clientHeight) >=
+                        container.scrollHeight;
 
-                setRelatedPostsMap((prev) => ({
-                    ...prev,
-                    [slug]: [
-                        ...(prev[slug] || []),
-                        ...newPosts.filter(
-                            (p) => !(prev[slug] || []).some((old) => old.id === p.id),
-                        ),
-                    ],
-                }));
+                    if (reachedBottom) {
+                        scrollLock.current = false;
+                        isLooping.current = false;
+                        clearInterval(unlockCheck);
+                    }
+                }, 50);
+            } else if (direction > 0 && atBottom) {
+                nextIndex = 0;
+                isLooping.current = true;
 
-                setRelatedPostSlug(slug);
-                window.history.replaceState({}, '', generateURL(post));
-
-                if (nextIndex >= posts.length - 5 && nextPageUrl) {
-                    fetchMorePosts();
-                }
+                const unlockCheck = setInterval(() => {
+                    const reachedTop = container.scrollTop <= 0;
+                    if (reachedTop) {
+                        scrollLock.current = false;
+                        isLooping.current = false;
+                        clearInterval(unlockCheck);
+                    }
+                }, 50);
+            } else {
+                isLooping.current = false;
+                nextIndex = Math.max(0, Math.min(posts.length - 1, nextIndex));
+                setTimeout(() => {
+                    scrollLock.current = false;
+                }, 100);
             }
 
-            // Unlock after animation completes
-            setTimeout(() => {
-                scrollLock.current = false;
-            }, 100);
+            container.scrollTo({
+                top: nextIndex * container.clientHeight,
+                behavior: 'smooth',
+            });
+
+            const post = posts[nextIndex];
+            const slug = post.slug;
+            const newPosts = post.related_posts || [];
+
+            setSelectedPostIndex(nextIndex);
+            setViewablePost(post);
+
+            setRelatedPostsMap((prev) => ({
+                ...prev,
+                [slug]: [
+                    ...(prev[slug] || []),
+                    ...newPosts.filter((p) => !(prev[slug] || []).some((old) => old.id === p.id)),
+                ],
+            }));
+
+            setRelatedPostSlug(slug);
+            window.history.replaceState({}, '', generateURL(post));
+
+            if (
+                !isLooping.current &&
+                nextIndex >= posts.length - 5 &&
+                nextPageUrl &&
+                !fetchLock.current
+            ) {
+                fetchLock.current = true;
+                fetchMorePosts().finally(() => {
+                    fetchLock.current = false;
+                });
+            }
         };
 
         const handleScroll = () => {
+            if (scrollLock.current || isLooping.current) return;
+
             const scrollTop = container.scrollTop;
             const containerHeight = container.clientHeight;
-            const newIndex = Math.round(scrollTop / containerHeight);
+            const atTop = scrollTop <= 0;
+            const atBottom = Math.ceil(scrollTop + containerHeight) >= container.scrollHeight;
 
-            if (newIndex !== selectedPostIndex && posts[newIndex]) {
-                const post = posts[newIndex];
-                const slug = post.slug;
-                const newPosts = post.related_posts || [];
+            const direction = scrollTop > (handleScroll.lastScrollTop || 0) ? 1 : -1;
+            handleScroll.lastScrollTop = scrollTop;
 
-                setSelectedPostIndex(newIndex);
-                setViewablePost(post);
+            scrollLock.current = true;
 
-                setRelatedPostsMap((prev) => ({
-                    ...prev,
-                    [slug]: [
-                        ...(prev[slug] || []),
-                        ...newPosts.filter(
-                            (p) => !(prev[slug] || []).some((old) => old.id === p.id),
-                        ),
-                    ],
-                }));
+            let nextIndex = selectedPostIndex + direction;
 
-                // Setting Post Viewer Main Post Slug
-                setRelatedPostSlug(slug);
+            if (direction < 0 && atTop) {
+                nextIndex = posts.length - 1;
+                isLooping.current = true;
 
-                window.history.replaceState({}, '', generateURL(post));
+                const unlockCheck = setInterval(() => {
+                    const reachedBottom =
+                        Math.ceil(container.scrollTop + container.clientHeight) >=
+                        container.scrollHeight;
 
-                if (newIndex >= posts.length - 5 && nextPageUrl) {
-                    fetchMorePosts();
-                }
+                    if (reachedBottom) {
+                        scrollLock.current = false;
+                        isLooping.current = false;
+                        clearInterval(unlockCheck);
+                    }
+                }, 50);
+            } else if (direction > 0 && atBottom) {
+                nextIndex = 0;
+                isLooping.current = true;
+
+                const unlockCheck = setInterval(() => {
+                    const reachedTop = container.scrollTop <= 0;
+                    if (reachedTop) {
+                        scrollLock.current = false;
+                        isLooping.current = false;
+                        clearInterval(unlockCheck);
+                    }
+                }, 50);
+            } else {
+                isLooping.current = false;
+                nextIndex = Math.max(0, Math.min(posts.length - 1, nextIndex));
+                setTimeout(() => {
+                    scrollLock.current = false;
+                }, 100);
+            }
+
+            container.scrollTo({
+                top: nextIndex * container.clientHeight,
+                behavior: 'smooth',
+            });
+
+            const post = posts[nextIndex];
+            const slug = post.slug;
+            const newPosts = post.related_posts || [];
+
+            setSelectedPostIndex(nextIndex);
+            setViewablePost(post);
+
+            setRelatedPostsMap((prev) => ({
+                ...prev,
+                [slug]: [
+                    ...(prev[slug] || []),
+                    ...newPosts.filter((p) => !(prev[slug] || []).some((old) => old.id === p.id)),
+                ],
+            }));
+
+            setRelatedPostSlug(slug);
+            window.history.replaceState({}, '', generateURL(post));
+
+            if (
+                !isLooping.current &&
+                nextIndex >= posts.length - 5 &&
+                nextPageUrl &&
+                !fetchLock.current
+            ) {
+                fetchLock.current = true;
+                fetchMorePosts().finally(() => {
+                    fetchLock.current = false;
+                });
             }
         };
 
-        window.addEventListener('wheel', handleWheel, { passive: false });
-        container.addEventListener('scroll', handleScroll, { passive: true });
+        if (isTouchDevice) {
+            container.addEventListener('scroll', handleScroll, { passive: true });
+        } else {
+            window.addEventListener('wheel', handleWheel, { passive: false });
+        }
 
         return () => {
-            window.removeEventListener('wheel', handleWheel);
-            container.removeEventListener('scroll', handleScroll, { passive: true });
+            if (isTouchDevice) {
+                container.removeEventListener('scroll', handleScroll, { passive: true });
+            } else {
+                window.removeEventListener('wheel', handleWheel);
+            }
         };
     }, [
         isMobilePostViewer,
