@@ -793,10 +793,6 @@ export default function index({ google_map_api_key, search_history }) {
         isMobilePostGallery,
     ]);
 
-    useEffect(() => {
-        alert(isLooping.current);
-    }, [isLooping.current]);
-
     const lastHorizontalIndexRef = useRef({});
     const lastTriedRef = useRef({});
 
