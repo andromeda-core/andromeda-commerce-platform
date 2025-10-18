@@ -642,8 +642,8 @@ export default function index({ google_map_api_key, search_history }) {
 
             const scrollTop = container.scrollTop;
             const containerHeight = container.clientHeight;
-            const atTop = scrollTop <= 0;
-            const atBottom = Math.ceil(scrollTop + containerHeight) >= container.scrollHeight;
+            const atTop = scrollTop <= -5;
+            const atBottom = Math.ceil(scrollTop + containerHeight) >= container.scrollHeight + 5;
 
             let newIndex = Math.round(scrollTop / containerHeight);
 
