@@ -708,6 +708,7 @@ export default function index({ google_map_api_key, search_history }) {
             if (atTop && deltaY > 30 && !isLooping.current && selectedPostIndex === 0) {
                 scrollLock.current = true;
                 isLooping.current = true;
+                container.style.touchAction = 'none';
                 const newIndex = posts.length - 1;
                 container.scrollTo({
                     top: newIndex * container.clientHeight,
@@ -724,6 +725,7 @@ export default function index({ google_map_api_key, search_history }) {
                     if (reachedBottom) {
                         scrollLock.current = false;
                         isLooping.current = false;
+                        container.style.touchAction = 'auto';
                         clearInterval(unlockCheck);
                     }
                 }, 50);
@@ -737,6 +739,9 @@ export default function index({ google_map_api_key, search_history }) {
             ) {
                 scrollLock.current = true;
                 isLooping.current = true;
+
+                container.style.touchAction = 'none';
+
                 container.scrollTo({ top: 0, behavior: 'smooth' });
                 setSelectedPostIndex(0);
                 setViewablePost(posts[0]);
@@ -746,6 +751,8 @@ export default function index({ google_map_api_key, search_history }) {
                     if (reachedTop) {
                         scrollLock.current = false;
                         isLooping.current = false;
+
+                        container.style.touchAction = 'auto';
                         clearInterval(unlockCheck);
                     }
                 }, 50);
