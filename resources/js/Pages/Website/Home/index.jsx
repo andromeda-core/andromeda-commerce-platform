@@ -638,6 +638,7 @@ export default function index({ google_map_api_key, search_history }) {
         };
 
         const handleScroll = () => {
+            alert('TOP');
             if (scrollLock.current || isLooping.current) return;
 
             const scrollTop = container.scrollTop;
@@ -779,9 +780,9 @@ export default function index({ google_map_api_key, search_history }) {
 
         return () => {
             if (isTouchDevice) {
-                container.removeEventListener('scroll', handleScroll, { passive: false });
+                container.removeEventListener('scroll', handleScroll);
             } else {
-                window.removeEventListener('wheel', handleWheel, { passive: false });
+                window.removeEventListener('wheel', handleWheel);
             }
         };
     }, [
