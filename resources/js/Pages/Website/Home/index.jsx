@@ -637,10 +637,23 @@ export default function index({ google_map_api_key, search_history }) {
             }
         };
 
+        // Mobile scroll
         const handleScroll = () => {
+            if (scrollLock.current || isLooping.current) return;
+
             const scrollTop = container.scrollTop;
             const containerHeight = container.clientHeight;
             const newIndex = Math.round(scrollTop / containerHeight);
+
+            const atTop = scrollTop <= 1;
+            const atBottom = Math.ceil(scrollTop + containerHeight) >= container.scrollHeight - 1;
+
+            if (atTop || atBottom) {
+                scrollLock.current = false;
+                isLooping.current = false;
+            }
+
+            if (newIndex === selectedPostIndex || !posts[newIndex]) return;
 
             if (newIndex !== selectedPostIndex && posts[newIndex]) {
                 const post = posts[newIndex];
@@ -665,18 +678,24 @@ export default function index({ google_map_api_key, search_history }) {
 
                 window.history.replaceState({}, '', generateURL(post));
 
-                if (newIndex >= posts.length - 5 && nextPageUrl) {
-                    fetchMorePosts();
+                if (
+                    !isLooping.current &&
+                    newIndex >= posts.length - 5 &&
+                    nextPageUrl &&
+                    !fetchLock.current
+                ) {
+                    fetchMorePosts().finally(() => {
+                        fetchLock.current = false;
+                    });
                 }
             }
         };
 
-        // Track finger movement at the top
-        container.addEventListener('touchstart', (e) => {
+        const handleTouchStart = (e) => {
             handleScroll.startY = e.touches[0].clientY;
-        });
+        };
 
-        container.addEventListener('touchmove', (e) => {
+        const handleTouchMove = (e) => {
             const currentY = e.touches[0].clientY;
             const deltaY = currentY - (handleScroll.startY || currentY);
 
@@ -684,18 +703,29 @@ export default function index({ google_map_api_key, search_history }) {
             const atBottom =
                 Math.ceil(container.scrollTop + container.clientHeight) >= container.scrollHeight;
 
-            // Swipe down from top → loop to bottom
             if (atTop && deltaY > 30 && !isLooping.current && selectedPostIndex === 0) {
                 isLooping.current = true;
                 const newIndex = posts.length - 1;
-                container.scrollTo({ top: newIndex * container.clientHeight, behavior: 'smooth' });
+                container.scrollTo({
+                    top: newIndex * container.clientHeight,
+                    behavior: 'smooth',
+                });
                 setSelectedPostIndex(newIndex);
                 setViewablePost(posts[newIndex]);
                 setRelatedPostSlug(posts[newIndex].slug);
-                setTimeout(() => (isLooping.current = false), 400);
+                const unlockCheck = setInterval(() => {
+                    const reachedBottom =
+                        Math.ceil(container.scrollTop + container.clientHeight) >=
+                        container.scrollHeight;
+
+                    if (reachedBottom) {
+                        scrollLock.current = false;
+                        isLooping.current = false;
+                        clearInterval(unlockCheck);
+                    }
+                }, 50);
             }
 
-            // Swipe up from bottom → loop to top
             if (
                 atBottom &&
                 deltaY < -30 &&
@@ -707,12 +737,21 @@ export default function index({ google_map_api_key, search_history }) {
                 setSelectedPostIndex(0);
                 setViewablePost(posts[0]);
                 setRelatedPostSlug(posts[0].slug);
-                setTimeout(() => (isLooping.current = false), 400);
+                const unlockCheck = setInterval(() => {
+                    const reachedTop = container.scrollTop <= 0;
+                    if (reachedTop) {
+                        scrollLock.current = false;
+                        isLooping.current = false;
+                        clearInterval(unlockCheck);
+                    }
+                }, 50);
             }
-        });
+        };
 
         if (isTouchDevice) {
             container.addEventListener('scroll', handleScroll, { passive: false });
+            container.addEventListener('touchstart', handleTouchStart, { passive: false });
+            container.addEventListener('touchmove', handleTouchMove, { passive: false });
         } else {
             window.addEventListener('wheel', handleWheel, { passive: false });
         }
@@ -720,6 +759,8 @@ export default function index({ google_map_api_key, search_history }) {
         return () => {
             if (isTouchDevice) {
                 container.removeEventListener('scroll', handleScroll);
+                container.removeEventListener('touchstart', handleTouchStart);
+                container.removeEventListener('touchmove', handleTouchMove);
             } else {
                 window.removeEventListener('wheel', handleWheel);
             }
@@ -1483,7 +1524,7 @@ export default function index({ google_map_api_key, search_history }) {
                                         tabIndex={0}
                                         className="h-screen w-full snap-y snap-mandatory overflow-y-scroll scrollbar-none"
                                         style={{
-                                            overscrollBehavior: 'none',
+                                            overscrollBehavior: 'contain',
                                             scrollSnapType: 'y mandatory',
                                             scrollSnapStop: 'always',
                                             WebkitOverflowScrolling: 'touch',
