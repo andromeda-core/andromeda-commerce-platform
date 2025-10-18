@@ -642,16 +642,19 @@ export default function index({ google_map_api_key, search_history }) {
 
             const scrollTop = container.scrollTop;
             const containerHeight = container.clientHeight;
+            const direction = scrollTop > (handleScroll.lastScrollTop || 0) ? 1 : -1;
+            handleScroll.lastScrollTop = scrollTop;
+
+            // Add tolerance so it triggers only on actual overscroll
             const atTop = scrollTop <= -5;
-            const atBottom = Math.ceil(scrollTop + containerHeight) >= container.scrollHeight + 5;
+            const atBottom = scrollTop + containerHeight >= container.scrollHeight + 5;
 
             let newIndex = Math.round(scrollTop / containerHeight);
 
-            // Lock during programmatic scroll
             scrollLock.current = true;
 
-            // --- Loop from TOP → BOTTOM
-            if (atTop && selectedPostIndex === 0) {
+            // --- Loop from TOP → BOTTOM ---
+            if (direction < 0 && atTop && selectedPostIndex === 0) {
                 isLooping.current = true;
                 newIndex = posts.length - 1;
 
@@ -662,22 +665,21 @@ export default function index({ google_map_api_key, search_history }) {
                 });
 
                 const unlockCheck = setInterval(() => {
-                    const reachedBottom =
-                        Math.ceil(container.scrollTop + container.clientHeight) >=
-                        container.scrollHeight;
-                    if (reachedBottom) {
+                    const reachedTarget =
+                        Math.abs(container.scrollTop - newIndex * containerHeight) < 2;
+                    if (reachedTarget) {
                         scrollLock.current = false;
                         isLooping.current = false;
                         container.style.scrollSnapType = 'y mandatory';
                         clearInterval(unlockCheck);
                     }
-                }, 50);
+                }, 40);
 
                 return;
             }
 
-            // --- Loop from BOTTOM → TOP
-            if (atBottom && selectedPostIndex === posts.length - 1) {
+            // --- Loop from BOTTOM → TOP ---
+            if (direction > 0 && atBottom && selectedPostIndex === posts.length - 1) {
                 isLooping.current = true;
                 newIndex = 0;
 
@@ -688,25 +690,23 @@ export default function index({ google_map_api_key, search_history }) {
                 });
 
                 const unlockCheck = setInterval(() => {
-                    const reachedTop = container.scrollTop <= 0;
+                    const reachedTop = container.scrollTop <= 2;
                     if (reachedTop) {
                         scrollLock.current = false;
                         isLooping.current = false;
                         container.style.scrollSnapType = 'y mandatory';
                         clearInterval(unlockCheck);
                     }
-                }, 50);
+                }, 40);
 
                 return;
             }
 
-            // --- Normal scrolling
+            // --- Normal scrolling ---
             isLooping.current = false;
-            setTimeout(() => {
-                scrollLock.current = false;
-            }, 100);
+            scrollLock.current = false;
 
-            // --- Normal index handling
+            // --- Normal index handling ---
             if (newIndex !== selectedPostIndex && posts[newIndex]) {
                 const post = posts[newIndex];
                 const slug = post.slug;
