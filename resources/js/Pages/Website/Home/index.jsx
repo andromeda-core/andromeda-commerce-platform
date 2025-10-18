@@ -1421,25 +1421,33 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             const currentX = e.touches[0].clientX;
-            const deltaX = currentX - (horizontalTouchStartX.current[slug] || currentX);
-            const swipeThreshold = 30;
+            const startX = horizontalTouchStartX.current[slug] || currentX;
+            const deltaX = currentX - startX;
+            const swipeThreshold = 50; // Must swipe at least 50px
 
             const scrollLeft = el.scrollLeft;
             const clientWidth = el.clientWidth;
             const scrollWidth = el.scrollWidth;
 
-            // Check if at START (main post visible)
-            const atStart = scrollLeft <= clientWidth * 0.2;
+            // Strict edge detection
+            const atStart = scrollLeft < 5; // Bilkul start pe
+            const atEnd = scrollLeft > scrollWidth - clientWidth - 5; // Bilkul end pe
 
-            // Check if at END (last post visible)
-            const atEnd = scrollLeft >= scrollWidth - clientWidth * 1.2;
+            console.log('Scroll:', {
+                scrollLeft,
+                clientWidth,
+                scrollWidth,
+                atStart,
+                atEnd,
+                deltaX,
+            });
 
-            // LEFT SWIPE - if at START, loop to END
+            // LEFT SWIPE at START - loop to END
             if (atStart && deltaX < -swipeThreshold) {
+                console.log('LEFT LOOP TRIGGERED');
                 e.preventDefault();
                 horizontalLooping.current[slug] = true;
 
-                // Jump to last post
                 const targetScroll = scrollWidth - clientWidth;
                 el.scrollTo({
                     left: targetScroll,
@@ -1469,12 +1477,12 @@ export default function index({ google_map_api_key, search_history }) {
                 return;
             }
 
-            // RIGHT SWIPE - if at END, loop to START
+            // RIGHT SWIPE at END - loop to START
             if (atEnd && deltaX > swipeThreshold) {
+                console.log('RIGHT LOOP TRIGGERED');
                 e.preventDefault();
                 horizontalLooping.current[slug] = true;
 
-                // Jump to main post
                 el.scrollTo({
                     left: 0,
                     behavior: 'smooth',
