@@ -1247,6 +1247,7 @@ export default function index({ google_map_api_key, search_history }) {
 
     const lastHorizontalIndexRef = useRef({});
     const lastTriedRef = useRef({});
+    const horizontalScrollingRef = useRef({}); // Debounce flag
 
     const handleHorizontalScroll = useCallback(
         (mainPost, e) => {
@@ -1261,12 +1262,15 @@ export default function index({ google_map_api_key, search_history }) {
 
             const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
 
-            if (index === lastIndex) return;
+            // Skip if same index or currently animating
+            if (index === lastIndex || horizontalScrollingRef.current[slug]) return;
+
             lastHorizontalIndexRef.current[slug] = index;
 
-            // CAROUSEL LOOP: Right swipe at first post (index 0, going backwards)
-            if (index < 0 || (index === 0 && lastIndex > 0)) {
-                // Jump to last post
+            // CAROUSEL LOOP: Right swipe at first post
+            if (index === 0 && lastIndex > 0) {
+                horizontalScrollingRef.current[slug] = true;
+
                 const targetScroll = total * el.clientWidth;
                 el.scrollTo({ left: targetScroll, behavior: 'smooth' });
                 lastHorizontalIndexRef.current[slug] = total;
@@ -1284,12 +1288,18 @@ export default function index({ google_map_api_key, search_history }) {
 
                 setViewablePost(lastPost);
                 window.history.pushState({}, '', `${route('home')}${generateURL(lastPost)}`);
+
+                // Release lock after animation
+                setTimeout(() => {
+                    horizontalScrollingRef.current[slug] = false;
+                }, 600);
                 return;
             }
 
-            // CAROUSEL LOOP: Left swipe at last post (index >= total, going forward)
-            if (index >= total) {
-                // Jump to first post (main)
+            // CAROUSEL LOOP: Left swipe at last post
+            if (index >= total && lastIndex < total) {
+                horizontalScrollingRef.current[slug] = true;
+
                 el.scrollTo({ left: 0, behavior: 'smooth' });
                 lastHorizontalIndexRef.current[slug] = 0;
 
@@ -1305,11 +1315,16 @@ export default function index({ google_map_api_key, search_history }) {
 
                 setViewablePost(mainPost);
                 window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
+
+                // Release lock after animation
+                setTimeout(() => {
+                    horizontalScrollingRef.current[slug] = false;
+                }, 600);
                 return;
             }
 
             // NORMAL SCROLL: Show related post
-            if (index > 0) {
+            if (index > 0 && index < total) {
                 const relatedPost = relatedPosts[index - 1];
                 if (activeViewerMap[slug] !== 'related' || currentViewer?.id !== relatedPost.id) {
                     setRelatedViewerMap((prev) => ({
@@ -1323,13 +1338,12 @@ export default function index({ google_map_api_key, search_history }) {
                     }));
 
                     setViewablePost(relatedPost);
-
                     window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
                 }
 
-                const remaining = relatedPosts?.length - index;
+                const remaining = total - index;
 
-                // Instant fetch on first swipe (if no pagination yet)
+                // Instant fetch on first swipe
                 if (!nextPageUrl && !isFetchingRef.current) {
                     if (completedSlugsRef.current[slug]) return;
 
@@ -1344,7 +1358,7 @@ export default function index({ google_map_api_key, search_history }) {
                     return;
                 }
 
-                // Fetch's only ONCE per next page URL when near end
+                // Fetch only once per page URL when near end
                 if (
                     remaining <= 5 &&
                     nextPageUrl &&
