@@ -1251,9 +1251,7 @@ export default function index({ google_map_api_key, search_history }) {
     const handleHorizontalScroll = useCallback(
         (mainPost, e) => {
             const el = e.currentTarget;
-            const scrollLeft = el.scrollLeft;
-            const clientWidth = el.clientWidth;
-            const index = Math.round(scrollLeft / clientWidth);
+            const index = Math.round(el.scrollLeft / el.clientWidth);
 
             const slug = mainPost.slug;
             const relatedPosts = relatedPostsMap[slug] || [];
@@ -1261,72 +1259,116 @@ export default function index({ google_map_api_key, search_history }) {
             const nextPageUrl = relatedNextMap[slug] || null;
             const total = relatedPosts.length;
 
-            if (total === 0) return;
+            const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
 
-            const lastIndex = lastHorizontalIndexRef.current[slug] ?? -999;
-
-            // Skip if same index (no movement)
             if (index === lastIndex) return;
-
             lastHorizontalIndexRef.current[slug] = index;
 
-            // --- LOOP: Trying to go BEFORE first post (right swipe at start) ---
-            if (scrollLeft < clientWidth * 0.2 && lastIndex > 0) {
-                // Snap to last post
-                const targetLeft = (total - 1) * clientWidth;
-                el.scrollTo({ left: targetLeft, behavior: 'smooth' });
-                lastHorizontalIndexRef.current[slug] = total - 1;
+            // CAROUSEL LOOP: Right swipe at first post (index 0, going backwards)
+            if (index < 0 || (index === 0 && lastIndex > 0)) {
+                // Jump to last post
+                const targetScroll = total * el.clientWidth;
+                el.scrollTo({ left: targetScroll, behavior: 'smooth' });
+                lastHorizontalIndexRef.current[slug] = total;
 
                 const lastPost = relatedPosts[total - 1];
-                setActiveViewerMap((p) => ({ ...p, [slug]: 'related' }));
-                setRelatedViewerMap((p) => ({ ...p, [slug]: lastPost }));
+                setRelatedViewerMap((prev) => ({
+                    ...prev,
+                    [slug]: lastPost,
+                }));
+
+                setActiveViewerMap((prev) => ({
+                    ...prev,
+                    [slug]: 'related',
+                }));
+
                 setViewablePost(lastPost);
                 window.history.pushState({}, '', `${route('home')}${generateURL(lastPost)}`);
                 return;
             }
 
-            // --- LOOP: Trying to go AFTER last post (left swipe at end) ---
-            if (scrollLeft > (total - 1.2) * clientWidth && lastIndex < total - 1) {
-                // Snap to first post (main)
+            // CAROUSEL LOOP: Left swipe at last post (index >= total, going forward)
+            if (index >= total) {
+                // Jump to first post (main)
                 el.scrollTo({ left: 0, behavior: 'smooth' });
                 lastHorizontalIndexRef.current[slug] = 0;
 
-                setActiveViewerMap((p) => ({ ...p, [slug]: 'main' }));
-                setRelatedViewerMap((p) => ({ ...p, [slug]: null }));
+                setActiveViewerMap((prev) => ({
+                    ...prev,
+                    [slug]: 'main',
+                }));
+
+                setRelatedViewerMap((prev) => ({
+                    ...prev,
+                    [slug]: null,
+                }));
+
                 setViewablePost(mainPost);
                 window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
                 return;
             }
 
-            // --- NORMAL SCROLL: Change post ---
-            if (index === 0 && currentViewer) {
-                // At main post
-                setActiveViewerMap((p) => ({ ...p, [slug]: 'main' }));
-                setRelatedViewerMap((p) => ({ ...p, [slug]: null }));
-                setViewablePost(mainPost);
-                window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
-            } else if (index > 0 && index <= total) {
-                // At related post
+            // NORMAL SCROLL: Show related post
+            if (index > 0) {
                 const relatedPost = relatedPosts[index - 1];
                 if (activeViewerMap[slug] !== 'related' || currentViewer?.id !== relatedPost.id) {
-                    setRelatedViewerMap((p) => ({ ...p, [slug]: relatedPost }));
-                    setActiveViewerMap((p) => ({ ...p, [slug]: 'related' }));
+                    setRelatedViewerMap((prev) => ({
+                        ...prev,
+                        [slug]: relatedPost,
+                    }));
+
+                    setActiveViewerMap((prev) => ({
+                        ...prev,
+                        [slug]: 'related',
+                    }));
+
                     setViewablePost(relatedPost);
+
                     window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
                 }
 
-                // Fetch more posts when near end
-                const remaining = total - index;
+                const remaining = relatedPosts?.length - index;
+
+                // Instant fetch on first swipe (if no pagination yet)
+                if (!nextPageUrl && !isFetchingRef.current) {
+                    if (completedSlugsRef.current[slug]) return;
+
+                    const now = Date.now();
+                    const lastTried = lastTriedRef.current[slug] || 0;
+
+                    if (now - lastTried < 10000) return;
+                    lastTriedRef.current[slug] = now;
+
+                    setIsFetchingRelated(true);
+                    fetchRelatedPosts(slug);
+                    return;
+                }
+
+                // Fetch's only ONCE per next page URL when near end
                 if (
-                    !isFetchingRef.current &&
-                    nextPageUrl &&
                     remaining <= 5 &&
+                    nextPageUrl &&
+                    !isFetchingRef.current &&
                     lastFetchedUrlRef.current[slug] !== nextPageUrl &&
                     !completedSlugsRef.current[slug]
                 ) {
                     setIsFetchingRelated(true);
                     fetchRelatedPosts(slug);
                 }
+            } else if (index === 0 && currentViewer) {
+                // Show main post
+                setActiveViewerMap((prev) => ({
+                    ...prev,
+                    [slug]: 'main',
+                }));
+
+                setRelatedViewerMap((prev) => ({
+                    ...prev,
+                    [slug]: null,
+                }));
+
+                setViewablePost(mainPost);
+                window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
             }
         },
         [
