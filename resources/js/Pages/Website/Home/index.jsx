@@ -1248,11 +1248,13 @@ export default function index({ google_map_api_key, search_history }) {
     const lastHorizontalIndexRef = useRef({});
     const lastTriedRef = useRef({});
     const horizontalScrollingRef = useRef({}); // Debounce flag
+    const lastScrollLeftRef = useRef({}); // Track scroll direction
 
     const handleHorizontalScroll = useCallback(
         (mainPost, e) => {
             const el = e.currentTarget;
-            const index = Math.round(el.scrollLeft / el.clientWidth);
+            const scrollLeft = el.scrollLeft;
+            const index = Math.round(scrollLeft / el.clientWidth);
 
             const slug = mainPost.slug;
             const relatedPosts = relatedPostsMap[slug] || [];
@@ -1261,14 +1263,21 @@ export default function index({ google_map_api_key, search_history }) {
             const total = relatedPosts.length;
 
             const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
+            const lastScrollLeft = lastScrollLeftRef.current[slug] ?? scrollLeft;
 
             // Skip if same index or currently animating
-            if (index === lastIndex || horizontalScrollingRef.current[slug]) return;
+            if (index === lastIndex || horizontalScrollingRef.current[slug]) {
+                lastScrollLeftRef.current[slug] = scrollLeft;
+                return;
+            }
 
             lastHorizontalIndexRef.current[slug] = index;
+            lastScrollLeftRef.current[slug] = scrollLeft;
 
-            // CAROUSEL LOOP: Right swipe at first post
-            if (index === 0 && lastIndex > 0) {
+            // CAROUSEL LOOP: User scrolled BACKWARDS past index 0
+            // Only trigger if they were at a related post (lastIndex > 0) and now at index 0
+            // AND the scroll direction is backwards (scrollLeft decreased from before)
+            if (index === 0 && lastIndex > 0 && scrollLeft < lastIndex * el.clientWidth * 0.5) {
                 horizontalScrollingRef.current[slug] = true;
 
                 const targetScroll = total * el.clientWidth;
@@ -1289,14 +1298,13 @@ export default function index({ google_map_api_key, search_history }) {
                 setViewablePost(lastPost);
                 window.history.pushState({}, '', `${route('home')}${generateURL(lastPost)}`);
 
-                // Release lock after animation
                 setTimeout(() => {
                     horizontalScrollingRef.current[slug] = false;
                 }, 600);
                 return;
             }
 
-            // CAROUSEL LOOP: Left swipe at last post
+            // CAROUSEL LOOP: User scrolled FORWARD past last post
             if (index >= total && lastIndex < total) {
                 horizontalScrollingRef.current[slug] = true;
 
@@ -1316,7 +1324,6 @@ export default function index({ google_map_api_key, search_history }) {
                 setViewablePost(mainPost);
                 window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
 
-                // Release lock after animation
                 setTimeout(() => {
                     horizontalScrollingRef.current[slug] = false;
                 }, 600);
@@ -1343,7 +1350,6 @@ export default function index({ google_map_api_key, search_history }) {
 
                 const remaining = total - index;
 
-                // Instant fetch on first swipe
                 if (!nextPageUrl && !isFetchingRef.current) {
                     if (completedSlugsRef.current[slug]) return;
 
@@ -1358,7 +1364,6 @@ export default function index({ google_map_api_key, search_history }) {
                     return;
                 }
 
-                // Fetch only once per page URL when near end
                 if (
                     remaining <= 5 &&
                     nextPageUrl &&
@@ -1370,7 +1375,7 @@ export default function index({ google_map_api_key, search_history }) {
                     fetchRelatedPosts(slug);
                 }
             } else if (index === 0 && currentViewer) {
-                // Show main post
+                // User naturally landed on index 0 (not a loop trigger)
                 setActiveViewerMap((prev) => ({
                     ...prev,
                     [slug]: 'main',
