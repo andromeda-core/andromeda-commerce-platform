@@ -808,6 +808,9 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             if (gestureLocked.current === 'x') {
+                isHorizontalLooping.current[slug] = false;
+                horizontalScrollLock.current[slug] = false;
+
                 const slug = relatedPostSlugRef.current;
                 const relatedPosts = relatedPostsRef.current[slug] || [];
 
@@ -828,6 +831,8 @@ export default function index({ google_map_api_key, search_history }) {
                 } else if (currentIndex < lastIndex) {
                     horizontalLastDirectionRef.current[slug] = 'left';
                 }
+
+                console.log('DIRECTION', horizontalLastDirectionRef.current[slug]);
 
                 lastHorizontalIndexRef.current[slug] = currentIndex;
 
@@ -1031,26 +1036,6 @@ export default function index({ google_map_api_key, search_history }) {
             }
         };
     }, [isMobilePostViewer, viewablePost, selectedPostIndex, nextPageUrl, isMobilePostGallery]);
-
-    useEffect(() => {
-        const slug = relatedPostSlugRef.current;
-        if (!slug) return;
-
-        console.log(`Post changed to: ${slug}, resetting carousel state`);
-
-        // Reset all carousel tracking for this slug
-        lastHorizontalIndexRef.current[slug] = 0;
-        isHorizontalLooping.current[slug] = false;
-        horizontalScrollLock.current[slug] = false;
-
-        // Reset the carousel container scroll position
-        const container = horizontalCarouselRefs.current[slug];
-        if (container) {
-            // Scroll to position 0 (main post) without animation
-            container.scrollLeft = 0;
-            console.log(`Reset carousel scroll for ${slug}`);
-        }
-    }, [relatedPostSlug]);
 
     // Original Horizontal Scroll Logic
     const handleHorizontalScroll = useCallback((mainPost, e) => {
