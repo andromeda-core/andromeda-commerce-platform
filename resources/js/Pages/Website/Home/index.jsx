@@ -811,10 +811,19 @@ export default function index({ google_map_api_key, search_history }) {
 
             if (gestureLocked.current === 'x') {
                 const slug = relatedPostSlugRef.current;
+
+                if (!slug) {
+                    console.warn('No slug set');
+                    return;
+                }
+
                 const relatedPosts = relatedPostsRef.current[slug] || [];
 
                 const horizontalContainer = horizontalCarouselRefs.current[slug];
-                if (!horizontalContainer) return;
+                if (!horizontalContainer) {
+                    console.warn(`No container for ${slug}`);
+                    return;
+                }
 
                 const containerWidth = horizontalContainer.clientWidth;
                 const currentScrollLeft = horizontalContainer.scrollLeft;
