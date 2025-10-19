@@ -793,9 +793,15 @@ export default function index({ google_map_api_key, search_history }) {
                 const diff = touchStartX.current - e.touches[0].clientX;
 
                 if (horizontalSwipeLock.current) return;
-                setTimeout(() => {
-                    alert(diff);
-                }, 1000);
+                if (diff < 0 && index === 0) {
+                    setTimeout(() => {
+                        alert('Triggering Loop to Go Last Post');
+                    }, 1000);
+                } else if (diff > 0 && index === total - 1) {
+                    setTimeout(() => {
+                        alert('Triggering Loop to Go First Post');
+                    }, 1000);
+                }
             }
 
             if (gestureLocked.current === 'y') {
