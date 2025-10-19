@@ -380,7 +380,7 @@ export default function index({ google_map_api_key, search_history }) {
         isFetchingRef.current = true;
 
         try {
-            const res = await axios.get(currentUrl, {
+            const res = await axios.get(nextUrl, {
                 params: {
                     slug: slug,
                 },
