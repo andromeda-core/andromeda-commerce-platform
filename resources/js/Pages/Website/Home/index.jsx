@@ -559,6 +559,8 @@ export default function index({ google_map_api_key, search_history }) {
     const horizontalScrollLock = useRef({});
     const horizontalLastDirectionRef = useRef({});
 
+    console.log('DIRECTION', horizontalLastDirectionRef.current[slug]);
+
     useEffect(() => {
         postsRef.current = posts;
     }, [posts]);
@@ -831,8 +833,6 @@ export default function index({ google_map_api_key, search_history }) {
                 } else if (currentIndex < lastIndex) {
                     horizontalLastDirectionRef.current[slug] = 'left';
                 }
-
-                console.log('DIRECTION', horizontalLastDirectionRef.current[slug]);
 
                 lastHorizontalIndexRef.current[slug] = currentIndex;
 
