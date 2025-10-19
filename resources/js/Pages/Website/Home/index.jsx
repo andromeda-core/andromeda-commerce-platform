@@ -938,6 +938,11 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             if (gestureLocked.current === 'y') {
+                Object.keys(isHorizontalLooping.current).forEach((key) => {
+                    isHorizontalLooping.current[key] = false;
+                    horizontalScrollLock.current[key] = false;
+                });
+
                 const scrollTop = container.scrollTop;
                 const atTop = scrollTop <= 0;
                 const atBottom =
@@ -977,6 +982,20 @@ export default function index({ google_map_api_key, search_history }) {
                         isLooping.current = false;
                         container.style.touchAction = 'auto';
                         container.style.pointerEvents = 'auto';
+
+                        setTimeout(() => {
+                            const slug = postsRef.current[newIndex]?.slug;
+                            const horizontalContainer = horizontalCarouselRefs.current[slug];
+
+                            if (horizontalContainer) {
+                                horizontalContainer.style.touchAction = 'pan-y pan-x';
+                                horizontalContainer.style.pointerEvents = 'auto';
+                            }
+
+                            isHorizontalLooping.current[slug] = false;
+                            horizontalScrollLock.current[slug] = false;
+                            lastHorizontalIndexRef.current[slug] = 0;
+                        }, 300);
                     });
 
                     return;
@@ -1006,6 +1025,20 @@ export default function index({ google_map_api_key, search_history }) {
                         isLooping.current = false;
                         container.style.touchAction = 'auto';
                         container.style.pointerEvents = 'auto';
+
+                        setTimeout(() => {
+                            const slug = postsRef.current[0]?.slug;
+                            const horizontalContainer = horizontalCarouselRefs.current[slug];
+
+                            if (horizontalContainer) {
+                                horizontalContainer.style.touchAction = 'pan-y pan-x';
+                                horizontalContainer.style.pointerEvents = 'auto';
+                            }
+
+                            isHorizontalLooping.current[slug] = false;
+                            horizontalScrollLock.current[slug] = false;
+                            lastHorizontalIndexRef.current[slug] = 0;
+                        }, 300);
                     });
 
                     return;
