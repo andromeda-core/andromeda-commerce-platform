@@ -1191,6 +1191,8 @@ export default function index({ google_map_api_key, search_history }) {
                     setViewablePost(relatedPost);
 
                     window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
+                } else {
+                    alert('TRYING TO SWIPE On LEFT');
                 }
 
                 const remaining = relatedPosts?.length - index;
