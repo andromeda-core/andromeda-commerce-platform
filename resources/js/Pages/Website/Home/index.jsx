@@ -542,6 +542,7 @@ export default function index({ google_map_api_key, search_history }) {
     const isLooping = useRef(false);
     const touchStartY = useRef(0);
     const touchStartX = useRef(0);
+    const touchEndX = useRef(0);
     const postsRef = useRef(posts);
     const lastFetchTriggerIndex = useRef(-1);
     const gestureLocked = useRef(null);
@@ -780,47 +781,6 @@ export default function index({ google_map_api_key, search_history }) {
                     gestureLocked.current = 'y';
                 } else if (Math.abs(deltaX) > Math.abs(deltaY) + 10) {
                     gestureLocked.current = 'x';
-                }
-            }
-
-            if (gestureLocked.current === 'x') {
-                const slug = relatedPostSlug;
-                const relatedPosts = relatedPostsMap[slug] || [];
-                const total = relatedPosts.length;
-                let index = lastHorizontalIndexRef.current[slug] ?? 0;
-
-                const diff = touchStartX.current - e.touches[0].clientX;
-
-                // Prevent spamming by adding a short cooldown (e.g., 600ms)
-                if (horizontalSwipeLock.current) return;
-
-                // 👉 Swipe Right to Left (Next)
-                if (diff > 100) {
-                    horizontalSwipeLock.current = true;
-
-                    if (index >= total - 1) {
-                        alert("You've reached the end.");
-                    }
-
-                    // reset for next swipe
-                    touchStartX.current = e.touches[0].clientX;
-                    setTimeout(() => (horizontalSwipeLock.current = false), 600);
-                    return;
-                }
-
-                // 👈 Swipe Left to Right (Previous)
-                if (diff < -100) {
-                    horizontalSwipeLock.current = true;
-
-                    if (index <= 0) {
-                        // user tried to go previous from first post
-                        alert("You've reached the first.");
-                    }
-
-                    // reset for next swipe
-                    touchStartX.current = e.touches[0].clientX;
-                    setTimeout(() => (horizontalSwipeLock.current = false), 600);
-                    return;
                 }
             }
 
@@ -1297,6 +1257,39 @@ export default function index({ google_map_api_key, search_history }) {
             fetchRelatedPosts,
         ],
     );
+
+    const handleHorizontalSwipe = (mainPost, e) => {
+        if (horizontalSwipeLock.current) return;
+
+        const touchEnd = e.changedTouches[0].clientX;
+        const diff = touchStartX.current - touchEnd;
+
+        if (Math.abs(diff) < 100) return;
+
+        horizontalSwipeLock.current = true;
+        setTimeout(() => (horizontalSwipeLock.current = false), 400);
+
+        const slug = relatedPostSlug;
+        const relatedPosts = relatedPostsMap[slug] || [];
+        const total = relatedPosts.length;
+        let index = lastHorizontalIndexRef.current[slug] ?? 0;
+
+        // Swipe right ➜ left (next)
+        if (diff > 100) {
+            if (index >= total - 1) {
+                alert("You've reached the end.");
+                return;
+            }
+        }
+
+        // Swipe left ➜ right (prev)
+        if (diff < -100) {
+            if (index <= 0) {
+                alert("You've reached the first.");
+                return;
+            }
+        }
+    };
 
     // Not Perfect Needed Refinement
     // const lastHorizontalIndexRef = useRef({});
@@ -2749,8 +2742,14 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                     {/* Main Post + Related Posts Horizontal Scroll */}
                                                     <div
+                                                        onTouchStart={(e) => {
+                                                            touchStartX.current =
+                                                                e.touches[0].clientX;
+                                                        }}
+                                                        onTouchEnd={(e) => {
+                                                            handleHorizontalSwipe(mainPost, e);
+                                                        }}
                                                         onScroll={(e) => {
-                                                            e.stopPropagation();
                                                             handleHorizontalScroll(mainPost, e);
                                                         }}
                                                         className="horizontal-scroll-container relative flex h-full w-full select-none snap-x snap-mandatory overflow-x-scroll scrollbar-none"
