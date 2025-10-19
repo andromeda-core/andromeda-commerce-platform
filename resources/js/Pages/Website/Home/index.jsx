@@ -820,17 +820,11 @@ export default function index({ google_map_api_key, search_history }) {
                 const containerWidth = horizontalContainer.clientWidth;
                 const currentScrollLeft = horizontalContainer.scrollLeft;
 
-                console.log(
-                    `currentScrollLeft: ${currentScrollLeft}, containerWidth: ${containerWidth}`,
-                );
-
                 const maxScroll = horizontalContainer.scrollWidth - containerWidth;
-                console.log('maxScroll: ', maxScroll);
 
                 // Total carousel items: 1 main + related posts
                 const totalItems = 1 + relatedPosts.length;
                 const currentIndex = Math.round(currentScrollLeft / containerWidth);
-                console.log(`currentIndex: ${currentIndex}, totalItems: ${totalItems}`);
 
                 if (currentScrollLeft === 0 && currentIndex === 0) {
                     console.log('Moving To End of Posts');
@@ -853,7 +847,6 @@ export default function index({ google_map_api_key, search_history }) {
                     horizontalTimeoutRef.current[slug] = setTimeout(() => {
                         isHorizontalLooping.current[slug] = false;
                         horizontalScrollLock.current[slug] = false;
-                        console.log(`[${slug}] Loop LEFT complete`);
                     }, 700);
 
                     e.preventDefault();
@@ -861,9 +854,7 @@ export default function index({ google_map_api_key, search_history }) {
                 }
 
                 if (currentScrollLeft >= maxScroll - 10 && !isHorizontalLooping.current[slug]) {
-                    console.log(
-                        `[${slug}] LOOP RIGHT: At end (scrollLeft: ${currentScrollLeft}, maxScroll: ${maxScroll}), jumping to first`,
-                    );
+                    console.log('Moving To First of Posts');
                     isHorizontalLooping.current[slug] = true;
                     horizontalScrollLock.current[slug] = true;
 
@@ -889,16 +880,11 @@ export default function index({ google_map_api_key, search_history }) {
 
                         isHorizontalLooping.current[slug] = false;
                         horizontalScrollLock.current[slug] = false;
-                        console.log(`[${slug}] Loop RIGHT complete`);
                     }, 700);
 
                     e.preventDefault();
                     return;
                 }
-
-                console.log(
-                    `No loop triggered. scrollLeft: ${currentScrollLeft}, maxScroll: ${maxScroll}, deltaX: ${deltaX}`,
-                );
             }
 
             if (gestureLocked.current === 'y') {
