@@ -1226,92 +1226,6 @@ export default function index({ google_map_api_key, search_history }) {
     // const lastHorizontalIndexRef = useRef({});
     // const lastTriedRef = useRef({});
 
-    // const handleHorizontalScroll = useCallback(
-    //     (mainPost, e) => {
-    //         const el = e.currentTarget;
-    //         const index = Math.round(el.scrollLeft / el.clientWidth);
-
-    //         const slug = mainPost.slug;
-    //         const relatedPosts = relatedPostsMap[slug] || [];
-    //         const currentViewer = relatedViewerMap[slug] || null;
-    //         const nextPageUrl = relatedNextMap[slug] || null;
-
-    //         const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
-
-    //         if (index === lastIndex) return;
-    //         lastHorizontalIndexRef.current[slug] = index;
-
-    //         if (index > 0) {
-    //             const relatedPost = relatedPosts[index - 1];
-    //             if (activeViewerMap[slug] !== 'related' || currentViewer?.id !== relatedPost.id) {
-    //                 setRelatedViewerMap((prev) => ({
-    //                     ...prev,
-    //                     [slug]: relatedPost,
-    //                 }));
-
-    //                 setActiveViewerMap((prev) => ({
-    //                     ...prev,
-    //                     [slug]: 'related',
-    //                 }));
-
-    //                 setViewablePost(relatedPost);
-
-    //                 window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
-    //             }
-
-    //             const remaining = relatedPosts?.length - index;
-
-    //             // Instant fetch on first swipe (if no pagination yet)
-    //             if (!nextPageUrl && !isFetchingRef.current) {
-    //                 if (completedSlugsRef.current[slug]) return;
-
-    //                 const now = Date.now();
-    //                 const lastTried = lastTriedRef.current[slug] || 0;
-
-    //                 if (now - lastTried < 10000) return;
-    //                 lastTriedRef.current[slug] = now;
-
-    //                 setIsFetchingRelated(true);
-    //                 fetchRelatedPosts(slug);
-    //                 return;
-    //             }
-
-    //             // Fetch's only ONCE per next page URL when near end
-    //             if (
-    //                 remaining <= 5 &&
-    //                 nextPageUrl &&
-    //                 !isFetchingRef.current &&
-    //                 lastFetchedUrlRef.current[slug] !== nextPageUrl &&
-    //                 !completedSlugsRef.current[slug]
-    //             ) {
-    //                 setIsFetchingRelated(true);
-    //                 fetchRelatedPosts(slug);
-    //             }
-    //         } else if (index === 0 && currentViewer) {
-    //             setActiveViewerMap((prev) => ({
-    //                 ...prev,
-    //                 [slug]: 'main',
-    //             }));
-
-    //             setRelatedViewerMap((prev) => ({
-    //                 ...prev,
-    //                 [slug]: null,
-    //             }));
-
-    //             setViewablePost(mainPost);
-    //             window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
-    //         }
-    //     },
-    //     [
-    //         relatedPostsMap,
-    //         relatedViewerMap,
-    //         relatedNextMap,
-    //         isFetchingRef,
-    //         lastFetchedUrlRef,
-    //         fetchRelatedPosts,
-    //     ],
-    // );
-
     const handleHorizontalScroll = useCallback(
         (mainPost, e) => {
             const el = e.currentTarget;
@@ -1323,12 +1237,9 @@ export default function index({ google_map_api_key, search_history }) {
             const nextPageUrl = relatedNextMap[slug] || null;
 
             const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
-            const total = relatedPosts.length;
-            const remaining = relatedPosts?.length - index;
-
-            lastHorizontalIndexRef.current[slug] = index;
 
             if (index === lastIndex) return;
+            lastHorizontalIndexRef.current[slug] = index;
 
             if (index > 0) {
                 const relatedPost = relatedPosts[index - 1];
@@ -1347,6 +1258,8 @@ export default function index({ google_map_api_key, search_history }) {
 
                     window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
                 }
+
+                const remaining = relatedPosts?.length - index;
 
                 // Instant fetch on first swipe (if no pagination yet)
                 if (!nextPageUrl && !isFetchingRef.current) {
