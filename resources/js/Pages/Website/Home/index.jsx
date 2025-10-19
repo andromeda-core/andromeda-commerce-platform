@@ -862,6 +862,7 @@ export default function index({ google_map_api_key, search_history }) {
                 console.log('last Index:', lastIndex);
                 console.log('Total Items:', totalItems);
                 console.log('Container Width:', containerWidth);
+                console.log('isFirstScroll', isFirstScroll);
                 // LEFT LOOP: At position 0, came from position > 0 (moving left)
                 if (
                     currentScrollLeft === 0 &&
