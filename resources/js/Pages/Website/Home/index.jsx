@@ -1262,7 +1262,7 @@ export default function index({ google_map_api_key, search_history }) {
         const handleMove = (e) => {
             const diff = touchStartX.current - e.touches[0].clientX;
 
-            const slug = mainPost.slug;
+            const slug = relatedPostSlug;
             const relatedPosts = relatedPostsMap[slug] || [];
             const total = relatedPosts.length;
             const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
@@ -1278,7 +1278,6 @@ export default function index({ google_map_api_key, search_history }) {
             }
         };
 
-        // attach listeners with passive:false
         container.addEventListener('touchstart', handleStart, { passive: false });
         container.addEventListener('touchmove', handleMove, { passive: false });
 
@@ -1286,7 +1285,7 @@ export default function index({ google_map_api_key, search_history }) {
             container.removeEventListener('touchstart', handleStart);
             container.removeEventListener('touchmove', handleMove);
         };
-    }, [mainPost, relatedPostsMap]);
+    }, [relatedPostSlug, relatedPostsMap]);
 
     const handleHorizontalScroll = useCallback(
         (mainPost, e) => {
