@@ -545,6 +545,8 @@ export default function index({ google_map_api_key, search_history }) {
     const postsRef = useRef(posts);
     const lastFetchTriggerIndex = useRef(-1);
     const gestureLocked = useRef(null);
+    const lastHorizontalIndexRef = useRef({});
+    const lastTriedRef = useRef({});
 
     console.log(gestureLocked.current);
 
@@ -783,7 +785,61 @@ export default function index({ google_map_api_key, search_history }) {
             setTimeout(() => {
                 alert(gestureLocked.current);
             }, 1000);
-            if (gestureLocked.current === 'x') return;
+
+            if (gestureLocked.current === 'x') {
+                const slug = relatedPostSlug;
+                const relatedPosts = relatedPostsMap[slug] || [];
+                const total = relatedPosts.length;
+                let index = lastHorizontalIndexRef.current[slug] ?? 0;
+
+                const diff = touchStartX.current - e.touches[0].clientX;
+
+                // 👉 Swipe Right to Left (Next)
+                if (diff > 50) {
+                    if (index >= total - 1) {
+                        // jump to first
+                        index = 0;
+                    }
+
+                    const nextPost = relatedPosts[index];
+                    if (nextPost) {
+                        lastHorizontalIndexRef.current[slug] = index;
+                        setViewablePost(nextPost);
+                        setRelatedViewerMap((prev) => ({
+                            ...prev,
+                            [slug]: nextPost,
+                        }));
+                        window.history.replaceState(
+                            {},
+                            '',
+                            `${route('home')}${generateURL(nextPost)}`,
+                        );
+                    }
+                }
+
+                // 👈 Swipe Left to Right (Previous)
+                if (diff < -50) {
+                    if (index <= 0) {
+                        // jump to last
+                        index = total - 1;
+                    }
+
+                    const prevPost = relatedPosts[index];
+                    if (prevPost) {
+                        lastHorizontalIndexRef.current[slug] = index;
+                        setViewablePost(prevPost);
+                        setRelatedViewerMap((prev) => ({
+                            ...prev,
+                            [slug]: prevPost,
+                        }));
+                        window.history.replaceState(
+                            {},
+                            '',
+                            `${route('home')}${generateURL(prevPost)}`,
+                        );
+                    }
+                }
+            }
 
             if (gestureLocked.current === 'y') {
                 const scrollTop = container.scrollTop;
@@ -1258,46 +1314,6 @@ export default function index({ google_map_api_key, search_history }) {
     //         fetchRelatedPosts,
     //     ],
     // );
-
-    const scrollContainerRef = useRef(null);
-    const lastHorizontalIndexRef = useRef({});
-    const lastTriedRef = useRef({});
-
-    useEffect(() => {
-        const container = scrollContainerRef.current;
-        if (!container) return;
-
-        const handleStart = (e) => {
-            touchStartX.current = e.touches[0].clientX;
-        };
-
-        const handleMove = (e) => {
-            const diff = touchStartX.current - e.touches[0].clientX;
-
-            const slug = relatedPostSlug;
-            const relatedPosts = relatedPostsMap[slug] || [];
-            const total = relatedPosts.length;
-            const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
-
-            if (diff > 50 && lastIndex >= total - 1) {
-                alert('No more posts on the right!');
-                touchStartX.current = e.touches[0].clientX;
-            }
-
-            if (diff < -50 && lastIndex <= 0) {
-                alert('No more posts on the left!');
-                touchStartX.current = e.touches[0].clientX;
-            }
-        };
-
-        container.addEventListener('touchstart', handleStart, { passive: false });
-        container.addEventListener('touchmove', handleMove, { passive: false });
-
-        return () => {
-            container.removeEventListener('touchstart', handleStart);
-            container.removeEventListener('touchmove', handleMove);
-        };
-    }, [relatedPostSlug, relatedPostsMap]);
 
     const handleHorizontalScroll = useCallback(
         (mainPost, e) => {
@@ -2837,15 +2853,6 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                     {/* Main Post + Related Posts Horizontal Scroll */}
                                                     <div
-                                                        ref={scrollContainerRef}
-                                                        onTouchStart={(e) => {
-                                                            e.stopPropagation();
-                                                            handleTouchStart(e);
-                                                        }}
-                                                        onTouchMove={(e) => {
-                                                            e.stopPropagation();
-                                                            handleTouchMove(mainPost, e);
-                                                        }}
                                                         onScroll={(e) => {
                                                             e.stopPropagation();
                                                             handleHorizontalScroll(mainPost, e);
