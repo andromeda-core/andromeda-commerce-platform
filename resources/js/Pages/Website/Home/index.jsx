@@ -547,9 +547,6 @@ export default function index({ google_map_api_key, search_history }) {
     const postsRef = useRef(posts);
     const lastFetchTriggerIndex = useRef(-1);
     const gestureLocked = useRef(null);
-    const lastHorizontalIndexRef = useRef({});
-    const lastTriedRef = useRef({});
-    const lastDirectionRef = useRef(null);
 
     useEffect(() => {
         postsRef.current = posts;
@@ -783,31 +780,8 @@ export default function index({ google_map_api_key, search_history }) {
                 }
             }
 
-            // if (gestureLocked.current === 'x') {
-            //     const diff = touchStartX.current - e.touches[0].clientX;
-
-            //     const goingRight = diff > 100;
-            //     const goingLeft = diff < -100;
-
-            //     const slug = relatedPostSlug;
-            //     const relatedPosts = relatedPostsMap[slug] || [];
-            //     const total = relatedPosts.length;
-            //     const index = lastHorizontalIndexRef.current[slug] ?? 0;
-
-            //     if (horizontalSwipeLock.current) return;
-
-            //     // Only prevent default when looping — not normal swiping
-            //     if (
-            //         (goingRight && index === total - 1 && lastDirectionRef.current === 'right') ||
-            //         (goingLeft && index === 0 && lastDirectionRef.current === 'left')
-            //     ) {
-            //         e.preventDefault();
-            //         horizontalSwipeLock.current = true;
-            //         alert('Loop Triggered');
-            //         setTimeout(() => (horizontalSwipeLock.current = false), 200);
-            //         return;
-            //     }
-            // }
+            if (gestureLocked.current === 'x') {
+            }
 
             if (gestureLocked.current === 'y') {
                 const scrollTop = container.scrollTop;
@@ -889,9 +863,122 @@ export default function index({ google_map_api_key, search_history }) {
         };
     }, [isMobilePostViewer, viewablePost, selectedPostIndex, nextPageUrl, isMobilePostGallery]);
 
+    // const relatedPostsRef = useRef(relatedPostsMap);
+    // const relatedViewMap = useRef(relatedViewerMap);
+    // const relatedNextUrlMap = useRef(relatedNextMap);
+
+    // useEffect(() => {
+    //     relatedPostsRef.current = relatedPostsMap;
+    // }, [relatedPostsMap]);
+
+    // useEffect(() => {
+    //     relatedViewMap.current = relatedViewerMap;
+    // }, [relatedViewerMap]);
+
+    // useEffect(() => {
+    //     relatedNextUrlMap.current = relatedNextMap;
+    // }, [relatedNextMap]);
+
+    // Original Horizontal Scroll Logic
+    // const handleHorizontalScroll = useCallback(
+    //     (mainPost, e) => {
+    //         const el = e.currentTarget;
+
+    //         const slug = mainPost.slug;
+    //         const relatedPosts = relatedPostsRef.current[slug] || [];
+    //         const currentViewer = relatedViewMap.current[slug] || null;
+    //         const nextPageUrl = relatedNextUrlMap.current[slug] || null;
+
+    //         const index = Math.round(el.scrollLeft / el.clientWidth);
+    //         const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
+
+    //         if (index === lastIndex) return;
+    //         lastHorizontalIndexRef.current[slug] = index;
+
+    //         if (index > lastIndex) lastDirectionRef.current = 'right';
+    //         else if (index < lastIndex) lastDirectionRef.current = 'left';
+
+    //         if (index > 0) {
+    //             const relatedPost = relatedPosts[index - 1];
+    //             if (activeViewerMap[slug] !== 'related' || currentViewer?.id !== relatedPost.id) {
+    //                 setRelatedViewerMap((prev) => ({
+    //                     ...prev,
+    //                     [slug]: relatedPost,
+    //                 }));
+
+    //                 setActiveViewerMap((prev) => ({
+    //                     ...prev,
+    //                     [slug]: 'related',
+    //                 }));
+
+    //                 setViewablePost(relatedPost);
+
+    //                 window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
+    //             }
+
+    //             const remaining = relatedPosts?.length - index;
+
+    //             // Instant fetch on first swipe (if no pagination yet)
+    //             if (!nextPageUrl && !isFetchingRef.current) {
+    //                 if (completedSlugsRef.current[slug]) return;
+
+    //                 const now = Date.now();
+    //                 const lastTried = lastTriedRef.current[slug] || 0;
+
+    //                 if (now - lastTried < 10000) return;
+    //                 lastTriedRef.current[slug] = now;
+
+    //                 setIsFetchingRelated(true);
+    //                 fetchRelatedPosts(slug);
+    //                 return;
+    //             }
+
+    //             // Fetch's only ONCE per next page URL when near end
+    //             if (
+    //                 remaining <= 5 &&
+    //                 nextPageUrl &&
+    //                 !isFetchingRef.current &&
+    //                 lastFetchedUrlRef.current[slug] !== nextPageUrl &&
+    //                 !completedSlugsRef.current[slug]
+    //             ) {
+    //                 setIsFetchingRelated(true);
+    //                 fetchRelatedPosts(slug);
+    //             }
+    //         } else if (index === 0 && currentViewer) {
+    //             setActiveViewerMap((prev) => ({
+    //                 ...prev,
+    //                 [slug]: 'main',
+    //             }));
+
+    //             setRelatedViewerMap((prev) => ({
+    //                 ...prev,
+    //                 [slug]: null,
+    //             }));
+
+    //             setViewablePost(mainPost);
+    //             window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
+    //         }
+    //     },
+    //     [
+    //         relatedPostsMap,
+    //         relatedViewerMap,
+    //         relatedNextMap,
+    //         isFetchingRef,
+    //         lastFetchedUrlRef,
+    //         fetchRelatedPosts,
+    //     ],
+    // );
+
     const relatedPostsRef = useRef(relatedPostsMap);
     const relatedViewMap = useRef(relatedViewerMap);
     const relatedNextUrlMap = useRef(relatedNextMap);
+
+    const horizontalScrollLock = useRef({});
+    const isHorizontalLooping = useRef({});
+    const lastHorizontalIndexRef = useRef({});
+    const lastDirectionRef = useRef({});
+    const horizontalTimeoutRef = useRef({});
+    const lastTriedRef = useRef({});
 
     useEffect(() => {
         relatedPostsRef.current = relatedPostsMap;
@@ -905,28 +992,111 @@ export default function index({ google_map_api_key, search_history }) {
         relatedNextUrlMap.current = relatedNextMap;
     }, [relatedNextMap]);
 
-    // Original Horizontal Scroll Logic
     const handleHorizontalScroll = useCallback(
         (mainPost, e) => {
             const el = e.currentTarget;
-
             const slug = mainPost.slug;
+
+            // Guard: Prevent if looping
+            if (isHorizontalLooping.current[slug]) {
+                return;
+            }
+
             const relatedPosts = relatedPostsRef.current[slug] || [];
             const currentViewer = relatedViewMap.current[slug] || null;
             const nextPageUrl = relatedNextUrlMap.current[slug] || null;
 
-            const index = Math.round(el.scrollLeft / el.clientWidth);
+            const mainPostWidth = el.clientWidth;
+            const currentScrollLeft = Math.round(el.scrollLeft / mainPostWidth);
             const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
 
-            if (index === lastIndex) return;
-            lastHorizontalIndexRef.current[slug] = index;
+            if (currentScrollLeft === lastIndex) return;
 
-            if (index > lastIndex) lastDirectionRef.current = 'right';
-            else if (index < lastIndex) lastDirectionRef.current = 'left';
+            // Track direction
+            if (currentScrollLeft > lastIndex) {
+                lastDirectionRef.current[slug] = 'right';
+            } else if (currentScrollLeft < lastIndex) {
+                lastDirectionRef.current[slug] = 'left';
+            }
 
-            if (index > 0) {
-                const relatedPost = relatedPosts[index - 1];
-                if (activeViewerMap[slug] !== 'related' || currentViewer?.id !== relatedPost.id) {
+            // Update last index
+            lastHorizontalIndexRef.current[slug] = currentScrollLeft;
+
+            const totalItems = 1 + relatedPosts.length;
+            const direction = lastDirectionRef.current[slug];
+
+            toast.info(
+                `[${slug}] Index: ${currentScrollLeft}, LastIndex: ${lastIndex}, Direction: ${direction}, Total: ${totalItems}`,
+            );
+
+            // LOOP LEFT: At position 0, moving left → jump to last item
+            if (currentScrollLeft === 0 && lastIndex > 0 && direction === 'left') {
+                toast.info(`[${slug}] LOOP LEFT: Jumping to last (${totalItems - 1})`);
+                horizontalScrollLock.current[slug] = true;
+                isHorizontalLooping.current[slug] = true;
+
+                const lastItemIndex = totalItems - 1;
+
+                el.scrollTo({
+                    left: lastItemIndex * mainPostWidth,
+                    behavior: 'smooth',
+                });
+
+                // Clear any existing timeout
+                if (horizontalTimeoutRef.current[slug]) {
+                    clearTimeout(horizontalTimeoutRef.current[slug]);
+                }
+
+                horizontalTimeoutRef.current[slug] = setTimeout(() => {
+                    isHorizontalLooping.current[slug] = false;
+                    horizontalScrollLock.current[slug] = false;
+                    toast.info(`[${slug}] Loop LEFT complete`);
+                }, 700);
+
+                return;
+            }
+
+            // LOOP RIGHT: At last position, moving right → jump to first
+            if (currentScrollLeft === totalItems - 1 && direction === 'right') {
+                toast.info(`[${slug}] LOOP RIGHT: Jumping to first (0)`);
+                horizontalScrollLock.current[slug] = true;
+                isHorizontalLooping.current[slug] = true;
+
+                el.scrollTo({
+                    left: 0,
+                    behavior: 'smooth',
+                });
+
+                // Clear any existing timeout
+                if (horizontalTimeoutRef.current[slug]) {
+                    clearTimeout(horizontalTimeoutRef.current[slug]);
+                }
+
+                horizontalTimeoutRef.current[slug] = setTimeout(() => {
+                    // Reset to main post view
+                    setActiveViewerMap((prev) => ({
+                        ...prev,
+                        [slug]: 'main',
+                    }));
+                    setRelatedViewerMap((prev) => ({
+                        ...prev,
+                        [slug]: null,
+                    }));
+                    setViewablePost(mainPost);
+                    window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
+
+                    isHorizontalLooping.current[slug] = false;
+                    horizontalScrollLock.current[slug] = false;
+                    toast.info(`[${slug}] Loop RIGHT complete`);
+                }, 700);
+
+                return;
+            }
+
+            // NORMAL SCROLL: Non-loop behavior
+            if (currentScrollLeft > 0) {
+                const relatedPost = relatedPosts[currentScrollLeft - 1];
+                if (activeViewerMap[slug] !== 'related' || currentViewer?.id !== relatedPost?.id) {
                     setRelatedViewerMap((prev) => ({
                         ...prev,
                         [slug]: relatedPost,
@@ -938,11 +1108,10 @@ export default function index({ google_map_api_key, search_history }) {
                     }));
 
                     setViewablePost(relatedPost);
-
                     window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
                 }
 
-                const remaining = relatedPosts?.length - index;
+                const remaining = relatedPosts?.length - currentScrollLeft;
 
                 // Instant fetch on first swipe (if no pagination yet)
                 if (!nextPageUrl && !isFetchingRef.current) {
@@ -959,7 +1128,7 @@ export default function index({ google_map_api_key, search_history }) {
                     return;
                 }
 
-                // Fetch's only ONCE per next page URL when near end
+                // Fetch only ONCE per next page URL when near end
                 if (
                     remaining <= 5 &&
                     nextPageUrl &&
@@ -970,7 +1139,7 @@ export default function index({ google_map_api_key, search_history }) {
                     setIsFetchingRelated(true);
                     fetchRelatedPosts(slug);
                 }
-            } else if (index === 0 && currentViewer) {
+            } else if (currentScrollLeft === 0 && currentViewer) {
                 setActiveViewerMap((prev) => ({
                     ...prev,
                     [slug]: 'main',
@@ -985,31 +1154,8 @@ export default function index({ google_map_api_key, search_history }) {
                 window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
             }
         },
-        [
-            relatedPostsMap,
-            relatedViewerMap,
-            relatedNextMap,
-            isFetchingRef,
-            lastFetchedUrlRef,
-            fetchRelatedPosts,
-        ],
+        [activeViewerMap, isFetchingRef, lastFetchedUrlRef, fetchRelatedPosts],
     );
-
-    // Update swipe handlers
-    const horizontalRelatedPostsLoopHandler = useSwipeable({
-        onSwipedLeft: () => {
-            alert('LEFT');
-        },
-
-        onSwipedRight: () => {
-            alert('RIGHT');
-        },
-
-        preventScrollOnSwipe: true,
-        trackMouse: true,
-        trackTouch: true,
-        delta: 30,
-    });
 
     const updateRelatedPostsMap = (slug, newPosts = []) => {
         if (!slug || !Array.isArray(newPosts)) return;
@@ -2260,7 +2406,6 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                     {/* Main Post + Related Posts Horizontal Scroll */}
                                                     <div
-                                                        {...horizontalRelatedPostsLoopHandler}
                                                         onScroll={(e) => {
                                                             e.stopPropagation();
                                                             handleHorizontalScroll(post, e);
