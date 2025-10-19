@@ -883,6 +883,9 @@ export default function index({ google_map_api_key, search_history }) {
                     e.preventDefault();
                     isHorizontalLooping.current[slug] = true;
 
+                    horizontalContainer.style.touchAction = 'none';
+                    horizontalContainer.style.pointerEvents = 'none';
+
                     const targetScroll = maxScroll;
                     horizontalContainer.scrollTo({ left: targetScroll, behavior: 'smooth' });
 
@@ -901,6 +904,10 @@ export default function index({ google_map_api_key, search_history }) {
                         }
 
                         isHorizontalLooping.current[slug] = false;
+
+                        horizontalContainer.style.touchAction = 'auto';
+                        horizontalContainer.style.pointerEvents = 'auto';
+
                         setTimeout(() => {
                             horizontalScrollLock.current[slug] = false;
                         }, 500);
@@ -920,6 +927,9 @@ export default function index({ google_map_api_key, search_history }) {
                     e.preventDefault();
                     isHorizontalLooping.current[slug] = true;
 
+                    horizontalContainer.style.touchAction = 'none';
+                    horizontalContainer.style.pointerEvents = 'none';
+
                     horizontalContainer.scrollTo({ left: 0, behavior: 'smooth' });
 
                     waitForSettle(0, () => {
@@ -933,6 +943,10 @@ export default function index({ google_map_api_key, search_history }) {
                         );
                         console.log('✅ Loop RIGHT done');
                         isHorizontalLooping.current[slug] = false;
+
+                        horizontalContainer.style.touchAction = 'auto';
+                        horizontalContainer.style.pointerEvents = 'auto';
+
                         setTimeout(() => {
                             horizontalScrollLock.current[slug] = false;
                         }, 500);
