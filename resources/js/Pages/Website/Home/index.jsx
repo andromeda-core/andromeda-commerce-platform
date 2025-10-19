@@ -979,9 +979,9 @@ export default function index({ google_map_api_key, search_history }) {
     //     ],
     // );
 
-    const horizontalScrollRefs = useRef({});
-    const isHorizontalLoopingRef = useRef({});
     const relatedPostsRef = useRef(relatedPostsMap);
+
+    const isHorizontalLoopingRef = useRef({});
 
     useEffect(() => {
         relatedPostsRef.current = relatedPostsMap;
@@ -991,7 +991,7 @@ export default function index({ google_map_api_key, search_history }) {
         (mainPost, e) => {
             const el = e.currentTarget;
             const slug = mainPost.slug;
-            const relatedPosts = relatedPostsRef.current[slug] || [];
+            const relatedPosts = relatedPostsMap[slug] || [];
             const currentViewer = relatedViewerMap[slug] || null;
             const nextPageUrl = relatedNextMap[slug] || null;
 
@@ -1005,14 +1005,24 @@ export default function index({ google_map_api_key, search_history }) {
             if (index === lastIndex) return;
             lastHorizontalIndexRef.current[slug] = index;
 
-            if (index > lastIndex) lastDirectionRef.current = 'right';
-            else if (index < lastIndex) lastDirectionRef.current = 'left';
+            // Track direction PER SLUG
+            if (index > lastIndex) {
+                lastDirectionRef.current[slug] = 'right';
+            } else if (index < lastIndex) {
+                lastDirectionRef.current[slug] = 'left';
+            }
 
             // Total items: 1 main + related posts count
             const totalItems = 1 + relatedPosts.length;
+            const direction = lastDirectionRef.current[slug];
+
+            console.log(
+                `[${slug}] Index: ${index}, LastIndex: ${lastIndex}, Direction: ${direction}, Total: ${totalItems}`,
+            );
 
             // Handle loop to last item (swipe left at first position)
-            if (index === 0 && lastIndex > 0 && lastDirectionRef.current === 'left') {
+            if (index === 0 && lastIndex > 0 && direction === 'left') {
+                console.log(`[${slug}] 🔄 LOOP LEFT: Jumping to last item (${totalItems - 1})`);
                 isHorizontalLoopingRef.current[slug] = true;
                 const lastItemIndex = totalItems - 1;
 
@@ -1028,7 +1038,9 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             // Handle loop to first item (swipe right at last position)
-            if (index === totalItems - 2 && lastDirectionRef.current === 'right') {
+            // FIX: totalItems - 1 is the last index (not totalItems - 2)
+            if (index === totalItems - 1 && direction === 'right') {
+                console.log(`[${slug}] 🔄 LOOP RIGHT: Jumping to first item (0)`);
                 isHorizontalLoopingRef.current[slug] = true;
 
                 el.scrollTo({
