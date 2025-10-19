@@ -1024,7 +1024,7 @@ export default function index({ google_map_api_key, search_history }) {
                 isHorizontalLooping.current[slug] = false;
                 horizontalScrollLock.current[slug] = false;
                 console.log(`[${slug}] Auto-reset loop flags`);
-            }, 800);
+            }, 200);
 
             return;
         }
