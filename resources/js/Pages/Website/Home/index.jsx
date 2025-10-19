@@ -559,7 +559,7 @@ export default function index({ google_map_api_key, search_history }) {
     const horizontalScrollLock = useRef({});
     const horizontalLastDirectionRef = useRef({});
 
-    console.log('DIRECTION', horizontalLastDirectionRef.current[slug]);
+    console.log('DIRECTION', horizontalLastDirectionRef.current);
 
     useEffect(() => {
         postsRef.current = posts;
