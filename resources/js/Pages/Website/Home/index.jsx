@@ -780,6 +780,9 @@ export default function index({ google_map_api_key, search_history }) {
                 }
             }
 
+            setTimeout(() => {
+                alert(gestureLocked.current);
+            }, 1000);
             if (gestureLocked.current === 'x') return;
 
             if (gestureLocked.current === 'y') {
