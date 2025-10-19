@@ -801,13 +801,14 @@ export default function index({ google_map_api_key, search_history }) {
                     setTimeout(() => {
                         alert('Triggering Loop to Go First Post');
                     }, 1000);
-                } else {
-                    setTimeout(() => {
-                        alert(diff);
-                        alert(index);
-                        alert(total);
-                    }, 1000);
                 }
+                // else {
+                //     setTimeout(() => {
+                //         alert(diff);
+                //         alert(index);
+                //         alert(total);
+                //     }, 1000);
+                // }
             }
 
             if (gestureLocked.current === 'y') {
