@@ -557,7 +557,6 @@ export default function index({ google_map_api_key, search_history }) {
     const horizontalCarouselRefs = useRef({});
     const isHorizontalLooping = useRef({});
     const horizontalScrollLock = useRef({});
-    const horizontalTimeoutRef = useRef({});
 
     useEffect(() => {
         postsRef.current = posts;
@@ -1019,6 +1018,11 @@ export default function index({ google_map_api_key, search_history }) {
         const el = e.currentTarget;
         const slug = mainPost.slug;
 
+        if (isHorizontalLooping.current[slug] || horizontalScrollLock.current[slug]) {
+            console.log(`[${slug}] Skipping - loop in progress`);
+            return;
+        }
+
         const relatedPosts = relatedPostsRef.current[slug] || [];
         const currentViewer = relatedViewMap.current[slug] || null;
         const nextPageUrl = relatedNextUrlMap.current[slug] || null;
@@ -1079,9 +1083,7 @@ export default function index({ google_map_api_key, search_history }) {
                 nextPageUrl &&
                 !isFetchingRef.current &&
                 lastFetchedUrlRef.current[slug] !== nextPageUrl &&
-                !completedSlugsRef.current[slug] &&
-                !isHorizontalLooping.current[slug] &&
-                !horizontalScrollLock.current[slug]
+                !completedSlugsRef.current[slug]
             ) {
                 setIsFetchingRelated(true);
                 fetchRelatedPosts(slug);
