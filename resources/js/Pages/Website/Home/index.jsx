@@ -1031,9 +1031,9 @@ export default function index({ google_map_api_key, search_history }) {
             return;
         }
 
-        const relatedPosts = relatedPostsRef.current[slug] || [];
-        const currentViewer = relatedViewMap.current[slug] || null;
-        const nextPageUrl = relatedNextUrlMap.current[slug] || null;
+        const relatedPosts = relatedPostsMap[slug] || [];
+        const currentViewer = relatedViewerMap[slug] || null;
+        const nextPageUrl = relatedNextUrlMap[slug] || null;
 
         const index = Math.round(el.scrollLeft / el.clientWidth);
         const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
