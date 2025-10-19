@@ -553,6 +553,8 @@ export default function index({ google_map_api_key, search_history }) {
     const gestureLocked = useRef(null);
     const lastTriedRef = useRef(0);
 
+    const horizontalCarouselRefs = useRef({});
+
     useEffect(() => {
         postsRef.current = posts;
     }, [posts]);
@@ -816,9 +818,7 @@ export default function index({ google_map_api_key, search_history }) {
                 const relatedPosts = relatedPostsRef.current[slug] || [];
 
                 // Get the horizontal scroll container (you'll need a ref for this)
-                const horizontalContainer = document.querySelector(
-                    `[data-carousel-slug="${slug}"]`,
-                );
+                const horizontalContainer = horizontalCarouselRefs.current[slug];
 
                 alert(!!horizontalContainer);
 
@@ -2329,6 +2329,12 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                     {/* Main Post + Related Posts Horizontal Scroll */}
                                                     <div
+                                                        ref={(el) => {
+                                                            if (el)
+                                                                horizontalCarouselRefs.current[
+                                                                    post.slug
+                                                                ] = el;
+                                                        }}
                                                         data-carousel-slug={post.slug}
                                                         onScroll={(e) => {
                                                             e.stopPropagation();
