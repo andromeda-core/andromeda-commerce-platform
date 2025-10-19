@@ -1009,6 +1009,7 @@ export default function index({ google_map_api_key, search_history }) {
         else if (index < lastIndex) lastDirectionRef.current = 'left';
 
         if (index > 0) {
+            // alert()
             const relatedPost = relatedPosts[index - 1];
             if (activeViewerMap[slug] !== 'related' || currentViewer?.id !== relatedPost.id) {
                 setRelatedViewerMap((prev) => ({
@@ -2319,12 +2320,12 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                     {/* Main Post + Related Posts Horizontal Scroll */}
                                                     <div
-                                                        ref={(el) => {
-                                                            if (el)
-                                                                horizontalCarouselRefs.current[
-                                                                    post.slug
-                                                                ] = el;
-                                                        }}
+                                                        // ref={(el) => {
+                                                        //     if (el)
+                                                        //         horizontalCarouselRefs.current[
+                                                        //             post.slug
+                                                        //         ] = el;
+                                                        // }}
                                                         data-carousel-slug={post.slug}
                                                         onScroll={(e) => {
                                                             e.stopPropagation();
