@@ -856,6 +856,11 @@ export default function index({ google_map_api_key, search_history }) {
                     checkSettle();
                 };
 
+                console.log('Current Scroll Left:', currentScrollLeft);
+                console.log('current Index:', currentIndex);
+                console.log('last Index:', lastIndex);
+                console.log('Total Items:', totalItems);
+                console.log('Container Width:', containerWidth);
                 // LEFT LOOP: At position 0, came from position > 0 (moving left)
                 if (
                     currentScrollLeft === 0 &&
