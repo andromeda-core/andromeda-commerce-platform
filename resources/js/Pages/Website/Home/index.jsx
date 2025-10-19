@@ -1007,15 +1007,9 @@ export default function index({ google_map_api_key, search_history }) {
 
         if (index === lastIndex) return;
 
-        setTimeout(() => {
-            alert(index);
-            alert(lastIndex);
-        }, 1000);
-
         lastHorizontalIndexRef.current[slug] = index;
 
         if (index > 0) {
-            alert('In Post Changing ');
             const relatedPost = relatedPosts[index - 1];
 
             alert(!!relatedPost);
