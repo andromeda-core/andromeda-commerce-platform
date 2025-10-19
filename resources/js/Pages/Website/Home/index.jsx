@@ -1000,13 +1000,13 @@ export default function index({ google_map_api_key, search_history }) {
             lastDirectionRef.current = direction;
 
             // ✅ detect edge behavior (end/start)
-            if (index >= total - 1 && direction === 'right') {
+            if (index > total - 1 && direction === 'right') {
                 alert(`No more posts → end reached Direction: ${direction}`);
                 // Optional: loop
                 // el.scrollTo({ left: 0, behavior: 'smooth' });
             }
 
-            if (index <= 0 && direction === 'left') {
+            if (index < 0 && direction === 'left') {
                 alert(`No previous posts → start reached Direction: ${direction}`);
                 // Optional: loop
                 // el.scrollTo({ left: el.scrollWidth - el.clientWidth, behavior: 'smooth' });
