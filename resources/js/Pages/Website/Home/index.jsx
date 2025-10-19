@@ -576,8 +576,6 @@ export default function index({ google_map_api_key, search_history }) {
         relatedPostSlugRef.current = relatedPostSlug;
     }, [relatedPostSlug]);
 
-    console.log(horizontalCarouselRefs.current);
-
     useEffect(() => {
         if (!isMobilePostViewer || viewablePost === '' || isMobilePostGallery) return;
         const container = mobilePostContainerRef.current;
