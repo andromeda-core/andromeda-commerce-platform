@@ -804,6 +804,8 @@ export default function index({ google_map_api_key, search_history }) {
                 } else {
                     setTimeout(() => {
                         alert(diff);
+                        alert(index);
+                        alert(total);
                     }, 1000);
                 }
             }
