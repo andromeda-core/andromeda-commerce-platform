@@ -811,7 +811,13 @@ export default function index({ google_map_api_key, search_history }) {
         };
 
         const handleTouchMove = (e) => {
-            if (scrollLock.current || isLooping.current) {
+            const slug = relatedPostSlugRef.current;
+
+            if (
+                scrollLock.current ||
+                isLooping.current ||
+                (slug && isHorizontalLooping.current[slug])
+            ) {
                 e.preventDefault();
                 return;
             }
