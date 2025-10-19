@@ -986,9 +986,10 @@ export default function index({ google_map_api_key, search_history }) {
                 }
 
                 if (
-                    (atBottom || isInRelated) &&
+                    atBottom &&
                     deltaY < -30 &&
-                    selectedPostIndex === postsRef.current.length - 1
+                    ((isInRelated && parentPostIndex === postsRef.current.length - 1) ||
+                        (!isInRelated && selectedPostIndex === postsRef.current.length - 1))
                 ) {
                     e.preventDefault();
                     scrollLock.current = true;
