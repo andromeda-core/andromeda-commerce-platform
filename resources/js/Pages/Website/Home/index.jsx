@@ -992,7 +992,9 @@ export default function index({ google_map_api_key, search_history }) {
 
     // Original Horizontal Scroll Logic
     const handleHorizontalScroll = useCallback((mainPost, e) => {
+        alert('in Handle');
         const el = e.currentTarget;
+        alert('After El');
 
         const slug = mainPost.slug;
         const relatedPosts = relatedPostsRef.current[slug] || [];
@@ -1002,7 +1004,10 @@ export default function index({ google_map_api_key, search_history }) {
         const index = Math.round(el.scrollLeft / el.clientWidth);
         const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
 
+        alert('before Confition');
+        alert(index);
         if (index === lastIndex) return;
+        alert('After Confition');
         lastHorizontalIndexRef.current[slug] = index;
 
         if (index > lastIndex) lastDirectionRef.current = 'right';
