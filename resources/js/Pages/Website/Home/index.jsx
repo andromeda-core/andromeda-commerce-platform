@@ -1016,6 +1016,28 @@ export default function index({ google_map_api_key, search_history }) {
         };
     }, [isMobilePostViewer, viewablePost, selectedPostIndex, nextPageUrl, isMobilePostGallery]);
 
+    useEffect(() => {
+        const slug = relatedPostSlugRef.current;
+        if (!slug) return;
+
+        console.log(`Post changed to: ${slug}, resetting carousel state`);
+
+        // Reset all carousel tracking for this slug
+        lastHorizontalIndexRef.current[slug] = 0;
+        lastDirectionRef.current[slug] = null;
+        isHorizontalLooping.current[slug] = false;
+        horizontalScrollLock.current[slug] = false;
+        lastFetchTimeRef.current[slug] = 0;
+
+        // Reset the carousel container scroll position
+        const container = horizontalCarouselRefs.current[slug];
+        if (container) {
+            // Scroll to position 0 (main post) without animation
+            container.scrollLeft = 0;
+            console.log(`Reset carousel scroll for ${slug}`);
+        }
+    }, [relatedPostSlug]);
+
     // Original Horizontal Scroll Logic
     const handleHorizontalScroll = useCallback((mainPost, e) => {
         const el = e.currentTarget;
