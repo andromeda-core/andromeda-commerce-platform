@@ -1122,6 +1122,8 @@ export default function index({ google_map_api_key, search_history }) {
             setViewablePost(mainPost);
             window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
         }
+
+        setSelectedPostIndex(0);
     }, []);
 
     // Resetting Related Post Some Refs
