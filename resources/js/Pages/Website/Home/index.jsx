@@ -1024,7 +1024,7 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             // Handle loop to first item (swipe right at last position)
-            if (index === totalItems - 1 && lastDirectionRef.current === 'right') {
+            if (index === totalItems - 2 && lastDirectionRef.current === 'right') {
                 isHorizontalLoopingRef.current[slug] = true;
 
                 el.scrollTo({
