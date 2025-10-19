@@ -850,7 +850,10 @@ export default function index({ google_map_api_key, search_history }) {
                     checkSettle();
                 };
 
+                console.log('CurrentScrollLEft', currentScrollLeft);
+
                 if (currentScrollLeft === 0 && currentIndex === 0) {
+                    console.log('Its in the condiiton');
                     console.log('Loop LEFT - scrolling back from position 0');
                     isHorizontalLooping.current[slug] = true;
                     horizontalScrollLock.current[slug] = true;
