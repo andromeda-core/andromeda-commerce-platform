@@ -979,6 +979,8 @@ export default function index({ google_map_api_key, search_history }) {
     //     ],
     // );
 
+    const lastEdgeRef = useRef(null); // 'first', 'last', or null
+
     const handleHorizontalScroll = useCallback(
         (mainPost, e) => {
             const el = e.currentTarget;
@@ -994,25 +996,41 @@ export default function index({ google_map_api_key, search_history }) {
 
             if (index === lastIndex) return;
 
-            // Track last index & direction
-            lastHorizontalIndexRef.current[slug] = index;
-            const direction = index > lastIndex ? 'right' : 'left';
+            // Track direction
+            const direction = index > lastIndex ? 'right' : index < lastIndex ? 'left' : null;
             lastDirectionRef.current = direction;
+            lastHorizontalIndexRef.current[slug] = index;
 
-            // ✅ detect edge behavior (end/start)
-            if (index > total - 1 && direction === 'right') {
-                alert(`No more posts → end reached Direction: ${direction}`);
-                // Optional: loop
-                // el.scrollTo({ left: 0, behavior: 'smooth' });
+            // ---- ✅ Improved edge detection ----
+            const isAtLast = index >= total - 1;
+            const isAtFirst = index <= 0;
+
+            if (isAtLast && direction === 'right') {
+                if (lastEdgeRef.current === 'last') {
+                    // 🔥 User swiped again on last post → trigger now
+                    alert('Loop → First post');
+                    lastEdgeRef.current = null; // reset
+                    // el.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    // Just reached last for the first time
+                    lastEdgeRef.current = 'last';
+                }
+            } else if (isAtFirst && direction === 'left') {
+                if (lastEdgeRef.current === 'first') {
+                    // 🔥 User swiped again on first post → trigger now
+                    alert('Loop → Last post');
+                    lastEdgeRef.current = null;
+                    // el.scrollTo({ left: el.scrollWidth - el.clientWidth, behavior: 'smooth' });
+                } else {
+                    // Just reached first for the first time
+                    lastEdgeRef.current = 'first';
+                }
+            } else {
+                // Reset edge tracker when user moves away
+                lastEdgeRef.current = null;
             }
 
-            if (index < 0 && direction === 'left') {
-                alert(`No previous posts → start reached Direction: ${direction}`);
-                // Optional: loop
-                // el.scrollTo({ left: el.scrollWidth - el.clientWidth, behavior: 'smooth' });
-            }
-
-            // 🔹 Post switching logic
+            // ---- Continue your existing logic ----
             if (index > 0) {
                 const relatedPost = relatedPosts[index - 1];
                 if (activeViewerMap[slug] !== 'related' || currentViewer?.id !== relatedPost.id) {
@@ -1020,19 +1038,16 @@ export default function index({ google_map_api_key, search_history }) {
                         ...prev,
                         [slug]: relatedPost,
                     }));
-
                     setActiveViewerMap((prev) => ({
                         ...prev,
                         [slug]: 'related',
                     }));
-
                     setViewablePost(relatedPost);
                     window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
                 }
 
                 const remaining = total - index;
 
-                // Prefetch related posts when near the end
                 if (!nextPageUrl && !isFetchingRef.current) {
                     if (completedSlugsRef.current[slug]) return;
                     const now = Date.now();
