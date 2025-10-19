@@ -810,9 +810,6 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             if (gestureLocked.current === 'x') {
-                isHorizontalLooping.current[slug] = false;
-                horizontalScrollLock.current[slug] = false;
-
                 const slug = relatedPostSlugRef.current;
                 const relatedPosts = relatedPostsRef.current[slug] || [];
 
