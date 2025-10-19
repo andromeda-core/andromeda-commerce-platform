@@ -556,6 +556,7 @@ export default function index({ google_map_api_key, search_history }) {
     const lastHorizontalIndexRef = useRef({});
     const horizontalCarouselRefs = useRef({});
     const isHorizontalLooping = useRef({});
+    const horizontalScrollLock = useRef({});
 
     useEffect(() => {
         postsRef.current = posts;
