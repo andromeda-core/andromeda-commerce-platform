@@ -1022,6 +1022,8 @@ export default function index({ google_map_api_key, search_history }) {
         if (index > 0) {
             alert('In Post Changing ');
             const relatedPost = relatedPosts[index - 1];
+
+            alert(!!relatedPost);
             if (activeViewerMap[slug] !== 'related' || currentViewer?.id !== relatedPost.id) {
                 setRelatedViewerMap((prev) => ({
                     ...prev,
