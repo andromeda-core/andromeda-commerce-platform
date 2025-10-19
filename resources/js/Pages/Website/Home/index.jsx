@@ -808,6 +808,12 @@ export default function index({ google_map_api_key, search_history }) {
                 isHorizontalLooping.current[slug] = false;
                 horizontalScrollLock.current[slug] = false;
             }
+
+            const container = mobilePostContainerRef.current;
+            if (container) {
+                container.style.touchAction = 'auto';
+                container.style.pointerEvents = 'auto';
+            }
         };
 
         const handleTouchMove = (e) => {
