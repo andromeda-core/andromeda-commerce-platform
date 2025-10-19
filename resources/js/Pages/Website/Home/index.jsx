@@ -782,10 +782,6 @@ export default function index({ google_map_api_key, search_history }) {
                 }
             }
 
-            setTimeout(() => {
-                alert(gestureLocked.current);
-            }, 1000);
-
             if (gestureLocked.current === 'x') {
                 const slug = relatedPostSlug;
                 const relatedPosts = relatedPostsMap[slug] || [];
@@ -794,11 +790,11 @@ export default function index({ google_map_api_key, search_history }) {
 
                 const diff = touchStartX.current - e.touches[0].clientX;
 
-                // 👉 Swipe Right to Left (Next)
                 if (diff > 50) {
                     if (index >= total - 1) {
-                        // jump to first
-                        index = 0;
+                        setTimeout(() => {
+                            alert("You've reached the end.");
+                        }, 1000);
                     }
 
                     const nextPost = relatedPosts[index];
@@ -820,24 +816,25 @@ export default function index({ google_map_api_key, search_history }) {
                 // 👈 Swipe Left to Right (Previous)
                 if (diff < -50) {
                     if (index <= 0) {
-                        // jump to last
-                        index = total - 1;
+                        setTimeout(() => {
+                            alert("You've reached the First.");
+                        }, 1000);
                     }
 
-                    const prevPost = relatedPosts[index];
-                    if (prevPost) {
-                        lastHorizontalIndexRef.current[slug] = index;
-                        setViewablePost(prevPost);
-                        setRelatedViewerMap((prev) => ({
-                            ...prev,
-                            [slug]: prevPost,
-                        }));
-                        window.history.replaceState(
-                            {},
-                            '',
-                            `${route('home')}${generateURL(prevPost)}`,
-                        );
-                    }
+                    // const prevPost = relatedPosts[index];
+                    // if (prevPost) {
+                    //     lastHorizontalIndexRef.current[slug] = index;
+                    //     setViewablePost(prevPost);
+                    //     setRelatedViewerMap((prev) => ({
+                    //         ...prev,
+                    //         [slug]: prevPost,
+                    //     }));
+                    //     window.history.replaceState(
+                    //         {},
+                    //         '',
+                    //         `${route('home')}${generateURL(prevPost)}`,
+                    //     );
+                    // }
                 }
             }
 
