@@ -1024,7 +1024,6 @@ export default function index({ google_map_api_key, search_history }) {
 
         // Reset all carousel tracking for this slug
         lastHorizontalIndexRef.current[slug] = 0;
-        lastDirectionRef.current[slug] = null;
         isHorizontalLooping.current[slug] = false;
         horizontalScrollLock.current[slug] = false;
         lastFetchTimeRef.current[slug] = 0;
