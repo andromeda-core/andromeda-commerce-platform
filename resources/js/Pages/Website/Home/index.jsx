@@ -550,8 +550,6 @@ export default function index({ google_map_api_key, search_history }) {
     const lastTriedRef = useRef({});
     const horizontalSwipeLock = useRef(null);
 
-    console.log(gestureLocked.current);
-
     useEffect(() => {
         postsRef.current = posts;
     }, [posts]);
@@ -781,6 +779,71 @@ export default function index({ google_map_api_key, search_history }) {
                     gestureLocked.current = 'y';
                 } else if (Math.abs(deltaX) > Math.abs(deltaY) + 10) {
                     gestureLocked.current = 'x';
+                }
+            }
+
+            if (gestureLocked.current === 'x') {
+                e.preventDefault();
+
+                const slug = relatedPostSlug;
+                const relatedPosts = relatedPostsMap[slug] || [];
+                const total = relatedPosts.length;
+                let index = lastHorizontalIndexRef.current[slug] ?? 0;
+
+                const diff = touchStartX.current - e.touches[0].clientX;
+
+                if (horizontalSwipeLock.current) return;
+
+                // Right ➜ Left (Next)
+                if (diff > 100) {
+                    horizontalSwipeLock.current = true;
+
+                    if (index >= total - 1) {
+                        alert("You've reached the end.");
+                        // } else {
+                        //     index++;
+                        //     const nextPost = relatedPosts[index];
+                        //     if (nextPost) {
+                        //         lastHorizontalIndexRef.current[slug] = index;
+                        //         setViewablePost(nextPost);
+                        //         setRelatedViewerMap((prev) => ({
+                        //             ...prev,
+                        //             [slug]: nextPost,
+                        //         }));
+                        //         window.history.replaceState({}, '', `${route('home')}${generateURL(nextPost)}`);
+                        //     }
+                        // }
+
+                        setTimeout(() => (horizontalSwipeLock.current = false), 400);
+                        return;
+                    }
+
+                    // Left ➜ Right (Previous)
+                    if (diff < -100) {
+                        horizontalSwipeLock.current = true;
+
+                        if (index <= 0) {
+                            alert("You've reached the first.");
+                            // } else {
+                            //     index--;
+                            //     const prevPost = relatedPosts[index];
+                            //     if (prevPost) {
+                            //         lastHorizontalIndexRef.current[slug] = index;
+                            //         setViewablePost(prevPost);
+                            //         setRelatedViewerMap((prev) => ({
+                            //             ...prev,
+                            //             [slug]: prevPost,
+                            //         }));
+                            //         window.history.replaceState({}, '', `${route('home')}${generateURL(prevPost)}`);
+                            //     }
+                            // }
+
+                            setTimeout(() => (horizontalSwipeLock.current = false), 400);
+                            return;
+                        }
+
+                        return; // stop Y logic when horizontal
+                    }
                 }
             }
 
@@ -1257,39 +1320,6 @@ export default function index({ google_map_api_key, search_history }) {
             fetchRelatedPosts,
         ],
     );
-
-    const handleHorizontalSwipe = (mainPost, e) => {
-        if (horizontalSwipeLock.current) return;
-
-        const touchEnd = e.changedTouches[0].clientX;
-        const diff = touchStartX.current - touchEnd;
-
-        if (Math.abs(diff) < 100) return;
-
-        horizontalSwipeLock.current = true;
-        setTimeout(() => (horizontalSwipeLock.current = false), 400);
-
-        const slug = relatedPostSlug;
-        const relatedPosts = relatedPostsMap[slug] || [];
-        const total = relatedPosts.length;
-        let index = lastHorizontalIndexRef.current[slug] ?? 0;
-
-        // Swipe right ➜ left (next)
-        if (diff > 100) {
-            if (index >= total - 1) {
-                alert("You've reached the end.");
-                return;
-            }
-        }
-
-        // Swipe left ➜ right (prev)
-        if (diff < -100) {
-            if (index <= 0) {
-                alert("You've reached the first.");
-                return;
-            }
-        }
-    };
 
     // Not Perfect Needed Refinement
     // const lastHorizontalIndexRef = useRef({});
@@ -2742,13 +2772,6 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                     {/* Main Post + Related Posts Horizontal Scroll */}
                                                     <div
-                                                        onTouchStart={(e) => {
-                                                            touchStartX.current =
-                                                                e.touches[0].clientX;
-                                                        }}
-                                                        onTouchEnd={(e) => {
-                                                            handleHorizontalSwipe(mainPost, e);
-                                                        }}
                                                         onScroll={(e) => {
                                                             handleHorizontalScroll(mainPost, e);
                                                         }}
