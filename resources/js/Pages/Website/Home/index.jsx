@@ -771,6 +771,7 @@ export default function index({ google_map_api_key, search_history }) {
             const isVerticalSwipe = Math.abs(deltaY) > Math.abs(deltaX) + 20;
 
             if (!isVerticalSwipe) {
+                alert('No Vertical');
                 return;
             }
 
@@ -1246,38 +1247,46 @@ export default function index({ google_map_api_key, search_history }) {
     //     ],
     // );
 
+    const scrollContainerRef = useRef(null);
     const lastHorizontalIndexRef = useRef({});
     const lastTriedRef = useRef({});
-    const touchMoveX = useRef(0);
 
-    const handleTouchStart = useCallback((e) => {
-        touchStartX.current = e.touches[0].clientX;
-    }, []);
+    useEffect(() => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
 
-    const handleTouchMove = useCallback(
-        (mainPost, e) => {
-            touchMoveX.current = e.touches[0].clientX;
-            const diff = touchStartX.current - touchMoveX.current;
+        const handleStart = (e) => {
+            touchStartX.current = e.touches[0].clientX;
+        };
+
+        const handleMove = (e) => {
+            const diff = touchStartX.current - e.touches[0].clientX;
 
             const slug = mainPost.slug;
             const relatedPosts = relatedPostsMap[slug] || [];
             const total = relatedPosts.length;
             const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
 
-            // Right swipe (to next post)
             if (diff > 50 && lastIndex >= total - 1) {
                 alert('No more posts on the right!');
-                touchStartX.current = touchMoveX.current; // reset so it won’t repeat instantly
+                touchStartX.current = e.touches[0].clientX;
             }
 
-            // Left swipe (to previous post)
             if (diff < -50 && lastIndex <= 0) {
                 alert('No more posts on the left!');
-                touchStartX.current = touchMoveX.current;
+                touchStartX.current = e.touches[0].clientX;
             }
-        },
-        [relatedPostsMap],
-    );
+        };
+
+        // attach listeners with passive:false
+        container.addEventListener('touchstart', handleStart, { passive: false });
+        container.addEventListener('touchmove', handleMove, { passive: false });
+
+        return () => {
+            container.removeEventListener('touchstart', handleStart);
+            container.removeEventListener('touchmove', handleMove);
+        };
+    }, [mainPost, relatedPostsMap]);
 
     const handleHorizontalScroll = useCallback(
         (mainPost, e) => {
@@ -2821,10 +2830,6 @@ export default function index({ google_map_api_key, search_history }) {
                                                             e.stopPropagation();
                                                             handleHorizontalScroll(post, e);
                                                         }}
-                                                        onTouchStart={handleTouchStart}
-                                                        onTouchMove={(e) =>
-                                                            handleTouchMove(mainPost, e)
-                                                        }
                                                         className="horizontal-scroll-container relative flex h-full w-full select-none snap-x snap-mandatory overflow-x-scroll scrollbar-none"
                                                         style={{
                                                             scrollSnapType: 'x mandatory',
