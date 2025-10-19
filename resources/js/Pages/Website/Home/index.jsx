@@ -808,30 +808,32 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             if (gestureLocked.current === 'x') {
-                console.log('Scrolled X-axis');
+                console.log('Scroolled');
                 const slug = relatedPostSlugRef.current;
                 const relatedPosts = relatedPostsRef.current[slug] || [];
 
+                // Get the horizontal scroll container (you'll need a ref for this)
                 const horizontalContainer = horizontalCarouselRefs.current[slug];
+
                 if (!horizontalContainer) return;
 
                 const containerWidth = horizontalContainer.clientWidth;
                 const currentScrollLeft = horizontalContainer.scrollLeft;
-                const scrollWidth = horizontalContainer.scrollWidth; // Total width of all items
-                const maxScroll = scrollWidth - containerWidth; // Maximum scroll position
 
                 console.log(
-                    `currentScrollLeft: ${currentScrollLeft}, containerWidth: ${containerWidth}, scrollWidth: ${scrollWidth}, maxScroll: ${maxScroll}`,
+                    `currentScrollLeft: ${currentScrollLeft}, containerWidth: ${containerWidth}`,
                 );
 
+                const maxScroll = horizontalContainer.scrollWidth - containerWidth;
+                console.log('maxScroll: ', maxScroll);
+
+                // Total carousel items: 1 main + related posts
                 const totalItems = 1 + relatedPosts.length;
                 const currentIndex = Math.round(currentScrollLeft / containerWidth);
-
                 console.log(`currentIndex: ${currentIndex}, totalItems: ${totalItems}`);
 
-                // LEFT LOOP: At position 0, swiping left (deltaX < -100)
-                if (currentScrollLeft === 0 && currentIndex === 0 && deltaX < -100) {
-                    console.log('Moving To End of Posts (LEFT SWIPE)');
+                if (currentScrollLeft === 0 && currentIndex === 0) {
+                    console.log('Moving To End of Posts');
                     isHorizontalLooping.current[slug] = true;
                     horizontalScrollLock.current[slug] = true;
 
@@ -843,6 +845,7 @@ export default function index({ google_map_api_key, search_history }) {
                         behavior: 'smooth',
                     });
 
+                    // Clear timeout
                     if (horizontalTimeoutRef.current[slug]) {
                         clearTimeout(horizontalTimeoutRef.current[slug]);
                     }
@@ -857,13 +860,7 @@ export default function index({ google_map_api_key, search_history }) {
                     return;
                 }
 
-                // RIGHT LOOP: At end of scroll, swiping right (deltaX > 100)
-                // Check if we're at maxScroll position (not just index matching)
-                if (
-                    currentScrollLeft >= maxScroll - 10 &&
-                    deltaX > 100 &&
-                    !isHorizontalLooping.current[slug]
-                ) {
+                if (currentScrollLeft >= maxScroll - 10 && !isHorizontalLooping.current[slug]) {
                     console.log(
                         `[${slug}] LOOP RIGHT: At end (scrollLeft: ${currentScrollLeft}, maxScroll: ${maxScroll}), jumping to first`,
                     );
