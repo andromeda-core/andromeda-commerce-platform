@@ -1077,7 +1077,8 @@ export default function index({ google_map_api_key, search_history }) {
                     gestureLocked.current = null;
                     scrollLock.current = false;
                     isLooping.current = false;
-                }, 100);
+                    fetchLock.current = false;
+                }, 50);
 
                 window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
             }
@@ -1126,7 +1127,8 @@ export default function index({ google_map_api_key, search_history }) {
                 gestureLocked.current = null;
                 scrollLock.current = false;
                 isLooping.current = false;
-            }, 100);
+                fetchLock.current = false;
+            }, 50);
 
             window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
         }
