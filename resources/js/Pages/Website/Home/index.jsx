@@ -793,58 +793,9 @@ export default function index({ google_map_api_key, search_history }) {
                 const diff = touchStartX.current - e.touches[0].clientX;
 
                 if (horizontalSwipeLock.current) return;
-
-                // Right ➜ Left (Next)
-                if (diff > 100) {
-                    horizontalSwipeLock.current = true;
-
-                    if (index >= total - 1) {
-                        alert("You've reached the end.");
-                        // } else {
-                        //     index++;
-                        //     const nextPost = relatedPosts[index];
-                        //     if (nextPost) {
-                        //         lastHorizontalIndexRef.current[slug] = index;
-                        //         setViewablePost(nextPost);
-                        //         setRelatedViewerMap((prev) => ({
-                        //             ...prev,
-                        //             [slug]: nextPost,
-                        //         }));
-                        //         window.history.replaceState({}, '', `${route('home')}${generateURL(nextPost)}`);
-                        //     }
-                        // }
-
-                        setTimeout(() => (horizontalSwipeLock.current = false), 400);
-                        return;
-                    }
-
-                    // Left ➜ Right (Previous)
-                    if (diff < -100) {
-                        horizontalSwipeLock.current = true;
-
-                        if (index <= 0) {
-                            alert("You've reached the first.");
-                            // } else {
-                            //     index--;
-                            //     const prevPost = relatedPosts[index];
-                            //     if (prevPost) {
-                            //         lastHorizontalIndexRef.current[slug] = index;
-                            //         setViewablePost(prevPost);
-                            //         setRelatedViewerMap((prev) => ({
-                            //             ...prev,
-                            //             [slug]: prevPost,
-                            //         }));
-                            //         window.history.replaceState({}, '', `${route('home')}${generateURL(prevPost)}`);
-                            //     }
-                            // }
-
-                            setTimeout(() => (horizontalSwipeLock.current = false), 400);
-                            return;
-                        }
-
-                        return; // stop Y logic when horizontal
-                    }
-                }
+                setTimeout(() => {
+                    alert(diff);
+                }, 1000);
             }
 
             if (gestureLocked.current === 'y') {
