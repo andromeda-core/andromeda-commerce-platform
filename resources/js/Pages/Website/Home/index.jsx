@@ -1022,7 +1022,7 @@ export default function index({ google_map_api_key, search_history }) {
             // Update last index
             lastHorizontalIndexRef.current[slug] = currentScrollLeft;
 
-            const totalItems = 1 + relatedPosts.length;
+            const totalItems = relatedPosts.length;
             const direction = lastDirectionRef.current[slug];
 
             toast.info(
@@ -1031,11 +1031,11 @@ export default function index({ google_map_api_key, search_history }) {
 
             // LOOP LEFT: At position 0, moving left → jump to last item
             if (currentScrollLeft === 0 && lastIndex > 0 && direction === 'left') {
-                toast.info(`[${slug}] LOOP LEFT: Jumping to last (${totalItems - 1})`);
+                toast.info(`[${slug}] LOOP LEFT: Jumping to last (${totalItems})`);
                 horizontalScrollLock.current[slug] = true;
                 isHorizontalLooping.current[slug] = true;
 
-                const lastItemIndex = totalItems - 1;
+                const lastItemIndex = totalItems - 2;
 
                 el.scrollTo({
                     left: lastItemIndex * mainPostWidth,
