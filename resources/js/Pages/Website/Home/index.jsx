@@ -1002,6 +1002,15 @@ export default function index({ google_map_api_key, search_history }) {
 
         if (isHorizontalLooping.current[slug] || horizontalScrollLock.current[slug]) {
             console.log(`[${slug}] Skipping - loop in progress`);
+
+            // ✅ Auto-unlock after animation ends if stuck
+            clearTimeout(isHorizontalLooping.current[`${slug}_resetTimer`]);
+            isHorizontalLooping.current[`${slug}_resetTimer`] = setTimeout(() => {
+                isHorizontalLooping.current[slug] = false;
+                horizontalScrollLock.current[slug] = false;
+                console.log(`[${slug}] Auto-reset loop flags`);
+            }, 800);
+
             return;
         }
 
