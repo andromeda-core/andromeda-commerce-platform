@@ -992,6 +992,7 @@ export default function index({ google_map_api_key, search_history }) {
         preventScrollOnSwipe: true,
         trackMouse: true,
         trackTouch: true,
+        delta: 30,
     });
 
     const updateRelatedPostsMap = (slug, newPosts = []) => {
@@ -2242,109 +2243,113 @@ export default function index({ google_map_api_key, search_history }) {
                                                         )}
 
                                                     {/* Main Post + Related Posts Horizontal Scroll */}
-                                                    <div
-                                                        {...horizontalRelatedPostsLoopHandler}
-                                                        onScroll={(e) => {
-                                                            e.stopPropagation();
-                                                            handleHorizontalScroll(post, e);
-                                                        }}
-                                                        className="pointer-none horizontal-scroll-container relative flex h-full w-full select-none snap-x snap-mandatory overflow-x-scroll scrollbar-none"
-                                                        style={{
-                                                            scrollSnapType: 'x mandatory',
-                                                            overscrollBehaviorX: 'auto',
-                                                            overscrollBehaviorY: 'auto',
-                                                            touchAction: 'pan-y pan-x',
-                                                            WebkitOverflowScrolling: 'touch',
-                                                            scrollBehavior: 'smooth',
-                                                        }}
-                                                    >
-                                                        <div className="relative h-full min-w-full flex-shrink-0 snap-start snap-always">
-                                                            <div className="relative flex h-full w-full items-center justify-center text-white">
-                                                                {Array.isArray(
-                                                                    post.post_image_urls,
-                                                                ) &&
-                                                                post.post_image_urls.length > 0 ? (
-                                                                    <img
-                                                                        src={
-                                                                            post.post_image_urls[0]
-                                                                        }
-                                                                        alt="Main Post"
-                                                                        className="absolute inset-0 z-10 h-full w-full object-cover"
-                                                                    />
-                                                                ) : (
-                                                                    Array.isArray(
-                                                                        post.post_video_urls,
+                                                    <div {...horizontalRelatedPostsLoopHandler}>
+                                                        <div
+                                                            onScroll={(e) => {
+                                                                e.stopPropagation();
+                                                                handleHorizontalScroll(post, e);
+                                                            }}
+                                                            className="pointer-none horizontal-scroll-container relative flex h-full w-full select-none snap-x snap-mandatory overflow-x-scroll scrollbar-none"
+                                                            style={{
+                                                                scrollSnapType: 'x mandatory',
+                                                                overscrollBehaviorX: 'auto',
+                                                                overscrollBehaviorY: 'auto',
+                                                                touchAction: 'pan-y pan-x',
+                                                                WebkitOverflowScrolling: 'touch',
+                                                                scrollBehavior: 'smooth',
+                                                            }}
+                                                        >
+                                                            <div className="relative h-full min-w-full flex-shrink-0 snap-start snap-always">
+                                                                <div className="relative flex h-full w-full items-center justify-center text-white">
+                                                                    {Array.isArray(
+                                                                        post.post_image_urls,
                                                                     ) &&
-                                                                    post.post_video_urls.length >
-                                                                        0 && (
-                                                                        <VideoPlayer
-                                                                            videoUrl={
+                                                                    post.post_image_urls.length >
+                                                                        0 ? (
+                                                                        <img
+                                                                            src={
                                                                                 post
-                                                                                    .post_video_urls[0]
+                                                                                    .post_image_urls[0]
                                                                             }
-                                                                            thumbnail={
-                                                                                videoThumbnail
-                                                                            }
-                                                                            className="relative z-10 max-h-full max-w-full object-contain"
+                                                                            alt="Main Post"
+                                                                            className="absolute inset-0 z-10 h-full w-full object-cover"
                                                                         />
-                                                                    )
-                                                                )}
-                                                            </div>
-                                                        </div>
-
-                                                        {relatedPosts?.length > 0 &&
-                                                            relatedPosts.map((related, i) => (
-                                                                <div
-                                                                    key={related.id || i}
-                                                                    className="relative h-full min-w-full flex-shrink-0 snap-start snap-always"
-                                                                >
-                                                                    <div className="relative flex h-full w-full items-center justify-center text-white">
-                                                                        {Array.isArray(
-                                                                            related.post_image_urls,
+                                                                    ) : (
+                                                                        Array.isArray(
+                                                                            post.post_video_urls,
                                                                         ) &&
-                                                                        related.post_image_urls
-                                                                            .length > 0 ? (
-                                                                            <img
-                                                                                src={
-                                                                                    related
-                                                                                        .post_image_urls[0]
+                                                                        post.post_video_urls
+                                                                            .length > 0 && (
+                                                                            <VideoPlayer
+                                                                                videoUrl={
+                                                                                    post
+                                                                                        .post_video_urls[0]
                                                                                 }
-                                                                                alt="Related Post"
-                                                                                className="absolute inset-0 z-10 h-full w-full object-cover"
+                                                                                thumbnail={
+                                                                                    videoThumbnail
+                                                                                }
+                                                                                className="relative z-10 max-h-full max-w-full object-contain"
                                                                             />
-                                                                        ) : (
-                                                                            Array.isArray(
-                                                                                related.post_video_urls,
+                                                                        )
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            {relatedPosts?.length > 0 &&
+                                                                relatedPosts.map((related, i) => (
+                                                                    <div
+                                                                        key={related.id || i}
+                                                                        className="relative h-full min-w-full flex-shrink-0 snap-start snap-always"
+                                                                    >
+                                                                        <div className="relative flex h-full w-full items-center justify-center text-white">
+                                                                            {Array.isArray(
+                                                                                related.post_image_urls,
                                                                             ) &&
-                                                                            related.post_video_urls
-                                                                                .length > 0 && (
-                                                                                <VideoPlayer
-                                                                                    videoUrl={
+                                                                            related.post_image_urls
+                                                                                .length > 0 ? (
+                                                                                <img
+                                                                                    src={
                                                                                         related
-                                                                                            .post_video_urls[0]
+                                                                                            .post_image_urls[0]
                                                                                     }
-                                                                                    thumbnail={
-                                                                                        videoThumbnail
-                                                                                    }
-                                                                                    className="relative z-10 max-h-full max-w-full object-contain"
+                                                                                    alt="Related Post"
+                                                                                    className="absolute inset-0 z-10 h-full w-full object-cover"
                                                                                 />
-                                                                            )
-                                                                        )}
+                                                                            ) : (
+                                                                                Array.isArray(
+                                                                                    related.post_video_urls,
+                                                                                ) &&
+                                                                                related
+                                                                                    .post_video_urls
+                                                                                    .length > 0 && (
+                                                                                    <VideoPlayer
+                                                                                        videoUrl={
+                                                                                            related
+                                                                                                .post_video_urls[0]
+                                                                                        }
+                                                                                        thumbnail={
+                                                                                            videoThumbnail
+                                                                                        }
+                                                                                        className="relative z-10 max-h-full max-w-full object-contain"
+                                                                                    />
+                                                                                )
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+
+                                                            {isFetchingRelated && (
+                                                                <div className="fixed inset-0 flex h-full min-w-full flex-shrink-0 snap-start snap-always flex-col items-center justify-center bg-deepcharcoal text-white">
+                                                                    <div className="absolute left-4 top-4 h-4 w-16 animate-pulse rounded bg-gray-700"></div>
+                                                                    <div className="h-[70vh] w-[90%] animate-pulse rounded-2xl bg-gray-800/60"></div>
+                                                                    <div className="absolute bottom-16 w-full space-y-2 px-6 text-center">
+                                                                        <div className="mx-auto h-4 w-2/3 animate-pulse rounded bg-gray-700"></div>
+                                                                        <div className="mx-auto h-4 w-1/2 animate-pulse rounded bg-gray-700/70"></div>
+                                                                        <div className="mx-auto h-4 w-1/3 animate-pulse rounded bg-gray-700/60"></div>
                                                                     </div>
                                                                 </div>
-                                                            ))}
-
-                                                        {isFetchingRelated && (
-                                                            <div className="fixed inset-0 flex h-full min-w-full flex-shrink-0 snap-start snap-always flex-col items-center justify-center bg-deepcharcoal text-white">
-                                                                <div className="absolute left-4 top-4 h-4 w-16 animate-pulse rounded bg-gray-700"></div>
-                                                                <div className="h-[70vh] w-[90%] animate-pulse rounded-2xl bg-gray-800/60"></div>
-                                                                <div className="absolute bottom-16 w-full space-y-2 px-6 text-center">
-                                                                    <div className="mx-auto h-4 w-2/3 animate-pulse rounded bg-gray-700"></div>
-                                                                    <div className="mx-auto h-4 w-1/2 animate-pulse rounded bg-gray-700/70"></div>
-                                                                    <div className="mx-auto h-4 w-1/3 animate-pulse rounded bg-gray-700/60"></div>
-                                                                </div>
-                                                            </div>
-                                                        )}
+                                                            )}
+                                                        </div>
                                                     </div>
 
                                                     {/* Bottom Overlay */}
