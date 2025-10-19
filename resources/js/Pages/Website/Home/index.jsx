@@ -796,6 +796,8 @@ export default function index({ google_map_api_key, search_history }) {
                 lastDirectionRef.current[slug] = null;
                 isHorizontalLooping.current[slug] = false;
                 horizontalScrollLock.current[slug] = false;
+
+                delete horizontalCarouselRefs.current[slug];
             }
         };
 
