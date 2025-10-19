@@ -822,8 +822,6 @@ export default function index({ google_map_api_key, search_history }) {
                 // Get the horizontal scroll container (you'll need a ref for this)
                 const horizontalContainer = horizontalCarouselRefs.current[slug];
 
-                alert(!!horizontalContainer);
-
                 if (!horizontalContainer) return;
 
                 const containerWidth = horizontalContainer.clientWidth;
