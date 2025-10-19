@@ -390,15 +390,22 @@ export default function index({ google_map_api_key, search_history }) {
             if (data.status) {
                 const newPosts = data.posts?.data || data.posts || [];
                 const nextPage = data.posts?.next_page_url || null;
-                setRelatedPostsMap((prev) => ({
-                    ...prev,
-                    [slug]: [
-                        ...(prev[slug] || []),
-                        ...newPosts.filter(
-                            (p) => !(prev[slug] || []).some((old) => old.id === p.id),
-                        ),
-                    ],
-                }));
+                setRelatedPostsMap((prev) => {
+                    const updated = {
+                        ...prev,
+                        [slug]: [
+                            ...(prev[slug] || []),
+                            ...newPosts.filter(
+                                (p) => !(prev[slug] || []).some((old) => old.id === p.id),
+                            ),
+                        ],
+                    };
+
+                    relatedPostsRef.current = updated;
+
+                    return updated;
+                });
+
                 lastFetchedUrlRef.current[slug] = nextUrl;
                 setRelatedNextMap((prev) => ({
                     ...prev,
@@ -1031,9 +1038,9 @@ export default function index({ google_map_api_key, search_history }) {
             return;
         }
 
-        const relatedPosts = relatedPostsMap[slug] || [];
-        const currentViewer = relatedViewerMap[slug] || null;
-        const nextPageUrl = relatedNextUrlMap[slug] || null;
+        const relatedPosts = relatedPostsRef.current[slug] || [];
+        const currentViewer = relatedViewMap.current[slug] || null;
+        const nextPageUrl = relatedNextUrlMap.current[slug] || null;
 
         const index = Math.round(el.scrollLeft / el.clientWidth);
         const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
