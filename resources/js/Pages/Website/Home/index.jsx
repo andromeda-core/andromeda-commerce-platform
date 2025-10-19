@@ -1260,12 +1260,17 @@ export default function index({ google_map_api_key, search_history }) {
             const nextPageUrl = relatedNextMap[slug] || null;
 
             const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
+            const total = relatedPosts.length;
             const remaining = relatedPosts?.length - index;
 
             lastHorizontalIndexRef.current[slug] = index;
 
-            if (lastIndex && remaining == 0) {
-                alert('going Back To First');
+            if (index > lastIndex && index >= total - 1) {
+                alert('No more posts on the right!');
+            }
+
+            if (index < lastIndex && index <= 0) {
+                alert('No more posts on the left!');
             }
 
             if (index > 0) {
