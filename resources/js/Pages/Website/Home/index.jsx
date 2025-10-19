@@ -412,15 +412,6 @@ export default function index({ google_map_api_key, search_history }) {
                 lastFetchedUrlRef.current[slug] = nextUrl;
 
                 if (!nextPage) completedSlugsRef.current[slug] = true;
-
-                setTimeout(() => {
-                    console.log(
-                        `[${slug}] ✅ fetched: ${newPosts.length} | total: ${
-                            relatedPostsRef.current[slug]?.length || 0
-                        } | next:`,
-                        nextPage,
-                    );
-                }, 100);
             }
         } catch (err) {
             console.error(`[${slug}] ❌ Error fetching related posts`, err);
@@ -879,7 +870,6 @@ export default function index({ google_map_api_key, search_history }) {
                     deltaX > 60 && // real swipe threshold
                     !isHorizontalLooping.current[slug]
                 ) {
-                    console.log('↩️ Loop LEFT → jumping to last post');
                     e.preventDefault();
                     isHorizontalLooping.current[slug] = true;
 
@@ -900,7 +890,6 @@ export default function index({ google_map_api_key, search_history }) {
                                 '',
                                 `${route('home')}${generateURL(relatedPost)}`,
                             );
-                            console.log('✅ Loop LEFT done');
                         }
 
                         isHorizontalLooping.current[slug] = false;
@@ -911,7 +900,6 @@ export default function index({ google_map_api_key, search_history }) {
                         setTimeout(() => {
                             horizontalScrollLock.current[slug] = false;
                         }, 500);
-                        console.log(`[${slug}] Auto-reset loop flags`);
                     });
                     return;
                 }
@@ -923,7 +911,6 @@ export default function index({ google_map_api_key, search_history }) {
                     deltaX < -60 &&
                     !isHorizontalLooping.current[slug]
                 ) {
-                    console.log('↪️ Loop RIGHT → back to main');
                     e.preventDefault();
                     isHorizontalLooping.current[slug] = true;
 
@@ -941,7 +928,7 @@ export default function index({ google_map_api_key, search_history }) {
                             '',
                             `${route('home')}${generateURL(viewablePost)}`,
                         );
-                        console.log('✅ Loop RIGHT done');
+
                         isHorizontalLooping.current[slug] = false;
 
                         horizontalContainer.style.touchAction = 'auto';
@@ -950,7 +937,6 @@ export default function index({ google_map_api_key, search_history }) {
                         setTimeout(() => {
                             horizontalScrollLock.current[slug] = false;
                         }, 500);
-                        console.log(`[${slug}] Auto-reset loop flags`);
                     });
                     return;
                 }
@@ -962,7 +948,10 @@ export default function index({ google_map_api_key, search_history }) {
                 const atBottom =
                     Math.abs(scrollTop + container.clientHeight - container.scrollHeight) < 5;
 
-                if (atTop && deltaY > 30 && selectedPostIndex === 0) {
+                const slug = relatedPostSlugRef.current;
+                const isInRelated = activeViewerMap[slug] === 'related';
+
+                if ((atTop || isInRelated) && deltaY > 30 && selectedPostIndex === 0) {
                     e.preventDefault();
                     scrollLock.current = true;
                     isLooping.current = true;
@@ -991,7 +980,11 @@ export default function index({ google_map_api_key, search_history }) {
                     return;
                 }
 
-                if (atBottom && deltaY < -30 && selectedPostIndex === postsRef.current.length - 1) {
+                if (
+                    (atBottom || isInRelated) &&
+                    deltaY < -30 &&
+                    selectedPostIndex === postsRef.current.length - 1
+                ) {
                     e.preventDefault();
                     scrollLock.current = true;
                     isLooping.current = true;
@@ -1042,7 +1035,6 @@ export default function index({ google_map_api_key, search_history }) {
         const slug = mainPost.slug;
 
         if (isHorizontalLooping.current[slug] || horizontalScrollLock.current[slug]) {
-            console.log(`[${slug}] Skipping - loop in progress`);
             return;
         }
 
