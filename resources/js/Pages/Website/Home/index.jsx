@@ -551,6 +551,7 @@ export default function index({ google_map_api_key, search_history }) {
     const postsRef = useRef(posts);
     const lastFetchTriggerIndex = useRef(-1);
     const gestureLocked = useRef(null);
+    const lastTriedRef = useRef(0);
 
     useEffect(() => {
         postsRef.current = posts;
@@ -797,6 +798,9 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             if (gestureLocked.current === 'x') {
+                const slug = relatedPostsRef.current[relatedPostSlug];
+                alert(slug);
+
                 setTimeout(() => {
                     alert('Scroolled');
                 }, 1000);
