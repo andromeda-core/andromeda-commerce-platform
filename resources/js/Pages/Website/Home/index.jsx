@@ -819,6 +819,11 @@ export default function index({ google_map_api_key, search_history }) {
 
                 const containerWidth = horizontalContainer.clientWidth;
                 const currentScrollLeft = horizontalContainer.scrollLeft;
+
+                console.log(
+                    `currentScrollLeft: ${currentScrollLeft}, containerWidth: ${containerWidth}`,
+                );
+
                 const maxScroll = horizontalContainer.scrollWidth - containerWidth;
 
                 // Total carousel items: 1 main + related posts
@@ -834,7 +839,7 @@ export default function index({ google_map_api_key, search_history }) {
                     deltaX < minDeltaX &&
                     !isHorizontalLooping.current[slug]
                 ) {
-                    toast.info(`[${slug}] LOOP LEFT: Jumping to last item`);
+                    console.log(`[${slug}] LOOP LEFT: Jumping to last item`);
                     isHorizontalLooping.current[slug] = true;
                     horizontalScrollLock.current[slug] = true;
 
@@ -854,7 +859,7 @@ export default function index({ google_map_api_key, search_history }) {
                     horizontalTimeoutRef.current[slug] = setTimeout(() => {
                         isHorizontalLooping.current[slug] = false;
                         horizontalScrollLock.current[slug] = false;
-                        toast.info(`[${slug}] Loop LEFT complete`);
+                        console.log(`[${slug}] Loop LEFT complete`);
                     }, 700);
 
                     e.preventDefault();
@@ -867,7 +872,7 @@ export default function index({ google_map_api_key, search_history }) {
                     deltaX > maxDeltaX &&
                     !isHorizontalLooping.current[slug]
                 ) {
-                    toast.info(`[${slug}] LOOP RIGHT: Jumping to first item`);
+                    console.log(`[${slug}] LOOP RIGHT: Jumping to first item`);
                     isHorizontalLooping.current[slug] = true;
                     horizontalScrollLock.current[slug] = true;
 
@@ -895,7 +900,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                         isHorizontalLooping.current[slug] = false;
                         horizontalScrollLock.current[slug] = false;
-                        toast.info(`[${slug}] Loop RIGHT complete`);
+                        console.log(`[${slug}] Loop RIGHT complete`);
                     }, 700);
 
                     e.preventDefault();
