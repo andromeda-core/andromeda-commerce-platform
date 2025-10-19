@@ -1080,9 +1080,9 @@ export default function index({ google_map_api_key, search_history }) {
                 remaining <= 5 &&
                 nextPageUrl &&
                 !isFetchingRef.current &&
-                lastFetchedUrlRef.current[slug] !== nextPageUrl &&
                 !completedSlugsRef.current[slug]
             ) {
+                console.log(`[${slug}] Fetching more related posts…`);
                 setIsFetchingRelated(true);
                 fetchRelatedPosts(slug);
             }
