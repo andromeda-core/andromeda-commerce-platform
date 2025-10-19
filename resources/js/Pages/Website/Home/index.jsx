@@ -943,6 +943,7 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             if (gestureLocked.current === 'y') {
+                alert('Y');
                 const scrollTop = container.scrollTop;
                 const atTop = scrollTop <= 0;
                 const atBottom =
