@@ -1079,7 +1079,9 @@ export default function index({ google_map_api_key, search_history }) {
                 nextPageUrl &&
                 !isFetchingRef.current &&
                 lastFetchedUrlRef.current[slug] !== nextPageUrl &&
-                !completedSlugsRef.current[slug]
+                !completedSlugsRef.current[slug] &&
+                !isHorizontalLooping.current[slug] &&
+                !horizontalScrollLock.current[slug]
             ) {
                 setIsFetchingRelated(true);
                 fetchRelatedPosts(slug);
