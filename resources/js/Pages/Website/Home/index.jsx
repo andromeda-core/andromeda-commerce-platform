@@ -557,6 +557,7 @@ export default function index({ google_map_api_key, search_history }) {
     const horizontalCarouselRefs = useRef({});
     const isHorizontalLooping = useRef({});
     const horizontalScrollLock = useRef({});
+    const horizontalLastDirectionRef = useRef({});
 
     useEffect(() => {
         postsRef.current = posts;
@@ -819,6 +820,16 @@ export default function index({ google_map_api_key, search_history }) {
 
                 const totalItems = 1 + relatedPosts.length;
                 const currentIndex = Math.round(currentScrollLeft / containerWidth);
+                const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
+
+                // Track direction based on index change
+                if (currentIndex > lastIndex) {
+                    horizontalLastDirectionRef.current[slug] = 'right';
+                } else if (currentIndex < lastIndex) {
+                    horizontalLastDirectionRef.current[slug] = 'left';
+                }
+
+                lastHorizontalIndexRef.current[slug] = currentIndex;
 
                 const waitForHorizontalScrollSettle = (targetScroll, callback) => {
                     let lastScrollLeft = horizontalContainer.scrollLeft;
@@ -846,18 +857,16 @@ export default function index({ google_map_api_key, search_history }) {
                     checkSettle();
                 };
 
-                const minDeltaX = -100;
-                const maxDeltaX = 100;
-
                 console.log(
-                    `[${slug}] currentScrollLeft: ${currentScrollLeft}, currentIndex: ${currentIndex}, deltaX: ${deltaX}`,
+                    `[${slug}] Index: ${currentIndex}, LastIndex: ${lastIndex}, Direction: ${horizontalLastDirectionRef.current[slug]}`,
                 );
 
-                // LEFT LOOP: At position 0, swiping left (deltaX < -100)
+                // LEFT LOOP: At position 0, came from position > 0 (moving left)
                 if (
                     currentScrollLeft === 0 &&
                     currentIndex === 0 &&
-                    deltaX < minDeltaX &&
+                    lastIndex > 0 &&
+                    horizontalLastDirectionRef.current[slug] === 'left' &&
                     !isHorizontalLooping.current[slug]
                 ) {
                     console.log('Loop LEFT - scrolling back from position 0');
@@ -901,10 +910,11 @@ export default function index({ google_map_api_key, search_history }) {
                     return;
                 }
 
-                // RIGHT LOOP: At end of scroll, swiping right (deltaX > 100)
+                // RIGHT LOOP: At end of scroll, came from position < end (moving right)
                 if (
                     currentScrollLeft >= maxScroll - 10 &&
-                    deltaX > maxDeltaX &&
+                    lastIndex < totalItems - 1 &&
+                    horizontalLastDirectionRef.current[slug] === 'right' &&
                     !isHorizontalLooping.current[slug]
                 ) {
                     console.log('Loop RIGHT - at end, jumping to first');
