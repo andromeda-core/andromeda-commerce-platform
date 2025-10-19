@@ -824,11 +824,14 @@ export default function index({ google_map_api_key, search_history }) {
                     `currentScrollLeft: ${currentScrollLeft}, containerWidth: ${containerWidth}`,
                 );
 
+                // if(currentScrollLeft === 0 && )
+
                 const maxScroll = horizontalContainer.scrollWidth - containerWidth;
 
                 // Total carousel items: 1 main + related posts
                 const totalItems = 1 + relatedPosts.length;
                 const currentIndex = Math.round(currentScrollLeft / containerWidth);
+                console.log(`currentIndex: ${currentIndex}, totalItems: ${totalItems}`);
 
                 const minDeltaX = -100; // threshold for swipe left (negative)
                 const maxDeltaX = 100; // threshold for swipe right (positive)
