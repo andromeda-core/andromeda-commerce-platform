@@ -983,6 +983,10 @@ export default function index({ google_map_api_key, search_history }) {
     const isHorizontalLoopingRef = useRef({});
     const relatedPostsRef = useRef(relatedPostsMap);
 
+    useEffect(() => {
+        relatedPostsRef.current = relatedPostsMap;
+    }, [relatedPostsMap]);
+
     const handleHorizontalScroll = useCallback(
         (mainPost, e) => {
             const el = e.currentTarget;
