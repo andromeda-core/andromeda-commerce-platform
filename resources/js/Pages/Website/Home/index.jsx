@@ -370,7 +370,7 @@ export default function index({ google_map_api_key, search_history }) {
     const completedSlugsRef = useRef({});
     const fetchRelatedPosts = async (slug) => {
         const nextUrl =
-            relatedNextMap[slug] ??
+            relatedNextUrlMap.current[slug] ??
             `${route('website.posts.getrelated')}?${new URLSearchParams(
                 JSON.parse(decodeURIComponent(getCookie('post_preferences'))),
             )}`;
@@ -390,47 +390,37 @@ export default function index({ google_map_api_key, search_history }) {
             if (data.status) {
                 const newPosts = data.posts?.data || data.posts || [];
                 const nextPage = data.posts?.next_page_url || null;
+
                 setRelatedPostsMap((prev) => {
-                    const updated = {
-                        ...prev,
-                        [slug]: [
-                            ...(prev[slug] || []),
-                            ...newPosts.filter(
-                                (p) => !(prev[slug] || []).some((old) => old.id === p.id),
-                            ),
-                        ],
-                    };
+                    const existing = prev[slug] || [];
+                    const filtered = newPosts.filter(
+                        (p) => !existing.some((old) => old.id === p.id),
+                    );
+                    const merged = [...existing, ...filtered];
 
+                    const updated = { ...prev, [slug]: [...merged] };
                     relatedPostsRef.current = updated;
+                    return updated;
+                });
 
+                setRelatedNextMap((prev) => {
+                    const updated = { ...prev, [slug]: nextPage };
+                    relatedNextUrlMap.current = updated;
                     return updated;
                 });
 
                 lastFetchedUrlRef.current[slug] = nextUrl;
-                setRelatedNextMap((prev) => ({
-                    ...prev,
-                    [slug]: data.posts.next_page_url,
-                }));
 
-                if (!nextPage) {
-                    completedSlugsRef.current[slug] = true;
+                if (!nextPage) completedSlugsRef.current[slug] = true;
 
+                setTimeout(() => {
                     console.log(
-                        `[${slug}] fetched ${newPosts.length} posts. total now:`,
-                        (relatedPostsRef.current[slug]?.length || 0) + newPosts.length,
-                        ' next_page_url:',
-                        data.posts?.next_page_url,
+                        `[${slug}] ✅ fetched: ${newPosts.length} | total: ${
+                            relatedPostsRef.current[slug]?.length || 0
+                        } | next:`,
+                        nextPage,
                     );
-                } else {
-                    console.log(`[${slug}] ➡️ Next page ready: ${nextPage}`);
-
-                    console.log(
-                        `[${slug}] fetched ${newPosts.length} posts. total now:`,
-                        (relatedPostsRef.current[slug]?.length || 0) + newPosts.length,
-                        ' next_page_url:',
-                        data.posts?.next_page_url,
-                    );
-                }
+                }, 100);
             }
         } catch (err) {
             console.error(`[${slug}] ❌ Error fetching related posts`, err);
