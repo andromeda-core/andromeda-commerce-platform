@@ -891,16 +891,111 @@ export default function index({ google_map_api_key, search_history }) {
     }, [isMobilePostViewer, viewablePost, selectedPostIndex, nextPageUrl, isMobilePostGallery]);
 
     // Original Horizontal Scroll Logic
+    // const handleHorizontalScroll = useCallback(
+    //     (mainPost, e) => {
+    //         const el = e.currentTarget;
+
+    //         const slug = mainPost.slug;
+    //         const relatedPosts = relatedPostsMap[slug] || [];
+    //         const currentViewer = relatedViewerMap[slug] || null;
+    //         const nextPageUrl = relatedNextMap[slug] || null;
+
+    //         const index = Math.round(el.scrollLeft / el.clientWidth);
+    //         const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
+
+    //         if (index === lastIndex) return;
+    //         lastHorizontalIndexRef.current[slug] = index;
+
+    //         if (index > lastIndex) lastDirectionRef.current = 'right';
+    //         else if (index < lastIndex) lastDirectionRef.current = 'left';
+
+    //         if (index > 0) {
+    //             const relatedPost = relatedPosts[index - 1];
+    //             if (activeViewerMap[slug] !== 'related' || currentViewer?.id !== relatedPost.id) {
+    //                 setRelatedViewerMap((prev) => ({
+    //                     ...prev,
+    //                     [slug]: relatedPost,
+    //                 }));
+
+    //                 setActiveViewerMap((prev) => ({
+    //                     ...prev,
+    //                     [slug]: 'related',
+    //                 }));
+
+    //                 setViewablePost(relatedPost);
+
+    //                 window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
+    //             }
+
+    //             const remaining = relatedPosts?.length - index;
+
+    //             // Instant fetch on first swipe (if no pagination yet)
+    //             if (!nextPageUrl && !isFetchingRef.current) {
+    //                 if (completedSlugsRef.current[slug]) return;
+
+    //                 const now = Date.now();
+    //                 const lastTried = lastTriedRef.current[slug] || 0;
+
+    //                 if (now - lastTried < 10000) return;
+    //                 lastTriedRef.current[slug] = now;
+
+    //                 setIsFetchingRelated(true);
+    //                 fetchRelatedPosts(slug);
+    //                 return;
+    //             }
+
+    //             // Fetch's only ONCE per next page URL when near end
+    //             if (
+    //                 remaining <= 5 &&
+    //                 nextPageUrl &&
+    //                 !isFetchingRef.current &&
+    //                 lastFetchedUrlRef.current[slug] !== nextPageUrl &&
+    //                 !completedSlugsRef.current[slug]
+    //             ) {
+    //                 setIsFetchingRelated(true);
+    //                 fetchRelatedPosts(slug);
+    //             }
+    //         } else if (index === 0 && currentViewer) {
+    //             setActiveViewerMap((prev) => ({
+    //                 ...prev,
+    //                 [slug]: 'main',
+    //             }));
+
+    //             setRelatedViewerMap((prev) => ({
+    //                 ...prev,
+    //                 [slug]: null,
+    //             }));
+
+    //             setViewablePost(mainPost);
+    //             window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
+    //         }
+    //     },
+    //     [
+    //         relatedPostsMap,
+    //         relatedViewerMap,
+    //         relatedNextMap,
+    //         isFetchingRef,
+    //         lastFetchedUrlRef,
+    //         fetchRelatedPosts,
+    //     ],
+    // );
+
+    const horizontalScrollRefs = useRef({});
+    const isHorizontalLoopingRef = useRef({});
+
     const handleHorizontalScroll = useCallback(
         (mainPost, e) => {
             const el = e.currentTarget;
-
             const slug = mainPost.slug;
             const relatedPosts = relatedPostsMap[slug] || [];
             const currentViewer = relatedViewerMap[slug] || null;
             const nextPageUrl = relatedNextMap[slug] || null;
 
-            const index = Math.round(el.scrollLeft / el.clientWidth);
+            // Prevent updates during looping animation
+            if (isHorizontalLoopingRef.current[slug]) return;
+
+            const mainPostWidth = el.clientWidth;
+            const index = Math.round(el.scrollLeft / mainPostWidth);
             const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
 
             if (index === lastIndex) return;
@@ -909,6 +1004,53 @@ export default function index({ google_map_api_key, search_history }) {
             if (index > lastIndex) lastDirectionRef.current = 'right';
             else if (index < lastIndex) lastDirectionRef.current = 'left';
 
+            // Total items: 1 main + related posts count
+            const totalItems = 1 + relatedPosts.length;
+
+            // Handle loop to last item (swipe left at first position)
+            if (index === 0 && lastIndex > 0 && lastDirectionRef.current === 'left') {
+                isHorizontalLoopingRef.current[slug] = true;
+                const lastItemIndex = totalItems - 1;
+
+                el.scrollTo({
+                    left: lastItemIndex * mainPostWidth,
+                    behavior: 'smooth',
+                });
+
+                setTimeout(() => {
+                    isHorizontalLoopingRef.current[slug] = false;
+                }, 600);
+                return;
+            }
+
+            // Handle loop to first item (swipe right at last position)
+            if (index === totalItems - 1 && lastDirectionRef.current === 'right') {
+                isHorizontalLoopingRef.current[slug] = true;
+
+                el.scrollTo({
+                    left: 0,
+                    behavior: 'smooth',
+                });
+
+                setTimeout(() => {
+                    isHorizontalLoopingRef.current[slug] = false;
+                }, 600);
+
+                // Reset to main post view
+                setActiveViewerMap((prev) => ({
+                    ...prev,
+                    [slug]: 'main',
+                }));
+                setRelatedViewerMap((prev) => ({
+                    ...prev,
+                    [slug]: null,
+                }));
+                setViewablePost(mainPost);
+                window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
+                return;
+            }
+
+            // Normal scroll handling (non-loop)
             if (index > 0) {
                 const relatedPost = relatedPosts[index - 1];
                 if (activeViewerMap[slug] !== 'related' || currentViewer?.id !== relatedPost.id) {
@@ -923,7 +1065,6 @@ export default function index({ google_map_api_key, search_history }) {
                     }));
 
                     setViewablePost(relatedPost);
-
                     window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
                 }
 
@@ -944,7 +1085,7 @@ export default function index({ google_map_api_key, search_history }) {
                     return;
                 }
 
-                // Fetch's only ONCE per next page URL when near end
+                // Fetch only ONCE per next page URL when near end
                 if (
                     remaining <= 5 &&
                     nextPageUrl &&
@@ -980,13 +1121,14 @@ export default function index({ google_map_api_key, search_history }) {
         ],
     );
 
+    // Update swipe handlers
     const horizontalRelatedPostsLoopHandler = useSwipeable({
         onSwipedLeft: () => {
-            alert('swiped left');
+            alert('LEFT');
         },
 
         onSwipedRight: () => {
-            alert('swiped right');
+            alert('RIGHT');
         },
 
         preventScrollOnSwipe: true,
