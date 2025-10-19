@@ -830,8 +830,6 @@ export default function index({ google_map_api_key, search_history }) {
                 const currentIndex = Math.round(currentScrollLeft / containerWidth);
                 const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
 
-                lastHorizontalIndexRef.current[slug] = currentIndex;
-
                 const waitForHorizontalScrollSettle = (targetScroll, callback) => {
                     let lastScrollLeft = horizontalContainer.scrollLeft;
                     let stableCount = 0;
@@ -899,6 +897,7 @@ export default function index({ google_map_api_key, search_history }) {
                             console.log(`Loop LEFT complete - showing: ${relatedPost.id}`);
                         }
 
+                        lastHorizontalIndexRef.current[slug] = currentIndex;
                         isHorizontalLooping.current[slug] = false;
                         horizontalScrollLock.current[slug] = false;
                     });
@@ -939,6 +938,7 @@ export default function index({ google_map_api_key, search_history }) {
                         );
                         console.log('Loop RIGHT complete - back to main');
 
+                        lastHorizontalIndexRef.current[slug] = currentIndex;
                         isHorizontalLooping.current[slug] = false;
                         horizontalScrollLock.current[slug] = false;
                     });
