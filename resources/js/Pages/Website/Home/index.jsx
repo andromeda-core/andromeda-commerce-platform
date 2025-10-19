@@ -941,6 +941,7 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             if (gestureLocked.current === 'y') {
+                const slug = relatedPostSlugRef.current;
                 const isInRelated = activeViewerMap[slug] === 'related';
                 const scrollTop = container.scrollTop;
                 const atTop = scrollTop <= 0;
