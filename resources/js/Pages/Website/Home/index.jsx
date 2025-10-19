@@ -808,7 +808,6 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             if (gestureLocked.current === 'x') {
-                console.log('Scroolled');
                 const slug = relatedPostSlugRef.current;
                 const relatedPosts = relatedPostsRef.current[slug] || [];
 
@@ -827,7 +826,7 @@ export default function index({ google_map_api_key, search_history }) {
                 const currentIndex = Math.round(currentScrollLeft / containerWidth);
 
                 if (currentScrollLeft === 0 && currentIndex === 0) {
-                    console.log('Moving To End of Posts');
+                    console.log('Loop LEFT - scrolling back from position 0');
                     isHorizontalLooping.current[slug] = true;
                     horizontalScrollLock.current[slug] = true;
 
@@ -845,6 +844,26 @@ export default function index({ google_map_api_key, search_history }) {
                     }
 
                     horizontalTimeoutRef.current[slug] = setTimeout(() => {
+                        const relatedPost = relatedPosts[relatedPosts.length - 1];
+
+                        if (relatedPost && typeof relatedPost === 'object' && relatedPost.id) {
+                            setRelatedViewerMap((prev) => ({
+                                ...prev,
+                                [slug]: relatedPost,
+                            }));
+                            setActiveViewerMap((prev) => ({
+                                ...prev,
+                                [slug]: 'related',
+                            }));
+                            setViewablePost(relatedPost);
+                            window.history.pushState(
+                                {},
+                                '',
+                                `${route('home')}${generateURL(relatedPost)}`,
+                            );
+                            console.log(`Loop LEFT complete - showing: ${relatedPost.id}`);
+                        }
+
                         isHorizontalLooping.current[slug] = false;
                         horizontalScrollLock.current[slug] = false;
                     }, 700);
@@ -868,7 +887,6 @@ export default function index({ google_map_api_key, search_history }) {
                     }
 
                     horizontalTimeoutRef.current[slug] = setTimeout(() => {
-                        // Reset to main post view
                         setActiveViewerMap((prev) => ({
                             ...prev,
                             [slug]: 'main',
@@ -877,6 +895,13 @@ export default function index({ google_map_api_key, search_history }) {
                             ...prev,
                             [slug]: null,
                         }));
+                        setViewablePost(viewablePost);
+                        window.history.replaceState(
+                            {},
+                            '',
+                            `${route('home')}${generateURL(viewablePost)}`,
+                        );
+                        console.log('Loop RIGHT complete - back to main');
 
                         isHorizontalLooping.current[slug] = false;
                         horizontalScrollLock.current[slug] = false;
