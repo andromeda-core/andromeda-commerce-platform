@@ -801,6 +801,10 @@ export default function index({ google_map_api_key, search_history }) {
                     setTimeout(() => {
                         alert('Triggering Loop to Go First Post');
                     }, 1000);
+                } else {
+                    setTimeout(() => {
+                        alert(diff);
+                    }, 1000);
                 }
             }
 
