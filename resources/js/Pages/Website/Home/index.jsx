@@ -551,7 +551,7 @@ export default function index({ google_map_api_key, search_history }) {
     const postsRef = useRef(posts);
     const lastFetchTriggerIndex = useRef(-1);
     const gestureLocked = useRef(null);
-    const lastTriedRef = useRef(0);
+    const lastTriedRef = useRef({});
 
     const lastHorizontalIndexRef = useRef({});
     const horizontalCarouselRefs = useRef({});
