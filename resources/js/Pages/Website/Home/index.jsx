@@ -407,9 +407,22 @@ export default function index({ google_map_api_key, search_history }) {
 
                 if (!nextPage) {
                     completedSlugsRef.current[slug] = true;
-                    console.log(`[${slug}] ✅ All related posts fetched completely`);
+
+                    console.log(
+                        `[${slug}] fetched ${newPosts.length} posts. total now:`,
+                        (relatedPostsRef.current[slug]?.length || 0) + newPosts.length,
+                        ' next_page_url:',
+                        data.posts?.next_page_url,
+                    );
                 } else {
                     console.log(`[${slug}] ➡️ Next page ready: ${nextPage}`);
+
+                    console.log(
+                        `[${slug}] fetched ${newPosts.length} posts. total now:`,
+                        (relatedPostsRef.current[slug]?.length || 0) + newPosts.length,
+                        ' next_page_url:',
+                        data.posts?.next_page_url,
+                    );
                 }
             }
         } catch (err) {
@@ -1022,8 +1035,6 @@ export default function index({ google_map_api_key, search_history }) {
         const currentViewer = relatedViewMap.current[slug] || null;
         const nextPageUrl = relatedNextUrlMap.current[slug] || null;
 
-        console.log(nextPageUrl);
-
         const index = Math.round(el.scrollLeft / el.clientWidth);
         const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
 
@@ -1081,7 +1092,6 @@ export default function index({ google_map_api_key, search_history }) {
                 !isFetchingRef.current &&
                 !completedSlugsRef.current[slug]
             ) {
-                console.log(`[${slug}] Fetching more related posts…`);
                 setIsFetchingRelated(true);
                 fetchRelatedPosts(slug);
             }
@@ -1107,7 +1117,6 @@ export default function index({ google_map_api_key, search_history }) {
         if (!slug) return;
 
         requestAnimationFrame(() => {
-            console.log(`Post changed to ${slug}, resetting loop state`);
             isHorizontalLooping.current[slug] = false;
             horizontalScrollLock.current[slug] = false;
             lastHorizontalIndexRef.current[slug] = 0;
@@ -1171,7 +1180,6 @@ export default function index({ google_map_api_key, search_history }) {
         }
     };
 
-    console.log(relatedPostsRef.current);
     return (
         <MainLayout>
             <Head title="Home" />
