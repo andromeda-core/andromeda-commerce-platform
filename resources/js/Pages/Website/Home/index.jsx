@@ -828,7 +828,8 @@ export default function index({ google_map_api_key, search_history }) {
 
                 const totalItems = 1 + relatedPosts.length;
                 const currentIndex = Math.round(currentScrollLeft / containerWidth);
-                const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
+                const lastIndex = lastHorizontalIndexRef.current[slug];
+                const isFirstScroll = lastIndex === undefined;
 
                 const waitForHorizontalScrollSettle = (targetScroll, callback) => {
                     let lastScrollLeft = horizontalContainer.scrollLeft;
@@ -865,7 +866,7 @@ export default function index({ google_map_api_key, search_history }) {
                 if (
                     currentScrollLeft === 0 &&
                     currentIndex === 0 &&
-                    //lastIndex > 0 &&
+                    (isFirstScroll || lastIndex > 0) &&
                     !isHorizontalLooping.current[slug]
                 ) {
                     console.log('Loop LEFT - scrolling back from position 0');
