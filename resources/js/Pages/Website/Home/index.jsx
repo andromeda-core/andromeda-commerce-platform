@@ -755,8 +755,6 @@ export default function index({ google_map_api_key, search_history }) {
         const handleTouchStart = (e) => {
             touchStartY.current = e.touches[0].clientY;
             touchStartX.current = e.touches[0].clientX;
-
-            alert('its working');
         };
 
         const handleTouchMove = (e) => {
