@@ -1018,6 +1018,8 @@ export default function index({ google_map_api_key, search_history }) {
         const currentViewer = relatedViewMap.current[slug] || null;
         const nextPageUrl = relatedNextUrlMap.current[slug] || null;
 
+        console.log(nextPageUrl);
+
         const index = Math.round(el.scrollLeft / el.clientWidth);
         const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
 
