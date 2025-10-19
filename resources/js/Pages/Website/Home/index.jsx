@@ -795,7 +795,7 @@ export default function index({ google_map_api_key, search_history }) {
                 if (horizontalSwipeLock.current) return;
                 if (diff < 0 && index === 0) {
                     setTimeout(() => {
-                        alert(`Triggering Loop to Go Last Post DIFF: ${$diff}`);
+                        alert(`Triggering Loop to Go Last Post DIFF: ${diff}`);
                     }, 1000);
                 } else if (diff > 0 && index === total - 1) {
                     setTimeout(() => {
