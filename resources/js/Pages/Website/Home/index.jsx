@@ -1071,6 +1071,10 @@ export default function index({ google_map_api_key, search_history }) {
 
                 setViewablePost(relatedPost);
 
+                gestureLocked.current = null;
+                isLooping.current = false;
+                scrollLock.current = false;
+
                 window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
             }
 
@@ -1113,6 +1117,10 @@ export default function index({ google_map_api_key, search_history }) {
             }));
 
             setViewablePost(mainPost);
+
+            gestureLocked.current = null;
+            isLooping.current = false;
+            scrollLock.current = false;
             window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
         }
     }, []);
