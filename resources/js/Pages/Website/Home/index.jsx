@@ -1026,7 +1026,6 @@ export default function index({ google_map_api_key, search_history }) {
         lastHorizontalIndexRef.current[slug] = 0;
         isHorizontalLooping.current[slug] = false;
         horizontalScrollLock.current[slug] = false;
-        lastFetchTimeRef.current[slug] = 0;
 
         // Reset the carousel container scroll position
         const container = horizontalCarouselRefs.current[slug];
