@@ -833,18 +833,6 @@ export default function index({ google_map_api_key, search_history }) {
 
                 if (currentScrollLeft === 0 && currentIndex === 0) {
                     console.log('Moving To End of Posts');
-                }
-
-                const minDeltaX = -100; // threshold for swipe left (negative)
-                const maxDeltaX = 100; // threshold for swipe right (positive)
-
-                // LOOP LEFT: At first item (index 0), swiping left (deltaX < -100)
-                if (
-                    currentIndex === 0 &&
-                    deltaX < minDeltaX &&
-                    !isHorizontalLooping.current[slug]
-                ) {
-                    console.log(`[${slug}] LOOP LEFT: Jumping to last item`);
                     isHorizontalLooping.current[slug] = true;
                     horizontalScrollLock.current[slug] = true;
 
@@ -870,6 +858,9 @@ export default function index({ google_map_api_key, search_history }) {
                     e.preventDefault();
                     return;
                 }
+
+                const minDeltaX = -100; // threshold for swipe left (negative)
+                const maxDeltaX = 100; // threshold for swipe right (positive)
 
                 // LOOP RIGHT: At last item, swiping right (deltaX > 100)
                 if (
