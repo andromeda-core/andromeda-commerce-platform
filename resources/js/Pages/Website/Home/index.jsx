@@ -872,44 +872,44 @@ export default function index({ google_map_api_key, search_history }) {
                     return;
                 }
 
-                if (currentScrollLeft >= maxScroll - 10 && !isHorizontalLooping.current[slug]) {
-                    console.log('Moving To First of Posts');
-                    isHorizontalLooping.current[slug] = true;
-                    horizontalScrollLock.current[slug] = true;
+                // if (currentScrollLeft >= maxScroll - 10 && !isHorizontalLooping.current[slug]) {
+                //     console.log('Moving To First of Posts');
+                //     isHorizontalLooping.current[slug] = true;
+                //     horizontalScrollLock.current[slug] = true;
 
-                    horizontalContainer.scrollTo({
-                        left: 0,
-                        behavior: 'smooth',
-                    });
+                //     horizontalContainer.scrollTo({
+                //         left: 0,
+                //         behavior: 'smooth',
+                //     });
 
-                    if (horizontalTimeoutRef.current[slug]) {
-                        clearTimeout(horizontalTimeoutRef.current[slug]);
-                    }
+                //     if (horizontalTimeoutRef.current[slug]) {
+                //         clearTimeout(horizontalTimeoutRef.current[slug]);
+                //     }
 
-                    horizontalTimeoutRef.current[slug] = setTimeout(() => {
-                        setActiveViewerMap((prev) => ({
-                            ...prev,
-                            [slug]: 'main',
-                        }));
-                        setRelatedViewerMap((prev) => ({
-                            ...prev,
-                            [slug]: null,
-                        }));
-                        setViewablePost(viewablePost);
-                        window.history.replaceState(
-                            {},
-                            '',
-                            `${route('home')}${generateURL(viewablePost)}`,
-                        );
-                        console.log('Loop RIGHT complete - back to main');
+                //     horizontalTimeoutRef.current[slug] = setTimeout(() => {
+                //         setActiveViewerMap((prev) => ({
+                //             ...prev,
+                //             [slug]: 'main',
+                //         }));
+                //         setRelatedViewerMap((prev) => ({
+                //             ...prev,
+                //             [slug]: null,
+                //         }));
+                //         setViewablePost(viewablePost);
+                //         window.history.replaceState(
+                //             {},
+                //             '',
+                //             `${route('home')}${generateURL(viewablePost)}`,
+                //         );
+                //         console.log('Loop RIGHT complete - back to main');
 
-                        isHorizontalLooping.current[slug] = false;
-                        horizontalScrollLock.current[slug] = false;
-                    }, 700);
+                //         isHorizontalLooping.current[slug] = false;
+                //         horizontalScrollLock.current[slug] = false;
+                //     }, 700);
 
-                    e.preventDefault();
-                    return;
-                }
+                //     e.preventDefault();
+                //     return;
+                // }
             }
 
             if (gestureLocked.current === 'y') {
