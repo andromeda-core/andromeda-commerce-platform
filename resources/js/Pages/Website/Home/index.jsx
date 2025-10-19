@@ -13,6 +13,7 @@ import VideoPlayer from '@/Components/VideoPlayer';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import GlobalSearch from '@/Components/GlobalSearch';
+import { useSwipeable } from 'react-swipeable';
 
 const getCookie = (name) => {
     const value = `; ${document.cookie}`;
@@ -890,100 +891,10 @@ export default function index({ google_map_api_key, search_history }) {
     }, [isMobilePostViewer, viewablePost, selectedPostIndex, nextPageUrl, isMobilePostGallery]);
 
     // Original Horizontal Scroll Logic
-    // const handleHorizontalScroll = useCallback(
-    //     (mainPost, e) => {
-    //         const el = e.currentTarget;
-
-    //         const slug = mainPost.slug;
-    //         const relatedPosts = relatedPostsMap[slug] || [];
-    //         const currentViewer = relatedViewerMap[slug] || null;
-    //         const nextPageUrl = relatedNextMap[slug] || null;
-
-    //         const index = Math.round(el.scrollLeft / el.clientWidth);
-    //         const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
-
-    //         if (index === lastIndex) return;
-    //         lastHorizontalIndexRef.current[slug] = index;
-
-    //         if (index > lastIndex) lastDirectionRef.current = 'right';
-    //         else if (index < lastIndex) lastDirectionRef.current = 'left';
-
-    //         if (index > 0) {
-    //             const relatedPost = relatedPosts[index - 1];
-    //             if (activeViewerMap[slug] !== 'related' || currentViewer?.id !== relatedPost.id) {
-    //                 setRelatedViewerMap((prev) => ({
-    //                     ...prev,
-    //                     [slug]: relatedPost,
-    //                 }));
-
-    //                 setActiveViewerMap((prev) => ({
-    //                     ...prev,
-    //                     [slug]: 'related',
-    //                 }));
-
-    //                 setViewablePost(relatedPost);
-
-    //                 window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
-    //             }
-
-    //             const remaining = relatedPosts?.length - index;
-
-    //             // Instant fetch on first swipe (if no pagination yet)
-    //             if (!nextPageUrl && !isFetchingRef.current) {
-    //                 if (completedSlugsRef.current[slug]) return;
-
-    //                 const now = Date.now();
-    //                 const lastTried = lastTriedRef.current[slug] || 0;
-
-    //                 if (now - lastTried < 10000) return;
-    //                 lastTriedRef.current[slug] = now;
-
-    //                 setIsFetchingRelated(true);
-    //                 fetchRelatedPosts(slug);
-    //                 return;
-    //             }
-
-    //             // Fetch's only ONCE per next page URL when near end
-    //             if (
-    //                 remaining <= 5 &&
-    //                 nextPageUrl &&
-    //                 !isFetchingRef.current &&
-    //                 lastFetchedUrlRef.current[slug] !== nextPageUrl &&
-    //                 !completedSlugsRef.current[slug]
-    //             ) {
-    //                 setIsFetchingRelated(true);
-    //                 fetchRelatedPosts(slug);
-    //             }
-    //         } else if (index === 0 && currentViewer) {
-    //             setActiveViewerMap((prev) => ({
-    //                 ...prev,
-    //                 [slug]: 'main',
-    //             }));
-
-    //             setRelatedViewerMap((prev) => ({
-    //                 ...prev,
-    //                 [slug]: null,
-    //             }));
-
-    //             setViewablePost(mainPost);
-    //             window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
-    //         }
-    //     },
-    //     [
-    //         relatedPostsMap,
-    //         relatedViewerMap,
-    //         relatedNextMap,
-    //         isFetchingRef,
-    //         lastFetchedUrlRef,
-    //         fetchRelatedPosts,
-    //     ],
-    // );
-
-    const lastEdgeRef = useRef(null);
-
     const handleHorizontalScroll = useCallback(
         (mainPost, e) => {
             const el = e.currentTarget;
+
             const slug = mainPost.slug;
             const relatedPosts = relatedPostsMap[slug] || [];
             const currentViewer = relatedViewerMap[slug] || null;
@@ -991,23 +902,13 @@ export default function index({ google_map_api_key, search_history }) {
 
             const index = Math.round(el.scrollLeft / el.clientWidth);
             const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
-            const total = relatedPosts.length;
 
             if (index === lastIndex) return;
-
-            const direction = index > lastIndex ? 'right' : 'left';
-            lastDirectionRef.current = direction;
             lastHorizontalIndexRef.current[slug] = index;
 
-            const isAtLast = index >= total - 1;
-            const isAtFirst = index <= 0;
+            if (index > lastIndex) lastDirectionRef.current = 'right';
+            else if (index < lastIndex) lastDirectionRef.current = 'left';
 
-            // Track edge (but don’t alert yet)
-            if (isAtLast) lastEdgeRef.current = 'last';
-            else if (isAtFirst) lastEdgeRef.current = 'first';
-            else lastEdgeRef.current = null;
-
-            // Continue your existing logic (unchanged)
             if (index > 0) {
                 const relatedPost = relatedPosts[index - 1];
                 if (activeViewerMap[slug] !== 'related' || currentViewer?.id !== relatedPost.id) {
@@ -1015,27 +916,35 @@ export default function index({ google_map_api_key, search_history }) {
                         ...prev,
                         [slug]: relatedPost,
                     }));
+
                     setActiveViewerMap((prev) => ({
                         ...prev,
                         [slug]: 'related',
                     }));
+
                     setViewablePost(relatedPost);
+
                     window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
                 }
 
-                const remaining = total - index;
+                const remaining = relatedPosts?.length - index;
 
+                // Instant fetch on first swipe (if no pagination yet)
                 if (!nextPageUrl && !isFetchingRef.current) {
                     if (completedSlugsRef.current[slug]) return;
+
                     const now = Date.now();
                     const lastTried = lastTriedRef.current[slug] || 0;
+
                     if (now - lastTried < 10000) return;
-                    lastTriedRef.current = now;
+                    lastTriedRef.current[slug] = now;
+
                     setIsFetchingRelated(true);
                     fetchRelatedPosts(slug);
                     return;
                 }
 
+                // Fetch's only ONCE per next page URL when near end
                 if (
                     remaining <= 5 &&
                     nextPageUrl &&
@@ -1051,10 +960,12 @@ export default function index({ google_map_api_key, search_history }) {
                     ...prev,
                     [slug]: 'main',
                 }));
+
                 setRelatedViewerMap((prev) => ({
                     ...prev,
                     [slug]: null,
                 }));
+
                 setViewablePost(mainPost);
                 window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
             }
@@ -1069,44 +980,19 @@ export default function index({ google_map_api_key, search_history }) {
         ],
     );
 
-    // ✅ Add this touch listener once per horizontal container
-    const attachEdgeSwipeDetector = (container) => {
-        if (!container) return;
+    const horizontalRelatedPostsLoopHandler = useSwipeable({
+        onSwipedLeft: () => {
+            alert('swiped left');
+        },
 
-        container.addEventListener(
-            'touchstart',
-            (e) => {
-                touchStartX.current = e.touches[0].clientX;
-            },
-            { passive: false },
-        );
+        onSwipedRight: () => {
+            alert('swiped right');
+        },
 
-        container.addEventListener(
-            'touchend',
-            (e) => {
-                const diff = touchStartX.current - e.changedTouches[0].clientX;
-
-                if (horizontalSwipeLock.current) return;
-
-                // User is already at the last, and swiped further right
-                if (lastEdgeRef.current === 'last' && diff > 80) {
-                    horizontalSwipeLock.current = true;
-                    alert('You tried to go beyond last → Loop to first');
-                    // optional: el.scrollTo({ left: 0, behavior: 'smooth' });
-                    setTimeout(() => (horizontalSwipeLock.current = false), 600);
-                }
-
-                // User is already at the first, and swiped further left
-                if (lastEdgeRef.current === 'first' && diff < -80) {
-                    horizontalSwipeLock.current = true;
-                    alert('You tried to go before first → Loop to last');
-                    // optional: el.scrollTo({ left: el.scrollWidth, behavior: 'smooth' });
-                    setTimeout(() => (horizontalSwipeLock.current = false), 600);
-                }
-            },
-            { passive: false },
-        );
-    };
+        preventScrollOnSwipe: true,
+        trackMouse: true,
+        trackTouch: true,
+    });
 
     const updateRelatedPostsMap = (slug, newPosts = []) => {
         if (!slug || !Array.isArray(newPosts)) return;
@@ -2357,12 +2243,12 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                     {/* Main Post + Related Posts Horizontal Scroll */}
                                                     <div
-                                                        ref={(el) => attachEdgeSwipeDetector(el)}
+                                                        {...horizontalRelatedPostsLoopHandler}
                                                         onScroll={(e) => {
                                                             e.stopPropagation();
                                                             handleHorizontalScroll(post, e);
                                                         }}
-                                                        className="horizontal-scroll-container relative flex h-full w-full select-none snap-x snap-mandatory overflow-x-scroll scrollbar-none"
+                                                        className="pointer-none horizontal-scroll-container relative flex h-full w-full select-none snap-x snap-mandatory overflow-x-scroll scrollbar-none"
                                                         style={{
                                                             scrollSnapType: 'x mandatory',
                                                             overscrollBehaviorX: 'auto',
