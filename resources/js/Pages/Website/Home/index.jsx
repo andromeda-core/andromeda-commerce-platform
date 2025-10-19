@@ -29,7 +29,6 @@ export default function index({ google_map_api_key, search_history }) {
     const [relatedNextMap, setRelatedNextMap] = useState({});
     const [relatedViewerMap, setRelatedViewerMap] = useState({});
     const [activeViewerMap, setActiveViewerMap] = useState({});
-
     const [relatedPostSlug, setRelatedPostSlug] = useState(null);
 
     const [nextPageUrl, setNextPageUrl] = useState(null);
@@ -794,7 +793,6 @@ export default function index({ google_map_api_key, search_history }) {
             touchStartX.current = e.touches[0].clientX;
             gestureLocked.current = null;
 
-            // ✅ reset loop direction at start of every gesture
             const slug = relatedPostSlugRef.current;
             if (slug) {
                 lastDirectionRef.current[slug] = null;
@@ -945,9 +943,6 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             if (gestureLocked.current === 'y') {
-                alert('Y');
-                alert(selectedPostIndex);
-                alert(deltaY);
                 const scrollTop = container.scrollTop;
                 const atTop = scrollTop <= 0;
                 const atBottom =
@@ -956,7 +951,14 @@ export default function index({ google_map_api_key, search_history }) {
                 const slug = relatedPostSlugRef.current;
                 const isInRelated = activeViewerMap[slug] === 'related';
 
-                if ((atTop || isInRelated) && deltaY > 30 && selectedPostIndex === 0) {
+                const parentPostIndex = postsRef.current.findIndex((p) => p.slug === slug);
+
+                if (
+                    atTop &&
+                    deltaY > 30 &&
+                    ((isInRelated && parentPostIndex === 0) ||
+                        (!isInRelated && selectedPostIndex === 0))
+                ) {
                     e.preventDefault();
                     scrollLock.current = true;
                     isLooping.current = true;
@@ -1122,6 +1124,7 @@ export default function index({ google_map_api_key, search_history }) {
             }));
 
             setViewablePost(mainPost);
+            isInRelatedRef.current = true;
             window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
         }
 
