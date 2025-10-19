@@ -531,6 +531,8 @@ export default function index({ google_map_api_key, search_history }) {
         if (viewablePost && isMobilePostViewer && posts.length > 0) {
             const currentIndex = posts.findIndex((p) => p.id === viewablePost.id);
 
+            alert('CURRENT INDEX; ' + currentIndex);
+
             if (currentIndex !== -1 && currentIndex !== selectedPostIndex) {
                 setSelectedPostIndex(currentIndex);
             }
