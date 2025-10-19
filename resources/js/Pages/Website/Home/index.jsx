@@ -755,6 +755,8 @@ export default function index({ google_map_api_key, search_history }) {
         const handleTouchStart = (e) => {
             touchStartY.current = e.touches[0].clientY;
             touchStartX.current = e.touches[0].clientX;
+
+            alert('its working');
         };
 
         const handleTouchMove = (e) => {
@@ -1249,6 +1251,33 @@ export default function index({ google_map_api_key, search_history }) {
     const lastHorizontalIndexRef = useRef({});
     const lastTriedRef = useRef({});
 
+    const handleTouchEnd = useCallback(
+        (mainPost, e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const diff = touchStartX.current - touchEndX;
+
+            const slug = mainPost.slug;
+            const relatedPosts = relatedPostsMap[slug] || [];
+            const total = relatedPosts.length;
+            const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
+
+            // 👉 Right Swipe (Next Post)
+            if (diff > 50) {
+                if (lastIndex >= total - 1) {
+                    alert('No more posts on the right!');
+                }
+            }
+
+            // 👉 Left Swipe (Previous Post)
+            else if (diff < -50) {
+                if (lastIndex <= 0) {
+                    alert('No more posts on the left!');
+                }
+            }
+        },
+        [relatedPostsMap],
+    );
+
     const handleHorizontalScroll = useCallback(
         (mainPost, e) => {
             const el = e.currentTarget;
@@ -1265,17 +1294,7 @@ export default function index({ google_map_api_key, search_history }) {
 
             lastHorizontalIndexRef.current[slug] = index;
 
-            setTimeout(() => {
-                alert(`index: ${index}, lastIndex: ${lastIndex}, total: ${total}`);
-            }, 1000);
-
-            if (index > lastIndex && index >= total - 1) {
-                alert('No more posts on the right!');
-            }
-
-            if (index < lastIndex && index <= 0) {
-                alert('No more posts on the left!');
-            }
+            if (index === lastIndex) return;
 
             if (index > 0) {
                 const relatedPost = relatedPosts[index - 1];
@@ -2801,6 +2820,9 @@ export default function index({ google_map_api_key, search_history }) {
                                                             e.stopPropagation();
                                                             handleHorizontalScroll(post, e);
                                                         }}
+                                                        onTouchEnd={(e) =>
+                                                            handleTouchEnd(mainPost, e)
+                                                        }
                                                         className="horizontal-scroll-container relative flex h-full w-full select-none snap-x snap-mandatory overflow-x-scroll scrollbar-none"
                                                         style={{
                                                             scrollSnapType: 'x mandatory',
