@@ -992,17 +992,13 @@ export default function index({ google_map_api_key, search_history }) {
     // Original Horizontal Scroll Logic
     const handleHorizontalScroll = useCallback((mainPost, e) => {
         const el = e.currentTarget;
-
         const slug = mainPost.slug;
 
         const relatedPosts = relatedPostsRef.current[slug] || [];
-
         const currentViewer = relatedViewMap.current[slug] || null;
-
         const nextPageUrl = relatedNextUrlMap.current[slug] || null;
 
         const index = Math.round(el.scrollLeft / el.clientWidth);
-
         const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
 
         if (index === lastIndex) return;
@@ -1012,7 +1008,16 @@ export default function index({ google_map_api_key, search_history }) {
         if (index > 0) {
             const relatedPost = relatedPosts[index - 1];
 
+            // GUARD: Check if relatedPost is a valid object
+            if (!relatedPost || typeof relatedPost !== 'object' || !relatedPost.id) {
+                console.error(`Invalid related post at index ${index - 1}:`, relatedPost);
+                console.error(`Related posts array:`, relatedPosts);
+                return;
+            }
+
             if (activeViewerMap[slug] !== 'related' || currentViewer?.id !== relatedPost.id) {
+                console.log(`Updating to related post:`, relatedPost);
+
                 setRelatedViewerMap((prev) => ({
                     ...prev,
                     [slug]: relatedPost,
