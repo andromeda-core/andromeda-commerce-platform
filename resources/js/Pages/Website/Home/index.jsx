@@ -941,12 +941,16 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             if (gestureLocked.current === 'y') {
+                const isInRelated = activeViewerMap[slug] === 'related';
                 const scrollTop = container.scrollTop;
                 const atTop = scrollTop <= 0;
                 const atBottom =
                     Math.abs(scrollTop + container.clientHeight - container.scrollHeight) < 5;
 
-                if (atTop && deltaY > 30 && selectedPostIndex === 0) {
+                const canLoopTop = atTop || isInRelated;
+                const canLoopBottom = atBottom || isInRelated;
+
+                if (canLoopTop && deltaY > 30 && selectedPostIndex === 0) {
                     e.preventDefault();
                     scrollLock.current = true;
                     isLooping.current = true;
@@ -975,7 +979,11 @@ export default function index({ google_map_api_key, search_history }) {
                     return;
                 }
 
-                if (atBottom && deltaY < -30 && selectedPostIndex === postsRef.current.length - 1) {
+                if (
+                    canLoopBottom &&
+                    deltaY < -30 &&
+                    selectedPostIndex === postsRef.current.length - 1
+                ) {
                     e.preventDefault();
                     scrollLock.current = true;
                     isLooping.current = true;
