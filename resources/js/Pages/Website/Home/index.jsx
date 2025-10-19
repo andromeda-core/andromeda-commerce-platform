@@ -895,6 +895,8 @@ export default function index({ google_map_api_key, search_history }) {
                             );
                             console.log('✅ Loop LEFT done');
                         }
+
+                        gestureLocked.current = null;
                         setTimeout(() => (isHorizontalLooping.current[slug] = false), 500);
                     });
                     return;
@@ -923,6 +925,7 @@ export default function index({ google_map_api_key, search_history }) {
                             `${route('home')}${generateURL(viewablePost)}`,
                         );
                         console.log('✅ Loop RIGHT done');
+                        gestureLocked.current = null;
                         setTimeout(() => (isHorizontalLooping.current[slug] = false), 500);
                     });
                     return;
