@@ -1125,7 +1125,21 @@ export default function index({ google_map_api_key, search_history }) {
         }
     }, []);
 
+    // Resetting Related Post Some Refs
+    useEffect(() => {
+        const slug = relatedPostSlugRef.current;
+        if (!slug) return;
+
+        console.log(`Post changed to ${slug}, resetting loop state`);
+
+        // Reset all loop tracking for this slug
+        isHorizontalLooping.current[slug] = false;
+        horizontalScrollLock.current[slug] = false;
+        lastHorizontalIndexRef.current[slug] = undefined;
+    }, [relatedPostSlug]);
+
     console.log('isLOoping', isHorizontalLooping.current);
+
     const updateRelatedPostsMap = (slug, newPosts = []) => {
         if (!slug || !Array.isArray(newPosts)) return;
 
@@ -1260,6 +1274,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                 setSelectedPostIndex(index ?? 0);
                                                 setSelectedMediaIndex(0);
+                                                setRelatedPostSlug(post?.slug);
                                                 window.history.pushState({}, '', url);
                                             }}
                                         >
