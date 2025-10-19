@@ -820,6 +820,8 @@ export default function index({ google_map_api_key, search_history }) {
                     `[data-carousel-slug="${slug}"]`,
                 );
 
+                alert(!!horizontalContainer);
+
                 if (!horizontalContainer) return;
 
                 const containerWidth = horizontalContainer.clientWidth;
