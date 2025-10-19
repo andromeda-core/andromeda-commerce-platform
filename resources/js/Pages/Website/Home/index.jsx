@@ -2796,7 +2796,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                         className="horizontal-scroll-container relative flex h-full w-full select-none snap-x snap-mandatory overflow-x-scroll scrollbar-none"
                                                         style={{
                                                             scrollSnapType: 'x mandatory',
-                                                            overscrollBehaviorX: 'contain',
+                                                            overscrollBehaviorX: 'auto',
                                                             overscrollBehaviorY: 'auto',
                                                             touchAction: 'pan-y pan-x',
                                                             WebkitOverflowScrolling: 'touch',
