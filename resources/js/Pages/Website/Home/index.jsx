@@ -979,12 +979,11 @@ export default function index({ google_map_api_key, search_history }) {
     //     ],
     // );
 
-    const lastEdgeRef = useRef(null); // 'first', 'last', or null
+    const lastEdgeRef = useRef(null);
 
     const handleHorizontalScroll = useCallback(
         (mainPost, e) => {
             const el = e.currentTarget;
-
             const slug = mainPost.slug;
             const relatedPosts = relatedPostsMap[slug] || [];
             const currentViewer = relatedViewerMap[slug] || null;
@@ -996,41 +995,19 @@ export default function index({ google_map_api_key, search_history }) {
 
             if (index === lastIndex) return;
 
-            // Track direction
-            const direction = index > lastIndex ? 'right' : index < lastIndex ? 'left' : null;
+            const direction = index > lastIndex ? 'right' : 'left';
             lastDirectionRef.current = direction;
             lastHorizontalIndexRef.current[slug] = index;
 
-            // ---- ✅ Improved edge detection ----
             const isAtLast = index >= total - 1;
             const isAtFirst = index <= 0;
 
-            if (isAtLast && direction === 'right') {
-                if (lastEdgeRef.current === 'last') {
-                    // 🔥 User swiped again on last post → trigger now
-                    alert('Loop → First post');
-                    lastEdgeRef.current = null; // reset
-                    // el.scrollTo({ left: 0, behavior: 'smooth' });
-                } else {
-                    // Just reached last for the first time
-                    lastEdgeRef.current = 'last';
-                }
-            } else if (isAtFirst && direction === 'left') {
-                if (lastEdgeRef.current === 'first') {
-                    // 🔥 User swiped again on first post → trigger now
-                    alert('Loop → Last post');
-                    lastEdgeRef.current = null;
-                    // el.scrollTo({ left: el.scrollWidth - el.clientWidth, behavior: 'smooth' });
-                } else {
-                    // Just reached first for the first time
-                    lastEdgeRef.current = 'first';
-                }
-            } else {
-                // Reset edge tracker when user moves away
-                lastEdgeRef.current = null;
-            }
+            // Track edge (but don’t alert yet)
+            if (isAtLast) lastEdgeRef.current = 'last';
+            else if (isAtFirst) lastEdgeRef.current = 'first';
+            else lastEdgeRef.current = null;
 
-            // ---- Continue your existing logic ----
+            // Continue your existing logic (unchanged)
             if (index > 0) {
                 const relatedPost = relatedPosts[index - 1];
                 if (activeViewerMap[slug] !== 'related' || currentViewer?.id !== relatedPost.id) {
@@ -1053,8 +1030,7 @@ export default function index({ google_map_api_key, search_history }) {
                     const now = Date.now();
                     const lastTried = lastTriedRef.current[slug] || 0;
                     if (now - lastTried < 10000) return;
-                    lastTriedRef.current[slug] = now;
-
+                    lastTriedRef.current = now;
                     setIsFetchingRelated(true);
                     fetchRelatedPosts(slug);
                     return;
@@ -1092,6 +1068,45 @@ export default function index({ google_map_api_key, search_history }) {
             fetchRelatedPosts,
         ],
     );
+
+    // ✅ Add this touch listener once per horizontal container
+    const attachEdgeSwipeDetector = (container) => {
+        if (!container) return;
+
+        container.addEventListener(
+            'touchstart',
+            (e) => {
+                touchStartX.current = e.touches[0].clientX;
+            },
+            { passive: false },
+        );
+
+        container.addEventListener(
+            'touchend',
+            (e) => {
+                const diff = touchStartX.current - e.changedTouches[0].clientX;
+
+                if (horizontalSwipeLock.current) return;
+
+                // User is already at the last, and swiped further right
+                if (lastEdgeRef.current === 'last' && diff > 80) {
+                    horizontalSwipeLock.current = true;
+                    alert('You tried to go beyond last → Loop to first');
+                    // optional: el.scrollTo({ left: 0, behavior: 'smooth' });
+                    setTimeout(() => (horizontalSwipeLock.current = false), 600);
+                }
+
+                // User is already at the first, and swiped further left
+                if (lastEdgeRef.current === 'first' && diff < -80) {
+                    horizontalSwipeLock.current = true;
+                    alert('You tried to go before first → Loop to last');
+                    // optional: el.scrollTo({ left: el.scrollWidth, behavior: 'smooth' });
+                    setTimeout(() => (horizontalSwipeLock.current = false), 600);
+                }
+            },
+            { passive: false },
+        );
+    };
 
     const updateRelatedPostsMap = (slug, newPosts = []) => {
         if (!slug || !Array.isArray(newPosts)) return;
@@ -2342,6 +2357,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                     {/* Main Post + Related Posts Horizontal Scroll */}
                                                     <div
+                                                        ref={(el) => attachEdgeSwipeDetector(el)}
                                                         onScroll={(e) => {
                                                             e.stopPropagation();
                                                             handleHorizontalScroll(post, e);
