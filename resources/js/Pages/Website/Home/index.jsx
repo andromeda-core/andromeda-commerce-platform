@@ -369,14 +369,13 @@ export default function index({ google_map_api_key, search_history }) {
     // If Post Already Fetches All Remeaning Related Posts And Dont Have More Pages so it will be marked as completed and wont be fetched
     const completedSlugsRef = useRef({});
     const fetchRelatedPosts = async (slug) => {
-        const currentUrl =
+        const nextUrl =
             relatedNextMap[slug] ??
             `${route('website.posts.getrelated')}?${new URLSearchParams(
                 JSON.parse(decodeURIComponent(getCookie('post_preferences'))),
             )}`;
 
-        if (isFetchingRef.current || lastFetchedUrlRef.current[slug] === currentUrl || !slug)
-            return;
+        if (isFetchingRef.current || lastFetchedUrlRef.current[slug] === nextUrl || !slug) return;
 
         isFetchingRef.current = true;
         lastFetchedUrlRef.current[slug] = currentUrl;
@@ -391,6 +390,7 @@ export default function index({ google_map_api_key, search_history }) {
 
             if (data.status) {
                 const newPosts = data.posts?.data || data.posts || [];
+                const nextPage = data.posts?.next_page_url || null;
                 setRelatedPostsMap((prev) => ({
                     ...prev,
                     [slug]: [
@@ -400,16 +400,21 @@ export default function index({ google_map_api_key, search_history }) {
                         ),
                     ],
                 }));
+                lastFetchedUrlRef.current[slug] = nextUrl;
                 setRelatedNextMap((prev) => ({
                     ...prev,
                     [slug]: data.posts.next_page_url,
                 }));
 
-                if (!data.posts.next_page_url) {
+                if (!nextPage) {
                     completedSlugsRef.current[slug] = true;
+                    console.log(`[${slug}] ✅ All related posts fetched completely`);
+                } else {
+                    console.log(`[${slug}] ➡️ Next page ready: ${nextPage}`);
                 }
             }
         } catch (err) {
+            console.error(`[${slug}] ❌ Error fetching related posts`, err);
             toast.error('Error fetching related posts');
         } finally {
             isFetchingRef.current = false;
