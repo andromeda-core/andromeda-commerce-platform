@@ -1006,7 +1006,9 @@ export default function index({ google_map_api_key, search_history }) {
         alert('After Related PAGE URL');
 
         const index = Math.round(el.scrollLeft / el.clientWidth);
+        alert('After Index');
         const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
+        alert('Last Index');
 
         alert('before Confition');
         alert(index);
