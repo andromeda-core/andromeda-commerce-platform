@@ -997,9 +997,13 @@ export default function index({ google_map_api_key, search_history }) {
         alert('After El');
 
         const slug = mainPost.slug;
+        alert('After Slug');
         const relatedPosts = relatedPostsRef.current[slug] || [];
+        alert('After Related Posts');
         const currentViewer = relatedViewMap.current[slug] || null;
+        alert('After Related Viewer');
         const nextPageUrl = relatedNextUrlMap.current[slug] || null;
+        alert('After Related PAGE URL');
 
         const index = Math.round(el.scrollLeft / el.clientWidth);
         const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
