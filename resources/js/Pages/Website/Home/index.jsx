@@ -1265,6 +1265,10 @@ export default function index({ google_map_api_key, search_history }) {
 
             lastHorizontalIndexRef.current[slug] = index;
 
+            setTimeout(() => {
+                alert(`index: ${index}, lastIndex: ${lastIndex}, total: ${total}`);
+            }, 1000);
+
             if (index > lastIndex && index >= total - 1) {
                 alert('No more posts on the right!');
             }
