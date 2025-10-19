@@ -798,8 +798,8 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             if (gestureLocked.current === 'x') {
-                const slug = relatedPostsRef.current[relatedPostSlug];
-                alert(slug);
+                alert(relatedPostSlug);
+                const relatedPosts = relatedPostsRef.current[relatedPostSlug];
 
                 setTimeout(() => {
                     alert('Scroolled');
