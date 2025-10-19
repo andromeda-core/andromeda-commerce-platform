@@ -790,7 +790,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                 const diff = touchStartX.current - e.touches[0].clientX;
 
-                if (diff > 50) {
+                if (diff > 100) {
                     if (index >= total - 1) {
                         setTimeout(() => {
                             alert("You've reached the end.");
@@ -814,7 +814,7 @@ export default function index({ google_map_api_key, search_history }) {
                 }
 
                 // 👈 Swipe Left to Right (Previous)
-                if (diff < -50) {
+                if (diff < -100) {
                     if (index <= 0) {
                         setTimeout(() => {
                             alert("You've reached the First.");
