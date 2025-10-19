@@ -811,14 +811,6 @@ export default function index({ google_map_api_key, search_history }) {
                 const slug = relatedPostSlugRef.current;
                 if (!slug) return;
 
-                const lastIndex = lastHorizontalIndexRef.current[slug];
-                const currentIndex = Math.round(currentScrollLeft / containerWidth);
-                if (lastIndex !== currentIndex) {
-                    lastDirectionRef.current[slug] =
-                        currentIndex > (lastIndex ?? 0) ? 'right' : 'left';
-                    lastHorizontalIndexRef.current[slug] = currentIndex;
-                }
-
                 const relatedPosts = relatedPostsRef.current[slug] || [];
 
                 const horizontalContainer = horizontalCarouselRefs.current[slug];
@@ -828,8 +820,16 @@ export default function index({ google_map_api_key, search_history }) {
                 }
 
                 const containerWidth = horizontalContainer.clientWidth;
+                const currentIndex = Math.round(currentScrollLeft / containerWidth);
                 const currentScrollLeft = horizontalContainer.scrollLeft;
                 const maxScroll = horizontalContainer.scrollWidth - containerWidth;
+
+                const lastIndex = lastHorizontalIndexRef.current[slug];
+                if (lastIndex !== currentIndex) {
+                    lastDirectionRef.current[slug] =
+                        currentIndex > (lastIndex ?? 0) ? 'right' : 'left';
+                    lastHorizontalIndexRef.current[slug] = currentIndex;
+                }
 
                 const totalItems = 1 + relatedPosts.length;
                 const isFirstScroll = lastIndex === undefined;
