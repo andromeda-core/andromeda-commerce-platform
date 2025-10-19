@@ -799,6 +799,8 @@ export default function index({ google_map_api_key, search_history }) {
         const handleTouchStart = (e) => {
             touchStartY.current = e.touches[0].clientY;
             touchStartX.current = e.touches[0].clientX;
+            scrollLock.current = false;
+            isLooping.current = false;
             gestureLocked.current = null;
 
             // ✅ reset loop direction at start of every gesture
@@ -1071,9 +1073,11 @@ export default function index({ google_map_api_key, search_history }) {
 
                 setViewablePost(relatedPost);
 
-                gestureLocked.current = null;
-                isLooping.current = false;
-                scrollLock.current = false;
+                setTimeout(() => {
+                    gestureLocked.current = null;
+                    scrollLock.current = false;
+                    isLooping.current = false;
+                }, 100);
 
                 window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
             }
@@ -1118,9 +1122,12 @@ export default function index({ google_map_api_key, search_history }) {
 
             setViewablePost(mainPost);
 
-            gestureLocked.current = null;
-            isLooping.current = false;
-            scrollLock.current = false;
+            setTimeout(() => {
+                gestureLocked.current = null;
+                scrollLock.current = false;
+                isLooping.current = false;
+            }, 100);
+
             window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
         }
     }, []);
