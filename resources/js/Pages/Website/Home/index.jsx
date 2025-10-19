@@ -549,7 +549,6 @@ export default function index({ google_map_api_key, search_history }) {
     const gestureLocked = useRef(null);
     const lastHorizontalIndexRef = useRef({});
     const lastTriedRef = useRef({});
-    const horizontalSwipeLock = useRef(null);
     const lastDirectionRef = useRef(null);
 
     useEffect(() => {
@@ -982,12 +981,13 @@ export default function index({ google_map_api_key, search_history }) {
 
     const horizontalScrollRefs = useRef({});
     const isHorizontalLoopingRef = useRef({});
+    const relatedPostsRef = useRef(relatedPostsMap);
 
     const handleHorizontalScroll = useCallback(
         (mainPost, e) => {
             const el = e.currentTarget;
             const slug = mainPost.slug;
-            const relatedPosts = relatedPostsMap[slug] || [];
+            const relatedPosts = relatedPostsRef.current[slug] || [];
             const currentViewer = relatedViewerMap[slug] || null;
             const nextPageUrl = relatedNextMap[slug] || null;
 
