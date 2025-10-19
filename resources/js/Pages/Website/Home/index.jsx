@@ -1171,7 +1171,7 @@ export default function index({ google_map_api_key, search_history }) {
         }
     };
 
-    console.log(Object.keys(relatedPostsRef.current).length);
+    console.log(Object.values(relatedPostsRef.current).length);
     return (
         <MainLayout>
             <Head title="Home" />
