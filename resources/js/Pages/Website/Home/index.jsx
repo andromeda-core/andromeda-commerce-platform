@@ -1014,9 +1014,6 @@ export default function index({ google_map_api_key, search_history }) {
 
         lastHorizontalIndexRef.current[slug] = index;
 
-        if (index > lastIndex) lastDirectionRef.current = 'right';
-        else if (index < lastIndex) lastDirectionRef.current = 'left';
-
         if (index > 0) {
             alert('In Post Changing ');
             const relatedPost = relatedPosts[index - 1];
