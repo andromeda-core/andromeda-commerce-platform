@@ -815,100 +815,100 @@ export default function index({ google_map_api_key, search_history }) {
             //     }, 1000);
             // }
 
-            if (gestureLocked.current === 'x') {
-                const slug = relatedPostSlugRef.current;
-                const relatedPosts = relatedPostsRef.current[slug] || [];
+            // if (gestureLocked.current === 'x') {
+            //     const slug = relatedPostSlugRef.current;
+            //     const relatedPosts = relatedPostsRef.current[slug] || [];
 
-                // Get the horizontal scroll container (you'll need a ref for this)
-                const horizontalContainer = horizontalCarouselRefs.current[slug];
+            //     // Get the horizontal scroll container (you'll need a ref for this)
+            //     const horizontalContainer = horizontalCarouselRefs.current[slug];
 
-                if (!horizontalContainer) return;
+            //     if (!horizontalContainer) return;
 
-                const containerWidth = horizontalContainer.clientWidth;
-                const currentScrollLeft = horizontalContainer.scrollLeft;
-                const maxScroll = horizontalContainer.scrollWidth - containerWidth;
+            //     const containerWidth = horizontalContainer.clientWidth;
+            //     const currentScrollLeft = horizontalContainer.scrollLeft;
+            //     const maxScroll = horizontalContainer.scrollWidth - containerWidth;
 
-                // Total carousel items: 1 main + related posts
-                const totalItems = 1 + relatedPosts.length;
-                const currentIndex = Math.round(currentScrollLeft / containerWidth);
+            //     // Total carousel items: 1 main + related posts
+            //     const totalItems = 1 + relatedPosts.length;
+            //     const currentIndex = Math.round(currentScrollLeft / containerWidth);
 
-                const minDeltaX = -100; // threshold for swipe left (negative)
-                const maxDeltaX = 100; // threshold for swipe right (positive)
+            //     const minDeltaX = -100; // threshold for swipe left (negative)
+            //     const maxDeltaX = 100; // threshold for swipe right (positive)
 
-                // LOOP LEFT: At first item (index 0), swiping left (deltaX < -100)
-                if (
-                    currentIndex === 0 &&
-                    deltaX < minDeltaX &&
-                    !isHorizontalLooping.current[slug]
-                ) {
-                    toast.info(`[${slug}] LOOP LEFT: Jumping to last item`);
-                    isHorizontalLooping.current[slug] = true;
-                    horizontalScrollLock.current[slug] = true;
+            //     // LOOP LEFT: At first item (index 0), swiping left (deltaX < -100)
+            //     if (
+            //         currentIndex === 0 &&
+            //         deltaX < minDeltaX &&
+            //         !isHorizontalLooping.current[slug]
+            //     ) {
+            //         toast.info(`[${slug}] LOOP LEFT: Jumping to last item`);
+            //         isHorizontalLooping.current[slug] = true;
+            //         horizontalScrollLock.current[slug] = true;
 
-                    const lastItemIndex = totalItems - 1;
-                    const targetScroll = lastItemIndex * containerWidth;
+            //         const lastItemIndex = totalItems - 1;
+            //         const targetScroll = lastItemIndex * containerWidth;
 
-                    horizontalContainer.scrollTo({
-                        left: targetScroll,
-                        behavior: 'smooth',
-                    });
+            //         horizontalContainer.scrollTo({
+            //             left: targetScroll,
+            //             behavior: 'smooth',
+            //         });
 
-                    // Clear timeout
-                    if (horizontalTimeoutRef.current[slug]) {
-                        clearTimeout(horizontalTimeoutRef.current[slug]);
-                    }
+            //         // Clear timeout
+            //         if (horizontalTimeoutRef.current[slug]) {
+            //             clearTimeout(horizontalTimeoutRef.current[slug]);
+            //         }
 
-                    horizontalTimeoutRef.current[slug] = setTimeout(() => {
-                        isHorizontalLooping.current[slug] = false;
-                        horizontalScrollLock.current[slug] = false;
-                        toast.info(`[${slug}] Loop LEFT complete`);
-                    }, 700);
+            //         horizontalTimeoutRef.current[slug] = setTimeout(() => {
+            //             isHorizontalLooping.current[slug] = false;
+            //             horizontalScrollLock.current[slug] = false;
+            //             toast.info(`[${slug}] Loop LEFT complete`);
+            //         }, 700);
 
-                    e.preventDefault();
-                    return;
-                }
+            //         e.preventDefault();
+            //         return;
+            //     }
 
-                // LOOP RIGHT: At last item, swiping right (deltaX > 100)
-                if (
-                    currentIndex === totalItems - 1 &&
-                    deltaX > maxDeltaX &&
-                    !isHorizontalLooping.current[slug]
-                ) {
-                    toast.info(`[${slug}] LOOP RIGHT: Jumping to first item`);
-                    isHorizontalLooping.current[slug] = true;
-                    horizontalScrollLock.current[slug] = true;
+            //     // LOOP RIGHT: At last item, swiping right (deltaX > 100)
+            //     if (
+            //         currentIndex === totalItems - 1 &&
+            //         deltaX > maxDeltaX &&
+            //         !isHorizontalLooping.current[slug]
+            //     ) {
+            //         toast.info(`[${slug}] LOOP RIGHT: Jumping to first item`);
+            //         isHorizontalLooping.current[slug] = true;
+            //         horizontalScrollLock.current[slug] = true;
 
-                    horizontalContainer.scrollTo({
-                        left: 0,
-                        behavior: 'smooth',
-                    });
+            //         horizontalContainer.scrollTo({
+            //             left: 0,
+            //             behavior: 'smooth',
+            //         });
 
-                    // Clear timeout
-                    if (horizontalTimeoutRef.current[slug]) {
-                        clearTimeout(horizontalTimeoutRef.current[slug]);
-                    }
+            //         // Clear timeout
+            //         if (horizontalTimeoutRef.current[slug]) {
+            //             clearTimeout(horizontalTimeoutRef.current[slug]);
+            //         }
 
-                    horizontalTimeoutRef.current[slug] = setTimeout(() => {
-                        // Reset to main post view
-                        setActiveViewerMap((prev) => ({
-                            ...prev,
-                            [slug]: 'main',
-                        }));
-                        setRelatedViewerMap((prev) => ({
-                            ...prev,
-                            [slug]: null,
-                        }));
-                        setViewablePost(viewablePost); // Keep current viewable post
+            //         horizontalTimeoutRef.current[slug] = setTimeout(() => {
+            //             // Reset to main post view
+            //             setActiveViewerMap((prev) => ({
+            //                 ...prev,
+            //                 [slug]: 'main',
+            //             }));
+            //             setRelatedViewerMap((prev) => ({
+            //                 ...prev,
+            //                 [slug]: null,
+            //             }));
+            //             setViewablePost(viewablePost); // Keep current viewable post
 
-                        isHorizontalLooping.current[slug] = false;
-                        horizontalScrollLock.current[slug] = false;
-                        toast.info(`[${slug}] Loop RIGHT complete`);
-                    }, 700);
+            //             isHorizontalLooping.current[slug] = false;
+            //             horizontalScrollLock.current[slug] = false;
+            //             toast.info(`[${slug}] Loop RIGHT complete`);
+            //         }, 700);
 
-                    e.preventDefault();
-                    return;
-                }
-            }
+            //         e.preventDefault();
+            //         return;
+            //     }
+            // }
 
             if (gestureLocked.current === 'y') {
                 const scrollTop = container.scrollTop;
