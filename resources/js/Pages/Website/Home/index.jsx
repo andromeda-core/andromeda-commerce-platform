@@ -784,41 +784,28 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             if (gestureLocked.current === 'x') {
-                e.preventDefault();
+                const diff = touchStartX.current - e.touches[0].clientX;
 
-                try {
-                    const slug = relatedPostSlug;
-                    const relatedPosts = relatedPostsMap[slug] || [];
-                    const total = relatedPosts.length;
-                    const index = lastHorizontalIndexRef.current[slug] ?? 0;
-                    const diff = touchStartX.current - e.touches[0].clientX;
+                const goingRight = diff > 100;
+                const goingLeft = diff < -100;
 
-                    if (horizontalSwipeLock.current) return;
+                const slug = relatedPostSlug;
+                const relatedPosts = relatedPostsMap[slug] || [];
+                const total = relatedPosts.length;
+                const index = lastHorizontalIndexRef.current[slug] ?? 0;
 
-                    const goingRight = diff > 100;
-                    const goingLeft = diff < -100;
+                if (horizontalSwipeLock.current) return;
 
-                    // user is at last post and swipes forward (right→left)
-                    if (goingRight && index === total - 1 && lastDirectionRef.current === 'right') {
-                        horizontalSwipeLock.current = true;
-                        alert('Loop → First post');
-                        // your loop logic to go to index 0 here
-                        setTimeout(() => (horizontalSwipeLock.current = false), 800);
-                        return;
-                    }
-
-                    // user is at first post and swipes backward (left→right)
-                    if (goingLeft && index === 0 && lastDirectionRef.current === 'left') {
-                        horizontalSwipeLock.current = true;
-                        alert('Loop → Last post');
-                        // your loop logic to go to index total - 1 here
-                        setTimeout(() => (horizontalSwipeLock.current = false), 800);
-                        return;
-                    }
-                } catch (err) {
-                    // ✅ show error in alert (visible on mobile)
-                    alert(`Error: ${err.message || err}`);
-                    console.error('Gesture error:', err);
+                // Only prevent default when looping — not normal swiping
+                if (
+                    (goingRight && index === total - 1 && lastDirectionRef.current === 'right') ||
+                    (goingLeft && index === 0 && lastDirectionRef.current === 'left')
+                ) {
+                    e.preventDefault();
+                    horizontalSwipeLock.current = true;
+                    alert('Loop Triggered');
+                    setTimeout(() => (horizontalSwipeLock.current = false), 200);
+                    return;
                 }
             }
 
