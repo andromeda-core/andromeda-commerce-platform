@@ -810,17 +810,13 @@ export default function index({ google_map_api_key, search_history }) {
                 const slug = relatedPostSlugRef.current;
                 const relatedPosts = relatedPostsRef.current[slug] || [];
 
-                // Get the horizontal scroll container (you'll need a ref for this)
                 const horizontalContainer = horizontalCarouselRefs.current[slug];
-
                 if (!horizontalContainer) return;
 
                 const containerWidth = horizontalContainer.clientWidth;
                 const currentScrollLeft = horizontalContainer.scrollLeft;
-
                 const maxScroll = horizontalContainer.scrollWidth - containerWidth;
 
-                // Total carousel items: 1 main + related posts
                 const totalItems = 1 + relatedPosts.length;
                 const currentIndex = Math.round(currentScrollLeft / containerWidth);
 
@@ -850,11 +846,22 @@ export default function index({ google_map_api_key, search_history }) {
                     checkSettle();
                 };
 
-                console.log('CurrentScrollLEft', currentScrollLeft);
+                const minDeltaX = -100;
+                const maxDeltaX = 100;
 
-                if (currentScrollLeft === 0 && currentIndex === 0) {
-                    console.log('Its in the condiiton');
+                console.log(
+                    `[${slug}] currentScrollLeft: ${currentScrollLeft}, currentIndex: ${currentIndex}, deltaX: ${deltaX}`,
+                );
+
+                // LEFT LOOP: At position 0, swiping left (deltaX < -100)
+                if (
+                    currentScrollLeft === 0 &&
+                    currentIndex === 0 &&
+                    deltaX < minDeltaX &&
+                    !isHorizontalLooping.current[slug]
+                ) {
                     console.log('Loop LEFT - scrolling back from position 0');
+                    e.preventDefault();
                     isHorizontalLooping.current[slug] = true;
                     horizontalScrollLock.current[slug] = true;
 
@@ -866,7 +873,6 @@ export default function index({ google_map_api_key, search_history }) {
                         behavior: 'smooth',
                     });
 
-                    // Wait for scroll to settle, then update viewer
                     waitForHorizontalScrollSettle(targetScroll, () => {
                         const relatedPost = relatedPosts[relatedPosts.length - 1];
 
@@ -892,48 +898,48 @@ export default function index({ google_map_api_key, search_history }) {
                         horizontalScrollLock.current[slug] = false;
                     });
 
-                    e.preventDefault();
                     return;
                 }
 
-                // if (currentScrollLeft >= maxScroll - 10 && !isHorizontalLooping.current[slug]) {
-                //     console.log('Moving To First of Posts');
-                //     isHorizontalLooping.current[slug] = true;
-                //     horizontalScrollLock.current[slug] = true;
+                // RIGHT LOOP: At end of scroll, swiping right (deltaX > 100)
+                if (
+                    currentScrollLeft >= maxScroll - 10 &&
+                    deltaX > maxDeltaX &&
+                    !isHorizontalLooping.current[slug]
+                ) {
+                    console.log('Loop RIGHT - at end, jumping to first');
+                    e.preventDefault();
+                    isHorizontalLooping.current[slug] = true;
+                    horizontalScrollLock.current[slug] = true;
 
-                //     horizontalContainer.scrollTo({
-                //         left: 0,
-                //         behavior: 'smooth',
-                //     });
+                    horizontalContainer.scrollTo({
+                        left: 0,
+                        behavior: 'smooth',
+                    });
 
-                //     if (horizontalTimeoutRef.current[slug]) {
-                //         clearTimeout(horizontalTimeoutRef.current[slug]);
-                //     }
+                    waitForHorizontalScrollSettle(0, () => {
+                        setActiveViewerMap((prev) => ({
+                            ...prev,
+                            [slug]: 'main',
+                        }));
+                        setRelatedViewerMap((prev) => ({
+                            ...prev,
+                            [slug]: null,
+                        }));
+                        setViewablePost(viewablePost);
+                        window.history.replaceState(
+                            {},
+                            '',
+                            `${route('home')}${generateURL(viewablePost)}`,
+                        );
+                        console.log('Loop RIGHT complete - back to main');
 
-                //     horizontalTimeoutRef.current[slug] = setTimeout(() => {
-                //         setActiveViewerMap((prev) => ({
-                //             ...prev,
-                //             [slug]: 'main',
-                //         }));
-                //         setRelatedViewerMap((prev) => ({
-                //             ...prev,
-                //             [slug]: null,
-                //         }));
-                //         setViewablePost(viewablePost);
-                //         window.history.replaceState(
-                //             {},
-                //             '',
-                //             `${route('home')}${generateURL(viewablePost)}`,
-                //         );
-                //         console.log('Loop RIGHT complete - back to main');
+                        isHorizontalLooping.current[slug] = false;
+                        horizontalScrollLock.current[slug] = false;
+                    });
 
-                //         isHorizontalLooping.current[slug] = false;
-                //         horizontalScrollLock.current[slug] = false;
-                //     }, 700);
-
-                //     e.preventDefault();
-                //     return;
-                // }
+                    return;
+                }
             }
 
             if (gestureLocked.current === 'y') {
