@@ -1260,6 +1260,7 @@ export default function index({ google_map_api_key, search_history }) {
             const nextPageUrl = relatedNextMap[slug] || null;
 
             const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
+            const remaining = relatedPosts?.length - index;
 
             lastHorizontalIndexRef.current[slug] = index;
 
@@ -1284,8 +1285,6 @@ export default function index({ google_map_api_key, search_history }) {
 
                     window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
                 }
-
-                const remaining = relatedPosts?.length - index;
 
                 // Instant fetch on first swipe (if no pagination yet)
                 if (!nextPageUrl && !isFetchingRef.current) {
