@@ -895,7 +895,9 @@ export default function index({ google_map_api_key, search_history }) {
                         }
 
                         isHorizontalLooping.current[slug] = false;
-                        horizontalScrollLock.current[slug] = false;
+                        setTimeout(() => {
+                            horizontalScrollLock.current[slug] = false;
+                        }, 500);
                         console.log(`[${slug}] Auto-reset loop flags`);
                     });
                     return;
@@ -925,7 +927,9 @@ export default function index({ google_map_api_key, search_history }) {
                         );
                         console.log('✅ Loop RIGHT done');
                         isHorizontalLooping.current[slug] = false;
-                        horizontalScrollLock.current[slug] = false;
+                        setTimeout(() => {
+                            horizontalScrollLock.current[slug] = false;
+                        }, 500);
                         console.log(`[${slug}] Auto-reset loop flags`);
                     });
                     return;
