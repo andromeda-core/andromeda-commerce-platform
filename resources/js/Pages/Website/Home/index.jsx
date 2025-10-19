@@ -557,6 +557,7 @@ export default function index({ google_map_api_key, search_history }) {
     const horizontalCarouselRefs = useRef({});
     const isHorizontalLooping = useRef({});
     const horizontalScrollLock = useRef({});
+    const lastDirectionRef = useRef({});
 
     useEffect(() => {
         postsRef.current = posts;
@@ -808,10 +809,14 @@ export default function index({ google_map_api_key, search_history }) {
 
             if (gestureLocked.current === 'x') {
                 const slug = relatedPostSlugRef.current;
+                if (!slug) return;
 
-                if (!slug) {
-                    console.warn('No slug set');
-                    return;
+                const lastIndex = lastHorizontalIndexRef.current[slug];
+                const currentIndex = Math.round(currentScrollLeft / containerWidth);
+                if (lastIndex !== currentIndex) {
+                    lastDirectionRef.current[slug] =
+                        currentIndex > (lastIndex ?? 0) ? 'right' : 'left';
+                    lastHorizontalIndexRef.current[slug] = currentIndex;
                 }
 
                 const relatedPosts = relatedPostsRef.current[slug] || [];
@@ -827,8 +832,6 @@ export default function index({ google_map_api_key, search_history }) {
                 const maxScroll = horizontalContainer.scrollWidth - containerWidth;
 
                 const totalItems = 1 + relatedPosts.length;
-                const currentIndex = Math.round(currentScrollLeft / containerWidth);
-                const lastIndex = lastHorizontalIndexRef.current[slug];
                 const isFirstScroll = lastIndex === undefined;
 
                 const waitForHorizontalScrollSettle = (targetScroll, callback) => {
@@ -840,7 +843,7 @@ export default function index({ google_map_api_key, search_history }) {
                         const currentScrollLeft = horizontalContainer.scrollLeft;
                         const atTarget = Math.abs(currentScrollLeft - targetScroll) < 5;
 
-                        if (currentScrollLeft === lastScrollLeft && atTarget) {
+                        if (Math.abs(currentScrollLeft - lastScrollLeft) < 1 && atTarget) {
                             stableCount++;
                             if (stableCount >= requiredStable) {
                                 callback();
@@ -865,10 +868,11 @@ export default function index({ google_map_api_key, search_history }) {
                 console.log('isFirstScroll', isFirstScroll);
                 // LEFT LOOP: At position 0, came from position > 0 (moving left)
                 if (
-                    currentScrollLeft === 0 &&
+                    currentScrollLeft <= 5 &&
                     currentIndex === 0 &&
-                    (isFirstScroll || lastIndex > 0) &&
-                    !isHorizontalLooping.current[slug]
+                    lastDirectionRef.current[slug] === 'left' &&
+                    !isHorizontalLooping.current[slug] &&
+                    !horizontalScrollLock.current[slug]
                 ) {
                     console.log('Loop LEFT - scrolling back from position 0');
                     e.preventDefault();
@@ -914,9 +918,11 @@ export default function index({ google_map_api_key, search_history }) {
 
                 // RIGHT LOOP: At end of scroll, came from position < end (moving right)
                 if (
-                    currentScrollLeft >= maxScroll - 10 &&
-                    lastIndex < totalItems - 1 &&
-                    !isHorizontalLooping.current[slug]
+                    Math.abs(currentScrollLeft - maxScroll) <= 5 &&
+                    currentIndex === totalItems - 1 &&
+                    lastDirectionRef.current[slug] === 'right' &&
+                    !isHorizontalLooping.current[slug] &&
+                    !horizontalScrollLock.current[slug]
                 ) {
                     console.log('Loop RIGHT - at end, jumping to first');
                     e.preventDefault();
@@ -1130,12 +1136,13 @@ export default function index({ google_map_api_key, search_history }) {
         const slug = relatedPostSlugRef.current;
         if (!slug) return;
 
-        console.log(`Post changed to ${slug}, resetting loop state`);
-
-        // Reset all loop tracking for this slug
-        isHorizontalLooping.current[slug] = false;
-        horizontalScrollLock.current[slug] = false;
-        lastHorizontalIndexRef.current[slug] = undefined;
+        requestAnimationFrame(() => {
+            console.log(`Post changed to ${slug}, resetting loop state`);
+            isHorizontalLooping.current[slug] = false;
+            horizontalScrollLock.current[slug] = false;
+            lastHorizontalIndexRef.current[slug] = 0;
+            lastDirectionRef.current[slug] = null;
+        });
     }, [relatedPostSlug]);
 
     console.log('isLOoping', isHorizontalLooping.current);
