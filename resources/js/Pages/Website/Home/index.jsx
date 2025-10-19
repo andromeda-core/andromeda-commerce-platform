@@ -13,7 +13,6 @@ import VideoPlayer from '@/Components/VideoPlayer';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import GlobalSearch from '@/Components/GlobalSearch';
-import { useSwipeable } from 'react-swipeable';
 
 const getCookie = (name) => {
     const value = `; ${document.cookie}`;
@@ -541,6 +540,7 @@ export default function index({ google_map_api_key, search_history }) {
     const relatedPostsRef = useRef(relatedPostsMap);
     const relatedViewMap = useRef(relatedViewerMap);
     const relatedNextUrlMap = useRef(relatedNextMap);
+    const relatedPostSlugRef = useRef(relatedPostSlug);
 
     const scrollLock = useRef(false);
     const fetchLock = useRef(false);
@@ -568,6 +568,10 @@ export default function index({ google_map_api_key, search_history }) {
     useEffect(() => {
         relatedNextUrlMap.current = relatedNextMap;
     }, [relatedNextMap]);
+
+    useEffect(() => {
+        relatedPostSlugRef.current = relatedPostSlug;
+    }, [relatedPostSlug]);
 
     useEffect(() => {
         if (!isMobilePostViewer || viewablePost === '' || isMobilePostGallery) return;
