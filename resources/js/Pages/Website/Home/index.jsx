@@ -991,94 +991,84 @@ export default function index({ google_map_api_key, search_history }) {
     }, [isMobilePostViewer, viewablePost, selectedPostIndex, nextPageUrl, isMobilePostGallery]);
 
     // Original Horizontal Scroll Logic
-    const handleHorizontalScroll = useCallback(
-        (mainPost, e) => {
-            const el = e.currentTarget;
+    const handleHorizontalScroll = useCallback((mainPost, e) => {
+        const el = e.currentTarget;
 
-            const slug = mainPost.slug;
-            const relatedPosts = relatedPostsRef.current[slug] || [];
-            const currentViewer = relatedViewMap.current[slug] || null;
-            const nextPageUrl = relatedNextUrlMap.current[slug] || null;
+        const slug = mainPost.slug;
+        const relatedPosts = relatedPostsRef.current[slug] || [];
+        const currentViewer = relatedViewMap.current[slug] || null;
+        const nextPageUrl = relatedNextUrlMap.current[slug] || null;
 
-            const index = Math.round(el.scrollLeft / el.clientWidth);
-            const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
+        const index = Math.round(el.scrollLeft / el.clientWidth);
+        const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
 
-            if (index === lastIndex) return;
-            lastHorizontalIndexRef.current[slug] = index;
+        if (index === lastIndex) return;
+        lastHorizontalIndexRef.current[slug] = index;
 
-            if (index > lastIndex) lastDirectionRef.current = 'right';
-            else if (index < lastIndex) lastDirectionRef.current = 'left';
+        if (index > lastIndex) lastDirectionRef.current = 'right';
+        else if (index < lastIndex) lastDirectionRef.current = 'left';
 
-            if (index > 0) {
-                const relatedPost = relatedPosts[index - 1];
-                if (activeViewerMap[slug] !== 'related' || currentViewer?.id !== relatedPost.id) {
-                    setRelatedViewerMap((prev) => ({
-                        ...prev,
-                        [slug]: relatedPost,
-                    }));
-
-                    setActiveViewerMap((prev) => ({
-                        ...prev,
-                        [slug]: 'related',
-                    }));
-
-                    setViewablePost(relatedPost);
-
-                    window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
-                }
-
-                const remaining = relatedPosts?.length - index;
-
-                // Instant fetch on first swipe (if no pagination yet)
-                if (!nextPageUrl && !isFetchingRef.current) {
-                    if (completedSlugsRef.current[slug]) return;
-
-                    const now = Date.now();
-                    const lastTried = lastTriedRef.current[slug] || 0;
-
-                    if (now - lastTried < 10000) return;
-                    lastTriedRef.current[slug] = now;
-
-                    setIsFetchingRelated(true);
-                    fetchRelatedPosts(slug);
-                    return;
-                }
-
-                // Fetch's only ONCE per next page URL when near end
-                if (
-                    remaining <= 5 &&
-                    nextPageUrl &&
-                    !isFetchingRef.current &&
-                    lastFetchedUrlRef.current[slug] !== nextPageUrl &&
-                    !completedSlugsRef.current[slug]
-                ) {
-                    setIsFetchingRelated(true);
-                    fetchRelatedPosts(slug);
-                }
-            } else if (index === 0 && currentViewer) {
-                setActiveViewerMap((prev) => ({
-                    ...prev,
-                    [slug]: 'main',
-                }));
-
+        if (index > 0) {
+            const relatedPost = relatedPosts[index - 1];
+            if (activeViewerMap[slug] !== 'related' || currentViewer?.id !== relatedPost.id) {
                 setRelatedViewerMap((prev) => ({
                     ...prev,
-                    [slug]: null,
+                    [slug]: relatedPost,
                 }));
 
-                setViewablePost(mainPost);
-                window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
+                setActiveViewerMap((prev) => ({
+                    ...prev,
+                    [slug]: 'related',
+                }));
+
+                setViewablePost(relatedPost);
+
+                window.history.pushState({}, '', `${route('home')}${generateURL(relatedPost)}`);
             }
-        },
-        [
-            relatedPostsMap,
-            relatedViewerMap,
-            relatedNextMap,
-            isFetchingRef,
-            lastFetchedUrlRef,
-            fetchRelatedPosts,
-        ],
-    );
+
+            const remaining = relatedPosts?.length - index;
+
+            // Instant fetch on first swipe (if no pagination yet)
+            if (!nextPageUrl && !isFetchingRef.current) {
+                if (completedSlugsRef.current[slug]) return;
+
+                const now = Date.now();
+                const lastTried = lastTriedRef.current[slug] || 0;
+
+                if (now - lastTried < 10000) return;
+                lastTriedRef.current[slug] = now;
+
+                setIsFetchingRelated(true);
+                fetchRelatedPosts(slug);
+                return;
+            }
+
+            // Fetch's only ONCE per next page URL when near end
+            if (
+                remaining <= 5 &&
+                nextPageUrl &&
+                !isFetchingRef.current &&
+                lastFetchedUrlRef.current[slug] !== nextPageUrl &&
+                !completedSlugsRef.current[slug]
+            ) {
+                setIsFetchingRelated(true);
+                fetchRelatedPosts(slug);
+            }
+        } else if (index === 0 && currentViewer) {
+            setActiveViewerMap((prev) => ({
+                ...prev,
+                [slug]: 'main',
+            }));
+
+            setRelatedViewerMap((prev) => ({
+                ...prev,
+                [slug]: null,
+            }));
+
+            setViewablePost(mainPost);
+            window.history.replaceState({}, '', `${route('home')}${generateURL(mainPost)}`);
+        }
+    }, []);
 
     const updateRelatedPostsMap = (slug, newPosts = []) => {
         if (!slug || !Array.isArray(newPosts)) return;
