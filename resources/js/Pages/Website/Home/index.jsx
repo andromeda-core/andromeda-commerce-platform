@@ -1125,6 +1125,7 @@ export default function index({ google_map_api_key, search_history }) {
         }
     }, []);
 
+    console.log('isLOoping', isHorizontalLooping.current);
     const updateRelatedPostsMap = (slug, newPosts = []) => {
         if (!slug || !Array.isArray(newPosts)) return;
 
