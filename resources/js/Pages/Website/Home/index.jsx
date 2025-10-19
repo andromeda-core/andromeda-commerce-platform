@@ -894,13 +894,9 @@ export default function index({ google_map_api_key, search_history }) {
                             console.log('✅ Loop LEFT done');
                         }
 
-                        setTimeout(() => (isHorizontalLooping.current[slug] = false), 500);
-                        clearTimeout(isHorizontalLooping.current[`${slug}_resetTimer`]);
-                        isHorizontalLooping.current[`${slug}_resetTimer`] = setTimeout(() => {
-                            isHorizontalLooping.current[slug] = false;
-                            horizontalScrollLock.current[slug] = false;
-                            console.log(`[${slug}] Auto-reset loop flags`);
-                        }, 1000);
+                        isHorizontalLooping.current[slug] = false;
+                        horizontalScrollLock.current[slug] = false;
+                        console.log(`[${slug}] Auto-reset loop flags`);
                     });
                     return;
                 }
@@ -928,13 +924,9 @@ export default function index({ google_map_api_key, search_history }) {
                             `${route('home')}${generateURL(viewablePost)}`,
                         );
                         console.log('✅ Loop RIGHT done');
-                        setTimeout(() => (isHorizontalLooping.current[slug] = false), 500);
-                        clearTimeout(isHorizontalLooping.current[`${slug}_resetTimer`]);
-                        isHorizontalLooping.current[`${slug}_resetTimer`] = setTimeout(() => {
-                            isHorizontalLooping.current[slug] = false;
-                            horizontalScrollLock.current[slug] = false;
-                            console.log(`[${slug}] Auto-reset loop flags`);
-                        }, 1000);
+                        isHorizontalLooping.current[slug] = false;
+                        horizontalScrollLock.current[slug] = false;
+                        console.log(`[${slug}] Auto-reset loop flags`);
                     });
                     return;
                 }
