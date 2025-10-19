@@ -544,6 +544,9 @@ export default function index({ google_map_api_key, search_history }) {
     const touchStartX = useRef(0);
     const postsRef = useRef(posts);
     const lastFetchTriggerIndex = useRef(-1);
+    const gestureLocked = useRef(null);
+
+    console.log(gestureLocked.current);
 
     useEffect(() => {
         postsRef.current = posts;
@@ -755,6 +758,7 @@ export default function index({ google_map_api_key, search_history }) {
         const handleTouchStart = (e) => {
             touchStartY.current = e.touches[0].clientY;
             touchStartX.current = e.touches[0].clientX;
+            gestureLocked.current = null;
         };
 
         const handleTouchMove = (e) => {
@@ -768,69 +772,74 @@ export default function index({ google_map_api_key, search_history }) {
             const deltaY = currentY - (touchStartY.current || currentY);
             const deltaX = currentX - (touchStartX.current || currentX);
 
-            const isVerticalSwipe = Math.abs(deltaY) > Math.abs(deltaX) + 20;
-
-            if (!isVerticalSwipe) {
-                alert('No Vertical');
-                return;
+            if (!gestureLocked.current) {
+                if (Math.abs(deltaY) > Math.abs(deltaX) + 10) {
+                    gestureLocked.current = 'y';
+                } else if (Math.abs(deltaX) > Math.abs(deltaY) + 10) {
+                    gestureLocked.current = 'x';
+                }
             }
 
-            const scrollTop = container.scrollTop;
-            const atTop = scrollTop <= 0;
-            const atBottom =
-                Math.abs(scrollTop + container.clientHeight - container.scrollHeight) < 5;
+            if (gestureLocked.current === 'x') return;
 
-            if (atTop && deltaY > 30 && selectedPostIndex === 0) {
-                e.preventDefault();
-                scrollLock.current = true;
-                isLooping.current = true;
+            if (gestureLocked.current === 'y') {
+                const scrollTop = container.scrollTop;
+                const atTop = scrollTop <= 0;
+                const atBottom =
+                    Math.abs(scrollTop + container.clientHeight - container.scrollHeight) < 5;
 
-                container.style.touchAction = 'none';
-                container.style.pointerEvents = 'none';
+                if (atTop && deltaY > 30 && selectedPostIndex === 0) {
+                    e.preventDefault();
+                    scrollLock.current = true;
+                    isLooping.current = true;
 
-                const newIndex = postsRef.current.length - 1;
+                    container.style.touchAction = 'none';
+                    container.style.pointerEvents = 'none';
 
-                container.scrollTo({
-                    top: newIndex * container.clientHeight,
-                    behavior: 'smooth',
-                });
+                    const newIndex = postsRef.current.length - 1;
 
-                waitForScrollSettle(false, () => {
-                    setSelectedPostIndex(newIndex);
-                    setViewablePost(postsRef.current[newIndex]);
-                    setRelatedPostSlug(postsRef.current[newIndex].slug);
+                    container.scrollTo({
+                        top: newIndex * container.clientHeight,
+                        behavior: 'smooth',
+                    });
 
-                    scrollLock.current = false;
-                    isLooping.current = false;
-                    container.style.touchAction = 'auto';
-                    container.style.pointerEvents = 'auto';
-                });
+                    waitForScrollSettle(false, () => {
+                        setSelectedPostIndex(newIndex);
+                        setViewablePost(postsRef.current[newIndex]);
+                        setRelatedPostSlug(postsRef.current[newIndex].slug);
 
-                return;
-            }
+                        scrollLock.current = false;
+                        isLooping.current = false;
+                        container.style.touchAction = 'auto';
+                        container.style.pointerEvents = 'auto';
+                    });
 
-            if (atBottom && deltaY < -30 && selectedPostIndex === postsRef.current.length - 1) {
-                e.preventDefault();
-                scrollLock.current = true;
-                isLooping.current = true;
+                    return;
+                }
 
-                container.style.touchAction = 'none';
-                container.style.pointerEvents = 'none';
+                if (atBottom && deltaY < -30 && selectedPostIndex === postsRef.current.length - 1) {
+                    e.preventDefault();
+                    scrollLock.current = true;
+                    isLooping.current = true;
 
-                container.scrollTo({ top: 0, behavior: 'smooth' });
+                    container.style.touchAction = 'none';
+                    container.style.pointerEvents = 'none';
 
-                waitForScrollSettle(true, () => {
-                    setSelectedPostIndex(0);
-                    setViewablePost(postsRef.current[0]);
-                    setRelatedPostSlug(postsRef.current[0].slug);
+                    container.scrollTo({ top: 0, behavior: 'smooth' });
 
-                    scrollLock.current = false;
-                    isLooping.current = false;
-                    container.style.touchAction = 'auto';
-                    container.style.pointerEvents = 'auto';
-                });
+                    waitForScrollSettle(true, () => {
+                        setSelectedPostIndex(0);
+                        setViewablePost(postsRef.current[0]);
+                        setRelatedPostSlug(postsRef.current[0].slug);
 
-                return;
+                        scrollLock.current = false;
+                        isLooping.current = false;
+                        container.style.touchAction = 'auto';
+                        container.style.pointerEvents = 'auto';
+                    });
+
+                    return;
+                }
             }
         };
 
@@ -2825,9 +2834,18 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                     {/* Main Post + Related Posts Horizontal Scroll */}
                                                     <div
+                                                        ref={scrollContainerRef}
+                                                        onTouchStart={(e) => {
+                                                            e.stopPropagation();
+                                                            handleTouchStart(e);
+                                                        }}
+                                                        onTouchMove={(e) => {
+                                                            e.stopPropagation();
+                                                            handleTouchMove(mainPost, e);
+                                                        }}
                                                         onScroll={(e) => {
                                                             e.stopPropagation();
-                                                            handleHorizontalScroll(post, e);
+                                                            handleHorizontalScroll(mainPost, e);
                                                         }}
                                                         className="horizontal-scroll-container relative flex h-full w-full select-none snap-x snap-mandatory overflow-x-scroll scrollbar-none"
                                                         style={{
