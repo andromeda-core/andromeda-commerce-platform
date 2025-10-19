@@ -804,110 +804,101 @@ export default function index({ google_map_api_key, search_history }) {
                 }
             }
 
-            // if (gestureLocked.current === 'x') {
-            //     const slug = relatedPostSlug
-            //     const relatedPosts = relatedPostsRef.current[slug];
-            //     const currentRelatedPost = relatedViewMap.current[slug];
+            if (gestureLocked.current === 'x') {
+                console.log('Scroolled');
+                const slug = relatedPostSlugRef.current;
+                const relatedPosts = relatedPostsRef.current[slug] || [];
 
-            //     setTimeout(() => {
-            //         alert('Scroolled');
-            //     }, 1000);
-            // }
+                // Get the horizontal scroll container (you'll need a ref for this)
+                const horizontalContainer = horizontalCarouselRefs.current[slug];
 
-            // if (gestureLocked.current === 'x') {
-            //     const slug = relatedPostSlugRef.current;
-            //     const relatedPosts = relatedPostsRef.current[slug] || [];
+                if (!horizontalContainer) return;
 
-            //     // Get the horizontal scroll container (you'll need a ref for this)
-            //     const horizontalContainer = horizontalCarouselRefs.current[slug];
+                const containerWidth = horizontalContainer.clientWidth;
+                const currentScrollLeft = horizontalContainer.scrollLeft;
+                const maxScroll = horizontalContainer.scrollWidth - containerWidth;
 
-            //     if (!horizontalContainer) return;
+                // Total carousel items: 1 main + related posts
+                const totalItems = 1 + relatedPosts.length;
+                const currentIndex = Math.round(currentScrollLeft / containerWidth);
 
-            //     const containerWidth = horizontalContainer.clientWidth;
-            //     const currentScrollLeft = horizontalContainer.scrollLeft;
-            //     const maxScroll = horizontalContainer.scrollWidth - containerWidth;
+                const minDeltaX = -100; // threshold for swipe left (negative)
+                const maxDeltaX = 100; // threshold for swipe right (positive)
 
-            //     // Total carousel items: 1 main + related posts
-            //     const totalItems = 1 + relatedPosts.length;
-            //     const currentIndex = Math.round(currentScrollLeft / containerWidth);
+                // LOOP LEFT: At first item (index 0), swiping left (deltaX < -100)
+                if (
+                    currentIndex === 0 &&
+                    deltaX < minDeltaX &&
+                    !isHorizontalLooping.current[slug]
+                ) {
+                    toast.info(`[${slug}] LOOP LEFT: Jumping to last item`);
+                    isHorizontalLooping.current[slug] = true;
+                    horizontalScrollLock.current[slug] = true;
 
-            //     const minDeltaX = -100; // threshold for swipe left (negative)
-            //     const maxDeltaX = 100; // threshold for swipe right (positive)
+                    const lastItemIndex = totalItems - 1;
+                    const targetScroll = lastItemIndex * containerWidth;
 
-            //     // LOOP LEFT: At first item (index 0), swiping left (deltaX < -100)
-            //     if (
-            //         currentIndex === 0 &&
-            //         deltaX < minDeltaX &&
-            //         !isHorizontalLooping.current[slug]
-            //     ) {
-            //         toast.info(`[${slug}] LOOP LEFT: Jumping to last item`);
-            //         isHorizontalLooping.current[slug] = true;
-            //         horizontalScrollLock.current[slug] = true;
+                    horizontalContainer.scrollTo({
+                        left: targetScroll,
+                        behavior: 'smooth',
+                    });
 
-            //         const lastItemIndex = totalItems - 1;
-            //         const targetScroll = lastItemIndex * containerWidth;
+                    // Clear timeout
+                    if (horizontalTimeoutRef.current[slug]) {
+                        clearTimeout(horizontalTimeoutRef.current[slug]);
+                    }
 
-            //         horizontalContainer.scrollTo({
-            //             left: targetScroll,
-            //             behavior: 'smooth',
-            //         });
+                    horizontalTimeoutRef.current[slug] = setTimeout(() => {
+                        isHorizontalLooping.current[slug] = false;
+                        horizontalScrollLock.current[slug] = false;
+                        toast.info(`[${slug}] Loop LEFT complete`);
+                    }, 700);
 
-            //         // Clear timeout
-            //         if (horizontalTimeoutRef.current[slug]) {
-            //             clearTimeout(horizontalTimeoutRef.current[slug]);
-            //         }
+                    e.preventDefault();
+                    return;
+                }
 
-            //         horizontalTimeoutRef.current[slug] = setTimeout(() => {
-            //             isHorizontalLooping.current[slug] = false;
-            //             horizontalScrollLock.current[slug] = false;
-            //             toast.info(`[${slug}] Loop LEFT complete`);
-            //         }, 700);
+                // LOOP RIGHT: At last item, swiping right (deltaX > 100)
+                if (
+                    currentIndex === totalItems - 1 &&
+                    deltaX > maxDeltaX &&
+                    !isHorizontalLooping.current[slug]
+                ) {
+                    toast.info(`[${slug}] LOOP RIGHT: Jumping to first item`);
+                    isHorizontalLooping.current[slug] = true;
+                    horizontalScrollLock.current[slug] = true;
 
-            //         e.preventDefault();
-            //         return;
-            //     }
+                    horizontalContainer.scrollTo({
+                        left: 0,
+                        behavior: 'smooth',
+                    });
 
-            //     // LOOP RIGHT: At last item, swiping right (deltaX > 100)
-            //     if (
-            //         currentIndex === totalItems - 1 &&
-            //         deltaX > maxDeltaX &&
-            //         !isHorizontalLooping.current[slug]
-            //     ) {
-            //         toast.info(`[${slug}] LOOP RIGHT: Jumping to first item`);
-            //         isHorizontalLooping.current[slug] = true;
-            //         horizontalScrollLock.current[slug] = true;
+                    // Clear timeout
+                    if (horizontalTimeoutRef.current[slug]) {
+                        clearTimeout(horizontalTimeoutRef.current[slug]);
+                    }
 
-            //         horizontalContainer.scrollTo({
-            //             left: 0,
-            //             behavior: 'smooth',
-            //         });
+                    horizontalTimeoutRef.current[slug] = setTimeout(() => {
+                        // Reset to main post view
+                        setActiveViewerMap((prev) => ({
+                            ...prev,
+                            [slug]: 'main',
+                        }));
+                        setRelatedViewerMap((prev) => ({
+                            ...prev,
+                            [slug]: null,
+                        }));
+                        setViewablePost(viewablePost); // Keep current viewable post
 
-            //         // Clear timeout
-            //         if (horizontalTimeoutRef.current[slug]) {
-            //             clearTimeout(horizontalTimeoutRef.current[slug]);
-            //         }
+                        isHorizontalLooping.current[slug] = false;
+                        horizontalScrollLock.current[slug] = false;
+                        toast.info(`[${slug}] Loop RIGHT complete`);
+                    }, 700);
 
-            //         horizontalTimeoutRef.current[slug] = setTimeout(() => {
-            //             // Reset to main post view
-            //             setActiveViewerMap((prev) => ({
-            //                 ...prev,
-            //                 [slug]: 'main',
-            //             }));
-            //             setRelatedViewerMap((prev) => ({
-            //                 ...prev,
-            //                 [slug]: null,
-            //             }));
-            //             setViewablePost(viewablePost); // Keep current viewable post
-
-            //             isHorizontalLooping.current[slug] = false;
-            //             horizontalScrollLock.current[slug] = false;
-            //             toast.info(`[${slug}] Loop RIGHT complete`);
-            //         }, 700);
-
-            //         e.preventDefault();
-            //         return;
-            //     }
-            // }
+                    e.preventDefault();
+                    return;
+                }
+            }
 
             if (gestureLocked.current === 'y') {
                 const scrollTop = container.scrollTop;
@@ -1016,8 +1007,6 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             if (activeViewerMap[slug] !== 'related' || currentViewer?.id !== relatedPost.id) {
-                console.log(`Updating to related post:`, relatedPost);
-
                 setRelatedViewerMap((prev) => ({
                     ...prev,
                     [slug]: relatedPost,
