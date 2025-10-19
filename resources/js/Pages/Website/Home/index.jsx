@@ -782,34 +782,34 @@ export default function index({ google_map_api_key, search_history }) {
                 }
             }
 
-            if (gestureLocked.current === 'x') {
-                e.preventDefault();
+            // if (gestureLocked.current === 'x') {
+            //     e.preventDefault();
 
-                const slug = relatedPostSlug;
-                const relatedPosts = relatedPostsMap[slug] || [];
-                const total = relatedPosts.length;
-                let index = lastHorizontalIndexRef.current[slug] ?? 0;
+            //     const slug = relatedPostSlug;
+            //     const relatedPosts = relatedPostsMap[slug] || [];
+            //     const total = relatedPosts.length;
+            //     let index = lastHorizontalIndexRef.current[slug] ?? 0;
 
-                const diff = touchStartX.current - e.touches[0].clientX;
+            //     const diff = touchStartX.current - e.touches[0].clientX;
 
-                if (horizontalSwipeLock.current) return;
-                if (diff < 0 && index === 0) {
-                    setTimeout(() => {
-                        alert(`Triggering Loop to Go Last Post DIFF: ${diff}`);
-                    }, 1000);
-                } else if (diff > 0 && index === total - 1) {
-                    setTimeout(() => {
-                        alert('Triggering Loop to Go First Post');
-                    }, 1000);
-                }
-                // else {
-                //     setTimeout(() => {
-                //         alert(diff);
-                //         alert(index);
-                //         alert(total);
-                //     }, 1000);
-                // }
-            }
+            //     if (horizontalSwipeLock.current) return;
+            //     if (diff < 0 && index === 0) {
+            //         setTimeout(() => {
+            //             alert(`Triggering Loop to Go Last Post DIFF: ${diff}`);
+            //         }, 1000);
+            //     } else if (diff > 0 && index === total - 1) {
+            //         setTimeout(() => {
+            //             alert('Triggering Loop to Go First Post');
+            //         }, 1000);
+            //     }
+            //     // else {
+            //     //     setTimeout(() => {
+            //     //         alert(diff);
+            //     //         alert(index);
+            //     //         alert(total);
+            //     //     }, 1000);
+            //     // }
+            // }
 
             if (gestureLocked.current === 'y') {
                 const scrollTop = container.scrollTop;
