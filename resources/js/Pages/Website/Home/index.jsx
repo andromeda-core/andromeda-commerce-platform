@@ -553,6 +553,7 @@ export default function index({ google_map_api_key, search_history }) {
     const gestureLocked = useRef(null);
     const lastTriedRef = useRef(0);
 
+    const lastHorizontalIndexRef = useRef({});
     const horizontalCarouselRefs = useRef({});
 
     useEffect(() => {
