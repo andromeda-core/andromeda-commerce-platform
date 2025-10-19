@@ -378,7 +378,6 @@ export default function index({ google_map_api_key, search_history }) {
         if (isFetchingRef.current || lastFetchedUrlRef.current[slug] === nextUrl || !slug) return;
 
         isFetchingRef.current = true;
-        lastFetchedUrlRef.current[slug] = currentUrl;
 
         try {
             const res = await axios.get(currentUrl, {
