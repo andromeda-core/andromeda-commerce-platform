@@ -575,6 +575,8 @@ export default function index({ google_map_api_key, search_history }) {
         relatedPostSlugRef.current = relatedPostSlug;
     }, [relatedPostSlug]);
 
+    console.log(horizontalCarouselRefs.current);
+
     useEffect(() => {
         if (!isMobilePostViewer || viewablePost === '' || isMobilePostGallery) return;
         const container = mobilePostContainerRef.current;
@@ -814,7 +816,7 @@ export default function index({ google_map_api_key, search_history }) {
             // }
 
             if (gestureLocked.current === 'x') {
-                const slug = relatedPostSlug;
+                const slug = relatedPostSlugRef.current;
                 const relatedPosts = relatedPostsRef.current[slug] || [];
 
                 // Get the horizontal scroll container (you'll need a ref for this)
