@@ -547,6 +547,7 @@ export default function index({ google_map_api_key, search_history }) {
     const gestureLocked = useRef(null);
     const lastHorizontalIndexRef = useRef({});
     const lastTriedRef = useRef({});
+    const horizontalSwipeLock = useRef(null);
 
     console.log(gestureLocked.current);
 
@@ -790,51 +791,36 @@ export default function index({ google_map_api_key, search_history }) {
 
                 const diff = touchStartX.current - e.touches[0].clientX;
 
+                // Prevent spamming by adding a short cooldown (e.g., 600ms)
+                if (horizontalSwipeLock.current) return;
+
+                // 👉 Swipe Right to Left (Next)
                 if (diff > 100) {
+                    horizontalSwipeLock.current = true;
+
                     if (index >= total - 1) {
-                        setTimeout(() => {
-                            alert("You've reached the end.");
-                        }, 1000);
+                        alert("You've reached the end.");
                     }
 
-                    const nextPost = relatedPosts[index];
-                    if (nextPost) {
-                        lastHorizontalIndexRef.current[slug] = index;
-                        setViewablePost(nextPost);
-                        setRelatedViewerMap((prev) => ({
-                            ...prev,
-                            [slug]: nextPost,
-                        }));
-                        window.history.replaceState(
-                            {},
-                            '',
-                            `${route('home')}${generateURL(nextPost)}`,
-                        );
-                    }
+                    // reset for next swipe
+                    touchStartX.current = e.touches[0].clientX;
+                    setTimeout(() => (horizontalSwipeLock.current = false), 600);
+                    return;
                 }
 
                 // 👈 Swipe Left to Right (Previous)
                 if (diff < -100) {
+                    horizontalSwipeLock.current = true;
+
                     if (index <= 0) {
-                        setTimeout(() => {
-                            alert("You've reached the First.");
-                        }, 1000);
+                        // user tried to go previous from first post
+                        alert("You've reached the first.");
                     }
 
-                    // const prevPost = relatedPosts[index];
-                    // if (prevPost) {
-                    //     lastHorizontalIndexRef.current[slug] = index;
-                    //     setViewablePost(prevPost);
-                    //     setRelatedViewerMap((prev) => ({
-                    //         ...prev,
-                    //         [slug]: prevPost,
-                    //     }));
-                    //     window.history.replaceState(
-                    //         {},
-                    //         '',
-                    //         `${route('home')}${generateURL(prevPost)}`,
-                    //     );
-                    // }
+                    // reset for next swipe
+                    touchStartX.current = e.touches[0].clientX;
+                    setTimeout(() => (horizontalSwipeLock.current = false), 600);
+                    return;
                 }
             }
 
