@@ -1264,8 +1264,8 @@ export default function index({ google_map_api_key, search_history }) {
 
             lastHorizontalIndexRef.current[slug] = index;
 
-            if (lastIndex && remaining < 1) {
-                alert('going Back');
+            if (lastIndex && remaining == 0) {
+                alert('going Back To First');
             }
 
             if (index > 0) {
