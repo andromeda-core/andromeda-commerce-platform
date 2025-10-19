@@ -944,6 +944,8 @@ export default function index({ google_map_api_key, search_history }) {
 
             if (gestureLocked.current === 'y') {
                 alert('Y');
+                alert(selectedPostIndex);
+                alert(deltaY);
                 const scrollTop = container.scrollTop;
                 const atTop = scrollTop <= 0;
                 const atBottom =
@@ -1008,6 +1010,8 @@ export default function index({ google_map_api_key, search_history }) {
 
                     return;
                 }
+
+                alert('OUTSIDE');
             }
         };
 
