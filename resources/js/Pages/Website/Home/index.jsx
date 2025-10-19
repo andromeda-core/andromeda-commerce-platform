@@ -1248,29 +1248,32 @@ export default function index({ google_map_api_key, search_history }) {
 
     const lastHorizontalIndexRef = useRef({});
     const lastTriedRef = useRef({});
+    const touchMoveX = useRef(0);
 
-    const handleTouchEnd = useCallback(
+    const handleTouchStart = useCallback((e) => {
+        touchStartX.current = e.touches[0].clientX;
+    }, []);
+
+    const handleTouchMove = useCallback(
         (mainPost, e) => {
-            const touchEndX = e.changedTouches[0].clientX;
-            const diff = touchStartX.current - touchEndX;
+            touchMoveX.current = e.touches[0].clientX;
+            const diff = touchStartX.current - touchMoveX.current;
 
             const slug = mainPost.slug;
             const relatedPosts = relatedPostsMap[slug] || [];
             const total = relatedPosts.length;
             const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
 
-            // 👉 Right Swipe (Next Post)
-            if (diff > 50) {
-                if (lastIndex >= total - 1) {
-                    alert('No more posts on the right!');
-                }
+            // Right swipe (to next post)
+            if (diff > 50 && lastIndex >= total - 1) {
+                alert('No more posts on the right!');
+                touchStartX.current = touchMoveX.current; // reset so it won’t repeat instantly
             }
 
-            // 👉 Left Swipe (Previous Post)
-            else if (diff < -50) {
-                if (lastIndex <= 0) {
-                    alert('No more posts on the left!');
-                }
+            // Left swipe (to previous post)
+            if (diff < -50 && lastIndex <= 0) {
+                alert('No more posts on the left!');
+                touchStartX.current = touchMoveX.current;
             }
         },
         [relatedPostsMap],
@@ -2818,8 +2821,9 @@ export default function index({ google_map_api_key, search_history }) {
                                                             e.stopPropagation();
                                                             handleHorizontalScroll(post, e);
                                                         }}
-                                                        onTouchEnd={(e) =>
-                                                            handleTouchEnd(mainPost, e)
+                                                        onTouchStart={handleTouchStart}
+                                                        onTouchMove={(e) =>
+                                                            handleTouchMove(mainPost, e)
                                                         }
                                                         className="horizontal-scroll-container relative flex h-full w-full select-none snap-x snap-mandatory overflow-x-scroll scrollbar-none"
                                                         style={{
