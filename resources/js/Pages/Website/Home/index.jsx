@@ -993,35 +993,28 @@ export default function index({ google_map_api_key, search_history }) {
 
     // Original Horizontal Scroll Logic
     const handleHorizontalScroll = useCallback((mainPost, e) => {
-        alert('in Handle');
         const el = e.currentTarget;
-        alert('After El');
 
         const slug = mainPost.slug;
-        alert('After Slug');
+
         const relatedPosts = relatedPostsRef.current[slug] || [];
-        alert('After Related Posts');
+
         const currentViewer = relatedViewMap.current[slug] || null;
-        alert('After Related Viewer');
+
         const nextPageUrl = relatedNextUrlMap.current[slug] || null;
-        alert('After Related PAGE URL');
 
         const index = Math.round(el.scrollLeft / el.clientWidth);
-        alert('After Index');
-        const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
-        alert('Last Index');
 
-        alert('before Confition');
-        alert(index);
+        const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
+
         if (index === lastIndex) return;
-        alert('After Confition');
+
         lastHorizontalIndexRef.current[slug] = index;
 
         if (index > lastIndex) lastDirectionRef.current = 'right';
         else if (index < lastIndex) lastDirectionRef.current = 'left';
 
         if (index > 0) {
-            alert('psot changing');
             const relatedPost = relatedPosts[index - 1];
             if (activeViewerMap[slug] !== 'related' || currentViewer?.id !== relatedPost.id) {
                 setRelatedViewerMap((prev) => ({
