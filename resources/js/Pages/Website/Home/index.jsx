@@ -825,6 +825,32 @@ export default function index({ google_map_api_key, search_history }) {
                 const totalItems = 1 + relatedPosts.length;
                 const currentIndex = Math.round(currentScrollLeft / containerWidth);
 
+                const waitForHorizontalScrollSettle = (targetScroll, callback) => {
+                    let lastScrollLeft = horizontalContainer.scrollLeft;
+                    let stableCount = 0;
+                    const requiredStable = 2;
+
+                    const checkSettle = () => {
+                        const currentScrollLeft = horizontalContainer.scrollLeft;
+                        const atTarget = Math.abs(currentScrollLeft - targetScroll) < 5;
+
+                        if (currentScrollLeft === lastScrollLeft && atTarget) {
+                            stableCount++;
+                            if (stableCount >= requiredStable) {
+                                callback();
+                                return;
+                            }
+                        } else {
+                            stableCount = 0;
+                        }
+
+                        lastScrollLeft = currentScrollLeft;
+                        setTimeout(checkSettle, 50);
+                    };
+
+                    checkSettle();
+                };
+
                 if (currentScrollLeft === 0 && currentIndex === 0) {
                     console.log('Loop LEFT - scrolling back from position 0');
                     isHorizontalLooping.current[slug] = true;
@@ -838,12 +864,8 @@ export default function index({ google_map_api_key, search_history }) {
                         behavior: 'smooth',
                     });
 
-                    // Clear timeout
-                    if (horizontalTimeoutRef.current[slug]) {
-                        clearTimeout(horizontalTimeoutRef.current[slug]);
-                    }
-
-                    horizontalTimeoutRef.current[slug] = setTimeout(() => {
+                    // Wait for scroll to settle, then update viewer
+                    waitForHorizontalScrollSettle(targetScroll, () => {
                         const relatedPost = relatedPosts[relatedPosts.length - 1];
 
                         if (relatedPost && typeof relatedPost === 'object' && relatedPost.id) {
@@ -866,7 +888,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                         isHorizontalLooping.current[slug] = false;
                         horizontalScrollLock.current[slug] = false;
-                    }, 700);
+                    });
 
                     e.preventDefault();
                     return;
