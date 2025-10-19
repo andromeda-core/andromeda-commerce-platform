@@ -815,105 +815,105 @@ export default function index({ google_map_api_key, search_history }) {
                 }
             }
 
-            // if (gestureLocked.current === 'x') {
-            //     const slug = relatedPostSlugRef.current;
-            //     if (!slug) return;
+            if (gestureLocked.current === 'x') {
+                const slug = relatedPostSlugRef.current;
+                if (!slug) return;
 
-            //     const relatedPosts = relatedPostsRef.current[slug] || [];
-            //     const horizontalContainer = horizontalCarouselRefs.current[slug];
-            //     if (!horizontalContainer) return;
+                const relatedPosts = relatedPostsRef.current[slug] || [];
+                const horizontalContainer = horizontalCarouselRefs.current[slug];
+                if (!horizontalContainer) return;
 
-            //     const containerWidth = horizontalContainer.clientWidth;
-            //     const currentScrollLeft = horizontalContainer.scrollLeft;
-            //     const maxScroll = horizontalContainer.scrollWidth - containerWidth;
-            //     const totalItems = 1 + relatedPosts.length;
-            //     const currentIndex = Math.round(currentScrollLeft / containerWidth);
-            //     const nearStart = currentScrollLeft <= 5;
-            //     const nearEnd = Math.abs(currentScrollLeft - maxScroll) <= 5;
+                const containerWidth = horizontalContainer.clientWidth;
+                const currentScrollLeft = horizontalContainer.scrollLeft;
+                const maxScroll = horizontalContainer.scrollWidth - containerWidth;
+                const totalItems = 1 + relatedPosts.length;
+                const currentIndex = Math.round(currentScrollLeft / containerWidth);
+                const nearStart = currentScrollLeft <= 5;
+                const nearEnd = Math.abs(currentScrollLeft - maxScroll) <= 5;
 
-            //     // ✅ detect direction only when moving
-            //     const lastIndex = lastHorizontalIndexRef.current[slug];
-            //     if (lastIndex !== currentIndex) {
-            //         lastDirectionRef.current[slug] =
-            //             currentIndex > (lastIndex ?? 0) ? 'right' : 'left';
-            //         lastHorizontalIndexRef.current[slug] = currentIndex;
-            //     }
+                // ✅ detect direction only when moving
+                const lastIndex = lastHorizontalIndexRef.current[slug];
+                if (lastIndex !== currentIndex) {
+                    lastDirectionRef.current[slug] =
+                        currentIndex > (lastIndex ?? 0) ? 'right' : 'left';
+                    lastHorizontalIndexRef.current[slug] = currentIndex;
+                }
 
-            //     // internal helper for animation settle
-            //     const waitForSettle = (target, cb) => {
-            //         let lastLeft = horizontalContainer.scrollLeft,
-            //             stable = 0;
-            //         const tick = () => {
-            //             const left = horizontalContainer.scrollLeft;
-            //             if (Math.abs(left - target) < 2 && Math.abs(left - lastLeft) < 1) {
-            //                 if (++stable > 1) return cb();
-            //             } else stable = 0;
-            //             lastLeft = left;
-            //             setTimeout(tick, 40);
-            //         };
-            //         tick();
-            //     };
+                // internal helper for animation settle
+                const waitForSettle = (target, cb) => {
+                    let lastLeft = horizontalContainer.scrollLeft,
+                        stable = 0;
+                    const tick = () => {
+                        const left = horizontalContainer.scrollLeft;
+                        if (Math.abs(left - target) < 2 && Math.abs(left - lastLeft) < 1) {
+                            if (++stable > 1) return cb();
+                        } else stable = 0;
+                        lastLeft = left;
+                        setTimeout(tick, 40);
+                    };
+                    tick();
+                };
 
-            //     // --- LEFT LOOP: at start, swipe left-to-right ---
-            //     if (
-            //         nearStart &&
-            //         currentIndex === 0 &&
-            //         deltaX > 60 && // real swipe threshold
-            //         !isHorizontalLooping.current[slug]
-            //     ) {
-            //         console.log('↩️ Loop LEFT → jumping to last post');
-            //         e.preventDefault();
-            //         isHorizontalLooping.current[slug] = true;
+                // --- LEFT LOOP: at start, swipe left-to-right ---
+                if (
+                    nearStart &&
+                    currentIndex === 0 &&
+                    deltaX > 60 && // real swipe threshold
+                    !isHorizontalLooping.current[slug]
+                ) {
+                    console.log('↩️ Loop LEFT → jumping to last post');
+                    e.preventDefault();
+                    isHorizontalLooping.current[slug] = true;
 
-            //         const targetScroll = maxScroll;
-            //         horizontalContainer.scrollTo({ left: targetScroll, behavior: 'smooth' });
+                    const targetScroll = maxScroll;
+                    horizontalContainer.scrollTo({ left: targetScroll, behavior: 'smooth' });
 
-            //         waitForSettle(targetScroll, () => {
-            //             const relatedPost = relatedPosts[relatedPosts.length - 1];
-            //             if (relatedPost?.id) {
-            //                 setRelatedViewerMap((p) => ({ ...p, [slug]: relatedPost }));
-            //                 setActiveViewerMap((p) => ({ ...p, [slug]: 'related' }));
-            //                 setViewablePost(relatedPost);
-            //                 window.history.pushState(
-            //                     {},
-            //                     '',
-            //                     `${route('home')}${generateURL(relatedPost)}`,
-            //                 );
-            //                 console.log('✅ Loop LEFT done');
-            //             }
-            //             setTimeout(() => (isHorizontalLooping.current[slug] = false), 500);
-            //         });
-            //         return;
-            //     }
+                    waitForSettle(targetScroll, () => {
+                        const relatedPost = relatedPosts[relatedPosts.length - 1];
+                        if (relatedPost?.id) {
+                            setRelatedViewerMap((p) => ({ ...p, [slug]: relatedPost }));
+                            setActiveViewerMap((p) => ({ ...p, [slug]: 'related' }));
+                            setViewablePost(relatedPost);
+                            window.history.pushState(
+                                {},
+                                '',
+                                `${route('home')}${generateURL(relatedPost)}`,
+                            );
+                            console.log('✅ Loop LEFT done');
+                        }
+                        setTimeout(() => (isHorizontalLooping.current[slug] = false), 500);
+                    });
+                    return;
+                }
 
-            //     // --- RIGHT LOOP: at end, swipe right-to-left ---
-            //     if (
-            //         nearEnd &&
-            //         currentIndex === totalItems - 1 &&
-            //         deltaX < -60 &&
-            //         !isHorizontalLooping.current[slug]
-            //     ) {
-            //         console.log('↪️ Loop RIGHT → back to main');
-            //         e.preventDefault();
-            //         isHorizontalLooping.current[slug] = true;
+                // --- RIGHT LOOP: at end, swipe right-to-left ---
+                if (
+                    nearEnd &&
+                    currentIndex === totalItems - 1 &&
+                    deltaX < -60 &&
+                    !isHorizontalLooping.current[slug]
+                ) {
+                    console.log('↪️ Loop RIGHT → back to main');
+                    e.preventDefault();
+                    isHorizontalLooping.current[slug] = true;
 
-            //         horizontalContainer.scrollTo({ left: 0, behavior: 'smooth' });
+                    horizontalContainer.scrollTo({ left: 0, behavior: 'smooth' });
 
-            //         waitForSettle(0, () => {
-            //             setActiveViewerMap((p) => ({ ...p, [slug]: 'main' }));
-            //             setRelatedViewerMap((p) => ({ ...p, [slug]: null }));
-            //             setViewablePost(viewablePost);
-            //             window.history.replaceState(
-            //                 {},
-            //                 '',
-            //                 `${route('home')}${generateURL(viewablePost)}`,
-            //             );
-            //             console.log('✅ Loop RIGHT done');
-            //             setTimeout(() => (isHorizontalLooping.current[slug] = false), 500);
-            //         });
-            //         return;
-            //     }
-            // }
+                    waitForSettle(0, () => {
+                        setActiveViewerMap((p) => ({ ...p, [slug]: 'main' }));
+                        setRelatedViewerMap((p) => ({ ...p, [slug]: null }));
+                        setViewablePost(viewablePost);
+                        window.history.replaceState(
+                            {},
+                            '',
+                            `${route('home')}${generateURL(viewablePost)}`,
+                        );
+                        console.log('✅ Loop RIGHT done');
+                        setTimeout(() => (isHorizontalLooping.current[slug] = false), 500);
+                    });
+                    return;
+                }
+            }
 
             if (gestureLocked.current === 'y') {
                 const scrollTop = container.scrollTop;
