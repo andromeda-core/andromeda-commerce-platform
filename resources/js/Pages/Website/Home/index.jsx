@@ -845,7 +845,6 @@ export default function index({ google_map_api_key, search_history }) {
                 const nearStart = currentScrollLeft <= 5;
                 const nearEnd = Math.abs(currentScrollLeft - maxScroll) <= 5;
 
-                // ✅ detect direction only when moving
                 const lastIndex = lastHorizontalIndexRef.current[slug];
                 if (lastIndex !== currentIndex) {
                     lastDirectionRef.current[slug] =
@@ -853,7 +852,6 @@ export default function index({ google_map_api_key, search_history }) {
                     lastHorizontalIndexRef.current[slug] = currentIndex;
                 }
 
-                // internal helper for animation settle
                 const waitForSettle = (target, cb) => {
                     let lastLeft = horizontalContainer.scrollLeft,
                         stable = 0;
@@ -897,6 +895,12 @@ export default function index({ google_map_api_key, search_history }) {
                         }
 
                         setTimeout(() => (isHorizontalLooping.current[slug] = false), 500);
+                        clearTimeout(isHorizontalLooping.current[`${slug}_resetTimer`]);
+                        isHorizontalLooping.current[`${slug}_resetTimer`] = setTimeout(() => {
+                            isHorizontalLooping.current[slug] = false;
+                            horizontalScrollLock.current[slug] = false;
+                            console.log(`[${slug}] Auto-reset loop flags`);
+                        }, 1000);
                     });
                     return;
                 }
@@ -925,6 +929,12 @@ export default function index({ google_map_api_key, search_history }) {
                         );
                         console.log('✅ Loop RIGHT done');
                         setTimeout(() => (isHorizontalLooping.current[slug] = false), 500);
+                        clearTimeout(isHorizontalLooping.current[`${slug}_resetTimer`]);
+                        isHorizontalLooping.current[`${slug}_resetTimer`] = setTimeout(() => {
+                            isHorizontalLooping.current[slug] = false;
+                            horizontalScrollLock.current[slug] = false;
+                            console.log(`[${slug}] Auto-reset loop flags`);
+                        }, 1000);
                     });
                     return;
                 }
@@ -1017,15 +1027,6 @@ export default function index({ google_map_api_key, search_history }) {
 
         if (isHorizontalLooping.current[slug] || horizontalScrollLock.current[slug]) {
             console.log(`[${slug}] Skipping - loop in progress`);
-
-            // ✅ Auto-unlock after animation ends if stuck
-            clearTimeout(isHorizontalLooping.current[`${slug}_resetTimer`]);
-            isHorizontalLooping.current[`${slug}_resetTimer`] = setTimeout(() => {
-                isHorizontalLooping.current[slug] = false;
-                horizontalScrollLock.current[slug] = false;
-                console.log(`[${slug}] Auto-reset loop flags`);
-            }, 1000);
-
             return;
         }
 
