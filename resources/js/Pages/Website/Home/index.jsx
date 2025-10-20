@@ -754,6 +754,9 @@ export default function index({ google_map_api_key, search_history }) {
         const handleScroll = () => {
             if (scrollLock.current || isLooping.current) return;
 
+            console.log('Handle SCroll Triggers');
+            console.log('LOOPING STATUS', isLooping.current);
+
             const scrollTop = container.scrollTop;
             const containerHeight = container.clientHeight;
             const newIndex = Math.round(scrollTop / containerHeight);
