@@ -1002,8 +1002,6 @@ export default function index({ google_map_api_key, search_history }) {
                         );
                         setRelatedPostSlug(postsRef.current[newIndex].slug);
 
-                        scrollLock.current = false;
-                        isLooping.current = false;
                         container.style.touchAction = 'auto';
                         container.style.pointerEvents = 'auto';
 
@@ -1016,6 +1014,11 @@ export default function index({ google_map_api_key, search_history }) {
                         Object.keys(horizontalScrollLock.current).forEach(
                             (key) => (horizontalScrollLock.current[key] = false),
                         );
+
+                        setTimeout(() => {
+                            scrollLock.current = false;
+                            isLooping.current = false;
+                        }, 500);
                     }, 400);
 
                     return;
@@ -1051,8 +1054,6 @@ export default function index({ google_map_api_key, search_history }) {
                         );
                         setRelatedPostSlug(postsRef.current[0].slug);
 
-                        scrollLock.current = false;
-                        isLooping.current = false;
                         container.style.touchAction = 'auto';
                         container.style.pointerEvents = 'auto';
 
@@ -1065,6 +1066,11 @@ export default function index({ google_map_api_key, search_history }) {
                         Object.keys(horizontalScrollLock.current).forEach(
                             (key) => (horizontalScrollLock.current[key] = false),
                         );
+
+                        setTimeout(() => {
+                            scrollLock.current = false;
+                            isLooping.current = false;
+                        }, 500);
                     }, 400);
 
                     return;
