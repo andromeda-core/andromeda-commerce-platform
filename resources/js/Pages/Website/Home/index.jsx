@@ -867,10 +867,12 @@ export default function index({ google_map_api_key, search_history }) {
                     nearStart &&
                     currentIndex === 0 &&
                     deltaX > 60 && // real swipe threshold
-                    !isHorizontalLooping.current[slug]
+                    !isHorizontalLooping.current[slug] &&
+                    !horizontalScrollLock.current[slug]
                 ) {
                     e.preventDefault();
                     isHorizontalLooping.current[slug] = true;
+                    horizontalScrollLock.current[slug] = true;
 
                     horizontalContainer.style.touchAction = 'none';
                     horizontalContainer.style.pointerEvents = 'none';
@@ -912,10 +914,12 @@ export default function index({ google_map_api_key, search_history }) {
                     nearEnd &&
                     currentIndex === totalItems - 1 &&
                     deltaX < -60 &&
-                    !isHorizontalLooping.current[slug]
+                    !isHorizontalLooping.current[slug] &&
+                    !horizontalScrollLock.current[slug]
                 ) {
                     e.preventDefault();
                     isHorizontalLooping.current[slug] = true;
+                    horizontalScrollLock.current[slug] = true;
 
                     horizontalContainer.style.touchAction = 'none';
                     horizontalContainer.style.pointerEvents = 'none';
@@ -941,8 +945,8 @@ export default function index({ google_map_api_key, search_history }) {
                         horizontalContainer.style.pointerEvents = 'auto';
 
                         setTimeout(() => {
-                            horizontalScrollLock.current[slug] = false;
                             isHorizontalLooping.current[slug] = false;
+                            horizontalScrollLock.current[slug] = false;
                         }, 500);
                     }, 400);
                     return;
