@@ -822,6 +822,7 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             if (gestureLocked.current === 'x') {
+                console.log('X GESTURE');
                 const slug = relatedPostSlugRef.current;
                 if (!slug) return;
 
