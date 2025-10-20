@@ -896,7 +896,7 @@ export default function index({ google_map_api_key, search_history }) {
                     horizontalContainer.style.pointerEvents = 'none';
 
                     const targetScroll = maxScroll;
-                    horizontalContainer.scrollTo({ left: targetScroll, behavior: 'instant' });
+                    horizontalContainer.scrollTo({ left: targetScroll, behavior: 'smooth' });
 
                     waitForSettle(targetScroll, () => {
                         const relatedPost = relatedPosts[relatedPosts.length - 1];
@@ -936,7 +936,7 @@ export default function index({ google_map_api_key, search_history }) {
                     horizontalContainer.style.touchAction = 'none';
                     horizontalContainer.style.pointerEvents = 'none';
 
-                    horizontalContainer.scrollTo({ left: 0, behavior: 'instant' });
+                    horizontalContainer.scrollTo({ left: 0, behavior: 'smooth' });
 
                     waitForSettle(0, () => {
                         setActiveViewerMap((p) => ({ ...p, [slug]: 'main' }));
