@@ -987,6 +987,8 @@ export default function index({ google_map_api_key, search_history }) {
                             const slug = postsRef.current[newIndex]?.slug;
                             const horizontalContainer = horizontalCarouselRefs.current[slug];
 
+                            console.log('horizontalContainer', horizontalContainer);
+
                             if (horizontalContainer) {
                                 horizontalContainer.style.touchAction = 'pan-y pan-x';
                                 horizontalContainer.style.pointerEvents = 'auto';
@@ -1029,6 +1031,8 @@ export default function index({ google_map_api_key, search_history }) {
                         setTimeout(() => {
                             const slug = postsRef.current[0]?.slug;
                             const horizontalContainer = horizontalCarouselRefs.current[slug];
+
+                            console.log('horizontalContainer', horizontalContainer);
 
                             if (horizontalContainer) {
                                 horizontalContainer.style.touchAction = 'pan-y pan-x';
