@@ -825,10 +825,14 @@ export default function index({ google_map_api_key, search_history }) {
                 console.log('X GESTURE');
                 const slug = relatedPostSlugRef.current;
                 if (!slug) return;
+                console.log('After Slug');
 
                 const relatedPosts = relatedPostsRef.current[slug] || [];
+                console.log('After Related Pots');
                 const horizontalContainer = horizontalCarouselRefs.current[slug];
+                console.log('Horizontal Containewr');
                 if (!horizontalContainer) return;
+                console.log('After Horizontal Containewr');
 
                 const containerWidth = horizontalContainer.clientWidth;
                 const currentScrollLeft = horizontalContainer.scrollLeft;
@@ -994,12 +998,12 @@ export default function index({ google_map_api_key, search_history }) {
                             (key) => (horizontalScrollLock.current[key] = false),
                         );
 
-                        const slug = relatedPostSlugRef.current; //slug
-                        console.log('REALTED PArent POST SLUG', slug);
-                        const horizontalContainer = horizontalCarouselRefs.current[slug];
-                        console.log('horizontalContainer', horizontalContainer);
+                        // const slug = relatedPostSlugRef.current; //slug
+                        // console.log('REALTED PArent POST SLUG', slug);
+                        // const horizontalContainer = horizontalCarouselRefs.current[slug];
+                        // console.log('horizontalContainer', horizontalContainer);
 
-                        console.log('🌀 Gesture reset — touch context restored');
+                        // console.log('🌀 Gesture reset — touch context restored');
                     });
 
                     return;
@@ -1040,12 +1044,12 @@ export default function index({ google_map_api_key, search_history }) {
                             (key) => (horizontalScrollLock.current[key] = false),
                         );
 
-                        const slug = relatedPostSlugRef.current; //slug
-                        console.log('REALTED PArent POST SLUG', slug);
-                        const horizontalContainer = horizontalCarouselRefs.current[slug];
-                        console.log('horizontalContainer', horizontalContainer);
+                        // const slug = relatedPostSlugRef.current; //slug
+                        // console.log('REALTED PArent POST SLUG', slug);
+                        // const horizontalContainer = horizontalCarouselRefs.current[slug];
+                        // console.log('horizontalContainer', horizontalContainer);
 
-                        console.log('🌀 Gesture reset — touch context restored');
+                        // console.log('🌀 Gesture reset — touch context restored');
                     });
 
                     return;
