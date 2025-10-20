@@ -896,13 +896,12 @@ export default function index({ google_map_api_key, search_history }) {
                             );
                         }
 
-                        isHorizontalLooping.current[slug] = false;
-
                         horizontalContainer.style.touchAction = 'auto';
                         horizontalContainer.style.pointerEvents = 'auto';
 
                         setTimeout(() => {
                             horizontalScrollLock.current[slug] = false;
+                            isHorizontalLooping.current[slug] = false;
                         }, 500);
                     }, 400);
                     return;
@@ -938,13 +937,12 @@ export default function index({ google_map_api_key, search_history }) {
                             `${route('home')}${generateURL(viewablePost)}`,
                         );
 
-                        isHorizontalLooping.current[slug] = false;
-
                         horizontalContainer.style.touchAction = 'auto';
                         horizontalContainer.style.pointerEvents = 'auto';
 
                         setTimeout(() => {
                             horizontalScrollLock.current[slug] = false;
+                            isHorizontalLooping.current[slug] = false;
                         }, 500);
                     }, 400);
                     return;
