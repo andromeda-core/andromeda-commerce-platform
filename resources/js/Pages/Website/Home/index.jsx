@@ -983,7 +983,10 @@ export default function index({ google_map_api_key, search_history }) {
                         container.style.touchAction = 'auto';
                         container.style.pointerEvents = 'auto';
 
-                        console.log('REALTED PArent POST SLUG', relatedPostSlugRef.current);
+                        const slug = relatedPostSlugRef.current; //slug
+                        console.log('REALTED PArent POST SLUG', slug);
+                        const horizontalContainer = horizontalCarouselRefs.current[slug];
+                        console.log('horizontalContainer', horizontalContainer);
                     });
 
                     return;
@@ -1014,7 +1017,10 @@ export default function index({ google_map_api_key, search_history }) {
                         container.style.touchAction = 'auto';
                         container.style.pointerEvents = 'auto';
 
-                        console.log('REALTED PArent POST SLUG', relatedPostSlugRef.current);
+                        const slug = relatedPostSlugRef.current; //slug
+                        console.log('REALTED PArent POST SLUG', slug);
+                        const horizontalContainer = horizontalCarouselRefs.current[slug];
+                        console.log('horizontalContainer', horizontalContainer);
                     });
 
                     return;
