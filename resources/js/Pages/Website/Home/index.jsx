@@ -630,32 +630,6 @@ export default function index({ google_map_api_key, search_history }) {
             );
         };
 
-        const waitForScrollSettle = (isTop, callback) => {
-            let lastScrollTop = container.scrollTop;
-            let stableCount = 0;
-            const requiredStable = 2;
-
-            const checkSettle = () => {
-                const currentScrollTop = container.scrollTop;
-                const atTarget = checkScrollReachedTarget(isTop);
-
-                if (currentScrollTop === lastScrollTop && atTarget) {
-                    stableCount++;
-                    if (stableCount >= requiredStable) {
-                        callback();
-                        return;
-                    }
-                } else {
-                    stableCount = 0;
-                }
-
-                lastScrollTop = currentScrollTop;
-                setTimeout(checkSettle, 50);
-            };
-
-            checkSettle();
-        };
-
         // Desktop scroll - Wheel
         const handleWheel = (e) => {
             if (e.ctrlKey || e.metaKey) return;
@@ -884,20 +858,6 @@ export default function index({ google_map_api_key, search_history }) {
                         currentIndex > (lastIndex ?? 0) ? 'right' : 'left';
                     lastHorizontalIndexRef.current[slug] = currentIndex;
                 }
-
-                const waitForSettle = (target, cb) => {
-                    let lastLeft = horizontalContainer.scrollLeft,
-                        stable = 0;
-                    const tick = () => {
-                        const left = horizontalContainer.scrollLeft;
-                        if (Math.abs(left - target) < 2 && Math.abs(left - lastLeft) < 1) {
-                            if (++stable > 1) return cb();
-                        } else stable = 0;
-                        lastLeft = left;
-                        setTimeout(tick, 40);
-                    };
-                    tick();
-                };
 
                 // --- LEFT LOOP: at start, swipe left-to-right ---
                 if (
@@ -1225,6 +1185,7 @@ export default function index({ google_map_api_key, search_history }) {
         if (!slug) return;
 
         requestAnimationFrame(() => {
+            console.log('Reset Related Post Some Refs');
             isHorizontalLooping.current[slug] = false;
             horizontalScrollLock.current[slug] = false;
             lastHorizontalIndexRef.current[slug] = 0;
