@@ -541,6 +541,27 @@ export default function index({ google_map_api_key, search_history }) {
         }
     }, [posts, isPostLoaded, viewablePost]);
 
+    const updateRelatedPostsMap = (slug, newPosts = []) => {
+        if (!slug || !Array.isArray(newPosts)) return;
+
+        setRelatedPostsMap((prev) => {
+            const existing = prev[slug] || [];
+
+            // Only merge unique posts
+            const merged = [
+                ...existing,
+                ...newPosts.filter((p) => !existing.some((old) => old.id === p.id)),
+            ];
+
+            // Only update if there’s actually something new
+            if (merged.length !== existing.length) {
+                return { ...prev, [slug]: merged };
+            }
+
+            return prev;
+        });
+    };
+
     const relatedPostsRef = useRef(relatedPostsMap);
     const relatedViewMap = useRef(relatedViewerMap);
     const relatedNextUrlMap = useRef(relatedNextMap);
@@ -997,6 +1018,10 @@ export default function index({ google_map_api_key, search_history }) {
                     waitForScrollSettle(false, () => {
                         setSelectedPostIndex(newIndex);
                         setViewablePost(postsRef.current[newIndex]);
+                        updateRelatedPostsMap(
+                            postsRef.current[newIndex]?.slug,
+                            postsRef.current[newIndex]?.related_posts,
+                        );
                         setRelatedPostSlug(postsRef.current[newIndex].slug);
 
                         scrollLock.current = false;
@@ -1043,6 +1068,10 @@ export default function index({ google_map_api_key, search_history }) {
                     waitForScrollSettle(true, () => {
                         setSelectedPostIndex(0);
                         setViewablePost(postsRef.current[0]);
+                        updateRelatedPostsMap(
+                            postsRef.current[0]?.slug,
+                            postsRef.current[0]?.related_posts,
+                        );
                         setRelatedPostSlug(postsRef.current[0].slug);
 
                         scrollLock.current = false;
@@ -1195,27 +1224,6 @@ export default function index({ google_map_api_key, search_history }) {
             lastDirectionRef.current[slug] = null;
         });
     }, [relatedPostSlug]);
-
-    const updateRelatedPostsMap = (slug, newPosts = []) => {
-        if (!slug || !Array.isArray(newPosts)) return;
-
-        setRelatedPostsMap((prev) => {
-            const existing = prev[slug] || [];
-
-            // Only merge unique posts
-            const merged = [
-                ...existing,
-                ...newPosts.filter((p) => !existing.some((old) => old.id === p.id)),
-            ];
-
-            // Only update if there’s actually something new
-            if (merged.length !== existing.length) {
-                return { ...prev, [slug]: merged };
-            }
-
-            return prev;
-        });
-    };
 
     const getRelatedPosts = (slug) => relatedPostsMap[slug] || [];
     const getRelatedViewer = (slug) => relatedViewerMap[slug] || null;
