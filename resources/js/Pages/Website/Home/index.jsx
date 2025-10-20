@@ -843,19 +843,15 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             if (gestureLocked.current === 'x') {
-                console.log('🟢 [X Gesture Start] --------------------');
                 const slug = relatedPostSlugRef.current;
-                console.log('Slug:', slug);
+
                 if (!slug) return;
 
                 const relatedPosts = relatedPostsRef.current[slug] || [];
-                console.log('Related Posts Count:', relatedPosts.length);
 
                 const horizontalContainer = horizontalCarouselRefs.current[slug];
-                console.log('Horizontal Container:', horizontalContainer);
 
                 if (!horizontalContainer) return;
-                console.log('After Horizontal Containewr');
 
                 const containerWidth = horizontalContainer.clientWidth;
                 const currentScrollLeft = horizontalContainer.scrollLeft;
@@ -865,23 +861,11 @@ export default function index({ google_map_api_key, search_history }) {
                 const nearStart = currentScrollLeft <= 5;
                 const nearEnd = Math.abs(currentScrollLeft - maxScroll) <= 5;
 
-                console.log({
-                    containerWidth,
-                    currentScrollLeft,
-                    maxScroll,
-                    totalItems,
-                    currentIndex,
-                    nearStart,
-                    nearEnd,
-                    deltaX,
-                });
-
                 const lastIndex = lastHorizontalIndexRef.current[slug];
                 if (lastIndex !== currentIndex) {
                     lastDirectionRef.current[slug] =
                         currentIndex > (lastIndex ?? 0) ? 'right' : 'left';
                     lastHorizontalIndexRef.current[slug] = currentIndex;
-                    console.log('Direction Changed →', lastDirectionRef.current[slug]);
                 }
 
                 const waitForSettle = (target, cb) => {
@@ -975,8 +959,6 @@ export default function index({ google_map_api_key, search_history }) {
                     });
                     return;
                 }
-
-                console.log('⚪ No loop triggered this frame');
             }
 
             if (gestureLocked.current === 'y') {
