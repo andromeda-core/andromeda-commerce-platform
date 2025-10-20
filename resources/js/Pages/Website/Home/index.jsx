@@ -759,6 +759,7 @@ export default function index({ google_map_api_key, search_history }) {
             }
         };
 
+        // Mobile Touch Scroll
         const handleScroll = () => {
             if (scrollLock.current || isLooping.current) return;
 
@@ -806,6 +807,7 @@ export default function index({ google_map_api_key, search_history }) {
             }
         };
 
+        // Mobile Touch Start Scroll + Swipe
         const handleTouchStart = (e) => {
             touchStartY.current = e.touches[0].clientY;
             touchStartX.current = e.touches[0].clientX;
@@ -820,6 +822,7 @@ export default function index({ google_map_api_key, search_history }) {
             }
         };
 
+        // Mobile Touch Move Scroll + Swipe
         const handleTouchMove = (e) => {
             const slug = relatedPostSlugRef.current;
 
