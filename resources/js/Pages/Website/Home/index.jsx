@@ -912,10 +912,15 @@ export default function index({ google_map_api_key, search_history }) {
                     horizontalContainer.style.touchAction = 'none';
                     horizontalContainer.style.pointerEvents = 'none';
 
-                    const targetScroll = maxScroll;
-                    horizontalContainer.scrollTo({ left: targetScroll, behavior: 'instant' });
+                    horizontalContainer.style.transition = 'transform 0.40s ease-out';
+                    horizontalContainer.style.transform = 'translateY(100%)';
 
-                    waitForSettle(targetScroll, () => {
+                    setTimeout(() => {
+                        const targetScroll = maxScroll;
+                        horizontalContainer.scrollTo({ left: targetScroll, behavior: 'instant' });
+                        horizontalContainer.style.transition = '';
+                        horizontalContainer.style.transform = '';
+
                         const relatedPost = relatedPosts[relatedPosts.length - 1];
                         if (relatedPost?.id) {
                             setRelatedViewerMap((p) => ({ ...p, [slug]: relatedPost }));
@@ -936,7 +941,7 @@ export default function index({ google_map_api_key, search_history }) {
                         setTimeout(() => {
                             horizontalScrollLock.current[slug] = false;
                         }, 500);
-                    });
+                    }, 400);
                     return;
                 }
 
@@ -953,9 +958,14 @@ export default function index({ google_map_api_key, search_history }) {
                     horizontalContainer.style.touchAction = 'none';
                     horizontalContainer.style.pointerEvents = 'none';
 
-                    horizontalContainer.scrollTo({ left: 0, behavior: 'instant' });
+                    horizontalContainer.style.transition = 'transform 0.40s ease-out';
+                    horizontalContainer.style.transform = 'translateY(-100%)';
 
-                    waitForSettle(0, () => {
+                    setTimeout(() => {
+                        horizontalContainer.style.transition = '';
+                        horizontalContainer.style.transform = '';
+                        horizontalContainer.scrollTo({ left: 0, behavior: 'instant' });
+
                         setActiveViewerMap((p) => ({ ...p, [slug]: 'main' }));
                         setRelatedViewerMap((p) => ({ ...p, [slug]: null }));
                         setViewablePost(viewablePost);
@@ -973,7 +983,7 @@ export default function index({ google_map_api_key, search_history }) {
                         setTimeout(() => {
                             horizontalScrollLock.current[slug] = false;
                         }, 500);
-                    });
+                    }, 400);
                     return;
                 }
             }
