@@ -604,6 +604,10 @@ export default function index({ google_map_api_key, search_history }) {
         relatedPostSlugRef.current = relatedPostSlug;
     }, [relatedPostSlug]);
 
+    // Post Viewer Posts Handling Logic
+    // Including Mobile And PC Post Mobile Viewer Handling Logic
+    // Handle Touch Method's Y axis And HandleScroll and Handlewheel method are for Y axisPosts Scroll
+    // handleTouch Method's X Axis  And HandleHorizontalScrollMethod is For X Axis Posts
     useEffect(() => {
         if (!isMobilePostViewer || viewablePost === '' || isMobilePostGallery) return;
         const container = mobilePostContainerRef.current;
@@ -757,9 +761,6 @@ export default function index({ google_map_api_key, search_history }) {
 
         const handleScroll = () => {
             if (scrollLock.current || isLooping.current) return;
-
-            console.log('Handle SCroll Triggers');
-            console.log('LOOPING STATUS', isLooping.current);
 
             const scrollTop = container.scrollTop;
             const containerHeight = container.clientHeight;
