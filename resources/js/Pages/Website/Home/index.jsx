@@ -2422,12 +2422,6 @@ export default function index({ google_map_api_key, search_history }) {
                                                                 horizontalCarouselRefs.current[
                                                                     post.slug
                                                                 ] = el;
-
-                                                            requestAnimationFrame(() => {
-                                                                if (el && el.scrollLeft === 0) {
-                                                                    el.scrollLeft = el.clientWidth;
-                                                                }
-                                                            });
                                                         }}
                                                         data-carousel-slug={post.slug}
                                                         onScroll={(e) => {
