@@ -913,7 +913,7 @@ export default function index({ google_map_api_key, search_history }) {
                     horizontalContainer.style.pointerEvents = 'none';
 
                     horizontalContainer.style.transition = 'transform 0.40s ease-out';
-                    horizontalContainer.style.transform = 'translateY(100%)';
+                    horizontalContainer.style.transform = 'translateX(100%)';
 
                     setTimeout(() => {
                         const targetScroll = maxScroll;
@@ -959,7 +959,7 @@ export default function index({ google_map_api_key, search_history }) {
                     horizontalContainer.style.pointerEvents = 'none';
 
                     horizontalContainer.style.transition = 'transform 0.40s ease-out';
-                    horizontalContainer.style.transform = 'translateY(-100%)';
+                    horizontalContainer.style.transform = 'translateX(-100%)';
 
                     setTimeout(() => {
                         horizontalContainer.style.transition = '';
