@@ -671,8 +671,10 @@ export default function index({ google_map_api_key, search_history }) {
                     setViewablePost(post);
                     setRelatedPostSlug(post.slug);
 
-                    scrollLock.current = false;
-                    isLooping.current = false;
+                    requestAnimationFrame(() => {
+                        scrollLock.current = false;
+                        isLooping.current = false;
+                    });
                     window.history.replaceState({}, '', generateURL(post));
                 }, 400);
             } else if (direction > 0 && atBottom) {
@@ -696,8 +698,10 @@ export default function index({ google_map_api_key, search_history }) {
                     setViewablePost(post);
                     setRelatedPostSlug(post.slug);
 
-                    scrollLock.current = false;
-                    isLooping.current = false;
+                    requestAnimationFrame(() => {
+                        scrollLock.current = false;
+                        isLooping.current = false;
+                    });
                     window.history.replaceState({}, '', generateURL(post));
                 }, 400);
             } else {
@@ -899,7 +903,6 @@ export default function index({ google_map_api_key, search_history }) {
                         }
 
                         requestAnimationFrame(() => {
-                            fetchLock.current = false;
                             isHorizontalLooping.current[slug] = false;
                             horizontalScrollLock.current[slug] = false;
 
@@ -943,7 +946,6 @@ export default function index({ google_map_api_key, search_history }) {
                         );
 
                         requestAnimationFrame(() => {
-                            fetchLock.current = false;
                             isHorizontalLooping.current[slug] = false;
                             horizontalScrollLock.current[slug] = false;
 
@@ -1006,23 +1008,23 @@ export default function index({ google_map_api_key, search_history }) {
                         );
                         setRelatedPostSlug(postsRef.current[newIndex].slug);
 
-                        container.style.touchAction = 'auto';
-                        container.style.pointerEvents = 'auto';
+                        requestAnimationFrame(() => {
+                            container.style.touchAction = 'auto';
+                            container.style.pointerEvents = 'auto';
 
-                        gestureLocked.current = null;
-                        touchStartX.current = 0;
-                        touchStartY.current = 0;
-                        Object.keys(isHorizontalLooping.current).forEach(
-                            (key) => (isHorizontalLooping.current[key] = false),
-                        );
-                        Object.keys(horizontalScrollLock.current).forEach(
-                            (key) => (horizontalScrollLock.current[key] = false),
-                        );
+                            gestureLocked.current = null;
+                            touchStartX.current = 0;
+                            touchStartY.current = 0;
+                            Object.keys(isHorizontalLooping.current).forEach(
+                                (key) => (isHorizontalLooping.current[key] = false),
+                            );
+                            Object.keys(horizontalScrollLock.current).forEach(
+                                (key) => (horizontalScrollLock.current[key] = false),
+                            );
 
-                        setTimeout(() => {
                             scrollLock.current = false;
                             isLooping.current = false;
-                        }, 500);
+                        });
                     }, 400);
 
                     return;
@@ -1058,23 +1060,23 @@ export default function index({ google_map_api_key, search_history }) {
                         );
                         setRelatedPostSlug(postsRef.current[0].slug);
 
-                        container.style.touchAction = 'auto';
-                        container.style.pointerEvents = 'auto';
+                        requestAnimationFrame(() => {
+                            container.style.touchAction = 'auto';
+                            container.style.pointerEvents = 'auto';
 
-                        gestureLocked.current = null;
-                        touchStartX.current = 0;
-                        touchStartY.current = 0;
-                        Object.keys(isHorizontalLooping.current).forEach(
-                            (key) => (isHorizontalLooping.current[key] = false),
-                        );
-                        Object.keys(horizontalScrollLock.current).forEach(
-                            (key) => (horizontalScrollLock.current[key] = false),
-                        );
+                            gestureLocked.current = null;
+                            touchStartX.current = 0;
+                            touchStartY.current = 0;
+                            Object.keys(isHorizontalLooping.current).forEach(
+                                (key) => (isHorizontalLooping.current[key] = false),
+                            );
+                            Object.keys(horizontalScrollLock.current).forEach(
+                                (key) => (horizontalScrollLock.current[key] = false),
+                            );
 
-                        setTimeout(() => {
                             scrollLock.current = false;
                             isLooping.current = false;
-                        }, 500);
+                        });
                     }, 400);
 
                     return;
