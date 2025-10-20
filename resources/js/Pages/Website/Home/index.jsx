@@ -679,36 +679,53 @@ export default function index({ google_map_api_key, search_history }) {
                 nextIndex = postsRef.current.length - 1;
                 isLooping.current = true;
 
-                container.scrollTo({
-                    top: nextIndex * container.clientHeight,
-                    behavior: 'smooth',
-                });
+                container.style.transition = 'transform 0.40s ease-out';
+                container.style.transform = 'translateY(100%)';
 
-                waitForScrollSettle(false, () => {
+                setTimeout(() => {
+                    container.style.transition = '';
+                    container.style.transform = '';
+
+                    container.scrollTo({
+                        top: nextIndex * container.clientHeight,
+                        behavior: 'instant',
+                    });
+
+                    const post = postsRef.current[nextIndex];
+
                     setSelectedPostIndex(nextIndex);
-                    setViewablePost(postsRef.current[nextIndex]);
-                    setRelatedPostSlug(postsRef.current[nextIndex].slug);
+                    setViewablePost(post);
+                    setRelatedPostSlug(post.slug);
 
                     scrollLock.current = false;
                     isLooping.current = false;
-                });
+                    window.history.replaceState({}, '', generateURL(post));
+                }, 400);
             } else if (direction > 0 && atBottom) {
                 nextIndex = 0;
                 isLooping.current = true;
 
-                container.scrollTo({
-                    top: 0,
-                    behavior: 'smooth',
-                });
+                container.style.transition = 'transform 0.40s ease-out';
+                container.style.transform = 'translateY(-100%)';
 
-                waitForScrollSettle(true, () => {
+                setTimeout(() => {
+                    container.style.transition = '';
+                    container.style.transform = '';
+
+                    container.scrollTo({
+                        top: 0,
+                        behavior: 'instant',
+                    });
+
+                    const post = postsRef.current[0];
                     setSelectedPostIndex(0);
-                    setViewablePost(postsRef.current[0]);
-                    setRelatedPostSlug(postsRef.current[0].slug);
+                    setViewablePost(post);
+                    setRelatedPostSlug(post.slug);
 
                     scrollLock.current = false;
                     isLooping.current = false;
-                });
+                    window.history.replaceState({}, '', generateURL(post));
+                }, 400);
             } else {
                 isLooping.current = false;
                 nextIndex = Math.max(0, Math.min(postsRef.current.length - 1, nextIndex));
@@ -896,7 +913,7 @@ export default function index({ google_map_api_key, search_history }) {
                     horizontalContainer.style.pointerEvents = 'none';
 
                     const targetScroll = maxScroll;
-                    horizontalContainer.scrollTo({ left: targetScroll, behavior: 'smooth' });
+                    horizontalContainer.scrollTo({ left: targetScroll, behavior: 'instant' });
 
                     waitForSettle(targetScroll, () => {
                         const relatedPost = relatedPosts[relatedPosts.length - 1];
@@ -936,7 +953,7 @@ export default function index({ google_map_api_key, search_history }) {
                     horizontalContainer.style.touchAction = 'none';
                     horizontalContainer.style.pointerEvents = 'none';
 
-                    horizontalContainer.scrollTo({ left: 0, behavior: 'smooth' });
+                    horizontalContainer.scrollTo({ left: 0, behavior: 'instant' });
 
                     waitForSettle(0, () => {
                         setActiveViewerMap((p) => ({ ...p, [slug]: 'main' }));
@@ -992,12 +1009,18 @@ export default function index({ google_map_api_key, search_history }) {
 
                     const newIndex = postsRef.current.length - 1;
 
-                    container.scrollTo({
-                        top: newIndex * container.clientHeight,
-                        behavior: 'smooth',
-                    });
+                    container.style.transition = 'transform 0.40s ease-out';
+                    container.style.transform = 'translateY(100%)';
 
-                    waitForScrollSettle(false, () => {
+                    setTimeout(() => {
+                        container.style.transition = '';
+                        container.style.transform = '';
+
+                        container.scrollTo({
+                            top: newIndex * container.clientHeight,
+                            behavior: 'smooth',
+                        });
+
                         setSelectedPostIndex(newIndex);
                         setViewablePost(postsRef.current[newIndex]);
                         updateRelatedPostsMap(
@@ -1020,14 +1043,7 @@ export default function index({ google_map_api_key, search_history }) {
                         Object.keys(horizontalScrollLock.current).forEach(
                             (key) => (horizontalScrollLock.current[key] = false),
                         );
-
-                        // const slug = relatedPostSlugRef.current; //slug
-                        // console.log('REALTED PArent POST SLUG', slug);
-                        // const horizontalContainer = horizontalCarouselRefs.current[slug];
-                        // console.log('horizontalContainer', horizontalContainer);
-
-                        // console.log('🌀 Gesture reset — touch context restored');
-                    });
+                    }, 400);
 
                     return;
                 }
@@ -1045,9 +1061,15 @@ export default function index({ google_map_api_key, search_history }) {
                     container.style.touchAction = 'none';
                     container.style.pointerEvents = 'none';
 
-                    container.scrollTo({ top: 0, behavior: 'smooth' });
+                    container.style.transition = 'transform 0.40s ease-out';
+                    container.style.transform = 'translateY(-100%)';
 
-                    waitForScrollSettle(true, () => {
+                    setTimeout(() => {
+                        container.style.transition = '';
+                        container.style.transform = '';
+
+                        container.scrollTo({ top: 0, behavior: 'smooth' });
+
                         setSelectedPostIndex(0);
                         setViewablePost(postsRef.current[0]);
                         updateRelatedPostsMap(
@@ -1070,14 +1092,7 @@ export default function index({ google_map_api_key, search_history }) {
                         Object.keys(horizontalScrollLock.current).forEach(
                             (key) => (horizontalScrollLock.current[key] = false),
                         );
-
-                        // const slug = relatedPostSlugRef.current; //slug
-                        // console.log('REALTED PArent POST SLUG', slug);
-                        // const horizontalContainer = horizontalCarouselRefs.current[slug];
-                        // console.log('horizontalContainer', horizontalContainer);
-
-                        // console.log('🌀 Gesture reset — touch context restored');
-                    });
+                    }, 400);
 
                     return;
                 }
