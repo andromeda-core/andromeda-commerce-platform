@@ -1104,7 +1104,7 @@ export default function index({ google_map_api_key, search_history }) {
         const el = e.currentTarget;
         const slug = mainPost.slug;
 
-        if (isHorizontalLooping.current[slug] || horizontalScrollLock.current[slug]) {
+        if (isHorizontalLooping.current[slug] && horizontalScrollLock.current[slug]) {
             return;
         }
 
