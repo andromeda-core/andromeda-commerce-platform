@@ -1180,18 +1180,18 @@ export default function index({ google_map_api_key, search_history }) {
     }, []);
 
     // Resetting Related Post Some Refs
-    useEffect(() => {
-        const slug = relatedPostSlugRef.current;
-        if (!slug) return;
-        if (isHorizontalLooping.current[slug]) return;
-        requestAnimationFrame(() => {
-            console.log('Reset Related Post Some Refs');
-            isHorizontalLooping.current[slug] = false;
-            horizontalScrollLock.current[slug] = false;
-            lastHorizontalIndexRef.current[slug] = 0;
-            lastDirectionRef.current[slug] = null;
-        });
-    }, [relatedPostSlug]);
+    // useEffect(() => {
+    //     const slug = relatedPostSlugRef.current;
+    //     if (!slug) return;
+    //     if (isHorizontalLooping.current[slug]) return;
+    //     requestAnimationFrame(() => {
+    //         console.log('Reset Related Post Some Refs');
+    //         isHorizontalLooping.current[slug] = false;
+    //         horizontalScrollLock.current[slug] = false;
+    //         lastHorizontalIndexRef.current[slug] = 0;
+    //         lastDirectionRef.current[slug] = null;
+    //     });
+    // }, [relatedPostSlug]);
 
     const getRelatedPosts = (slug) => relatedPostsMap[slug] || [];
     const getRelatedViewer = (slug) => relatedViewerMap[slug] || null;
