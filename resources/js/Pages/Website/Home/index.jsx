@@ -983,33 +983,7 @@ export default function index({ google_map_api_key, search_history }) {
                         container.style.touchAction = 'auto';
                         container.style.pointerEvents = 'auto';
 
-                        setTimeout(() => {
-                            const slug = postsRef.current[newIndex]?.slug;
-                            let tries = 0;
-
-                            const tryEnableHorizontal = () => {
-                                const horizontalContainer = horizontalCarouselRefs.current[slug];
-                                if (horizontalContainer) {
-                                    console.log('✅ Found horizontal container for', slug);
-                                    horizontalContainer.style.touchAction = 'pan-y pan-x';
-                                    horizontalContainer.style.pointerEvents = 'auto';
-
-                                    isHorizontalLooping.current[slug] = false;
-                                    horizontalScrollLock.current[slug] = false;
-                                    lastHorizontalIndexRef.current[slug] = 0;
-                                } else if (tries < 10) {
-                                    tries++;
-                                    setTimeout(tryEnableHorizontal, 100);
-                                } else {
-                                    console.warn(
-                                        '⚠️ Horizontal container not found after loop for',
-                                        slug,
-                                    );
-                                }
-                            };
-
-                            tryEnableHorizontal();
-                        }, 100);
+                        console.log('REALTED PArent POST SLUG', relatedPostSlugRef.current);
                     });
 
                     return;
@@ -1040,33 +1014,7 @@ export default function index({ google_map_api_key, search_history }) {
                         container.style.touchAction = 'auto';
                         container.style.pointerEvents = 'auto';
 
-                        setTimeout(() => {
-                            const slug = postsRef.current[newIndex]?.slug;
-                            let tries = 0;
-
-                            const tryEnableHorizontal = () => {
-                                const horizontalContainer = horizontalCarouselRefs.current[slug];
-                                if (horizontalContainer) {
-                                    console.log('✅ Found horizontal container for', slug);
-                                    horizontalContainer.style.touchAction = 'pan-y pan-x';
-                                    horizontalContainer.style.pointerEvents = 'auto';
-
-                                    isHorizontalLooping.current[slug] = false;
-                                    horizontalScrollLock.current[slug] = false;
-                                    lastHorizontalIndexRef.current[slug] = 0;
-                                } else if (tries < 10) {
-                                    tries++;
-                                    setTimeout(tryEnableHorizontal, 100);
-                                } else {
-                                    console.warn(
-                                        '⚠️ Horizontal container not found after loop for',
-                                        slug,
-                                    );
-                                }
-                            };
-
-                            tryEnableHorizontal();
-                        }, 100);
+                        console.log('REALTED PArent POST SLUG', relatedPostSlugRef.current);
                     });
 
                     return;
