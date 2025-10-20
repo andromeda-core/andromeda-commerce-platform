@@ -898,14 +898,15 @@ export default function index({ google_map_api_key, search_history }) {
                             );
                         }
 
-                        horizontalContainer.style.touchAction = 'auto';
-                        horizontalContainer.style.pointerEvents = 'auto';
-
-                        setTimeout(() => {
-                            horizontalScrollLock.current[slug] = false;
+                        requestAnimationFrame(() => {
+                            fetchLock.current = false;
                             isHorizontalLooping.current[slug] = false;
-                        }, 500);
-                    }, 400);
+                            horizontalScrollLock.current[slug] = false;
+
+                            horizontalContainer.style.touchAction = 'auto';
+                            horizontalContainer.style.pointerEvents = 'auto';
+                        });
+                    }, 420);
                     return;
                 }
 
@@ -941,14 +942,15 @@ export default function index({ google_map_api_key, search_history }) {
                             `${route('home')}${generateURL(viewablePost)}`,
                         );
 
-                        horizontalContainer.style.touchAction = 'auto';
-                        horizontalContainer.style.pointerEvents = 'auto';
-
-                        setTimeout(() => {
+                        requestAnimationFrame(() => {
+                            fetchLock.current = false;
                             isHorizontalLooping.current[slug] = false;
                             horizontalScrollLock.current[slug] = false;
-                        }, 500);
-                    }, 400);
+
+                            horizontalContainer.style.touchAction = 'auto';
+                            horizontalContainer.style.pointerEvents = 'auto';
+                        });
+                    }, 420);
                     return;
                 }
             }
@@ -1104,7 +1106,7 @@ export default function index({ google_map_api_key, search_history }) {
         const el = e.currentTarget;
         const slug = mainPost.slug;
 
-        if (isHorizontalLooping.current[slug] && horizontalScrollLock.current[slug]) {
+        if (isHorizontalLooping.current[slug] || horizontalScrollLock.current[slug]) {
             return;
         }
 
