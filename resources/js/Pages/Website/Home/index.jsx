@@ -983,10 +983,22 @@ export default function index({ google_map_api_key, search_history }) {
                         container.style.touchAction = 'auto';
                         container.style.pointerEvents = 'auto';
 
+                        gestureLocked.current = null;
+                        touchStartX.current = 0;
+                        touchStartY.current = 0;
+                        Object.keys(isHorizontalLooping.current).forEach(
+                            (key) => (isHorizontalLooping.current[key] = false),
+                        );
+                        Object.keys(horizontalScrollLock.current).forEach(
+                            (key) => (horizontalScrollLock.current[key] = false),
+                        );
+
                         const slug = relatedPostSlugRef.current; //slug
                         console.log('REALTED PArent POST SLUG', slug);
                         const horizontalContainer = horizontalCarouselRefs.current[slug];
                         console.log('horizontalContainer', horizontalContainer);
+
+                        console.log('🌀 Gesture reset — touch context restored');
                     });
 
                     return;
@@ -1017,10 +1029,22 @@ export default function index({ google_map_api_key, search_history }) {
                         container.style.touchAction = 'auto';
                         container.style.pointerEvents = 'auto';
 
+                        gestureLocked.current = null;
+                        touchStartX.current = 0;
+                        touchStartY.current = 0;
+                        Object.keys(isHorizontalLooping.current).forEach(
+                            (key) => (isHorizontalLooping.current[key] = false),
+                        );
+                        Object.keys(horizontalScrollLock.current).forEach(
+                            (key) => (horizontalScrollLock.current[key] = false),
+                        );
+
                         const slug = relatedPostSlugRef.current; //slug
                         console.log('REALTED PArent POST SLUG', slug);
                         const horizontalContainer = horizontalCarouselRefs.current[slug];
                         console.log('horizontalContainer', horizontalContainer);
+
+                        console.log('🌀 Gesture reset — touch context restored');
                     });
 
                     return;
