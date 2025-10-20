@@ -844,21 +844,23 @@ export default function index({ google_map_api_key, search_history }) {
 
             if (gestureLocked.current === 'x') {
                 const slug = relatedPostSlugRef.current;
+
                 if (!slug) return;
 
                 const relatedPosts = relatedPostsRef.current[slug] || [];
+
                 const horizontalContainer = horizontalCarouselRefs.current[slug];
-                if (!horizontalContainer || !relatedPosts.length) return;
+
+                if (!horizontalContainer) return;
 
                 const containerWidth = horizontalContainer.clientWidth;
-                const scrollLeft = horizontalContainer.scrollLeft;
-                const total = relatedPosts.length;
+                const currentScrollLeft = horizontalContainer.scrollLeft;
+                const maxScroll = horizontalContainer.scrollWidth - containerWidth;
+                const totalItems = 1 + relatedPosts.length;
+                const currentIndex = Math.round(currentScrollLeft / containerWidth);
+                const nearStart = currentScrollLeft <= 5;
+                const nearEnd = Math.abs(currentScrollLeft - maxScroll) <= 5;
 
-                const currentIndex = Math.round(scrollLeft / containerWidth);
-                const nearStart = scrollLeft <= 5;
-                const nearEnd = Math.abs(scrollLeft - (total + 1) * containerWidth) <= 5;
-
-                // Track last index for direction
                 const lastIndex = lastHorizontalIndexRef.current[slug];
                 if (lastIndex !== currentIndex) {
                     lastDirectionRef.current[slug] =
@@ -866,58 +868,38 @@ export default function index({ google_map_api_key, search_history }) {
                     lastHorizontalIndexRef.current[slug] = currentIndex;
                 }
 
-                // --- Infinite Loop Logic for Cloned Edges ---
-                // If user reaches the rightmost clone (index = total + 1)
-                if (currentIndex === total + 1 && !isHorizontalLooping.current[slug]) {
+                const waitForSettle = (target, cb) => {
+                    let lastLeft = horizontalContainer.scrollLeft,
+                        stable = 0;
+                    const tick = () => {
+                        const left = horizontalContainer.scrollLeft;
+                        if (Math.abs(left - target) < 2 && Math.abs(left - lastLeft) < 1) {
+                            if (++stable > 1) return cb();
+                        } else stable = 0;
+                        lastLeft = left;
+                        setTimeout(tick, 40);
+                    };
+                    tick();
+                };
+
+                // --- LEFT LOOP: at start, swipe left-to-right ---
+                if (
+                    nearStart &&
+                    currentIndex === 0 &&
+                    deltaX > 60 && // real swipe threshold
+                    !isHorizontalLooping.current[slug]
+                ) {
+                    e.preventDefault();
                     isHorizontalLooping.current[slug] = true;
-                    // Instantly reset scroll position to first real slide
-                    horizontalContainer.scrollLeft = containerWidth;
 
-                    // Show the first real post (index 0)
-                    const relatedPost = relatedPosts[0];
-                    if (relatedPost?.id) {
-                        setRelatedViewerMap((p) => ({ ...p, [slug]: relatedPost }));
-                        setActiveViewerMap((p) => ({ ...p, [slug]: 'related' }));
-                        setViewablePost(relatedPost);
-                        window.history.pushState(
-                            {},
-                            '',
-                            `${route('home')}${generateURL(relatedPost)}`,
-                        );
-                    }
+                    horizontalContainer.style.touchAction = 'none';
+                    horizontalContainer.style.pointerEvents = 'none';
 
-                    isHorizontalLooping.current[slug] = false;
-                    return;
-                }
+                    const targetScroll = maxScroll;
+                    horizontalContainer.scrollTo({ left: targetScroll, behavior: 'smooth' });
 
-                // If user reaches the leftmost clone (index = 0)
-                if (currentIndex === 0 && !isHorizontalLooping.current[slug]) {
-                    isHorizontalLooping.current[slug] = true;
-                    // Instantly reset scroll position to last real slide
-                    horizontalContainer.scrollLeft = total * containerWidth;
-
-                    const relatedPost = relatedPosts[relatedPosts.length - 1];
-                    if (relatedPost?.id) {
-                        setRelatedViewerMap((p) => ({ ...p, [slug]: relatedPost }));
-                        setActiveViewerMap((p) => ({ ...p, [slug]: 'related' }));
-                        setViewablePost(relatedPost);
-                        window.history.pushState(
-                            {},
-                            '',
-                            `${route('home')}${generateURL(relatedPost)}`,
-                        );
-                    }
-
-                    isHorizontalLooping.current[slug] = false;
-                    return;
-                }
-
-                // --- Normal Swipe Behavior (inside real slides) ---
-                if (!isHorizontalLooping.current[slug]) {
-                    const nextIndex = Math.round(scrollLeft / containerWidth);
-
-                    if (nextIndex > 0 && nextIndex <= total) {
-                        const relatedPost = relatedPosts[nextIndex - 1];
+                    waitForSettle(targetScroll, () => {
+                        const relatedPost = relatedPosts[relatedPosts.length - 1];
                         if (relatedPost?.id) {
                             setRelatedViewerMap((p) => ({ ...p, [slug]: relatedPost }));
                             setActiveViewerMap((p) => ({ ...p, [slug]: 'related' }));
@@ -928,8 +910,35 @@ export default function index({ google_map_api_key, search_history }) {
                                 `${route('home')}${generateURL(relatedPost)}`,
                             );
                         }
-                    } else if (nextIndex === 0) {
-                        // Back to main post
+
+                        isHorizontalLooping.current[slug] = false;
+
+                        horizontalContainer.style.touchAction = 'auto';
+                        horizontalContainer.style.pointerEvents = 'auto';
+
+                        setTimeout(() => {
+                            horizontalScrollLock.current[slug] = false;
+                        }, 500);
+                    });
+                    return;
+                }
+
+                // --- RIGHT LOOP: at end, swipe right-to-left ---
+                if (
+                    nearEnd &&
+                    currentIndex === totalItems - 1 &&
+                    deltaX < -60 &&
+                    !isHorizontalLooping.current[slug]
+                ) {
+                    e.preventDefault();
+                    isHorizontalLooping.current[slug] = true;
+
+                    horizontalContainer.style.touchAction = 'none';
+                    horizontalContainer.style.pointerEvents = 'none';
+
+                    horizontalContainer.scrollTo({ left: 0, behavior: 'smooth' });
+
+                    waitForSettle(0, () => {
                         setActiveViewerMap((p) => ({ ...p, [slug]: 'main' }));
                         setRelatedViewerMap((p) => ({ ...p, [slug]: null }));
                         setViewablePost(viewablePost);
@@ -938,7 +947,17 @@ export default function index({ google_map_api_key, search_history }) {
                             '',
                             `${route('home')}${generateURL(viewablePost)}`,
                         );
-                    }
+
+                        isHorizontalLooping.current[slug] = false;
+
+                        horizontalContainer.style.touchAction = 'auto';
+                        horizontalContainer.style.pointerEvents = 'auto';
+
+                        setTimeout(() => {
+                            horizontalScrollLock.current[slug] = false;
+                        }, 500);
+                    });
+                    return;
                 }
             }
 
@@ -2472,67 +2491,47 @@ export default function index({ google_map_api_key, search_history }) {
                                                             </div>
                                                         </div>
 
-                                                        {(() => {
-                                                            const extendedPosts = [
-                                                                relatedPosts[
-                                                                    relatedPosts.length - 1
-                                                                ],
-                                                                ...relatedPosts,
-                                                                relatedPosts[0],
-                                                            ];
-
-                                                            return (
-                                                                extendedPosts?.length > 0 &&
-                                                                extendedPosts.map((related, i) => {
-                                                                    if (!related) return null;
-
-                                                                    const key = `${related.id || 'clone'}-${i}`;
-                                                                    return (
-                                                                        <div
-                                                                            key={key}
-                                                                            className="relative flex-shrink-0 h-full min-w-full snap-start snap-always"
-                                                                        >
-                                                                            <div className="relative flex items-center justify-center w-full h-full text-white">
-                                                                                {Array.isArray(
-                                                                                    related.post_image_urls,
-                                                                                ) &&
-                                                                                related
-                                                                                    .post_image_urls
-                                                                                    .length > 0 ? (
-                                                                                    <img
-                                                                                        src={
-                                                                                            related
-                                                                                                .post_image_urls[0]
-                                                                                        }
-                                                                                        alt="Related Post"
-                                                                                        className="absolute inset-0 z-10 object-cover w-full h-full"
-                                                                                    />
-                                                                                ) : (
-                                                                                    Array.isArray(
-                                                                                        related.post_video_urls,
-                                                                                    ) &&
+                                                        {relatedPosts?.length > 0 &&
+                                                            relatedPosts.map((related, i) => (
+                                                                <div
+                                                                    key={related.id || i}
+                                                                    className="relative flex-shrink-0 h-full min-w-full snap-start snap-always"
+                                                                >
+                                                                    <div className="relative flex items-center justify-center w-full h-full text-white">
+                                                                        {Array.isArray(
+                                                                            related.post_image_urls,
+                                                                        ) &&
+                                                                        related.post_image_urls
+                                                                            .length > 0 ? (
+                                                                            <img
+                                                                                src={
                                                                                     related
-                                                                                        .post_video_urls
-                                                                                        .length >
-                                                                                        0 && (
-                                                                                        <VideoPlayer
-                                                                                            videoUrl={
-                                                                                                related
-                                                                                                    .post_video_urls[0]
-                                                                                            }
-                                                                                            thumbnail={
-                                                                                                videoThumbnail
-                                                                                            }
-                                                                                            className="relative z-10 object-contain max-w-full max-h-full"
-                                                                                        />
-                                                                                    )
-                                                                                )}
-                                                                            </div>
-                                                                        </div>
-                                                                    );
-                                                                })
-                                                            );
-                                                        })()}
+                                                                                        .post_image_urls[0]
+                                                                                }
+                                                                                alt="Related Post"
+                                                                                className="absolute inset-0 z-10 object-cover w-full h-full"
+                                                                            />
+                                                                        ) : (
+                                                                            Array.isArray(
+                                                                                related.post_video_urls,
+                                                                            ) &&
+                                                                            related.post_video_urls
+                                                                                .length > 0 && (
+                                                                                <VideoPlayer
+                                                                                    videoUrl={
+                                                                                        related
+                                                                                            .post_video_urls[0]
+                                                                                    }
+                                                                                    thumbnail={
+                                                                                        videoThumbnail
+                                                                                    }
+                                                                                    className="relative z-10 object-contain max-w-full max-h-full"
+                                                                                />
+                                                                            )
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            ))}
 
                                                         {isFetchingRelated && (
                                                             <div className="fixed inset-0 flex flex-col items-center justify-center flex-shrink-0 h-full min-w-full text-white snap-start snap-always bg-deepcharcoal">
