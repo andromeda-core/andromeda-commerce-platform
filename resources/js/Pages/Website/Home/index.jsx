@@ -1018,7 +1018,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                         container.scrollTo({
                             top: newIndex * container.clientHeight,
-                            behavior: 'smooth',
+                            behavior: 'instant',
                         });
 
                         setSelectedPostIndex(newIndex);
@@ -1068,7 +1068,7 @@ export default function index({ google_map_api_key, search_history }) {
                         container.style.transition = '';
                         container.style.transform = '';
 
-                        container.scrollTo({ top: 0, behavior: 'smooth' });
+                        container.scrollTo({ top: 0, behavior: 'instant' });
 
                         setSelectedPostIndex(0);
                         setViewablePost(postsRef.current[0]);
