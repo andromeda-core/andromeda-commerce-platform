@@ -667,10 +667,10 @@ const GlobalSearch = ({
     return (
         <>
             <div className="lg:max-w-8xl sticky top-0 z-[50] mx-auto w-full backdrop-blur-md transition-all duration-300 sm:px-6 lg:px-8">
-                <div className="mx-auto py-2 sm:py-3">
+                <div className="py-2 mx-auto sm:py-3">
                     <div className="relative flex w-full items-center rounded-xl border border-gray-300 bg-white/90 p-1.5 dark:border-gray-700 dark:bg-deepcharcoal sm:p-2">
                         <div className="relative w-full">
-                            <div className="relative flex w-full items-center rounded-xl">
+                            <div className="relative flex items-center w-full rounded-xl">
                                 {searchQuery !== '' && (
                                     <svg
                                         onClick={() => {
@@ -683,7 +683,7 @@ const GlobalSearch = ({
                                         viewBox="0 0 24 24"
                                         strokeWidth={1.5}
                                         stroke="currentColor"
-                                        className="absolute right-3 size-4 cursor-pointer hover:text-black/80 dark:text-white/80 hover:dark:text-white/50"
+                                        className="absolute cursor-pointer right-3 size-4 hover:text-black/80 dark:text-white/80 hover:dark:text-white/50"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -697,7 +697,7 @@ const GlobalSearch = ({
                                     ref={searchInputRef}
                                     type="search"
                                     placeholder="What happened...?"
-                                    className="ml-2 flex-1 border-none bg-transparent text-xs text-gray-600 placeholder-gray-400 outline-none focus:outline-none focus:ring-0 dark:text-white/80 sm:text-base"
+                                    className="flex-1 ml-2 text-xs text-gray-600 placeholder-gray-400 bg-transparent border-none outline-none focus:outline-none focus:ring-0 dark:text-white/80 sm:text-base"
                                     value={searchQuery}
                                     onChange={(e) => {
                                         if (e.target.value.trim().length > 0) {
@@ -726,9 +726,9 @@ const GlobalSearch = ({
 
                         {/* Search History Dropdown */}
                         {searchHistoryOpen && searchHistory.length > 0 && (
-                            <div className="absolute left-0 right-0 top-full z-50 mt-2 rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-700 dark:bg-deepcharcoal sm:left-2 sm:right-2">
+                            <div className="absolute left-0 right-0 z-50 mt-2 bg-white border border-gray-300 rounded-md shadow-lg top-full dark:border-gray-700 dark:bg-deepcharcoal sm:left-2 sm:right-2">
                                 {/* Title */}
-                                <div className="flex gap-2 border-b border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 dark:border-gray-700 dark:text-gray-300">
+                                <div className="flex gap-2 px-4 py-3 text-sm font-semibold text-gray-700 border-b border-gray-200 dark:border-gray-700 dark:text-gray-300">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
@@ -745,10 +745,10 @@ const GlobalSearch = ({
                                     </svg>
                                     Your Recent Searches
                                 </div>
-                                <ul className="max-h-60 overflow-y-auto">
+                                <ul className="overflow-y-auto max-h-60">
                                     {searchHistoryLoading ? (
                                         <li className="flex items-center justify-center px-4 py-4">
-                                            <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"></div>
+                                            <div className="w-5 h-5 border-2 border-indigo-500 rounded-full animate-spin border-t-transparent"></div>
                                         </li>
                                     ) : (
                                         searchHistory.map((item, index) => {
@@ -763,7 +763,7 @@ const GlobalSearch = ({
                                             return (
                                                 <li
                                                     key={index}
-                                                    className="cursor-pointer border-b border-gray-100 px-4 py-3 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900"
+                                                    className="px-4 py-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900"
                                                     onMouseDown={(e) => {
                                                         e.preventDefault();
                                                         ApplyFilter('search_history', item);
@@ -772,10 +772,10 @@ const GlobalSearch = ({
                                                 >
                                                     <div className="flex items-center justify-between gap-3">
                                                         {/* Left side - Search info with thumbnail */}
-                                                        <div className="flex flex-1 items-center gap-3">
+                                                        <div className="flex items-center flex-1 gap-3">
                                                             {/* Thumbnail - only show if result exists */}
                                                             {hasResults && result?.image ? (
-                                                                <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-md bg-gray-100 dark:bg-zinc-900/80">
+                                                                <div className="flex-shrink-0 w-12 h-12 overflow-hidden bg-gray-100 rounded-md dark:bg-zinc-900/80">
                                                                     <img
                                                                         src={result.image}
                                                                         alt={
@@ -783,7 +783,7 @@ const GlobalSearch = ({
                                                                             result.name ||
                                                                             'Result'
                                                                         }
-                                                                        className="h-full w-full object-cover"
+                                                                        className="object-cover w-full h-full"
                                                                         onError={(e) => {
                                                                             e.target.style.display =
                                                                                 'none';
@@ -791,7 +791,7 @@ const GlobalSearch = ({
                                                                     />
                                                                 </div>
                                                             ) : (
-                                                                <div className="flex h-full items-center justify-center rounded-lg bg-indigo-600 p-3 text-sm text-white/80 dark:bg-indigo-500">
+                                                                <div className="flex items-center justify-center h-full p-3 text-sm bg-indigo-600 rounded-lg text-white/80 dark:bg-indigo-500">
                                                                     <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
                                                                         fill="none"
@@ -810,7 +810,7 @@ const GlobalSearch = ({
                                                             )}
 
                                                             {/* Text content */}
-                                                            <div className="flex flex-1 flex-col">
+                                                            <div className="flex flex-col flex-1">
                                                                 {/* Query or title Hastag with count */}
                                                                 <div className="flex items-center gap-2">
                                                                     <div className="flex flex-col font-medium text-gray-900 dark:text-gray-100">
@@ -913,7 +913,7 @@ const GlobalSearch = ({
                                                                 e.preventDefault();
                                                                 e.stopPropagation();
                                                             }}
-                                                            className="flex-shrink-0 rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                                                            className="flex-shrink-0 p-2 text-gray-400 transition-colors rounded-lg hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
                                                         >
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -921,7 +921,7 @@ const GlobalSearch = ({
                                                                 viewBox="0 0 24 24"
                                                                 strokeWidth={1.5}
                                                                 stroke="currentColor"
-                                                                className="h-5 w-5"
+                                                                className="w-5 h-5"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -973,7 +973,7 @@ const GlobalSearch = ({
                                 viewBox="0 0 24 24"
                                 strokeWidth={1.5}
                                 stroke="currentColor"
-                                className="h-5 w-5 sm:h-6 sm:w-6"
+                                className="w-5 h-5 sm:h-6 sm:w-6"
                             >
                                 <path
                                     strokeLinecap="round"
@@ -1030,14 +1030,14 @@ const GlobalSearch = ({
                             <div className="fixed inset-0 z-50 flex items-center justify-center">
                                 {/* Backdrop */}
                                 <div
-                                    className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+                                    className="fixed inset-0 transition-opacity duration-300 bg-black/60 backdrop-blur-sm"
                                     onClick={() => setIsPostFilterSetting(false)}
                                 />
 
                                 {/* Modal Card */}
-                                <div className="relative z-10 w-full max-w-2xl rounded-2xl bg-white/95 p-8 shadow-2xl dark:bg-deepcharcoal dark:text-white/80">
+                                <div className="relative z-10 w-full max-w-2xl p-8 shadow-2xl rounded-2xl bg-white/95 dark:bg-deepcharcoal dark:text-white/80">
                                     {/* Header */}
-                                    <div className="flex items-center justify-between border-b border-gray-200 pb-4 dark:border-gray-700">
+                                    <div className="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
                                         <h2 className="text-xl font-semibold tracking-tight text-gray-600 dark:text-white/80">
                                             Post Filter Settings
                                         </h2>
@@ -1085,7 +1085,7 @@ const GlobalSearch = ({
 
                                         {/* SECTION: Post Type Filters */}
                                         <section>
-                                            <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-gray-500">
+                                            <h3 className="mb-4 text-sm font-medium tracking-wider text-gray-500 uppercase">
                                                 Post Type Filters
                                             </h3>
                                             <div className="space-y-4">
@@ -1101,10 +1101,10 @@ const GlobalSearch = ({
                                                         <span className="text-sm font-medium text-gray-600 dark:text-white/80">
                                                             {label}
                                                         </span>
-                                                        <label className="relative inline-flex cursor-pointer items-center">
+                                                        <label className="relative inline-flex items-center cursor-pointer">
                                                             <input
                                                                 type="checkbox"
-                                                                className="peer sr-only"
+                                                                className="sr-only peer"
                                                                 checked={postPreferences[key]}
                                                                 onChange={(e) =>
                                                                     handlePostPreferences(
@@ -1123,7 +1123,7 @@ const GlobalSearch = ({
                                         {/* SECTION RESULTS PAGE FILTER */}
                                         {(resultsPage || mainPage) && (
                                             <section>
-                                                <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-gray-500">
+                                                <h3 className="mb-4 text-sm font-medium tracking-wider text-gray-500 uppercase">
                                                     Visibility Filter
                                                 </h3>
                                                 <div className="space-y-4">
@@ -1141,10 +1141,10 @@ const GlobalSearch = ({
                                                             <span className="text-sm font-medium text-gray-600 dark:text-white/80">
                                                                 {label}
                                                             </span>
-                                                            <label className="relative inline-flex cursor-pointer items-center">
+                                                            <label className="relative inline-flex items-center cursor-pointer">
                                                                 <input
                                                                     type="checkbox"
-                                                                    className="peer sr-only"
+                                                                    className="sr-only peer"
                                                                     checked={postPreferences[key]}
                                                                     onChange={(e) =>
                                                                         handlePostPreferences(
@@ -1171,7 +1171,7 @@ const GlobalSearch = ({
                                                         <div role="status">
                                                             <svg
                                                                 aria-hidden="true"
-                                                                className="h-4 w-8 animate-spin fill-white/80 text-gray-200 dark:text-gray-200"
+                                                                className="w-8 h-4 text-gray-200 animate-spin fill-white/80 dark:text-gray-200"
                                                                 viewBox="0 0 100 101"
                                                                 fill="none"
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -1204,10 +1204,10 @@ const GlobalSearch = ({
                                 {/* Fullscreen slide-over */}
                                 <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-white text-black dark:bg-deepcharcoal dark:text-white/80 sm:pb-20">
                                     {/* Top Bar */}
-                                    <div className="relative flex items-center border-b border-gray-200 px-4 py-3 dark:border-gray-800">
+                                    <div className="relative flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800">
                                         <button
                                             onClick={() => setIsPostFilterSetting(false)}
-                                            className="absolute left-4 rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                            className="absolute p-1 rounded-full left-4 hover:bg-gray-100 dark:hover:bg-gray-800"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -1231,7 +1231,7 @@ const GlobalSearch = ({
                                     </div>
 
                                     {/* Content */}
-                                    <div className="my-4 flex-1 space-y-6 p-4">
+                                    <div className="flex-1 p-4 my-4 space-y-6">
                                         {/* Location Section */}
                                         {/* <div className="space-y-4">
                                             <h3 className="mb-4 text-sm font-medium tracking-wider text-gray-500 uppercase">
@@ -1254,17 +1254,17 @@ const GlobalSearch = ({
 
                                         {/* Post Feed Settings */}
                                         <div>
-                                            <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-gray-500">
+                                            <h3 className="mb-4 text-sm font-medium tracking-wider text-gray-500 uppercase">
                                                 Post Type Filters
                                             </h3>
                                             <div className="space-y-5">
                                                 {/* Text */}
                                                 <div className="flex items-center justify-between">
                                                     <span className="text-sm">Text</span>
-                                                    <label className="relative inline-flex cursor-pointer items-center">
+                                                    <label className="relative inline-flex items-center cursor-pointer">
                                                         <input
                                                             type="checkbox"
-                                                            className="peer sr-only"
+                                                            className="sr-only peer"
                                                             checked={postPreferences.text}
                                                             onChange={(e) =>
                                                                 handlePostPreferences(
@@ -1280,10 +1280,10 @@ const GlobalSearch = ({
                                                 {/* Images */}
                                                 <div className="flex items-center justify-between">
                                                     <span className="text-sm">Images</span>
-                                                    <label className="relative inline-flex cursor-pointer items-center">
+                                                    <label className="relative inline-flex items-center cursor-pointer">
                                                         <input
                                                             type="checkbox"
-                                                            className="peer sr-only"
+                                                            className="sr-only peer"
                                                             checked={postPreferences.images}
                                                             onChange={(e) =>
                                                                 handlePostPreferences(
@@ -1299,10 +1299,10 @@ const GlobalSearch = ({
                                                 {/* Videos */}
                                                 <div className="flex items-center justify-between">
                                                     <span className="text-sm">Videos</span>
-                                                    <label className="relative inline-flex cursor-pointer items-center">
+                                                    <label className="relative inline-flex items-center cursor-pointer">
                                                         <input
                                                             type="checkbox"
-                                                            className="peer sr-only"
+                                                            className="sr-only peer"
                                                             checked={postPreferences.videos}
                                                             onChange={(e) =>
                                                                 handlePostPreferences(
@@ -1318,9 +1318,9 @@ const GlobalSearch = ({
                                         </div>
 
                                         {/* SECTION RESULTS PAGE FILTER */}
-                                        {resultsPage && (
+                                        {(resultsPage || mainPage) && (
                                             <section>
-                                                <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-gray-500">
+                                                <h3 className="mb-4 text-sm font-medium tracking-wider text-gray-500 uppercase">
                                                     Visibility Filter
                                                 </h3>
                                                 <div className="space-y-4">
@@ -1338,10 +1338,10 @@ const GlobalSearch = ({
                                                             <span className="text-sm font-medium text-gray-600 dark:text-white/80">
                                                                 {label}
                                                             </span>
-                                                            <label className="relative inline-flex cursor-pointer items-center">
+                                                            <label className="relative inline-flex items-center cursor-pointer">
                                                                 <input
                                                                     type="checkbox"
-                                                                    className="peer sr-only"
+                                                                    className="sr-only peer"
                                                                     checked={postPreferences[key]}
                                                                     onChange={(e) =>
                                                                         handlePostPreferences(
@@ -1368,7 +1368,7 @@ const GlobalSearch = ({
                                                         <div role="status">
                                                             <svg
                                                                 aria-hidden="true"
-                                                                className="h-4 w-8 animate-spin fill-white/80 text-gray-200 dark:text-gray-200"
+                                                                className="w-8 h-4 text-gray-200 animate-spin fill-white/80 dark:text-gray-200"
                                                                 viewBox="0 0 100 101"
                                                                 fill="none"
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -1407,14 +1407,14 @@ const GlobalSearch = ({
                             <div className="fixed inset-0 z-50 flex items-center justify-center">
                                 {/* Backdrop */}
                                 <div
-                                    className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+                                    className="fixed inset-0 transition-opacity duration-300 bg-black/60 backdrop-blur-sm"
                                     onClick={() => setIsSpatiotemporalFilters(false)}
                                 />
 
                                 {/* Modal Card */}
-                                <div className="relative z-10 w-full max-w-2xl rounded-2xl bg-white/95 p-8 shadow-2xl dark:bg-deepcharcoal dark:text-white/80">
+                                <div className="relative z-10 w-full max-w-2xl p-8 shadow-2xl rounded-2xl bg-white/95 dark:bg-deepcharcoal dark:text-white/80">
                                     {/* Header */}
-                                    <div className="flex items-center justify-between border-b border-gray-200 pb-4 dark:border-gray-700">
+                                    <div className="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
                                         <h2 className="text-xl font-semibold tracking-tight text-gray-600 dark:text-white/80">
                                             Advanced Search
                                         </h2>
@@ -1441,12 +1441,12 @@ const GlobalSearch = ({
 
                                     {/* Content */}
                                     <div className="mt-6 max-h-[100vh] space-y-8 overflow-y-auto pr-1">
-                                        <section className="mt-4 w-full">
+                                        <section className="w-full mt-4">
                                             {/* Search Bar */}
                                             <div className="z-[50] mx-auto w-full transition-all duration-300">
-                                                <div className="mx-auto py-2 sm:py-3">
+                                                <div className="py-2 mx-auto sm:py-3">
                                                     <div className="flex w-full items-center rounded-xl border border-gray-300 bg-white/90 p-1.5 dark:border-gray-700 dark:bg-deepcharcoal sm:p-2">
-                                                        <div className="relative flex w-full items-center rounded-xl">
+                                                        <div className="relative flex items-center w-full rounded-xl">
                                                             {searchQuery !== '' && (
                                                                 <svg
                                                                     onClick={() => {
@@ -1459,7 +1459,7 @@ const GlobalSearch = ({
                                                                     viewBox="0 0 24 24"
                                                                     strokeWidth={1.5}
                                                                     stroke="currentColor"
-                                                                    className="absolute right-3 size-4 cursor-pointer hover:text-black/80 dark:text-white/80 hover:dark:text-white/50"
+                                                                    className="absolute cursor-pointer right-3 size-4 hover:text-black/80 dark:text-white/80 hover:dark:text-white/50"
                                                                 >
                                                                     <path
                                                                         strokeLinecap="round"
@@ -1473,7 +1473,7 @@ const GlobalSearch = ({
                                                                 ref={searchInputRef}
                                                                 type="search"
                                                                 placeholder="What happened...?"
-                                                                className="ml-2 flex-1 border-none bg-transparent text-xs text-gray-600 placeholder-gray-400 outline-none focus:outline-none focus:ring-0 dark:text-white/80 sm:text-base"
+                                                                className="flex-1 ml-2 text-xs text-gray-600 placeholder-gray-400 bg-transparent border-none outline-none focus:outline-none focus:ring-0 dark:text-white/80 sm:text-base"
                                                                 value={searchQuery}
                                                                 onChange={(e) => {
                                                                     if (
@@ -1534,14 +1534,14 @@ const GlobalSearch = ({
                                                                     }}
                                                                 >
                                                                     {/* Title */}
-                                                                    <div className="border-b border-gray-200 px-4 py-2 text-xs font-semibold text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                                                                    <div className="px-4 py-2 text-xs font-semibold text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
                                                                         Your Recent Searches
                                                                     </div>
 
-                                                                    <ul className="max-h-60 overflow-y-auto">
+                                                                    <ul className="overflow-y-auto max-h-60">
                                                                         {searchHistoryLoading ? (
                                                                             <li className="flex items-center justify-center px-4 py-4">
-                                                                                <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"></div>
+                                                                                <div className="w-5 h-5 border-2 border-indigo-500 rounded-full animate-spin border-t-transparent"></div>
                                                                             </li>
                                                                         ) : (
                                                                             searchHistory.map(
@@ -1571,7 +1571,7 @@ const GlobalSearch = ({
                                                                                             key={
                                                                                                 index
                                                                                             }
-                                                                                            className="cursor-pointer border-b border-gray-100 px-4 py-3 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900"
+                                                                                            className="px-4 py-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900"
                                                                                             onMouseDown={(
                                                                                                 e,
                                                                                             ) => {
@@ -1587,11 +1587,11 @@ const GlobalSearch = ({
                                                                                         >
                                                                                             <div className="flex items-center justify-between gap-3">
                                                                                                 {/* Left side - Search info with thumbnail */}
-                                                                                                <div className="flex flex-1 items-center gap-3">
+                                                                                                <div className="flex items-center flex-1 gap-3">
                                                                                                     {/* Thumbnail - only show if result exists */}
                                                                                                     {hasResults &&
                                                                                                     result?.image ? (
-                                                                                                        <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-md bg-gray-100 dark:bg-zinc-900/80">
+                                                                                                        <div className="flex-shrink-0 w-12 h-12 overflow-hidden bg-gray-100 rounded-md dark:bg-zinc-900/80">
                                                                                                             <img
                                                                                                                 src={
                                                                                                                     result.image
@@ -1601,7 +1601,7 @@ const GlobalSearch = ({
                                                                                                                     result.name ||
                                                                                                                     'Result'
                                                                                                                 }
-                                                                                                                className="h-full w-full object-cover"
+                                                                                                                className="object-cover w-full h-full"
                                                                                                                 onError={(
                                                                                                                     e,
                                                                                                                 ) => {
@@ -1611,7 +1611,7 @@ const GlobalSearch = ({
                                                                                                             />
                                                                                                         </div>
                                                                                                     ) : (
-                                                                                                        <div className="flex h-full items-center justify-center rounded-lg bg-indigo-600 p-3 text-sm text-white/80 dark:bg-indigo-500">
+                                                                                                        <div className="flex items-center justify-center h-full p-3 text-sm bg-indigo-600 rounded-lg text-white/80 dark:bg-indigo-500">
                                                                                                             <svg
                                                                                                                 xmlns="http://www.w3.org/2000/svg"
                                                                                                                 fill="none"
@@ -1632,7 +1632,7 @@ const GlobalSearch = ({
                                                                                                     )}
 
                                                                                                     {/* Text content */}
-                                                                                                    <div className="flex flex-1 flex-col">
+                                                                                                    <div className="flex flex-col flex-1">
                                                                                                         {/* Query or title Hastag with count */}
                                                                                                         <div className="flex items-center gap-2">
                                                                                                             <div className="flex flex-col font-medium text-gray-900 dark:text-gray-100">
@@ -1751,7 +1751,7 @@ const GlobalSearch = ({
                                                                                                         e.preventDefault();
                                                                                                         e.stopPropagation();
                                                                                                     }}
-                                                                                                    className="flex-shrink-0 rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                                                                                                    className="flex-shrink-0 p-2 text-gray-400 transition-colors rounded-lg hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
                                                                                                 >
                                                                                                     <svg
                                                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -1761,7 +1761,7 @@ const GlobalSearch = ({
                                                                                                             1.5
                                                                                                         }
                                                                                                         stroke="currentColor"
-                                                                                                        className="h-5 w-5"
+                                                                                                        className="w-5 h-5"
                                                                                                     >
                                                                                                         <path
                                                                                                             strokeLinecap="round"
@@ -1786,12 +1786,12 @@ const GlobalSearch = ({
 
                                             {/* Address Input */}
                                             <div className="mb-5">
-                                                <div className="flex items-center rounded-xl border border-gray-300 bg-white/90 p-2 dark:border-gray-700 dark:bg-deepcharcoal">
+                                                <div className="flex items-center p-2 border border-gray-300 rounded-xl bg-white/90 dark:border-gray-700 dark:bg-deepcharcoal">
                                                     <input
                                                         key={getPlaceDetails}
                                                         type="search"
                                                         placeholder="Search Address"
-                                                        className="ml-2 flex-1 border-none bg-transparent text-sm text-gray-600 placeholder-gray-400 outline-none focus:ring-0 dark:text-white/80"
+                                                        className="flex-1 ml-2 text-sm text-gray-600 placeholder-gray-400 bg-transparent border-none outline-none focus:ring-0 dark:text-white/80"
                                                         value={autoCompletionLocationSearch}
                                                         onChange={(e) => {
                                                             const value = e.target.value;
@@ -1816,17 +1816,17 @@ const GlobalSearch = ({
                                                     />
                                                 </div>
                                                 {autoCompletionDropdown && (
-                                                    <ul className="relative z-50 mt-2 max-h-60 w-full overflow-y-auto rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-deepcharcoal">
+                                                    <ul className="relative z-50 w-full mt-2 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-lg max-h-60 dark:border-gray-600 dark:bg-deepcharcoal">
                                                         {autoCompletionLoading ? (
                                                             <li className="flex items-center justify-center px-4 py-4">
-                                                                <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"></div>
+                                                                <div className="w-5 h-5 border-2 border-indigo-500 rounded-full animate-spin border-t-transparent"></div>
                                                             </li>
                                                         ) : (
                                                             autoCompletionResults.map(
                                                                 (item, index) => (
                                                                     <li
                                                                         key={index}
-                                                                        className="cursor-pointer px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-900"
+                                                                        className="px-4 py-2 text-sm text-gray-800 cursor-pointer hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-900"
                                                                         onClick={() => {
                                                                             setPlaceId(
                                                                                 item.place_id,
@@ -1854,7 +1854,7 @@ const GlobalSearch = ({
                                                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                                     {/* Radius */}
                                                     <div className="col-span-1">
-                                                        <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-white/80">
+                                                        <label className="block mb-1 text-xs font-medium text-gray-600 dark:text-white/80">
                                                             Radius
                                                         </label>
                                                         <div
@@ -1864,7 +1864,7 @@ const GlobalSearch = ({
                                                             <input
                                                                 readOnly
                                                                 type="text"
-                                                                className="w-full border-none bg-transparent text-sm text-gray-600 placeholder-gray-400 outline-none focus:outline-none focus:ring-0 dark:text-white/80"
+                                                                className="w-full text-sm text-gray-600 placeholder-gray-400 bg-transparent border-none outline-none focus:outline-none focus:ring-0 dark:text-white/80"
                                                                 value={
                                                                     (
                                                                         postFilters.radius / 1000
@@ -1894,7 +1894,7 @@ const GlobalSearch = ({
 
                                                     {/* Floor Range */}
                                                     <div className="col-span-2">
-                                                        <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-white/80">
+                                                        <label className="block mb-1 text-xs font-medium text-gray-600 dark:text-white/80">
                                                             Floor Range
                                                         </label>
                                                         <div className="flex h-[50px] items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white/90 px-2 dark:border-gray-700 dark:bg-deepcharcoal">
@@ -1942,7 +1942,7 @@ const GlobalSearch = ({
 
                                                     {/* Time Range */}
                                                     <div className="col-span-3">
-                                                        <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
+                                                        <label className="block mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">
                                                             Date & Time Range
                                                         </label>
                                                         <div className="flex h-[50px] items-center gap-2 rounded-xl border border-gray-300 bg-white/90 p-2 focus-within:outline-none focus-within:ring-0 dark:border-gray-700 dark:bg-deepcharcoal">
@@ -1950,7 +1950,7 @@ const GlobalSearch = ({
                                                                 ref={rangeRef}
                                                                 readOnly
                                                                 placeholder="Select Date & Time Range"
-                                                                className="w-full border-none bg-transparent text-sm text-gray-600 placeholder-gray-400 outline-none focus:outline-none focus:ring-0 dark:text-white/80"
+                                                                className="w-full text-sm text-gray-600 placeholder-gray-400 bg-transparent border-none outline-none focus:outline-none focus:ring-0 dark:text-white/80"
                                                             />
                                                         </div>
                                                     </div>
@@ -1968,7 +1968,7 @@ const GlobalSearch = ({
                                                         <div role="status">
                                                             <svg
                                                                 aria-hidden="true"
-                                                                className="h-4 w-8 animate-spin fill-white/80 text-gray-200 dark:text-gray-200"
+                                                                className="w-8 h-4 text-gray-200 animate-spin fill-white/80 dark:text-gray-200"
                                                                 viewBox="0 0 100 101"
                                                                 fill="none"
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -2001,10 +2001,10 @@ const GlobalSearch = ({
                                 {/* Fullscreen slide-over */}
                                 <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-white text-black dark:bg-deepcharcoal dark:text-white/80 sm:pb-20">
                                     {/* Top Bar */}
-                                    <div className="relative flex items-center border-b border-gray-200 px-4 py-3 dark:border-gray-800">
+                                    <div className="relative flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800">
                                         <button
                                             onClick={() => setIsSpatiotemporalFilters(false)}
-                                            className="absolute left-4 rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                            className="absolute p-1 rounded-full left-4 hover:bg-gray-100 dark:hover:bg-gray-800"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -2028,13 +2028,13 @@ const GlobalSearch = ({
                                     </div>
 
                                     {/* Content */}
-                                    <div className="flex-1 space-y-6 px-2">
-                                        <section className="mt-4 w-full">
+                                    <div className="flex-1 px-2 space-y-6">
+                                        <section className="w-full mt-4">
                                             {/* Search Bar */}
                                             <div className="z-[50] mx-auto w-full transition-all duration-300">
-                                                <div className="mx-auto py-2 sm:py-3">
+                                                <div className="py-2 mx-auto sm:py-3">
                                                     <div className="flex w-full items-center rounded-xl border border-gray-300 bg-white/90 p-1.5 dark:border-gray-700 dark:bg-deepcharcoal sm:p-2">
-                                                        <div className="relative flex w-full items-center rounded-xl">
+                                                        <div className="relative flex items-center w-full rounded-xl">
                                                             {searchQuery !== '' && (
                                                                 <svg
                                                                     onClick={() => {
@@ -2047,7 +2047,7 @@ const GlobalSearch = ({
                                                                     viewBox="0 0 24 24"
                                                                     strokeWidth={1.5}
                                                                     stroke="currentColor"
-                                                                    className="absolute right-3 size-4 cursor-pointer hover:text-black/80 dark:text-white/80 hover:dark:text-white/50"
+                                                                    className="absolute cursor-pointer right-3 size-4 hover:text-black/80 dark:text-white/80 hover:dark:text-white/50"
                                                                 >
                                                                     <path
                                                                         strokeLinecap="round"
@@ -2061,7 +2061,7 @@ const GlobalSearch = ({
                                                                 ref={searchInputRef}
                                                                 type="search"
                                                                 placeholder="What happened...?"
-                                                                className="ml-2 flex-1 border-none bg-transparent text-sm text-gray-600 placeholder-gray-400 outline-none focus:outline-none focus:ring-0 dark:text-white/80 sm:text-base"
+                                                                className="flex-1 ml-2 text-sm text-gray-600 placeholder-gray-400 bg-transparent border-none outline-none focus:outline-none focus:ring-0 dark:text-white/80 sm:text-base"
                                                                 value={searchQuery}
                                                                 onChange={(e) => {
                                                                     if (
@@ -2122,14 +2122,14 @@ const GlobalSearch = ({
                                                                     }}
                                                                 >
                                                                     {/* Title */}
-                                                                    <div className="border-b border-gray-200 px-4 py-2 text-xs font-semibold text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                                                                    <div className="px-4 py-2 text-xs font-semibold text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
                                                                         Your Recent Searches
                                                                     </div>
 
-                                                                    <ul className="max-h-36 overflow-y-auto">
+                                                                    <ul className="overflow-y-auto max-h-36">
                                                                         {searchHistoryLoading ? (
                                                                             <li className="flex items-center justify-center px-4 py-4">
-                                                                                <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"></div>
+                                                                                <div className="w-5 h-5 border-2 border-indigo-500 rounded-full animate-spin border-t-transparent"></div>
                                                                             </li>
                                                                         ) : (
                                                                             searchHistory.map(
@@ -2159,7 +2159,7 @@ const GlobalSearch = ({
                                                                                             key={
                                                                                                 index
                                                                                             }
-                                                                                            className="cursor-pointer border-b border-gray-100 px-4 py-3 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900"
+                                                                                            className="px-4 py-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900"
                                                                                             onMouseDown={(
                                                                                                 e,
                                                                                             ) => {
@@ -2175,11 +2175,11 @@ const GlobalSearch = ({
                                                                                         >
                                                                                             <div className="flex items-center justify-between gap-3">
                                                                                                 {/* Left side - Search info with thumbnail */}
-                                                                                                <div className="flex flex-1 items-center gap-3">
+                                                                                                <div className="flex items-center flex-1 gap-3">
                                                                                                     {/* Thumbnail - only show if result exists */}
                                                                                                     {hasResults &&
                                                                                                     result?.image ? (
-                                                                                                        <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-md bg-gray-100 dark:bg-zinc-900/80">
+                                                                                                        <div className="flex-shrink-0 w-12 h-12 overflow-hidden bg-gray-100 rounded-md dark:bg-zinc-900/80">
                                                                                                             <img
                                                                                                                 src={
                                                                                                                     result.image
@@ -2189,7 +2189,7 @@ const GlobalSearch = ({
                                                                                                                     result.name ||
                                                                                                                     'Result'
                                                                                                                 }
-                                                                                                                className="h-full w-full object-cover"
+                                                                                                                className="object-cover w-full h-full"
                                                                                                                 onError={(
                                                                                                                     e,
                                                                                                                 ) => {
@@ -2199,7 +2199,7 @@ const GlobalSearch = ({
                                                                                                             />
                                                                                                         </div>
                                                                                                     ) : (
-                                                                                                        <div className="flex h-full items-center justify-center rounded-lg bg-indigo-600 p-3 text-sm text-white/80 dark:bg-indigo-500">
+                                                                                                        <div className="flex items-center justify-center h-full p-3 text-sm bg-indigo-600 rounded-lg text-white/80 dark:bg-indigo-500">
                                                                                                             <svg
                                                                                                                 xmlns="http://www.w3.org/2000/svg"
                                                                                                                 fill="none"
@@ -2220,7 +2220,7 @@ const GlobalSearch = ({
                                                                                                     )}
 
                                                                                                     {/* Text content */}
-                                                                                                    <div className="flex flex-1 flex-col">
+                                                                                                    <div className="flex flex-col flex-1">
                                                                                                         {/* Query or title Hastag with count */}
                                                                                                         <div className="flex items-center gap-2">
                                                                                                             <div className="flex flex-col font-medium text-gray-900 dark:text-gray-100">
@@ -2339,7 +2339,7 @@ const GlobalSearch = ({
                                                                                                         e.preventDefault();
                                                                                                         e.stopPropagation();
                                                                                                     }}
-                                                                                                    className="flex-shrink-0 rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                                                                                                    className="flex-shrink-0 p-2 text-gray-400 transition-colors rounded-lg hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
                                                                                                 >
                                                                                                     <svg
                                                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -2349,7 +2349,7 @@ const GlobalSearch = ({
                                                                                                             1.5
                                                                                                         }
                                                                                                         stroke="currentColor"
-                                                                                                        className="h-5 w-5"
+                                                                                                        className="w-5 h-5"
                                                                                                     >
                                                                                                         <path
                                                                                                             strokeLinecap="round"
@@ -2373,12 +2373,12 @@ const GlobalSearch = ({
                                             </div>
                                             {/* Address Input */}
                                             <div className="mb-5">
-                                                <div className="flex items-center rounded-xl border border-gray-300 bg-white/90 p-2 outline-none focus-within:ring-0 dark:border-gray-700 dark:bg-deepcharcoal">
+                                                <div className="flex items-center p-2 border border-gray-300 outline-none rounded-xl bg-white/90 focus-within:ring-0 dark:border-gray-700 dark:bg-deepcharcoal">
                                                     <input
                                                         key={getPlaceDetails}
                                                         type="search"
                                                         placeholder="Search Address"
-                                                        className="ml-2 flex-1 border-none bg-transparent text-sm text-gray-600 placeholder-gray-400 outline-none focus:ring-0 dark:text-white/80"
+                                                        className="flex-1 ml-2 text-sm text-gray-600 placeholder-gray-400 bg-transparent border-none outline-none focus:ring-0 dark:text-white/80"
                                                         value={autoCompletionLocationSearch}
                                                         onChange={(e) => {
                                                             const value = e.target.value;
@@ -2403,17 +2403,17 @@ const GlobalSearch = ({
                                                     />
                                                 </div>
                                                 {autoCompletionDropdown && (
-                                                    <ul className="relative z-50 mt-2 max-h-60 w-full overflow-y-auto rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-deepcharcoal">
+                                                    <ul className="relative z-50 w-full mt-2 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-lg max-h-60 dark:border-gray-600 dark:bg-deepcharcoal">
                                                         {autoCompletionLoading ? (
                                                             <li className="flex items-center justify-center px-4 py-4">
-                                                                <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"></div>
+                                                                <div className="w-5 h-5 border-2 border-indigo-500 rounded-full animate-spin border-t-transparent"></div>
                                                             </li>
                                                         ) : (
                                                             autoCompletionResults.map(
                                                                 (item, index) => (
                                                                     <li
                                                                         key={index}
-                                                                        className="cursor-pointer px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-900"
+                                                                        className="px-4 py-2 text-sm text-gray-800 cursor-pointer hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-900"
                                                                         onClick={() => {
                                                                             setPlaceId(
                                                                                 item.place_id,
@@ -2441,7 +2441,7 @@ const GlobalSearch = ({
                                                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                                     {/* Radius */}
                                                     <div className="col-span-1">
-                                                        <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-white/80">
+                                                        <label className="block mb-1 text-xs font-medium text-gray-600 dark:text-white/80">
                                                             Radius
                                                         </label>
                                                         <div
@@ -2451,7 +2451,7 @@ const GlobalSearch = ({
                                                             <input
                                                                 readOnly
                                                                 type="text"
-                                                                className="w-full border-none bg-transparent text-sm text-gray-600 outline-none focus-within:ring-0 dark:text-white/80"
+                                                                className="w-full text-sm text-gray-600 bg-transparent border-none outline-none focus-within:ring-0 dark:text-white/80"
                                                                 value={
                                                                     (
                                                                         postFilters.radius / 1000
@@ -2481,7 +2481,7 @@ const GlobalSearch = ({
 
                                                     {/* Floor Range */}
                                                     <div className="col-span-2">
-                                                        <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-white/80">
+                                                        <label className="block mb-1 text-xs font-medium text-gray-600 dark:text-white/80">
                                                             Floor Range
                                                         </label>
                                                         <div className="flex h-[50px] items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white/90 px-2 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal">
@@ -2529,7 +2529,7 @@ const GlobalSearch = ({
 
                                                     {/* Time Range */}
                                                     <div className="col-span-3">
-                                                        <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
+                                                        <label className="block mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">
                                                             Date & Time Range
                                                         </label>
                                                         <div className="flex h-[50px] items-center gap-2 rounded-xl border border-gray-300 bg-white/90 p-2 outline-none focus-within:ring-0 dark:border-gray-700 dark:bg-deepcharcoal">
@@ -2537,7 +2537,7 @@ const GlobalSearch = ({
                                                                 ref={rangeRef}
                                                                 readOnly
                                                                 placeholder="Select Date & Time Range"
-                                                                className="w-full border-none bg-transparent text-sm text-gray-600 placeholder-gray-400 outline-none focus-within:ring-0 dark:text-white/80"
+                                                                className="w-full text-sm text-gray-600 placeholder-gray-400 bg-transparent border-none outline-none focus-within:ring-0 dark:text-white/80"
                                                             />
                                                         </div>
                                                     </div>
@@ -2555,7 +2555,7 @@ const GlobalSearch = ({
                                                         <div role="status">
                                                             <svg
                                                                 aria-hidden="true"
-                                                                className="h-4 w-8 animate-spin fill-white/80 text-gray-200 dark:text-gray-200"
+                                                                className="w-8 h-4 text-gray-200 animate-spin fill-white/80 dark:text-gray-200"
                                                                 viewBox="0 0 100 101"
                                                                 fill="none"
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -2588,21 +2588,21 @@ const GlobalSearch = ({
             {/* Place Detail Locaiton Fecthing Loading State */}
             {palceDetailFetching &&
                 createPortal(
-                    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                         <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                         {/* Modal content */}
-                        <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
+                        <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
                             <div className="text-center">
                                 <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                     Please Wait While We Are Setting up Location
                                 </h2>
 
-                                <div className="mt-5 flex items-center justify-center">
+                                <div className="flex items-center justify-center mt-5">
                                     <div role="status">
                                         <svg
                                             aria-hidden="true"
-                                            className="h-8 w-8 animate-spin fill-indigo-600 text-gray-200 dark:text-gray-600"
+                                            className="w-8 h-8 text-gray-200 animate-spin fill-indigo-600 dark:text-gray-600"
                                             viewBox="0 0 100 101"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
@@ -2629,21 +2629,21 @@ const GlobalSearch = ({
             {searchApplying && !isPostFilterSetting && !isSpatiotemporalFilters && (
                 <>
                     {createPortal(
-                        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                             <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                             {/* Modal content */}
-                            <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
+                            <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
                                 <div className="text-center">
                                     <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                         Please Wait While We Are Finding Results For You
                                     </h2>
 
-                                    <div className="mt-5 flex items-center justify-center">
+                                    <div className="flex items-center justify-center mt-5">
                                         <div role="status">
                                             <svg
                                                 aria-hidden="true"
-                                                className="h-8 w-8 animate-spin fill-indigo-600 text-gray-200 dark:text-gray-600"
+                                                className="w-8 h-8 text-gray-200 animate-spin fill-indigo-600 dark:text-gray-600"
                                                 viewBox="0 0 100 101"
                                                 fill="none"
                                                 xmlns="http://www.w3.org/2000/svg"
