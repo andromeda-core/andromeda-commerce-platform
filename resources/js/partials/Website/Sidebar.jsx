@@ -134,7 +134,7 @@ const Sidebar = ({
                             </Link>
                         </li>
 
-                        <li>
+                        {/* <li>
                             <a
                                 href="#"
                                 className={`flex w-full items-center ${
@@ -157,7 +157,7 @@ const Sidebar = ({
                                 </svg>
                                 {!isCollapsed && <span>Contact Us</span>}
                             </a>
-                        </li>
+                        </li> */}
 
                         <li>
                             <Link

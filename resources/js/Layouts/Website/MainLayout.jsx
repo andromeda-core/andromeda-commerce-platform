@@ -133,7 +133,7 @@ export default function MainLayout({ children }) {
 
     return (
         <>
-            <div className="relative min-h-screen w-full bg-slate-100 dark:bg-zinc-950/70">
+            <div className="relative w-full min-h-screen bg-slate-100 dark:bg-zinc-950/70">
                 <Preloader loaded={loaded} setLoaded={setLoaded} />
 
                 <ToastContainer
@@ -176,7 +176,7 @@ export default function MainLayout({ children }) {
                     }`}
                 >
                     {/* Main Content */}
-                    <main className="min-h-screen flex-1 px-3 pt-2 dark:bg-zinc-950/70 lg:px-6">
+                    <main className="flex-1 min-h-screen px-3 pt-2 dark:bg-zinc-950/70 lg:px-6">
                         {needsActivation &&
                             createPortal(
                                 <div
@@ -185,7 +185,7 @@ export default function MainLayout({ children }) {
                                         setNeedsActivation(false);
                                     }}
                                 >
-                                    <p className="mb-3 text-center text-sm opacity-80">
+                                    <p className="mb-3 text-sm text-center opacity-80">
                                         Tap anywhere to activate navigation
                                     </p>
                                 </div>,
@@ -204,7 +204,13 @@ export default function MainLayout({ children }) {
                 {/* Mobile Bottom Navigation */}
                 {windowSize.width < 1024 && (
                     <>
-                        <BottomBar darkMode={darkMode} setDarkMode={setDarkMode} />
+                        <BottomBar
+                            darkMode={darkMode}
+                            setDarkMode={setDarkMode}
+                            moreDropdown={moreDropdown}
+                            setMoreDropdown={setMoreDropdown}
+                            moreDropdownRef={moreDropdownRef}
+                        />
                     </>
                 )}
             </div>

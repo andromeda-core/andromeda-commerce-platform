@@ -336,14 +336,14 @@ Additional Work:
     3: Search Terms → partial match (LIKE) across post title and content.
     4: Users → exact match (=) — to be implemented later.
 
-  Implement simulated vertical loop navigation: when the user scrolls upward from the first post or downward from the last post,
-  instantly navigate to the opposite end within the already-loaded posts (no extra API calls),
-  ensuring smooth, continuous navigation aligned with the eager-loading system.
+  Implement simulated vertical loop navigation: when the user scrolls upward from the first post or downward from the last post, ✅
+  instantly navigate to the opposite end within the already-loaded posts (no extra API calls), ✅
+  ensuring smooth, continuous navigation aligned with the eager-loading system. ✅
 
 
-  Implement circular horizontal navigation: make the related posts viewer
-  loop infinitely so that swiping right from the last post returns to the first, and swiping left from the first post returns to the last — similar to an infinite carousel,
-  and apply the same concept to top–bottom navigation for seamless looping.
+  Implement circular horizontal navigation: make the related posts viewer ✅
+  loop infinitely so that swiping right from the last post returns to the first, and swiping left from the first post returns to the last — similar to an infinite carousel, ✅
+  and apply the same concept to top–bottom navigation for seamless looping. ✅
 
   Dedicated Matching Hashtag Post Contianing Page for showing post when user clicks on hashtag of any post it it wil redirects to this archive page ✅
 
