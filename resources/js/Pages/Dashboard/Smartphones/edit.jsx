@@ -21,6 +21,7 @@ export default function edit({ smartphone, colors, model_names, capacities, cate
         color_ids: smartphone.color_ids || [],
         upc: smartphone.upc || '',
         images: [],
+        tag: smartphone?.tag || '',
     });
 
     // Submit Processing
@@ -250,6 +251,18 @@ export default function edit({ smartphone, colors, model_names, capacities, cate
                                                         Required={true}
                                                     />
                                                 </div>
+
+                                                <Input
+                                                    InputName={'Tag'}
+                                                    Error={errors.tag}
+                                                    Value={data.tag}
+                                                    Action={(e) => setData('tag', e.target.value)}
+                                                    Placeholder={'Enter Tag'}
+                                                    Id={'tag'}
+                                                    Name={'tag'}
+                                                    Type={'text'}
+                                                    Required={false}
+                                                />
                                             </div>
 
                                             <div className="col-span-2 grid grid-cols-1 gap-4 md:grid-cols-1">

@@ -16,6 +16,8 @@ class Smartphone extends Model
         'category_id',
         'upc',
         'images',
+        'tag',
+        'slug',
     ];
 
     protected $appends = ['added_at', 'colors', 'smartphone_image_urls'];

@@ -1,5 +1,5 @@
 import PostMediaViewer from '@/Components/PostMediaViewer';
-import PostsGrid from '@/Components/PostsGrid';
+import PostsGrid from '@/Pages/Website/Home/PostsGrid';
 import useDarkMode from '@/Hooks/useDarkMode';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';

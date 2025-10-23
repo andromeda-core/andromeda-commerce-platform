@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import videoThumbnail from '../../../public/assets/images/video-thumb/general-video.png';
+import videoThumbnail from '../../../../../public/assets/images/video-thumb/general-video.png';
 
 export default function PostsGrid({
     posts,
@@ -98,7 +98,7 @@ export default function PostsGrid({
     }, [posts.length, nextPageUrl, fetchMorePosts]);
 
     return (
-        <div className={`lg:h-[85vh]`}>
+        <div className={`overflow-hidden lg:h-[85vh]`}>
             <div
                 ref={containerRef}
                 className="hide-y-scrollbar flex max-h-[75vh] cursor-pointer flex-row gap-2 overflow-x-hidden overflow-y-hidden border-gray-700 lg:w-28 lg:flex-col lg:overflow-y-auto lg:overflow-x-hidden"
@@ -143,7 +143,7 @@ export default function PostsGrid({
                                 className="h-full w-full object-cover text-[5px] text-gray-700 dark:text-white/80 lg:text-[10px]"
                             />
                         ) : (
-                            <div className="dark:bg-deepcharcoal flex h-full w-full items-center justify-center bg-gray-200 text-[5px] text-gray-700 dark:text-white/80 lg:text-[10px]">
+                            <div className="flex h-full w-full items-center justify-center bg-gray-200 text-[5px] text-gray-700 dark:bg-deepcharcoal dark:text-white/80 lg:text-[10px]">
                                 {post.title.length > 20
                                     ? post.title.slice(0, 20) + '...'
                                     : post.title}

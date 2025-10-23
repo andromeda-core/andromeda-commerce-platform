@@ -151,6 +151,15 @@ export default function Show({ smartphone }) {
                                                     'N/A'}
                                             </dd>
                                         </div>
+
+                                        <div className="flex justify-between py-3">
+                                            <dt className="text-gray-600 dark:text-gray-400">
+                                                Tag
+                                            </dt>
+                                            <dd className="font-medium text-gray-900 dark:text-gray-100">
+                                                {smartphone?.tag || 'N/A'}
+                                            </dd>
+                                        </div>
                                     </dl>
                                 </div>
 

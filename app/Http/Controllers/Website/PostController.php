@@ -23,15 +23,16 @@ class PostController extends Controller
         }
 
         if ($request->ajax()) {
-
             $data = $this->post->getPostsForWebsite($request);
 
-            $posts = $data['posts'];
-            $next_page_url = $data['next_page_url'];
+            $posts = $data['data']['posts'];
+            $products = $data['data']['products'];
+            $next_page_url = $data['pagination']['next_page_url'];
 
             return response()->json([
                 'status' => true,
                 'posts' => $posts,
+                'products' => $products,
                 'next_page_url' => $next_page_url,
             ]);
         }
@@ -39,21 +40,21 @@ class PostController extends Controller
         return to_route('home');
     }
 
-    public function getMorePosts(Request $request)
-    {
+    // public function getMorePosts(Request $request)
+    // {
 
-        if (! $request->has('page')) {
-            return back();
-        }
+    //     if (! $request->has('page')) {
+    //         return back();
+    //     }
 
-        $posts = $this->post->getInfinityScrollablePostsForWebsite($request);
+    //     $posts = $this->post->getInfinityScrollablePostsForWebsite($request);
 
-        return response()->json([
-            'status' => true,
-            'posts' => $posts['posts'],
-            'next_page_url' => $posts['next_page_url'],
-        ]);
-    }
+    //     return response()->json([
+    //         'status' => true,
+    //         'posts' => $posts['posts'],
+    //         'next_page_url' => $posts['next_page_url'],
+    //     ]);
+    // }
 
     public function bookmark(Request $request)
     {

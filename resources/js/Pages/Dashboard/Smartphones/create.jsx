@@ -20,6 +20,7 @@ export default function create({ colors, model_names, capacities, categories }) 
         category_id: '',
         upc: '',
         images: [],
+        tag: '',
     });
 
     const [file_error, setFileError] = useState(null);
@@ -192,6 +193,18 @@ export default function create({ colors, model_names, capacities, categories }) 
                                                         Required={true}
                                                     />
                                                 </div>
+
+                                                <Input
+                                                    InputName={'Tag'}
+                                                    Error={errors.tag}
+                                                    Value={data.tag}
+                                                    Action={(e) => setData('tag', e.target.value)}
+                                                    Placeholder={'Enter Tag'}
+                                                    Id={'tag'}
+                                                    Name={'tag'}
+                                                    Type={'text'}
+                                                    Required={false}
+                                                />
                                             </div>
 
                                             <div className="col-span-2 grid grid-cols-1 gap-4 md:grid-cols-1">

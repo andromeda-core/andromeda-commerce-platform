@@ -357,6 +357,32 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
+ * @property string $ip_address
+ * @property string $name
+ * @property string $email
+ * @property string $phone
+ * @property string $reason
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read mixed $added_at
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DataDeletionRequest newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DataDeletionRequest newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DataDeletionRequest query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DataDeletionRequest whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DataDeletionRequest whereEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DataDeletionRequest whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DataDeletionRequest whereIpAddress($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DataDeletionRequest whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DataDeletionRequest wherePhone($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DataDeletionRequest whereReason($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DataDeletionRequest whereUpdatedAt($value)
+ */
+	class DataDeletionRequest extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
  * @property int $user_id
  * @property string $address
  * @property string $bank_account_no
@@ -857,6 +883,8 @@ namespace App\Models{
  * @property int|null $capacity_id
  * @property int|null $category_id
  * @property string $upc
+ * @property string|null $tag
+ * @property string|null $slug
  * @property array<array-key, mixed>|null $images
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -881,6 +909,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereImages($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereModelNameId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereSlug($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereTag($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereUpc($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereUpdatedAt($value)
  */

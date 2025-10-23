@@ -1,9 +1,9 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import videoThumbnail from '../../../public/assets/images/video-thumb/general-video.png';
+import videoThumbnail from '../../../../../public/assets/images/video-thumb/general-video.png';
 import { useSwipeable } from 'react-swipeable';
 import useWindowSize from '@/Hooks/useWindowSize';
 import { motion, AnimatePresence } from 'framer-motion';
-import VideoPlayer from './VideoPlayer';
+import VideoPlayer from '@/Components/VideoPlayer';
 
 export default function PostMediaViewer({
     viewablePost,
@@ -139,7 +139,7 @@ export default function PostMediaViewer({
             >
                 {/* Big Viewer */}
                 <div
-                    className="bg-deepcharcoal relative flex flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl"
+                    className="relative flex flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-deepcharcoal"
                     style={{
                         height: windowSize.width >= 1024 ? '70vh' : '60vh',
                         minWidth: windowSize.width >= 1024 ? '30vw' : '100%',

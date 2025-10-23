@@ -11,6 +11,12 @@ class SmartphoneDestroyOnAWS implements ShouldQueue
 {
     use Queueable;
 
+    public $tries = 5;
+
+    public $backoff = 30;
+
+    public $timeout = 300;
+
     public function __construct(
         private array $files
     ) {}

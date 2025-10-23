@@ -64,7 +64,7 @@ export default function index({ smartphones }) {
                 label: 'Colors',
                 render: (item) => {
                     return (
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-col items-center gap-2">
                             {item.colors.map((color) => {
                                 return (
                                     <span
@@ -99,6 +99,17 @@ export default function index({ smartphones }) {
                                 {item?.selling_info?.total_price}
                             </span>
                         );
+                    }
+
+                    return 'N/A';
+                },
+            },
+
+            {
+                label: 'Tag',
+                render: (item) => {
+                    if (item?.tag) {
+                        return item?.tag;
                     }
 
                     return 'N/A';

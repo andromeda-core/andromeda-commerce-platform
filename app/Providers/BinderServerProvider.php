@@ -20,6 +20,8 @@ use App\Repositories\Customers\Interface\ICustomerRepository;
 use App\Repositories\Customers\Repository\CustomerRepository;
 use App\Repositories\Dashboard\Interface\IDashboardRepository;
 use App\Repositories\Dashboard\Repositories\DashboardRepository;
+use App\Repositories\DataDeletionRequests\Interface\IDataDeletionRequestRepository;
+use App\Repositories\DataDeletionRequests\Repository\DataDeletionRequestRepository;
 use App\Repositories\Distributors\Interface\IDistributorRepository;
 use App\Repositories\Distributors\Repository\DistributorRepository;
 use App\Repositories\Floors\Interface\IFloorRepostitory;
@@ -80,6 +82,7 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(IDashboardRepository::class, DashboardRepository::class);
         $this->app->bind(IGlobalSearchRepository::class, GlobalSearchRepository::class);
         $this->app->bind(ISearchHistoryRepository::class, SearchHistoryRepository::class);
+        $this->app->bind(IDataDeletionRequestRepository::class, DataDeletionRequestRepository::class);
 
     }
 

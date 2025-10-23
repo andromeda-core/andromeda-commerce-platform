@@ -8,6 +8,7 @@ use App\Http\Controllers\Dashboard\Commissions\CollaboratorCommissionController;
 use App\Http\Controllers\Dashboard\Commissions\DistributorCommissionController;
 use App\Http\Controllers\Dashboard\Commissions\SupplierCommissionController;
 use App\Http\Controllers\Dashboard\CustomerController;
+use App\Http\Controllers\Dashboard\DataDeletionRequestController;
 use App\Http\Controllers\Dashboard\DistributorController;
 use App\Http\Controllers\Dashboard\FloorController;
 use App\Http\Controllers\Dashboard\HomeController;
@@ -22,9 +23,11 @@ use App\Http\Controllers\Dashboard\SmartphoneController;
 use App\Http\Controllers\Dashboard\SmartphoneForSaleController;
 use App\Http\Controllers\Dashboard\SupplierController;
 use App\Http\Controllers\Dashboard\UserController;
+use App\Http\Controllers\Website\DataDeletionRequestController as WebsiteDataDeletionRequestController;
 use App\Http\Controllers\Website\GlobalSearchController;
 use App\Http\Controllers\Website\HomeController as WebsiteHomeController;
 use App\Http\Controllers\Website\PostController as WebsitePostController;
+use App\Http\Controllers\Website\PrivacyPolicyController;
 use Illuminate\Support\Facades\Route;
 
 // Website Un Auth Routes
@@ -58,6 +61,16 @@ Route::group(['as' => 'website.'], function () {
         Route::delete('/global-search-search-session-destroy', 'searchSessionDestroy')->name('search-session-destroy');
         Route::delete('global-search-destroy-history', 'destroyHistory')->name('search-history-destroy');
     });
+
+    // Privacy Policy Route
+    Route::get('/privacy-policy', PrivacyPolicyController::class)->name('privacy-policy.index');
+
+    // Data Deletion Routes
+    Route::controller(WebsiteDataDeletionRequestController::class)->middleware('auth')->name('data-deletion.')->group(function () {
+        Route::get('/data-deletion', 'index')->name('index');
+        Route::post('/data-deletion-store', 'store')->name('store');
+    });
+
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -309,6 +322,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::put('/profile-update', 'updateProfile')->name('profile.update');
             Route::put('/profile-password-update', 'updatePassword')->name('profile.password.update');
             Route::delete('/profile/account-destroy', 'destroyAccount')->name('profile.account.destroy');
+        });
+
+        // Data Deletion Request Routes
+        Route::controller(DataDeletionRequestController::class)->name('data-deletion-requests.')->group(function () {
+            Route::get('/data-deletion-requests', 'index')->name('index');
         });
 
         // Setting Routes

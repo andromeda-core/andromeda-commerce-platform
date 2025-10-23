@@ -408,7 +408,8 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                                 ->orWhereHas('capacity', function ($subQQ) use ($request) {
                                     $subQQ->where('name', 'LIKE', '%'.$request->input('query').'%');
                                 })
-                                ->orWhere('upc', 'LIKE', '%'.$request->input('query').'%');
+                                ->orWhere('upc', 'LIKE', '%'.$request->input('query').'%')
+                                ->orWhere('tag', '=', $request->input('query'));
                         });
                     }
 
@@ -451,8 +452,8 @@ class GlobalSearchRepository implements IGlobalSearchRepository
             if ($request->user() && (! empty($query) || (! empty($post_filters['address']['lat']) && ! empty($post_filters['address']['lng'])))) {
 
                 $normalizedFilters = ! empty($post_filters['address']['lat']) && ! empty($post_filters['address']['lng'])
-        ? json_encode($post_filters, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
-        : null;
+                 ? json_encode($post_filters, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+                 : null;
 
                 $filtersHash = $this->stableJsonHash($post_filters);
 

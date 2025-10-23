@@ -66,6 +66,15 @@ class SmartphoneRepository implements ISmartphoneRepository
             'category_id' => ['required', 'exists:categories,id'],
             'upc' => ['required', 'max:255', 'unique:smartphones,upc'],
             'images' => ['required', 'array', 'max:5'],
+            'tag' => ['nullable', 'string', 'max:30', function ($attribute, $value, $fail) {
+                if (str_contains($value, ',')) {
+                    $fail('Only One Tag Allowed In The Smartphone');
+                }
+
+                if (substr_count($value, '#') > 1 || str_contains($value, ' ') || str_contains($value, ',')) {
+                    return $fail('Only one hashtag is allowed without spaces or commas.');
+                }
+            }],
 
         ], [
             'color_ids.*.required' => 'Color Is Required ',
@@ -98,6 +107,18 @@ class SmartphoneRepository implements ISmartphoneRepository
             $validated_req = array_filter($validated_req, function ($value, $key) {
                 return ! in_array($key, ['images']);
             }, ARRAY_FILTER_USE_BOTH);
+
+            if (! empty($validated_req['tag']) && ! str_starts_with($validated_req['tag'], '#')) {
+                $tag = $validated_req['tag'];
+                $concatinated_tag = '#'.$tag;
+                $validated_req['tag'] = $concatinated_tag;
+            }
+
+            $model_name = $this->model_name->find($validated_req['model_name_id'])?->name ?? 'Smartphone';
+            $capacity = $this->capacity->find($validated_req['capacity_id'])?->name ?? '';
+
+            $raw_slug = "{$model_name}-{$capacity}-{$validated_req['upc']}-".Str::uuid();
+            $validated_req['slug'] = preg_replace('/\s+/u', '-', trim($raw_slug));
 
             $smartphone = $this->smartphone->create($validated_req);
             if (empty($smartphone)) {
@@ -148,6 +169,15 @@ class SmartphoneRepository implements ISmartphoneRepository
             'category_id' => ['required', 'exists:categories,id'],
             'upc' => ['required', 'max:255', 'unique:smartphones,upc,'.$id],
             'images' => ['required', 'array', 'max:5'],
+            'tag' => ['nullable', 'string', 'max:30', function ($attribute, $value, $fail) {
+                if (str_contains($value, ',')) {
+                    $fail('Only One Tag Allowed In The Smartphone');
+                }
+
+                if (substr_count($value, '#') > 1 || str_contains($value, ' ') || str_contains($value, ',')) {
+                    return $fail('Only one hashtag is allowed without spaces or commas.');
+                }
+            }],
         ], [
             'color_ids.*.required' => 'Color Is Required ',
             'color_ids.*.exists' => 'Given Color Are incorrect',
@@ -181,7 +211,22 @@ class SmartphoneRepository implements ISmartphoneRepository
                 return ! in_array($key, ['images']);
             }, ARRAY_FILTER_USE_BOTH);
 
+            if (! empty($validated_req['tag']) && ! str_starts_with($validated_req['tag'], '#')) {
+                $tag = $validated_req['tag'];
+                $concatinated_tag = '#'.$tag;
+                $validated_req['tag'] = $concatinated_tag;
+            }
+
             $smartphone = $this->smartphone->find($id);
+
+            if (empty($smartphone->slug)) {
+                $model_name = $this->model_name->find($validated_req['model_name_id'])?->name ?? 'Smartphone';
+                $capacity = $this->capacity->find($validated_req['capacity_id'])?->name ?? '';
+                $raw_slug = "{$model_name}-{$capacity}-{$validated_req['upc']}-".Str::uuid();
+
+                $validated_req['slug'] = preg_replace('/\s+/u', '-', trim($raw_slug));
+
+            }
 
             if ($request->filled('deleted_images')) {
                 $deleted = $request->array('deleted_images');

@@ -11,6 +11,12 @@ class PostDestroyOnAWSJob implements ShouldQueue
 {
     use Queueable;
 
+    public $tries = 5;
+
+    public $backoff = 30;
+
+    public $timeout = 300;
+
     /**
      * Create a new job instance.
      */

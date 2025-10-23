@@ -25,6 +25,7 @@ const GlobalSearch = ({
     defaultQuery = '',
     resultsPage = false,
     hashtagPage = false,
+    mainPage = false,
     defaultPostFilters = {},
     defaultFiltersCleared = false,
     search_history = [],
@@ -424,6 +425,37 @@ const GlobalSearch = ({
                     });
 
                 setIsPrefChanged(false);
+            }
+
+            if (mainPage) {
+                setSearchApplying(true);
+                OnPostFilterChange(true);
+                await axios
+                    .get(
+                        route('home'),
+                        {
+                            images: postPreferences.images,
+                            videos: postPreferences.videos,
+                            text: postPreferences.text,
+                            show_posts: postPreferences.show_posts,
+                            show_products: postPreferences.show_products,
+                        },
+                        {
+                            headers: { 'X-Inertia': true },
+                        },
+                    )
+                    .then((response) => {
+                        window.history.replaceState({}, '', route('home'));
+                    })
+                    .catch((error) => {
+                        toast.error(error.message);
+                    })
+                    .finally(() => {
+                        setSearchApplying(false);
+                    });
+
+                setIsPrefChanged(false);
+                return;
             }
 
             if (!isAnyAdditionalFilterApplied) {
@@ -1089,7 +1121,7 @@ const GlobalSearch = ({
                                         </section>
 
                                         {/* SECTION RESULTS PAGE FILTER */}
-                                        {resultsPage && (
+                                        {(resultsPage || mainPage) && (
                                             <section>
                                                 <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-gray-500">
                                                     Visibility Filter

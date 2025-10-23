@@ -104,7 +104,8 @@ class Post extends Model
         });
 
         static::created(function ($post) {
-            $post->slug = Str::slug($post->title.'-'.time().'-'.$post->id);
+
+            $post->slug = preg_replace('/\s+/u', '-', trim($post->title.'-'.time().'-'.$post->id.'-'.Str::uuid()));
             $post->save();
         });
 

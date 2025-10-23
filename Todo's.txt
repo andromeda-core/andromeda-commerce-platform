@@ -300,7 +300,7 @@ Milestone 7: Customer Website (Frontend + PWA + Posts + Orders + Meta OAuth)
 - Posts module: Display all posts/blogs to users ✅
 - Message Us FB/Instagram links shown on both the Checkout page and main Website
 - Country-based enabling of Meta OAuth through entries stored in Special Countries (e.g., Mongolia only)
-- (1) Privacy Policy and (2) Data Deletion Policy as separate pages on yesbigshop.com.
+- (1) Privacy Policy and (2) Data Deletion Policy as separate pages on yesbigshop.com. ✅
 	- https://docs.google.com/document/d/1d_0t4RXtx1Xrdj4U4KgTXFGfLaGZJ9Ykl5dyARDsBQU/edit?usp=sharing yesbigshop privacy policy and data deletion (korean)
 	- https://docs.google.com/document/d/1c7F1ohFgv_-ndouw3_GKkP0G5B1noJp4AG-pHp0Al3M/edit?usp=sharing yesbigshop privacy policy and data deletion (english)
 - Implementation of cryptocurrency payment (e.g., Bitcoin) for product purchases -> (new)
@@ -413,6 +413,14 @@ Additional Work:
      19: Added Cookie Filtering in Backend And in Frontend So Application Wont Break WhenCookie Value changed by user and attackers   ✅
      20: Hashtag Archive Page backend Logic And Frontend With Cookie Value Validation On backend And Frontend Done  ✅
      21: Hashtag Archive Page Ui Remeaning Just ✅
+     22: Update Backend For Smartphones For hashtag Support ✅
+     23: Slug Support Added For Smartphones ✅
+     24: Posts Slug Creation Logic Fixed And Now Supports Korean and other unicodes as well ✅
+     25: Update Results Page backend To Support Filtering With hashtags in products -> smartphones ✅
+     26: Posts And Products Merged And Showing Merged Posts and products on Main Archve Logic Done as well as optimized custom Pagination For Infinity
+     Eagerloading  ✅
+     27: Ui Of Product Single Page
+
 
   )
 

@@ -31,10 +31,11 @@ class GlobalSearchController extends Controller
         $floors = $this->floor->getFloorsForSearch();
         $google_map_api_key = $this->globalSearch->getGoogleMapApiKey();
         $search_history = $this->searchHistory->getHistory($request);
+        $current_time = now();
 
         // dd($search_history->toArray());
 
-        return Inertia::render('Website/Search/index', compact('floors', 'google_map_api_key', 'search_history'));
+        return Inertia::render('Website/Search/index', compact('floors', 'google_map_api_key', 'search_history', 'current_time'));
     }
 
     public function autoCompletion(Request $request)

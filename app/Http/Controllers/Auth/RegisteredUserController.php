@@ -53,7 +53,7 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         // Checking User Model Implements_MustVerifyEmail Inerface
-        if ($user instanceof MustVerifyEmail) {
+        if ($user instanceof MustVerifyEmail && ! $request->user()->hasRole('Customer')) {
 
             // Checking Does SMTP Setting Exists In Cache  If Exists Than After Registeration Instantly The Verification Mail Will be Sent If Not Than If Block Will Run
             if (empty(Cache::get('smtp_config'))) {
@@ -68,6 +68,9 @@ class RegisteredUserController extends Controller
 
             return redirect(route('verification.notice', absolute: false))
                 ->with('success', 'Registration successful! Please Check Your Inbox For Verification Mail');
+        } elseif ($request->user()->hasRole('Customer')) {
+            return redirect(route('home', absolute: false))
+                ->with('success', 'Registration successful!');
         } else {
             return redirect(route('dashboard', absolute: false))
                 ->with('success', 'Registration successful!');
