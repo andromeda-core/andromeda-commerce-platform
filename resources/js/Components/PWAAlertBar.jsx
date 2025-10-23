@@ -58,7 +58,7 @@ const PWAAlertBar = ({ onClose }) => {
 
     return (
         <div
-            className={`pointer-events-none fixed left-0 right-0 z-40 flex items-end justify-center p-4 ${windowSize.width < 1024 ? 'bottom-14' : 'bottom-0'} `}
+            className={`pointer-events-none fixed left-0 right-0 z-40 flex items-end justify-center p-4 ${isVisible && windowSize.width < 1024 ? 'bottom-14' : 'bottom-0'} `}
         >
             <div
                 className={`pointer-events-auto w-full max-w-md transform transition-all duration-500 ease-out ${
