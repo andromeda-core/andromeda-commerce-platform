@@ -53,7 +53,7 @@ const Sidebar = ({
                         isCollapsed ? 'justify-center' : ''
                     }`}
                 >
-                    <div className="flex h-12 w-12 items-center justify-center rounded">
+                    <div className="flex items-center justify-center w-12 h-12 rounded">
                         <div className="block dark:hidden">
                             <img src={light_logo} alt="Logo" />
                         </div>
@@ -192,6 +192,7 @@ const Sidebar = ({
                         {user && (
                             <li>
                                 <Link
+                                    prefetch
                                     href={route('website.data-deletion.index')}
                                     className={`flex w-full items-center ${
                                         isCollapsed ? 'justify-center px-0' : 'gap-3 px-4'
@@ -250,7 +251,7 @@ const Sidebar = ({
                                         />
                                     </svg>
                                     {!isCollapsed && (
-                                        <div className="flex w-full items-center justify-between">
+                                        <div className="flex items-center justify-between w-full">
                                             <span>More</span>
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
