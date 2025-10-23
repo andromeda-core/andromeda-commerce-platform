@@ -521,7 +521,7 @@ Route::get('/pwa-manifest', function () {
             : strtoupper(substr($name, 0, 3));
     }
 
-    $favicon = $general_setting->favicon ?? asset('assets/images/Logo/512512.png');
+    $favicon = $general_setting->app_favicon ?? asset('assets/images/Logo/512512.png');
 
     $themeColor = '#f1f5f9';
     $backgroundColor = '#f1f5f9';

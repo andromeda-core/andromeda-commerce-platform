@@ -1,7 +1,10 @@
 import useWindowSize from '@/Hooks/useWindowSize';
+import { usePage } from '@inertiajs/react';
 import React, { useState, useEffect } from 'react';
 
 const PWAAlertBar = ({ onClose }) => {
+    const { generalSetting } = usePage().props;
+    console.log(generalSetting);
     const windowSize = useWindowSize();
     const [isVisible, setIsVisible] = useState(false);
     const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -66,20 +69,24 @@ const PWAAlertBar = ({ onClose }) => {
                 <div className="p-4 border shadow-2xl rounded-2xl border-slate-300 bg-white/90 text-slate-800 backdrop-blur-xl dark:border-slate-700/50 dark:bg-deepcharcoal/90 dark:text-slate-100">
                     <div className="flex items-center gap-3">
                         <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 rounded-xl bg-blue-500/10 dark:bg-gray-900">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={1.5}
-                                stroke="currentColor"
-                                className="w-5 h-5 text-blue-500 dark:text-blue-400"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
-                                />
-                            </svg>
+                            {generalSetting?.app_favicon ? (
+                                <img src={generalSetting?.app_favicon} alt="Logo" />
+                            ) : (
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={1.5}
+                                    stroke="currentColor"
+                                    className="w-5 h-5 text-blue-500 dark:text-blue-400"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
+                                    />
+                                </svg>
+                            )}
                         </div>
 
                         <div className="flex-1 min-w-0">
