@@ -229,6 +229,7 @@ export default function MainLayout({ children }) {
                         />
                     </>
                 )}
+
                 <PWAAlertBar />
             </div>
         </>

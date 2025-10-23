@@ -1,6 +1,8 @@
+import useWindowSize from '@/Hooks/useWindowSize';
 import React, { useState, useEffect } from 'react';
 
 const PWAAlertBar = ({ onClose }) => {
+    const windowSize = useWindowSize();
     const [isVisible, setIsVisible] = useState(false);
     const [deferredPrompt, setDeferredPrompt] = useState(null);
 
@@ -53,13 +55,15 @@ const PWAAlertBar = ({ onClose }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-end justify-center p-4 pointer-events-none">
+        <div
+            className={`fixed ${windowSize.width < 1024 ? 'bottom-14' : ''} pointer-events-none inset-0 z-50 flex items-end justify-center p-4`}
+        >
             <div
                 className={`pointer-events-auto w-full max-w-md transform transition-all duration-500 ease-out ${
                     isVisible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
                 }`}
             >
-                <div className="p-4 border shadow-2xl rounded-2xl border-slate-300 bg-white/80 text-slate-800 backdrop-blur-xl dark:border-slate-700/50 dark:bg-deepcharcoal/80 dark:text-slate-100">
+                <div className="p-4 border shadow-2xl rounded-2xl border-slate-300 bg-white/90 text-slate-800 backdrop-blur-xl dark:border-slate-700/50 dark:bg-deepcharcoal/90 dark:text-slate-100">
                     <div className="flex items-center gap-3">
                         <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 rounded-xl bg-blue-500/10 dark:bg-gray-900">
                             <svg
