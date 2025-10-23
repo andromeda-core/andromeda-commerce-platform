@@ -506,10 +506,20 @@ Route::get('/pwa-manifest', function () {
     $general_setting = Cache::get('general_config');
 
     $name = $general_setting->app_name ?? config('app.name');
-
-    $shortName = collect(explode(' ', $name))
-        ->map(fn ($word) => strtoupper(substr($word, 0, 1)))
-        ->join('');
+    $shortName = null;
+    if (str_contains($name, ' ')) {
+        // Name contains spaces → take first letter of each word
+        $shortName = collect(explode(' ', $name))
+            ->filter() // remove empty values
+            ->map(fn ($word) => strtoupper(substr($word, 0, 1)))
+            ->join('');
+    } else {
+        // No spaces → take all capital letters (e.g., YesBigShop → YBS)
+        preg_match_all('/[A-Z]/', $name, $matches);
+        $shortName = ! empty($matches[0])
+            ? implode('', $matches[0])
+            : strtoupper(substr($name, 0, 3));
+    }
 
     $favicon = $general_setting->favicon ?? asset('assets/images/Logo/512512.png');
 
@@ -518,7 +528,7 @@ Route::get('/pwa-manifest', function () {
 
     $manifest = [
         'name' => $name,
-        'short_name' => $shortName,
+        'short_name' => $shortName ?? $name,
         'description' => $general_setting->app_description ?? 'Shop smarter with YesBigShop — your modern global marketplace offering trending products, secure checkout, and fast delivery, all in one simple app.',
         'start_url' => '/',
         'display' => 'standalone',
