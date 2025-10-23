@@ -59,26 +59,45 @@ registerSW({
         });
     },
 
-    onOfflineReady() {
-        Swal.fire({
-            icon: 'success',
-            title: 'Offline Ready',
-            text: 'You can now use the app even without an internet connection!',
-            confirmButtonColor: '#4f46e5',
-        });
-    },
+    onOfflineReady() {},
 });
 
 window.addEventListener('offline', () => {
     Swal.fire({
-        icon: 'warning',
-        title: "You're offline",
-        text: 'No internet connection detected, but you can still browse saved pages and content.',
-        confirmButtonColor: '#4f46e5',
+        icon: 'error',
+        title: "You're Offline",
+        text: 'Internet connection lost. Please reconnect to continue.',
+        showConfirmButton: false,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        allowEnterKey: false,
+        backdrop: true,
+        didOpen: () => {
+            // prevent user interaction with app content
+            document.body.style.pointerEvents = 'none';
+        },
     });
 });
 
+if (!navigator.onLine) {
+    Swal.fire({
+        icon: 'error',
+        title: "You're Offline",
+        text: 'Internet connection lost. Please reconnect to continue.',
+        showConfirmButton: false,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        allowEnterKey: false,
+        backdrop: true,
+        didOpen: () => {
+            document.body.style.pointerEvents = 'none';
+        },
+    });
+}
+
 window.addEventListener('online', () => {
+    Swal.close();
+    document.body.style.pointerEvents = 'auto';
     Swal.fire({
         icon: 'success',
         title: 'Back Online',
