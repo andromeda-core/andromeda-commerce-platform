@@ -150,7 +150,7 @@ class PostController extends Controller
 
         $google_map_api_key = $this->globalSearch->getGoogleMapApiKey();
 
-        return Inertia::render('Website/Posts/hashtagPosts', compact('posts', 'next_page_url', 'hashtag', 'google_map_api_key'));
+        return Inertia::render('Website/Home/hashtagPosts', compact('posts', 'next_page_url', 'hashtag', 'google_map_api_key'));
 
     }
 }
