@@ -499,4 +499,48 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 });
 
+// Dynamic Manifest JSON Route For PWA
+
+Route::get('/pwa-manifest', function () {
+
+    $general_setting = Cache::get('general_config');
+
+    $name = $general_setting->app_name ?? config('app.name');
+
+    $shortName = collect(explode(' ', $name))
+        ->map(fn ($word) => strtoupper(substr($word, 0, 1)))
+        ->join('');
+
+    $favicon = $general_setting->favicon ?? asset('assets/images/Logo/512512.png');
+
+    $themeColor = '#f1f5f9';
+    $backgroundColor = '#f1f5f9';
+
+    $manifest = [
+        'name' => $name,
+        'short_name' => $shortName,
+        'description' => $general_setting->app_description ?? 'Shop smarter with YesBigShop — your modern global marketplace offering trending products, secure checkout, and fast delivery, all in one simple app.',
+        'start_url' => '/',
+        'display' => 'standalone',
+        'theme_color' => $themeColor,
+        'background_color' => $backgroundColor,
+        'icons' => [
+            [
+                'src' => $favicon,
+                'sizes' => '192x192',
+                'type' => 'image/png',
+            ],
+            [
+                'src' => $favicon,
+                'sizes' => '512x512',
+                'type' => 'image/png',
+            ],
+        ],
+    ];
+
+    return response($manifest, 200)
+        ->header('Content-Type', 'application/manifest+json');
+
+})->name('pwa.manifest');
+
 require __DIR__.'/auth.php';

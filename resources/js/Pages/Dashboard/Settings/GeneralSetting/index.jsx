@@ -8,6 +8,7 @@ import { Head, useForm } from '@inertiajs/react';
 import React from 'react';
 import Swal from 'sweetalert2';
 import LinkButton from '@/Components/LinkButton';
+import Textarea from '@/Components/Textarea';
 
 export default function index({ general_setting }) {
     // Update General Setting Form Data
@@ -22,6 +23,7 @@ export default function index({ general_setting }) {
         is_removed_app_main_logo_light: false,
         app_favicon: null,
         is_removed_app_favicon: false,
+        app_description: general_setting?.app_description || '',
     });
 
     // Optional for Tracking File Upload Status
@@ -70,7 +72,7 @@ export default function index({ general_setting }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Settings'}
                                     URL={route('dashboard.settings.index')}
@@ -129,9 +131,20 @@ export default function index({ general_setting }) {
                                         Action={(e) => setData('contact_number', e.target.value)}
                                         Error={errors.contact_number}
                                     />
+
+                                    <Textarea
+                                        Action={(e) => setData('app_description', e.target.value)}
+                                        Id={'app_description'}
+                                        Name={'app_description'}
+                                        InputName={'Application Description'}
+                                        Required={false}
+                                        Value={data.app_description}
+                                        Error={errors.app_description}
+                                        Placeholder="Please Enter Your Appliation Description For Breif"
+                                    />
                                 </div>
 
-                                <div className="mt-20 grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div className="grid grid-cols-1 gap-4 mt-20 md:grid-cols-2">
                                     <FileUploaderInput
                                         Label={
                                             'Drag & Drop your Application Logo For Dark Mode or <span class="filepond--label-action">Browse</span>'
@@ -190,7 +203,7 @@ export default function index({ general_setting }) {
                                     />
                                 </div>
 
-                                <div className="grid-col-1 grid gap-4">
+                                <div className="grid gap-4 grid-col-1">
                                     <FileUploaderInput
                                         Label={
                                             'Drag & Drop your favicon or <span class="filepond--label-action">Browse</span>'

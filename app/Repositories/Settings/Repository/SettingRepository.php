@@ -65,6 +65,7 @@ class SettingRepository implements ISettingRepository
 
     public function updateGeneralSetting(Request $request)
     {
+
         $validated_req = $request->validate([
             'app_name' => ['required', 'min:4', 'string', 'max:100'],
             'contact_email' => ['required', 'email', 'max:255'],
@@ -72,8 +73,10 @@ class SettingRepository implements ISettingRepository
             ...($request->hasFile('app_main_logo_dark') ? ['app_main_logo_dark' => 'nullable|image|max:2048'] : []),
             ...($request->hasFile('app_main_logo_light') ? ['app_main_logo_light' => 'nullable|image|max:2048'] : []),
             ...($request->hasFile('app_favicon') ? ['app_favicon' => 'nullable|image|max:2048'] : []),
+            'app_description' => ['nullable', 'min:30', 'string', 'max:1000'],
         ], [
             'contact_number.regex' => 'The Contact Number Accepted With + Country Code - Example: +8801xxxxxxxxx',
+
         ]);
 
         try {
