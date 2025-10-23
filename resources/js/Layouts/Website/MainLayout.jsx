@@ -1,4 +1,5 @@
 import Preloader from '@/Components/Preloader';
+import PWAAlertBar from '@/Components/PWAAlertBar';
 import useWindowSize from '@/Hooks/useWindowSize';
 import BottomBar from '@/partials/Website/BottomBar';
 
@@ -131,6 +132,21 @@ export default function MainLayout({ children }) {
         }
     }, []);
 
+    // This logic Not Needed For Now
+    // const [isStandalone, setIsStandalone] = useState(false);
+
+    // useEffect(() => {
+    //     if (windowSize.width < 1024) {
+    //         const isInStandaloneMode =
+    //             window.matchMedia('(display-mode: standalone)').matches ||
+    //             window.navigator.standalone === true;
+
+    //         if (!isInStandaloneMode) {
+    //             setIsStandalone(isInStandaloneMode);
+    //         }
+    //     }
+    // }, [windowSize.width]);
+
     return (
         <>
             <div className="relative w-full min-h-screen bg-slate-100 dark:bg-zinc-950/70">
@@ -213,6 +229,7 @@ export default function MainLayout({ children }) {
                         />
                     </>
                 )}
+                <PWAAlertBar />
             </div>
         </>
     );

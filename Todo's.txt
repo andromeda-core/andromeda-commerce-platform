@@ -285,7 +285,7 @@ Milestone 7: Customer Website (Frontend + PWA + Posts + Orders + Meta OAuth)
 
 - UI & UX for the website -> Partially Completed ✅
 - Header Footer And Appbar For Mobile Preview  with Fully Responsiveness ✅
-- PWA frontend integration for a mobile-friendly experience
+- PWA frontend integration for a mobile-friendly experience ✅
 - Product listing and product detail pages
 - Cart Logic For Customers
 - Restricting Customer From Adding Items In Cart Who Belongs To Different Distributor

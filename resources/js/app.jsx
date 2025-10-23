@@ -73,7 +73,6 @@ window.addEventListener('offline', () => {
         allowEnterKey: false,
         backdrop: true,
         didOpen: () => {
-            // prevent user interaction with app content
             document.body.style.pointerEvents = 'none';
         },
     });
