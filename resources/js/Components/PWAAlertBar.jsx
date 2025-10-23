@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 
 const PWAAlertBar = ({ onClose }) => {
     const { generalSetting } = usePage().props;
-    console.log(generalSetting);
+
     const windowSize = useWindowSize();
     const [isVisible, setIsVisible] = useState(false);
     const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -59,7 +59,7 @@ const PWAAlertBar = ({ onClose }) => {
 
     return (
         <div
-            className={`fixed ${windowSize.width < 1024 ? 'bottom-14' : ''} pointer-events-none inset-0 z-50 flex items-end justify-center p-4`}
+            className={`pointer-events-none fixed left-0 right-0 z-40 flex items-end justify-center p-4 ${windowSize.width < 1024 ? 'bottom-14' : 'bottom-0'} `}
         >
             <div
                 className={`pointer-events-auto w-full max-w-md transform transition-all duration-500 ease-out ${
