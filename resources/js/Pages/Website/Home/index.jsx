@@ -969,16 +969,17 @@ export default function index({ google_map_api_key, search_history }) {
                             );
                         }
 
+                        horizontalContainer.removeChild(cover);
+                        horizontalContainer.removeChild(dummy);
+
                         requestAnimationFrame(() => {
-                            horizontalContainer.removeChild(cover);
-                            horizontalContainer.removeChild(dummy);
                             isHorizontalLooping.current[slug] = false;
                             horizontalScrollLock.current[slug] = false;
 
                             horizontalContainer.style.touchAction = 'auto';
                             horizontalContainer.style.pointerEvents = 'auto';
                         });
-                    }, 420);
+                    }, 410);
                     return;
                 }
 
@@ -1028,17 +1029,16 @@ export default function index({ google_map_api_key, search_history }) {
                             `${route('home')}${generateURL(viewablePost)}`,
                         );
 
+                        horizontalContainer.removeChild(cover);
+                        horizontalContainer.removeChild(dummy);
                         requestAnimationFrame(() => {
-                            horizontalContainer.removeChild(cover);
-                            horizontalContainer.removeChild(dummy);
-
                             isHorizontalLooping.current[slug] = false;
                             horizontalScrollLock.current[slug] = false;
 
                             horizontalContainer.style.touchAction = 'auto';
                             horizontalContainer.style.pointerEvents = 'auto';
                         });
-                    }, 420);
+                    }, 410);
                     return;
                 }
             }
