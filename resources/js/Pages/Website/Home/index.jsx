@@ -943,7 +943,7 @@ export default function index({ google_map_api_key, search_history }) {
                     dummy.className = 'absolute inset-0 z-[99] pointer-events-none';
                     dummy.style.background = lastRelatedPost?.post_image_urls?.[0]
                         ? `url(${lastRelatedPost.post_image_urls[0]}) center/cover no-repeat`
-                        : '#111';
+                        : '#0D0E12';
                     dummy.style.transform = 'translateX(-100%)';
                     dummy.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
 
@@ -998,6 +998,8 @@ export default function index({ google_map_api_key, search_history }) {
                     horizontalContainer.style.touchAction = 'none';
                     horizontalContainer.style.pointerEvents = 'none';
 
+                    const currentRelatedPost = relatedPosts[currentIndex];
+
                     const cover = document.createElement('div');
                     cover.className = 'absolute inset-0 z-[98] bg-black';
                     horizontalContainer.appendChild(cover);
@@ -1005,9 +1007,9 @@ export default function index({ google_map_api_key, search_history }) {
                     // Sliding dummy
                     const dummy = document.createElement('div');
                     dummy.className = 'absolute inset-0 z-[99] pointer-events-none';
-                    dummy.style.background = viewablePost?.post_image_urls?.[0]
-                        ? `url(${viewablePost.post_image_urls[0]}) center/cover no-repeat`
-                        : '#111';
+                    dummy.style.background = currentRelatedPost?.post_image_urls?.[0]
+                        ? `url(${currentRelatedPost.post_image_urls[0]}) center/cover no-repeat`
+                        : '#0D0E12';
                     dummy.style.transform = 'translateX(100%)';
                     dummy.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
 
