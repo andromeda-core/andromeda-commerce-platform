@@ -1004,22 +1004,19 @@ export default function index({ google_map_api_key, search_history }) {
                     cover.className = 'absolute inset-0 z-[98] bg-black';
                     horizontalContainer.appendChild(cover);
 
-                    // Sliding dummy
                     const dummy = document.createElement('div');
                     dummy.className = 'absolute inset-0 z-[99] pointer-events-none';
                     dummy.style.background = currentRelatedPost?.post_image_urls?.[0]
                         ? `url(${currentRelatedPost.post_image_urls[0]}) center/cover no-repeat`
                         : '#0D0E12';
-                    dummy.style.transform = 'translateX(100%)';
+                    dummy.style.transform = 'translateX(0)';
                     dummy.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
 
                     horizontalContainer.appendChild(dummy);
 
-                    requestAnimationFrame(() => {
-                        requestAnimationFrame(() => {
-                            dummy.style.transform = 'translateX(0)';
-                        });
-                    });
+                    setTimeout(() => {
+                        dummy.style.transform = 'translateX(-100%)';
+                    }, 10);
 
                     setTimeout(() => {
                         horizontalContainer.scrollTo({ left: 0, behavior: 'instant' });
