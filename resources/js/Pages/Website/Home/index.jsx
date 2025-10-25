@@ -675,7 +675,7 @@ export default function index({ google_map_api_key, search_history }) {
                 const next_post = postsRef.current[nextIndex];
 
                 const cover = document.createElement('div');
-                cover.className = 'absolute inset-0 z-[98] bg-black';
+                cover.className = 'absolute inset-0 z-[98]';
                 container.appendChild(cover);
 
                 const dummy = document.createElement('div');
@@ -720,7 +720,7 @@ export default function index({ google_map_api_key, search_history }) {
                 const next_post = postsRef.current[0];
 
                 const cover = document.createElement('div');
-                cover.className = 'absolute inset-0 z-[98] bg-black';
+                cover.className = 'absolute inset-0 z-[98]';
                 container.appendChild(cover);
 
                 const dummy = document.createElement('div');
@@ -936,7 +936,7 @@ export default function index({ google_map_api_key, search_history }) {
                     const lastRelatedPost = relatedPosts[relatedPosts.length - 1];
 
                     const cover = document.createElement('div');
-                    cover.className = 'absolute inset-0 z-[98] bg-black';
+                    cover.className = 'absolute inset-0 z-[98]';
                     horizontalContainer.appendChild(cover);
 
                     const dummy = document.createElement('div');
@@ -999,7 +999,7 @@ export default function index({ google_map_api_key, search_history }) {
                     horizontalContainer.style.pointerEvents = 'none';
 
                     const cover = document.createElement('div');
-                    cover.className = 'absolute inset-0 z-[98] bg-black';
+                    cover.className = 'absolute inset-0 z-[98]';
                     container.appendChild(cover);
 
                     const dummy = document.createElement('div');
@@ -1076,7 +1076,7 @@ export default function index({ google_map_api_key, search_history }) {
                     const next_post = postsRef.current[newIndex];
 
                     const cover = document.createElement('div');
-                    cover.className = 'absolute inset-0 z-[98] bg-black';
+                    cover.className = 'absolute inset-0 z-[98]';
                     container.appendChild(cover);
 
                     const dummy = document.createElement('div');
@@ -1147,7 +1147,7 @@ export default function index({ google_map_api_key, search_history }) {
                     const next_post = postsRef.current[0];
 
                     const cover = document.createElement('div');
-                    cover.className = 'absolute inset-0 z-[98] bg-black';
+                    cover.className = 'absolute inset-0 z-[98]';
                     container.appendChild(cover);
 
                     const dummy = document.createElement('div');
