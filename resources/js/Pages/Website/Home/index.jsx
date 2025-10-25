@@ -1013,9 +1013,10 @@ export default function index({ google_map_api_key, search_history }) {
 
                     horizontalContainer.appendChild(dummy);
 
-                    setTimeout(() => {
+                    requestAnimationFrame(() => {
+                        dummy.getBoundingClientRect();
                         dummy.style.transform = 'translateX(0)';
-                    }, 10);
+                    });
 
                     setTimeout(() => {
                         horizontalContainer.scrollTo({ left: 0, behavior: 'instant' });
