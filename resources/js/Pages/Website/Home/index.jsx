@@ -1002,10 +1002,20 @@ export default function index({ google_map_api_key, search_history }) {
 
                     const cover = document.createElement('div');
                     cover.className = 'absolute inset-0 z-[98] bg-black';
+                    cover.style.position = 'absolute';
+                    cover.style.top = '0';
+                    cover.style.left = '0';
+                    cover.style.right = '0';
+                    cover.style.bottom = '0';
                     horizontalContainer.appendChild(cover);
 
                     const dummy = document.createElement('div');
                     dummy.className = 'absolute inset-0 z-[99] pointer-events-none';
+                    dummy.style.position = 'absolute';
+                    dummy.style.top = '0';
+                    dummy.style.left = '0';
+                    dummy.style.right = '0';
+                    dummy.style.bottom = '0';
                     dummy.style.background = currentRelatedPost?.post_image_urls?.[0]
                         ? `url(${currentRelatedPost.post_image_urls[0]}) center/cover no-repeat`
                         : '#0D0E12';
@@ -1013,6 +1023,8 @@ export default function index({ google_map_api_key, search_history }) {
                     dummy.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
 
                     horizontalContainer.appendChild(dummy);
+
+                    dummy.offsetHeight;
 
                     setTimeout(() => {
                         dummy.style.transform = 'translateX(-100%)';
