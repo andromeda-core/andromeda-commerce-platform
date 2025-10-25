@@ -1000,7 +1000,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                     const cover = document.createElement('div');
                     cover.className = 'absolute inset-0 z-[98] bg-black';
-                    horizontalContainer.appendChild(cover);
+                    container.appendChild(cover);
 
                     const dummy = document.createElement('div');
                     dummy.className = 'absolute inset-0 z-[99] pointer-events-none';
@@ -1010,7 +1010,7 @@ export default function index({ google_map_api_key, search_history }) {
                     dummy.style.transform = 'translateX(100%)'; // Start from RIGHT
                     dummy.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
 
-                    horizontalContainer.appendChild(dummy);
+                    container.appendChild(dummy);
 
                     setTimeout(() => {
                         dummy.style.transform = 'translateX(0)'; // Slide to center
@@ -1028,8 +1028,8 @@ export default function index({ google_map_api_key, search_history }) {
                             `${route('home')}${generateURL(viewablePost)}`,
                         );
 
-                        horizontalContainer.removeChild(cover);
-                        horizontalContainer.removeChild(dummy);
+                        container.removeChild(cover);
+                        container.removeChild(dummy);
                         requestAnimationFrame(() => {
                             isHorizontalLooping.current[slug] = false;
                             horizontalScrollLock.current[slug] = false;
