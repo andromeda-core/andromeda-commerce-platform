@@ -933,14 +933,29 @@ export default function index({ google_map_api_key, search_history }) {
                     horizontalContainer.style.touchAction = 'none';
                     horizontalContainer.style.pointerEvents = 'none';
 
-                    horizontalContainer.style.transition = 'transform 0.40s ease-out';
-                    horizontalContainer.style.transform = 'translateX(100%)';
+                    const lastRelatedPost = relatedPosts[relatedPosts.length - 1];
+
+                    const cover = document.createElement('div');
+                    cover.className = 'absolute inset-0 z-[98] bg-black';
+                    horizontalContainer.appendChild(cover);
+
+                    const dummy = document.createElement('div');
+                    dummy.className = 'absolute inset-0 z-[99] pointer-events-none';
+                    dummy.style.background = lastRelatedPost?.post_image_urls?.[0]
+                        ? `url(${lastRelatedPost.post_image_urls[0]}) center/cover no-repeat`
+                        : '#111';
+                    dummy.style.transform = 'translateX(-100%)';
+                    dummy.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+
+                    horizontalContainer.appendChild(dummy);
+
+                    setTimeout(() => {
+                        dummy.style.transform = 'translateX(0)';
+                    }, 10);
 
                     setTimeout(() => {
                         const targetScroll = maxScroll;
                         horizontalContainer.scrollTo({ left: targetScroll, behavior: 'instant' });
-                        horizontalContainer.style.transition = '';
-                        horizontalContainer.style.transform = '';
 
                         const relatedPost = relatedPosts[relatedPosts.length - 1];
                         if (relatedPost?.id) {
@@ -955,6 +970,8 @@ export default function index({ google_map_api_key, search_history }) {
                         }
 
                         requestAnimationFrame(() => {
+                            horizontalContainer.removeChild(cover);
+                            horizontalContainer.removeChild(dummy);
                             isHorizontalLooping.current[slug] = false;
                             horizontalScrollLock.current[slug] = false;
 
@@ -980,12 +997,26 @@ export default function index({ google_map_api_key, search_history }) {
                     horizontalContainer.style.touchAction = 'none';
                     horizontalContainer.style.pointerEvents = 'none';
 
-                    horizontalContainer.style.transition = 'transform 0.40s ease-out';
-                    horizontalContainer.style.transform = 'translateX(-100%)';
+                    const cover = document.createElement('div');
+                    cover.className = 'absolute inset-0 z-[98] bg-black';
+                    horizontalContainer.appendChild(cover);
+
+                    // Sliding dummy
+                    const dummy = document.createElement('div');
+                    dummy.className = 'absolute inset-0 z-[99] pointer-events-none';
+                    dummy.style.background = viewablePost?.post_image_urls?.[0]
+                        ? `url(${viewablePost.post_image_urls[0]}) center/cover no-repeat`
+                        : '#111';
+                    dummy.style.transform = 'translateX(100%)';
+                    dummy.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+
+                    horizontalContainer.appendChild(dummy);
 
                     setTimeout(() => {
-                        horizontalContainer.style.transition = '';
-                        horizontalContainer.style.transform = '';
+                        dummy.style.transform = 'translateX(0)';
+                    }, 10);
+
+                    setTimeout(() => {
                         horizontalContainer.scrollTo({ left: 0, behavior: 'instant' });
 
                         setActiveViewerMap((p) => ({ ...p, [slug]: 'main' }));
@@ -998,6 +1029,9 @@ export default function index({ google_map_api_key, search_history }) {
                         );
 
                         requestAnimationFrame(() => {
+                            horizontalContainer.removeChild(cover);
+                            horizontalContainer.removeChild(dummy);
+
                             isHorizontalLooping.current[slug] = false;
                             horizontalScrollLock.current[slug] = false;
 
