@@ -1014,8 +1014,9 @@ export default function index({ google_map_api_key, search_history }) {
                     horizontalContainer.appendChild(dummy);
 
                     requestAnimationFrame(() => {
-                        dummy.getBoundingClientRect();
-                        dummy.style.transform = 'translateX(0)';
+                        requestAnimationFrame(() => {
+                            dummy.style.transform = 'translateX(0)';
+                        });
                     });
 
                     setTimeout(() => {
