@@ -27,7 +27,7 @@
 
     <title inertia>{{ $app_name }}</title>
     <link rel="shortcut icon"
-        href="{{ !empty($genral_setting->app_favicon) ? $general_setting->app_favicon : $default_favicon }}"
+        href="{{ !empty($general_setting->app_favicon) ? $general_setting->app_favicon : $default_favicon }}"
         type="image/x-icon">
 
     <link rel="apple-touch-icon"
