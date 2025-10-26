@@ -12,7 +12,7 @@
     $app_name = config('app.name', 'YesBigShop');
     $app_url = url()->current();
 
-    $default_logo = $default_favicon = asset('assets/images/Logo/256b.png');
+    $default_logo = asset('assets/images/Logo/256b.png');
     $app_logo = $general_setting->app_main_logo_light_url ?? $default_logo;
 
 @endphp
