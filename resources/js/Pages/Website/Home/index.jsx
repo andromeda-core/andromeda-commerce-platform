@@ -121,6 +121,35 @@ export default function index({ google_map_api_key, search_history }) {
     const elipsisDropDownRef = useRef(null);
     const elipsisButtonRef = useRef(null);
     const postsRefs = useRef([]);
+    const fetchLock = useRef(false);
+    const isFetchingRef = useRef(false);
+    const lastFetchedUrlRef = useRef({});
+
+    // If Post Already Fetches All Remeaning Related Posts And Dont Have More Pages so it will be marked as completed and wont be fetched
+    const completedSlugsRef = useRef({});
+    const relatedPostsRef = useRef(relatedPostsMap);
+    const relatedViewMap = useRef(relatedViewerMap);
+    const relatedNextUrlMap = useRef(relatedNextMap);
+    const relatedPostSlugRef = useRef(relatedPostSlug);
+
+    const scrollLock = useRef(false);
+
+    const isLooping = useRef(false);
+    const touchStartY = useRef(0);
+    const touchStartX = useRef(0);
+
+    const postsRef = useRef(posts);
+    const lastFetchTriggerIndex = useRef(-1);
+    const gestureLocked = useRef(null);
+    const lastTriedRef = useRef({});
+
+    const lastHorizontalIndexRef = useRef({});
+    const horizontalCarouselRefs = useRef({});
+    const isHorizontalLooping = useRef({});
+    const horizontalScrollLock = useRef({});
+    const lastDirectionRef = useRef({});
+
+    const isfetchingMorePosts = useRef(false);
 
     const generateURL = (post) => {
         return (
@@ -269,41 +298,12 @@ export default function index({ google_map_api_key, search_history }) {
         };
     }, [viewablePost, isMobilePostGallery, isMobilePostViewer, isDesktopPostViewer]);
 
-    // Fetch more posts
     const fetchMorePostsAndProducts = async () => {
-        if (!nextPageUrl) return;
+        if (!nextPageUrl || isfetchingMorePosts.current) return;
 
         try {
             const url = new URL(nextPageUrl);
-            // const params = new URLSearchParams(url.search);
-
-            // const cookieValue = getCookie('post_preferences');
-
-            // if (cookieValue && cookieValue.trim() !== '') {
-            //     try {
-            //         const parsed = JSON.parse(decodeURIComponent(cookieValue));
-            //         if (parsed && typeof parsed === 'object') {
-            //             Object.entries(parsed).forEach(([key, value]) => {
-            //                 params.set(key, value ? 'true' : 'false');
-            //             });
-            //         }
-            //     } catch (err) {
-            //         toast.warn('Invalid cookie JSON');
-            //     }
-            // } else {
-            //     const page = params.get('page');
-
-            //     const cleanParams = new URLSearchParams();
-            //     if (page) cleanParams.set('page', page);
-            //     params.delete('images');
-            //     params.delete('text');
-            //     params.delete('videos');
-
-            //     // replace params object
-            //     for (const [key, value] of cleanParams.entries()) {
-            //         params.set(key, value);
-            //     }
-            // }
+            isfetchingMorePosts.current = true;
 
             const res = await axios.get(url);
             const data = await res.data;
@@ -333,6 +333,8 @@ export default function index({ google_map_api_key, search_history }) {
             setNextPageUrl(data.next_page_url);
         } catch (err) {
             toast.error('Error fetching post');
+        } finally {
+            isfetchingMorePosts.current = false;
         }
     };
 
@@ -377,12 +379,6 @@ export default function index({ google_map_api_key, search_history }) {
         }
     };
 
-    const isFetchingRef = useRef(false);
-    const [isFetchingRelated, setIsFetchingRelated] = useState(false);
-    const lastFetchedUrlRef = useRef({});
-
-    // If Post Already Fetches All Remeaning Related Posts And Dont Have More Pages so it will be marked as completed and wont be fetched
-    const completedSlugsRef = useRef({});
     const fetchRelatedPosts = async (slug) => {
         const nextUrl =
             relatedNextUrlMap.current[slug] ??
@@ -429,7 +425,6 @@ export default function index({ google_map_api_key, search_history }) {
                 if (!nextPage) completedSlugsRef.current[slug] = true;
 
                 isFetchingRef.current = false;
-                setIsFetchingRelated(false);
             }
         } catch (err) {
             console.error(`[${slug}] ❌ Error fetching related posts`, err);
@@ -443,7 +438,7 @@ export default function index({ google_map_api_key, search_history }) {
 
         const observer = new IntersectionObserver(
             (entries) => {
-                if (entries[0].isIntersecting) {
+                if (entries[0].isIntersecting && !isfetchingMorePosts.current) {
                     fetchMorePostsAndProducts();
                 }
             },
@@ -578,28 +573,6 @@ export default function index({ google_map_api_key, search_history }) {
         });
     };
 
-    const relatedPostsRef = useRef(relatedPostsMap);
-    const relatedViewMap = useRef(relatedViewerMap);
-    const relatedNextUrlMap = useRef(relatedNextMap);
-    const relatedPostSlugRef = useRef(relatedPostSlug);
-
-    const scrollLock = useRef(false);
-    const fetchLock = useRef(false);
-    const isLooping = useRef(false);
-    const touchStartY = useRef(0);
-    const touchStartX = useRef(0);
-
-    const postsRef = useRef(posts);
-    const lastFetchTriggerIndex = useRef(-1);
-    const gestureLocked = useRef(null);
-    const lastTriedRef = useRef({});
-
-    const lastHorizontalIndexRef = useRef({});
-    const horizontalCarouselRefs = useRef({});
-    const isHorizontalLooping = useRef({});
-    const horizontalScrollLock = useRef({});
-    const lastDirectionRef = useRef({});
-
     useEffect(() => {
         postsRef.current = posts;
     }, [posts]);
@@ -650,20 +623,175 @@ export default function index({ google_map_api_key, search_history }) {
             );
         };
 
+        // Desktop scroll - Wheel Logic With Looping Effect Appending Logic
+        // const handleWheel = (e) => {
+        //     if (e.ctrlKey || e.metaKey) return;
+
+        //     if (scrollLock.current) {
+        //         e.preventDefault();
+        //         return;
+        //     }
+
+        //     e.preventDefault();
+        //     scrollLock.current = true;
+
+        //     const direction = e.deltaY > 0 ? 1 : -1;
+
+        //     const atTop = container.scrollTop <= 0;
+        //     const atBottom = checkScrollReachedTarget(false);
+
+        //     if (direction < 0 && atTop) {
+        //         isLooping.current = true;
+
+        //         const posts = Array.from(container.children);
+        //         const lastPost = posts[posts.length - 1];
+
+        //         container.prepend(lastPost);
+
+        //         container.scrollTo({
+        //             top: container.clientHeight,
+        //             behavior: 'instant',
+        //         });
+
+        //         const postSlug = lastPost.getAttribute('data-post-slug');
+        //         const post = postsRef.current.find((p) => p.slug === postSlug);
+
+        //         if (post) {
+        //             setSelectedPostIndex(postsRef.current.indexOf(post));
+        //             setViewablePost(post);
+        //             setRelatedPostSlug(post.slug);
+        //             window.history.replaceState({}, '', generateURL(post));
+        //         }
+
+        //         requestAnimationFrame(() => {
+        //             requestAnimationFrame(() => {
+        //                 container.scrollTo({
+        //                     top: 0,
+        //                     behavior: 'smooth',
+        //                 });
+        //             });
+        //         });
+
+        //         setTimeout(() => {
+        //             scrollLock.current = false;
+        //             isLooping.current = false;
+        //         }, 600);
+        //     } else if (direction > 0 && atBottom) {
+        //         isLooping.current = true;
+
+        //         const posts = Array.from(container.children);
+        //         const firstPost = posts[0];
+
+        //         container.append(firstPost);
+
+        //         container.scrollTo({
+        //             top: container.scrollHeight - container.clientHeight * 2,
+        //             behavior: 'instant',
+        //         });
+
+        //         const postSlug = firstPost.getAttribute('data-post-slug');
+        //         const post = postsRef.current.find((p) => p.slug === postSlug);
+
+        //         if (post) {
+        //             setSelectedPostIndex(postsRef.current.indexOf(post));
+        //             setViewablePost(post);
+        //             setRelatedPostSlug(post.slug);
+        //             window.history.replaceState({}, '', generateURL(post));
+        //         }
+
+        //         requestAnimationFrame(() => {
+        //             requestAnimationFrame(() => {
+        //                 container.scrollTo({
+        //                     top: container.scrollHeight - container.clientHeight,
+        //                     behavior: 'smooth',
+        //                 });
+        //             });
+        //         });
+
+        //         setTimeout(() => {
+        //             scrollLock.current = false;
+        //             isLooping.current = false;
+        //         }, 600);
+        //     } else {
+        //         isLooping.current = false;
+
+        //         const currentScrollTop = container.scrollTop;
+        //         const currentDOMIndex = Math.round(currentScrollTop / container.clientHeight);
+        //         const targetDOMIndex = currentDOMIndex + direction;
+
+        //         container.scrollTo({
+        //             top: targetDOMIndex * container.clientHeight,
+        //             behavior: 'smooth',
+        //         });
+
+        //         const posts = Array.from(container.children);
+        //         const targetPost = posts[targetDOMIndex];
+
+        //         if (targetPost) {
+        //             const postSlug = targetPost.getAttribute('data-post-slug');
+        //             const post = postsRef.current.find((p) => p.slug === postSlug);
+
+        //             if (post) {
+        //                 const slug = post.slug;
+        //                 const newPosts = post.related_posts || [];
+        //                 const postIndex = postsRef.current.indexOf(post);
+
+        //                 setSelectedPostIndex(postIndex);
+        //                 setViewablePost(post);
+
+        //                 setRelatedPostsMap((prev) => ({
+        //                     ...prev,
+        //                     [slug]: [
+        //                         ...(prev[slug] || []),
+        //                         ...newPosts.filter(
+        //                             (p) => !(prev[slug] || []).some((old) => old.id === p.id),
+        //                         ),
+        //                     ],
+        //                 }));
+
+        //                 setRelatedPostSlug(slug);
+        //                 window.history.replaceState({}, '', generateURL(post));
+
+        //                 if (
+        //                     postIndex >= postsRef.current.length - 5 &&
+        //                     nextPageUrl &&
+        //                     !fetchLock.current &&
+        //                     lastFetchTriggerIndex.current !== postIndex
+        //                 ) {
+        //                     fetchLock.current = true;
+        //                     lastFetchTriggerIndex.current = postIndex;
+
+        //                     fetchMorePostsAndProducts().finally(() => {
+        //                         fetchLock.current = false;
+        //                     });
+        //                 }
+        //             }
+        //         }
+
+        //         setTimeout(() => {
+        //             scrollLock.current = false;
+        //         }, 100);
+        //     }
+        // };
+
         // Desktop scroll - Wheel
         const handleWheel = (e) => {
             if (e.ctrlKey || e.metaKey) return;
+            e.preventDefault();
+            e.stopPropagation();
 
+            console.log(fetchLock.current);
             if (scrollLock.current) {
-                e.preventDefault();
                 return;
             }
 
-            e.preventDefault();
             scrollLock.current = true;
 
             const direction = e.deltaY > 0 ? 1 : -1;
-            let nextIndex = selectedPostIndex + direction;
+
+            const currentScrollTop = container.scrollTop;
+            const currentDOMIndex = Math.round(currentScrollTop / container.clientHeight);
+            let nextIndex = currentDOMIndex + direction;
 
             const atTop = container.scrollTop <= 0;
             const atBottom = checkScrollReachedTarget(false);
@@ -675,7 +803,7 @@ export default function index({ google_map_api_key, search_history }) {
                 const next_post = postsRef.current[nextIndex];
 
                 const cover = document.createElement('div');
-                cover.className = 'absolute inset-0 z-[98]';
+                cover.className = 'absolute inset-0 z-[98] bg-deepcharcoal';
                 container.appendChild(cover);
 
                 const dummy = document.createElement('div');
@@ -712,7 +840,7 @@ export default function index({ google_map_api_key, search_history }) {
                         isLooping.current = false;
                     });
                     window.history.replaceState({}, '', generateURL(post));
-                }, 410);
+                }, 460);
             } else if (direction > 0 && atBottom) {
                 nextIndex = 0;
                 isLooping.current = true;
@@ -720,7 +848,7 @@ export default function index({ google_map_api_key, search_history }) {
                 const next_post = postsRef.current[0];
 
                 const cover = document.createElement('div');
-                cover.className = 'absolute inset-0 z-[98]';
+                cover.className = 'absolute inset-0 z-[98] bg-deepcharcoal';
                 container.appendChild(cover);
 
                 const dummy = document.createElement('div');
@@ -755,22 +883,11 @@ export default function index({ google_map_api_key, search_history }) {
                         isLooping.current = false;
                     });
                     window.history.replaceState({}, '', generateURL(post));
-                }, 400);
+                }, 460);
             } else {
                 isLooping.current = false;
                 nextIndex = Math.max(0, Math.min(postsRef.current.length - 1, nextIndex));
 
-                container.scrollTo({
-                    top: nextIndex * container.clientHeight,
-                    behavior: 'smooth',
-                });
-
-                setTimeout(() => {
-                    scrollLock.current = false;
-                }, 100);
-            }
-
-            if (!(direction < 0 && atTop) && !(direction > 0 && atBottom)) {
                 const post = postsRef.current[nextIndex];
                 const slug = post.slug;
                 const newPosts = post.related_posts || [];
@@ -790,6 +907,15 @@ export default function index({ google_map_api_key, search_history }) {
 
                 setRelatedPostSlug(slug);
                 window.history.replaceState({}, '', generateURL(post));
+
+                container.scrollTo({
+                    top: nextIndex * container.clientHeight,
+                    behavior: 'smooth',
+                });
+
+                setTimeout(() => {
+                    scrollLock.current = false;
+                }, 100);
 
                 if (
                     nextIndex >= postsRef.current.length - 5 &&
@@ -845,6 +971,7 @@ export default function index({ google_map_api_key, search_history }) {
                 lastFetchTriggerIndex.current !== newIndex
             ) {
                 fetchLock.current = true;
+
                 lastFetchTriggerIndex.current = newIndex;
 
                 fetchMorePostsAndProducts()
@@ -936,7 +1063,7 @@ export default function index({ google_map_api_key, search_history }) {
                     const lastRelatedPost = relatedPosts[relatedPosts.length - 1];
 
                     const cover = document.createElement('div');
-                    cover.className = 'absolute inset-0 z-[98]';
+                    cover.className = 'absolute inset-0 z-[98] bg-deepcharcoal';
                     horizontalContainer.appendChild(cover);
 
                     const dummy = document.createElement('div');
@@ -999,7 +1126,7 @@ export default function index({ google_map_api_key, search_history }) {
                     horizontalContainer.style.pointerEvents = 'none';
 
                     const cover = document.createElement('div');
-                    cover.className = 'absolute inset-0 z-[98]';
+                    cover.className = 'absolute inset-0 z-[98] bg-deepcharcoal';
                     container.appendChild(cover);
 
                     const dummy = document.createElement('div');
@@ -1076,7 +1203,7 @@ export default function index({ google_map_api_key, search_history }) {
                     const next_post = postsRef.current[newIndex];
 
                     const cover = document.createElement('div');
-                    cover.className = 'absolute inset-0 z-[98]';
+                    cover.className = 'absolute inset-0 z-[98] bg-deepcharcoal';
                     container.appendChild(cover);
 
                     const dummy = document.createElement('div');
@@ -1147,7 +1274,7 @@ export default function index({ google_map_api_key, search_history }) {
                     const next_post = postsRef.current[0];
 
                     const cover = document.createElement('div');
-                    cover.className = 'absolute inset-0 z-[98]';
+                    cover.className = 'absolute inset-0 z-[98] bg-deepcharcoal';
                     container.appendChild(cover);
 
                     const dummy = document.createElement('div');
@@ -1278,7 +1405,6 @@ export default function index({ google_map_api_key, search_history }) {
                 if (now - lastTried < 10000) return;
                 lastTriedRef.current[slug] = now;
 
-                setIsFetchingRelated(true);
                 fetchRelatedPosts(slug);
                 return;
             }
@@ -1291,7 +1417,6 @@ export default function index({ google_map_api_key, search_history }) {
                 !completedSlugsRef.current[slug] &&
                 !isHorizontalLooping.current[slug]
             ) {
-                setIsFetchingRelated(true);
                 fetchRelatedPosts(slug);
             }
         } else if (index === 0 && currentViewer) {
@@ -2693,17 +2818,18 @@ export default function index({ google_map_api_key, search_history }) {
                                                                 </div>
                                                             ))}
 
-                                                        {isFetchingRelated && (
-                                                            <div className="fixed inset-0 flex h-full min-w-full flex-shrink-0 snap-start snap-always flex-col items-center justify-center bg-deepcharcoal text-white">
-                                                                <div className="absolute left-4 top-4 h-4 w-16 animate-pulse rounded bg-gray-700"></div>
+                                                        {/* Skeleton Loader Not Needed Anymore */}
+                                                        {/* {isFetchingRelated && (
+                                                            <div className="fixed inset-0 flex flex-col items-center justify-center flex-shrink-0 h-full min-w-full text-white snap-start snap-always bg-deepcharcoal">
+                                                                <div className="absolute w-16 h-4 bg-gray-700 rounded left-4 top-4 animate-pulse"></div>
                                                                 <div className="h-[70vh] w-[90%] animate-pulse rounded-2xl bg-gray-800/60"></div>
-                                                                <div className="absolute bottom-16 w-full space-y-2 px-6 text-center">
-                                                                    <div className="mx-auto h-4 w-2/3 animate-pulse rounded bg-gray-700"></div>
-                                                                    <div className="mx-auto h-4 w-1/2 animate-pulse rounded bg-gray-700/70"></div>
-                                                                    <div className="mx-auto h-4 w-1/3 animate-pulse rounded bg-gray-700/60"></div>
+                                                                <div className="absolute w-full px-6 space-y-2 text-center bottom-16">
+                                                                    <div className="w-2/3 h-4 mx-auto bg-gray-700 rounded animate-pulse"></div>
+                                                                    <div className="w-1/2 h-4 mx-auto rounded animate-pulse bg-gray-700/70"></div>
+                                                                    <div className="w-1/3 h-4 mx-auto rounded animate-pulse bg-gray-700/60"></div>
                                                                 </div>
                                                             </div>
-                                                        )}
+                                                        )} */}
                                                     </div>
 
                                                     {/* Bottom Overlay */}
