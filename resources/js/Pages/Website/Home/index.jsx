@@ -780,7 +780,6 @@ export default function index({ google_map_api_key, search_history }) {
             e.preventDefault();
             e.stopPropagation();
 
-            console.log(fetchLock.current);
             if (scrollLock.current) {
                 return;
             }
@@ -840,7 +839,7 @@ export default function index({ google_map_api_key, search_history }) {
                         isLooping.current = false;
                     });
                     window.history.replaceState({}, '', generateURL(post));
-                }, 460);
+                }, 410);
             } else if (direction > 0 && atBottom) {
                 nextIndex = 0;
                 isLooping.current = true;
@@ -883,7 +882,7 @@ export default function index({ google_map_api_key, search_history }) {
                         isLooping.current = false;
                     });
                     window.history.replaceState({}, '', generateURL(post));
-                }, 460);
+                }, 410);
             } else {
                 isLooping.current = false;
                 nextIndex = Math.max(0, Math.min(postsRef.current.length - 1, nextIndex));
