@@ -419,9 +419,11 @@ Additional Work:
      25: Update Results Page backend To Support Filtering With hashtags in products -> smartphones ✅
      26: Posts And Products Merged And Showing Merged Posts and products on Main Archve Logic Done as well as optimized custom Pagination For Infinity
      Eagerloading  ✅
+
      27: Ui Of Product Single Page
 
-
+     28: Looping logic Enhanced And revert Back to the Black Screen showing with Next Post Image And AlsoCode Refinemet Done ✅
+     29: APP Meta Data Enhanced For Beautifully Showing Cards In Social media When Link Pasted And also Added Some Meta Tags For SEO
   )
 
 
