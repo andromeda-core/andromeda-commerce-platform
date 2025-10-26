@@ -1,5 +1,6 @@
 @php
     $general_setting = Illuminate\Support\Facades\Cache::get('general_config');
+
     $default_favicon = asset('assets/images/Logo/512512.png');
 
     $app_description =
@@ -13,7 +14,7 @@
     $app_url = url()->current();
 
     $default_logo = asset('assets/images/Logo/256b.png');
-    $app_logo = $general_setting->app_main_logo_light_url ?? $default_logo;
+    $app_logo = $general_setting->app_main_logo_light ?? $default_logo;
 
 @endphp
 <!DOCTYPE html>
@@ -32,7 +33,6 @@
 
     <link rel="apple-touch-icon"
         href="{{ !empty($general_setting->app_favicon) ? $general_setting->app_favicon : $default_favicon }}">
-
 
 
     {{-- Primary Meta Tags (important for SEO) --}}
