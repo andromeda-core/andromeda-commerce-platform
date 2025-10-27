@@ -308,6 +308,7 @@ Milestone 7: Customer Website (Frontend + PWA + Posts + Orders + Meta OAuth)
 - Logic To Restrict Customer From Visiting Dashboard ✅
 - Overall Application Performance Enhancing -> Till The Current Work Its Done ✅
 - Updating Robot.txt File For Exposing Just Website Routes On Google Search Engine (Currently It Exposes Our Dashboard) ✅
+- Bookmark Page For Showing Authenticated User His Bookmarked Posts ✅
 
 
 Additional Work:

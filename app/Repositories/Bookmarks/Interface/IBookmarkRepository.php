@@ -13,4 +13,6 @@ interface IBookmarkRepository
     public function destroyBookmark(string $id);
 
     public function destroyBookmarkBySelection(Request $request);
+
+    public function getBookmakrs(Request $request);
 }

@@ -53,7 +53,7 @@ const Sidebar = ({
                         isCollapsed ? 'justify-center' : ''
                     }`}
                 >
-                    <div className="flex items-center justify-center w-12 h-12 rounded">
+                    <div className="flex h-12 w-12 items-center justify-center rounded">
                         <div className="block dark:hidden">
                             <img src={light_logo} alt="Logo" />
                         </div>
@@ -251,7 +251,7 @@ const Sidebar = ({
                                         />
                                     </svg>
                                     {!isCollapsed && (
-                                        <div className="flex items-center justify-between w-full">
+                                        <div className="flex w-full items-center justify-between">
                                             <span>More</span>
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -362,9 +362,11 @@ const Sidebar = ({
                                                         </li>
 
                                                         <li>
-                                                            <a
-                                                                href="#"
-                                                                className={`menu-item-inactive flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
+                                                            <Link
+                                                                href={route(
+                                                                    'website.bookmarks.index',
+                                                                )}
+                                                                className={`${route().current() === 'website.bookmarks.index' ? 'menu-item-active' : 'menu-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                                             >
                                                                 <svg
                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -381,7 +383,7 @@ const Sidebar = ({
                                                                     />
                                                                 </svg>
                                                                 My Bookmarks
-                                                            </a>
+                                                            </Link>
                                                         </li>
                                                     </>
                                                 )}

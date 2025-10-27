@@ -33,7 +33,7 @@ const BottomBar = ({ darkMode, setDarkMode, moreDropdownRef, moreDropdown, setMo
     return (
         <div className="fixed bottom-0 left-0 right-0 z-10 p-1 lg:hidden">
             {/* Navigation bar */}
-            <nav className="bg-white border-b border-gray-200 rounded-md shadow-md backdrop-blur-lg dark:border-t dark:border-gray-800 dark:bg-deepcharcoal">
+            <nav className="rounded-md border-b border-gray-200 bg-white shadow-md backdrop-blur-lg dark:border-t dark:border-gray-800 dark:bg-deepcharcoal">
                 <div className="flex items-center justify-around px-4 py-2">
                     {/* Home */}
                     <Link
@@ -115,13 +115,13 @@ const BottomBar = ({ darkMode, setDarkMode, moreDropdownRef, moreDropdown, setMo
                     </Link> */}
 
                     <button
-                        className="flex items-center cursor-pointer text-white/80"
+                        className="flex cursor-pointer items-center text-white/80"
                         ref={moreDropdownRef}
                         onClick={() => {
                             setMoreDropdown(!moreDropdown);
                         }}
                     >
-                        <span className="flex items-center justify-center mr-3 overflow-hidden bg-indigo-600 rounded-full hover:text-dark-900 h-11 w-11 hover:bg-indigo-500">
+                        <span className="hover:text-dark-900 mr-3 flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-indigo-600 hover:bg-indigo-500">
                             {user && user.avatar}
                             {!user && (
                                 <svg
@@ -232,8 +232,8 @@ const BottomBar = ({ darkMode, setDarkMode, moreDropdownRef, moreDropdown, setMo
 
                                             <li>
                                                 <a
-                                                    href="#"
-                                                    className={`menu-item-inactive flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
+                                                    href={route('website.bookmarks.index')}
+                                                    className={`${route().current() === 'website.bookmarks.index' ? 'menu-item-active' : 'menu-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                                 >
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"

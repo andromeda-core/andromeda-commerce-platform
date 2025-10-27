@@ -112,4 +112,25 @@ class BookmarkRepository implements IBookmarkRepository
             ];
         }
     }
+
+    public function getBookmakrs(Request $request)
+    {
+        $user = $request->user();
+
+        if (empty($user)) {
+            return [
+                'status' => false,
+                'message' => 'User Not Found',
+            ];
+        }
+
+        $bookmarks = $user->bookMarkedPosts()->with(['floor'])->latest()->paginate(10);
+
+        return [
+            'status' => true,
+            'bookmarks' => $bookmarks->items(),
+            'next_page_url' => $bookmarks->nextPageUrl(),
+        ];
+
+    }
 }

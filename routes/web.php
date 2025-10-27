@@ -23,6 +23,7 @@ use App\Http\Controllers\Dashboard\SmartphoneController;
 use App\Http\Controllers\Dashboard\SmartphoneForSaleController;
 use App\Http\Controllers\Dashboard\SupplierController;
 use App\Http\Controllers\Dashboard\UserController;
+use App\Http\Controllers\Website\BookmarkController as WebsiteBookmarkController;
 use App\Http\Controllers\Website\DataDeletionRequestController as WebsiteDataDeletionRequestController;
 use App\Http\Controllers\Website\GlobalSearchController;
 use App\Http\Controllers\Website\HomeController as WebsiteHomeController;
@@ -69,6 +70,11 @@ Route::group(['as' => 'website.'], function () {
     Route::controller(WebsiteDataDeletionRequestController::class)->middleware('auth')->name('data-deletion.')->group(function () {
         Route::get('/data-deletion', 'index')->name('index');
         Route::post('/data-deletion-store', 'store')->name('store');
+    });
+
+    // Bookmark Routes
+    Route::controller(WebsiteBookmarkController::class)->middleware('auth')->name('bookmarks.')->group(function () {
+        Route::get('/bookmarks', 'index')->name('index');
     });
 
 });
