@@ -382,9 +382,7 @@ Additional Work:
 
     15: Dashboard Theme Fully Synced With website Theme Also Updated The webiste Some Design ✅
 
-  )
 
-  More Changes (
     1:  Removing Shadow From Global Search Bar ✅
     2:  Changing The Heading  From Spatiotemporal Filters Modal to Advanced Search ✅
     3:  Adding Post And Product Toggles For Main Archive Page
@@ -410,22 +408,43 @@ Additional Work:
         fetch again to improve Application performance Also Added Caching
         For Storing Already Fetched Related Posts To Prevent Already Viewed Posts Fetching  ✅
 
-     18: Adding Checks For Mobile And P)C in Reuslts Page For Navigating Behalf Of if PC than refdirect with __Blank otherwise simple redirect ✅
-     19: Added Cookie Filtering in Backend And in Frontend So Application Wont Break WhenCookie Value changed by user and attackers   ✅
-     20: Hashtag Archive Page backend Logic And Frontend With Cookie Value Validation On backend And Frontend Done  ✅
-     21: Hashtag Archive Page Ui Remeaning Just ✅
-     22: Update Backend For Smartphones For hashtag Support ✅
-     23: Slug Support Added For Smartphones ✅
-     24: Posts Slug Creation Logic Fixed And Now Supports Korean and other unicodes as well ✅
-     25: Update Results Page backend To Support Filtering With hashtags in products -> smartphones ✅
-     26: Posts And Products Merged And Showing Merged Posts and products on Main Archve Logic Done as well as optimized custom Pagination For Infinity
-     Eagerloading  ✅
+    18: Adding Checks For Mobile And P)C in Reuslts Page For Navigating Behalf Of if PC than refdirect with __Blank otherwise simple redirect ✅
+    19: Added Cookie Filtering in Backend And in Frontend So Application Wont Break WhenCookie Value changed by user and attackers   ✅
+    20: Hashtag Archive Page backend Logic And Frontend With Cookie Value Validation On backend And Frontend Done  ✅
+    21: Hashtag Archive Page Ui Remeaning Just ✅
+    22: Update Backend For Smartphones For hashtag Support ✅
+    23: Slug Support Added For Smartphones ✅
+    24: Posts Slug Creation Logic Fixed And Now Supports Korean and other unicodes as well ✅
+    25: Update Results Page backend To Support Filtering With hashtags in products -> smartphones ✅
+    26: Posts And Products Merged And Showing Merged Posts and products on Main Archve Logic Done as well as optimized custom Pagination For Infinity
+    Eagerloading  ✅
+    27: Ui Of Product Single Page
+    28: Looping logic Enhanced And revert Back to the Black Screen showing with Next Post Image And AlsoCode Refinemet Done ✅
+    29: APP Meta Data Enhanced For Beautifully Showing Cards In Social media When Link Pasted And also Added Some Meta Tags For SEO ✅
 
-     27: Ui Of Product Single Page
+    Whole Website Layout Change Request 4th Time
+    (
+        (Whole Website Theme Updated Before It was having Some Issues Regarding The Theme Switching and shwoing some bugs)
+        1: Posts Desktop Viewer Layout Completed ✅
+        2: Products Desktop Viewer ✅
+        3: Main Archive  Layout Updated as Per Referance Design ✅
+        4: Filters Page Added Seprately For Filters ✅
+        5: Sidebar Layout Updated As Per The Referance Design ✅
+        6: Toast Alert Changed To Custom Modal based Beautiful Alerts ✅
+        7: Hashtag Results Page Fecthing Logic And Fetching Data Logic Enhanced And Now Its More Stable and its supports Both Products And Posts ✅
+        8: Smartphones Table Updated And Added Content, Tag Column ✅
+        9: In Global Search Auto Refresh Hashtag Page Logic Updated To an New Version Of Routes ✅
+        10: Navigation Accross The Site Enhanced And prevented Again Naviagte on the same route which currently active ✅
+        11: Smartphone Image Auto Resize Logic Changed To Just making Quality Of Image Less For Better perforamnce  ✅
+        12: Passing Post Preferences On Hashtag page Before it wasnt properly Sending Current Prefferences ✅
+        13: Validaiton Error Message Wasnt Showing On Uploaded File Error On Smartphones Forms So its Fixed Now ✅
+        14: Bookmark Page Ui Updated And Also Synced Bookmakred Posts Fetching With User Set Preferences Before It wasnt Passed ✅
+        15: URL Generation Logic Encoding Issue Fixed before It was Not Taking Geneating Slug Correctly and failing On Getting Slug For Fetching Post ✅
+        16: Add To Cart Logic Done ✅
+        17: Dashboard Post View Page Copy Link And Bookmark PopUp Showing Logic Updated ✅
+    )
 
-     28: Looping logic Enhanced And revert Back to the Black Screen showing with Next Post Image And AlsoCode Refinemet Done ✅
-     29: APP Meta Data Enhanced For Beautifully Showing Cards In Social media When Link Pasted And also Added Some Meta Tags For SEO
-  )
+
 
 
 

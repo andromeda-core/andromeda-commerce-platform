@@ -1,17 +1,17 @@
 import Preloader from '@/Components/Preloader';
 import PWAAlertBar from '@/Components/PWAAlertBar';
+import Toast from '@/Components/Toast';
 import useWindowSize from '@/Hooks/useWindowSize';
 import BottomBar from '@/partials/Website/BottomBar';
 
 import Sidebar from '@/partials/Website/Sidebar';
 import { usePage } from '@inertiajs/react';
+import axios from 'axios';
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-import { ToastContainer, Bounce, toast } from 'react-toastify';
-
 export default function MainLayout({ children }) {
-    const { asset, generalSetting, flash } = usePage().props;
+    const { asset, generalSetting, flash, auth } = usePage().props;
 
     // Application Logo Sate With Default Images
     const [ApplicationLogoLight, setApplicationLogoLight] = useState(
@@ -62,7 +62,7 @@ export default function MainLayout({ children }) {
     const windowSize = useWindowSize();
 
     // Sidebar Collapse Logic
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(true);
     const [moreDropdown, setMoreDropdown] = useState(false);
     const moreDropdownRef = useRef(null);
 
@@ -73,44 +73,18 @@ export default function MainLayout({ children }) {
             }
         };
 
-        const handleResize = () => {
-            setIsCollapsed(windowSize.width < 1500);
-        };
+        // const handleResize = () => {
+        //     setIsCollapsed(windowSize.width < 1500);
+        // };
 
-        handleResize();
-        window.addEventListener('resize', handleResize);
+        // handleResize();
+        // window.addEventListener('resize', handleResize);
         document.addEventListener('click', handleClickOutside);
         return () => {
-            window.removeEventListener('resize', handleResize);
+            // window.removeEventListener('resize', handleResize);
             document.removeEventListener('click', handleClickOutside);
         };
     }, [windowSize.width]);
-
-    const notify = (type, message) => {
-        toast[type](message, {
-            position: 'bottom-center',
-            autoClose: 5000,
-            hideProgressBar: true,
-            closeOnClick: false,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-
-            transition: Bounce,
-        });
-    };
-
-    useEffect(() => {
-        if (flash.success) {
-            notify('success', flash.success);
-        }
-        if (flash.error) {
-            notify('error', flash.error);
-        }
-        if (flash.info) {
-            notify('info', flash.info);
-        }
-    }, [flash]);
 
     const [CurrentUrl, setCurrentUrl] = useState(window.location.href);
     const [needsActivation, setNeedsActivation] = useState(false);
@@ -126,7 +100,7 @@ export default function MainLayout({ children }) {
         if (wasReload || cameExternally || wasNavigated) {
             const url = new URL(CurrentUrl);
 
-            if (url.searchParams.get('slug')) {
+            if (url.searchParams.get('slug') || url.searchParams.get('m-slug')) {
                 setNeedsActivation(true);
             }
         }
@@ -147,24 +121,23 @@ export default function MainLayout({ children }) {
     //     }
     // }, [windowSize.width]);
 
+    const [cartItemsCount, setCartItemsCount] = useState(0);
+    useEffect(() => {
+        if (auth?.user) {
+            axios.get(route('website.carts.get-items-count')).then((response) => {
+                const data = response.data;
+
+                setCartItemsCount(data.cart_items_count);
+            });
+        }
+    }, []);
+
     return (
         <>
-            <div className="relative w-full min-h-screen bg-slate-100 dark:bg-zinc-950/70">
+            <div className="relative w-full min-h-screen bg-white dark:bg-zinc-950/70">
                 <Preloader loaded={loaded} setLoaded={setLoaded} />
 
-                <ToastContainer
-                    position="bottom-center"
-                    autoClose={5000}
-                    hideProgressBar
-                    newestOnTop={false}
-                    closeOnClick={false}
-                    rtl={false}
-                    pauseOnFocusLoss
-                    draggable
-                    pauseOnHover
-                    theme="colored"
-                    transition={Bounce}
-                />
+                <Toast flash={flash} />
 
                 {/* Sidebar */}
                 {windowSize.width > 1024 && (
@@ -178,6 +151,7 @@ export default function MainLayout({ children }) {
                         moreDropdown={moreDropdown}
                         setMoreDropdown={setMoreDropdown}
                         moreDropdownRef={moreDropdownRef}
+                        cartItemsCount={cartItemsCount}
                     />
                 )}
 
@@ -192,7 +166,7 @@ export default function MainLayout({ children }) {
                     }`}
                 >
                     {/* Main Content */}
-                    <main className="flex-1 min-h-screen px-3 pt-2 dark:bg-zinc-950/70 lg:px-6">
+                    <main className="flex-1 min-h-screen px-3 pt-2 mx-0 bg-white dark:bg-zinc-950/70 lg:px-20 xl:px-36">
                         {needsActivation &&
                             createPortal(
                                 <div
@@ -226,12 +200,15 @@ export default function MainLayout({ children }) {
                             moreDropdown={moreDropdown}
                             setMoreDropdown={setMoreDropdown}
                             moreDropdownRef={moreDropdownRef}
+                            cartItemsCount={cartItemsCount}
                         />
                     </>
                 )}
 
                 <PWAAlertBar />
             </div>
+
+            <div id="modal-root"></div>
         </>
     );
 }

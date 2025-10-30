@@ -47,7 +47,7 @@ const DataDeletion = () => {
         <MainLayout>
             <Head title="Data Deletion" />
 
-            <div className="bg-slate-50 pb-20 dark:bg-zinc-950 sm:px-6 sm:pb-20 lg:px-8">
+            <div className="sm:px-6 sm:pb-20 lg:px-8">
                 <div className="min-h-screen">
                     {/* Hero Section */}
                     <div className="relative overflow-hidden border-b border-gray-800 bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">

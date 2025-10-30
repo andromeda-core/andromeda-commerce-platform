@@ -42,4 +42,9 @@ class Customer extends Model
     {
         return $this->belongsTo(Country::class, 'country_id', 'id');
     }
+
+    public function cart_items(): HasMany
+    {
+        return $this->hasMany(CartItem::class, 'customer_id', 'id');
+    }
 }

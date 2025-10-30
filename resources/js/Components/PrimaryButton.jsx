@@ -19,7 +19,7 @@ export default function PrimaryButton({
                     type={Type}
                     id={Id}
                     onClick={Action}
-                    className={`shadow-theme-xs my-3 flex items-center justify-center rounded-xl bg-indigo-700 px-3 py-2 text-sm font-medium text-white transition hover:bg-indigo-600 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10 sm:px-4 sm:py-3 ${CustomClass ? CustomClass : 'w-full min-w-0 max-w-full'} ${Disabled ? 'cursor-not-allowed opacity-25 dark:opacity-40' : ''} `}
+                    className={`shadow-theme-xs my-3 flex items-center justify-center rounded-xl bg-indigo-700 px-3 py-2 text-sm font-medium text-white transition hover:bg-indigo-600 sm:px-4 sm:py-3 ${CustomClass ? CustomClass : 'w-full min-w-0 max-w-full'} ${Disabled ? 'cursor-not-allowed opacity-25 dark:opacity-40' : ''} `}
                 >
                     {Text}
 

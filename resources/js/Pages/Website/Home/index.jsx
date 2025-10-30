@@ -6,28 +6,35 @@ import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import QRCode from 'react-qr-code';
-import { toast } from 'react-toastify';
+
 import videoThumbnail from '../../../../../public/assets/images/video-thumb/general-video.png';
 
 import VideoPlayer from '@/Components/VideoPlayer';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import GlobalSearch from '@/Components/GlobalSearch';
-
-const getCookie = (name) => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-    return null;
-};
+import LinkCopiedModal from '@/Components/LinkCopiedModal';
+import BookmarkStatusChangedModal from '@/Components/BookmarkStatusChangedModal';
+import useSidebarClick from '@/Hooks/useSidebarClick';
+import SmartphoneDesktopModal from './SmartphoneDesktopModal';
+import getCookie from '@/Hooks/useGetCookie';
+import Toast from '@/Components/Toast';
 
 export default function index({ google_map_api_key, search_history }) {
     const { currency } = usePage().props;
 
+    const [ErrorMessage, setErrorMessage] = useState(null);
+    const [showErrorMessage, setShowErrorMessage] = useState(false);
+
+    const [InfoMessage, setInfoMessage] = useState(null);
+    const [showInfoMessage, setShowInfoMessage] = useState(false);
+
     const [isPostLoaded, setIsPostLoaded] = useState(false);
     const [posts, setPosts] = useState(null);
     const [products, setProducts] = useState(null);
-
+    const [showPostDesktopActionsDropdown, setShowPostDesktopActionsDropdown] = useState(false);
+    const [bookmarkStatusChanged, setBookmarkStatusChanged] = useState(false);
+    const [linkCopied, setLinkCopied] = useState(false);
     const [relatedPostsMap, setRelatedPostsMap] = useState({});
     const [relatedNextMap, setRelatedNextMap] = useState({});
     const [relatedViewerMap, setRelatedViewerMap] = useState({});
@@ -35,17 +42,21 @@ export default function index({ google_map_api_key, search_history }) {
     const [relatedPostSlug, setRelatedPostSlug] = useState(null);
     const [nextPageUrl, setNextPageUrl] = useState(null);
 
+    // Smartphone States
+    const [smartphoneDesktopModal, setSmartphoneDesktopModal] = useState(false);
+    const [smartphoneMobileModal, setSmartphoneMobileModal] = useState(false);
+    const [viewableSmartphone, setViewableSmartphone] = useState(null);
+    const [selectedSmartphoneIndex, setSelectedSmartphoneIndex] = useState(null);
+
     const fetchPostsAndProducts = async () => {
         const cookieValue = getCookie('post_preferences');
         let parsed = null;
 
-        // ✅ Safe JSON parsing with fallback
         if (cookieValue && cookieValue !== 'null' && cookieValue !== 'undefined') {
             try {
                 parsed = JSON.parse(decodeURIComponent(cookieValue));
             } catch (error) {
                 console.warn('⚠️ Invalid post_preferences cookie. Using defaults.', error);
-                toast.warning('Your saved preferences were invalid — defaults applied.');
                 parsed = null;
             }
         }
@@ -74,7 +85,9 @@ export default function index({ google_map_api_key, search_history }) {
             setIsPostLoaded(true);
         } catch (error) {
             console.error('Failed to fetch posts:', error);
-            toast.error('Failed to fetch posts. Please try again later.');
+
+            setShowErrorMessage(true);
+            setErrorMessage('Failed to fetch posts. Please try again later.');
         }
     };
 
@@ -82,8 +95,27 @@ export default function index({ google_map_api_key, search_history }) {
         fetchPostsAndProducts();
     }, []);
 
-    const [viewablePost, setViewablePost] = useState('');
+    // Auto Resetting Error Message States
+    useEffect(() => {
+        if (showErrorMessage) {
+            setTimeout(() => {
+                setShowErrorMessage(false);
+                setErrorMessage(null);
+            }, 1500);
+        }
+    }, [showErrorMessage]);
 
+    // Auto Resetting Info Message States
+    useEffect(() => {
+        if (showInfoMessage) {
+            setTimeout(() => {
+                setShowInfoMessage(false);
+                setInfoMessage(null);
+            }, 1500);
+        }
+    }, [showInfoMessage]);
+
+    const [viewablePost, setViewablePost] = useState('');
     const [selectedPostIndex, setSelectedPostIndex] = useState(0);
     const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
 
@@ -124,6 +156,7 @@ export default function index({ google_map_api_key, search_history }) {
     const fetchLock = useRef(false);
     const isFetchingRef = useRef(false);
     const lastFetchedUrlRef = useRef({});
+    const postDesktopViewerActionDropdownRef = useRef(null);
 
     // If Post Already Fetches All Remeaning Related Posts And Dont Have More Pages so it will be marked as completed and wont be fetched
     const completedSlugsRef = useRef({});
@@ -153,14 +186,13 @@ export default function index({ google_map_api_key, search_history }) {
 
     const generateURL = (post) => {
         return (
-            `?slug=${post?.slug}&planet=earth${post?.latitude != null ? '&lat=' + post?.latitude : ''}` +
-            `${post?.longitude != null ? '&lng=' + post?.longitude : ''}` +
-            `${post?.location_name != null ? '&location_name=' + post?.location_name : ''}` +
-            `&timestamp=${post?.created_at}` +
-            `${post?.floor_id != null ? '&floor=' + post?.floor?.name : ''}`
+            `?slug=${encodeURIComponent(post?.slug)}&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
+            `${post?.longitude != null ? '&lng=' + encodeURIComponent(post?.longitude) : ''}` +
+            `${post?.location_name != null ? '&location_name=' + encodeURIComponent(post?.location_name) : ''}` +
+            `&timestamp=${encodeURIComponent(post?.created_at)}` +
+            `${post?.floor_id != null ? '&floor=' + encodeURIComponent(post?.floor?.name) : ''}`
         );
     };
-
     // Auto Select Post From Mobile Post Container Logic
 
     const scrollToPost = (post) => {
@@ -193,16 +225,39 @@ export default function index({ google_map_api_key, search_history }) {
         }
     };
 
+    const setSmartphoneViewerBasedOnWidth = (windowSize) => {
+        if (windowSize.width < 1024) {
+            if (showQrCode) setShowQrCode(false);
+
+            setSmartphoneDesktopModal(false);
+            setSmartphoneMobileModal(true);
+        }
+
+        if (windowSize.width > 1024) {
+            if (showQrCode) setShowQrCode(false);
+
+            setSmartphoneMobileModal(false);
+            setSmartphoneDesktopModal(true);
+        }
+    };
+
     useEffect(() => {
-        if (viewablePost != '') setPostViewerBasedOnWidth(windowSize);
+        if (viewablePost != '' && (isDesktopPostViewer || isMobilePostViewer)) {
+            setPostViewerBasedOnWidth(windowSize);
+        }
+
+        if (viewableSmartphone != null && (smartphoneDesktopModal || smartphoneMobileModal)) {
+            setSmartphoneViewerBasedOnWidth(windowSize);
+        }
     }, [windowSize.width]);
 
+    // Checking Post Slug In URL If Found Than Auto Opening Posts Desktop Modal
     useEffect(() => {
         if (!posts || !isPostLoaded) return;
 
         const params = new URLSearchParams(window.location.search);
         const slug = params.get('slug');
-
+        console.log(slug);
         if (slug) {
             const post = posts.find((post) => post.slug === slug);
 
@@ -220,12 +275,33 @@ export default function index({ google_map_api_key, search_history }) {
         }
     }, [isPostLoaded, posts]);
 
+    // Checking Smartphone Slug In URL If Found Than Auto Opening Smartphone Desktop Modal
+    useEffect(() => {
+        if (!products || !isPostLoaded) return;
+
+        const params = new URLSearchParams(window.location.search);
+        const slug = params.get('m-slug');
+
+        if (slug) {
+            const smartphone = products.smartphones.find((smartphone) => smartphone.slug === slug);
+
+            if (smartphone) {
+                setViewableSmartphone(smartphone);
+                setSmartphoneViewerBasedOnWidth(windowSize);
+            } else {
+                fetchSingleSmartphone(slug);
+                setSmartphoneViewerBasedOnWidth(windowSize);
+            }
+        }
+    }, [isPostLoaded, posts]);
+
+    // Post Refs
     const viewablePostRef = useRef('');
     const isMobilePostGalleryRef = useRef(false);
     const isDesktopPostViewerRef = useRef(false);
     const isMobilePostViewerRef = useRef(false);
 
-    // Update refs whenever state changes
+    // Post Effects
     useEffect(() => {
         viewablePostRef.current = viewablePost;
     }, [viewablePost]);
@@ -241,6 +317,27 @@ export default function index({ google_map_api_key, search_history }) {
     useEffect(() => {
         isMobilePostViewerRef.current = isMobilePostViewer;
     }, [isMobilePostViewer]);
+
+    // Smartphone Refs
+    const viewableSmartphoneRef = useRef(null);
+    const smartphoneDesktopModalRef = useRef(null);
+    const smartphoneMobileModalRef = useRef(null);
+
+    // Smartphone Effects
+    useEffect(() => {
+        smartphoneDesktopModalRef.current = smartphoneDesktopModal;
+    }, [smartphoneDesktopModal]);
+
+    useEffect(() => {
+        viewableSmartphoneRef.current = viewableSmartphone;
+    }, [viewableSmartphone]);
+
+    useEffect(() => {
+        smartphoneMobileModalRef.current = smartphoneMobileModal;
+    }, [smartphoneMobileModal]);
+
+    // Tracking Sidebar Click
+    const isSidebarClickActive = useSidebarClick();
 
     // Stopping Overflow Of Body When Modal is Open Also Preventing Inertia Navigation When Pressing browser Naviagtion buttons for Posts Viewer and gallery
     useEffect(() => {
@@ -271,17 +368,44 @@ export default function index({ google_map_api_key, search_history }) {
                 setIsMobilePostViewer(false);
                 return;
             }
+
+            if (viewableSmartphoneRef.current !== null) {
+                if (smartphoneMobileModalRef.current) {
+                    setSmartphoneMobileModal(false);
+                    if (currentState?.modal === 'smartphone-gallery') {
+                        window.history.replaceState({ modal: 'smartphone-viewer' }, '');
+                    }
+
+                    return;
+                }
+
+                window.history.replaceState({}, '', window.location.pathname);
+                setViewableSmartphone('');
+                setSmartphoneDesktopModal(false);
+
+                return;
+            }
         };
 
         const preventInertiaNavigation = (event) => {
-            const allowedRoutes = ['/hashtag/', '/posts-bookmark'];
+            const notAllowedRoutes = ['/'];
 
             const pathname = event.detail?.visit?.url?.pathname || '';
-            const isAllowedRoute = allowedRoutes.some((route) => pathname.includes(route));
+
+            const isNotAllowedRoute = notAllowedRoutes.some((route) => {
+                if (route === '/') {
+                    return pathname === '/';
+                }
+                return pathname.startsWith(route);
+            });
 
             if (
-                (viewablePostRef.current !== '' || isMobilePostGalleryRef.current) &&
-                !isAllowedRoute
+                (viewablePostRef.current !== '' ||
+                    isMobilePostGalleryRef.current ||
+                    viewableSmartphoneRef.current !== null ||
+                    smartphoneMobileModalRef.current) &&
+                isNotAllowedRoute &&
+                !isSidebarClickActive
             ) {
                 event.preventDefault();
             }
@@ -296,7 +420,16 @@ export default function index({ google_map_api_key, search_history }) {
             if (removeRouterEvent) removeRouterEvent();
             // document.removeEventListener('fullscreenchange', handleFullscreenChange);
         };
-    }, [viewablePost, isMobilePostGallery, isMobilePostViewer, isDesktopPostViewer]);
+    }, [
+        viewablePost,
+        isMobilePostGallery,
+        isMobilePostViewer,
+        isDesktopPostViewer,
+        isSidebarClickActive,
+        viewableSmartphone,
+        smartphoneDesktopModal,
+        smartphoneMobileModal,
+    ]);
 
     const fetchMorePostsAndProducts = async () => {
         if (!nextPageUrl || isfetchingMorePosts.current) return;
@@ -332,7 +465,8 @@ export default function index({ google_map_api_key, search_history }) {
 
             setNextPageUrl(data.next_page_url);
         } catch (err) {
-            toast.error('Error fetching post');
+            setShowErrorMessage(true);
+            setErrorMessage(err.message);
         } finally {
             isfetchingMorePosts.current = false;
         }
@@ -340,14 +474,37 @@ export default function index({ google_map_api_key, search_history }) {
 
     const fetchSinglePost = async (slug) => {
         try {
+            console.log(slug);
             const cookieValue = getCookie('post_preferences');
+            let parsed = null;
 
-            const parsed = await JSON.parse(decodeURIComponent(cookieValue));
+            if (cookieValue && cookieValue !== 'null' && cookieValue !== 'undefined') {
+                try {
+                    parsed = JSON.parse(decodeURIComponent(cookieValue));
+                } catch (error) {
+                    console.warn('⚠️ Invalid post_preferences cookie. Using defaults.', error);
+                    parsed = null;
+                }
+            }
 
-            const queryString = new URLSearchParams(parsed).toString();
+            const defaultPreferences = {
+                text: true,
+                videos: true,
+                images: true,
+                show_posts: true,
+                show_products: true,
+            };
 
-            const res = await fetch(route('website.posts.getsingle', slug) + `?${queryString}`);
-            const data = await res.json();
+            const finalPreferences =
+                parsed && typeof parsed === 'object'
+                    ? { ...defaultPreferences, ...parsed }
+                    : defaultPreferences;
+
+            const res = await axios.get(route('website.posts.getsingle', slug), {
+                params: finalPreferences,
+            });
+
+            const data = await res.data;
 
             if (data.status) {
                 setViewablePost(data.post);
@@ -372,19 +529,42 @@ export default function index({ google_map_api_key, search_history }) {
                     return newPosts;
                 });
             } else {
-                toast.info('Post Not Found');
+                setShowInfoMessage(true);
+                setInfoMessage('Post Not Found');
             }
         } catch (err) {
-            toast.error('Error fetching post');
+            setShowErrorMessage(true);
+            setErrorMessage('Error fetching post');
         }
     };
 
     const fetchRelatedPosts = async (slug) => {
-        const nextUrl =
-            relatedNextUrlMap.current[slug] ??
-            `${route('website.posts.getrelated')}?${new URLSearchParams(
-                JSON.parse(decodeURIComponent(getCookie('post_preferences'))),
-            )}`;
+        const cookieValue = getCookie('post_preferences');
+        let parsed = null;
+
+        if (cookieValue && cookieValue !== 'null' && cookieValue !== 'undefined') {
+            try {
+                parsed = JSON.parse(decodeURIComponent(cookieValue));
+            } catch (error) {
+                console.warn('⚠️ Invalid post_preferences cookie. Using defaults.', error);
+                parsed = null;
+            }
+        }
+
+        const defaultPreferences = {
+            text: true,
+            videos: true,
+            images: true,
+            show_posts: true,
+            show_products: true,
+        };
+
+        const finalPreferences =
+            parsed && typeof parsed === 'object'
+                ? { ...defaultPreferences, ...parsed }
+                : defaultPreferences;
+
+        const nextUrl = relatedNextUrlMap.current[slug] ?? `${route('website.posts.getrelated')}`;
 
         if (isFetchingRef.current || lastFetchedUrlRef.current[slug] === nextUrl || !slug) return;
 
@@ -394,6 +574,7 @@ export default function index({ google_map_api_key, search_history }) {
             const res = await axios.get(nextUrl, {
                 params: {
                     slug: slug,
+                    ...finalPreferences,
                 },
             });
             const data = res.data;
@@ -428,7 +609,82 @@ export default function index({ google_map_api_key, search_history }) {
             }
         } catch (err) {
             console.error(`[${slug}] ❌ Error fetching related posts`, err);
-            toast.error('Error fetching related posts');
+
+            setShowErrorMessage(true);
+            setErrorMessage('Error fetching related posts');
+        }
+    };
+
+    //  Fetch Single Smartphone Method
+    const fetchSingleSmartphone = async (slug) => {
+        try {
+            if (!isPostLoaded || products.length < 1) {
+                return;
+            }
+
+            const cookieValue = getCookie('post_preferences');
+            let parsed = null;
+
+            if (cookieValue && cookieValue !== 'null' && cookieValue !== 'undefined') {
+                try {
+                    parsed = JSON.parse(decodeURIComponent(cookieValue));
+                } catch (error) {
+                    console.warn('⚠️ Invalid post_preferences cookie. Using defaults.', error);
+                    parsed = null;
+                }
+            }
+
+            const defaultPreferences = {
+                text: true,
+                videos: true,
+                images: true,
+                show_posts: true,
+                show_products: true,
+            };
+
+            const finalPreferences =
+                parsed && typeof parsed === 'object'
+                    ? { ...defaultPreferences, ...parsed }
+                    : defaultPreferences;
+
+            const res = await axios.get(route('website.products.get-single-smartphone', slug), {
+                params: finalPreferences,
+            });
+            const data = await res.data;
+
+            if (data.status) {
+                setViewableSmartphone(data.smartphone);
+                setSmartphoneViewerBasedOnWidth(windowSize);
+
+                setProducts((prev) => {
+                    const currentSmartphones = prev?.smartphones || [];
+
+                    const exists = currentSmartphones.some((p) => p.id === data.smartphone.id);
+
+                    let newSmartphones;
+                    if (!exists) {
+                        newSmartphones = [data.smartphone, ...currentSmartphones];
+                    } else {
+                        newSmartphones = currentSmartphones;
+                    }
+
+                    const idx = newSmartphones.findIndex((p) => p.id === data.smartphone.id);
+                    if (idx !== -1) {
+                        setSelectedSmartphoneIndex(idx);
+                    }
+
+                    return {
+                        ...prev,
+                        smartphones: newSmartphones,
+                    };
+                });
+            } else {
+                setShowInfoMessage(true);
+                setInfoMessage('Smartphone Not Found');
+            }
+        } catch (err) {
+            setShowErrorMessage(true);
+            setErrorMessage(err.message);
         }
     };
 
@@ -510,7 +766,10 @@ export default function index({ google_map_api_key, search_history }) {
 
     // Checking Outside Click Of Elipsis Dropdown
     useEffect(() => {
-        const handleResize = () => setElipsisShowDropdown(false);
+        const handleResize = () => {
+            setElipsisShowDropdown(false);
+            setShowPostDesktopActionsDropdown(false);
+        };
         const handleClickOutside = (e) => {
             const clickedButton = e.target.closest('[data-elipsis-button]');
             const clickedDropdown = e.target.closest('[data-elipsis-dropdown]');
@@ -525,6 +784,22 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             setElipsisShowDropdown(false);
+
+            const clickedDesktopPostActionsButton = e.target.closest('[data-post-actions-button]');
+            const clickedDesktopPostActionsDropdown = e.target.closest(
+                '[data-post-actions-dropdown]',
+            );
+
+            if (clickedDesktopPostActionsButton) {
+                setShowPostDesktopActionsDropdown((prev) => !prev);
+                return;
+            }
+
+            if (clickedDesktopPostActionsDropdown) {
+                return;
+            }
+
+            setShowPostDesktopActionsDropdown(false);
         };
         window.addEventListener('resize', handleResize);
         document.addEventListener('mousedown', handleClickOutside);
@@ -1371,8 +1646,8 @@ export default function index({ google_map_api_key, search_history }) {
 
             // GUARD: Check if relatedPost is a valid object
             if (!relatedPost || typeof relatedPost !== 'object' || !relatedPost.id) {
-                console.error(`Invalid related post at index ${index - 1}:`, relatedPost);
-                console.error(`Related posts array:`, relatedPosts);
+                // console.error(`Invalid related post at index ${index - 1}:`, relatedPost);
+                // console.error(`Related posts array:`, relatedPosts);
                 return;
             }
 
@@ -1454,33 +1729,14 @@ export default function index({ google_map_api_key, search_history }) {
 
     const navigateToHashtag = async (hashtag) => {
         const tag = encodeURIComponent(hashtag);
-
-        const cookieValue = getCookie('post_preferences');
-        let postPreferences = null;
-
-        if (cookieValue && cookieValue !== 'null' && cookieValue !== 'undefined') {
-            try {
-                postPreferences = JSON.parse(decodeURIComponent(cookieValue));
-            } catch (error) {
-                console.warn('⚠️ Invalid post_preferences cookie, skipping preferences.', error);
-                toast.warn('Your saved preferences were invalid — using site defaults.');
-                postPreferences = null;
-            }
-        }
-
         try {
-            const response = await axios.post(
-                route('website.posts.hashtag-posts', tag),
-                { post_preferences: postPreferences },
-                {
-                    headers: { 'X-Inertia': true },
-                },
-            );
-
-            router.replace(response.data);
+            router.visit(route('website.posts.hashtag.index', tag), {
+                replace: true,
+                preserveState: true,
+                preserveScroll: true,
+            });
         } catch (error) {
             console.error('Hashtag navigation failed:', error);
-            toast.error('Failed to load hashtag posts.');
         }
     };
 
@@ -1488,13 +1744,21 @@ export default function index({ google_map_api_key, search_history }) {
         <MainLayout>
             <Head title="Home" />
 
+            {(showErrorMessage || showInfoMessage) && (
+                <Toast
+                    flash={{
+                        ...(showErrorMessage ? { error: ErrorMessage } : { info: InfoMessage }),
+                    }}
+                />
+            )}
+
             {!isPostLoaded && (
-                <div className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 dark:text-white/80">
+                <div className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80">
                     <div className="flex items-center justify-center">
                         <div role="status">
                             <svg
                                 aria-hidden="true"
-                                className="h-5 w-5 animate-spin fill-indigo-600 text-gray-200 dark:text-white/80"
+                                className="w-5 h-5 text-gray-200 animate-spin fill-indigo-600 dark:text-white/80"
                                 viewBox="0 0 100 101"
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -1511,42 +1775,47 @@ export default function index({ google_map_api_key, search_history }) {
                             <span className="sr-only">Loading...</span>
                         </div>
                     </div>
-                    Please Wait While We Load Posts...
+                    Please Wait While We Load Data...
                 </div>
             )}
 
             {isPostLoaded && (
                 <>
                     {/* Search Bar */}
-                    <GlobalSearch
-                        additional_filters={false}
-                        google_map_api_key={google_map_api_key}
-                        OnPostFilterChange={() => {
-                            window.history.replaceState({}, '', window.location.pathname);
-                            setViewablePost('');
-                            setIsDesktopPostViewer(false);
-                            setIsMobilePostViewer(false);
-                            setIsPostLoaded(false);
-                            setPosts(null);
-                            setProducts(null);
-                            setNextPageUrl(null);
-                            fetchPostsAndProducts();
-                        }}
-                        search_history={search_history}
-                        mainPage={true}
-                    />
+                    {windowSize.width > 1024 && (
+                        <div className="w-1/2 m-auto">
+                            <GlobalSearch
+                                filters={false}
+                                additional_filters={false}
+                                google_map_api_key={google_map_api_key}
+                                OnPostFilterChange={() => {
+                                    window.history.replaceState({}, '', window.location.pathname);
+                                    setViewablePost('');
+                                    setIsDesktopPostViewer(false);
+                                    setIsMobilePostViewer(false);
+                                    setIsPostLoaded(false);
+                                    setPosts(null);
+                                    setProducts(null);
+                                    setNextPageUrl(null);
+                                    fetchPostsAndProducts();
+                                }}
+                                search_history={search_history}
+                                mainPage={true}
+                            />
+                        </div>
+                    )}
 
                     {/* Masonry Layout */}
                     <div className="pb-20 sm:pb-20">
-                        <div className="max-w-8xl mx-auto sm:px-6 lg:px-8">
+                        <div className="mx-auto max-w-8xl sm:px-6 lg:px-8">
                             {/* Compact Masonry */}
-                            <div className="columns-1 gap-1 [column-fill:_balance] min-[300px]:columns-2 lg:columns-4">
+                            <div className="lg:columns:2 columns-1 gap-1 [column-fill:_balance] min-[300px]:columns-2 md:columns-2 lg:gap-2 xl:columns-4">
                                 {posts.map((post, index) => {
                                     const url = generateURL(post);
                                     return (
                                         <article
                                             key={post?.id}
-                                            className="group relative mb-1 cursor-pointer break-inside-avoid overflow-hidden rounded-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                                            className="relative mb-1 overflow-hidden transition-all duration-300 rounded-none shadow-md cursor-pointer group break-inside-avoid hover:-translate-y-1 hover:shadow-xl lg:mb-2"
                                             style={{ animationDelay: `${index * 100}ms` }}
                                             onClick={() => {
                                                 setViewablePost(post);
@@ -1555,12 +1824,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                     post?.related_posts,
                                                 );
 
-                                                if (windowSize.width > 1024) {
-                                                    setIsDesktopPostViewer(true);
-                                                } else {
-                                                    setIsMobilePostViewer(true);
-                                                    // openFullscreen();
-                                                }
+                                                setPostViewerBasedOnWidth(windowSize);
 
                                                 setSelectedPostIndex(index ?? 0);
                                                 setSelectedMediaIndex(0);
@@ -1579,16 +1843,14 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                     {/* Title */}
                                                     <div className="absolute left-3 top-3">
-                                                        <h2 className="line-clamp-2 text-[8px] font-semibold text-white drop-shadow-lg sm:text-[9px] md:text-[10px] lg:text-lg">
-                                                            {post?.title.length > 20
-                                                                ? post?.title.slice(0, 20) + '...'
-                                                                : post?.title}
-                                                        </h2>
+                                                        <span className="text-white drop-shadow-md">
+                                                            {post?.tag}
+                                                        </span>
                                                     </div>
 
                                                     {/* Share Button */}
                                                     <button
-                                                        className="absolute right-3 top-3 text-white opacity-80 drop-shadow-lg hover:opacity-100"
+                                                        className="absolute text-white right-3 top-3 opacity-80 drop-shadow-lg hover:opacity-100"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             const url =
@@ -1596,10 +1858,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                             navigator.clipboard.writeText(
                                                                 url.trim(),
                                                             );
-
-                                                            toast.success(
-                                                                'Shareable Link Copied To Clipboard',
-                                                            );
+                                                            setLinkCopied(true);
                                                         }}
                                                     >
                                                         <svg
@@ -1622,67 +1881,79 @@ export default function index({ google_map_api_key, search_history }) {
                                                     <div className="absolute inset-x-0 bottom-0 p-4">
                                                         <div className="mt-1 flex items-center justify-between text-[6px] font-bold text-gray-200 drop-shadow-sm sm:text-[7px] md:text-[8px] lg:text-xs">
                                                             <span className="text-white drop-shadow-md">
-                                                                {post?.tag}
+                                                                {post?.title.length > 25
+                                                                    ? post?.title.slice(0, 25) +
+                                                                      '...'
+                                                                    : post?.title}
                                                             </span>
                                                             <span className="flex items-center gap-1 text-white drop-shadow-md lg:gap-2">
-                                                                <svg
-                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                    fill="none"
-                                                                    viewBox="0 0 24 24"
-                                                                    strokeWidth={1.5}
-                                                                    stroke="currentColor"
-                                                                    className="size-2 md:size-3 lg:size-4"
-                                                                >
-                                                                    <path
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                                                                    />
-                                                                </svg>
-                                                                {post?.added_at}
+                                                                {post?.location_name && (
+                                                                    <span className="text-xs text-white/80">
+                                                                        {post?.location_name
+                                                                            ? post.location_name
+                                                                                  .length > 7
+                                                                                ? post.location_name.slice(
+                                                                                      0,
+                                                                                      7,
+                                                                                  )
+                                                                                : post.location_name
+                                                                            : ''}
+                                                                        {post?.location_name
+                                                                            ? ' '
+                                                                            : ''}
+                                                                        {post?.added_at
+                                                                            ? post.added_at + ' '
+                                                                            : ''}
+                                                                        {post?.created_at_time ||
+                                                                            ''}
+                                                                    </span>
+                                                                )}
                                                             </span>
                                                         </div>
                                                     </div>
                                                 </div>
                                             ) : (
                                                 /* Text-only */
-                                                <div className="relative flex flex-col justify-between bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 p-5 text-white dark:from-gray-500 dark:via-gray-600 dark:to-gray-800">
-                                                    {/* Share Button */}
-                                                    <button
-                                                        className="absolute right-3 top-3 text-white opacity-80 hover:opacity-100"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            const url =
-                                                                route('home') + generateURL(post);
-                                                            navigator.clipboard.writeText(
-                                                                url.trim(),
-                                                            );
+                                                <div className="relative flex flex-col justify-between p-5 text-white bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 dark:from-gray-500 dark:via-gray-600 dark:to-gray-800">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-white border-b border-gray-200 drop-shadow-md dark:border-gray-300">
+                                                            {post?.tag}
+                                                        </span>
+                                                        {/* Share Button */}
+                                                        <button
+                                                            className="text-white opacity-80 hover:opacity-100"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                const url =
+                                                                    route('home') +
+                                                                    generateURL(post);
+                                                                navigator.clipboard.writeText(
+                                                                    url.trim(),
+                                                                );
 
-                                                            toast.success(
-                                                                'Shareable Link Copied To Clipboard',
-                                                            );
-                                                        }}
-                                                    >
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            strokeWidth={1.5}
-                                                            stroke="currentColor"
-                                                            className="size-3 lg:size-5"
+                                                                setLinkCopied(true);
+                                                            }}
                                                         >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z"
-                                                            />
-                                                        </svg>
-                                                    </button>
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                strokeWidth={1.5}
+                                                                stroke="currentColor"
+                                                                className="size-3 lg:size-5"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
 
                                                     <div>
-                                                        <h2 className="mb-2 line-clamp-2 text-[10px] font-semibold text-white drop-shadow-lg sm:text-[9px] md:text-[10px] lg:text-lg">
-                                                            {post?.title}
-                                                        </h2>
+                                                        <div className="mb-2"></div>
+
                                                         <p className="line-clamp-4 text-[10px] opacity-90 lg:text-sm">
                                                             {post.content.length > 200 ? (
                                                                 <span
@@ -1705,24 +1976,29 @@ export default function index({ google_map_api_key, search_history }) {
                                                     </div>
                                                     <div className="mt-2 flex items-center justify-between text-[7px] font-bold text-gray-200 drop-shadow-sm sm:text-[7px] md:text-[8px] lg:text-xs">
                                                         <span className="text-white drop-shadow-md">
-                                                            {post?.tag}
+                                                            {post?.title.length > 20
+                                                                ? post?.title.slice(0, 20) + '...'
+                                                                : post?.title}
                                                         </span>
                                                         <span className="flex items-center gap-1 text-white drop-shadow-md lg:gap-2">
-                                                            <svg
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                fill="none"
-                                                                viewBox="0 0 24 24"
-                                                                strokeWidth={1.5}
-                                                                stroke="currentColor"
-                                                                className="size-2 md:size-3 lg:size-4"
-                                                            >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                                                                />
-                                                            </svg>
-                                                            {post?.added_at}
+                                                            {post?.location_name && (
+                                                                <span className="text-xs text-white/80">
+                                                                    {post?.location_name
+                                                                        ? post.location_name
+                                                                              .length > 7
+                                                                            ? post.location_name.slice(
+                                                                                  0,
+                                                                                  7,
+                                                                              )
+                                                                            : post.location_name
+                                                                        : ''}
+                                                                    {post?.location_name ? ' ' : ''}
+                                                                    {post?.added_at
+                                                                        ? post.added_at + ' '
+                                                                        : ''}
+                                                                    {post?.created_at_time || ''}
+                                                                </span>
+                                                            )}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -1735,10 +2011,10 @@ export default function index({ google_map_api_key, search_history }) {
                                     return (
                                         <article
                                             key={index}
-                                            className="group relative mb-1 cursor-pointer break-inside-avoid overflow-hidden rounded-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                                            className="relative mb-1 overflow-hidden transition-all duration-300 rounded-none shadow-md cursor-pointer group break-inside-avoid hover:-translate-y-1 hover:shadow-xl"
                                             onClick={() => {
-                                                // Optional: handle click to open details
-                                                console.log('Open smartphone:', smartphone.slug);
+                                                setSmartphoneViewerBasedOnWidth(windowSize);
+                                                setViewableSmartphone(smartphone);
                                             }}
                                         >
                                             <div className="relative">
@@ -1746,17 +2022,31 @@ export default function index({ google_map_api_key, search_history }) {
                                                     src={smartphone.images?.[0]}
                                                     alt={smartphone.name}
                                                     loading="lazy"
-                                                    className="w-full object-cover transition-all duration-500 group-hover:scale-105"
+                                                    className="object-cover w-full transition-all duration-500 group-hover:scale-105"
                                                 />
 
-                                                {/* Overlay */}
-                                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-                                                    <h2 className="line-clamp-1 text-sm font-semibold text-white drop-shadow-lg">
-                                                        {smartphone.name} ({smartphone.capacity})
-                                                    </h2>
+                                                <div className="absolute left-3 top-3">
+                                                    <span className="text-white drop-shadow-md">
+                                                        {smartphone?.tag}
+                                                    </span>
+                                                </div>
 
-                                                    <div className="mt-1 flex items-center justify-between text-[10px] text-white opacity-90">
-                                                        <span>{smartphone.tag}</span>
+                                                {/* Overlay */}
+                                                <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/70 to-transparent">
+                                                    <div className="mt-2 flex items-center justify-between text-[7px] font-bold text-gray-200 drop-shadow-sm sm:text-[7px] md:text-[8px] lg:text-xs">
+                                                        <span className="text-white drop-shadow-md">
+                                                            {smartphone.name.length > 20
+                                                                ? smartphone.name.slice(0, 20) +
+                                                                  '...'
+                                                                : smartphone.name}{' '}
+                                                            (
+                                                            {smartphone.capacity.length > 10
+                                                                ? smartphone.capacity.slice(0, 10) +
+                                                                  '...'
+                                                                : smartphone.capacity}
+                                                            )
+                                                        </span>
+
                                                         <span>
                                                             {smartphone.selling_info?.total_price
                                                                 ? `${currency?.symbol} ${smartphone.selling_info.total_price}`
@@ -1773,8 +2063,147 @@ export default function index({ google_map_api_key, search_history }) {
                             {posts?.length === 0 &&
                                 (Object.keys(products || {}).length === 0 ||
                                     Object.values(products).every((arr) => arr.length === 0)) && (
-                                    <div className="flex items-center justify-center rounded-lg bg-gradient-to-r from-purple-400 via-blue-400 to-indigo-600 py-5 text-center text-white dark:from-gray-500 dark:via-gray-600 dark:to-gray-800 dark:text-white/80">
-                                        <h1 className="text-md font-bold">No Data Found</h1>
+                                    <div className="flex items-center justify-center px-6 py-12 bg-white border border-gray-200 shadow-sm rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
+                                        <div className="flex flex-col items-center gap-4">
+                                            {/* Custom No Content SVG */}
+                                            <div className="flex items-center justify-center w-20 h-20">
+                                                <svg
+                                                    viewBox="0 0 120 120"
+                                                    className="w-full h-full text-gray-400 dark:text-gray-500"
+                                                    fill="none"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                >
+                                                    {/* Background Circle */}
+                                                    <circle
+                                                        cx="60"
+                                                        cy="60"
+                                                        r="50"
+                                                        stroke="currentColor"
+                                                        strokeWidth="2"
+                                                        strokeDasharray="8 4"
+                                                        opacity="0.3"
+                                                    />
+
+                                                    {/* Document/Post Icon */}
+                                                    <rect
+                                                        x="25"
+                                                        y="30"
+                                                        width="25"
+                                                        height="32"
+                                                        rx="3"
+                                                        stroke="currentColor"
+                                                        strokeWidth="2"
+                                                        fill="none"
+                                                    />
+                                                    <line
+                                                        x1="30"
+                                                        y1="38"
+                                                        x2="45"
+                                                        y2="38"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                        opacity="0.6"
+                                                    />
+                                                    <line
+                                                        x1="30"
+                                                        y1="43"
+                                                        x2="42"
+                                                        y2="43"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                        opacity="0.6"
+                                                    />
+                                                    <line
+                                                        x1="30"
+                                                        y1="48"
+                                                        x2="45"
+                                                        y2="48"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                        opacity="0.6"
+                                                    />
+
+                                                    {/* Product/Box Icon */}
+                                                    <rect
+                                                        x="70"
+                                                        y="35"
+                                                        width="22"
+                                                        height="22"
+                                                        rx="2"
+                                                        stroke="currentColor"
+                                                        strokeWidth="2"
+                                                        fill="none"
+                                                    />
+                                                    <line
+                                                        x1="70"
+                                                        y1="42"
+                                                        x2="92"
+                                                        y2="42"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                        opacity="0.6"
+                                                    />
+                                                    <line
+                                                        x1="81"
+                                                        y1="35"
+                                                        x2="81"
+                                                        y2="57"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                        opacity="0.6"
+                                                    />
+
+                                                    {/* Search/Magnifying Glass */}
+                                                    <circle
+                                                        cx="60"
+                                                        cy="75"
+                                                        r="12"
+                                                        stroke="currentColor"
+                                                        strokeWidth="2"
+                                                        fill="none"
+                                                    />
+                                                    <line
+                                                        x1="68"
+                                                        y1="83"
+                                                        x2="78"
+                                                        y2="93"
+                                                        stroke="currentColor"
+                                                        strokeWidth="2"
+                                                        strokeLinecap="round"
+                                                    />
+
+                                                    {/* X mark inside search */}
+                                                    <line
+                                                        x1="55"
+                                                        y1="70"
+                                                        x2="65"
+                                                        y2="80"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                        strokeLinecap="round"
+                                                    />
+                                                    <line
+                                                        x1="65"
+                                                        y1="70"
+                                                        x2="55"
+                                                        y2="80"
+                                                        stroke="currentColor"
+                                                        strokeWidth="1.5"
+                                                        strokeLinecap="round"
+                                                    />
+                                                </svg>
+                                            </div>
+
+                                            {/* Text */}
+                                            <div className="text-center">
+                                                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                                                    No Content Found
+                                                </h3>
+                                                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                                                    No posts or products Found
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
 
@@ -1784,13 +2213,13 @@ export default function index({ google_map_api_key, search_history }) {
                                     {nextPageUrl && (
                                         <div
                                             ref={loaderRef}
-                                            className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 dark:text-white/80"
+                                            className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80"
                                         >
                                             <div className="flex items-center justify-center">
                                                 <div role="status">
                                                     <svg
                                                         aria-hidden="true"
-                                                        className="h-5 w-5 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"
+                                                        className="w-5 h-5 text-gray-200 animate-spin fill-blue-600 dark:text-gray-600"
                                                         viewBox="0 0 100 101"
                                                         fill="none"
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -1819,303 +2248,317 @@ export default function index({ google_map_api_key, search_history }) {
                     {viewablePost != '' &&
                         isDesktopPostViewer &&
                         createPortal(
-                            <div className="fixed inset-0 z-50 bg-white dark:bg-deepcharcoal">
-                                <div
-                                    className="fixed inset-0 backdrop-blur-[32px]"
-                                    onClick={() => {
-                                        setViewablePost('');
-                                        window.history.replaceState(
-                                            {},
-                                            '',
-                                            window.location.pathname,
-                                        );
-                                    }}
-                                ></div>
+                            <>
+                                <div className="fixed inset-0 left-0 z-50 bg-white dark:bg-zinc-950 lg:left-20">
+                                    <div className="w-full mx-auto lg:w-1/2">
+                                        <GlobalSearch
+                                            mainPage={true}
+                                            search_history={search_history}
+                                            additional_filters={false}
+                                            filters={false}
+                                        />
+                                    </div>
 
-                                {/* Modal content */}
-                                <div className="relative z-10 h-screen overflow-hidden p-6 shadow-xl scrollbar-none sm:p-8 lg:overflow-y-auto">
-                                    {windowSize.width > 1024 && viewablePost != '' && (
-                                        <>
-                                            {/* Close Button */}
-                                            <div className="flex items-center justify-end">
-                                                <button
-                                                    onClick={() => {
-                                                        setViewablePost('');
-
-                                                        window.history.replaceState(
-                                                            {},
-                                                            '',
-                                                            window.location.pathname,
-                                                        );
-
-                                                        setIsDesktopPostViewer(false);
-                                                        setIsMobilePostViewer(false);
-                                                    }}
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        strokeWidth={1.5}
-                                                        stroke="currentColor"
-                                                        className="size-6 hover:text-black/80 dark:text-white/80 dark:hover:text-white"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            d="M6 18 18 6M6 6l12 12"
-                                                        />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </>
-                                    )}
-
-                                    {/* Scrollable Posts  */}
-
-                                    {/* Post Content */}
-                                    <div className="flex flex-col justify-center lg:flex-row">
-                                        {/* Media Section - Shows on top for mobile, left for desktop */}
-                                        <div
-                                            className={`translate-y-3 transform transition-all duration-500 ease-in-out`}
-                                        >
+                                    <div className="relative h-[calc(100vh-60px)] overflow-y-auto pb-24 scrollbar-none">
+                                        <div className="flex flex-col min-h-full lg:flex-row">
                                             {((Array.isArray(viewablePost?.post_video_urls) &&
                                                 viewablePost.post_video_urls.length > 0) ||
                                                 (Array.isArray(viewablePost?.post_image_urls) &&
                                                     viewablePost.post_image_urls.length > 0)) && (
-                                                <PostMediaViewer
-                                                    viewablePost={viewablePost}
-                                                    selectedMediaIndex={selectedMediaIndex}
-                                                    onSelectMediaIndex={setSelectedMediaIndex}
-                                                    setMediaItems={setMediaItems}
-                                                    mediaThumbRefs={mediaThumbRefs}
-                                                />
+                                                <div className="w-full flex-shrink-0 p-2 lg:w-[45%] lg:p-4">
+                                                    <div className="transition-all duration-500 ease-in-out transform translate-y-3">
+                                                        <PostMediaViewer
+                                                            viewablePost={viewablePost}
+                                                            selectedMediaIndex={selectedMediaIndex}
+                                                            onSelectMediaIndex={
+                                                                setSelectedMediaIndex
+                                                            }
+                                                            setMediaItems={setMediaItems}
+                                                            mediaThumbRefs={mediaThumbRefs}
+                                                        />
+                                                    </div>
+                                                </div>
                                             )}
-                                        </div>
 
-                                        {/* Content Section */}
-                                        {viewablePost && (
-                                            <div
-                                                className={`w-full bg-transparent ${
-                                                    (Array.isArray(viewablePost?.post_video_urls) &&
-                                                        viewablePost.post_video_urls.length > 0) ||
-                                                    (Array.isArray(viewablePost?.post_image_urls) &&
-                                                        viewablePost.post_image_urls.length > 0)
-                                                        ? 'lg:w-1/2' // when media exists, take half width on desktop
-                                                        : 'lg:w-[80%]' // when no media, take full width
-                                                }`}
-                                            >
-                                                {((!viewablePost?.post_video_urls?.length &&
-                                                    !viewablePost?.post_image_urls?.length) ||
-                                                    windowSize.width > 1024) && (
-                                                    <div className="mx-auto w-full space-y-4 p-2 md:px-10">
-                                                        {/* Author Header */}
-                                                        <div className="flex flex-wrap items-center justify-between space-x-3 space-y-4">
-                                                            <div className="flex items-center">
-                                                                <span className="text-[13px] font-semibold dark:text-white/80 sm:text-[16px] md:text-[17px] lg:text-[20px]">
-                                                                    {viewablePost?.user?.name
-                                                                        .length > 30
-                                                                        ? viewablePost?.user?.name.substring(
-                                                                              0,
-                                                                              30,
-                                                                          ) + '...'
-                                                                        : viewablePost?.user?.name}
-
-                                                                    {!viewablePost?.user?.name &&
-                                                                        'User'}
+                                            {viewablePost && (
+                                                <div
+                                                    className={`w-full bg-transparent ${
+                                                        (Array.isArray(
+                                                            viewablePost?.post_video_urls,
+                                                        ) &&
+                                                            viewablePost.post_video_urls.length >
+                                                                0) ||
+                                                        (Array.isArray(
+                                                            viewablePost?.post_image_urls,
+                                                        ) &&
+                                                            viewablePost.post_image_urls.length > 0)
+                                                            ? 'lg:w-1/2'
+                                                            : 'lg:w-full'
+                                                    }`}
+                                                >
+                                                    {((!viewablePost?.post_video_urls?.length &&
+                                                        !viewablePost?.post_image_urls?.length) ||
+                                                        windowSize.width > 1024) && (
+                                                        <div className="w-full p-4 mx-auto space-y-4 md:px-10 lg:pl-6 lg:pr-10">
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-lg font-medium dark:text-white/80">
+                                                                    <div>
+                                                                        {viewablePost?.tag && (
+                                                                            <button
+                                                                                onClick={() => {
+                                                                                    navigateToHashtag(
+                                                                                        viewablePost?.tag,
+                                                                                    );
+                                                                                }}
+                                                                            >
+                                                                                {viewablePost?.tag}
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
                                                                 </span>
-                                                            </div>
 
-                                                            <div className="flex cursor-pointer items-center gap-2">
-                                                                {/* QR Button */}
-                                                                <button
-                                                                    onClick={() =>
-                                                                        setShowQrCode(true)
+                                                                <div
+                                                                    className="relative"
+                                                                    ref={
+                                                                        postDesktopViewerActionDropdownRef
                                                                     }
                                                                 >
-                                                                    <svg
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                        fill="none"
-                                                                        viewBox="0 0 24 24"
-                                                                        strokeWidth={1.5}
-                                                                        stroke="currentColor"
-                                                                        className="size-5 hover:text-black/80 dark:text-white/80 dark:hover:text-white sm:size-4 md:size-5 lg:size-6"
-                                                                    >
-                                                                        <path
-                                                                            strokeLinecap="round"
-                                                                            strokeLinejoin="round"
-                                                                            d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z"
-                                                                        />
-                                                                        <path
-                                                                            strokeLinecap="round"
-                                                                            strokeLinejoin="round"
-                                                                            d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z"
-                                                                        />
-                                                                    </svg>
-                                                                </button>
-
-                                                                {/* Bookmark Button */}
-                                                                {auth?.user && (
                                                                     <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            router.put(
-                                                                                route(
-                                                                                    'website.posts.bookmark',
-                                                                                    viewablePost?.id,
-                                                                                ),
-                                                                                {
-                                                                                    post_id:
-                                                                                        viewablePost?.id,
-                                                                                },
-                                                                                {
-                                                                                    onSuccess:
-                                                                                        () => {
-                                                                                            viewablePost.is_bookmarked =
-                                                                                                !viewablePost.is_bookmarked;
-                                                                                        },
-                                                                                    onError: (e) =>
-                                                                                        toast.error(
-                                                                                            e.message,
-                                                                                        ),
-                                                                                },
-                                                                            );
-                                                                        }}
+                                                                        data-post-actions-button
                                                                     >
                                                                         <svg
                                                                             xmlns="http://www.w3.org/2000/svg"
-                                                                            fill={
-                                                                                viewablePost?.is_bookmarked
-                                                                                    ? isDarkMode
-                                                                                        ? '#fff'
-                                                                                        : '#0340D1'
-                                                                                    : 'none'
-                                                                            }
-                                                                            stroke={
-                                                                                viewablePost?.is_bookmarked
-                                                                                    ? isDarkMode
-                                                                                        ? '#fff'
-                                                                                        : '#0340D1'
-                                                                                    : 'currentColor'
-                                                                            }
-                                                                            strokeWidth={1.5}
+                                                                            fill="none"
                                                                             viewBox="0 0 24 24"
-                                                                            className="size-5 hover:text-black/80 dark:text-white/80 dark:hover:text-white sm:size-4 md:size-5 lg:size-6"
+                                                                            strokeWidth={1.5}
+                                                                            stroke="currentColor"
+                                                                            className="size-5 hover:text-black/80 dark:text-white/80 dark:hover:text-white sm:size-4 md:size-5 lg:size-8"
                                                                         >
                                                                             <path
                                                                                 strokeLinecap="round"
                                                                                 strokeLinejoin="round"
-                                                                                d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"
+                                                                                d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
                                                                             />
                                                                         </svg>
                                                                     </button>
-                                                                )}
+                                                                    {showPostDesktopActionsDropdown && (
+                                                                        <div
+                                                                            data-post-actions-dropdown
+                                                                            className="absolute right-0 z-50 w-48 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg top-full dark:border-zinc-800 dark:bg-deepcharcoal"
+                                                                        >
+                                                                            <div className="py-1">
+                                                                                <button
+                                                                                    onClick={() => {
+                                                                                        setShowQrCode(
+                                                                                            true,
+                                                                                        );
+                                                                                        setShowPostDesktopActionsDropdown(
+                                                                                            false,
+                                                                                        );
+                                                                                    }}
+                                                                                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-zinc-800"
+                                                                                >
+                                                                                    <svg
+                                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                                        fill="none"
+                                                                                        viewBox="0 0 24 24"
+                                                                                        strokeWidth={
+                                                                                            1.5
+                                                                                        }
+                                                                                        stroke="currentColor"
+                                                                                        className="size-5"
+                                                                                    >
+                                                                                        <path
+                                                                                            strokeLinecap="round"
+                                                                                            strokeLinejoin="round"
+                                                                                            d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z"
+                                                                                        />
+                                                                                        <path
+                                                                                            strokeLinecap="round"
+                                                                                            strokeLinejoin="round"
+                                                                                            d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z"
+                                                                                        />
+                                                                                    </svg>
+                                                                                    <span>
+                                                                                        QR Code
+                                                                                    </span>
+                                                                                </button>
 
-                                                                {/* Copy Link Button */}
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        const url =
-                                                                            route('home') +
-                                                                            generateURL(
-                                                                                viewablePost,
-                                                                            );
-                                                                        navigator.clipboard.writeText(
-                                                                            url.trim(),
-                                                                        );
-                                                                        toast.success(
-                                                                            'Copied to clipboard',
-                                                                        );
-                                                                    }}
-                                                                >
+                                                                                {auth?.user && (
+                                                                                    <button
+                                                                                        onClick={(
+                                                                                            e,
+                                                                                        ) => {
+                                                                                            e.stopPropagation();
+                                                                                            router.put(
+                                                                                                route(
+                                                                                                    'website.posts.bookmark',
+                                                                                                    viewablePost?.id,
+                                                                                                ),
+                                                                                                {
+                                                                                                    post_id:
+                                                                                                        viewablePost?.id,
+                                                                                                },
+                                                                                                {
+                                                                                                    onSuccess:
+                                                                                                        () => {
+                                                                                                            viewablePost.is_bookmarked =
+                                                                                                                !viewablePost.is_bookmarked;
+                                                                                                            setShowPostDesktopActionsDropdown(
+                                                                                                                false,
+                                                                                                            );
+                                                                                                            setBookmarkStatusChanged(
+                                                                                                                true,
+                                                                                                            );
+                                                                                                        },
+                                                                                                    onError:
+                                                                                                        (
+                                                                                                            e,
+                                                                                                        ) => {
+                                                                                                            setShowErrorMessage(
+                                                                                                                true,
+                                                                                                            );
+                                                                                                            setErrorMessage(
+                                                                                                                e.message,
+                                                                                                            );
+                                                                                                        },
+                                                                                                },
+                                                                                            );
+                                                                                        }}
+                                                                                        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-zinc-800"
+                                                                                    >
+                                                                                        <svg
+                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                            fill={
+                                                                                                viewablePost?.is_bookmarked
+                                                                                                    ? isDarkMode
+                                                                                                        ? '#fff'
+                                                                                                        : '#0340D1'
+                                                                                                    : 'none'
+                                                                                            }
+                                                                                            stroke={
+                                                                                                viewablePost?.is_bookmarked
+                                                                                                    ? isDarkMode
+                                                                                                        ? '#fff'
+                                                                                                        : '#0340D1'
+                                                                                                    : 'currentColor'
+                                                                                            }
+                                                                                            strokeWidth={
+                                                                                                1.5
+                                                                                            }
+                                                                                            viewBox="0 0 24 24"
+                                                                                            className="size-5"
+                                                                                        >
+                                                                                            <path
+                                                                                                strokeLinecap="round"
+                                                                                                strokeLinejoin="round"
+                                                                                                d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"
+                                                                                            />
+                                                                                        </svg>
+                                                                                        <span>
+                                                                                            {viewablePost?.is_bookmarked
+                                                                                                ? 'Remove Bookmark'
+                                                                                                : 'Bookmark'}
+                                                                                        </span>
+                                                                                    </button>
+                                                                                )}
+
+                                                                                <button
+                                                                                    onClick={(
+                                                                                        e,
+                                                                                    ) => {
+                                                                                        const url =
+                                                                                            route(
+                                                                                                'home',
+                                                                                            ) +
+                                                                                            generateURL(
+                                                                                                viewablePost,
+                                                                                            );
+                                                                                        navigator.clipboard.writeText(
+                                                                                            url.trim(),
+                                                                                        );
+                                                                                        setLinkCopied(
+                                                                                            true,
+                                                                                        );
+                                                                                        setShowPostDesktopActionsDropdown(
+                                                                                            false,
+                                                                                        );
+                                                                                    }}
+                                                                                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-zinc-800"
+                                                                                >
+                                                                                    <svg
+                                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                                        fill="none"
+                                                                                        viewBox="0 0 24 24"
+                                                                                        strokeWidth={
+                                                                                            1.5
+                                                                                        }
+                                                                                        stroke="currentColor"
+                                                                                        className="size-5"
+                                                                                    >
+                                                                                        <path
+                                                                                            strokeLinecap="round"
+                                                                                            strokeLinejoin="round"
+                                                                                            d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75"
+                                                                                        />
+                                                                                    </svg>
+                                                                                    <span>
+                                                                                        Copy Link
+                                                                                    </span>
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            <div
+                                                                className="prose max-h-none min-h-[400px] max-w-[90vw] break-words text-[15px] text-gray-800 dark:prose-invert dark:text-white/80 sm:text-[16px] md:text-[17px] lg:max-w-none lg:text-[20px]"
+                                                                dangerouslySetInnerHTML={{
+                                                                    __html: viewablePost?.content,
+                                                                }}
+                                                            />
+
+                                                            <div className="flex flex-wrap gap-2 my-2 text-gray-700 text-md dark:text-white/80">
+                                                                <span className="flex items-center gap-2 p-2 bg-gray-200 rounded-full dark:bg-gray-900">
                                                                     <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
                                                                         fill="none"
                                                                         viewBox="0 0 24 24"
                                                                         strokeWidth={1.5}
                                                                         stroke="currentColor"
-                                                                        className="size-5 hover:text-black/80 dark:text-white/80 dark:hover:text-white sm:size-4 md:size-5 lg:size-6"
+                                                                        className="size-5"
                                                                     >
                                                                         <path
                                                                             strokeLinecap="round"
                                                                             strokeLinejoin="round"
-                                                                            d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75"
+                                                                            d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
                                                                         />
                                                                     </svg>
-                                                                </button>
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Post Content */}
-                                                        <p className="mt-2 whitespace-normal break-words text-[15px] font-semibold text-gray-800 dark:text-white/80 sm:text-[16px] md:text-[17px] lg:text-[20px]">
-                                                            {viewablePost?.title}
-                                                        </p>
-
-                                                        <div
-                                                            className="prose max-h-[400px] max-w-[70vw] overflow-auto break-words text-[15px] text-gray-800 dark:prose-invert dark:text-white/80 sm:text-[16px] md:text-[17px] lg:text-[20px]"
-                                                            dangerouslySetInnerHTML={{
-                                                                __html: viewablePost?.content,
-                                                            }}
-                                                        />
-
-                                                        {/* Tag */}
-                                                        <div>
-                                                            {viewablePost?.tag && (
-                                                                <button
-                                                                    onClick={() => {
-                                                                        navigateToHashtag(
-                                                                            viewablePost?.tag,
-                                                                        );
-                                                                    }}
-                                                                    className="text-[10px] font-semibold text-indigo-600 dark:text-white/80 sm:text-[11px] md:text-[12px] lg:text-[15px]"
-                                                                >
-                                                                    {viewablePost?.tag}
-                                                                </button>
-                                                            )}
-                                                        </div>
-
-                                                        <hr className="border-gray-200 dark:border-gray-700" />
-
-                                                        {/* Post Meta Info */}
-                                                        <div className="my-2 flex flex-wrap gap-2 text-[10px] text-gray-700 dark:text-white/80 sm:text-[11px] md:text-[12px] lg:text-[15px]">
-                                                            <span className="rounded-full bg-gray-100 p-2 dark:bg-gray-800/70">
-                                                                {viewablePost?.added_at}{' '}
-                                                                {viewablePost?.created_at_time}
-                                                            </span>
-
-                                                            {viewablePost?.location_name && (
-                                                                <span className="rounded-full bg-gray-100 p-2 dark:bg-gray-800/70">
-                                                                    {viewablePost?.location_name}
+                                                                    <span>
+                                                                        {viewablePost?.user?.name
+                                                                            .length > 15
+                                                                            ? viewablePost?.user?.name.substring(
+                                                                                  0,
+                                                                                  15,
+                                                                              ) + '...'
+                                                                            : viewablePost?.user
+                                                                                  ?.name ||
+                                                                              'Unknown User'}
+                                                                    </span>
                                                                 </span>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
+                                                            </div>
 
-                                        {/* Scrollable Posts  */}
-                                        {windowSize.width > 1024 && (
-                                            <PostsGrid
-                                                posts={posts}
-                                                onSelect={(post) => {
-                                                    setViewablePost(post);
-                                                    window.history.replaceState(
-                                                        {},
-                                                        '',
-                                                        generateURL(post),
-                                                    );
-                                                }}
-                                                selectedPostIndex={selectedPostIndex}
-                                                onSelectIndex={setSelectedPostIndex}
-                                                nextPageUrl={nextPageUrl}
-                                                fetchMorePosts={fetchMorePostsAndProducts}
-                                                fetchSinglePost={fetchSinglePost}
-                                            />
-                                        )}
+                                                            <div className="h-32"></div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>,
-                            document.body,
+                            </>,
+                            document.getElementById('modal-root') || document.body,
                         )}
 
                     {/* Mobile Post View */}
@@ -2130,7 +2573,7 @@ export default function index({ google_map_api_key, search_history }) {
                                     {/* Scrollable Container */}
                                     <div
                                         tabIndex={0}
-                                        className="h-screen w-full snap-y snap-mandatory overflow-y-scroll scrollbar-none"
+                                        className="w-full h-screen overflow-y-scroll snap-y snap-mandatory scrollbar-none"
                                         style={{
                                             overscrollBehavior: 'contain',
                                             scrollSnapType: 'y mandatory',
@@ -2217,7 +2660,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                 <button
                                                                     ref={elipsisButtonRef}
                                                                     data-elipsis-button
-                                                                    className="rounded-full p-1 hover:bg-gray-300/20"
+                                                                    className="p-1 rounded-full hover:bg-gray-300/20"
                                                                 >
                                                                     <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -2251,7 +2694,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                 className="absolute right-0 top-full z-[99999] mt-2 w-36 rounded-lg border border-gray-900 bg-deepcharcoal shadow-xl sm:w-48"
                                                                             >
                                                                                 <ul
-                                                                                    className="overflow-y-scroll py-1 text-sm text-gray-200 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white"
+                                                                                    className="py-1 overflow-y-scroll text-sm text-gray-200 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white"
                                                                                     style={{
                                                                                         maxHeight:
                                                                                             '180px',
@@ -2269,7 +2712,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                                     false,
                                                                                                 );
                                                                                             }}
-                                                                                            className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
+                                                                                            className="flex items-center w-full gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
                                                                                         >
                                                                                             <svg
                                                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -2299,7 +2742,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                     {auth?.user && (
                                                                                         <li>
                                                                                             <button
-                                                                                                className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
+                                                                                                className="flex items-center w-full gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
                                                                                                 onClick={(
                                                                                                     e,
                                                                                                 ) => {
@@ -2318,14 +2761,23 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                                                 () => {
                                                                                                                     post.is_bookmarked =
                                                                                                                         !post.is_bookmarked;
+
+                                                                                                                    setBookmarkStatusChanged(
+                                                                                                                        true,
+                                                                                                                    );
                                                                                                                 },
                                                                                                             onError:
                                                                                                                 (
                                                                                                                     e,
                                                                                                                 ) => {
-                                                                                                                    toast.error(
-                                                                                                                        e.message,
-                                                                                                                    );
+                                                                                                                    {
+                                                                                                                        setShowErrorMessage(
+                                                                                                                            true,
+                                                                                                                        );
+                                                                                                                        setErrorMessage(
+                                                                                                                            e.message,
+                                                                                                                        );
+                                                                                                                    }
                                                                                                                 },
 
                                                                                                             onFinish:
@@ -2365,7 +2817,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                                                     <li>
                                                                                         <button
-                                                                                            className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
+                                                                                            className="flex items-center w-full gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
                                                                                             onClick={(
                                                                                                 e,
                                                                                             ) => {
@@ -2380,8 +2832,8 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                                     url.trim(),
                                                                                                 );
 
-                                                                                                toast.success(
-                                                                                                    'Copied to clipboard',
+                                                                                                setLinkCopied(
+                                                                                                    true,
                                                                                                 );
 
                                                                                                 setElipsisShowDropdown(
@@ -2499,7 +2951,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                     <button
                                                                         ref={elipsisButtonRef}
                                                                         data-elipsis-button
-                                                                        className="rounded-full p-1 hover:bg-gray-300/20"
+                                                                        className="p-1 rounded-full hover:bg-gray-300/20"
                                                                     >
                                                                         <svg
                                                                             xmlns="http://www.w3.org/2000/svg"
@@ -2533,7 +2985,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                     className="absolute right-0 top-full z-[99999] mt-2 w-36 rounded-lg border border-gray-900 bg-deepcharcoal shadow-xl sm:w-48"
                                                                                 >
                                                                                     <ul
-                                                                                        className="overflow-y-scroll py-1 text-sm text-gray-200 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white"
+                                                                                        className="py-1 overflow-y-scroll text-sm text-gray-200 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white"
                                                                                         style={{
                                                                                             maxHeight:
                                                                                                 '180px',
@@ -2551,7 +3003,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                                         false,
                                                                                                     );
                                                                                                 }}
-                                                                                                className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
+                                                                                                className="flex items-center w-full gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
                                                                                             >
                                                                                                 <svg
                                                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -2582,7 +3034,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                         {auth?.user && (
                                                                                             <li>
                                                                                                 <button
-                                                                                                    className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
+                                                                                                    className="flex items-center w-full gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
                                                                                                     onClick={(
                                                                                                         e,
                                                                                                     ) => {
@@ -2601,14 +3053,23 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                                                     () => {
                                                                                                                         relatedViewer.is_bookmarked =
                                                                                                                             !relatedViewer.is_bookmarked;
+
+                                                                                                                        setBookmarkStatusChanged(
+                                                                                                                            true,
+                                                                                                                        );
                                                                                                                     },
                                                                                                                 onError:
                                                                                                                     (
                                                                                                                         e,
                                                                                                                     ) => {
-                                                                                                                        toast.error(
-                                                                                                                            e.message,
-                                                                                                                        );
+                                                                                                                        {
+                                                                                                                            setShowErrorMessage(
+                                                                                                                                true,
+                                                                                                                            );
+                                                                                                                            setErrorMessage(
+                                                                                                                                e.message,
+                                                                                                                            );
+                                                                                                                        }
                                                                                                                     },
 
                                                                                                                 onFinish:
@@ -2648,7 +3109,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                                                         <li>
                                                                                             <button
-                                                                                                className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
+                                                                                                className="flex items-center w-full gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
                                                                                                 onClick={(
                                                                                                     e,
                                                                                                 ) => {
@@ -2663,8 +3124,8 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                                         url.trim(),
                                                                                                     );
 
-                                                                                                    toast.success(
-                                                                                                        'Copied to clipboard',
+                                                                                                    setLinkCopied(
+                                                                                                        true,
                                                                                                     );
 
                                                                                                     setElipsisShowDropdown(
@@ -2731,7 +3192,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                             e.stopPropagation();
                                                             handleHorizontalScroll(post, e);
                                                         }}
-                                                        className="horizontal-scroll-container relative flex h-full w-full select-none snap-x snap-mandatory overflow-x-scroll scrollbar-none"
+                                                        className="relative flex w-full h-full overflow-x-scroll select-none horizontal-scroll-container snap-x snap-mandatory scrollbar-none"
                                                         style={{
                                                             scrollSnapType: 'x mandatory',
                                                             overscrollBehaviorX: 'auto',
@@ -2741,8 +3202,8 @@ export default function index({ google_map_api_key, search_history }) {
                                                             scrollBehavior: 'smooth',
                                                         }}
                                                     >
-                                                        <div className="relative h-full min-w-full flex-shrink-0 snap-start snap-always">
-                                                            <div className="relative flex h-full w-full items-center justify-center text-white">
+                                                        <div className="relative flex-shrink-0 h-full min-w-full snap-start snap-always">
+                                                            <div className="relative flex items-center justify-center w-full h-full text-white">
                                                                 {Array.isArray(
                                                                     post.post_image_urls,
                                                                 ) &&
@@ -2752,7 +3213,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                             post.post_image_urls[0]
                                                                         }
                                                                         alt="Main Post"
-                                                                        className="absolute inset-0 z-10 h-full w-full object-cover"
+                                                                        className="absolute inset-0 z-10 object-cover w-full h-full"
                                                                     />
                                                                 ) : (
                                                                     Array.isArray(
@@ -2768,7 +3229,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                             thumbnail={
                                                                                 videoThumbnail
                                                                             }
-                                                                            className="relative z-10 max-h-full max-w-full object-contain"
+                                                                            className="relative z-10 object-contain max-w-full max-h-full"
                                                                         />
                                                                     )
                                                                 )}
@@ -2779,9 +3240,9 @@ export default function index({ google_map_api_key, search_history }) {
                                                             relatedPosts.map((related, i) => (
                                                                 <div
                                                                     key={related.id || i}
-                                                                    className="relative h-full min-w-full flex-shrink-0 snap-start snap-always"
+                                                                    className="relative flex-shrink-0 h-full min-w-full snap-start snap-always"
                                                                 >
-                                                                    <div className="relative flex h-full w-full items-center justify-center text-white">
+                                                                    <div className="relative flex items-center justify-center w-full h-full text-white">
                                                                         {Array.isArray(
                                                                             related.post_image_urls,
                                                                         ) &&
@@ -2793,7 +3254,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                         .post_image_urls[0]
                                                                                 }
                                                                                 alt="Related Post"
-                                                                                className="absolute inset-0 z-10 h-full w-full object-cover"
+                                                                                className="absolute inset-0 z-10 object-cover w-full h-full"
                                                                             />
                                                                         ) : (
                                                                             Array.isArray(
@@ -2809,7 +3270,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                     thumbnail={
                                                                                         videoThumbnail
                                                                                     }
-                                                                                    className="relative z-10 max-h-full max-w-full object-contain"
+                                                                                    className="relative z-10 object-contain max-w-full max-h-full"
                                                                                 />
                                                                             )
                                                                         )}
@@ -2851,7 +3312,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                         >
                                                             {/* Hashtag */}
                                                             <div
-                                                                className="mb-2 flex items-center justify-end space-x-2"
+                                                                className="flex items-center justify-end mb-2 space-x-2"
                                                                 onClick={() => {
                                                                     setShowDetailsPostIds((prev) =>
                                                                         prev.includes(post.id)
@@ -2946,10 +3407,10 @@ export default function index({ google_map_api_key, search_history }) {
                                                             {showDetailsPostIds.includes(
                                                                 post.id,
                                                             ) && (
-                                                                <div className="mb-0 mt-3 flex items-center justify-between">
+                                                                <div className="flex items-center justify-between mt-3 mb-0">
                                                                     {/* Username */}
-                                                                    <div className="mb-0 flex items-center space-x-2">
-                                                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-gray-900">
+                                                                    <div className="flex items-center mb-0 space-x-2">
+                                                                        <div className="flex items-center justify-center w-8 h-8 text-sm text-gray-900 bg-white rounded-full">
                                                                             {post.user?.avatar ||
                                                                                 'U'}
                                                                         </div>
@@ -2968,7 +3429,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                     </div>
 
                                                                     <button
-                                                                        className="rounded-md bg-indigo-600 p-1 text-sm font-semibold hover:bg-indigo-400/80"
+                                                                        className="p-1 text-sm font-semibold bg-indigo-600 rounded-md hover:bg-indigo-400/80"
                                                                         onClick={() => {
                                                                             setIsMobilePostGallery(
                                                                                 true,
@@ -2997,9 +3458,9 @@ export default function index({ google_map_api_key, search_history }) {
                                                                     post.post_video_urls,
                                                                 ) &&
                                                                 post.post_video_urls.length < 1 && (
-                                                                    <div className="mt-3 flex items-center justify-between">
-                                                                        <div className="mb-0 flex items-center space-x-2">
-                                                                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-gray-900">
+                                                                    <div className="flex items-center justify-between mt-3">
+                                                                        <div className="flex items-center mb-0 space-x-2">
+                                                                            <div className="flex items-center justify-center w-8 h-8 text-sm text-gray-900 bg-white rounded-full">
                                                                                 {post.user
                                                                                     ?.avatar || 'U'}
                                                                             </div>
@@ -3019,7 +3480,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                         </div>
 
                                                                         <button
-                                                                            className="rounded-md bg-indigo-600 p-1 text-sm font-semibold hover:bg-indigo-400/80"
+                                                                            className="p-1 text-sm font-semibold bg-indigo-600 rounded-md hover:bg-indigo-400/80"
                                                                             onClick={() => {
                                                                                 setIsMobilePostGallery(
                                                                                     true,
@@ -3061,7 +3522,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                             >
                                                                 {/* Hashtag */}
                                                                 <div
-                                                                    className="mb-2 flex items-center justify-end space-x-2"
+                                                                    className="flex items-center justify-end mb-2 space-x-2"
                                                                     onClick={() => {
                                                                         setShowDetailsPostIds(
                                                                             (prev) =>
@@ -3172,10 +3633,10 @@ export default function index({ google_map_api_key, search_history }) {
                                                                 {showDetailsPostIds.includes(
                                                                     relatedViewer.id,
                                                                 ) && (
-                                                                    <div className="mb-0 mt-3 flex items-center justify-between">
+                                                                    <div className="flex items-center justify-between mt-3 mb-0">
                                                                         {/* Username */}
-                                                                        <div className="mb-0 flex items-center space-x-2">
-                                                                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-gray-900">
+                                                                        <div className="flex items-center mb-0 space-x-2">
+                                                                            <div className="flex items-center justify-center w-8 h-8 text-sm text-gray-900 bg-white rounded-full">
                                                                                 {relatedViewer.user
                                                                                     ?.avatar || 'U'}
                                                                             </div>
@@ -3198,7 +3659,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                         </div>
 
                                                                         <button
-                                                                            className="rounded-md bg-indigo-600 p-1 text-sm font-semibold hover:bg-indigo-400/80"
+                                                                            className="p-1 text-sm font-semibold bg-indigo-600 rounded-md hover:bg-indigo-400/80"
                                                                             onClick={() => {
                                                                                 setIsMobilePostGallery(
                                                                                     true,
@@ -3229,9 +3690,9 @@ export default function index({ google_map_api_key, search_history }) {
                                                                     ) &&
                                                                     relatedViewer.post_video_urls
                                                                         .length < 1 && (
-                                                                        <div className="mt-3 flex items-center justify-between">
-                                                                            <div className="mb-0 flex items-center space-x-2">
-                                                                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-gray-900">
+                                                                        <div className="flex items-center justify-between mt-3">
+                                                                            <div className="flex items-center mb-0 space-x-2">
+                                                                                <div className="flex items-center justify-center w-8 h-8 text-sm text-gray-900 bg-white rounded-full">
                                                                                     {relatedViewer
                                                                                         .user
                                                                                         ?.avatar ||
@@ -3255,7 +3716,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                             </div>
 
                                                                             <button
-                                                                                className="rounded-md bg-indigo-600 p-1 text-sm font-semibold hover:bg-indigo-400/80"
+                                                                                className="p-1 text-sm font-semibold bg-indigo-600 rounded-md hover:bg-indigo-400/80"
                                                                                 onClick={() => {
                                                                                     setIsMobilePostGallery(
                                                                                         true,
@@ -3299,7 +3760,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                 className="absolute right-0 top-12 z-[9999] mt-2 w-36 rounded-lg border border-gray-900 bg-deepcharcoal shadow-xl sm:w-48"
                                             >
                                                 <ul
-                                                    className="overflow-y-scroll py-1 text-sm text-gray-200 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white"
+                                                    className="py-1 overflow-y-scroll text-sm text-gray-200 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white"
                                                     style={{ maxHeight: '180px' }}
                                                 >
                                                     <li>
@@ -3308,7 +3769,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                 setShowQrCode(true);
                                                                 setElipsisShowDropdown(false);
                                                             }}
-                                                            className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
+                                                            className="flex items-center w-full gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
                                                         >
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -3336,7 +3797,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                     {auth?.user && (
                                                         <li>
                                                             <button
-                                                                className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
+                                                                className="flex items-center w-full gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     router.put(
@@ -3352,9 +3813,16 @@ export default function index({ google_map_api_key, search_history }) {
                                                                             onSuccess: () => {
                                                                                 viewablePost.is_bookmarked =
                                                                                     !viewablePost.is_bookmarked;
+
+                                                                                setBookmarkStatusChanged(
+                                                                                    true,
+                                                                                );
                                                                             },
                                                                             onError: (e) => {
-                                                                                toast.error(
+                                                                                setShowErrorMessage(
+                                                                                    true,
+                                                                                );
+                                                                                setErrorMessage(
                                                                                     e.message,
                                                                                 );
                                                                             },
@@ -3393,7 +3861,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                     <li>
                                                         <button
-                                                            className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
+                                                            className="flex items-center w-full gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
                                                             onClick={(e) => {
                                                                 const url =
                                                                     route('home') +
@@ -3402,9 +3870,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                     url.trim(),
                                                                 );
 
-                                                                toast.success(
-                                                                    'Copied to clipboard',
-                                                                );
+                                                                setLinkCopied(true);
 
                                                                 setElipsisShowDropdown(false);
                                                             }}
@@ -3428,7 +3894,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                     </li>
 
                                                     <li>
-                                                        <div className="flex w-full flex-col items-start gap-1 px-4 py-2 transition-colors hover:text-white">
+                                                        <div className="flex flex-col items-start w-full gap-1 px-4 py-2 transition-colors hover:text-white">
                                                             <span className="rounded-full text-[10px]">
                                                                 Post Created Date
                                                             </span>
@@ -3449,7 +3915,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                                     <div className="relative z-10 flex h-[100dvh] w-full flex-col bg-deepcharcoal text-white">
                                         {/* Top Bar */}
-                                        <div className="flex items-center justify-between bg-deepcharcoal/50 px-4 py-3 backdrop-blur-sm">
+                                        <div className="flex items-center justify-between px-4 py-3 bg-deepcharcoal/50 backdrop-blur-sm">
                                             {/* Left side */}
                                             <div className="flex items-center space-x-2">
                                                 {/* Close */}
@@ -3496,7 +3962,7 @@ export default function index({ google_map_api_key, search_history }) {
                                             <div className="flex items-center space-x-3">
                                                 {/* Ellipsis */}
                                                 <button
-                                                    className="rounded-full p-1 hover:bg-gray-300/20"
+                                                    className="p-1 rounded-full hover:bg-gray-300/20"
                                                     ref={elipsisButtonRef}
                                                     data-elipsis-button
                                                 >
@@ -3506,7 +3972,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                         viewBox="0 0 24 24"
                                                         strokeWidth={1.5}
                                                         stroke="currentColor"
-                                                        className="h-6 w-6"
+                                                        className="w-6 h-6"
                                                     >
                                                         <path
                                                             strokeLinecap="round"
@@ -3521,11 +3987,11 @@ export default function index({ google_map_api_key, search_history }) {
                                         {/* Media Section (fixed height) */}
                                         {mediaItems.length > 0 && (
                                             <div className="relative h-[60vh] w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden scrollbar-none">
-                                                <div className="flex h-full w-full">
+                                                <div className="flex w-full h-full">
                                                     {mediaItems?.map((item, idx) => (
                                                         <div
                                                             key={idx}
-                                                            className="relative flex h-full w-full flex-shrink-0 snap-center snap-always items-center justify-center text-white"
+                                                            className="relative flex items-center justify-center flex-shrink-0 w-full h-full text-white snap-center snap-always"
                                                         >
                                                             {item.type === 'image' ? (
                                                                 <>
@@ -3537,7 +4003,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                     <img
                                                                         src={item.url}
                                                                         alt={`Media ${idx}`}
-                                                                        className="relative z-10 max-h-full max-w-full rounded-none object-contain"
+                                                                        className="relative z-10 object-contain max-w-full max-h-full rounded-none"
                                                                     />
                                                                 </>
                                                             ) : (
@@ -3546,7 +4012,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                         key={idx}
                                                                         videoUrl={item.url}
                                                                         thumbnail={videoThumbnail}
-                                                                        className="relative z-10 max-h-full max-w-full rounded-xl object-contain"
+                                                                        className="relative z-10 object-contain max-w-full max-h-full rounded-xl"
                                                                         fullscreen={true}
                                                                     />
                                                                 </>
@@ -3562,7 +4028,7 @@ export default function index({ google_map_api_key, search_history }) {
                                         )}
 
                                         {/* Scrollable Bottom Section */}
-                                        <div className="flex-1 space-y-3 overflow-y-auto p-4 scrollbar-none">
+                                        <div className="flex-1 p-4 space-y-3 overflow-y-auto scrollbar-none">
                                             <div className="flex items-center justify-end">
                                                 {/* Tags */}
                                                 {/* {viewablePost?.tag && (
@@ -3594,14 +4060,14 @@ export default function index({ google_map_api_key, search_history }) {
                                                 dangerouslySetInnerHTML={{
                                                     __html: viewablePost?.content,
                                                 }}
-                                                className="prose break-words text-sm text-white/80"
+                                                className="text-sm prose break-words text-white/80"
                                             ></div>
 
                                             <div className="flex items-center justify-start gap-3">
                                                 {/* {Userprofile} */}
 
                                                 <div className="flex items-center space-x-2">
-                                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-gray-900">
+                                                    <div className="flex items-center justify-center w-8 h-8 text-sm text-gray-900 bg-white rounded-full">
                                                         {viewablePost.user?.avatar || 'U'}
                                                     </div>
                                                     <span className="text-xs font-medium text-white/80">
@@ -3663,7 +4129,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                 value={route('home') + generateURL(viewablePost)}
                                                 viewBox="0 0 256 256"
                                                 level="H"
-                                                includeMargin
+                                                includemargin="true"
                                                 bgColor="#ffffff"
                                                 fgColor="#000000"
                                             />
@@ -3673,6 +4139,33 @@ export default function index({ google_map_api_key, search_history }) {
                             </div>,
                             document.body,
                         )}
+
+                    {/* Link Copied  */}
+                    {linkCopied && (
+                        <LinkCopiedModal linkCopied={linkCopied} setLinkCopied={setLinkCopied} />
+                    )}
+
+                    {/* Bookmark */}
+                    {bookmarkStatusChanged && (
+                        <BookmarkStatusChangedModal
+                            BookmarkStatusChanged={bookmarkStatusChanged}
+                            setBookmarkStatusChanged={setBookmarkStatusChanged}
+                            viewablePost={viewablePost}
+                        />
+                    )}
+
+                    {/* Smartphone Desktop Modal */}
+                    {smartphoneDesktopModal && viewableSmartphone != null && (
+                        <SmartphoneDesktopModal
+                            smartphoneDesktopModal={smartphoneDesktopModal}
+                            setSmartphoneDesktopModal={setSmartphoneDesktopModal}
+                            smartphone={viewableSmartphone}
+                            setSmartphone={setViewableSmartphone}
+                            searchHistory={search_history}
+                            selectedSmartphoneIndex={selectedSmartphoneIndex}
+                            setSelectedSmartphoneIndex={setSelectedSmartphoneIndex}
+                        />
+                    )}
                 </>
             )}
         </MainLayout>

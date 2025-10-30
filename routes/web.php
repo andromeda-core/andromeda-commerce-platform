@@ -24,11 +24,14 @@ use App\Http\Controllers\Dashboard\SmartphoneForSaleController;
 use App\Http\Controllers\Dashboard\SupplierController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\Website\BookmarkController as WebsiteBookmarkController;
+use App\Http\Controllers\Website\CartController;
 use App\Http\Controllers\Website\DataDeletionRequestController as WebsiteDataDeletionRequestController;
+use App\Http\Controllers\Website\GlobalFilterController;
 use App\Http\Controllers\Website\GlobalSearchController;
 use App\Http\Controllers\Website\HomeController as WebsiteHomeController;
 use App\Http\Controllers\Website\PostController as WebsitePostController;
 use App\Http\Controllers\Website\PrivacyPolicyController;
+use App\Http\Controllers\Website\ProductController;
 use Illuminate\Support\Facades\Route;
 
 // Website Un Auth Routes
@@ -43,7 +46,8 @@ Route::group(['as' => 'website.'], function () {
         Route::get('posts-getrelated/{slug?}', 'getRelatedPosts')->name('getrelated');
         Route::get('/posts-getsingle/{slug?}', 'getSinglePostBySlug')->name('getsingle');
         Route::put('/posts-bookmark', 'bookmark')->name('bookmark')->middleware('auth');
-        Route::match(['get', 'post'], '/hashtag/{hashtag?}/posts', 'hashtagPosts')->name('hashtag-posts');
+        Route::get('/hashtag/{hashtag?}', 'hashtagIndex')->name('hashtag.index');
+        Route::post('/hashtag-results', 'hashtagResults')->name('hashtag-results');
     });
 
     // Global Search Route
@@ -63,6 +67,11 @@ Route::group(['as' => 'website.'], function () {
         Route::delete('global-search-destroy-history', 'destroyHistory')->name('search-history-destroy');
     });
 
+    // Global Filters
+    Route::controller(GlobalFilterController::class)->name('global-filters.')->group(function () {
+        Route::get('/global-filters', 'index')->name('index');
+    });
+
     // Privacy Policy Route
     Route::get('/privacy-policy', PrivacyPolicyController::class)->name('privacy-policy.index');
 
@@ -75,6 +84,21 @@ Route::group(['as' => 'website.'], function () {
     // Bookmark Routes
     Route::controller(WebsiteBookmarkController::class)->middleware('auth')->name('bookmarks.')->group(function () {
         Route::get('/bookmarks', 'index')->name('index');
+        Route::get('/bookmarks/get-bookmarked-posts', 'getBookmarkedPosts')->name('get-bookmarked-posts');
+    });
+
+    // Product Routes
+    Route::controller(ProductController::class)->name('products.')->group(function () {
+        Route::get('/products/get-single-smartphone/{slug?}', 'getSingleSmartphone')->name('get-single-smartphone');
+    });
+
+    // Cart Routes
+    Route::controller(CartController::class)->middleware('auth')->name('carts.')->group(function () {
+        Route::get('/cart', 'index')->name('index');
+        Route::get('/cart-get-items', 'getCartItems')->name('get-cart-items');
+        Route::get('/cart-get-items-count', 'getItemsCount')->name('get-items-count');
+        Route::post('/cart/add-item', 'addItem')->name('add-item');
+        Route::delete('/cart/remove-item', 'removeItem')->name('remove-item');
     });
 
 });

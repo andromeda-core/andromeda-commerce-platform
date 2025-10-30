@@ -414,6 +414,8 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                     }
 
                     $smartphones = $smartphones->with(['model_name', 'capacity'])
+                        ->whereHas('selling_info')
+                        ->whereNotNull('slug')
                         ->latest()
                         ->forPage($page, $perPage)
                         ->get()
@@ -435,7 +437,9 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                                 'name' => $smartphone->model_name->name,
                                 'capacity' => $smartphone->capacity->name,
                                 'image' => $smartphone->smartphone_image_urls && count($smartphone->smartphone_image_urls) > 0 ? $smartphone->smartphone_image_urls[0] : null,
+                                'tag' => $smartphone->tag,
                                 'type' => 'smartphones',
+                                'slug' => $smartphone->slug,
                                 'created_at' => $smartphone->created_at->format('Y-m-d g:i A'),
                                 'timestamp' => $smartphone->created_at->timestamp,
                                 'matchType' => $matchType,

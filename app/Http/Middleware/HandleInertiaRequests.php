@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\CartItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
@@ -56,6 +57,10 @@ class HandleInertiaRequests extends Middleware
             // 'googleMapSetting' => Cache::get('google_map_setting'),
 
             'asset' => asset(''),
+
+            ...($request->user() && $request->user()?->hasRole('Customer') && $request->routeIs('home') ? [
+                'cart_items' => CartItem::where('customer_id', $request->user()->customer?->id)->get(),
+            ] : ['cart_items' => []]),
         ];
     }
 }

@@ -4,22 +4,17 @@ import SelectInput from '@/Components/SelectInput';
 import useWindowSize from '@/Hooks/useWindowSize';
 import axios from 'axios';
 import { createPortal } from 'react-dom';
-import { toast } from 'react-toastify';
-import Swal from 'sweetalert2';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 import RadiusMap from './RadiusMap';
 import { router } from '@inertiajs/react';
+import getCookie from '@/Hooks/useGetCookie';
+import Toast from './Toast';
 
-const getCookie = (name) => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-    return null;
-};
 const GlobalSearch = ({
     floors,
     google_map_api_key,
+    filters = true,
     additional_filters,
     OnPostFilterChange = () => {},
     defaultQuery = '',
@@ -34,6 +29,12 @@ const GlobalSearch = ({
     const windowSize = useWindowSize();
     const [searchApplying, setSearchApplying] = useState(false);
     const [searchHistory, setSearchHistory] = useState(search_history);
+
+    const [ErrorMessage, setErrorMessage] = useState(null);
+    const [showErrorMessage, setShowErrorMessage] = useState(false);
+
+    const [InfoMessage, setInfoMessage] = useState(null);
+    const [showInfoMessage, setShowInfoMessage] = useState(false);
 
     const [searchHistoryLoading, setSearchHistoryLoading] = useState(false);
     const [searchHistoryOpen, setSearchHistoryOpen] = useState(false);
@@ -58,7 +59,6 @@ const GlobalSearch = ({
     });
 
     const [isPrefChanged, setIsPrefChanged] = useState(false);
-
     useEffect(() => {
         const cookieValue = getCookie('post_preferences');
 
@@ -157,7 +157,8 @@ const GlobalSearch = ({
                             setIsPrefChanged(true);
                             instance.close();
                         } else {
-                            toast.error('Please select both start and end dates.');
+                            setInfoMessage('Please select both start and end dates.');
+                            setShowInfoMessage(true);
                         }
                     });
 
@@ -181,7 +182,8 @@ const GlobalSearch = ({
 
             onClose(selectedDates, dateStr, instance) {
                 if (selectedDates.length !== 2 && selectedDates.length !== 0) {
-                    toast.error('Please select both start and end dates.');
+                    setInfoMessage('Please select both start and end dates.');
+                    setShowInfoMessage(true);
                     setPostFilters((prev) => ({
                         ...prev,
                         date_range: '',
@@ -197,8 +199,12 @@ const GlobalSearch = ({
         return () => {
             flatpickrInstance.current.destroy();
             flatpickrInstance.current = null;
+            setPostFilters((prev) => ({
+                ...prev,
+                date_range: '',
+            }));
         };
-    }, [addressReady]);
+    }, [addressReady, isSpatiotemporalFilters]);
 
     // Fetch AutocompletionLocationsFrom Google
     const autoCompletions = () => {
@@ -216,17 +222,15 @@ const GlobalSearch = ({
                         setAutoCompletionResults(predictions);
                         setAutoCompletionLoading(false);
                         if (predictions.length < 1) {
-                            toast.info('No Results Found');
+                            setInfoMessage('No Results Found');
+                            setShowInfoMessage(true);
                         }
                     });
             }
         } catch (e) {
             setAutoCompletionLoading(false);
-            Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: e.message || 'Something went wrong',
-            });
+            setErrorMessage(e.message || 'Something went wrong');
+            setShowErrorMessage(true);
         }
     };
 
@@ -241,7 +245,8 @@ const GlobalSearch = ({
             }
 
             if (autoCompletionLocationSearch != '' && autoCompletionLocationSearch?.length < 3) {
-                toast.info('Please Enter More Details To Search');
+                setInfoMessage('Please Enter More Details To Search');
+                setShowInfoMessage(true);
             }
             if (autoCompletionLocationSearch?.length > 2 && placeId == '') {
                 setAutoCompletionLoading(false);
@@ -277,11 +282,8 @@ const GlobalSearch = ({
                 }
             })
             .catch((e) => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: e.message || 'Something went wrong',
-                });
+                setErrorMessage(e.message || 'Something went wrong');
+                setShowErrorMessage(true);
                 setAddressReady(false);
             })
             .finally(() => {
@@ -309,17 +311,20 @@ const GlobalSearch = ({
 
                 // Prevent all post types from being false
                 if (postTypes.includes(type) && postTypesAllFalse) {
-                    toast.info(
+                    setInfoMessage(
                         'At least one post type (text, image, or video) must remain enabled.',
                     );
+                    setShowInfoMessage(true);
+
                     return prev;
                 }
 
                 // Prevent all visibility filters from being false
                 if (visibilityFilters.includes(type) && visibilityAllFalse) {
-                    toast.info(
+                    setInfoMessage(
                         'At least one visibility option (posts or products) must remain enabled.',
                     );
+                    setShowInfoMessage(true);
                     return prev;
                 }
                 setIsPrefChanged(true);
@@ -390,7 +395,8 @@ const GlobalSearch = ({
                         window.history.replaceState({}, '', route('website.global-search.results'));
                     })
                     .catch((error) => {
-                        toast.error(error.message);
+                        setErrorMessage(error.message);
+                        setShowErrorMessage(true);
                     })
                     .finally(() => {
                         setSearchApplying(false);
@@ -403,22 +409,26 @@ const GlobalSearch = ({
                 setSearchApplying(true);
                 OnPostFilterChange(true);
                 await clearSession();
+
                 await axios
-                    .post(
-                        route('website.posts.hashtag-posts', encodeURIComponent(hashtag)),
-                        {
-                            post_preferences: postPreferences,
-                        },
+                    .get(
+                        route('website.posts.hashtag.index', encodeURIComponent(hashtag)),
+
                         {
                             headers: { 'X-Inertia': true },
                         },
                     )
                     .then((response) => {
                         router.replace(response.data);
-                        window.history.replaceState({}, '', route('website.posts.hashtag-posts'));
+                        window.history.replaceState(
+                            {},
+                            '',
+                            route('website.posts.hashtag.index', encodeURIComponent(hashtag)),
+                        );
                     })
                     .catch((error) => {
-                        toast.error(error.message);
+                        setErrorMessage(error.message);
+                        setShowErrorMessage(true);
                     })
                     .finally(() => {
                         setSearchApplying(false);
@@ -448,7 +458,8 @@ const GlobalSearch = ({
                         window.history.replaceState({}, '', route('home'));
                     })
                     .catch((error) => {
-                        toast.error(error.message);
+                        setErrorMessage(error.message);
+                        setShowErrorMessage(true);
                     })
                     .finally(() => {
                         setSearchApplying(false);
@@ -468,15 +479,16 @@ const GlobalSearch = ({
         }
 
         if (type == 'search_history') {
-            setSearchApplying(true);
             if (postFilters.from_floor_id != '' && postFilters.to_floor_id == '') {
-                toast.error('Please Select (To Floor) ');
+                setInfoMessage('Please Select (To Floor)');
+                setShowInfoMessage(true);
                 return;
             } else if (postFilters.to_floor_id != '' && postFilters.from_floor_id == '') {
-                toast.error('Please Select (From Floor) ');
+                setInfoMessage('Please Select (From Floor)');
+                setShowInfoMessage(true);
                 return;
             }
-
+            setSearchApplying(true);
             await clearSession();
             await axios
                 .post(
@@ -495,7 +507,8 @@ const GlobalSearch = ({
                     window.history.replaceState({}, '', route('website.global-search.results'));
                 })
                 .catch((error) => {
-                    toast.error(error.message);
+                    setErrorMessage(error.message);
+                    setShowErrorMessage(true);
                 })
                 .finally(() => {
                     setSearchApplying(false);
@@ -507,15 +520,16 @@ const GlobalSearch = ({
         }
 
         if (type !== 'filter') {
-            setSearchApplying(true);
             if (postFilters.from_floor_id != '' && postFilters.to_floor_id == '') {
-                toast.error('Please Select (To Floor) ');
+                setInfoMessage('Please Select (To Floor)');
+                setShowInfoMessage(true);
                 return;
             } else if (postFilters.to_floor_id != '' && postFilters.from_floor_id == '') {
-                toast.error('Please Select (From Floor) ');
+                setInfoMessage('Please Select (From Floor)');
+                setShowInfoMessage(true);
                 return;
             }
-
+            setSearchApplying(true);
             await clearSession();
             await axios
                 .post(
@@ -534,7 +548,8 @@ const GlobalSearch = ({
                     window.history.replaceState({}, '', route('website.global-search.results'));
                 })
                 .catch((error) => {
-                    toast.error(error.message);
+                    setErrorMessage(error.message);
+                    setShowErrorMessage(true);
                 })
                 .finally(() => {
                     setSearchApplying(false);
@@ -575,7 +590,7 @@ const GlobalSearch = ({
         const handleKeyDown = (e) => {
             const active = document.activeElement;
 
-            const isInInput = active?.tagName === 'INPUT' || active?.tagName === 'TEXTAREA';
+            const isInInput = active === searchInputRef.current;
 
             if (e.key === 'Enter' && isInInput) {
                 e.preventDefault();
@@ -584,10 +599,13 @@ const GlobalSearch = ({
                     const currentQuery = searchQueryRef.current.trim();
                     if (!isPrefChanged) {
                         if (currentQuery !== '') {
-                            toast.info('To Apply Search Please Search Anything Else');
+                            setInfoMessage('To Apply Search Please Search Anything Else');
+                            setShowInfoMessage(true);
                             return;
                         }
-                        toast.info('Please search something first');
+
+                        setInfoMessage('Please search something first');
+                        setShowInfoMessage(true);
                         return;
                     }
                     ApplyFilter('query');
@@ -653,24 +671,54 @@ const GlobalSearch = ({
                 if (res.data.status) {
                     setSearchHistory(res.data.data);
                 } else {
-                    toast.error(res.data.message);
+                    setErrorMessage(res.data.message);
+                    setShowErrorMessage(true);
                 }
             })
             .catch((e) => {
-                toast.error(e.message || 'Something went wrong');
+                setErrorMessage(e.message || 'Something went wrong');
+                setShowErrorMessage(true);
             })
             .finally(() => {
                 setSearchHistoryLoading(false);
             });
     };
 
+    // Auto Resetting Error Message States
+    useEffect(() => {
+        if (showErrorMessage) {
+            setTimeout(() => {
+                setShowErrorMessage(false);
+                setErrorMessage(null);
+            }, 1500);
+        }
+    }, [showErrorMessage]);
+
+    // Auto Resetting Info Message States
+    useEffect(() => {
+        if (showInfoMessage) {
+            setTimeout(() => {
+                setShowInfoMessage(false);
+                setInfoMessage(null);
+            }, 1500);
+        }
+    }, [showInfoMessage]);
+
     return (
         <>
+            {(showErrorMessage || showInfoMessage) && (
+                <Toast
+                    flash={{
+                        ...(showErrorMessage ? { error: ErrorMessage } : { info: InfoMessage }),
+                    }}
+                />
+            )}
+
             <div className="lg:max-w-8xl sticky top-0 z-[50] mx-auto w-full backdrop-blur-md transition-all duration-300 sm:px-6 lg:px-8">
-                <div className="py-2 mx-auto sm:py-3">
+                <div className="mx-auto py-2 sm:py-3">
                     <div className="relative flex w-full items-center rounded-xl border border-gray-300 bg-white/90 p-1.5 dark:border-gray-700 dark:bg-deepcharcoal sm:p-2">
                         <div className="relative w-full">
-                            <div className="relative flex items-center w-full rounded-xl">
+                            <div className="relative flex w-full items-center rounded-xl">
                                 {searchQuery !== '' && (
                                     <svg
                                         onClick={() => {
@@ -683,7 +731,7 @@ const GlobalSearch = ({
                                         viewBox="0 0 24 24"
                                         strokeWidth={1.5}
                                         stroke="currentColor"
-                                        className="absolute cursor-pointer right-3 size-4 hover:text-black/80 dark:text-white/80 hover:dark:text-white/50"
+                                        className="absolute right-3 size-4 cursor-pointer hover:text-black/80 dark:text-white/80 hover:dark:text-white/50"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -693,11 +741,26 @@ const GlobalSearch = ({
                                     </svg>
                                 )}
 
+                                {/* Magnifire Icon */}
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={1.5}
+                                    stroke="currentColor"
+                                    className="absolute left-3 size-5 cursor-pointer dark:text-white/80"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                                    />
+                                </svg>
+
                                 <input
                                     ref={searchInputRef}
                                     type="search"
-                                    placeholder="What happened...?"
-                                    className="flex-1 ml-2 text-xs text-gray-600 placeholder-gray-400 bg-transparent border-none outline-none focus:outline-none focus:ring-0 dark:text-white/80 sm:text-base"
+                                    className="ml-6 flex-1 border-none bg-transparent text-xs text-gray-600 placeholder-gray-400 outline-none focus:outline-none focus:ring-0 dark:text-white/80 sm:text-base"
                                     value={searchQuery}
                                     onChange={(e) => {
                                         if (e.target.value.trim().length > 0) {
@@ -726,9 +789,9 @@ const GlobalSearch = ({
 
                         {/* Search History Dropdown */}
                         {searchHistoryOpen && searchHistory.length > 0 && (
-                            <div className="absolute left-0 right-0 z-50 mt-2 bg-white border border-gray-300 rounded-md shadow-lg top-full dark:border-gray-700 dark:bg-deepcharcoal sm:left-2 sm:right-2">
+                            <div className="absolute left-0 right-0 top-full z-50 mt-2 rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-700 dark:bg-deepcharcoal sm:left-2 sm:right-2">
                                 {/* Title */}
-                                <div className="flex gap-2 px-4 py-3 text-sm font-semibold text-gray-700 border-b border-gray-200 dark:border-gray-700 dark:text-gray-300">
+                                <div className="flex gap-2 border-b border-gray-200 px-4 py-3 text-sm font-semibold text-gray-700 dark:border-gray-700 dark:text-gray-300">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
@@ -745,10 +808,10 @@ const GlobalSearch = ({
                                     </svg>
                                     Your Recent Searches
                                 </div>
-                                <ul className="overflow-y-auto max-h-60">
+                                <ul className="max-h-60 overflow-y-auto">
                                     {searchHistoryLoading ? (
                                         <li className="flex items-center justify-center px-4 py-4">
-                                            <div className="w-5 h-5 border-2 border-indigo-500 rounded-full animate-spin border-t-transparent"></div>
+                                            <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"></div>
                                         </li>
                                     ) : (
                                         searchHistory.map((item, index) => {
@@ -763,7 +826,7 @@ const GlobalSearch = ({
                                             return (
                                                 <li
                                                     key={index}
-                                                    className="px-4 py-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900"
+                                                    className="cursor-pointer border-b border-gray-100 px-4 py-3 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900"
                                                     onMouseDown={(e) => {
                                                         e.preventDefault();
                                                         ApplyFilter('search_history', item);
@@ -772,10 +835,10 @@ const GlobalSearch = ({
                                                 >
                                                     <div className="flex items-center justify-between gap-3">
                                                         {/* Left side - Search info with thumbnail */}
-                                                        <div className="flex items-center flex-1 gap-3">
+                                                        <div className="flex flex-1 items-center gap-3">
                                                             {/* Thumbnail - only show if result exists */}
                                                             {hasResults && result?.image ? (
-                                                                <div className="flex-shrink-0 w-12 h-12 overflow-hidden bg-gray-100 rounded-md dark:bg-zinc-900/80">
+                                                                <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-md bg-gray-100 dark:bg-zinc-900/80">
                                                                     <img
                                                                         src={result.image}
                                                                         alt={
@@ -783,7 +846,7 @@ const GlobalSearch = ({
                                                                             result.name ||
                                                                             'Result'
                                                                         }
-                                                                        className="object-cover w-full h-full"
+                                                                        className="h-full w-full object-cover"
                                                                         onError={(e) => {
                                                                             e.target.style.display =
                                                                                 'none';
@@ -791,7 +854,7 @@ const GlobalSearch = ({
                                                                     />
                                                                 </div>
                                                             ) : (
-                                                                <div className="flex items-center justify-center h-full p-3 text-sm bg-indigo-600 rounded-lg text-white/80 dark:bg-indigo-500">
+                                                                <div className="flex h-full items-center justify-center rounded-lg bg-indigo-600 p-3 text-sm text-white/80 dark:bg-indigo-500">
                                                                     <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
                                                                         fill="none"
@@ -810,7 +873,7 @@ const GlobalSearch = ({
                                                             )}
 
                                                             {/* Text content */}
-                                                            <div className="flex flex-col flex-1">
+                                                            <div className="flex flex-1 flex-col">
                                                                 {/* Query or title Hastag with count */}
                                                                 <div className="flex items-center gap-2">
                                                                     <div className="flex flex-col font-medium text-gray-900 dark:text-gray-100">
@@ -913,7 +976,7 @@ const GlobalSearch = ({
                                                                 e.preventDefault();
                                                                 e.stopPropagation();
                                                             }}
-                                                            className="flex-shrink-0 p-2 text-gray-400 transition-colors rounded-lg hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                                                            className="flex-shrink-0 rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
                                                         >
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -921,7 +984,7 @@ const GlobalSearch = ({
                                                                 viewBox="0 0 24 24"
                                                                 strokeWidth={1.5}
                                                                 stroke="currentColor"
-                                                                className="w-5 h-5"
+                                                                className="h-5 w-5"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -961,27 +1024,29 @@ const GlobalSearch = ({
                             </button>
                         )}
 
-                        <button
-                            className="mr-1.5 rounded-full p-1.5 text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-900 sm:mr-2 sm:p-2"
-                            onClick={() => {
-                                setIsPostFilterSetting(true);
-                            }}
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={1.5}
-                                stroke="currentColor"
-                                className="w-5 h-5 sm:h-6 sm:w-6"
+                        {filters && (
+                            <button
+                                className="mr-1.5 rounded-full p-1.5 text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-900 sm:mr-2 sm:p-2"
+                                onClick={() => {
+                                    setIsPostFilterSetting(true);
+                                }}
                             >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
-                                />
-                            </svg>
-                        </button>
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={1.5}
+                                    stroke="currentColor"
+                                    className="h-5 w-5 sm:h-6 sm:w-6"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
+                                    />
+                                </svg>
+                            </button>
+                        )}
                     </div>
 
                     {/* {isPrefChanged && (
@@ -1030,16 +1095,16 @@ const GlobalSearch = ({
                             <div className="fixed inset-0 z-50 flex items-center justify-center">
                                 {/* Backdrop */}
                                 <div
-                                    className="fixed inset-0 transition-opacity duration-300 bg-black/60 backdrop-blur-sm"
+                                    className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
                                     onClick={() => setIsPostFilterSetting(false)}
                                 />
 
                                 {/* Modal Card */}
-                                <div className="relative z-10 w-full max-w-2xl p-8 shadow-2xl rounded-2xl bg-white/95 dark:bg-deepcharcoal dark:text-white/80">
+                                <div className="relative z-10 w-full max-w-2xl rounded-2xl bg-white/95 p-8 shadow-2xl dark:bg-deepcharcoal dark:text-white/80">
                                     {/* Header */}
-                                    <div className="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
+                                    <div className="flex items-center justify-between border-b border-gray-200 pb-4 dark:border-gray-700">
                                         <h2 className="text-xl font-semibold tracking-tight text-gray-600 dark:text-white/80">
-                                            Post Filter Settings
+                                            Filter Settings
                                         </h2>
                                         <button
                                             onClick={() => setIsPostFilterSetting(false)}
@@ -1085,7 +1150,7 @@ const GlobalSearch = ({
 
                                         {/* SECTION: Post Type Filters */}
                                         <section>
-                                            <h3 className="mb-4 text-sm font-medium tracking-wider text-gray-500 uppercase">
+                                            <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-gray-500">
                                                 Post Type Filters
                                             </h3>
                                             <div className="space-y-4">
@@ -1101,10 +1166,10 @@ const GlobalSearch = ({
                                                         <span className="text-sm font-medium text-gray-600 dark:text-white/80">
                                                             {label}
                                                         </span>
-                                                        <label className="relative inline-flex items-center cursor-pointer">
+                                                        <label className="relative inline-flex cursor-pointer items-center">
                                                             <input
                                                                 type="checkbox"
-                                                                className="sr-only peer"
+                                                                className="peer sr-only"
                                                                 checked={postPreferences[key]}
                                                                 onChange={(e) =>
                                                                     handlePostPreferences(
@@ -1123,7 +1188,7 @@ const GlobalSearch = ({
                                         {/* SECTION RESULTS PAGE FILTER */}
                                         {(resultsPage || mainPage) && (
                                             <section>
-                                                <h3 className="mb-4 text-sm font-medium tracking-wider text-gray-500 uppercase">
+                                                <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-gray-500">
                                                     Visibility Filter
                                                 </h3>
                                                 <div className="space-y-4">
@@ -1141,10 +1206,10 @@ const GlobalSearch = ({
                                                             <span className="text-sm font-medium text-gray-600 dark:text-white/80">
                                                                 {label}
                                                             </span>
-                                                            <label className="relative inline-flex items-center cursor-pointer">
+                                                            <label className="relative inline-flex cursor-pointer items-center">
                                                                 <input
                                                                     type="checkbox"
-                                                                    className="sr-only peer"
+                                                                    className="peer sr-only"
                                                                     checked={postPreferences[key]}
                                                                     onChange={(e) =>
                                                                         handlePostPreferences(
@@ -1171,7 +1236,7 @@ const GlobalSearch = ({
                                                         <div role="status">
                                                             <svg
                                                                 aria-hidden="true"
-                                                                className="w-8 h-4 text-gray-200 animate-spin fill-white/80 dark:text-gray-200"
+                                                                className="h-4 w-8 animate-spin fill-white/80 text-gray-200 dark:text-gray-200"
                                                                 viewBox="0 0 100 101"
                                                                 fill="none"
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -1204,10 +1269,10 @@ const GlobalSearch = ({
                                 {/* Fullscreen slide-over */}
                                 <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-white text-black dark:bg-deepcharcoal dark:text-white/80 sm:pb-20">
                                     {/* Top Bar */}
-                                    <div className="relative flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800">
+                                    <div className="relative flex items-center border-b border-gray-200 px-4 py-3 dark:border-gray-800">
                                         <button
                                             onClick={() => setIsPostFilterSetting(false)}
-                                            className="absolute p-1 rounded-full left-4 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                            className="absolute left-4 rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-800"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -1226,12 +1291,12 @@ const GlobalSearch = ({
                                         </button>
 
                                         <h2 className="mx-10 text-xl font-semibold tracking-tight text-gray-800 dark:text-gray-100">
-                                            Post Filter Settings
+                                            Filter Settings
                                         </h2>
                                     </div>
 
                                     {/* Content */}
-                                    <div className="flex-1 p-4 my-4 space-y-6">
+                                    <div className="my-4 flex-1 space-y-6 p-4">
                                         {/* Location Section */}
                                         {/* <div className="space-y-4">
                                             <h3 className="mb-4 text-sm font-medium tracking-wider text-gray-500 uppercase">
@@ -1254,17 +1319,17 @@ const GlobalSearch = ({
 
                                         {/* Post Feed Settings */}
                                         <div>
-                                            <h3 className="mb-4 text-sm font-medium tracking-wider text-gray-500 uppercase">
+                                            <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-gray-500">
                                                 Post Type Filters
                                             </h3>
                                             <div className="space-y-5">
                                                 {/* Text */}
                                                 <div className="flex items-center justify-between">
                                                     <span className="text-sm">Text</span>
-                                                    <label className="relative inline-flex items-center cursor-pointer">
+                                                    <label className="relative inline-flex cursor-pointer items-center">
                                                         <input
                                                             type="checkbox"
-                                                            className="sr-only peer"
+                                                            className="peer sr-only"
                                                             checked={postPreferences.text}
                                                             onChange={(e) =>
                                                                 handlePostPreferences(
@@ -1280,10 +1345,10 @@ const GlobalSearch = ({
                                                 {/* Images */}
                                                 <div className="flex items-center justify-between">
                                                     <span className="text-sm">Images</span>
-                                                    <label className="relative inline-flex items-center cursor-pointer">
+                                                    <label className="relative inline-flex cursor-pointer items-center">
                                                         <input
                                                             type="checkbox"
-                                                            className="sr-only peer"
+                                                            className="peer sr-only"
                                                             checked={postPreferences.images}
                                                             onChange={(e) =>
                                                                 handlePostPreferences(
@@ -1299,10 +1364,10 @@ const GlobalSearch = ({
                                                 {/* Videos */}
                                                 <div className="flex items-center justify-between">
                                                     <span className="text-sm">Videos</span>
-                                                    <label className="relative inline-flex items-center cursor-pointer">
+                                                    <label className="relative inline-flex cursor-pointer items-center">
                                                         <input
                                                             type="checkbox"
-                                                            className="sr-only peer"
+                                                            className="peer sr-only"
                                                             checked={postPreferences.videos}
                                                             onChange={(e) =>
                                                                 handlePostPreferences(
@@ -1320,7 +1385,7 @@ const GlobalSearch = ({
                                         {/* SECTION RESULTS PAGE FILTER */}
                                         {(resultsPage || mainPage) && (
                                             <section>
-                                                <h3 className="mb-4 text-sm font-medium tracking-wider text-gray-500 uppercase">
+                                                <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-gray-500">
                                                     Visibility Filter
                                                 </h3>
                                                 <div className="space-y-4">
@@ -1338,10 +1403,10 @@ const GlobalSearch = ({
                                                             <span className="text-sm font-medium text-gray-600 dark:text-white/80">
                                                                 {label}
                                                             </span>
-                                                            <label className="relative inline-flex items-center cursor-pointer">
+                                                            <label className="relative inline-flex cursor-pointer items-center">
                                                                 <input
                                                                     type="checkbox"
-                                                                    className="sr-only peer"
+                                                                    className="peer sr-only"
                                                                     checked={postPreferences[key]}
                                                                     onChange={(e) =>
                                                                         handlePostPreferences(
@@ -1368,7 +1433,7 @@ const GlobalSearch = ({
                                                         <div role="status">
                                                             <svg
                                                                 aria-hidden="true"
-                                                                className="w-8 h-4 text-gray-200 animate-spin fill-white/80 dark:text-gray-200"
+                                                                className="h-4 w-8 animate-spin fill-white/80 text-gray-200 dark:text-gray-200"
                                                                 viewBox="0 0 100 101"
                                                                 fill="none"
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -1407,14 +1472,14 @@ const GlobalSearch = ({
                             <div className="fixed inset-0 z-50 flex items-center justify-center">
                                 {/* Backdrop */}
                                 <div
-                                    className="fixed inset-0 transition-opacity duration-300 bg-black/60 backdrop-blur-sm"
+                                    className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
                                     onClick={() => setIsSpatiotemporalFilters(false)}
                                 />
 
                                 {/* Modal Card */}
-                                <div className="relative z-10 w-full max-w-2xl p-8 shadow-2xl rounded-2xl bg-white/95 dark:bg-deepcharcoal dark:text-white/80">
+                                <div className="relative z-10 w-full max-w-2xl rounded-2xl bg-white/95 p-8 shadow-2xl dark:bg-deepcharcoal dark:text-white/80">
                                     {/* Header */}
-                                    <div className="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
+                                    <div className="flex items-center justify-between border-b border-gray-200 pb-4 dark:border-gray-700">
                                         <h2 className="text-xl font-semibold tracking-tight text-gray-600 dark:text-white/80">
                                             Advanced Search
                                         </h2>
@@ -1441,12 +1506,12 @@ const GlobalSearch = ({
 
                                     {/* Content */}
                                     <div className="mt-6 max-h-[100vh] space-y-8 overflow-y-auto pr-1">
-                                        <section className="w-full mt-4">
+                                        <section className="mt-4 w-full">
                                             {/* Search Bar */}
                                             <div className="z-[50] mx-auto w-full transition-all duration-300">
-                                                <div className="py-2 mx-auto sm:py-3">
+                                                <div className="mx-auto py-2 sm:py-3">
                                                     <div className="flex w-full items-center rounded-xl border border-gray-300 bg-white/90 p-1.5 dark:border-gray-700 dark:bg-deepcharcoal sm:p-2">
-                                                        <div className="relative flex items-center w-full rounded-xl">
+                                                        <div className="relative flex w-full items-center rounded-xl">
                                                             {searchQuery !== '' && (
                                                                 <svg
                                                                     onClick={() => {
@@ -1459,7 +1524,7 @@ const GlobalSearch = ({
                                                                     viewBox="0 0 24 24"
                                                                     strokeWidth={1.5}
                                                                     stroke="currentColor"
-                                                                    className="absolute cursor-pointer right-3 size-4 hover:text-black/80 dark:text-white/80 hover:dark:text-white/50"
+                                                                    className="absolute right-3 size-4 cursor-pointer hover:text-black/80 dark:text-white/80 hover:dark:text-white/50"
                                                                 >
                                                                     <path
                                                                         strokeLinecap="round"
@@ -1469,11 +1534,25 @@ const GlobalSearch = ({
                                                                 </svg>
                                                             )}
 
+                                                            {/* Magnifire Icon */}
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                strokeWidth={1.5}
+                                                                stroke="currentColor"
+                                                                className="absolute left-3 size-5 cursor-pointer dark:text-white/80"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                                                                />
+                                                            </svg>
                                                             <input
                                                                 ref={searchInputRef}
                                                                 type="search"
-                                                                placeholder="What happened...?"
-                                                                className="flex-1 ml-2 text-xs text-gray-600 placeholder-gray-400 bg-transparent border-none outline-none focus:outline-none focus:ring-0 dark:text-white/80 sm:text-base"
+                                                                className="ml-6 flex-1 border-none bg-transparent text-xs text-gray-600 placeholder-gray-400 outline-none focus:outline-none focus:ring-0 dark:text-white/80 sm:text-base"
                                                                 value={searchQuery}
                                                                 onChange={(e) => {
                                                                     if (
@@ -1534,14 +1613,14 @@ const GlobalSearch = ({
                                                                     }}
                                                                 >
                                                                     {/* Title */}
-                                                                    <div className="px-4 py-2 text-xs font-semibold text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
+                                                                    <div className="border-b border-gray-200 px-4 py-2 text-xs font-semibold text-gray-500 dark:border-gray-700 dark:text-gray-400">
                                                                         Your Recent Searches
                                                                     </div>
 
-                                                                    <ul className="overflow-y-auto max-h-60">
+                                                                    <ul className="max-h-60 overflow-y-auto">
                                                                         {searchHistoryLoading ? (
                                                                             <li className="flex items-center justify-center px-4 py-4">
-                                                                                <div className="w-5 h-5 border-2 border-indigo-500 rounded-full animate-spin border-t-transparent"></div>
+                                                                                <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"></div>
                                                                             </li>
                                                                         ) : (
                                                                             searchHistory.map(
@@ -1571,7 +1650,7 @@ const GlobalSearch = ({
                                                                                             key={
                                                                                                 index
                                                                                             }
-                                                                                            className="px-4 py-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900"
+                                                                                            className="cursor-pointer border-b border-gray-100 px-4 py-3 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900"
                                                                                             onMouseDown={(
                                                                                                 e,
                                                                                             ) => {
@@ -1587,11 +1666,11 @@ const GlobalSearch = ({
                                                                                         >
                                                                                             <div className="flex items-center justify-between gap-3">
                                                                                                 {/* Left side - Search info with thumbnail */}
-                                                                                                <div className="flex items-center flex-1 gap-3">
+                                                                                                <div className="flex flex-1 items-center gap-3">
                                                                                                     {/* Thumbnail - only show if result exists */}
                                                                                                     {hasResults &&
                                                                                                     result?.image ? (
-                                                                                                        <div className="flex-shrink-0 w-12 h-12 overflow-hidden bg-gray-100 rounded-md dark:bg-zinc-900/80">
+                                                                                                        <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-md bg-gray-100 dark:bg-zinc-900/80">
                                                                                                             <img
                                                                                                                 src={
                                                                                                                     result.image
@@ -1601,7 +1680,7 @@ const GlobalSearch = ({
                                                                                                                     result.name ||
                                                                                                                     'Result'
                                                                                                                 }
-                                                                                                                className="object-cover w-full h-full"
+                                                                                                                className="h-full w-full object-cover"
                                                                                                                 onError={(
                                                                                                                     e,
                                                                                                                 ) => {
@@ -1611,7 +1690,7 @@ const GlobalSearch = ({
                                                                                                             />
                                                                                                         </div>
                                                                                                     ) : (
-                                                                                                        <div className="flex items-center justify-center h-full p-3 text-sm bg-indigo-600 rounded-lg text-white/80 dark:bg-indigo-500">
+                                                                                                        <div className="flex h-full items-center justify-center rounded-lg bg-indigo-600 p-3 text-sm text-white/80 dark:bg-indigo-500">
                                                                                                             <svg
                                                                                                                 xmlns="http://www.w3.org/2000/svg"
                                                                                                                 fill="none"
@@ -1632,7 +1711,7 @@ const GlobalSearch = ({
                                                                                                     )}
 
                                                                                                     {/* Text content */}
-                                                                                                    <div className="flex flex-col flex-1">
+                                                                                                    <div className="flex flex-1 flex-col">
                                                                                                         {/* Query or title Hastag with count */}
                                                                                                         <div className="flex items-center gap-2">
                                                                                                             <div className="flex flex-col font-medium text-gray-900 dark:text-gray-100">
@@ -1751,7 +1830,7 @@ const GlobalSearch = ({
                                                                                                         e.preventDefault();
                                                                                                         e.stopPropagation();
                                                                                                     }}
-                                                                                                    className="flex-shrink-0 p-2 text-gray-400 transition-colors rounded-lg hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                                                                                                    className="flex-shrink-0 rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
                                                                                                 >
                                                                                                     <svg
                                                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -1761,7 +1840,7 @@ const GlobalSearch = ({
                                                                                                             1.5
                                                                                                         }
                                                                                                         stroke="currentColor"
-                                                                                                        className="w-5 h-5"
+                                                                                                        className="h-5 w-5"
                                                                                                     >
                                                                                                         <path
                                                                                                             strokeLinecap="round"
@@ -1786,47 +1865,70 @@ const GlobalSearch = ({
 
                                             {/* Address Input */}
                                             <div className="mb-5">
-                                                <div className="flex items-center p-2 border border-gray-300 rounded-xl bg-white/90 dark:border-gray-700 dark:bg-deepcharcoal">
-                                                    <input
-                                                        key={getPlaceDetails}
-                                                        type="search"
-                                                        placeholder="Search Address"
-                                                        className="flex-1 ml-2 text-sm text-gray-600 placeholder-gray-400 bg-transparent border-none outline-none focus:ring-0 dark:text-white/80"
-                                                        value={autoCompletionLocationSearch}
-                                                        onChange={(e) => {
-                                                            const value = e.target.value;
-                                                            if (value === '') {
-                                                                setPlaceId('');
-                                                                setAutoCompletionLocationSearch('');
-                                                                setAutoCompletionResults([]);
-                                                                setPostFilters((prev) => ({
-                                                                    ...prev,
-                                                                    address: {
-                                                                        lat: '',
-                                                                        lng: '',
-                                                                    },
-                                                                }));
-                                                                setAddressReady(false);
-                                                            } else {
-                                                                setAutoCompletionLocationSearch(
-                                                                    e.target.value,
-                                                                );
-                                                            }
-                                                        }}
-                                                    />
+                                                <div className="flex items-center rounded-xl border border-gray-300 bg-white/90 p-2 dark:border-gray-700 dark:bg-deepcharcoal">
+                                                    <div className="relative flex w-full items-center rounded-xl">
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            strokeWidth={1.5}
+                                                            stroke="currentColor"
+                                                            className="absolute left-3 size-5 cursor-pointer dark:text-white/80"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                                                            />
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                                                            />
+                                                        </svg>
+
+                                                        <input
+                                                            key={getPlaceDetails}
+                                                            type="search"
+                                                            className="ml-6 flex-1 border-none bg-transparent text-sm text-gray-600 placeholder-gray-400 outline-none focus:ring-0 dark:text-white/80"
+                                                            value={autoCompletionLocationSearch}
+                                                            onChange={(e) => {
+                                                                const value = e.target.value;
+                                                                if (value === '') {
+                                                                    setPlaceId('');
+                                                                    setAutoCompletionLocationSearch(
+                                                                        '',
+                                                                    );
+                                                                    setAutoCompletionResults([]);
+                                                                    setPostFilters((prev) => ({
+                                                                        ...prev,
+                                                                        address: {
+                                                                            lat: '',
+                                                                            lng: '',
+                                                                        },
+                                                                    }));
+                                                                    setAddressReady(false);
+                                                                } else {
+                                                                    setAutoCompletionLocationSearch(
+                                                                        e.target.value,
+                                                                    );
+                                                                }
+                                                            }}
+                                                        />
+                                                    </div>
                                                 </div>
                                                 {autoCompletionDropdown && (
-                                                    <ul className="relative z-50 w-full mt-2 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-lg max-h-60 dark:border-gray-600 dark:bg-deepcharcoal">
+                                                    <ul className="relative z-50 mt-2 max-h-60 w-full overflow-y-auto rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-deepcharcoal">
                                                         {autoCompletionLoading ? (
                                                             <li className="flex items-center justify-center px-4 py-4">
-                                                                <div className="w-5 h-5 border-2 border-indigo-500 rounded-full animate-spin border-t-transparent"></div>
+                                                                <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"></div>
                                                             </li>
                                                         ) : (
                                                             autoCompletionResults.map(
                                                                 (item, index) => (
                                                                     <li
                                                                         key={index}
-                                                                        className="px-4 py-2 text-sm text-gray-800 cursor-pointer hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-900"
+                                                                        className="cursor-pointer px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-900"
                                                                         onClick={() => {
                                                                             setPlaceId(
                                                                                 item.place_id,
@@ -1854,7 +1956,7 @@ const GlobalSearch = ({
                                                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                                     {/* Radius */}
                                                     <div className="col-span-1">
-                                                        <label className="block mb-1 text-xs font-medium text-gray-600 dark:text-white/80">
+                                                        <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-white/80">
                                                             Radius
                                                         </label>
                                                         <div
@@ -1864,7 +1966,7 @@ const GlobalSearch = ({
                                                             <input
                                                                 readOnly
                                                                 type="text"
-                                                                className="w-full text-sm text-gray-600 placeholder-gray-400 bg-transparent border-none outline-none focus:outline-none focus:ring-0 dark:text-white/80"
+                                                                className="w-full border-none bg-transparent text-sm text-gray-600 placeholder-gray-400 outline-none focus:outline-none focus:ring-0 dark:text-white/80"
                                                                 value={
                                                                     (
                                                                         postFilters.radius / 1000
@@ -1894,7 +1996,7 @@ const GlobalSearch = ({
 
                                                     {/* Floor Range */}
                                                     <div className="col-span-2">
-                                                        <label className="block mb-1 text-xs font-medium text-gray-600 dark:text-white/80">
+                                                        <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-white/80">
                                                             Floor Range
                                                         </label>
                                                         <div className="flex h-[50px] items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white/90 px-2 dark:border-gray-700 dark:bg-deepcharcoal">
@@ -1942,7 +2044,7 @@ const GlobalSearch = ({
 
                                                     {/* Time Range */}
                                                     <div className="col-span-3">
-                                                        <label className="block mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                                                        <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
                                                             Date & Time Range
                                                         </label>
                                                         <div className="flex h-[50px] items-center gap-2 rounded-xl border border-gray-300 bg-white/90 p-2 focus-within:outline-none focus-within:ring-0 dark:border-gray-700 dark:bg-deepcharcoal">
@@ -1950,7 +2052,7 @@ const GlobalSearch = ({
                                                                 ref={rangeRef}
                                                                 readOnly
                                                                 placeholder="Select Date & Time Range"
-                                                                className="w-full text-sm text-gray-600 placeholder-gray-400 bg-transparent border-none outline-none focus:outline-none focus:ring-0 dark:text-white/80"
+                                                                className="w-full border-none bg-transparent text-sm text-gray-600 placeholder-gray-400 outline-none focus:outline-none focus:ring-0 dark:text-white/80"
                                                             />
                                                         </div>
                                                     </div>
@@ -1968,7 +2070,7 @@ const GlobalSearch = ({
                                                         <div role="status">
                                                             <svg
                                                                 aria-hidden="true"
-                                                                className="w-8 h-4 text-gray-200 animate-spin fill-white/80 dark:text-gray-200"
+                                                                className="h-4 w-8 animate-spin fill-white/80 text-gray-200 dark:text-gray-200"
                                                                 viewBox="0 0 100 101"
                                                                 fill="none"
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -2001,10 +2103,10 @@ const GlobalSearch = ({
                                 {/* Fullscreen slide-over */}
                                 <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-white text-black dark:bg-deepcharcoal dark:text-white/80 sm:pb-20">
                                     {/* Top Bar */}
-                                    <div className="relative flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800">
+                                    <div className="relative flex items-center border-b border-gray-200 px-4 py-3 dark:border-gray-800">
                                         <button
                                             onClick={() => setIsSpatiotemporalFilters(false)}
-                                            className="absolute p-1 rounded-full left-4 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                            className="absolute left-4 rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-800"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -2028,13 +2130,13 @@ const GlobalSearch = ({
                                     </div>
 
                                     {/* Content */}
-                                    <div className="flex-1 px-2 space-y-6">
-                                        <section className="w-full mt-4">
+                                    <div className="flex-1 space-y-6 px-2">
+                                        <section className="mt-4 w-full">
                                             {/* Search Bar */}
                                             <div className="z-[50] mx-auto w-full transition-all duration-300">
-                                                <div className="py-2 mx-auto sm:py-3">
+                                                <div className="mx-auto py-2 sm:py-3">
                                                     <div className="flex w-full items-center rounded-xl border border-gray-300 bg-white/90 p-1.5 dark:border-gray-700 dark:bg-deepcharcoal sm:p-2">
-                                                        <div className="relative flex items-center w-full rounded-xl">
+                                                        <div className="relative flex w-full items-center rounded-xl">
                                                             {searchQuery !== '' && (
                                                                 <svg
                                                                     onClick={() => {
@@ -2047,7 +2149,7 @@ const GlobalSearch = ({
                                                                     viewBox="0 0 24 24"
                                                                     strokeWidth={1.5}
                                                                     stroke="currentColor"
-                                                                    className="absolute cursor-pointer right-3 size-4 hover:text-black/80 dark:text-white/80 hover:dark:text-white/50"
+                                                                    className="absolute right-3 size-4 cursor-pointer hover:text-black/80 dark:text-white/80 hover:dark:text-white/50"
                                                                 >
                                                                     <path
                                                                         strokeLinecap="round"
@@ -2057,11 +2159,26 @@ const GlobalSearch = ({
                                                                 </svg>
                                                             )}
 
+                                                            {/* Magnifire Icon */}
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                strokeWidth={1.5}
+                                                                stroke="currentColor"
+                                                                className="absolute left-3 size-5 cursor-pointer dark:text-white/80"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                                                                />
+                                                            </svg>
+
                                                             <input
                                                                 ref={searchInputRef}
                                                                 type="search"
-                                                                placeholder="What happened...?"
-                                                                className="flex-1 ml-2 text-sm text-gray-600 placeholder-gray-400 bg-transparent border-none outline-none focus:outline-none focus:ring-0 dark:text-white/80 sm:text-base"
+                                                                className="ml-6 flex-1 border-none bg-transparent text-sm text-gray-600 placeholder-gray-400 outline-none focus:outline-none focus:ring-0 dark:text-white/80 sm:text-base"
                                                                 value={searchQuery}
                                                                 onChange={(e) => {
                                                                     if (
@@ -2122,14 +2239,14 @@ const GlobalSearch = ({
                                                                     }}
                                                                 >
                                                                     {/* Title */}
-                                                                    <div className="px-4 py-2 text-xs font-semibold text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400">
+                                                                    <div className="border-b border-gray-200 px-4 py-2 text-xs font-semibold text-gray-500 dark:border-gray-700 dark:text-gray-400">
                                                                         Your Recent Searches
                                                                     </div>
 
-                                                                    <ul className="overflow-y-auto max-h-36">
+                                                                    <ul className="max-h-36 overflow-y-auto">
                                                                         {searchHistoryLoading ? (
                                                                             <li className="flex items-center justify-center px-4 py-4">
-                                                                                <div className="w-5 h-5 border-2 border-indigo-500 rounded-full animate-spin border-t-transparent"></div>
+                                                                                <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"></div>
                                                                             </li>
                                                                         ) : (
                                                                             searchHistory.map(
@@ -2159,7 +2276,7 @@ const GlobalSearch = ({
                                                                                             key={
                                                                                                 index
                                                                                             }
-                                                                                            className="px-4 py-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900"
+                                                                                            className="cursor-pointer border-b border-gray-100 px-4 py-3 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-900"
                                                                                             onMouseDown={(
                                                                                                 e,
                                                                                             ) => {
@@ -2175,11 +2292,11 @@ const GlobalSearch = ({
                                                                                         >
                                                                                             <div className="flex items-center justify-between gap-3">
                                                                                                 {/* Left side - Search info with thumbnail */}
-                                                                                                <div className="flex items-center flex-1 gap-3">
+                                                                                                <div className="flex flex-1 items-center gap-3">
                                                                                                     {/* Thumbnail - only show if result exists */}
                                                                                                     {hasResults &&
                                                                                                     result?.image ? (
-                                                                                                        <div className="flex-shrink-0 w-12 h-12 overflow-hidden bg-gray-100 rounded-md dark:bg-zinc-900/80">
+                                                                                                        <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-md bg-gray-100 dark:bg-zinc-900/80">
                                                                                                             <img
                                                                                                                 src={
                                                                                                                     result.image
@@ -2189,7 +2306,7 @@ const GlobalSearch = ({
                                                                                                                     result.name ||
                                                                                                                     'Result'
                                                                                                                 }
-                                                                                                                className="object-cover w-full h-full"
+                                                                                                                className="h-full w-full object-cover"
                                                                                                                 onError={(
                                                                                                                     e,
                                                                                                                 ) => {
@@ -2199,7 +2316,7 @@ const GlobalSearch = ({
                                                                                                             />
                                                                                                         </div>
                                                                                                     ) : (
-                                                                                                        <div className="flex items-center justify-center h-full p-3 text-sm bg-indigo-600 rounded-lg text-white/80 dark:bg-indigo-500">
+                                                                                                        <div className="flex h-full items-center justify-center rounded-lg bg-indigo-600 p-3 text-sm text-white/80 dark:bg-indigo-500">
                                                                                                             <svg
                                                                                                                 xmlns="http://www.w3.org/2000/svg"
                                                                                                                 fill="none"
@@ -2220,7 +2337,7 @@ const GlobalSearch = ({
                                                                                                     )}
 
                                                                                                     {/* Text content */}
-                                                                                                    <div className="flex flex-col flex-1">
+                                                                                                    <div className="flex flex-1 flex-col">
                                                                                                         {/* Query or title Hastag with count */}
                                                                                                         <div className="flex items-center gap-2">
                                                                                                             <div className="flex flex-col font-medium text-gray-900 dark:text-gray-100">
@@ -2339,7 +2456,7 @@ const GlobalSearch = ({
                                                                                                         e.preventDefault();
                                                                                                         e.stopPropagation();
                                                                                                     }}
-                                                                                                    className="flex-shrink-0 p-2 text-gray-400 transition-colors rounded-lg hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                                                                                                    className="flex-shrink-0 rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
                                                                                                 >
                                                                                                     <svg
                                                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -2349,7 +2466,7 @@ const GlobalSearch = ({
                                                                                                             1.5
                                                                                                         }
                                                                                                         stroke="currentColor"
-                                                                                                        className="w-5 h-5"
+                                                                                                        className="h-5 w-5"
                                                                                                     >
                                                                                                         <path
                                                                                                             strokeLinecap="round"
@@ -2373,47 +2490,70 @@ const GlobalSearch = ({
                                             </div>
                                             {/* Address Input */}
                                             <div className="mb-5">
-                                                <div className="flex items-center p-2 border border-gray-300 outline-none rounded-xl bg-white/90 focus-within:ring-0 dark:border-gray-700 dark:bg-deepcharcoal">
-                                                    <input
-                                                        key={getPlaceDetails}
-                                                        type="search"
-                                                        placeholder="Search Address"
-                                                        className="flex-1 ml-2 text-sm text-gray-600 placeholder-gray-400 bg-transparent border-none outline-none focus:ring-0 dark:text-white/80"
-                                                        value={autoCompletionLocationSearch}
-                                                        onChange={(e) => {
-                                                            const value = e.target.value;
-                                                            if (value === '') {
-                                                                setPlaceId('');
-                                                                setAutoCompletionLocationSearch('');
-                                                                setAutoCompletionResults([]);
-                                                                setPostFilters((prev) => ({
-                                                                    ...prev,
-                                                                    address: {
-                                                                        lat: '',
-                                                                        lng: '',
-                                                                    },
-                                                                }));
-                                                                setAddressReady(false);
-                                                            } else {
-                                                                setAutoCompletionLocationSearch(
-                                                                    e.target.value,
-                                                                );
-                                                            }
-                                                        }}
-                                                    />
+                                                <div className="flex items-center rounded-xl border border-gray-300 bg-white/90 p-2 outline-none focus-within:ring-0 dark:border-gray-700 dark:bg-deepcharcoal">
+                                                    <div className="relative flex w-full items-center rounded-xl">
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            strokeWidth={1.5}
+                                                            stroke="currentColor"
+                                                            className="absolute left-3 size-5 cursor-pointer dark:text-white/80"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                                                            />
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                                                            />
+                                                        </svg>
+
+                                                        <input
+                                                            key={getPlaceDetails}
+                                                            type="search"
+                                                            className="ml-6 flex-1 border-none bg-transparent text-sm text-gray-600 placeholder-gray-400 outline-none focus:ring-0 dark:text-white/80"
+                                                            value={autoCompletionLocationSearch}
+                                                            onChange={(e) => {
+                                                                const value = e.target.value;
+                                                                if (value === '') {
+                                                                    setPlaceId('');
+                                                                    setAutoCompletionLocationSearch(
+                                                                        '',
+                                                                    );
+                                                                    setAutoCompletionResults([]);
+                                                                    setPostFilters((prev) => ({
+                                                                        ...prev,
+                                                                        address: {
+                                                                            lat: '',
+                                                                            lng: '',
+                                                                        },
+                                                                    }));
+                                                                    setAddressReady(false);
+                                                                } else {
+                                                                    setAutoCompletionLocationSearch(
+                                                                        e.target.value,
+                                                                    );
+                                                                }
+                                                            }}
+                                                        />
+                                                    </div>
                                                 </div>
                                                 {autoCompletionDropdown && (
-                                                    <ul className="relative z-50 w-full mt-2 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-lg max-h-60 dark:border-gray-600 dark:bg-deepcharcoal">
+                                                    <ul className="relative z-50 mt-2 max-h-60 w-full overflow-y-auto rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-deepcharcoal">
                                                         {autoCompletionLoading ? (
                                                             <li className="flex items-center justify-center px-4 py-4">
-                                                                <div className="w-5 h-5 border-2 border-indigo-500 rounded-full animate-spin border-t-transparent"></div>
+                                                                <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"></div>
                                                             </li>
                                                         ) : (
                                                             autoCompletionResults.map(
                                                                 (item, index) => (
                                                                     <li
                                                                         key={index}
-                                                                        className="px-4 py-2 text-sm text-gray-800 cursor-pointer hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-900"
+                                                                        className="cursor-pointer px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-900"
                                                                         onClick={() => {
                                                                             setPlaceId(
                                                                                 item.place_id,
@@ -2441,7 +2581,7 @@ const GlobalSearch = ({
                                                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                                     {/* Radius */}
                                                     <div className="col-span-1">
-                                                        <label className="block mb-1 text-xs font-medium text-gray-600 dark:text-white/80">
+                                                        <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-white/80">
                                                             Radius
                                                         </label>
                                                         <div
@@ -2451,7 +2591,7 @@ const GlobalSearch = ({
                                                             <input
                                                                 readOnly
                                                                 type="text"
-                                                                className="w-full text-sm text-gray-600 bg-transparent border-none outline-none focus-within:ring-0 dark:text-white/80"
+                                                                className="w-full border-none bg-transparent text-sm text-gray-600 outline-none focus-within:ring-0 dark:text-white/80"
                                                                 value={
                                                                     (
                                                                         postFilters.radius / 1000
@@ -2481,7 +2621,7 @@ const GlobalSearch = ({
 
                                                     {/* Floor Range */}
                                                     <div className="col-span-2">
-                                                        <label className="block mb-1 text-xs font-medium text-gray-600 dark:text-white/80">
+                                                        <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-white/80">
                                                             Floor Range
                                                         </label>
                                                         <div className="flex h-[50px] items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white/90 px-2 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal">
@@ -2529,7 +2669,7 @@ const GlobalSearch = ({
 
                                                     {/* Time Range */}
                                                     <div className="col-span-3">
-                                                        <label className="block mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                                                        <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
                                                             Date & Time Range
                                                         </label>
                                                         <div className="flex h-[50px] items-center gap-2 rounded-xl border border-gray-300 bg-white/90 p-2 outline-none focus-within:ring-0 dark:border-gray-700 dark:bg-deepcharcoal">
@@ -2537,7 +2677,7 @@ const GlobalSearch = ({
                                                                 ref={rangeRef}
                                                                 readOnly
                                                                 placeholder="Select Date & Time Range"
-                                                                className="w-full text-sm text-gray-600 placeholder-gray-400 bg-transparent border-none outline-none focus-within:ring-0 dark:text-white/80"
+                                                                className="w-full border-none bg-transparent text-sm text-gray-600 placeholder-gray-400 outline-none focus-within:ring-0 dark:text-white/80"
                                                             />
                                                         </div>
                                                     </div>
@@ -2555,7 +2695,7 @@ const GlobalSearch = ({
                                                         <div role="status">
                                                             <svg
                                                                 aria-hidden="true"
-                                                                className="w-8 h-4 text-gray-200 animate-spin fill-white/80 dark:text-gray-200"
+                                                                className="h-4 w-8 animate-spin fill-white/80 text-gray-200 dark:text-gray-200"
                                                                 viewBox="0 0 100 101"
                                                                 fill="none"
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -2588,21 +2728,21 @@ const GlobalSearch = ({
             {/* Place Detail Locaiton Fecthing Loading State */}
             {palceDetailFetching &&
                 createPortal(
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
                         <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                         {/* Modal content */}
-                        <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
+                        <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
                             <div className="text-center">
                                 <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                     Please Wait While We Are Setting up Location
                                 </h2>
 
-                                <div className="flex items-center justify-center mt-5">
+                                <div className="mt-5 flex items-center justify-center">
                                     <div role="status">
                                         <svg
                                             aria-hidden="true"
-                                            className="w-8 h-8 text-gray-200 animate-spin fill-indigo-600 dark:text-gray-600"
+                                            className="h-8 w-8 animate-spin fill-indigo-600 text-gray-200 dark:text-gray-600"
                                             viewBox="0 0 100 101"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
@@ -2629,21 +2769,21 @@ const GlobalSearch = ({
             {searchApplying && !isPostFilterSetting && !isSpatiotemporalFilters && (
                 <>
                     {createPortal(
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
+                        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
                             <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                             {/* Modal content */}
-                            <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
+                            <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
                                 <div className="text-center">
                                     <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                         Please Wait While We Are Finding Results For You
                                     </h2>
 
-                                    <div className="flex items-center justify-center mt-5">
+                                    <div className="mt-5 flex items-center justify-center">
                                         <div role="status">
                                             <svg
                                                 aria-hidden="true"
-                                                className="w-8 h-8 text-gray-200 animate-spin fill-indigo-600 dark:text-gray-600"
+                                                className="h-8 w-8 animate-spin fill-indigo-600 text-gray-200 dark:text-gray-600"
                                                 viewBox="0 0 100 101"
                                                 fill="none"
                                                 xmlns="http://www.w3.org/2000/svg"

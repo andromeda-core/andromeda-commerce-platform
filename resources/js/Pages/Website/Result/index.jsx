@@ -1,11 +1,12 @@
 import GlobalSearch from '@/Components/GlobalSearch';
+import LinkCopiedModal from '@/Components/LinkCopiedModal';
+import Toast from '@/Components/Toast';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
-import { Head, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import axios from 'axios';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { toast } from 'react-toastify';
 
 const index = ({
     results,
@@ -21,9 +22,16 @@ const index = ({
     const [defaultFiltersCleared, setDefaultFiltersCleared] = useState(false);
     const [AllResults, setAllResults] = useState(results || []);
 
+    const [ErrorMessage, setErrorMessage] = useState(null);
+    const [showErrorMessage, setShowErrorMessage] = useState(false);
+
+    const [InfoMessage, setInfoMessage] = useState(null);
+    const [showInfoMessage, setShowInfoMessage] = useState(false);
+
+    const [linkCopied, setLinkCopied] = useState(false);
+
     // Fetch More Results When Scrolls Logic
     const [nextPageUrl, setNextPageUrl] = useState(pagination.next_page_url || null);
-
     const loaderRef = useRef(null);
 
     const fetchMoreResults = async () => {
@@ -50,7 +58,8 @@ const index = ({
 
             setNextPageUrl(pagination.next_page_url);
         } catch (err) {
-            toast.error('Error fetching post ' + err);
+            setShowErrorMessage(true);
+            setErrorMessage('Error fetching post ' + err);
         }
     };
 
@@ -80,7 +89,7 @@ const index = ({
                               viewBox="0 0 24 24"
                               strokeWidth={1.5}
                               stroke="currentColor"
-                              className="size-5 text-gray-600 dark:text-white/80"
+                              className="text-gray-600 size-5 dark:text-white/80"
                           >
                               <path
                                   strokeLinecap="round"
@@ -106,7 +115,7 @@ const index = ({
                               viewBox="0 0 24 24"
                               strokeWidth={1.5}
                               stroke="currentColor"
-                              className="size-5 text-gray-600 dark:text-white/80"
+                              className="text-gray-600 size-5 dark:text-white/80"
                           >
                               <path
                                   strokeLinecap="round"
@@ -132,7 +141,7 @@ const index = ({
                               viewBox="0 0 24 24"
                               strokeWidth={1.5}
                               stroke="currentColor"
-                              className="size-5 text-gray-600 dark:text-white/80"
+                              className="text-gray-600 size-5 dark:text-white/80"
                           >
                               <path
                                   strokeLinecap="round"
@@ -165,11 +174,11 @@ const index = ({
 
     const generateURL = (post) => {
         return (
-            `?slug=${post?.slug}&planet=earth${post?.latitude != null ? '&lat=' + post?.latitude : ''}` +
-            `${post?.longitude != null ? '&lng=' + post?.longitude : ''}` +
-            `${post?.location_name != null ? '&location_name=' + post?.location_name : ''}` +
-            `&timestamp=${post?.timestamp}` +
-            `${post?.floor != null ? '&floor=' + post?.floor : ''}`
+            `?slug=${encodeURIComponent(post?.slug)}&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
+            `${post?.longitude != null ? '&lng=' + encodeURIComponent(post?.longitude) : ''}` +
+            `${post?.location_name != null ? '&location_name=' + encodeURIComponent(post?.location_name) : ''}` +
+            `&timestamp=${encodeURIComponent(post?.timestamp)}` +
+            `${post?.floor != null ? '&floor=' + encodeURIComponent(post?.floor) : ''}`
         );
     };
 
@@ -185,7 +194,9 @@ const index = ({
             radius: '',
         });
         setDefaultFiltersCleared(true);
-        toast.info('Filters cleared');
+
+        setShowInfoMessage(true);
+        setInfoMessage('Filters cleared');
     };
 
     // Infinite Scroll Observer
@@ -208,9 +219,37 @@ const index = ({
         };
     }, [nextPageUrl]);
 
+    // Auto Resetting Error Message States
+    useEffect(() => {
+        if (showErrorMessage) {
+            setTimeout(() => {
+                setShowErrorMessage(false);
+                setErrorMessage(null);
+            }, 1500);
+        }
+    }, [showErrorMessage]);
+
+    // Auto Resetting Info Message States
+    useEffect(() => {
+        if (showInfoMessage) {
+            setTimeout(() => {
+                setShowInfoMessage(false);
+                setInfoMessage(null);
+            }, 1500);
+        }
+    }, [showInfoMessage]);
+
     return (
         <MainLayout>
             <Head title="Result" />
+
+            {(showErrorMessage || showInfoMessage) && (
+                <Toast
+                    flash={{
+                        ...(showErrorMessage ? { error: ErrorMessage } : { info: InfoMessage }),
+                    }}
+                />
+            )}
 
             <GlobalSearch
                 google_map_api_key={google_map_api_key}
@@ -223,9 +262,9 @@ const index = ({
             />
 
             <div className="pb-20 sm:px-6 sm:pb-20 lg:px-8">
-                <div className="rounded-xl bg-white px-3 text-gray-900 dark:bg-deepcharcoal dark:text-gray-100 sm:px-6 lg:px-8">
+                <div className="px-3 text-gray-900 bg-white rounded-xl dark:bg-deepcharcoal dark:text-gray-100 sm:px-6 lg:px-8">
                     {/* Header */}
-                    <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-slate-700">
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-slate-700">
                         <div className="relative flex items-center gap-6">
                             {tabs.map((tab) => (
                                 <button
@@ -273,7 +312,7 @@ const index = ({
 
                                     return (
                                         <div
-                                            className="border-gray-5 group relative mx-6 mb-3 mt-2 flex cursor-pointer items-center justify-between rounded-lg border bg-white px-6 py-2 text-sm text-gray-800 transition-all hover:bg-indigo-50 hover:shadow-md dark:border-slate-700 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-700"
+                                            className="relative flex items-center justify-between px-6 py-2 mx-6 mt-2 mb-3 text-sm text-gray-800 transition-all bg-white border rounded-lg cursor-pointer border-gray-5 group hover:bg-indigo-50 hover:shadow-md dark:border-slate-700 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-700"
                                             title="Click to modify filters"
                                         >
                                             <div className="flex flex-wrap items-center gap-x-2">
@@ -334,7 +373,7 @@ const index = ({
                                             {/* Clear Button */}
                                             <button
                                                 onClick={handleClearFilters}
-                                                className="absolute right-0 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 opacity-0 transition-all group-hover:opacity-100 hover:bg-gray-200 hover:text-red-500 dark:hover:bg-slate-600"
+                                                className="absolute right-0 p-1 text-gray-400 transition-all -translate-y-1/2 rounded-full opacity-0 top-1/2 group-hover:opacity-100 hover:bg-gray-200 hover:text-red-500 dark:hover:bg-slate-600"
                                                 title="Clear filters"
                                             >
                                                 <svg
@@ -343,7 +382,7 @@ const index = ({
                                                     viewBox="0 0 24 24"
                                                     strokeWidth={1.5}
                                                     stroke="currentColor"
-                                                    className="h-4 w-4"
+                                                    className="w-4 h-4"
                                                 >
                                                     <path
                                                         strokeLinecap="round"
@@ -368,18 +407,18 @@ const index = ({
                             tabResults.map((item) => (
                                 <div
                                     key={item.id}
-                                    className="group flex cursor-pointer items-center gap-4 px-6 py-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/80"
+                                    className="flex items-center gap-4 px-6 py-4 transition-colors cursor-pointer group hover:bg-gray-50 dark:hover:bg-gray-800/80"
                                 >
                                     {/* Thumbnail */}
-                                    <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-indigo-600 dark:bg-indigo-500">
+                                    <div className="flex-shrink-0 w-12 h-12 overflow-hidden bg-indigo-600 rounded-lg dark:bg-indigo-500">
                                         {item.image ? (
                                             <img
                                                 src={item.image}
                                                 alt={item.title || item.name}
-                                                className="h-full w-full object-cover"
+                                                className="object-cover w-full h-full"
                                             />
                                         ) : (
-                                            <div className="flex h-full items-center justify-center text-sm text-white/80">
+                                            <div className="flex items-center justify-center h-full text-sm text-white/80">
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     fill="none"
@@ -399,34 +438,36 @@ const index = ({
                                     </div>
 
                                     {/* Info */}
-                                    <div className="min-w-0 flex-1">
+                                    <div className="flex-1 min-w-0">
                                         <h3 className="truncate">{item.title || item.name}</h3>
-                                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                                        <p className="text-xs text-gray-500 truncate dark:text-gray-400">
                                             {item.type === 'posts'
                                                 ? item.location_name || ''
                                                 : item.capacity || ''}
                                         </p>
 
-                                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
-                                            {item.type === 'posts' ? item?.tag : ''}
+                                        <p className="text-xs text-gray-500 truncate dark:text-gray-400">
+                                            {item?.tag || ''}
                                         </p>
-                                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                                        <p className="text-xs text-gray-500 truncate dark:text-gray-400">
                                             {item.created_at}
                                         </p>
                                     </div>
 
                                     {/* Right Info */}
-                                    <div className="flex flex-wrap items-center justify-center gap-2 opacity-0 transition-all duration-200 group-hover:opacity-100 lg:flex-nowrap">
+                                    <div className="flex flex-wrap items-center justify-center gap-2 transition-all duration-200 opacity-0 group-hover:opacity-100 lg:flex-nowrap">
                                         <button
                                             title="Copy Link"
-                                            className="flex h-8 w-8 items-center justify-center rounded-full p-2 text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+                                            className="flex items-center justify-center w-8 h-8 p-2 text-gray-500 rounded-full hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                                             onClick={() => {
+                                                setLinkCopied(true);
                                                 item.type === 'posts'
                                                     ? navigator.clipboard.writeText(
                                                           route('home') + generateURL(item),
                                                       )
-                                                    : navigator.clipboard.writeText('Pending');
-                                                toast.success('Link copied to clipboard');
+                                                    : navigator.clipboard.writeText(
+                                                          route('home') + '?m-slug=' + item.slug,
+                                                      );
                                             }}
                                         >
                                             <svg
@@ -450,10 +491,21 @@ const index = ({
                                             href={
                                                 item.type === 'posts'
                                                     ? route('home') + generateURL(item)
-                                                    : 'Pending'
+                                                    : route('home') + '?m-slug=' + item.slug
                                             }
+                                            onClick={() => {
+                                                item.type === 'posts'
+                                                    ? window.history.replaceState(
+                                                          { modal: 'post-viewer' },
+                                                          '',
+                                                      )
+                                                    : window.history.replaceState(
+                                                          { modal: 'smartphone-viewer' },
+                                                          '',
+                                                      );
+                                            }}
                                             {...(windowSize.width > 1024 && { target: '_blank' })}
-                                            className="flex h-8 w-full items-center justify-center gap-2 rounded-full p-2 text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+                                            className="flex items-center justify-center w-full h-8 gap-2 p-2 text-gray-500 rounded-full hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -480,13 +532,13 @@ const index = ({
                     {tabResults.length > 0 && nextPageUrl && (
                         <div
                             ref={loaderRef}
-                            className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 dark:text-white/80"
+                            className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80"
                         >
                             <div className="flex items-center justify-center">
                                 <div role="status">
                                     <svg
                                         aria-hidden="true"
-                                        className="h-5 w-5 animate-spin fill-indigo-600 text-gray-200 dark:text-gray-600"
+                                        className="w-5 h-5 text-gray-200 animate-spin fill-indigo-600 dark:text-gray-600"
                                         viewBox="0 0 100 101"
                                         fill="none"
                                         xmlns="http://www.w3.org/2000/svg"
@@ -508,6 +560,10 @@ const index = ({
                     )}
                 </div>
             </div>
+
+            {linkCopied && (
+                <LinkCopiedModal linkCopied={linkCopied} setLinkCopied={setLinkCopied} />
+            )}
         </MainLayout>
     );
 };

@@ -113,7 +113,7 @@ class BookmarkRepository implements IBookmarkRepository
         }
     }
 
-    public function getBookmakrs(Request $request)
+    public function getBookmarkedPosts(Request $request)
     {
         $user = $request->user();
 
@@ -124,7 +124,47 @@ class BookmarkRepository implements IBookmarkRepository
             ];
         }
 
-        $bookmarks = $user->bookMarkedPosts()->with(['floor'])->latest()->paginate(10);
+        $images = $request->boolean('images', true);
+        $text = $request->boolean('text', true);
+        $videos = $request->boolean('videos', true);
+        $show_posts = $request->boolean('show_posts', true);
+
+        if (! $show_posts) {
+            return [
+                'status' => true,
+                'bookmarks' => [],
+                'next_page_url' => null,
+            ];
+        }
+
+        $bookmarks = $user->bookMarkedPosts()
+            ->where(function ($q) use ($text, $images, $videos) {
+                if ($text) {
+
+                    $q->orWhere(function ($sub) {
+                        $sub->whereNull('images')
+                            ->whereNull('videos');
+                    });
+                }
+
+                if ($images) {
+
+                    $q->orWhere(function ($sub) {
+                        $sub->whereNotNull('images')
+                            ->whereNull('videos');
+                    });
+                }
+
+                if ($videos) {
+
+                    $q->orWhere(function ($sub) {
+                        $sub->whereNotNull('videos');
+                    });
+                }
+            })
+            ->with(['floor'])
+            ->latest()
+            ->paginate(10);
 
         return [
             'status' => true,

@@ -142,6 +142,38 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
+ * @property int $customer_id
+ * @property int|null $smartphone_id
+ * @property string $type
+ * @property int $quantity
+ * @property int|null $color_id
+ * @property string $unit_price
+ * @property string $total_price
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Color|null $color
+ * @property-read \App\Models\Customer $customer
+ * @property-read \App\Models\Smartphone|null $smartphone
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CartItem newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CartItem newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CartItem query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CartItem whereColorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CartItem whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CartItem whereCustomerId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CartItem whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CartItem whereQuantity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CartItem whereSmartphoneId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CartItem whereTotalPrice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CartItem whereType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CartItem whereUnitPrice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|CartItem whereUpdatedAt($value)
+ */
+	class CartItem extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
  * @property string $name
  * @property string $slug
  * @property string $short_description
@@ -332,6 +364,8 @@ namespace App\Models{
  * @property string|null $address_line2
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CartItem> $cart_items
+ * @property-read int|null $cart_items_count
  * @property-read \App\Models\Country|null $country
  * @property-read mixed $added_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Order> $orders
@@ -466,9 +500,9 @@ namespace App\Models{
  * @property string|null $app_main_logo_dark
  * @property string|null $app_main_logo_light
  * @property string|null $app_favicon
+ * @property string|null $app_description
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property string|null $app_description
  * @property-read mixed $app_favicon_url
  * @property-read mixed $app_main_logo_dark_url
  * @property-read mixed $app_main_logo_light_url
@@ -885,12 +919,15 @@ namespace App\Models{
  * @property int|null $capacity_id
  * @property int|null $category_id
  * @property string $upc
+ * @property string|null $content
  * @property string|null $tag
  * @property string|null $slug
  * @property array<array-key, mixed>|null $images
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Capacity|null $capacity
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CartItem> $cart_items
+ * @property-read int|null $cart_items_count
  * @property-read \App\Models\Category|null $category
  * @property-read mixed $added_at
  * @property-read mixed $colors
@@ -907,6 +944,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereCapacityId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereCategoryId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereColorIds($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereContent($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereImages($value)

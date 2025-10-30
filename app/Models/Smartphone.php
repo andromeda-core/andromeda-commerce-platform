@@ -18,6 +18,7 @@ class Smartphone extends Model
         'images',
         'tag',
         'slug',
+        'content',
     ];
 
     protected $appends = ['added_at', 'colors', 'smartphone_image_urls'];
@@ -70,6 +71,11 @@ class Smartphone extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(OrderItem::class, 'smartphone_id', 'id');
+    }
+
+    public function cart_items(): HasMany
+    {
+        return $this->hasMany(CartItem::class, 'smartphone_id', 'id');
     }
 
     // Casting

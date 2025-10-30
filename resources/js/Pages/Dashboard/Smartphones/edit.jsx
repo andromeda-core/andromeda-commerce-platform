@@ -10,6 +10,7 @@ import SelectInput from '@/Components/SelectInput';
 import FileUploaderInput from '@/Components/FileUploaderInput';
 import BarcodeScannerComponent from 'react-qr-barcode-scanner';
 import Toast from '@/Components/Toast';
+import TipTapEditor from '@/Components/TipTapEditor';
 
 export default function edit({ smartphone, colors, model_names, capacities, categories }) {
     // Create Data Form Data
@@ -22,6 +23,7 @@ export default function edit({ smartphone, colors, model_names, capacities, cate
         upc: smartphone.upc || '',
         images: [],
         tag: smartphone?.tag || '',
+        content: smartphone?.content || '',
     });
 
     // Submit Processing
@@ -269,7 +271,7 @@ export default function edit({ smartphone, colors, model_names, capacities, cate
                                                 <FileUploaderInput
                                                     InputName={'Smart Phone Images'}
                                                     Id={'images'}
-                                                    Error={errors.images}
+                                                    Error={errors.file_error}
                                                     Label={
                                                         'Drag & Drop your Smart Phone Images or <span class="filepond--label-action">Browse</span>'
                                                     }
@@ -292,6 +294,21 @@ export default function edit({ smartphone, colors, model_names, capacities, cate
                                                 />
                                             </div>
 
+                                            <div className="grid grid-cols-1 gap-4">
+                                                <TipTapEditor
+                                                    Label={'Content'}
+                                                    Id={'content'}
+                                                    Required={true}
+                                                    Value={data.content}
+                                                    Error={errors.content}
+                                                    Action={(value) => {
+                                                        if (value == '<p></p>')
+                                                            setData('content', '');
+                                                        else setData('content', value);
+                                                    }}
+                                                />
+                                            </div>
+
                                             <PrimaryButton
                                                 Text={'Update Smart Phone'}
                                                 Type={'submit'}
@@ -303,7 +320,8 @@ export default function edit({ smartphone, colors, model_names, capacities, cate
                                                     data.color_ids.length === 0 ||
                                                     data.upc.trim() === '' ||
                                                     data?.images?.length === 0 ||
-                                                    data.category_id === ''
+                                                    data.category_id === '' ||
+                                                    data.content.trim() === ''
                                                 }
                                                 Spinner={processing}
                                                 Icon={

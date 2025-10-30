@@ -139,7 +139,7 @@ export default function PostMediaViewer({
             >
                 {/* Big Viewer */}
                 <div
-                    className="relative flex flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-deepcharcoal"
+                    className="relative flex flex-shrink-0 items-center justify-center overflow-hidden rounded-sm bg-gray-100 dark:bg-zinc-900/20"
                     style={{
                         height: windowSize.width >= 1024 ? '70vh' : '60vh',
                         minWidth: windowSize.width >= 1024 ? '30vw' : '100%',
@@ -209,13 +209,13 @@ export default function PostMediaViewer({
 
                 {/* Thumbnails */}
                 {windowSize.width > 1024 && mediaItems.length > 1 && (
-                    <div className="mt-3 flex max-w-[28vw] gap-2 overflow-x-hidden px-2 scrollbar-none">
+                    <div className="mt-3 flex max-w-[31vw] gap-2 overflow-x-hidden px-2 scrollbar-none">
                         {mediaItems.map((item, idx) => (
                             <button
                                 key={idx}
                                 ref={(el) => (mediaThumbRefs.current[idx] = el)}
                                 onClick={() => onSelectMediaIndex(idx)}
-                                className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border transition-all duration-200 ${
+                                className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-sm border transition-all duration-200 ${
                                     selectedMediaIndex === idx
                                         ? 'border-indigo-600 ring-2 ring-indigo-400'
                                         : 'border-gray-300 hover:border-gray-500'

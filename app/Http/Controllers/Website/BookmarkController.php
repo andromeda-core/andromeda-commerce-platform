@@ -13,9 +13,19 @@ class BookmarkController extends Controller
         private IBookmarkRepository $bookmark
     ) {}
 
-    public function index(Request $request)
+    public function index()
     {
-        $data = $this->bookmark->getBookmakrs($request);
+        return Inertia::render('Website/Bookmarks/index');
+    }
+
+    public function getBookmarkedPosts(Request $request)
+    {
+
+        if (! $request->ajax()) {
+            return to_route('home');
+        }
+
+        $data = $this->bookmark->getBookmarkedPosts($request);
 
         if ($data['status'] === false) {
             return to_route('home')->with('error', $data['message']);
@@ -31,6 +41,5 @@ class BookmarkController extends Controller
             ], 200);
         }
 
-        return Inertia::render('Website/Bookmarks/index', compact('posts', 'next_page_url'));
     }
 }

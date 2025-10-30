@@ -65,9 +65,9 @@ const PWAAlertBar = ({ onClose }) => {
                     isVisible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
                 }`}
             >
-                <div className="p-4 border shadow-2xl rounded-2xl border-slate-300 bg-white/90 text-slate-800 backdrop-blur-xl dark:border-slate-700/50 dark:bg-deepcharcoal/90 dark:text-slate-100">
+                <div className="rounded-2xl border border-slate-300 bg-white/90 p-4 text-slate-800 shadow-2xl backdrop-blur-xl dark:border-slate-700/50 dark:bg-deepcharcoal/90 dark:text-slate-100">
                     <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 rounded-xl bg-blue-500/10 dark:bg-gray-900">
+                        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-blue-500/10 dark:bg-gray-900">
                             {generalSetting?.app_favicon ? (
                                 <img src={generalSetting?.app_favicon} alt="Logo" />
                             ) : (
@@ -77,7 +77,7 @@ const PWAAlertBar = ({ onClose }) => {
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
                                     stroke="currentColor"
-                                    className="w-5 h-5 text-blue-500 dark:text-blue-400"
+                                    className="h-5 w-5 text-blue-500 dark:text-blue-400"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -88,7 +88,7 @@ const PWAAlertBar = ({ onClose }) => {
                             )}
                         </div>
 
-                        <div className="flex-1 min-w-0">
+                        <div className="min-w-0 flex-1">
                             <p className="text-sm font-medium leading-tight text-slate-900 dark:text-white">
                                 Install App
                             </p>
@@ -100,13 +100,13 @@ const PWAAlertBar = ({ onClose }) => {
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={handleInstall}
-                                className="rounded-lg bg-indigo-500 px-4 py-1.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-indigo-600"
+                                className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-indigo-700"
                             >
                                 Install
                             </button>
                             <button
                                 onClick={handleClose}
-                                className="flex items-center justify-center w-8 h-8 transition-colors duration-200 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-700/50"
+                                className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors duration-200 hover:bg-slate-300 dark:hover:bg-slate-700/50"
                                 aria-label="Close"
                             >
                                 <svg
@@ -115,7 +115,7 @@ const PWAAlertBar = ({ onClose }) => {
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
                                     stroke="currentColor"
-                                    className="w-4 h-4 text-slate-500 dark:text-slate-400"
+                                    className="h-4 w-4 text-slate-500 dark:text-slate-400"
                                 >
                                     <path
                                         strokeLinecap="round"

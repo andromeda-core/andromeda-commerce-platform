@@ -64,17 +64,21 @@ class PostController extends Controller
             return back()->with('error', $bookmarked['message']);
         }
 
-        return back()->with('success', $bookmarked['message']);
+        return back();
     }
 
     public function getSinglePostBySlug(?string $slug, Request $request)
     {
+        if (! $request->ajax()) {
+            return to_route('home');
+        }
 
         if (empty($slug)) {
             return response()->json(['status' => false]);
         }
 
         $post = $this->post->getSinglePostBySlug($slug, $request);
+        // info($slug);
 
         if (empty($post)) {
             return response()->json(['status' => false]);
@@ -104,7 +108,18 @@ class PostController extends Controller
         return response()->json(['status' => true, 'posts' => $posts['related_posts']], 200);
     }
 
-    public function hashtagPosts(Request $request, ?string $hashtag = null)
+    public function hashtagIndex(?string $hashtag = null)
+    {
+
+        if (empty($hashtag)) {
+            return to_route('home')->with('info', 'Hashtag Not Found');
+        }
+        $google_map_api_key = $this->globalSearch->getGoogleMapApiKey();
+
+        return Inertia::render('Website/Home/hashtagPosts', compact('hashtag', 'google_map_api_key'));
+    }
+
+    public function hashtagResults(Request $request)
     {
 
         $preferences = $request->input('post_preferences');
@@ -121,36 +136,34 @@ class PostController extends Controller
             }
         }
 
+        $hashtag = $request->input('hashtag');
+
         if (empty($hashtag)) {
-            return to_route('home');
+            return response()->json(['status' => false, 'message' => 'Hashtag Not Found'], 400);
         }
 
-        $data = $this->post->getHashtagPosts($request, $hashtag, $preferences);
-        if ($data['status'] == false && ! $request->header('X-Inertia')) {
-            return to_route('home')->with('error', $data['message']);
-        }
+        $data = $this->post->hashtagResults($request, $hashtag, $preferences);
 
-        if ($request->ajax() && $data['status'] == false && ! $request->header('X-Inertia')) {
+        if ($data['status'] === false) {
             return response()->json([
                 'status' => false,
                 'message' => $data['message'],
             ], 400);
         }
 
-        $posts = $data['posts']->items();
-        $next_page_url = $data['posts']->nextPageUrl();
+        $posts = $data['data']['posts'];
+        $smartphones = $data['data']['products']['smartphones'];
 
-        if ($request->ajax() && ! $request->header('X-Inertia')) {
-            return response()->json([
-                'status' => true,
-                'backend_retuned_posts' => $posts,
-                'backend_retuned_next_page_url' => $next_page_url,
-            ]);
-        }
+        $results = collect($posts)->merge($smartphones);
+        $next_page_url = $data['pagination']['next_page_url'];
 
-        $google_map_api_key = $this->globalSearch->getGoogleMapApiKey();
+        return response()->json([
+            'status' => true,
+            'backend_retuned_results' => $results,
+            'backend_retuned_next_page_url' => $next_page_url,
+        ]);
 
-        return Inertia::render('Website/Home/hashtagPosts', compact('posts', 'next_page_url', 'hashtag', 'google_map_api_key'));
+        return Inertia::render('Website/Home/hashtagPosts', compact('results', 'next_page_url', 'hashtag'));
 
     }
 }

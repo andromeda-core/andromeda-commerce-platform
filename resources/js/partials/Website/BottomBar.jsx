@@ -2,38 +2,41 @@ import { Link, router, usePage } from '@inertiajs/react';
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
-const BottomBar = ({ darkMode, setDarkMode, moreDropdownRef, moreDropdown, setMoreDropdown }) => {
+const BottomBar = ({ darkMode, setDarkMode, moreDropdownRef, moreDropdown, setMoreDropdown, cartItemsCount }) => {
     const { user } = usePage().props.auth;
 
     // Toggle Mode Dark + Light
     useEffect(() => {
         const saved = localStorage.getItem('darkMode');
-        if (saved === null) {
-            return;
-        }
-
-        try {
-            const parsed = JSON.parse(saved);
-            if (typeof parsed === 'boolean') {
-                setDarkMode(parsed);
-
-                if (darkMode) {
-                    document.body.classList.add('dark', 'bg-deepcharcoal');
-                } else {
-                    document.body.classList = '';
+        if (saved !== null) {
+            try {
+                const parsed = JSON.parse(saved);
+                if (typeof parsed === 'boolean') {
+                    setDarkMode(parsed);
                 }
-            } else {
+            } catch (e) {
                 localStorage.setItem('darkMode', false);
             }
-        } catch (e) {
-            localStorage.setItem('darkMode', false);
         }
+    }, []);
+
+    useEffect(() => {
+        if (darkMode) {
+            document.documentElement.classList.add('dark');
+            document.body.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+            document.body.classList.remove('dark');
+        }
+
+        // Save to localStorage
+        localStorage.setItem('darkMode', JSON.stringify(darkMode));
     }, [darkMode]);
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-10 p-1 lg:hidden">
+        <div className="fixed bottom-0 left-0 right-0 z-10 lg:hidden">
             {/* Navigation bar */}
-            <nav className="rounded-md border-b border-gray-200 bg-white shadow-md backdrop-blur-lg dark:border-t dark:border-gray-800 dark:bg-deepcharcoal">
+            <nav className="bg-white border-b border-gray-200 rounded-md shadow-md backdrop-blur-lg dark:border-t dark:border-gray-800 dark:bg-deepcharcoal">
                 <div className="flex items-center justify-around px-4 py-2">
                     {/* Home */}
                     <Link
@@ -41,6 +44,11 @@ const BottomBar = ({ darkMode, setDarkMode, moreDropdownRef, moreDropdown, setMo
                         className={`flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${
                             route().current() === 'home' ? 'menu-item-active' : 'menu-item-inactive'
                         }`}
+                        onClick={(e) => {
+                            if (route().current() === 'home') {
+                                e.preventDefault();
+                            }
+                        }}
                     >
                         <svg
                             className={`size-8`}
@@ -71,6 +79,11 @@ const BottomBar = ({ darkMode, setDarkMode, moreDropdownRef, moreDropdown, setMo
                                 ? 'menu-item-active'
                                 : 'menu-item-inactive'
                         }`}
+                        onClick={(e) => {
+                            if (route().current() === 'website.global-search.index') {
+                                e.preventDefault();
+                            }
+                        }}
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -87,6 +100,31 @@ const BottomBar = ({ darkMode, setDarkMode, moreDropdownRef, moreDropdown, setMo
                             />
                         </svg>
                     </Link>
+
+                    <a
+                        href={'#'}
+                        className={`menu-item-inactive relative flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200`}
+                        onClick={(e) => {
+                            if (route().current() === 'website.profile.index') {
+                                e.preventDefault();
+                            }
+                        }}
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="size-7"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                            />
+                        </svg>
+                    </a>
 
                     {/* Posts */}
                     {/* <Link
@@ -114,32 +152,52 @@ const BottomBar = ({ darkMode, setDarkMode, moreDropdownRef, moreDropdown, setMo
                         </svg>
                     </Link> */}
 
+                    <Link
+                        href={route('website.global-filters.index')}
+                        className={`${route().current() === 'website.global-filters.index' ? 'menu-item-active' : 'menu-item-inactive'} flex cursor-pointer items-center rounded-lg p-2 text-white/80`}
+                        onClick={(e) => {
+                            if (route().current() === 'website.global-filters.index') {
+                                e.preventDefault();
+                            }
+                        }}
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="size-7"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
+                            />
+                        </svg>
+                    </Link>
+
                     <button
-                        className="flex cursor-pointer items-center text-white/80"
+                        className={`flex cursor-pointer items-center rounded-lg p-2 text-white/80 ${moreDropdown ? 'menu-item-active' : 'menu-item-inactive'}`}
                         ref={moreDropdownRef}
                         onClick={() => {
                             setMoreDropdown(!moreDropdown);
                         }}
                     >
-                        <span className="hover:text-dark-900 mr-3 flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-indigo-600 hover:bg-indigo-500">
-                            {user && user.avatar}
-                            {!user && (
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth={1.5}
-                                    stroke="currentColor"
-                                    className="size-6"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
-                                    />
-                                </svg>
-                            )}
-                        </span>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="size-7"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M3.75 5.25h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5"
+                            />
+                        </svg>
                     </button>
 
                     {moreDropdown &&
@@ -181,8 +239,9 @@ const BottomBar = ({ darkMode, setDarkMode, moreDropdownRef, moreDropdown, setMo
                                             )}
 
                                             <li>
-                                                <a
-                                                    href="#"
+                                                <Link
+                                                    data-sidebar-link="true"
+                                                    href={route('website.carts.index')}
                                                     className={`menu-item-inactive flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                                 >
                                                     <svg
@@ -191,22 +250,28 @@ const BottomBar = ({ darkMode, setDarkMode, moreDropdownRef, moreDropdown, setMo
                                                         viewBox="0 0 24 24"
                                                         strokeWidth={1.5}
                                                         stroke="currentColor"
-                                                        className={`size-4`}
+                                                         className={`size-4`}
                                                     >
                                                         <path
                                                             strokeLinecap="round"
                                                             strokeLinejoin="round"
-                                                            d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
-                                                        />
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                                                            d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
                                                         />
                                                     </svg>
-                                                    Account Setting
-                                                </a>
+                                                    My Cart{' '}
+                                                    {cartItemsCount > 0 && (
+                                                        <span className="relative ml-auto">
+                                                            <span className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-indigo-500 rounded-full animate-pulse">
+                                                                {cartItemsCount > 99
+                                                                    ? '99+'
+                                                                    : cartItemsCount}
+                                                            </span>
+                                                            <span className="absolute top-0 right-0 block w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></span>
+                                                        </span>
+                                                    )}
+                                                </Link>
                                             </li>
+
                                             <li>
                                                 <a
                                                     href="#"
@@ -231,9 +296,17 @@ const BottomBar = ({ darkMode, setDarkMode, moreDropdownRef, moreDropdown, setMo
                                             </li>
 
                                             <li>
-                                                <a
+                                                <Link
                                                     href={route('website.bookmarks.index')}
                                                     className={`${route().current() === 'website.bookmarks.index' ? 'menu-item-active' : 'menu-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
+                                                    onClick={(e) => {
+                                                        if (
+                                                            route().current() ===
+                                                            'website.bookmarks.index'
+                                                        ) {
+                                                            e.preventDefault();
+                                                        }
+                                                    }}
                                                 >
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -250,13 +323,21 @@ const BottomBar = ({ darkMode, setDarkMode, moreDropdownRef, moreDropdown, setMo
                                                         />
                                                     </svg>
                                                     My Bookmarks
-                                                </a>
+                                                </Link>
                                             </li>
 
                                             <li>
                                                 <Link
                                                     href={route('website.data-deletion.index')}
                                                     className={`${route().current() === 'website.data-deletion.index' ? 'menu-item-active' : 'menu-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
+                                                    onClick={(e) => {
+                                                        if (
+                                                            route().current() ===
+                                                            'website.data-deletion.index'
+                                                        ) {
+                                                            e.preventDefault();
+                                                        }
+                                                    }}
                                                 >
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -308,6 +389,14 @@ const BottomBar = ({ darkMode, setDarkMode, moreDropdownRef, moreDropdown, setMo
                                             prefetch
                                             href={route('website.privacy-policy.index')}
                                             className={`${route().current() === 'website.privacy-policy.index' ? 'menu-item-active' : 'menu-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
+                                            onClick={(e) => {
+                                                if (
+                                                    route().current() ===
+                                                    'website.privacy-policy.index'
+                                                ) {
+                                                    e.preventDefault();
+                                                }
+                                            }}
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"

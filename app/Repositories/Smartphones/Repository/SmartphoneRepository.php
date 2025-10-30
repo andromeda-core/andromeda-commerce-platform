@@ -75,6 +75,7 @@ class SmartphoneRepository implements ISmartphoneRepository
                     return $fail('Only one hashtag is allowed without spaces or commas.');
                 }
             }],
+            'content' => ['required', 'string', 'min:20'],
 
         ], [
             'color_ids.*.required' => 'Color Is Required ',
@@ -133,9 +134,7 @@ class SmartphoneRepository implements ISmartphoneRepository
 
                     $resizedImage = ImageManager::imagick()
                         ->read($image)
-                        ->resize(1920, 1080)
-                        ->cover(1920, 1080)
-                        ->encodeByExtension($image->getClientOriginalExtension(), quality: 80);
+                        ->encodeByExtension('jpg', quality: 70);
 
                     $tempPath = 'temp/uploads/'.$new_name;
                     Storage::disk('local')->put($tempPath, (string) $resizedImage);
@@ -178,6 +177,7 @@ class SmartphoneRepository implements ISmartphoneRepository
                     return $fail('Only one hashtag is allowed without spaces or commas.');
                 }
             }],
+            'content' => ['required', 'string', 'min:20'],
         ], [
             'color_ids.*.required' => 'Color Is Required ',
             'color_ids.*.exists' => 'Given Color Are incorrect',
@@ -264,9 +264,7 @@ class SmartphoneRepository implements ISmartphoneRepository
 
                     $resizedImage = ImageManager::imagick()
                         ->read($image)
-                        ->resize(1920, 1080)
-                        ->cover(1920, 1080)
-                        ->encodeByExtension($image->getClientOriginalExtension(), quality: 80);
+                        ->encodeByExtension('jpg', quality: 70);
 
                     $tempPath = 'temp/uploads/'.$new_name;
                     Storage::disk('local')->put($tempPath, (string) $resizedImage);

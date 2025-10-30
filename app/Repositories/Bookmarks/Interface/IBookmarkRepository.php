@@ -14,5 +14,5 @@ interface IBookmarkRepository
 
     public function destroyBookmarkBySelection(Request $request);
 
-    public function getBookmakrs(Request $request);
+    public function getBookmarkedPosts(Request $request);
 }

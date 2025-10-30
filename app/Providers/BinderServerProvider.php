@@ -6,6 +6,8 @@ use App\Repositories\Batches\Interface\IBatchRepository;
 use App\Repositories\Batches\Repository\BatchRepository;
 use App\Repositories\Bookmarks\Interface\IBookmarkRepository;
 use App\Repositories\Bookmarks\Repository\BookmarkRepository;
+use App\Repositories\Cart\Interface\ICartRepository;
+use App\Repositories\Cart\Repository\CartRepository;
 use App\Repositories\Categories\Interface\ICategoryRepository;
 use App\Repositories\Categories\Repository\CategoryRepository;
 use App\Repositories\Collaborators\Interface\ICollaboratorRepository;
@@ -36,6 +38,8 @@ use App\Repositories\PackageRecordings\Interface\IPackageRecordingsRepository;
 use App\Repositories\PackageRecordings\Repository\PackageRecordingsRepository;
 use App\Repositories\Posts\Interface\IPostRepository;
 use App\Repositories\Posts\Repository\PostRepository;
+use App\Repositories\Products\Interface\IProductsRepository;
+use App\Repositories\Products\Repository\ProductsRepository;
 use App\Repositories\RewardPoints\Interface\IRewardPointRepository;
 use App\Repositories\RewardPoints\Repository\RewardPointRepository;
 use App\Repositories\SearchHistories\Interface\ISearchHistoryRepository;
@@ -83,6 +87,8 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(IGlobalSearchRepository::class, GlobalSearchRepository::class);
         $this->app->bind(ISearchHistoryRepository::class, SearchHistoryRepository::class);
         $this->app->bind(IDataDeletionRequestRepository::class, DataDeletionRequestRepository::class);
+        $this->app->bind(IProductsRepository::class, ProductsRepository::class);
+        $this->app->bind(ICartRepository::class, CartRepository::class);
 
     }
 

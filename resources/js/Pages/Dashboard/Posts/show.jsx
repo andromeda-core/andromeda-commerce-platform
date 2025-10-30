@@ -13,6 +13,7 @@ import { createPortal } from 'react-dom';
 import Toast from '@/Components/Toast';
 import PrimaryButton from '@/Components/PrimaryButton';
 import QRCode from 'react-qr-code';
+import BookmarkStatusChangedModal from '@/Components/BookmarkStatusChangedModal';
 export default function view({ post }) {
     const { generalSetting } = usePage().props;
 
@@ -22,16 +23,21 @@ export default function view({ post }) {
     const dropDownRef = useRef(null);
 
     const [customToastMessage, setCustomToastMessage] = useState({});
+    const [bookmarkStatusChanged, setBookmarkStatusChanged] = useState(false);
 
     const [showQrCode, setShowQrCode] = useState(false);
-    const [url, setUrl] = useState(
-        route('dashboard.posts.show', post?.slug) +
-            `?planet=earth${post?.latitude != null ? '&lat=' + post?.latitude : ''}` +
-            `${post?.longitude != null ? '&lng=' + post?.longitude : ''}` +
-            `${post?.location_name != null ? '&location_name=' + post?.location_name : ''}` +
-            `&timestamp=${post?.created_at}` +
-            `${post?.floor_id != null ? '&floor=' + post?.floor?.name : ''}`,
-    );
+
+    const generateURL = (post) => {
+        return (
+            `?slug=${encodeURIComponent(post?.slug)}&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
+            `${post?.longitude != null ? '&lng=' + encodeURIComponent(post?.longitude) : ''}` +
+            `${post?.location_name != null ? '&location_name=' + encodeURIComponent(post?.location_name) : ''}` +
+            `&timestamp=${encodeURIComponent(post?.created_at)}` +
+            `${post?.floor_id != null ? '&floor=' + encodeURIComponent(post?.floor?.name) : ''}`
+        );
+    };
+
+    const [url, setUrl] = useState(route('dashboard.posts.show', post?.slug) + generateURL(post));
 
     const handleToggle = () => {
         if (iconRef.current) {
@@ -77,11 +83,13 @@ export default function view({ post }) {
                     child="View Posts"
                 />
 
-                {customToastMessage.message != '' && <Toast flash={customToastMessage} />}
+                {Object.values(customToastMessage).length > 0 && (
+                    <Toast flash={customToastMessage} />
+                )}
                 <Card
                     Content={
                         <>
-                            <div className="mx-auto flex w-full max-w-5xl flex-col overflow-hidden rounded-lg shadow-lg md:flex-row">
+                            <div className="flex flex-col w-full max-w-5xl mx-auto overflow-hidden rounded-lg shadow-lg md:flex-row">
                                 {/* Media Section - Shows on top for mobile, left for desktop */}
                                 {((Array.isArray(post?.post_video_urls) &&
                                     post.post_video_urls.length > 0) ||
@@ -100,20 +108,20 @@ export default function view({ post }) {
                                                 loop
                                                 navigation={true}
                                                 modules={[Pagination, Navigation]}
-                                                className="mySwiper h-full w-full"
+                                                className="w-full h-full mySwiper"
                                             >
                                                 {Array.isArray(post?.post_image_urls) &&
                                                     post.post_image_urls.map(
                                                         (img, index) =>
                                                             img && (
                                                                 <SwiperSlide key={`img-${index}`}>
-                                                                    <div className="relative flex h-full w-full items-center justify-center">
+                                                                    <div className="relative flex items-center justify-center w-full h-full">
                                                                         {/* Blurred background filler */}
                                                                         <img
                                                                             src={img}
                                                                             alt=""
                                                                             aria-hidden="true"
-                                                                            className="absolute inset-0 h-full w-full scale-110 object-cover blur-lg"
+                                                                            className="absolute inset-0 object-cover w-full h-full scale-110 blur-lg"
                                                                         />
 
                                                                         {/* Actual image */}
@@ -121,7 +129,7 @@ export default function view({ post }) {
                                                                             src={img}
                                                                             alt={`Image ${index + 1}`}
                                                                             loading="lazy"
-                                                                            className="relative z-10 h-full w-auto object-contain"
+                                                                            className="relative z-10 object-contain w-auto h-full"
                                                                         />
                                                                     </div>
 
@@ -134,11 +142,11 @@ export default function view({ post }) {
                                                         (vid, index) =>
                                                             vid && (
                                                                 <SwiperSlide key={`vid-${index}`}>
-                                                                    <div className="relative flex h-full w-full items-center justify-center">
+                                                                    <div className="relative flex items-center justify-center w-full h-full">
                                                                         {/* Blurred video background */}
                                                                         <video
                                                                             src={vid}
-                                                                            className="absolute inset-0 h-full w-full scale-110 object-cover blur-lg"
+                                                                            className="absolute inset-0 object-cover w-full h-full scale-110 blur-lg"
                                                                             muted
                                                                             loop
                                                                             playsInline
@@ -148,7 +156,7 @@ export default function view({ post }) {
                                                                         <video
                                                                             controls
                                                                             controlsList="nodownload"
-                                                                            className="relative z-10 h-full w-auto object-contain pb-7"
+                                                                            className="relative z-10 object-contain w-auto h-full pb-7"
                                                                         >
                                                                             <source
                                                                                 src={vid}
@@ -177,13 +185,13 @@ export default function view({ post }) {
                                             : 'md:w-full'
                                     }`}
                                 >
-                                    <div className="mx-auto w-full space-y-4 p-6 md:p-10">
+                                    <div className="w-full p-6 mx-auto space-y-4 md:p-10">
                                         {/* Author Header */}
                                         <div className="flex flex-wrap items-center justify-between space-x-3">
                                             <div className="flex items-center space-x-3">
                                                 <img
                                                     src={generalSetting?.app_favicon ?? DummyLogo}
-                                                    className="h-10 w-10 rounded-full"
+                                                    className="w-10 h-10 rounded-full"
                                                     alt="Profile"
                                                 />
                                                 <span className="text-lg font-semibold dark:text-white/80">
@@ -224,14 +232,14 @@ export default function view({ post }) {
                                                         <div
                                                             onClick={(e) => e.stopPropagation()}
                                                             ref={dropDownRef}
-                                                            className="fixed z-[99999] w-44 rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800 sm:w-48"
+                                                            className="fixed z-[100] w-44 rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800 sm:w-48"
                                                             style={{
                                                                 top: `${dropdownPos.top}px`,
                                                                 left: `${dropdownPos.left}px`,
                                                             }}
                                                         >
                                                             <ul
-                                                                className="overflow-y-scroll py-1 text-sm text-gray-700 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-blue-500 dark:text-gray-200 dark:scrollbar-thumb-white"
+                                                                className="py-1 overflow-y-scroll text-sm text-gray-700 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-blue-500 dark:text-gray-200 dark:scrollbar-thumb-white"
                                                                 style={{ maxHeight: '180px' }}
                                                             >
                                                                 <li>
@@ -240,7 +248,7 @@ export default function view({ post }) {
                                                                             setShowQrCode(true);
                                                                             setShowDropdown(false);
                                                                         }}
-                                                                        className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                                                                        className="flex items-center w-full gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
                                                                     >
                                                                         <svg
                                                                             xmlns="http://www.w3.org/2000/svg"
@@ -267,7 +275,7 @@ export default function view({ post }) {
 
                                                                 <li>
                                                                     <button
-                                                                        className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                                                                        className="flex items-center w-full gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
                                                                             router.put(
@@ -279,7 +287,14 @@ export default function view({ post }) {
                                                                                     post_id:
                                                                                         post?.id,
                                                                                 },
+
                                                                                 {
+                                                                                    onSuccess:
+                                                                                        () => {
+                                                                                            setBookmarkStatusChanged(
+                                                                                                true,
+                                                                                            );
+                                                                                        },
                                                                                     onError: (
                                                                                         e,
                                                                                     ) => {
@@ -317,7 +332,7 @@ export default function view({ post }) {
 
                                                                 <li>
                                                                     <button
-                                                                        className="flex w-full items-center gap-1 px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                                                                        className="flex items-center w-full gap-1 px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
                                                                         onClick={(e) => {
                                                                             navigator.clipboard.writeText(
                                                                                 url.trim(),
@@ -363,12 +378,12 @@ export default function view({ post }) {
 
                                         {/* Post Content */}
 
-                                        <p className="text-md mt-8 whitespace-normal break-words font-semibold text-gray-800 dark:text-white/80">
+                                        <p className="mt-8 font-semibold text-gray-800 break-words whitespace-normal text-md dark:text-white/80">
                                             {post?.title}
                                         </p>
 
                                         <div
-                                            className="prose max-w-none break-words text-gray-800 dark:prose-invert dark:text-white/80"
+                                            className="prose text-gray-800 break-words max-w-none dark:prose-invert dark:text-white/80"
                                             dangerouslySetInnerHTML={{
                                                 __html: post?.content,
                                             }}
@@ -385,12 +400,12 @@ export default function view({ post }) {
 
                                         {/* Post Meta Info */}
                                         <div className="flex flex-wrap gap-2 text-xs text-gray-700 dark:text-white/80">
-                                            <span className="rounded-full bg-gray-100 px-2 py-1 dark:bg-gray-500">
+                                            <span className="px-2 py-1 bg-gray-100 rounded-full dark:bg-gray-500">
                                                 {post?.added_at + ' ' + post?.created_at_time}
                                             </span>
 
                                             {post?.location_name && (
-                                                <span className="rounded-full bg-gray-100 px-2 py-1 dark:bg-gray-500">
+                                                <span className="px-2 py-1 bg-gray-100 rounded-full dark:bg-gray-500">
                                                     {post?.location_name}
                                                 </span>
                                             )}
@@ -405,7 +420,7 @@ export default function view({ post }) {
                 {/* QR Code */}
                 {showQrCode && (
                     <>
-                        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                             <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                             {/* Modal content */}
@@ -413,7 +428,7 @@ export default function view({ post }) {
                                 role="dialog"
                                 aria-modal="true"
                                 aria-labelledby="qrCodeTitle"
-                                className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-800 sm:p-8"
+                                className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-gray-800 sm:p-8"
                             >
                                 <div className="text-center">
                                     <h2
@@ -424,16 +439,16 @@ export default function view({ post }) {
                                     </h2>
 
                                     <div className="flex items-center justify-center">
-                                        <div className="mx-auto w-full max-w-xs">
+                                        <div className="w-full max-w-xs mx-auto">
                                             <QRCode
-                                                className="h-auto w-full"
+                                                className="w-full h-auto"
                                                 value={url}
                                                 viewBox="0 0 256 256"
                                             />
                                         </div>
                                     </div>
 
-                                    <div className="mt-6 flex justify-center">
+                                    <div className="flex justify-center mt-6">
                                         <PrimaryButton
                                             Action={() => setShowQrCode(false)}
                                             Text="Close"
@@ -446,7 +461,7 @@ export default function view({ post }) {
                                                     viewBox="0 0 24 24"
                                                     strokeWidth={1.5}
                                                     stroke="currentColor"
-                                                    className="h-6 w-6"
+                                                    className="w-6 h-6"
                                                     aria-hidden="true"
                                                 >
                                                     <path
@@ -464,6 +479,13 @@ export default function view({ post }) {
                     </>
                 )}
             </AuthenticatedLayout>
+
+            {bookmarkStatusChanged && (
+                <BookmarkStatusChangedModal
+                    BookmarkStatusChanged={bookmarkStatusChanged}
+                    setBookmarkStatusChanged={setBookmarkStatusChanged}
+                />
+            )}
         </>
     );
 }

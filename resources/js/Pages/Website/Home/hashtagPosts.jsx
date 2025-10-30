@@ -1,43 +1,133 @@
 import GlobalSearch from '@/Components/GlobalSearch';
+import LinkCopiedModal from '@/Components/LinkCopiedModal';
+import Toast from '@/Components/Toast';
+import getCookie from '@/Hooks/useGetCookie';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, router } from '@inertiajs/react';
+import axios from 'axios';
 import React, { useEffect, useRef, useState } from 'react';
-import { toast } from 'react-toastify';
 
-const hashtagPosts = ({ posts, next_page_url, hashtag, google_map_api_key }) => {
-    const [allResults, setAllResults] = useState(posts);
-    const [nextPageUrl, setNextPageUrl] = useState(next_page_url || null);
+const hashtagPosts = ({ hashtag, google_map_api_key }) => {
+    const [results, setResults] = useState([]);
+    const [nextPageUrl, setNextPageUrl] = useState(null);
+
+    const [allResults, setAllResults] = useState(results);
+
+    const [linkCopied, setLinkCopied] = useState(false);
 
     const windowSize = useWindowSize();
     const loaderRef = useRef(null);
 
     const generateURL = (post) => {
         return (
-            `?slug=${post?.slug}&planet=earth${post?.latitude != null ? '&lat=' + post?.latitude : ''}` +
-            `${post?.longitude != null ? '&lng=' + post?.longitude : ''}` +
-            `${post?.location_name != null ? '&location_name=' + post?.location_name : ''}` +
-            `&timestamp=${post?.timestamp}` +
-            `${post?.floor != null ? '&floor=' + post?.floor : ''}`
+            `?slug=${encodeURIComponent(post?.slug)}&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
+            `${post?.longitude != null ? '&lng=' + encodeURIComponent(post?.longitude) : ''}` +
+            `${post?.location_name != null ? '&location_name=' + encodeURIComponent(post?.location_name) : ''}` +
+            `&timestamp=${encodeURIComponent(post?.timestamp)}` +
+            `${post?.floor != null ? '&floor=' + encodeURIComponent(post?.floor) : ''}`
         );
     };
 
-    const fetchMoreResults = async () => {
-        if (!nextPageUrl) return;
+    const [isLoaded, setIsLoaded] = useState(false);
+    const [isFetchingMore, setIsFetchingMore] = useState(false);
+    const [ErrorMessage, setErrorMessage] = useState('');
+    const [showErrorMessage, setShowErrorMessage] = useState(false);
+
+    const fetchResults = async () => {
+        const cookieValue = getCookie('post_preferences');
+        let parsed = null;
+
+        if (cookieValue && cookieValue !== 'null' && cookieValue !== 'undefined') {
+            try {
+                parsed = JSON.parse(decodeURIComponent(cookieValue));
+            } catch (error) {
+                console.warn('⚠️ Invalid post_preferences cookie. Using defaults.', error);
+                parsed = null;
+            }
+        }
+
+        const defaultPreferences = {
+            text: true,
+            videos: true,
+            images: true,
+            show_posts: true,
+            show_products: true,
+        };
+
+        const finalPreferences =
+            parsed && typeof parsed === 'object'
+                ? { ...defaultPreferences, ...parsed }
+                : defaultPreferences;
 
         try {
-            const res = await axios.get(nextPageUrl, {
+            const res = await axios.post(route('website.posts.hashtag-results'), {
+                post_preferences: finalPreferences,
+                hashtag: decodeURIComponent(hashtag),
+            });
+
+            if (res.data.status) {
+                setAllResults(res.data.backend_retuned_results);
+                setNextPageUrl(res.data.backend_retuned_next_page_url);
+                setIsLoaded(true);
+            } else {
+                setErrorMessage(res.data.message);
+                setShowErrorMessage(true);
+            }
+        } catch (err) {
+            setErrorMessage(err.message);
+            setShowErrorMessage(true);
+        }
+    };
+
+    useEffect(() => {
+        fetchResults();
+    }, []);
+
+    const fetchMoreResults = async () => {
+        if (!nextPageUrl || isFetchingMore) return;
+        setIsFetchingMore(true);
+        try {
+            const cookieValue = getCookie('post_preferences');
+            let parsed = null;
+
+            if (cookieValue && cookieValue !== 'null' && cookieValue !== 'undefined') {
+                try {
+                    parsed = JSON.parse(decodeURIComponent(cookieValue));
+                } catch (error) {
+                    console.warn('⚠️ Invalid post_preferences cookie. Using defaults.', error);
+                    parsed = null;
+                }
+            }
+
+            const defaultPreferences = {
+                text: true,
+                videos: true,
+                images: true,
+                show_posts: true,
+                show_products: true,
+            };
+
+            const finalPreferences =
+                parsed && typeof parsed === 'object'
+                    ? { ...defaultPreferences, ...parsed }
+                    : defaultPreferences;
+
+            const res = await axios.post(nextPageUrl, {
+                post_preferences: finalPreferences,
+                hashtag: decodeURIComponent(hashtag),
+
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                 },
             });
 
-            const { backend_retuned_posts, backend_retuned_next_page_url } = res.data;
+            const { backend_retuned_results, backend_retuned_next_page_url } = res.data;
 
             setAllResults((prev) => {
                 const existingKeys = new Set(prev.map((item) => `${item.type}-${item.id}`));
 
-                const filteredNew = backend_retuned_posts.filter(
+                const filteredNew = backend_retuned_results.filter(
                     (item) => !existingKeys.has(`${item.type}-${item.id}`),
                 );
 
@@ -46,16 +136,20 @@ const hashtagPosts = ({ posts, next_page_url, hashtag, google_map_api_key }) => 
 
             setNextPageUrl(backend_retuned_next_page_url);
         } catch (err) {
-            toast.error('Error fetching post ' + err);
+            setErrorMessage(err.message);
+            setShowErrorMessage(true);
+        } finally {
+            setIsFetchingMore(false);
         }
     };
+
     // Infinite Scroll Observer
     useEffect(() => {
         if (!loaderRef.current || !nextPageUrl) return;
 
         const observer = new IntersectionObserver(
             (entries) => {
-                if (entries[0].isIntersecting) {
+                if (entries[0].isIntersecting && !isFetchingMore) {
                     fetchMoreResults();
                 }
             },
@@ -67,11 +161,12 @@ const hashtagPosts = ({ posts, next_page_url, hashtag, google_map_api_key }) => 
         return () => {
             if (loaderRef.current) observer.unobserve(loaderRef.current);
         };
-    }, [nextPageUrl]);
+    }, [nextPageUrl, isFetchingMore]);
 
     return (
         <MainLayout>
             <Head title="HashTag" />
+            {showErrorMessage && <Toast flash={{ error: ErrorMessage }} />}
 
             <GlobalSearch
                 google_map_api_key={google_map_api_key}
@@ -81,9 +176,9 @@ const hashtagPosts = ({ posts, next_page_url, hashtag, google_map_api_key }) => 
             />
 
             <div className="pb-20 sm:px-6 sm:pb-20 lg:px-8">
-                <div className="rounded-xl bg-white px-3 text-gray-900 dark:bg-deepcharcoal dark:text-gray-100 sm:px-6 lg:px-8">
+                <div className="px-3 text-gray-900 bg-white rounded-xl dark:bg-deepcharcoal dark:text-gray-100 sm:px-6 lg:px-8">
                     {/* Header */}
-                    <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-slate-700">
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-slate-700">
                         <div className="relative flex items-center gap-6">
                             <button
                                 className={`relative scale-105 pb-2 text-sm text-indigo-600 transition-all duration-300 ease-in-out dark:text-indigo-400`}
@@ -101,7 +196,7 @@ const hashtagPosts = ({ posts, next_page_url, hashtag, google_map_api_key }) => 
                                 ></span>
                             </button>
                             <div
-                                className="border-gray-5 group relative mb-3 mt-2 flex items-center justify-between rounded-lg px-2 py-2 text-sm text-indigo-600 transition-all dark:text-indigo-400"
+                                className="relative flex items-center justify-between px-2 py-2 mt-2 mb-3 text-sm text-indigo-600 transition-all rounded-lg border-gray-5 group dark:text-indigo-400"
                                 title="Click to modify filters"
                             >
                                 <div className="flex flex-wrap items-center gap-x-2">{hashtag}</div>
@@ -112,25 +207,54 @@ const hashtagPosts = ({ posts, next_page_url, hashtag, google_map_api_key }) => 
                     {/* Result List */}
                     <div className="divide-y divide-gray-200 dark:divide-slate-700">
                         {allResults.length === 0 ? (
-                            <div className="py-10 text-center text-gray-500 dark:text-gray-400">
-                                No results found
-                            </div>
+                            <>
+                                {!isLoaded ? (
+                                    <div className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80">
+                                        <div className="flex items-center justify-center">
+                                            <div role="status">
+                                                <svg
+                                                    aria-hidden="true"
+                                                    className="w-5 h-5 text-gray-200 animate-spin fill-indigo-600 dark:text-white/80"
+                                                    viewBox="0 0 100 101"
+                                                    fill="none"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                >
+                                                    <path
+                                                        d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                                                        fill="currentColor"
+                                                    />
+                                                    <path
+                                                        d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                                                        fill="currentFill"
+                                                    />
+                                                </svg>
+                                                <span className="sr-only">Loading...</span>
+                                            </div>
+                                        </div>
+                                        Please Wait While We Load Data...
+                                    </div>
+                                ) : (
+                                    <div className="py-10 text-center text-gray-500 dark:text-gray-400">
+                                        No results found
+                                    </div>
+                                )}
+                            </>
                         ) : (
                             allResults.map((item) => (
                                 <div
                                     key={item.id}
-                                    className="group flex cursor-pointer items-center gap-4 px-6 py-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/80"
+                                    className="flex items-center gap-4 px-6 py-4 transition-colors cursor-pointer group hover:bg-gray-50 dark:hover:bg-gray-800/80"
                                 >
                                     {/* Thumbnail */}
-                                    <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-indigo-600 dark:bg-indigo-500">
+                                    <div className="flex-shrink-0 w-12 h-12 overflow-hidden bg-indigo-600 rounded-lg dark:bg-indigo-500">
                                         {item.image ? (
                                             <img
                                                 src={item.image}
                                                 alt={item.title || item.name}
-                                                className="h-full w-full object-cover"
+                                                className="object-cover w-full h-full"
                                             />
                                         ) : (
-                                            <div className="flex h-full items-center justify-center text-sm text-white/80">
+                                            <div className="flex items-center justify-center h-full text-sm text-white/80">
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     fill="none"
@@ -150,30 +274,38 @@ const hashtagPosts = ({ posts, next_page_url, hashtag, google_map_api_key }) => 
                                     </div>
 
                                     {/* Info */}
-                                    <div className="min-w-0 flex-1">
+                                    <div className="flex-1 min-w-0">
                                         <h3 className="truncate">{item.title || item.name}</h3>
-                                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                                        <p className="text-xs text-gray-500 truncate dark:text-gray-400">
                                             {item?.location_name || ''}
                                         </p>
 
-                                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                                        <p className="text-xs text-gray-500 truncate dark:text-gray-400">
+                                            {item?.capacity || ''}
+                                        </p>
+
+                                        <p className="text-xs text-gray-500 truncate dark:text-gray-400">
                                             {item?.tag}
                                         </p>
-                                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                                        <p className="text-xs text-gray-500 truncate dark:text-gray-400">
                                             {item.created_at}
                                         </p>
                                     </div>
 
                                     {/* Right Info */}
-                                    <div className="flex flex-wrap items-center justify-center gap-2 opacity-0 transition-all duration-200 group-hover:opacity-100 lg:flex-nowrap">
+                                    <div className="flex flex-wrap items-center justify-center gap-2 transition-all duration-200 opacity-0 group-hover:opacity-100 lg:flex-nowrap">
                                         <button
                                             title="Copy Link"
-                                            className="flex h-8 w-8 items-center justify-center rounded-full p-2 text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+                                            className="flex items-center justify-center w-8 h-8 p-2 text-gray-500 rounded-full hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                                             onClick={() => {
-                                                navigator.clipboard.writeText(
-                                                    route('home') + generateURL(item),
-                                                );
-                                                toast.success('Link copied to clipboard');
+                                                setLinkCopied(true);
+                                                item.type === 'posts'
+                                                    ? navigator.clipboard.writeText(
+                                                          route('home') + generateURL(item),
+                                                      )
+                                                    : navigator.clipboard.writeText(
+                                                          route('home') + '?m-slug=' + item.slug,
+                                                      );
                                             }}
                                         >
                                             <svg
@@ -194,9 +326,13 @@ const hashtagPosts = ({ posts, next_page_url, hashtag, google_map_api_key }) => 
 
                                         <a
                                             title="Open"
-                                            href={route('home') + generateURL(item)}
+                                            href={
+                                                item.type === 'posts'
+                                                    ? route('home') + generateURL(item)
+                                                    : route('home') + '?m-slug=' + item.slug
+                                            }
                                             {...(windowSize.width > 1024 && { target: '_blank' })}
-                                            className="flex h-8 w-full items-center justify-center gap-2 rounded-full p-2 text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+                                            className="flex items-center justify-center w-full h-8 gap-2 p-2 text-gray-500 rounded-full hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -223,13 +359,13 @@ const hashtagPosts = ({ posts, next_page_url, hashtag, google_map_api_key }) => 
                     {allResults.length > 0 && nextPageUrl && (
                         <div
                             ref={loaderRef}
-                            className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 dark:text-white/80"
+                            className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80"
                         >
                             <div className="flex items-center justify-center">
                                 <div role="status">
                                     <svg
                                         aria-hidden="true"
-                                        className="h-5 w-5 animate-spin fill-indigo-600 text-gray-200 dark:text-gray-600"
+                                        className="w-5 h-5 text-gray-200 animate-spin fill-indigo-600 dark:text-gray-600"
                                         viewBox="0 0 100 101"
                                         fill="none"
                                         xmlns="http://www.w3.org/2000/svg"
@@ -251,6 +387,10 @@ const hashtagPosts = ({ posts, next_page_url, hashtag, google_map_api_key }) => 
                     )}
                 </div>
             </div>
+
+            {linkCopied && (
+                <LinkCopiedModal linkCopied={linkCopied} setLinkCopied={setLinkCopied} />
+            )}
         </MainLayout>
     );
 };
