@@ -40,7 +40,7 @@ export default function index({ posts }) {
                 render: (item) => {
                     return (
                         <Link
-                            href={route('dashboard.posts.show', item?.slug)}
+                            href={route('dashboard.posts.show', encodeURIComponent(item?.slug))}
                             className="text-blue-500 underline break-words cursor-pointer"
                         >
                             {item.title}
