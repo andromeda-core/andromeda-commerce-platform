@@ -7,113 +7,187 @@ export default function VideoPlayer({ videoUrl, thumbnail, className, fullscreen
     const [loading, setLoading] = useState(true);
     const loadingRef = useRef(loading);
     const videoRef = useRef(null);
+    const playerRef = useRef(null);
+
     useEffect(() => {
         loadingRef.current = loading;
     }, [loading]);
 
-    // Loading Video And Showing Loader
+    // Initialize Plyr
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
 
-        const player = new Plyr(video, {
-            controls: [
-                'play',
-                'progress',
-                'current-time',
-                'duration',
-                'mute',
-                'volume',
-                'settings',
-                ...(fullscreen ? ['fullscreen'] : []),
-            ],
-            disableContextMenu: true,
-            previewThumbnails: true,
-            quality: { default: 1080 },
-        });
+        // Cleanup previous player
+        if (playerRef.current) {
+            try {
+                playerRef.current.destroy();
+            } catch (e) {
+                console.warn('Player cleanup error:', e);
+            }
+            playerRef.current = null;
+        }
 
-        let isMounted = true;
-        player.on('canplay', () => isMounted && setLoading(false));
-        player.on('playing', () => isMounted && setLoading(false));
-        player.on('waiting', () => isMounted && setLoading(true));
-        player.on('seeked', () => isMounted && setLoading(false));
+        // Small delay to ensure DOM is ready
+        const initTimer = setTimeout(() => {
+            const player = new Plyr(video, {
+                controls: [
+                    'play-large',
+                    'play',
+                    'progress',
+                    'current-time',
+                    'duration',
+                    'mute',
+                    'volume',
+                    'settings',
+                    ...(fullscreen ? ['fullscreen'] : []),
+                ],
+                settings: ['quality', 'speed'],
+                quality: {
+                    default: 720,
+                    options: [1080, 720, 480, 360],
+                },
+                disableContextMenu: true,
+                hideControls: true,
+                resetOnEnd: false,
+                clickToPlay: true,
+                keyboard: { focused: false, global: false },
+                tooltips: { controls: true, seek: true },
+                displayDuration: true,
+                fullscreen: {
+                    enabled: fullscreen,
+                    fallback: true,
+                    iosNative: false,
+                    container: null,
+                },
+            });
 
-        const handleKeyDown = (e) => {
-            if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+            playerRef.current = player;
 
-            if (fullscreen) {
-                if (e.key.toLowerCase() === 'f') {
-                    e.preventDefault();
-                    if (!loadingRef.current) {
-                        player.fullscreen.toggle();
+            let isMounted = true;
+
+            // Loading events
+            player.on('loadedmetadata', () => {
+                if (isMounted) setLoading(false);
+            });
+
+            player.on('loadeddata', () => {
+                if (isMounted) setLoading(false);
+            });
+
+            player.on('canplay', () => {
+                if (isMounted) setLoading(false);
+            });
+
+            player.on('playing', () => {
+                if (isMounted) setLoading(false);
+            });
+
+            player.on('waiting', () => {
+                if (isMounted) setLoading(true);
+            });
+
+            player.on('seeked', () => {
+                if (isMounted) setLoading(false);
+            });
+
+            // Force controls to show on initialization
+            player.on('ready', () => {
+                const controlsElement = player.elements.container.querySelector('.plyr__controls');
+                if (controlsElement) {
+                    controlsElement.style.opacity = '1';
+                    controlsElement.style.visibility = 'visible';
+                }
+            });
+
+            // Keyboard shortcuts
+            const handleKeyDown = (e) => {
+                if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+                if (!player || loadingRef.current) return;
+
+                const key = e.key.toLowerCase();
+
+                try {
+                    switch (key) {
+                        case 'f':
+                            if (fullscreen && player.fullscreen.enabled) {
+                                e.preventDefault();
+                                player.fullscreen.toggle();
+                            }
+                            break;
+
+                        case 'm':
+                            e.preventDefault();
+                            player.muted = !player.muted;
+                            break;
+
+                        case ' ':
+                            e.preventDefault();
+                            player.togglePlay();
+                            break;
+
+                        case 'arrowright':
+                            e.preventDefault();
+                            player.forward(5);
+                            break;
+
+                        case 'arrowleft':
+                            e.preventDefault();
+                            player.rewind(5);
+                            break;
+
+                        case 'arrowup':
+                            e.preventDefault();
+                            player.increaseVolume(0.1);
+                            break;
+
+                        case 'arrowdown':
+                            e.preventDefault();
+                            player.decreaseVolume(0.1);
+                            break;
+
+                        default:
+                            break;
                     }
+                } catch (err) {
+                    console.warn('Keyboard shortcut error:', err);
                 }
-            }
+            };
 
-            if (e.key.toLowerCase() === 'm') {
-                e.preventDefault();
-                if (!loadingRef.current) {
-                    player.muted = !player.muted;
+            window.addEventListener('keydown', handleKeyDown);
+
+            return () => {
+                isMounted = false;
+                window.removeEventListener('keydown', handleKeyDown);
+                clearTimeout(initTimer);
+                if (playerRef.current) {
+                    try {
+                        playerRef.current.destroy();
+                    } catch (e) {
+                        console.warn('Player cleanup error:', e);
+                    }
+                    playerRef.current = null;
                 }
-            }
+            };
+        }, 100);
 
-            if (e.code === 'Space') {
-                e.preventDefault();
-                if (!loadingRef.current) {
-                    player.playing ? player.pause() : player.play();
-                }
-            }
-
-            if (e.key === 'ArrowRight') {
-                e.preventDefault();
-                player.currentTime += 5;
-            }
-
-            if (e.key === 'ArrowLeft') {
-                e.preventDefault();
-                player.currentTime -= 5;
-            }
-
-            if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                player.volume += 0.1;
-            }
-
-            if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                player.volume -= 0.1;
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-
-        return () => {
-            isMounted = false;
-            window.removeEventListener('keydown', handleKeyDown);
-            player.destroy();
-        };
-    }, [videoUrl]);
+        return () => clearTimeout(initTimer);
+    }, [videoUrl, fullscreen]);
 
     return (
-        <div className="relative top-12">
-            {/* <div
-                className="absolute inset-0 z-20 flex items-center justify-center mt-10 transition-opacity duration-200 pointer-events-none"
-                style={{ opacity: loading ? 1 : 0, pointerEvents: loading ? 'all' : 'none' }}
-            >
-                <Spinner customSize="w-20 h-20" />
-            </div> */}
-
+        <div className="relative flex items-center justify-center w-full h-full">
+            {/* Video Player */}
             <video
-                ref={videoRef}
-                className={`plyr-react plyr rounded-sm ${className || ''}`}
+                // ref={videoRef}
+                className={`w-full rounded-lg ${className || ''}`}
                 controls
-                controlsList="nodownload"
-                src={videoUrl}
+                controlsList="nodownload noremoteplayback"
                 playsInline
+                preload="metadata"
                 poster={thumbnail}
-                preload="auto"
                 muted
             >
+                <source src={videoUrl} type="video/mp4" />
                 Your browser does not support the video tag.
             </video>
         </div>

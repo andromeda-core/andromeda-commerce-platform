@@ -449,6 +449,7 @@ Additional Work:
              Mobile Post Viewer  -> pending
         )
         21: Post Update Issue Fixed  ✅
+        22: Video Plyr.js Currently Disabled And Will be Fixed Later
     )
 
 

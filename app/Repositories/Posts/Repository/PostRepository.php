@@ -270,7 +270,7 @@ class PostRepository implements IPostRepository
 
         $validated_req = $request->validate([
             'title' => ['required', 'string', 'max:255', 'min:10'],
-            'content' => ['required', 'string'],
+            'content' => ['required', 'string', 'min:20'],
             'images' => ['nullable', 'max:35', 'array'],
             'videos' => ['nullable', 'max:5', 'array'],
             'tag' => ['nullable', 'string', 'max:30', function ($attribute, $value, $fail) {

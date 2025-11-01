@@ -267,6 +267,7 @@ export default function edit({ post, floors }) {
                                                     Label={'Content'}
                                                     Id={'content'}
                                                     Required={true}
+                                                    Error={errors?.content}
                                                     Value={data.content}
                                                     Action={(value) => {
                                                         if (value == '<p></p>')

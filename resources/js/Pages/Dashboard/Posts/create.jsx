@@ -518,6 +518,7 @@ export default function create({ floors, googleMapSetting }) {
                                                 <TipTapEditor
                                                     Label={'Content'}
                                                     Id={'content'}
+                                                    Error={errors?.content}
                                                     Required={true}
                                                     Value={data.content}
                                                     Action={(value) => {
