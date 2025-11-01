@@ -325,7 +325,7 @@ class PostRepository implements IPostRepository
 
         try {
 
-            $post = $this->getSinglePostBySlug($slug, $request);
+            $post = $this->post->where('slug', $slug)->where('status', true)->first();
 
             if (empty($post)) {
                 throw new Exception('Post Not Found');

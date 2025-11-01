@@ -95,6 +95,7 @@ class PostController extends Controller implements HasMiddleware
 
     public function update(Request $request, ?string $slug = null)
     {
+
         if (empty($slug)) {
             return back()->with('error', 'Post Slug Not Found');
         }

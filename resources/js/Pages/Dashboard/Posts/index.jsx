@@ -41,7 +41,7 @@ export default function index({ posts }) {
                     return (
                         <Link
                             href={route('dashboard.posts.show', item?.slug)}
-                            className="cursor-pointer break-words text-blue-500 underline"
+                            className="text-blue-500 underline break-words cursor-pointer"
                         >
                             {item.title}
                         </Link>
@@ -56,7 +56,7 @@ export default function index({ posts }) {
                 label: 'Post Type',
                 render: (item) => {
                     return (
-                        <span className="rounded-lg bg-blue-500 p-2 text-white">
+                        <span className="p-2 text-white bg-blue-500 rounded-lg">
                             {item.post_type.charAt(0).toUpperCase() +
                                 item.post_type.slice(1).toLowerCase()}
                         </span>
@@ -69,11 +69,11 @@ export default function index({ posts }) {
                 render: (item) => {
                     if (item.status === 1) {
                         return (
-                            <span className="rounded-lg bg-green-500 p-3 text-white">Active</span>
+                            <span className="p-3 text-white bg-green-500 rounded-lg">Active</span>
                         );
                     } else {
                         return (
-                            <span className="rounded-lg bg-red-500 p-2 text-white">In Active</span>
+                            <span className="p-2 text-white bg-red-500 rounded-lg">In Active</span>
                         );
                     }
                 },
@@ -87,7 +87,7 @@ export default function index({ posts }) {
             {
                 label: 'View',
                 type: 'link',
-                href: (item) => route('dashboard.posts.show', item.slug),
+                href: (item) => route('dashboard.posts.show', encodeURIComponent(item.slug)),
             },
 
             ...(canEdit
@@ -95,7 +95,8 @@ export default function index({ posts }) {
                       {
                           label: 'Edit',
                           type: 'link',
-                          href: (item) => route('dashboard.posts.edit', item.slug),
+                          href: (item) =>
+                              route('dashboard.posts.edit', encodeURIComponent(item.slug)),
                       },
                   ]
                 : []),
@@ -121,7 +122,7 @@ export default function index({ posts }) {
                     Content={
                         <>
                             {can('Posts Create') && (
-                                <div className="my-3 flex flex-wrap justify-end">
+                                <div className="flex flex-wrap justify-end my-3">
                                     <LinkButton
                                         Text={'Create Post'}
                                         URL={route('dashboard.posts.create')}
