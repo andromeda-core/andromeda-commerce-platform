@@ -2,13 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import Plyr from 'plyr';
 import 'plyr/dist/plyr.css';
 import Spinner from './Spinner';
-import axios from 'axios';
 
 export default function VideoPlayer({ videoUrl, thumbnail, className, fullscreen = false }) {
     const [loading, setLoading] = useState(true);
     const loadingRef = useRef(loading);
     const videoRef = useRef(null);
-
     useEffect(() => {
         loadingRef.current = loading;
     }, [loading]);
@@ -97,23 +95,24 @@ export default function VideoPlayer({ videoUrl, thumbnail, className, fullscreen
     }, [videoUrl]);
 
     return (
-        <div className="relative">
-            <div
-                className="pointer-events-none absolute inset-0 z-20 mt-10 flex items-center justify-center transition-opacity duration-200"
+        <div className="relative top-12">
+            {/* <div
+                className="absolute inset-0 z-20 flex items-center justify-center mt-10 transition-opacity duration-200 pointer-events-none"
                 style={{ opacity: loading ? 1 : 0, pointerEvents: loading ? 'all' : 'none' }}
             >
                 <Spinner customSize="w-20 h-20" />
-            </div>
+            </div> */}
 
             <video
                 ref={videoRef}
-                className={`plyr-react plyr rounded-md ${className || ''}`}
+                className={`plyr-react plyr rounded-sm ${className || ''}`}
                 controls
                 controlsList="nodownload"
                 src={videoUrl}
                 playsInline
                 poster={thumbnail}
                 preload="auto"
+                muted
             >
                 Your browser does not support the video tag.
             </video>

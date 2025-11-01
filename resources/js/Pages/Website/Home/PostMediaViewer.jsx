@@ -4,6 +4,8 @@ import { useSwipeable } from 'react-swipeable';
 import useWindowSize from '@/Hooks/useWindowSize';
 import { motion, AnimatePresence } from 'framer-motion';
 import VideoPlayer from '@/Components/VideoPlayer';
+import VideoWithThumbnail from '@/Components/VideoWithThumbnail';
+import VideoThumbnail from '@/Components/VideoThumbnail';
 
 export default function PostMediaViewer({
     viewablePost,
@@ -85,6 +87,10 @@ export default function PostMediaViewer({
 
     useEffect(() => {
         setDirection(1);
+
+        document.querySelectorAll('video').forEach((v) => {
+            v.pause();
+        });
     }, [selected]);
 
     // Preload
@@ -134,12 +140,12 @@ export default function PostMediaViewer({
     return (
         <>
             <div
-                className="relative mx-auto mb-5 mt-5 flex flex-col items-center lg:mt-0"
+                className="relative flex flex-col items-center mx-auto mt-5 mb-5 lg:mt-0"
                 ref={MediaRef}
             >
                 {/* Big Viewer */}
                 <div
-                    className="relative flex flex-shrink-0 items-center justify-center overflow-hidden rounded-sm bg-gray-100 dark:bg-zinc-900/20"
+                    className="relative flex items-center justify-center flex-shrink-0 overflow-hidden bg-gray-100 rounded-sm dark:bg-zinc-900/20"
                     style={{
                         height: windowSize.width >= 1024 ? '70vh' : '60vh',
                         minWidth: windowSize.width >= 1024 ? '30vw' : '100%',
@@ -149,7 +155,7 @@ export default function PostMediaViewer({
                     }}
                     {...handlers}
                 >
-                    <div className="invisible h-full w-full">
+                    <div className="invisible w-full h-full">
                         {mediaItems[selected]?.type === 'image' ? (
                             <img
                                 src={mediaItems[selected]?.url}
@@ -158,31 +164,33 @@ export default function PostMediaViewer({
                                 loading="lazy"
                             />
                         ) : (
-                            <video
-                                src={mediaItems[selected]?.url}
-                                className="h-full w-full min-w-[300px] max-w-[300px] rounded-xl object-contain lg:min-w-[500px]"
+                            <VideoWithThumbnail
+                                className={
+                                    'h-full w-full min-w-[300px] max-w-[300px] rounded-xl object-contain lg:min-w-[500px]'
+                                }
+                                videoUrl={mediaItems[selected]?.url}
                             />
                         )}
                     </div>
                     {/* Animated layers */}
                     <AnimatePresence initial={false} custom={direction}>
-                        <div className="absolute inset-0 flex h-full w-full items-center justify-center">
+                        <div className="absolute inset-0 flex items-center justify-center w-full h-full">
                             {mediaItems.map((item, idx) => (
                                 <motion.div
-                                    key={item.url}
+                                    key={`${idx}-${item.url}`}
                                     initial={false}
                                     animate={{
                                         opacity: idx === selected ? 1 : 0,
                                         zIndex: idx === selected ? 1 : 0,
                                     }}
                                     transition={{ duration: 0.4, ease: 'easeInOut' }}
-                                    className="absolute inset-0 flex h-full w-full items-center justify-center"
+                                    className="absolute inset-0 flex items-center justify-center w-full h-full"
                                 >
                                     {item.type === 'image' ? (
                                         <img
                                             src={item.url}
                                             alt={`Media ${idx}`}
-                                            className="h-full w-full rounded-xl object-contain"
+                                            className="object-contain w-full h-full rounded-xl"
                                             onLoad={() => loadedCache.current.add(item.url)}
                                         />
                                     ) : (
@@ -193,12 +201,9 @@ export default function PostMediaViewer({
                                         //     className="object-contain w-full h-full rounded-xl"
                                         // />
 
-                                        <VideoPlayer
-                                            key={selectedMediaIndex}
+                                        <VideoWithThumbnail
+                                            className={'h-full w-full rounded-md object-contain'}
                                             videoUrl={item.url}
-                                            thumbnail={videoThumbnail}
-                                            className="h-full w-full rounded-xl object-contain"
-                                            fullscreen={true}
                                         />
                                     )}
                                 </motion.div>
@@ -212,7 +217,7 @@ export default function PostMediaViewer({
                     <div className="mt-3 flex max-w-[31vw] gap-2 overflow-x-hidden px-2 scrollbar-none">
                         {mediaItems.map((item, idx) => (
                             <button
-                                key={idx}
+                                key={`${idx}-${item.url}`}
                                 ref={(el) => (mediaThumbRefs.current[idx] = el)}
                                 onClick={() => onSelectMediaIndex(idx)}
                                 className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-sm border transition-all duration-200 ${
@@ -225,13 +230,19 @@ export default function PostMediaViewer({
                                     <img
                                         src={item.url}
                                         alt={`Image ${idx}`}
-                                        className="h-full w-full object-cover"
+                                        className="object-cover w-full h-full"
                                     />
                                 ) : (
-                                    <img
-                                        src={videoThumbnail}
+                                    // <img
+                                    //     src={videoThumbnail}
+                                    //     alt={`Video ${idx}`}
+                                    //     className="object-cover w-full h-full opacity-80"
+                                    // />
+
+                                    <VideoThumbnail
+                                        className={'h-full w-full object-cover opacity-80'}
+                                        videoUrl={item.url}
                                         alt={`Video ${idx}`}
-                                        className="h-full w-full object-cover opacity-80"
                                     />
                                 )}
                             </button>

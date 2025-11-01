@@ -95,7 +95,7 @@ export default function view({ post }) {
                                     post.post_video_urls.length > 0) ||
                                     (Array.isArray(post?.post_image_urls) &&
                                         post.post_image_urls.length > 0)) && (
-                                    <div className="w-full bg-gray-200 dark:bg-gray-900 md:w-1/2">
+                                    <div className="w-full bg-gray-200 dark:bg-deepcharcoal md:w-1/2">
                                         <div className="flex h-[300px] items-center justify-center md:h-[500px]">
                                             <Swiper
                                                 style={{
@@ -176,7 +176,7 @@ export default function view({ post }) {
 
                                 {/* Content Section - Shows below media on mobile, right side on desktop */}
                                 <div
-                                    className={`w-full bg-white dark:bg-gray-900/90 ${
+                                    className={`w-full bg-white dark:bg-deepcharcoal ${
                                         (Array.isArray(post?.post_video_urls) &&
                                             post.post_video_urls.length > 0) ||
                                         (Array.isArray(post?.post_image_urls) &&
@@ -232,7 +232,7 @@ export default function view({ post }) {
                                                         <div
                                                             onClick={(e) => e.stopPropagation()}
                                                             ref={dropDownRef}
-                                                            className="fixed z-[100] w-44 rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800 sm:w-48"
+                                                            className="fixed z-[100] w-44 rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-700 dark:bg-deepcharcoal sm:w-48"
                                                             style={{
                                                                 top: `${dropdownPos.top}px`,
                                                                 left: `${dropdownPos.left}px`,
@@ -400,12 +400,12 @@ export default function view({ post }) {
 
                                         {/* Post Meta Info */}
                                         <div className="flex flex-wrap gap-2 text-xs text-gray-700 dark:text-white/80">
-                                            <span className="px-2 py-1 bg-gray-100 rounded-full dark:bg-gray-500">
+                                            <span className="px-2 py-1 bg-gray-100 rounded-full dark:bg-zinc-800/50">
                                                 {post?.added_at + ' ' + post?.created_at_time}
                                             </span>
 
                                             {post?.location_name && (
-                                                <span className="px-2 py-1 bg-gray-100 rounded-full dark:bg-gray-500">
+                                                <span className="px-2 py-1 bg-gray-100 rounded-full dark:bg-zinc-800/50">
                                                     {post?.location_name}
                                                 </span>
                                             )}
@@ -428,7 +428,7 @@ export default function view({ post }) {
                                 role="dialog"
                                 aria-modal="true"
                                 aria-labelledby="qrCodeTitle"
-                                className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-gray-800 sm:p-8"
+                                className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8"
                             >
                                 <div className="text-center">
                                     <h2

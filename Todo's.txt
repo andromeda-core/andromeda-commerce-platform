@@ -444,6 +444,10 @@ Additional Work:
         17: Dashboard Post View Page Copy Link And Bookmark PopUp Showing Logic Updated ✅
         18: Fonts Changed To New Fonts Given By Joseph ✅
         19: Product Smartphone Mobile Viewer With Gallery For Mobile Completed With Same UI That Was Given  ✅
+        20: Only Video Posts Will Now Display Its First Frame As Thumbnail  (
+             Desktop Post Viewer Configured ✅
+             Mobile Post Viewer  -> pending
+        )
     )
 
 
