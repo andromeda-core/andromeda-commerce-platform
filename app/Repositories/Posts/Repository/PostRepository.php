@@ -612,6 +612,7 @@ class PostRepository implements IPostRepository
 
         $results = collect();
         $hasMore = false;
+        $hasMoreSmartphones = false;
         $posts = [];
         $smartphones = [];
 
@@ -720,6 +721,8 @@ class PostRepository implements IPostRepository
                     ];
                 });
 
+            $hasMoreSmartphones = $smartphones->count() === $perPage;
+
             $hasMore = $hasMore || ($smartphones->count() === $perPage);
 
         }
@@ -750,6 +753,7 @@ class PostRepository implements IPostRepository
             'status' => true,
             'data' => $results,
             'pagination' => [
+                'has_more_smartphones' => $hasMoreSmartphones,
                 'current_page' => (int) $page,
                 'per_page' => (int) $perPage,
                 'has_more_pages' => $hasMore,

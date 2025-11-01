@@ -442,6 +442,8 @@ Additional Work:
         15: URL Generation Logic Encoding Issue Fixed before It was Not Taking Geneating Slug Correctly and failing On Getting Slug For Fetching Post ✅
         16: Add To Cart Logic Done ✅
         17: Dashboard Post View Page Copy Link And Bookmark PopUp Showing Logic Updated ✅
+        18: Fonts Changed To New Fonts Given By Joseph ✅
+        19: Product Smartphone Mobile Viewer With Gallery For Mobile Completed With Same UI That Was Given  ✅
     )
 
 

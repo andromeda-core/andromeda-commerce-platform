@@ -5,6 +5,7 @@ namespace App\Repositories\Inventories\Repository;
 use App\Models\Batch;
 use App\Models\Inventory;
 use App\Models\Smartphone;
+use App\Models\SmartphoneForSale;
 use App\Models\StorageLocation;
 use App\Repositories\Inventories\Interface\IInventoryRepository;
 use Exception;
@@ -16,7 +17,8 @@ class InventoryRepository implements IInventoryRepository
         private Inventory $inventory,
         private Batch $batch,
         private StorageLocation $storage_location,
-        private Smartphone $smartphone
+        private Smartphone $smartphone,
+        private SmartphoneForSale $smartphone_for_sale
     ) {}
 
     public function getAllInventory(Request $request)
@@ -234,7 +236,7 @@ class InventoryRepository implements IInventoryRepository
 
     public function getSmartphones()
     {
-        return $this->smartphone->with(['model_name'])->get()->map(function ($smartphone) {
+        return $this->smartphone->whereNotIn('id', $this->smartphone_for_sale->pluck('smartphone_id'))->with(['model_name'])->get()->map(function ($smartphone) {
             return [
                 'id' => $smartphone->id,
                 'name' => $smartphone->model_name->name,

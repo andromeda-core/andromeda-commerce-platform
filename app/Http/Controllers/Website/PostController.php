@@ -28,12 +28,14 @@ class PostController extends Controller
             $posts = $data['data']['posts'];
             $products = $data['data']['products'];
             $next_page_url = $data['pagination']['next_page_url'];
+            $has_more_smartphones = $data['pagination']['has_more_smartphones'];
 
             return response()->json([
                 'status' => true,
                 'posts' => $posts,
                 'products' => $products,
                 'next_page_url' => $next_page_url,
+                'has_more_smartphones' => $has_more_smartphones,
             ]);
         }
 

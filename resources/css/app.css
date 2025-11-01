@@ -77,6 +77,10 @@
 
 /* Base Layer: Apply Outfit font to body */
 @layer base {
+    :root {
+        --bottom-bar-height: 60px;
+    }
+
     body {
         @apply font-outfit;
     }
@@ -342,4 +346,13 @@
 input[type='search']::-webkit-search-decoration,
 input[type='search']::-webkit-search-cancel-button {
     -webkit-appearance: none;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }

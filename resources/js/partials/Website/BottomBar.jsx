@@ -2,7 +2,14 @@ import { Link, router, usePage } from '@inertiajs/react';
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
-const BottomBar = ({ darkMode, setDarkMode, moreDropdownRef, moreDropdown, setMoreDropdown, cartItemsCount }) => {
+const BottomBar = ({
+    darkMode,
+    setDarkMode,
+    moreDropdownRef,
+    moreDropdown,
+    setMoreDropdown,
+    cartItemsCount,
+}) => {
     const { user } = usePage().props.auth;
 
     // Toggle Mode Dark + Light
@@ -34,9 +41,9 @@ const BottomBar = ({ darkMode, setDarkMode, moreDropdownRef, moreDropdown, setMo
     }, [darkMode]);
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-10 lg:hidden">
+        <div className="fixed bottom-0 left-0 right-0 z-[60] lg:hidden">
             {/* Navigation bar */}
-            <nav className="bg-white border-b border-gray-200 rounded-md shadow-md backdrop-blur-lg dark:border-t dark:border-gray-800 dark:bg-deepcharcoal">
+            <nav className="rounded-md border-b border-gray-200 bg-white shadow-md backdrop-blur-lg dark:border-t dark:border-gray-800 dark:bg-deepcharcoal">
                 <div className="flex items-center justify-around px-4 py-2">
                     {/* Home */}
                     <Link
@@ -44,11 +51,11 @@ const BottomBar = ({ darkMode, setDarkMode, moreDropdownRef, moreDropdown, setMo
                         className={`flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${
                             route().current() === 'home' ? 'menu-item-active' : 'menu-item-inactive'
                         }`}
-                        onClick={(e) => {
-                            if (route().current() === 'home') {
-                                e.preventDefault();
-                            }
-                        }}
+                        // onClick={(e) => {
+                        //     if (route().current() === 'home') {
+                        //         e.preventDefault();
+                        //     }
+                        // }}
                     >
                         <svg
                             className={`size-8`}
@@ -250,7 +257,7 @@ const BottomBar = ({ darkMode, setDarkMode, moreDropdownRef, moreDropdown, setMo
                                                         viewBox="0 0 24 24"
                                                         strokeWidth={1.5}
                                                         stroke="currentColor"
-                                                         className={`size-4`}
+                                                        className={`size-4`}
                                                     >
                                                         <path
                                                             strokeLinecap="round"
@@ -261,12 +268,12 @@ const BottomBar = ({ darkMode, setDarkMode, moreDropdownRef, moreDropdown, setMo
                                                     My Cart{' '}
                                                     {cartItemsCount > 0 && (
                                                         <span className="relative ml-auto">
-                                                            <span className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-indigo-500 rounded-full animate-pulse">
+                                                            <span className="flex h-6 w-6 animate-pulse items-center justify-center rounded-full bg-indigo-500 text-xs font-bold text-white">
                                                                 {cartItemsCount > 99
                                                                     ? '99+'
                                                                     : cartItemsCount}
                                                             </span>
-                                                            <span className="absolute top-0 right-0 block w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></span>
+                                                            <span className="absolute right-0 top-0 block h-2 w-2 animate-bounce rounded-full bg-indigo-400"></span>
                                                         </span>
                                                     )}
                                                 </Link>

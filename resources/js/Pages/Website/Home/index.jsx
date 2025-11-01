@@ -19,6 +19,7 @@ import useSidebarClick from '@/Hooks/useSidebarClick';
 import SmartphoneDesktopModal from './SmartphoneDesktopModal';
 import getCookie from '@/Hooks/useGetCookie';
 import Toast from '@/Components/Toast';
+import SmartphoneMobileModal from './SmartphoneMobileModal';
 
 export default function index({ google_map_api_key, search_history }) {
     const { currency } = usePage().props;
@@ -32,6 +33,7 @@ export default function index({ google_map_api_key, search_history }) {
     const [isPostLoaded, setIsPostLoaded] = useState(false);
     const [posts, setPosts] = useState(null);
     const [products, setProducts] = useState(null);
+
     const [showPostDesktopActionsDropdown, setShowPostDesktopActionsDropdown] = useState(false);
     const [bookmarkStatusChanged, setBookmarkStatusChanged] = useState(false);
     const [linkCopied, setLinkCopied] = useState(false);
@@ -47,6 +49,15 @@ export default function index({ google_map_api_key, search_history }) {
     const [smartphoneMobileModal, setSmartphoneMobileModal] = useState(false);
     const [viewableSmartphone, setViewableSmartphone] = useState(null);
     const [selectedSmartphoneIndex, setSelectedSmartphoneIndex] = useState(null);
+    const [hasMoreSmartphones, setHasMoreSmartphones] = useState(false);
+    const [smartphoneMobileGallery, setSmartphoneMobileGallery] = useState(false);
+
+    // Smartphone Refs
+    const smartphoneMobileGalleryRef = useRef(null);
+
+    useEffect(() => {
+        smartphoneMobileGalleryRef.current = smartphoneMobileGallery;
+    }, [smartphoneMobileGallery]);
 
     const fetchPostsAndProducts = async () => {
         const cookieValue = getCookie('post_preferences');
@@ -82,6 +93,7 @@ export default function index({ google_map_api_key, search_history }) {
             setPosts(res.data.posts);
             setProducts(res.data.products);
             setNextPageUrl(res.data.next_page_url);
+            setHasMoreSmartphones(res.data.has_more_smartphones);
             setIsPostLoaded(true);
         } catch (error) {
             console.error('Failed to fetch posts:', error);
@@ -230,6 +242,7 @@ export default function index({ google_map_api_key, search_history }) {
             if (showQrCode) setShowQrCode(false);
 
             setSmartphoneDesktopModal(false);
+            setSmartphoneMobileGallery(false);
             setSmartphoneMobileModal(true);
         }
 
@@ -257,7 +270,7 @@ export default function index({ google_map_api_key, search_history }) {
 
         const params = new URLSearchParams(window.location.search);
         const slug = params.get('slug');
-        console.log(slug);
+
         if (slug) {
             const post = posts.find((post) => post.slug === slug);
 
@@ -284,10 +297,11 @@ export default function index({ google_map_api_key, search_history }) {
 
         if (slug) {
             const smartphone = products.smartphones.find((smartphone) => smartphone.slug === slug);
-
+            const index = products.smartphones.findIndex((smartphone) => smartphone.slug === slug);
             if (smartphone) {
                 setViewableSmartphone(smartphone);
                 setSmartphoneViewerBasedOnWidth(windowSize);
+                setSelectedSmartphoneIndex(index);
             } else {
                 fetchSingleSmartphone(slug);
                 setSmartphoneViewerBasedOnWidth(windowSize);
@@ -344,6 +358,8 @@ export default function index({ google_map_api_key, search_history }) {
         if (viewablePost !== '') {
             setSelectedMediaIndex(0);
             document.body.classList.add('overflow-hidden');
+        } else if (viewableSmartphone !== null) {
+            document.body.classList.add('overflow-hidden');
         } else {
             document.body.classList.remove('overflow-hidden');
             // if (document.fullscreenElement) closeFullscreen();
@@ -370,8 +386,8 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             if (viewableSmartphoneRef.current !== null) {
-                if (smartphoneMobileModalRef.current) {
-                    setSmartphoneMobileModal(false);
+                if (smartphoneMobileGalleryRef.current) {
+                    setSmartphoneMobileGallery(false);
                     if (currentState?.modal === 'smartphone-gallery') {
                         window.history.replaceState({ modal: 'smartphone-viewer' }, '');
                     }
@@ -380,8 +396,9 @@ export default function index({ google_map_api_key, search_history }) {
                 }
 
                 window.history.replaceState({}, '', window.location.pathname);
-                setViewableSmartphone('');
+                setViewableSmartphone(null);
                 setSmartphoneDesktopModal(false);
+                setSmartphoneMobileModal(false);
 
                 return;
             }
@@ -400,10 +417,7 @@ export default function index({ google_map_api_key, search_history }) {
             });
 
             if (
-                (viewablePostRef.current !== '' ||
-                    isMobilePostGalleryRef.current ||
-                    viewableSmartphoneRef.current !== null ||
-                    smartphoneMobileModalRef.current) &&
+                (viewablePostRef.current !== '' || viewableSmartphoneRef.current !== null) &&
                 isNotAllowedRoute &&
                 !isSidebarClickActive
             ) {
@@ -420,16 +434,7 @@ export default function index({ google_map_api_key, search_history }) {
             if (removeRouterEvent) removeRouterEvent();
             // document.removeEventListener('fullscreenchange', handleFullscreenChange);
         };
-    }, [
-        viewablePost,
-        isMobilePostGallery,
-        isMobilePostViewer,
-        isDesktopPostViewer,
-        isSidebarClickActive,
-        viewableSmartphone,
-        smartphoneDesktopModal,
-        smartphoneMobileModal,
-    ]);
+    }, [viewablePost, isSidebarClickActive, viewableSmartphone]);
 
     const fetchMorePostsAndProducts = async () => {
         if (!nextPageUrl || isfetchingMorePosts.current) return;
@@ -474,7 +479,6 @@ export default function index({ google_map_api_key, search_history }) {
 
     const fetchSinglePost = async (slug) => {
         try {
-            console.log(slug);
             const cookieValue = getCookie('post_preferences');
             let parsed = null;
 
@@ -1753,12 +1757,12 @@ export default function index({ google_map_api_key, search_history }) {
             )}
 
             {!isPostLoaded && (
-                <div className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80">
+                <div className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 dark:text-white/80">
                     <div className="flex items-center justify-center">
                         <div role="status">
                             <svg
                                 aria-hidden="true"
-                                className="w-5 h-5 text-gray-200 animate-spin fill-indigo-600 dark:text-white/80"
+                                className="h-5 w-5 animate-spin fill-indigo-600 text-gray-200 dark:text-white/80"
                                 viewBox="0 0 100 101"
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -1783,7 +1787,7 @@ export default function index({ google_map_api_key, search_history }) {
                 <>
                     {/* Search Bar */}
                     {windowSize.width > 1024 && (
-                        <div className="w-1/2 m-auto">
+                        <div className="m-auto w-1/2">
                             <GlobalSearch
                                 filters={false}
                                 additional_filters={false}
@@ -1807,7 +1811,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                     {/* Masonry Layout */}
                     <div className="pb-20 sm:pb-20">
-                        <div className="mx-auto max-w-8xl sm:px-6 lg:px-8">
+                        <div className="max-w-8xl mx-auto sm:px-6 lg:px-8">
                             {/* Compact Masonry */}
                             <div className="lg:columns:2 columns-1 gap-1 [column-fill:_balance] min-[300px]:columns-2 md:columns-2 lg:gap-2 xl:columns-4">
                                 {posts.map((post, index) => {
@@ -1815,7 +1819,7 @@ export default function index({ google_map_api_key, search_history }) {
                                     return (
                                         <article
                                             key={post?.id}
-                                            className="relative mb-1 overflow-hidden transition-all duration-300 rounded-none shadow-md cursor-pointer group break-inside-avoid hover:-translate-y-1 hover:shadow-xl lg:mb-2"
+                                            className="group relative mb-1 cursor-pointer break-inside-avoid overflow-hidden rounded-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl lg:mb-2"
                                             style={{ animationDelay: `${index * 100}ms` }}
                                             onClick={() => {
                                                 setViewablePost(post);
@@ -1850,7 +1854,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                     {/* Share Button */}
                                                     <button
-                                                        className="absolute text-white right-3 top-3 opacity-80 drop-shadow-lg hover:opacity-100"
+                                                        className="absolute right-3 top-3 text-white opacity-80 drop-shadow-lg hover:opacity-100"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             const url =
@@ -1886,7 +1890,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                       '...'
                                                                     : post?.title}
                                                             </span>
-                                                            <span className="flex items-center gap-1 text-white drop-shadow-md lg:gap-2">
+                                                            {/* <span className="flex items-center gap-1 text-white drop-shadow-md lg:gap-2">
                                                                 {post?.location_name && (
                                                                     <span className="text-xs text-white/80">
                                                                         {post?.location_name
@@ -1908,15 +1912,15 @@ export default function index({ google_map_api_key, search_history }) {
                                                                             ''}
                                                                     </span>
                                                                 )}
-                                                            </span>
+                                                            </span> */}
                                                         </div>
                                                     </div>
                                                 </div>
                                             ) : (
                                                 /* Text-only */
-                                                <div className="relative flex flex-col justify-between p-5 text-white bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 dark:from-gray-500 dark:via-gray-600 dark:to-gray-800">
+                                                <div className="relative flex flex-col justify-between bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 p-5 text-white dark:from-gray-500 dark:via-gray-600 dark:to-gray-800">
                                                     <div className="flex items-center justify-between">
-                                                        <span className="text-white border-b border-gray-200 drop-shadow-md dark:border-gray-300">
+                                                        <span className="border-b border-gray-200 text-white drop-shadow-md dark:border-gray-300">
                                                             {post?.tag}
                                                         </span>
                                                         {/* Share Button */}
@@ -2011,10 +2015,12 @@ export default function index({ google_map_api_key, search_history }) {
                                     return (
                                         <article
                                             key={index}
-                                            className="relative mb-1 overflow-hidden transition-all duration-300 rounded-none shadow-md cursor-pointer group break-inside-avoid hover:-translate-y-1 hover:shadow-xl"
+                                            className="group relative mb-1 cursor-pointer break-inside-avoid overflow-hidden rounded-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
                                             onClick={() => {
-                                                setSmartphoneViewerBasedOnWidth(windowSize);
                                                 setViewableSmartphone(smartphone);
+                                                setSelectedSmartphoneIndex(index);
+
+                                                setSmartphoneViewerBasedOnWidth(windowSize);
                                             }}
                                         >
                                             <div className="relative">
@@ -2022,7 +2028,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                     src={smartphone.images?.[0]}
                                                     alt={smartphone.name}
                                                     loading="lazy"
-                                                    className="object-cover w-full transition-all duration-500 group-hover:scale-105"
+                                                    className="w-full object-cover transition-all duration-500 group-hover:scale-105"
                                                 />
 
                                                 <div className="absolute left-3 top-3">
@@ -2032,7 +2038,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                 </div>
 
                                                 {/* Overlay */}
-                                                <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/70 to-transparent">
+                                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3">
                                                     <div className="mt-2 flex items-center justify-between text-[7px] font-bold text-gray-200 drop-shadow-sm sm:text-[7px] md:text-[8px] lg:text-xs">
                                                         <span className="text-white drop-shadow-md">
                                                             {smartphone.name.length > 20
@@ -2063,13 +2069,13 @@ export default function index({ google_map_api_key, search_history }) {
                             {posts?.length === 0 &&
                                 (Object.keys(products || {}).length === 0 ||
                                     Object.values(products).every((arr) => arr.length === 0)) && (
-                                    <div className="flex items-center justify-center px-6 py-12 bg-white border border-gray-200 shadow-sm rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
+                                    <div className="flex items-center justify-center rounded-xl border border-gray-200 bg-white px-6 py-12 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal">
                                         <div className="flex flex-col items-center gap-4">
                                             {/* Custom No Content SVG */}
-                                            <div className="flex items-center justify-center w-20 h-20">
+                                            <div className="flex h-20 w-20 items-center justify-center">
                                                 <svg
                                                     viewBox="0 0 120 120"
-                                                    className="w-full h-full text-gray-400 dark:text-gray-500"
+                                                    className="h-full w-full text-gray-400 dark:text-gray-500"
                                                     fill="none"
                                                     xmlns="http://www.w3.org/2000/svg"
                                                 >
@@ -2208,38 +2214,34 @@ export default function index({ google_map_api_key, search_history }) {
                                 )}
 
                             {/* Loader */}
-                            {posts?.length > 0 && (
-                                <>
-                                    {nextPageUrl && (
-                                        <div
-                                            ref={loaderRef}
-                                            className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80"
-                                        >
-                                            <div className="flex items-center justify-center">
-                                                <div role="status">
-                                                    <svg
-                                                        aria-hidden="true"
-                                                        className="w-5 h-5 text-gray-200 animate-spin fill-blue-600 dark:text-gray-600"
-                                                        viewBox="0 0 100 101"
-                                                        fill="none"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                    >
-                                                        <path
-                                                            d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                                                            fill="currentColor"
-                                                        />
-                                                        <path
-                                                            d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                                                            fill="currentFill"
-                                                        />
-                                                    </svg>
-                                                    <span className="sr-only">Loading...</span>
-                                                </div>
-                                            </div>
-                                            Loading more...
+                            {nextPageUrl && (
+                                <div
+                                    ref={loaderRef}
+                                    className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 dark:text-white/80"
+                                >
+                                    <div className="flex items-center justify-center">
+                                        <div role="status">
+                                            <svg
+                                                aria-hidden="true"
+                                                className="h-5 w-5 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"
+                                                viewBox="0 0 100 101"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <path
+                                                    d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                                                    fill="currentColor"
+                                                />
+                                                <path
+                                                    d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                                                    fill="currentFill"
+                                                />
+                                            </svg>
+                                            <span className="sr-only">Loading...</span>
                                         </div>
-                                    )}
-                                </>
+                                    </div>
+                                    Loading more...
+                                </div>
                             )}
                         </div>
                     </div>
@@ -2250,7 +2252,7 @@ export default function index({ google_map_api_key, search_history }) {
                         createPortal(
                             <>
                                 <div className="fixed inset-0 left-0 z-50 bg-white dark:bg-zinc-950 lg:left-20">
-                                    <div className="w-full mx-auto lg:w-1/2">
+                                    <div className="mx-auto w-full lg:w-1/2">
                                         <GlobalSearch
                                             mainPage={true}
                                             search_history={search_history}
@@ -2260,13 +2262,13 @@ export default function index({ google_map_api_key, search_history }) {
                                     </div>
 
                                     <div className="relative h-[calc(100vh-60px)] overflow-y-auto pb-24 scrollbar-none">
-                                        <div className="flex flex-col min-h-full lg:flex-row">
+                                        <div className="flex min-h-full flex-col lg:flex-row">
                                             {((Array.isArray(viewablePost?.post_video_urls) &&
                                                 viewablePost.post_video_urls.length > 0) ||
                                                 (Array.isArray(viewablePost?.post_image_urls) &&
                                                     viewablePost.post_image_urls.length > 0)) && (
                                                 <div className="w-full flex-shrink-0 p-2 lg:w-[45%] lg:p-4">
-                                                    <div className="transition-all duration-500 ease-in-out transform translate-y-3">
+                                                    <div className="translate-y-3 transform transition-all duration-500 ease-in-out">
                                                         <PostMediaViewer
                                                             viewablePost={viewablePost}
                                                             selectedMediaIndex={selectedMediaIndex}
@@ -2299,7 +2301,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                     {((!viewablePost?.post_video_urls?.length &&
                                                         !viewablePost?.post_image_urls?.length) ||
                                                         windowSize.width > 1024) && (
-                                                        <div className="w-full p-4 mx-auto space-y-4 md:px-10 lg:pl-6 lg:pr-10">
+                                                        <div className="mx-auto w-full space-y-4 p-4 md:px-10 lg:pl-6 lg:pr-10">
                                                             <div className="flex items-center justify-between">
                                                                 <span className="text-lg font-medium dark:text-white/80">
                                                                     <div>
@@ -2344,7 +2346,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                     {showPostDesktopActionsDropdown && (
                                                                         <div
                                                                             data-post-actions-dropdown
-                                                                            className="absolute right-0 z-50 w-48 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg top-full dark:border-zinc-800 dark:bg-deepcharcoal"
+                                                                            className="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg border border-gray-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-deepcharcoal"
                                                                         >
                                                                             <div className="py-1">
                                                                                 <button
@@ -2519,8 +2521,8 @@ export default function index({ google_map_api_key, search_history }) {
                                                                 }}
                                                             />
 
-                                                            <div className="flex flex-wrap gap-2 my-2 text-gray-700 text-md dark:text-white/80">
-                                                                <span className="flex items-center gap-2 p-2 bg-gray-200 rounded-full dark:bg-gray-900">
+                                                            <div className="text-md my-2 flex flex-wrap gap-2 text-gray-700 dark:text-white/80">
+                                                                <span className="flex items-center gap-2 rounded-full bg-gray-200 p-2 dark:bg-gray-900">
                                                                     <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
                                                                         fill="none"
@@ -2573,7 +2575,7 @@ export default function index({ google_map_api_key, search_history }) {
                                     {/* Scrollable Container */}
                                     <div
                                         tabIndex={0}
-                                        className="w-full h-screen overflow-y-scroll snap-y snap-mandatory scrollbar-none"
+                                        className="h-screen w-full snap-y snap-mandatory overflow-y-scroll scrollbar-none"
                                         style={{
                                             overscrollBehavior: 'contain',
                                             scrollSnapType: 'y mandatory',
@@ -2660,7 +2662,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                 <button
                                                                     ref={elipsisButtonRef}
                                                                     data-elipsis-button
-                                                                    className="p-1 rounded-full hover:bg-gray-300/20"
+                                                                    className="rounded-full p-1 hover:bg-gray-300/20"
                                                                 >
                                                                     <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -2694,7 +2696,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                 className="absolute right-0 top-full z-[99999] mt-2 w-36 rounded-lg border border-gray-900 bg-deepcharcoal shadow-xl sm:w-48"
                                                                             >
                                                                                 <ul
-                                                                                    className="py-1 overflow-y-scroll text-sm text-gray-200 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white"
+                                                                                    className="overflow-y-scroll py-1 text-sm text-gray-200 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white"
                                                                                     style={{
                                                                                         maxHeight:
                                                                                             '180px',
@@ -2712,7 +2714,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                                     false,
                                                                                                 );
                                                                                             }}
-                                                                                            className="flex items-center w-full gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
+                                                                                            className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
                                                                                         >
                                                                                             <svg
                                                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -2742,7 +2744,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                     {auth?.user && (
                                                                                         <li>
                                                                                             <button
-                                                                                                className="flex items-center w-full gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
+                                                                                                className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
                                                                                                 onClick={(
                                                                                                     e,
                                                                                                 ) => {
@@ -2817,7 +2819,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                                                     <li>
                                                                                         <button
-                                                                                            className="flex items-center w-full gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
+                                                                                            className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
                                                                                             onClick={(
                                                                                                 e,
                                                                                             ) => {
@@ -2951,7 +2953,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                     <button
                                                                         ref={elipsisButtonRef}
                                                                         data-elipsis-button
-                                                                        className="p-1 rounded-full hover:bg-gray-300/20"
+                                                                        className="rounded-full p-1 hover:bg-gray-300/20"
                                                                     >
                                                                         <svg
                                                                             xmlns="http://www.w3.org/2000/svg"
@@ -2985,7 +2987,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                     className="absolute right-0 top-full z-[99999] mt-2 w-36 rounded-lg border border-gray-900 bg-deepcharcoal shadow-xl sm:w-48"
                                                                                 >
                                                                                     <ul
-                                                                                        className="py-1 overflow-y-scroll text-sm text-gray-200 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white"
+                                                                                        className="overflow-y-scroll py-1 text-sm text-gray-200 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white"
                                                                                         style={{
                                                                                             maxHeight:
                                                                                                 '180px',
@@ -3003,7 +3005,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                                         false,
                                                                                                     );
                                                                                                 }}
-                                                                                                className="flex items-center w-full gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
+                                                                                                className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
                                                                                             >
                                                                                                 <svg
                                                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -3034,7 +3036,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                         {auth?.user && (
                                                                                             <li>
                                                                                                 <button
-                                                                                                    className="flex items-center w-full gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
+                                                                                                    className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
                                                                                                     onClick={(
                                                                                                         e,
                                                                                                     ) => {
@@ -3109,7 +3111,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                                                         <li>
                                                                                             <button
-                                                                                                className="flex items-center w-full gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
+                                                                                                className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
                                                                                                 onClick={(
                                                                                                     e,
                                                                                                 ) => {
@@ -3192,7 +3194,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                             e.stopPropagation();
                                                             handleHorizontalScroll(post, e);
                                                         }}
-                                                        className="relative flex w-full h-full overflow-x-scroll select-none horizontal-scroll-container snap-x snap-mandatory scrollbar-none"
+                                                        className="horizontal-scroll-container relative flex h-full w-full select-none snap-x snap-mandatory overflow-x-scroll scrollbar-none"
                                                         style={{
                                                             scrollSnapType: 'x mandatory',
                                                             overscrollBehaviorX: 'auto',
@@ -3202,8 +3204,8 @@ export default function index({ google_map_api_key, search_history }) {
                                                             scrollBehavior: 'smooth',
                                                         }}
                                                     >
-                                                        <div className="relative flex-shrink-0 h-full min-w-full snap-start snap-always">
-                                                            <div className="relative flex items-center justify-center w-full h-full text-white">
+                                                        <div className="relative h-full min-w-full flex-shrink-0 snap-start snap-always">
+                                                            <div className="relative flex h-full w-full items-center justify-center text-white">
                                                                 {Array.isArray(
                                                                     post.post_image_urls,
                                                                 ) &&
@@ -3213,7 +3215,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                             post.post_image_urls[0]
                                                                         }
                                                                         alt="Main Post"
-                                                                        className="absolute inset-0 z-10 object-cover w-full h-full"
+                                                                        className="absolute inset-0 z-10 h-full w-full object-cover"
                                                                     />
                                                                 ) : (
                                                                     Array.isArray(
@@ -3229,7 +3231,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                             thumbnail={
                                                                                 videoThumbnail
                                                                             }
-                                                                            className="relative z-10 object-contain max-w-full max-h-full"
+                                                                            className="relative z-10 max-h-full max-w-full object-contain"
                                                                         />
                                                                     )
                                                                 )}
@@ -3240,9 +3242,9 @@ export default function index({ google_map_api_key, search_history }) {
                                                             relatedPosts.map((related, i) => (
                                                                 <div
                                                                     key={related.id || i}
-                                                                    className="relative flex-shrink-0 h-full min-w-full snap-start snap-always"
+                                                                    className="relative h-full min-w-full flex-shrink-0 snap-start snap-always"
                                                                 >
-                                                                    <div className="relative flex items-center justify-center w-full h-full text-white">
+                                                                    <div className="relative flex h-full w-full items-center justify-center text-white">
                                                                         {Array.isArray(
                                                                             related.post_image_urls,
                                                                         ) &&
@@ -3254,7 +3256,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                         .post_image_urls[0]
                                                                                 }
                                                                                 alt="Related Post"
-                                                                                className="absolute inset-0 z-10 object-cover w-full h-full"
+                                                                                className="absolute inset-0 z-10 h-full w-full object-cover"
                                                                             />
                                                                         ) : (
                                                                             Array.isArray(
@@ -3270,7 +3272,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                     thumbnail={
                                                                                         videoThumbnail
                                                                                     }
-                                                                                    className="relative z-10 object-contain max-w-full max-h-full"
+                                                                                    className="relative z-10 max-h-full max-w-full object-contain"
                                                                                 />
                                                                             )
                                                                         )}
@@ -3312,7 +3314,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                         >
                                                             {/* Hashtag */}
                                                             <div
-                                                                className="flex items-center justify-end mb-2 space-x-2"
+                                                                className="mb-2 flex items-center justify-end space-x-2"
                                                                 onClick={() => {
                                                                     setShowDetailsPostIds((prev) =>
                                                                         prev.includes(post.id)
@@ -3407,10 +3409,10 @@ export default function index({ google_map_api_key, search_history }) {
                                                             {showDetailsPostIds.includes(
                                                                 post.id,
                                                             ) && (
-                                                                <div className="flex items-center justify-between mt-3 mb-0">
+                                                                <div className="mb-0 mt-3 flex items-center justify-between">
                                                                     {/* Username */}
-                                                                    <div className="flex items-center mb-0 space-x-2">
-                                                                        <div className="flex items-center justify-center w-8 h-8 text-sm text-gray-900 bg-white rounded-full">
+                                                                    <div className="mb-0 flex items-center space-x-2">
+                                                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-gray-900">
                                                                             {post.user?.avatar ||
                                                                                 'U'}
                                                                         </div>
@@ -3429,7 +3431,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                     </div>
 
                                                                     <button
-                                                                        className="p-1 text-sm font-semibold bg-indigo-600 rounded-md hover:bg-indigo-400/80"
+                                                                        className="rounded-md bg-indigo-600 p-1 text-sm font-semibold hover:bg-indigo-400/80"
                                                                         onClick={() => {
                                                                             setIsMobilePostGallery(
                                                                                 true,
@@ -3458,9 +3460,9 @@ export default function index({ google_map_api_key, search_history }) {
                                                                     post.post_video_urls,
                                                                 ) &&
                                                                 post.post_video_urls.length < 1 && (
-                                                                    <div className="flex items-center justify-between mt-3">
-                                                                        <div className="flex items-center mb-0 space-x-2">
-                                                                            <div className="flex items-center justify-center w-8 h-8 text-sm text-gray-900 bg-white rounded-full">
+                                                                    <div className="mt-3 flex items-center justify-between">
+                                                                        <div className="mb-0 flex items-center space-x-2">
+                                                                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-gray-900">
                                                                                 {post.user
                                                                                     ?.avatar || 'U'}
                                                                             </div>
@@ -3480,7 +3482,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                         </div>
 
                                                                         <button
-                                                                            className="p-1 text-sm font-semibold bg-indigo-600 rounded-md hover:bg-indigo-400/80"
+                                                                            className="rounded-md bg-indigo-600 p-1 text-sm font-semibold hover:bg-indigo-400/80"
                                                                             onClick={() => {
                                                                                 setIsMobilePostGallery(
                                                                                     true,
@@ -3522,7 +3524,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                             >
                                                                 {/* Hashtag */}
                                                                 <div
-                                                                    className="flex items-center justify-end mb-2 space-x-2"
+                                                                    className="mb-2 flex items-center justify-end space-x-2"
                                                                     onClick={() => {
                                                                         setShowDetailsPostIds(
                                                                             (prev) =>
@@ -3633,10 +3635,10 @@ export default function index({ google_map_api_key, search_history }) {
                                                                 {showDetailsPostIds.includes(
                                                                     relatedViewer.id,
                                                                 ) && (
-                                                                    <div className="flex items-center justify-between mt-3 mb-0">
+                                                                    <div className="mb-0 mt-3 flex items-center justify-between">
                                                                         {/* Username */}
-                                                                        <div className="flex items-center mb-0 space-x-2">
-                                                                            <div className="flex items-center justify-center w-8 h-8 text-sm text-gray-900 bg-white rounded-full">
+                                                                        <div className="mb-0 flex items-center space-x-2">
+                                                                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-gray-900">
                                                                                 {relatedViewer.user
                                                                                     ?.avatar || 'U'}
                                                                             </div>
@@ -3659,7 +3661,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                         </div>
 
                                                                         <button
-                                                                            className="p-1 text-sm font-semibold bg-indigo-600 rounded-md hover:bg-indigo-400/80"
+                                                                            className="rounded-md bg-indigo-600 p-1 text-sm font-semibold hover:bg-indigo-400/80"
                                                                             onClick={() => {
                                                                                 setIsMobilePostGallery(
                                                                                     true,
@@ -3690,9 +3692,9 @@ export default function index({ google_map_api_key, search_history }) {
                                                                     ) &&
                                                                     relatedViewer.post_video_urls
                                                                         .length < 1 && (
-                                                                        <div className="flex items-center justify-between mt-3">
-                                                                            <div className="flex items-center mb-0 space-x-2">
-                                                                                <div className="flex items-center justify-center w-8 h-8 text-sm text-gray-900 bg-white rounded-full">
+                                                                        <div className="mt-3 flex items-center justify-between">
+                                                                            <div className="mb-0 flex items-center space-x-2">
+                                                                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-gray-900">
                                                                                     {relatedViewer
                                                                                         .user
                                                                                         ?.avatar ||
@@ -3716,7 +3718,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                             </div>
 
                                                                             <button
-                                                                                className="p-1 text-sm font-semibold bg-indigo-600 rounded-md hover:bg-indigo-400/80"
+                                                                                className="rounded-md bg-indigo-600 p-1 text-sm font-semibold hover:bg-indigo-400/80"
                                                                                 onClick={() => {
                                                                                     setIsMobilePostGallery(
                                                                                         true,
@@ -3760,7 +3762,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                 className="absolute right-0 top-12 z-[9999] mt-2 w-36 rounded-lg border border-gray-900 bg-deepcharcoal shadow-xl sm:w-48"
                                             >
                                                 <ul
-                                                    className="py-1 overflow-y-scroll text-sm text-gray-200 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white"
+                                                    className="overflow-y-scroll py-1 text-sm text-gray-200 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white"
                                                     style={{ maxHeight: '180px' }}
                                                 >
                                                     <li>
@@ -3769,7 +3771,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                 setShowQrCode(true);
                                                                 setElipsisShowDropdown(false);
                                                             }}
-                                                            className="flex items-center w-full gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
+                                                            className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
                                                         >
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -3797,7 +3799,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                     {auth?.user && (
                                                         <li>
                                                             <button
-                                                                className="flex items-center w-full gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
+                                                                className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     router.put(
@@ -3861,7 +3863,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                                                     <li>
                                                         <button
-                                                            className="flex items-center w-full gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
+                                                            className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-950 hover:text-white"
                                                             onClick={(e) => {
                                                                 const url =
                                                                     route('home') +
@@ -3894,7 +3896,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                     </li>
 
                                                     <li>
-                                                        <div className="flex flex-col items-start w-full gap-1 px-4 py-2 transition-colors hover:text-white">
+                                                        <div className="flex w-full flex-col items-start gap-1 px-4 py-2 transition-colors hover:text-white">
                                                             <span className="rounded-full text-[10px]">
                                                                 Post Created Date
                                                             </span>
@@ -3915,7 +3917,7 @@ export default function index({ google_map_api_key, search_history }) {
 
                                     <div className="relative z-10 flex h-[100dvh] w-full flex-col bg-deepcharcoal text-white">
                                         {/* Top Bar */}
-                                        <div className="flex items-center justify-between px-4 py-3 bg-deepcharcoal/50 backdrop-blur-sm">
+                                        <div className="flex items-center justify-between bg-deepcharcoal/50 px-4 py-3 backdrop-blur-sm">
                                             {/* Left side */}
                                             <div className="flex items-center space-x-2">
                                                 {/* Close */}
@@ -3962,7 +3964,7 @@ export default function index({ google_map_api_key, search_history }) {
                                             <div className="flex items-center space-x-3">
                                                 {/* Ellipsis */}
                                                 <button
-                                                    className="p-1 rounded-full hover:bg-gray-300/20"
+                                                    className="rounded-full p-1 hover:bg-gray-300/20"
                                                     ref={elipsisButtonRef}
                                                     data-elipsis-button
                                                 >
@@ -3972,7 +3974,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                         viewBox="0 0 24 24"
                                                         strokeWidth={1.5}
                                                         stroke="currentColor"
-                                                        className="w-6 h-6"
+                                                        className="h-6 w-6"
                                                     >
                                                         <path
                                                             strokeLinecap="round"
@@ -3987,11 +3989,11 @@ export default function index({ google_map_api_key, search_history }) {
                                         {/* Media Section (fixed height) */}
                                         {mediaItems.length > 0 && (
                                             <div className="relative h-[60vh] w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden scrollbar-none">
-                                                <div className="flex w-full h-full">
+                                                <div className="flex h-full w-full">
                                                     {mediaItems?.map((item, idx) => (
                                                         <div
                                                             key={idx}
-                                                            className="relative flex items-center justify-center flex-shrink-0 w-full h-full text-white snap-center snap-always"
+                                                            className="relative flex h-full w-full flex-shrink-0 snap-center snap-always items-center justify-center text-white"
                                                         >
                                                             {item.type === 'image' ? (
                                                                 <>
@@ -4003,7 +4005,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                     <img
                                                                         src={item.url}
                                                                         alt={`Media ${idx}`}
-                                                                        className="relative z-10 object-contain max-w-full max-h-full rounded-none"
+                                                                        className="relative z-10 max-h-full max-w-full rounded-none object-contain"
                                                                     />
                                                                 </>
                                                             ) : (
@@ -4012,7 +4014,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                         key={idx}
                                                                         videoUrl={item.url}
                                                                         thumbnail={videoThumbnail}
-                                                                        className="relative z-10 object-contain max-w-full max-h-full rounded-xl"
+                                                                        className="relative z-10 max-h-full max-w-full rounded-xl object-contain"
                                                                         fullscreen={true}
                                                                     />
                                                                 </>
@@ -4028,7 +4030,7 @@ export default function index({ google_map_api_key, search_history }) {
                                         )}
 
                                         {/* Scrollable Bottom Section */}
-                                        <div className="flex-1 p-4 space-y-3 overflow-y-auto scrollbar-none">
+                                        <div className="flex-1 space-y-3 overflow-y-auto p-4 scrollbar-none">
                                             <div className="flex items-center justify-end">
                                                 {/* Tags */}
                                                 {/* {viewablePost?.tag && (
@@ -4060,14 +4062,14 @@ export default function index({ google_map_api_key, search_history }) {
                                                 dangerouslySetInnerHTML={{
                                                     __html: viewablePost?.content,
                                                 }}
-                                                className="text-sm prose break-words text-white/80"
+                                                className="prose break-words text-sm text-white/80"
                                             ></div>
 
                                             <div className="flex items-center justify-start gap-3">
                                                 {/* {Userprofile} */}
 
                                                 <div className="flex items-center space-x-2">
-                                                    <div className="flex items-center justify-center w-8 h-8 text-sm text-gray-900 bg-white rounded-full">
+                                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm text-gray-900">
                                                         {viewablePost.user?.avatar || 'U'}
                                                     </div>
                                                     <span className="text-xs font-medium text-white/80">
@@ -4162,8 +4164,22 @@ export default function index({ google_map_api_key, search_history }) {
                             smartphone={viewableSmartphone}
                             setSmartphone={setViewableSmartphone}
                             searchHistory={search_history}
+                        />
+                    )}
+
+                    {smartphoneMobileModal && viewableSmartphone != null && (
+                        <SmartphoneMobileModal
+                            smartphoneMobileModal={smartphoneMobileModal}
+                            setSmartphoneMobileModal={setSmartphoneMobileModal}
+                            smartphone={viewableSmartphone}
+                            setSmartphone={setViewableSmartphone}
                             selectedSmartphoneIndex={selectedSmartphoneIndex}
                             setSelectedSmartphoneIndex={setSelectedSmartphoneIndex}
+                            smartphones={products?.smartphones || []}
+                            hasMoreSmartphones={hasMoreSmartphones}
+                            fetchMorePostsAndProducts={fetchMorePostsAndProducts}
+                            smartphoneMobileGallery={smartphoneMobileGallery}
+                            setSmartphoneMobileGallery={setSmartphoneMobileGallery}
                         />
                     )}
                 </>
