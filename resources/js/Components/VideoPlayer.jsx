@@ -182,23 +182,80 @@ export default function VideoPlayer({
     //     return () => clearTimeout(initTimer);
     // }, [videoUrl, fullscreen]);
 
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [showPlayButton, setShowPlayButton] = useState(true);
+    const videoRef = useRef(null);
+
+    const handleVideoClick = () => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        if (video.paused) {
+            video.play();
+            setIsPlaying(true);
+            setShowPlayButton(false);
+        } else {
+            video.pause();
+            setIsPlaying(false);
+            setShowPlayButton(true);
+        }
+    };
+
+    const handlePlay = () => {
+        setIsPlaying(true);
+        setShowPlayButton(false);
+    };
+
+    const handlePause = () => {
+        setIsPlaying(false);
+        setShowPlayButton(true);
+    };
+
     return (
         <div className="relative flex items-center justify-center w-full h-full">
             {/* Video Player */}
             <video
-                className={`w-full rounded-lg ${className || ''} ${feed ? 'feed-video' : ''}`}
-                data-mode={feed ? 'feed' : 'full'}
-                controls={controls}
+                ref={videoRef}
+                className={`w-full rounded-lg ${className || ''}`}
+                controls={feed ? false : controls}
                 autoPlay={autoPlay}
                 playsInline
                 preload="metadata"
-                muted
                 poster={thumbnail}
                 crossOrigin="anonymous"
+                onClick={feed ? handleVideoClick : undefined}
+                onPlay={handlePlay}
+                onPause={handlePause}
             >
                 <source src={videoUrl} type="video/mp4" />
                 Your browser does not support the video tag.
             </video>
+
+            {feed && showPlayButton && (
+                <button
+                    onClick={handleVideoClick}
+                    className="absolute z-10 flex items-center justify-center w-20 h-20 transition-all duration-300 -translate-x-1/2 -translate-y-1/2 rounded-full left-1/2 top-1/2 bg-black/60 backdrop-blur-sm hover:scale-110 hover:bg-black/80"
+                    aria-label={isPlaying ? 'Pause' : 'Play'}
+                >
+                    {!isPlaying ? (
+                        <svg
+                            className="w-10 h-10 ml-1 text-white"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path d="M8 5v14l11-7z" />
+                        </svg>
+                    ) : (
+                        <svg
+                            className="w-10 h-10 text-white"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                        </svg>
+                    )}
+                </button>
+            )}
         </div>
     );
 }
