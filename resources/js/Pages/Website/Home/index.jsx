@@ -389,24 +389,24 @@ export default function index({ google_map_api_key, search_history }) {
                 return;
             }
 
-            // if (viewableSmartphoneRef.current !== null) {
-            //     if (smartphoneMobileGalleryRef.current) {
-            //         setSmartphoneMobileGallery(false);
-            //         if (currentState?.modal === 'smartphone-gallery') {
-            //             window.history.replaceState({ modal: 'smartphone-viewer' }, '');
-            //         }
+            if (viewableSmartphoneRef.current !== null) {
+                if (smartphoneMobileGalleryRef.current) {
+                    setSmartphoneMobileGallery(false);
+                    if (currentState?.modal === 'smartphone-gallery') {
+                        window.history.replaceState({ modal: 'smartphone-viewer' }, '');
+                    }
 
-            //         return;
-            //     }
+                    return;
+                }
 
-            //     window.history.replaceState({}, '', window.location.pathname);
-            //     setViewableSmartphone(null);
-            //     setSmartphoneDesktopModal(false);
-            //     setSmartphoneMobileModal(false);
-            //     console.log('MODAL CLOSES FROM PARENT');
+                window.history.replaceState({}, '', window.location.pathname);
+                setViewableSmartphone(null);
+                setSmartphoneDesktopModal(false);
+                setSmartphoneMobileModal(false);
+                console.log('MODAL CLOSES FROM PARENT');
 
-            //     return;
-            // }
+                return;
+            }
         };
 
         const preventInertiaNavigation = (event) => {

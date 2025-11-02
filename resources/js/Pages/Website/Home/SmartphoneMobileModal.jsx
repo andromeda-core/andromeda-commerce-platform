@@ -366,32 +366,6 @@ const SmartphoneMobileModal = ({
         }
     };
 
-    // Handle browser/mobile back button to close modals
-    useEffect(() => {
-        const handlePopState = (e) => {
-            if (smartphoneMobileModalOpen) {
-                setSmartphoneMobileModalOpen(false);
-                return;
-            }
-        };
-
-        const preventInertiaNavigation = (event) => {
-            const pathname = event.detail?.visit?.url?.pathname || '';
-
-            if (smartphoneMobileModalOpen && pathname === '/') {
-                event.preventDefault();
-            }
-        };
-        window.addEventListener('popstate', handlePopState);
-        const removeRouterEvent = router.on('before', preventInertiaNavigation);
-
-        // Cleanup
-        return () => {
-            window.removeEventListener('popstate', handlePopState);
-            if (removeRouterEvent) removeRouterEvent();
-        };
-    }, [smartphoneMobileModalOpen]);
-
     if (!smartphoneMobileModalOpen) return null;
     return (
         <>
