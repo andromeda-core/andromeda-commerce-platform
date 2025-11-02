@@ -127,47 +127,6 @@
     .dark * {
         scrollbar-color: #52525b #18181b; /* thumb: zinc-600 | track: zinc-900 for dark mode */
     }
-
-    /* 🎬 FEED MODE: Only show play/pause button */
-    video[data-mode='feed']::-webkit-media-controls-panel {
-        display: flex !important;
-        justify-content: center !important;
-    }
-
-    video[data-mode='feed']::-webkit-media-controls-play-button {
-        display: block !important;
-    }
-
-    /* Hide everything else in feed mode */
-    video[data-mode='feed']::-webkit-media-controls-volume-slider,
-    video[data-mode='feed']::-webkit-media-controls-mute-button,
-    video[data-mode='feed']::-webkit-media-controls-timeline,
-    video[data-mode='feed']::-webkit-media-controls-current-time-display,
-    video[data-mode='feed']::-webkit-media-controls-time-remaining-display,
-    video[data-mode='feed']::-webkit-media-controls-seek-back-button,
-    video[data-mode='feed']::-webkit-media-controls-seek-forward-button,
-    video[data-mode='feed']::-webkit-media-controls-fullscreen-button,
-    video[data-mode='feed']::-webkit-media-controls-rewind-button,
-    video[data-mode='feed']::-webkit-media-controls-return-to-realtime-button,
-    video[data-mode='feed']::-webkit-media-controls-toggle-closed-captions-button {
-        display: none !important;
-    }
-
-    /* 🚫 Hide the large white center “poster play” overlay */
-    video[data-mode='feed']::-webkit-media-controls-start-playback-button,
-    video::-webkit-media-controls-start-playback-button {
-        display: none !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-        -webkit-appearance: none !important;
-    }
-
-    /* (Optional) hide iOS overlay enclosure if it still appears */
-    video[data-mode='feed']::-webkit-media-controls-overlay-enclosure {
-        display: none !important;
-        opacity: 0 !important;
-    }
 }
 
 /* Utilities Layer: Define custom utilities for sidebar and other components */
@@ -396,4 +355,89 @@ input[type='search']::-webkit-search-cancel-button {
     to {
         opacity: 1;
     }
+}
+
+/* Native video controls customization for feed mode */
+.feed-video {
+    position: relative;
+}
+
+/* Hide all native controls except play button when in feed mode */
+.feed-video::-webkit-media-controls-panel {
+    display: none !important;
+}
+
+.feed-video::-webkit-media-controls-play-button {
+    display: none !important;
+}
+
+.feed-video::-webkit-media-controls-start-playback-button {
+    display: block !important;
+}
+
+.feed-video::-webkit-media-controls-timeline {
+    display: none !important;
+}
+
+.feed-video::-webkit-media-controls-current-time-display {
+    display: none !important;
+}
+
+.feed-video::-webkit-media-controls-time-remaining-display {
+    display: none !important;
+}
+
+.feed-video::-webkit-media-controls-volume-slider {
+    display: none !important;
+}
+
+.feed-video::-webkit-media-controls-mute-button {
+    display: none !important;
+}
+
+.feed-video::-webkit-media-controls-toggle-closed-captions-button {
+    display: none !important;
+}
+
+.feed-video::-webkit-media-controls-fullscreen-button {
+    display: none !important;
+}
+
+/* Firefox */
+.feed-video::-moz-media-controls {
+    display: none !important;
+}
+
+/* Custom center play/pause button for feed */
+.feed-video::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+}
+
+.feed-video:not(.playing)::after {
+    opacity: 1;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M8 5v14l11-7z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 40px;
+}
+
+.feed-video.playing::after {
+    opacity: 0;
+}
+
+/* Show play button on hover even when playing */
+.feed-video:hover::after {
+    opacity: 0.8;
 }
