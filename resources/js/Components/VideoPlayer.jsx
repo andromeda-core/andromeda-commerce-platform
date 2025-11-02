@@ -66,9 +66,7 @@ export default function VideoPlayer({
                 preload="metadata"
                 poster={thumbnail}
                 crossOrigin="anonymous"
-                muted
-                onClick={feed ? handleInteraction : undefined}
-                // remove onTouchEnd completely to stop double-firing
+                onPointerUp={feed ? handleInteraction : undefined}
                 style={{
                     WebkitTapHighlightColor: 'transparent',
                     touchAction: feed ? 'manipulation' : 'auto',
