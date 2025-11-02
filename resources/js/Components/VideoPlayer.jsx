@@ -1,44 +1,47 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 export default function VideoPlayer({ videoUrl, thumbnail, className, controls, feed, autoPlay }) {
     const videoRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [showControls, setShowControls] = useState(true);
 
-    // ✅ Direct toggle that works in Safari's "gesture" context
-    const handleTap = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
+    useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
 
-        // Call play/pause *synchronously* inside gesture
-        if (video.paused || video.ended) {
-            video.play().catch((err) => console.warn('Play error:', err));
-            setIsPlaying(true);
-        } else {
-            video.pause();
-            setIsPlaying(false);
-        }
-    };
+        // Attach a native (non-React) event listener for Safari
+        const handleNativeTap = () => {
+            if (video.paused || video.ended) {
+                video.play().catch((err) => console.warn('Play error:', err));
+                setIsPlaying(true);
+            } else {
+                video.pause();
+                setIsPlaying(false);
+            }
+        };
 
-    // Auto-hide play icon after playback starts
+        // Attach directly to the element (bypassing React)
+        video.addEventListener('touchend', handleNativeTap);
+        video.addEventListener('click', handleNativeTap);
+
+        return () => {
+            video.removeEventListener('touchend', handleNativeTap);
+            video.removeEventListener('click', handleNativeTap);
+        };
+    }, []);
+
+    // Hide overlay after play
     useEffect(() => {
         if (isPlaying) {
-            const timer = setTimeout(() => setShowControls(false), 1000);
-            return () => clearTimeout(timer);
+            const t = setTimeout(() => setShowControls(false), 1000);
+            return () => clearTimeout(t);
         } else {
             setShowControls(true);
         }
     }, [isPlaying]);
 
     return (
-        <div
-            className="relative flex items-center justify-center w-full h-full select-none"
-            onTouchEnd={handleTap} // ✅ Safari prefers onTouchEnd
-            onClick={handleTap} // ✅ fallback for desktop
-        >
+        <div className="relative flex items-center justify-center w-full h-full select-none">
             <video
                 ref={videoRef}
                 className={`w-full rounded-lg ${className || ''}`}
@@ -60,7 +63,7 @@ export default function VideoPlayer({ videoUrl, thumbnail, className, controls, 
 
             {feed && showControls && (
                 <div
-                    className="absolute z-10 flex items-center justify-center w-20 h-20 transition-all duration-300 -translate-x-1/2 -translate-y-1/2 rounded-full left-1/2 top-1/2 bg-black/60 backdrop-blur-sm hover:scale-110 active:scale-95"
+                    className="absolute z-10 flex items-center justify-center w-20 h-20 transition-all duration-300 -translate-x-1/2 -translate-y-1/2 rounded-full left-1/2 top-1/2 bg-black/60 backdrop-blur-sm"
                     style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
                     {isPlaying ? (
