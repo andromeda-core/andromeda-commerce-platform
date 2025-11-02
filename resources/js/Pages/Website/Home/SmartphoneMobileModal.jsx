@@ -19,7 +19,9 @@ const SmartphoneMobileModal = ({
     smartphoneMobileGallery,
     setSmartphoneMobileGallery,
 }) => {
-    console.log('MODAL OPENS');
+    useEffect(() => {
+        console.log('MODAL OPENS');
+    }, []);
 
     const [localSmartphones, setLocalSmartphones] = useState(smartphones || []);
     const hasInitializedScroll = useRef(false);
@@ -37,16 +39,13 @@ const SmartphoneMobileModal = ({
         if (!smartphoneMobileModal) return;
 
         const url = new URL(window.location);
-        if (!url.searchParams.get('m-slug')) {
-            if (smartphone?.slug) {
-                url.searchParams.set('m-slug', smartphone.slug);
-            }
+        if (!url.searchParams.get('m-slug') && smartphone?.slug) {
+            url.searchParams.set('m-slug', smartphone.slug);
             window.history.pushState({ modal: 'smartphone-viewer' }, '', url.toString());
         }
 
         return () => {
             console.log('MODAL CLODED');
-            setSmartphone(null);
             hasInitializedScroll.current = false;
             window.history.replaceState({}, '', window.location.pathname);
         };
@@ -623,4 +622,4 @@ const SmartphoneMobileModal = ({
     );
 };
 
-export default React.memo(SmartphoneMobileModal);
+export default SmartphoneMobileModal;
