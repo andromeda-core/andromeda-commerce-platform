@@ -1,15 +1,18 @@
+import useWindowSize from '@/Hooks/useWindowSize';
 import React, { useEffect, useRef, useState } from 'react';
 
 export default function VideoPlayer({ videoUrl, thumbnail, className, controls, feed, autoPlay }) {
+    const windowSize = useWindowSize();
+
     const videoRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [showControls, setShowControls] = useState(true);
     const hideTimeout = useRef(null);
 
     const handleTap = () => {
-        setTimeout(() => {
-            alert('TAP');
-        }, 1000);
+        const video = videoRef.current;
+        if (!video) return;
+
         // Clear any pending hide timer so overlay always shows briefly again
         clearTimeout(hideTimeout.current);
         setShowControls(true);
@@ -33,7 +36,11 @@ export default function VideoPlayer({ videoUrl, thumbnail, className, controls, 
             <div
                 className="absolute inset-0 z-20 cursor-pointer"
                 style={{ background: 'transparent' }}
-                onTouchStart={(e) => handleTap(e)} // prevents native tap delay
+                onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleTap(e);
+                }}
             />
 
             <video
