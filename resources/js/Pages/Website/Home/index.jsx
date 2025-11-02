@@ -1771,20 +1771,21 @@ export default function index({ google_map_api_key, search_history }) {
                 clearTimeout(scrollTimeout.current);
             }
 
-            // Debounce the scroll event
-            scrollTimeout.current = setTimeout(() => {
-                const scrollLeft = container.scrollLeft;
-                const itemWidth = container.offsetWidth;
-                const newIndex = Math.round(scrollLeft / itemWidth);
+            requestAnimationFrame(() => {
+                scrollTimeout.current = setTimeout(() => {
+                    const scrollLeft = container.scrollLeft;
+                    const itemWidth = container.offsetWidth;
+                    const newIndex = Math.round(scrollLeft / itemWidth);
 
-                if (newIndex !== currentMediaIndex) {
-                    // Stop all videos and reset their state
-                    handleStopVideoPlayer();
+                    if (newIndex !== currentMediaIndex) {
+                        // Stop all videos and reset their state
+                        handleStopVideoPlayer();
 
-                    // Update current index
-                    setCurrentMediaIndex(newIndex);
-                }
-            }, 150); // Wait 150ms after scrolling stops
+                        // Update current index
+                        setCurrentMediaIndex(newIndex);
+                    }
+                }, 150);
+            });
         },
         [currentMediaIndex],
     );
