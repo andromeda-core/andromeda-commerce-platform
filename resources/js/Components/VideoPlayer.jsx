@@ -15,47 +15,49 @@ export default function VideoPlayer({
 
     const togglePlayPause = () => {
         const now = Date.now();
-        if (now - lastToggleRef.current < 400) return; // prevent double-tap
+        if (now - lastToggleRef.current < 350) return; // debounce
         lastToggleRef.current = now;
 
-        const video = videoRef.current;
-        if (!video) return;
-
-        if (video.paused || video.ended) {
-            video.play().catch((err) => console.warn('Play error:', err));
-        } else {
-            video.pause();
-        }
+        const v = videoRef.current;
+        if (!v) return;
+        if (v.paused || v.ended) v.play().catch(() => {});
+        else v.pause();
     };
 
     useEffect(() => {
-        const video = videoRef.current;
-        if (!video) return;
-
-        const handlePlay = () => setIsPlaying(true);
-        const handlePause = () => setIsPlaying(false);
-
-        video.addEventListener('play', handlePlay);
-        video.addEventListener('pause', handlePause);
-        video.addEventListener('ended', handlePause);
-
+        const v = videoRef.current;
+        if (!v) return;
+        const onPlay = () => setIsPlaying(true);
+        const onPause = () => setIsPlaying(false);
+        v.addEventListener('play', onPlay);
+        v.addEventListener('pause', onPause);
+        v.addEventListener('ended', onPause);
         return () => {
-            video.removeEventListener('play', handlePlay);
-            video.removeEventListener('pause', handlePause);
-            video.removeEventListener('ended', handlePause);
+            v.removeEventListener('play', onPlay);
+            v.removeEventListener('pause', onPause);
+            v.removeEventListener('ended', onPause);
         };
     }, []);
 
-    // ✅ only one event type (click OR touch), not both
-    const handleInteraction = (e) => {
+    // unified pointer handler
+    const handlePointerUp = (e) => {
         if (!feed) return;
         e.preventDefault();
         e.stopPropagation();
         togglePlayPause();
     };
 
+    // cancel the "ghost click" that mobile sends after touch
+    useEffect(() => {
+        const cancelGhostClick = (e) => {
+            if (feed) e.preventDefault();
+        };
+        window.addEventListener('click', cancelGhostClick, true);
+        return () => window.removeEventListener('click', cancelGhostClick, true);
+    }, [feed]);
+
     return (
-        <div className="relative flex items-center justify-center w-full h-full">
+        <div className="relative flex items-center justify-center w-full h-full select-none">
             <video
                 ref={videoRef}
                 className={`w-full rounded-lg ${className || ''}`}
@@ -66,10 +68,12 @@ export default function VideoPlayer({
                 preload="metadata"
                 poster={thumbnail}
                 crossOrigin="anonymous"
-                onPointerUp={feed ? handleInteraction : undefined}
+                muted
+                onPointerUp={feed ? handlePointerUp : undefined}
                 style={{
                     WebkitTapHighlightColor: 'transparent',
                     touchAction: feed ? 'manipulation' : 'auto',
+                    userSelect: 'none',
                 }}
             >
                 <source src={videoUrl} type="video/mp4" />
