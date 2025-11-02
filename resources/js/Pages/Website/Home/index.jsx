@@ -3412,15 +3412,17 @@ export default function index({ google_map_api_key, search_history }) {
                                                                             ) &&
                                                                             related.post_video_urls
                                                                                 .length > 0 && (
-                                                                                <VideoPlayer
+                                                                                <VideoWithThumbnail
                                                                                     videoUrl={
                                                                                         related
                                                                                             .post_video_urls[0]
                                                                                     }
-                                                                                    thumbnail={
-                                                                                        videoThumbnail
+                                                                                    className={
+                                                                                        'absolute inset-0 z-10 h-full w-full object-cover'
                                                                                     }
-                                                                                    className="relative z-10 object-contain max-w-full max-h-full"
+                                                                                    autoPlay={false}
+                                                                                    controls={true}
+                                                                                    feed={true}
                                                                                 />
                                                                             )
                                                                         )}
