@@ -11,15 +11,16 @@ export default function VideoPlayer({
 }) {
     const videoRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
-    const lastToggleRef = useRef(0);
+    const toggleLock = useRef(false);
 
     const togglePlayPause = () => {
-        const now = Date.now();
-        if (now - lastToggleRef.current < 350) return; // debounce
-        lastToggleRef.current = now;
+        if (toggleLock.current) return;
+        toggleLock.current = true;
+        setTimeout(() => (toggleLock.current = false), 300);
 
         const v = videoRef.current;
         if (!v) return;
+
         if (v.paused || v.ended) v.play().catch(() => {});
         else v.pause();
     };
@@ -27,34 +28,26 @@ export default function VideoPlayer({
     useEffect(() => {
         const v = videoRef.current;
         if (!v) return;
-        const onPlay = () => setIsPlaying(true);
-        const onPause = () => setIsPlaying(false);
-        v.addEventListener('play', onPlay);
-        v.addEventListener('pause', onPause);
-        v.addEventListener('ended', onPause);
+        const handlePlay = () => setIsPlaying(true);
+        const handlePause = () => setIsPlaying(false);
+
+        v.addEventListener('play', handlePlay);
+        v.addEventListener('pause', handlePause);
+        v.addEventListener('ended', handlePause);
+
         return () => {
-            v.removeEventListener('play', onPlay);
-            v.removeEventListener('pause', onPause);
-            v.removeEventListener('ended', onPause);
+            v.removeEventListener('play', handlePlay);
+            v.removeEventListener('pause', handlePause);
+            v.removeEventListener('ended', handlePause);
         };
     }, []);
 
-    // unified pointer handler
-    const handlePointerUp = (e) => {
+    const handleInteraction = (e) => {
         if (!feed) return;
         e.preventDefault();
         e.stopPropagation();
         togglePlayPause();
     };
-
-    // cancel the "ghost click" that mobile sends after touch
-    useEffect(() => {
-        const cancelGhostClick = (e) => {
-            if (feed) e.preventDefault();
-        };
-        window.addEventListener('click', cancelGhostClick, true);
-        return () => window.removeEventListener('click', cancelGhostClick, true);
-    }, [feed]);
 
     return (
         <div className="relative flex items-center justify-center w-full h-full select-none">
@@ -68,8 +61,13 @@ export default function VideoPlayer({
                 preload="metadata"
                 poster={thumbnail}
                 crossOrigin="anonymous"
-                muted
-                onPointerUp={feed ? handlePointerUp : undefined}
+                onTouchStart={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }}
+                onTouchEnd={feed ? handleInteraction : undefined}
+                onClick={(e) => e.preventDefault()} // cancel ghost click
+                onPointerUp={feed ? handleInteraction : undefined}
                 style={{
                     WebkitTapHighlightColor: 'transparent',
                     touchAction: feed ? 'manipulation' : 'auto',
