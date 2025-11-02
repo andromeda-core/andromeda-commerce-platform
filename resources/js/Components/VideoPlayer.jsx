@@ -11,13 +11,12 @@ export default function VideoPlayer({
 }) {
     const videoRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
-    const lastActionRef = useRef(0);
+    const lastToggleRef = useRef(0);
 
-    // Toggle logic that respects play state and avoids double triggers
     const togglePlayPause = () => {
         const now = Date.now();
-        if (now - lastActionRef.current < 300) return; // debounce
-        lastActionRef.current = now;
+        if (now - lastToggleRef.current < 400) return; // prevent double-tap
+        lastToggleRef.current = now;
 
         const video = videoRef.current;
         if (!video) return;
@@ -29,7 +28,6 @@ export default function VideoPlayer({
         }
     };
 
-    // Sync play/pause state
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
@@ -48,7 +46,7 @@ export default function VideoPlayer({
         };
     }, []);
 
-    // Unified interaction handler for feed
+    // ✅ only one event type (click OR touch), not both
     const handleInteraction = (e) => {
         if (!feed) return;
         e.preventDefault();
@@ -70,7 +68,7 @@ export default function VideoPlayer({
                 crossOrigin="anonymous"
                 muted
                 onClick={feed ? handleInteraction : undefined}
-                // onTouchEnd={feed ? handleInteraction : undefined}
+                // remove onTouchEnd completely to stop double-firing
                 style={{
                     WebkitTapHighlightColor: 'transparent',
                     touchAction: feed ? 'manipulation' : 'auto',
@@ -80,7 +78,6 @@ export default function VideoPlayer({
                 Your browser does not support the video tag.
             </video>
 
-            {/* Play icon overlay */}
             {feed && (
                 <div
                     className={`pointer-events-none absolute left-1/2 top-1/2 z-10 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 backdrop-blur-sm transition-all duration-300 ${
