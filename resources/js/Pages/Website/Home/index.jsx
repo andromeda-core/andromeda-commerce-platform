@@ -3333,6 +3333,9 @@ export default function index({ google_map_api_key, search_history }) {
                                                                             className={
                                                                                 'absolute inset-0 z-10 h-full w-full object-cover'
                                                                             }
+                                                                            autoPlay={true}
+                                                                            controls={true}
+                                                                            feed={true}
                                                                         />
                                                                     )
                                                                 )}
@@ -4111,12 +4114,19 @@ export default function index({ google_map_api_key, search_history }) {
                                                                 </>
                                                             ) : (
                                                                 <>
-                                                                    <VideoPlayer
+                                                                    {/* <VideoPlayer
                                                                         key={idx}
                                                                         videoUrl={item.url}
                                                                         thumbnail={videoThumbnail}
                                                                         className="relative z-10 object-contain max-w-full max-h-full rounded-xl"
                                                                         fullscreen={true}
+                                                                    /> */}
+
+                                                                    <VideoWithThumbnail
+                                                                        key={idx}
+                                                                        videoUrl={item.url}
+                                                                        className="relative z-10 object-contain max-w-full max-h-full rounded-xl"
+                                                                        autoPlay={true}
                                                                     />
                                                                 </>
                                                             )}

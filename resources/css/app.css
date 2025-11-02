@@ -357,44 +357,27 @@ input[type='search']::-webkit-search-cancel-button {
     }
 }
 
-/* Force Plyr controls to always be visible and interactive */
-.plyr {
-    width: 100%;
-}
-
-.plyr video {
-    width: 100%;
-    height: auto;
-    object-fit: contain;
-}
-
-/* CRITICAL: Force controls to show */
-.plyr--video .plyr__controls {
-    opacity: 1 !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
-}
-
-.plyr__control--overlaid {
+/* 🎬 FEED MODE: Only show play button */
+video[data-mode='feed']::-webkit-media-controls-panel {
     display: flex !important;
-    opacity: 1 !important;
+    justify-content: center !important;
 }
 
-/* Ensure play button is visible */
-.plyr--video .plyr__control--overlaid {
-    background: rgba(0, 113, 235, 0.9);
-    border-radius: 50%;
+video[data-mode='feed']::-webkit-media-controls-play-button {
+    display: block !important;
 }
 
-/* Fix hover states */
-.plyr:hover .plyr__controls {
-    opacity: 1 !important;
-    transform: translateY(0) !important;
-}
-
-/* Center video properly */
-.plyr__video-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* Hide everything else */
+video[data-mode='feed']::-webkit-media-controls-volume-slider,
+video[data-mode='feed']::-webkit-media-controls-mute-button,
+video[data-mode='feed']::-webkit-media-controls-timeline,
+video[data-mode='feed']::-webkit-media-controls-current-time-display,
+video[data-mode='feed']::-webkit-media-controls-time-remaining-display,
+video[data-mode='feed']::-webkit-media-controls-seek-back-button,
+video[data-mode='feed']::-webkit-media-controls-seek-forward-button,
+video[data-mode='feed']::-webkit-media-controls-fullscreen-button,
+video[data-mode='feed']::-webkit-media-controls-rewind-button,
+video[data-mode='feed']::-webkit-media-controls-return-to-realtime-button,
+video[data-mode='feed']::-webkit-media-controls-toggle-closed-captions-button {
+    display: none !important;
 }

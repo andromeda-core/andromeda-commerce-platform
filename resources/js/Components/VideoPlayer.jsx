@@ -3,7 +3,15 @@ import Plyr from 'plyr';
 import 'plyr/dist/plyr.css';
 import Spinner from './Spinner';
 
-export default function VideoPlayer({ videoUrl, thumbnail, className, fullscreen = false }) {
+export default function VideoPlayer({
+    videoUrl,
+    thumbnail,
+    className,
+    fullscreen = false,
+    autoPlay,
+    controls,
+    feed,
+}) {
     // const [loading, setLoading] = useState(true);
     // const loadingRef = useRef(loading);
     // const videoRef = useRef(null);
@@ -180,7 +188,9 @@ export default function VideoPlayer({ videoUrl, thumbnail, className, fullscreen
             <video
                 // ref={videoRef}
                 className={`w-full rounded-lg ${className || ''}`}
-                controls
+                data-mode={feed ? 'feed' : 'full'}
+                {...(controls && { controls })}
+                autoPlay={autoPlay}
                 controlsList="nodownload noremoteplayback"
                 playsInline
                 preload="metadata"

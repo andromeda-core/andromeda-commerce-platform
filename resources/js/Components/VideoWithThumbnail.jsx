@@ -2,7 +2,13 @@ import { useState, useEffect } from 'react';
 import VideoPlayer from './VideoPlayer';
 import Spinner from './Spinner';
 
-const VideoWithThumbnail = ({ className, videoUrl }) => {
+const VideoWithThumbnail = ({
+    className,
+    videoUrl,
+    autoPlay = false,
+    controls = true,
+    feed = false,
+}) => {
     const [thumbnail, setThumbnail] = useState(null);
     const [loaded, setLoaded] = useState(false);
 
@@ -43,7 +49,10 @@ const VideoWithThumbnail = ({ className, videoUrl }) => {
                     videoUrl={videoUrl}
                     thumbnail={thumbnail}
                     className={className}
+                    autoPlay={autoPlay}
+                    controls={controls}
                     fullscreen={true}
+                    feed={feed}
                 />
             )}
         </div>
