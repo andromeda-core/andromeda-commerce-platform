@@ -10,11 +10,11 @@ const VideoThumbnail = ({ videoUrl, alt, className }) => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
 
+        video.crossOrigin = 'anonymous';
         video.src = videoUrl;
         video.muted = true;
         video.playsInline = true;
         video.currentTime = 0.1;
-        video.crossOrigin = 'anonymous';
 
         const capture = () => {
             canvas.width = video.videoWidth;

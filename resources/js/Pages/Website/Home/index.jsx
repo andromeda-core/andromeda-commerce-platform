@@ -21,6 +21,7 @@ import getCookie from '@/Hooks/useGetCookie';
 import Toast from '@/Components/Toast';
 import SmartphoneMobileModal from './SmartphoneMobileModal';
 import VideoThumbnail from '@/Components/VideoThumbnail';
+import VideoWithThumbnail from '@/Components/VideoWithThumbnail';
 
 export default function index({ google_map_api_key, search_history }) {
     const { currency } = usePage().props;
@@ -2658,7 +2659,7 @@ export default function index({ google_map_api_key, search_history }) {
                         isMobilePostViewer &&
                         createPortal(
                             <>
-                                <div className="fixed inset-0 z-50 bg-deepcharcoal">
+                                <div className="fixed inset-0 z-[70] bg-deepcharcoal">
                                     {/* Backdrop */}
                                     {/* <div className="absolute inset-0 pointer-events-none bg-black/70"></div> */}
 
@@ -3313,15 +3314,25 @@ export default function index({ google_map_api_key, search_history }) {
                                                                     ) &&
                                                                     post.post_video_urls.length >
                                                                         0 && (
-                                                                        <VideoPlayer
+                                                                        // <VideoPlayer
+                                                                        //     videoUrl={
+                                                                        //         post
+                                                                        //             .post_video_urls[0]
+                                                                        //     }
+                                                                        //     thumbnail={
+                                                                        //         videoThumbnail
+                                                                        //     }
+                                                                        //     className="relative z-10 object-contain max-w-full max-h-full"
+                                                                        // />
+
+                                                                        <VideoWithThumbnail
                                                                             videoUrl={
                                                                                 post
                                                                                     .post_video_urls[0]
                                                                             }
-                                                                            thumbnail={
-                                                                                videoThumbnail
+                                                                            className={
+                                                                                'absolute inset-0 z-10 h-full w-full object-cover'
                                                                             }
-                                                                            className="relative z-10 object-contain max-w-full max-h-full"
                                                                         />
                                                                     )
                                                                 )}
@@ -3833,7 +3844,7 @@ export default function index({ google_map_api_key, search_history }) {
                                     </div>
                                 </div>
                             </>,
-                            document.body,
+                            document.getElementById('modal-root') || document.body,
                         )}
 
                     {/* Mobile Post Gallery */}
@@ -3841,7 +3852,7 @@ export default function index({ google_map_api_key, search_history }) {
                         isMobilePostViewer &&
                         createPortal(
                             <>
-                                <div className="fixed inset-0 z-50 bg-black">
+                                <div className="fixed inset-0 z-[70] bg-black">
                                     {/* Elipsis Dropdown Menu */}
                                     {showElipsisDropdown && isMobilePostViewer && (
                                         <>
@@ -4185,7 +4196,7 @@ export default function index({ google_map_api_key, search_history }) {
                                     </div>
                                 </div>
                             </>,
-                            document.body,
+                            document.getElementById('modal-root') || document.body,
                         )}
 
                     {/* QR CODE */}
