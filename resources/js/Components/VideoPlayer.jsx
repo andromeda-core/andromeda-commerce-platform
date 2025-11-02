@@ -186,16 +186,20 @@ export default function VideoPlayer({
         <div className="relative flex items-center justify-center w-full h-full">
             {/* Video Player */}
             <video
-                // ref={videoRef}
                 className={`w-full rounded-lg ${className || ''}`}
                 data-mode={feed ? 'feed' : 'full'}
-                {...(controls && { controls })}
-                autoPlay={autoPlay}
-                controlsList="nodownload noremoteplayback"
+                controls={feed ? true : controls}
+                autoPlay={false}
                 playsInline
                 preload="metadata"
+                muted={feed ? true : false}
                 poster={thumbnail}
-                muted
+                crossOrigin="anonymous"
+                onClick={(e) => {
+                    const vid = e.currentTarget;
+                    if (vid.paused) vid.play();
+                    else vid.pause();
+                }}
             >
                 <source src={videoUrl} type="video/mp4" />
                 Your browser does not support the video tag.
