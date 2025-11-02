@@ -3333,7 +3333,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                             className={
                                                                                 'absolute inset-0 z-10 h-full w-full object-cover'
                                                                             }
-                                                                            autoPlay={false}
+                                                                            autoPlay={true}
                                                                             controls={true}
                                                                             feed={true}
                                                                         />

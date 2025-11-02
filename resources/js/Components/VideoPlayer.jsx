@@ -192,7 +192,7 @@ export default function VideoPlayer({
                 autoPlay={false}
                 playsInline
                 preload="metadata"
-                muted={feed ? true : false}
+                muted
                 poster={thumbnail}
                 crossOrigin="anonymous"
                 onClick={(e) => {
