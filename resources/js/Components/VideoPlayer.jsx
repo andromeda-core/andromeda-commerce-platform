@@ -10,12 +10,10 @@ export default function VideoPlayer({
     feed,
 }) {
     const videoRef = useRef(null);
-    const [showPlayButton, setShowPlayButton] = useState(true);
+    const [isPlaying, setIsPlaying] = useState(false);
     const isTogglingRef = useRef(false);
 
-    // Toggle with debounce to prevent double-firing
     const togglePlayPause = () => {
-        // Prevent rapid consecutive toggles
         if (isTogglingRef.current) return;
 
         isTogglingRef.current = true;
@@ -33,14 +31,12 @@ export default function VideoPlayer({
         }
     };
 
-    // Handle play event
     const handlePlay = () => {
-        setShowPlayButton(false);
+        setIsPlaying(true);
     };
 
-    // Handle pause event
     const handlePause = () => {
-        setShowPlayButton(true);
+        setIsPlaying(false);
     };
 
     // Sync with video events
@@ -59,7 +55,6 @@ export default function VideoPlayer({
         };
     }, []);
 
-    // Single handler for all interactions
     const handleInteraction = (e) => {
         if (!feed) return;
 
@@ -71,7 +66,6 @@ export default function VideoPlayer({
 
     return (
         <div className="relative flex items-center justify-center w-full h-full">
-            {/* Video Player - NO click handlers when button is showing */}
             <video
                 ref={videoRef}
                 className={`w-full rounded-lg ${className || ''}`}
@@ -82,9 +76,8 @@ export default function VideoPlayer({
                 preload="metadata"
                 poster={thumbnail}
                 crossOrigin="anonymous"
-                // Only allow video clicks when playing (button hidden)
-                onTouchEnd={feed && !showPlayButton ? handleInteraction : undefined}
-                onClick={feed && !showPlayButton ? handleInteraction : undefined}
+                onTouchEnd={feed ? handleInteraction : undefined}
+                onClick={feed ? handleInteraction : undefined}
                 style={{
                     WebkitTapHighlightColor: 'transparent',
                     touchAction: feed ? 'manipulation' : 'auto',
@@ -94,14 +87,11 @@ export default function VideoPlayer({
                 Your browser does not support the video tag.
             </video>
 
-            {/* Custom Play Button - Only shows when paused */}
-            {feed && showPlayButton && (
-                <button
-                    onTouchEnd={handleInteraction}
-                    onClick={handleInteraction}
-                    className="absolute z-10 flex items-center justify-center w-20 h-20 transition-all duration-300 -translate-x-1/2 -translate-y-1/2 rounded-full left-1/2 top-1/2 bg-black/60 backdrop-blur-sm hover:scale-110 hover:bg-black/80 active:scale-95"
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
-                    aria-label="Play video"
+            {feed && (
+                <div
+                    className={`pointer-events-none absolute left-1/2 top-1/2 z-10 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 backdrop-blur-sm transition-all duration-300 ${
+                        isPlaying ? 'opacity-0' : 'opacity-100'
+                    }`}
                 >
                     <svg
                         className="w-10 h-10 ml-1 text-white"
@@ -110,7 +100,7 @@ export default function VideoPlayer({
                     >
                         <path d="M8 5v14l11-7z" />
                     </svg>
-                </button>
+                </div>
             )}
         </div>
     );
