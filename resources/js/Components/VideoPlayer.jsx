@@ -51,7 +51,16 @@ export default function VideoPlayer({
         };
     }, []);
 
-    const handleClick = (e) => {
+    // Video click handler (for clicking outside buttons)
+    const handleVideoClick = (e) => {
+        if (!feed) return;
+        e.preventDefault();
+        e.stopPropagation();
+        togglePlayPause();
+    };
+
+    // Button click handler (for clicking buttons directly)
+    const handleButtonClick = (e) => {
         if (!feed) return;
         e.preventDefault();
         e.stopPropagation();
@@ -70,6 +79,7 @@ export default function VideoPlayer({
                 preload="metadata"
                 poster={thumbnail}
                 crossOrigin="anonymous"
+                onClick={feed ? handleVideoClick : undefined}
                 style={{
                     WebkitTapHighlightColor: 'transparent',
                     touchAction: feed ? 'manipulation' : 'auto',
@@ -82,11 +92,9 @@ export default function VideoPlayer({
 
             {/* PLAY BUTTON - Shows when paused */}
             {feed && !isPlaying && (
-                <button
-                    onClick={handleClick}
-                    className="absolute z-10 flex items-center justify-center w-20 h-20 transition-all duration-300 -translate-x-1/2 -translate-y-1/2 rounded-full left-1/2 top-1/2 bg-black/60 backdrop-blur-sm hover:scale-110 hover:bg-black/80 active:scale-95"
+                <div
+                    className="absolute z-10 flex items-center justify-center w-20 h-20 transition-all duration-300 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none left-1/2 top-1/2 bg-black/60 backdrop-blur-sm"
                     style={{ WebkitTapHighlightColor: 'transparent' }}
-                    aria-label="Play video"
                 >
                     <svg
                         className="w-10 h-10 ml-1 text-white"
@@ -95,21 +103,19 @@ export default function VideoPlayer({
                     >
                         <path d="M8 5v14l11-7z" />
                     </svg>
-                </button>
+                </div>
             )}
 
-            {/* PAUSE BUTTON - Shows when playing */}
+            {/* PAUSE BUTTON - Shows on hover when playing */}
             {feed && isPlaying && (
-                <button
-                    onClick={handleClick}
-                    className="absolute z-10 flex items-center justify-center w-20 h-20 transition-all duration-300 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-0 left-1/2 top-1/2 bg-black/60 backdrop-blur-sm hover:scale-110 hover:bg-black/80 hover:opacity-100 active:scale-95"
+                <div
+                    className="absolute z-10 flex items-center justify-center w-20 h-20 transition-all duration-300 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-0 pointer-events-none left-1/2 top-1/2 bg-black/60 backdrop-blur-sm group-hover:opacity-100"
                     style={{ WebkitTapHighlightColor: 'transparent' }}
-                    aria-label="Pause video"
                 >
                     <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
                     </svg>
-                </button>
+                </div>
             )}
         </div>
     );
