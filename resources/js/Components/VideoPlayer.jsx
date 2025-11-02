@@ -11,24 +11,21 @@ export default function VideoPlayer({
 }) {
     const videoRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
-    const lastToggleTime = useRef(0);
 
-    const togglePlayPause = () => {
-        const now = Date.now();
-
-        // Prevent rapid toggles (300ms debounce)
-        if (now - lastToggleTime.current < 300) {
-            return;
-        }
-
-        lastToggleTime.current = now;
-
+    const togglePlay = () => {
         const video = videoRef.current;
         if (!video) return;
 
         if (video.paused || video.ended) {
-            video.play().catch(() => {});
-        } else {
+            video.play().catch((err) => console.warn('Play error:', err));
+        }
+    };
+
+    const togglePause = () => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        if (!video.paused && !video.ended) {
             video.pause();
         }
     };
@@ -50,13 +47,6 @@ export default function VideoPlayer({
             // video.removeEventListener('ended', handlePause);
         };
     }, []);
-
-    const handleClick = (e) => {
-        if (!feed) return;
-        e.preventDefault();
-        e.stopPropagation();
-        togglePlayPause();
-    };
 
     return (
         <div className="relative flex items-center justify-center w-full h-full select-none">
@@ -83,7 +73,7 @@ export default function VideoPlayer({
             {/* PLAY BUTTON - Shows when paused */}
             {feed && !isPlaying && (
                 <div
-                    onClick={handleClick}
+                    onClick={togglePlay}
                     className="absolute z-10 flex items-center justify-center w-20 h-20 transition-all duration-300 -translate-x-1/2 -translate-y-1/2 rounded-full left-1/2 top-1/2 bg-black/60 backdrop-blur-sm hover:scale-110 hover:bg-black/80 active:scale-95"
                     style={{ WebkitTapHighlightColor: 'transparent' }}
                     aria-label="Play video"
@@ -101,7 +91,7 @@ export default function VideoPlayer({
             {/* PAUSE BUTTON - Shows when playing */}
             {feed && isPlaying && (
                 <div
-                    onClick={handleClick}
+                    onClick={togglePause}
                     className="absolute z-10 flex items-center justify-center w-20 h-20 transition-all duration-300 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-0 left-1/2 top-1/2 bg-black/60 backdrop-blur-sm hover:scale-110 hover:bg-black/80 hover:opacity-100 active:scale-95"
                     style={{ WebkitTapHighlightColor: 'transparent' }}
                     aria-label="Pause video"
