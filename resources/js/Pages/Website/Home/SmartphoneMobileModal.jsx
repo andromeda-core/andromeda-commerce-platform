@@ -47,7 +47,7 @@ const SmartphoneMobileModal = ({
         return () => {
             console.log('MODAL CLODED');
             hasInitializedScroll.current = false;
-            window.history.replaceState({}, '', window.location.pathname);
+            window.history.replaceState({}, '', window.location.href);
         };
     }, [smartphoneMobileModalOpen, smartphone?.slug]);
 
