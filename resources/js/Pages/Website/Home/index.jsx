@@ -1755,6 +1755,26 @@ export default function index({ google_map_api_key, search_history }) {
         }
     };
 
+    const PostGalleryMediaContainerRef = useRef(null);
+
+    const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+
+    // Handle scroll/swipe to stop videos On Post Gallery
+    const handlePostGalleryMediaScroll = (e) => {
+        const container = e.target;
+        const scrollLeft = container.scrollLeft;
+        const itemWidth = container.offsetWidth;
+        const newIndex = Math.round(scrollLeft / itemWidth);
+
+        if (newIndex !== currentMediaIndex) {
+            // Stop all videos
+            handleStopVideoPlayer();
+
+            // Update current index
+            setCurrentMediaIndex(newIndex);
+        }
+    };
+
     return (
         <MainLayout>
             <Head title="Home" />
@@ -4101,7 +4121,11 @@ export default function index({ google_map_api_key, search_history }) {
 
                                         {/* Media Section (fixed height) */}
                                         {mediaItems.length > 0 && (
-                                            <div className="relative h-[60vh] w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden scrollbar-none">
+                                            <div
+                                                ref={PostGalleryMediaContainerRef}
+                                                onScroll={handlePostGalleryMediaScroll}
+                                                className="relative h-[60vh] w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden scrollbar-none"
+                                            >
                                                 <div className="flex w-full h-full">
                                                     {mediaItems?.map((item, idx) => (
                                                         <div
@@ -4135,7 +4159,8 @@ export default function index({ google_map_api_key, search_history }) {
                                                                         key={idx}
                                                                         videoUrl={item.url}
                                                                         className="relative z-10 object-contain max-w-full max-h-full rounded-xl"
-                                                                        autoPlay={true}
+                                                                        autoPlay={false}
+                                                                        controls={true}
                                                                     />
                                                                 </>
                                                             )}
