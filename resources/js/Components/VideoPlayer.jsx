@@ -64,8 +64,12 @@ export default function VideoPlayer({
                 onTouchStart={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    alert('OnTOUCH FIRED');
                 }}
-                onClick={(e) => e.preventDefault()}
+                onClick={(e) => {
+                    e.preventDefault();
+                    alert('On CLick');
+                }}
                 onPointerUp={feed ? handleInteraction : undefined}
                 style={{
                     WebkitTapHighlightColor: 'transparent',
