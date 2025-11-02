@@ -307,7 +307,10 @@ class CustomerRepository implements ICustomerRepository
             }
 
             if (! $user->hasRole('Customer')) {
-                throw new Exception('Only Customers Can Update Profile From Here');
+                return [
+                    'status' => false,
+                    'message' => 'Only Customers Can Update Profile From Here',
+                ];
             }
 
             $user->update([
@@ -364,7 +367,10 @@ class CustomerRepository implements ICustomerRepository
         }
 
         if (! $user->hasRole('Customer')) {
-            throw new Exception('Only Customers Can Update Profile From Here');
+            return [
+                'status' => false,
+                'message' => 'Only Customers Can Update Profile From Here',
+            ];
         }
 
         if ($user->update(['password' => bcrypt($validated_req['password'])])) {
