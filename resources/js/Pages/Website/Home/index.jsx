@@ -207,8 +207,14 @@ export default function index({ google_map_api_key, search_history }) {
             `${post?.floor_id != null ? '&floor=' + encodeURIComponent(post?.floor?.name) : ''}`
         );
     };
-    // Auto Select Post From Mobile Post Container Logic
 
+    const handleStopVideoPlayer = () => {
+        document.querySelectorAll('video').forEach((v) => {
+            v.pause();
+        });
+    };
+
+    // Auto Select Post From Mobile Post Container Logic
     const scrollToPost = (post) => {
         const index = posts.findIndex((p) => p.id === post.id);
         if (index !== -1 && postsRefs.current[index]) {
@@ -1075,7 +1081,7 @@ export default function index({ google_map_api_key, search_history }) {
 
             const atTop = container.scrollTop <= 0;
             const atBottom = checkScrollReachedTarget(false);
-
+            handleStopVideoPlayer();
             if (direction < 0 && atTop) {
                 nextIndex = postsRef.current.length - 1;
                 isLooping.current = true;
@@ -1268,6 +1274,7 @@ export default function index({ google_map_api_key, search_history }) {
             touchStartX.current = e.touches[0].clientX;
             gestureLocked.current = null;
 
+            handleStopVideoPlayer();
             const slug = relatedPostSlugRef.current;
             if (slug) {
                 lastDirectionRef.current[slug] = null;
@@ -1644,6 +1651,8 @@ export default function index({ google_map_api_key, search_history }) {
         const lastIndex = lastHorizontalIndexRef.current[slug] ?? 0;
 
         if (index === lastIndex) return;
+
+        handleStopVideoPlayer();
 
         lastHorizontalIndexRef.current[slug] = index;
 
@@ -3333,7 +3342,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                             className={
                                                                                 'absolute inset-0 z-10 h-full w-full object-cover'
                                                                             }
-                                                                            autoPlay={true}
+                                                                            autoPlay={false}
                                                                             controls={true}
                                                                             feed={true}
                                                                         />
