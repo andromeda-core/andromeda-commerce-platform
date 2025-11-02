@@ -18,6 +18,7 @@ export default function VideoPlayer({
 
         if (video.paused || video.ended) {
             video.play().catch((err) => console.warn('Play error:', err));
+            setIsPlaying(true);
         }
     };
 
@@ -27,26 +28,9 @@ export default function VideoPlayer({
 
         if (!video.paused && !video.ended) {
             video.pause();
+            setIsPlaying(false);
         }
     };
-
-    useEffect(() => {
-        const video = videoRef.current;
-        if (!video) return;
-
-        const handlePlay = () => setIsPlaying(true);
-        const handlePause = () => setIsPlaying(false);
-
-        video.addEventListener('play', handlePlay);
-        video.addEventListener('pause', handlePause);
-        // video.addEventListener('ended', handlePause);
-
-        return () => {
-            video.removeEventListener('play', handlePlay);
-            video.removeEventListener('pause', handlePause);
-            // video.removeEventListener('ended', handlePause);
-        };
-    }, []);
 
     return (
         <div className="relative flex items-center justify-center w-full h-full select-none">
