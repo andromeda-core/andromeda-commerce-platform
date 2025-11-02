@@ -65,8 +65,7 @@ export default function VideoPlayer({
                     e.preventDefault();
                     e.stopPropagation();
                 }}
-                onTouchEnd={feed ? handleInteraction : undefined}
-                onClick={(e) => e.preventDefault()} // cancel ghost click
+                onClick={(e) => e.preventDefault()}
                 onPointerUp={feed ? handleInteraction : undefined}
                 style={{
                     WebkitTapHighlightColor: 'transparent',
