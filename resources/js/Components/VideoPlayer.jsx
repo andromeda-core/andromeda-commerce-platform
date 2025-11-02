@@ -12,21 +12,16 @@ export default function VideoPlayer({
     const videoRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
 
-    const togglePlay = () => {
+    const togglePlayPause = () => {
         const video = videoRef.current;
         if (!video) return;
 
         if (video.paused || video.ended) {
-            video.play().catch((err) => console.warn('Play error:', err));
-            setIsPlaying(true);
-        }
-    };
-
-    const togglePause = () => {
-        const video = videoRef.current;
-        if (!video) return;
-
-        if (!video.paused && !video.ended) {
+            video
+                .play()
+                .then(() => setIsPlaying(true))
+                .catch((err) => console.warn('Play error:', err));
+        } else {
             video.pause();
             setIsPlaying(false);
         }
@@ -54,36 +49,36 @@ export default function VideoPlayer({
                 Your browser does not support the video tag.
             </video>
 
-            {/* PLAY BUTTON - Shows when paused */}
-            {feed && !isPlaying && (
-                <div
-                    onClick={togglePlay}
-                    className="absolute z-10 flex items-center justify-center w-20 h-20 transition-all duration-300 -translate-x-1/2 -translate-y-1/2 rounded-full left-1/2 top-1/2 bg-black/60 backdrop-blur-sm hover:scale-110 hover:bg-black/80 active:scale-95"
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
-                    aria-label="Play video"
+            {feed && (
+                <button
+                    onClick={togglePlayPause}
+                    className="absolute z-10 flex items-center justify-center w-20 h-20 transition-all duration-300 -translate-x-1/2 -translate-y-1/2 rounded-full left-1/2 top-1/2 bg-black/60 backdrop-blur-sm hover:scale-110 active:scale-95"
+                    style={{
+                        WebkitTapHighlightColor: 'transparent',
+                        userSelect: 'none',
+                    }}
+                    aria-label={isPlaying ? 'Pause video' : 'Play video'}
                 >
-                    <svg
-                        className="w-10 h-10 ml-1 text-white"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path d="M8 5v14l11-7z" />
-                    </svg>
-                </div>
-            )}
-
-            {/* PAUSE BUTTON - Shows when playing */}
-            {feed && isPlaying && (
-                <div
-                    onClick={togglePause}
-                    className="absolute z-10 flex items-center justify-center w-20 h-20 transition-all duration-300 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-0 left-1/2 top-1/2 bg-black/60 backdrop-blur-sm hover:scale-110 hover:bg-black/80 hover:opacity-100 active:scale-95"
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
-                    aria-label="Pause video"
-                >
-                    <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-                    </svg>
-                </div>
+                    {isPlaying ? (
+                        // Pause icon
+                        <svg
+                            className={`h-10 w-10 text-white`}
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                        </svg>
+                    ) : (
+                        // Play icon
+                        <svg
+                            className="w-10 h-10 ml-1 text-white"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path d="M8 5v14l11-7z" />
+                        </svg>
+                    )}
+                </button>
             )}
         </div>
     );
