@@ -9,27 +9,69 @@ export default function VideoPlayer({
     controls,
     feed,
 }) {
-    const lastInteractionRef = useRef(null);
-    const lastTouchRef = useRef(0);
     const videoRef = useRef(null);
-
     const [showPlayButton, setShowPlayButton] = useState(true);
+    const lastTouchTimeRef = useRef(0);
 
-    const handleVideoInteraction = (e) => {
-        if (!feed) return;
-        e.preventDefault();
-        e.stopPropagation();
-
+    // Simple toggle function
+    const togglePlayPause = () => {
         const video = videoRef.current;
         if (!video) return;
 
         if (video.paused) {
-            setShowPlayButton(false);
-            video.play();
+            video.play().catch((err) => console.warn('Play error:', err));
         } else {
             video.pause();
-            setShowPlayButton(true);
         }
+    };
+
+    // Handle play event
+    const handlePlay = () => {
+        setShowPlayButton(false);
+    };
+
+    // Handle pause event
+    const handlePause = () => {
+        setShowPlayButton(true);
+    };
+
+    // Sync with video events
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        video.addEventListener('play', handlePlay);
+        video.addEventListener('pause', handlePause);
+        video.addEventListener('ended', handlePause);
+
+        return () => {
+            video.removeEventListener('play', handlePlay);
+            video.removeEventListener('pause', handlePause);
+            video.removeEventListener('ended', handlePause);
+        };
+    }, []);
+
+    // Handle video click/touch
+    const handleVideoClick = (e) => {
+        if (!feed) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        const now = Date.now();
+        const timeSinceLastTouch = now - lastTouchTimeRef.current;
+
+        // If this is a click event shortly after a touch, ignore it
+        if (e.type === 'click' && timeSinceLastTouch < 500) {
+            return;
+        }
+
+        // Update last touch time for touch events
+        if (e.type === 'touchstart') {
+            lastTouchTimeRef.current = now;
+        }
+
+        togglePlayPause();
     };
 
     return (
@@ -45,20 +87,8 @@ export default function VideoPlayer({
                 preload="metadata"
                 poster={thumbnail}
                 crossOrigin="anonymous"
-                onTouchStart={(e) => {
-                    if (!feed) return;
-                    lastTouchRef.current = Date.now();
-                    handleVideoInteraction(e);
-                }}
-                onClick={(e) => {
-                    if (!feed) return;
-                    // Ignore click if touch happened recently
-                    if (Date.now() - lastTouchRef.current < 500) {
-                        e.preventDefault();
-                        return;
-                    }
-                    handleVideoInteraction(e);
-                }}
+                onTouchStart={feed ? handleVideoClick : undefined}
+                onClick={feed ? handleVideoClick : undefined}
                 style={{
                     WebkitTapHighlightColor: 'transparent',
                     touchAction: feed ? 'manipulation' : 'auto',
@@ -68,18 +98,12 @@ export default function VideoPlayer({
                 Your browser does not support the video tag.
             </video>
 
-            {/* Custom Play Button */}
+            {/* Custom Play Button - Only shows when paused */}
             {feed && showPlayButton && (
                 <button
-                    onTouchStart={handleVideoInteraction}
-                    onClick={(e) => {
-                        if (Date.now() - lastInteractionRef.current < 300) {
-                            e.preventDefault();
-                            return;
-                        }
-                        handleVideoInteraction(e);
-                    }}
-                    className="absolute z-10 flex items-center justify-center w-20 h-20 transition-all duration-300 -translate-x-1/2 -translate-y-1/2 rounded-full left-1/2 top-1/2 bg-black/60 backdrop-blur-sm hover:scale-110 hover:bg-black/80"
+                    onTouchStart={handleVideoClick}
+                    onClick={handleVideoClick}
+                    className="absolute z-10 flex items-center justify-center w-20 h-20 transition-all duration-300 -translate-x-1/2 -translate-y-1/2 rounded-full left-1/2 top-1/2 bg-black/60 backdrop-blur-sm hover:scale-110 hover:bg-black/80 active:scale-95"
                     style={{ WebkitTapHighlightColor: 'transparent' }}
                     aria-label="Play video"
                 >
