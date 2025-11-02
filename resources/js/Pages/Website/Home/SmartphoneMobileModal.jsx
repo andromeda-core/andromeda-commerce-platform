@@ -8,8 +8,8 @@ import SmartphoneMobileGalleryModal from './SmartphoneMobileGalleryModal';
 
 const SmartphoneMobileModal = ({
     smartphones,
-    smartphoneMobileModal,
-    setSmartphoneMobileModal,
+    smartphoneMobileModalOpen,
+    setSmartphoneMobileModalOpen,
     smartphone,
     setSmartphone,
     selectedSmartphoneIndex,
@@ -36,7 +36,7 @@ const SmartphoneMobileModal = ({
     const [linkCopied, setLinkCopied] = useState(false);
 
     useEffect(() => {
-        if (!smartphoneMobileModal) return;
+        if (!smartphoneMobileModalOpen) return;
 
         const url = new URL(window.location);
         if (!url.searchParams.get('m-slug') && smartphone?.slug) {
@@ -49,11 +49,11 @@ const SmartphoneMobileModal = ({
             hasInitializedScroll.current = false;
             window.history.replaceState({}, '', window.location.pathname);
         };
-    }, [smartphoneMobileModal, smartphone?.slug]);
+    }, [smartphoneMobileModalOpen, smartphone?.slug]);
 
     // Scroll to the currently selected smartphone when modal opens or index changes
     useEffect(() => {
-        if (!smartphoneMobileModal) return;
+        if (!smartphoneMobileModalOpen) return;
         const container = scrollContainerRef.current;
         if (!container || selectedSmartphoneIndex < 0) return;
 
@@ -73,7 +73,7 @@ const SmartphoneMobileModal = ({
         requestAnimationFrame(() => {
             setTimeout(alignToIndex, 0);
         });
-    }, [smartphoneMobileModal]);
+    }, [smartphoneMobileModalOpen]);
 
     // Handle snap scrolling with eager upward correction Without Inifnity Loop
     // useEffect(() => {
@@ -138,7 +138,7 @@ const SmartphoneMobileModal = ({
 
     useEffect(() => {
         const container = scrollContainerRef.current;
-        if (!container || localSmartphones.length === 0 || !smartphoneMobileModal) return;
+        if (!container || localSmartphones.length === 0 || !smartphoneMobileModalOpen) return;
 
         const itemHeight = container.firstElementChild?.offsetHeight || window.innerHeight;
         let isLocked = false;
@@ -323,7 +323,7 @@ const SmartphoneMobileModal = ({
         };
     }, [
         localSmartphones,
-        smartphoneMobileModal,
+        smartphoneMobileModalOpen,
         hasMoreSmartphones,
         smartphones,
         selectedSmartphoneIndex,
@@ -331,17 +331,17 @@ const SmartphoneMobileModal = ({
 
     // Reset on modal open
     useEffect(() => {
-        if (smartphoneMobileModal) {
+        if (smartphoneMobileModalOpen) {
             hasUserScrolledRef.current = false;
         }
-    }, [smartphoneMobileModal]);
+    }, [smartphoneMobileModalOpen]);
 
     //  Reset scroll flag when modal opens
     useEffect(() => {
-        if (smartphoneMobileModal) {
+        if (smartphoneMobileModalOpen) {
             hasUserScrolledRef.current = false;
         }
-    }, [smartphoneMobileModal]);
+    }, [smartphoneMobileModalOpen]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -366,7 +366,33 @@ const SmartphoneMobileModal = ({
         }
     };
 
-    if (!smartphoneMobileModal) return null;
+    // Handle browser/mobile back button to close modals
+    useEffect(() => {
+        const handlePopState = (e) => {
+            if (smartphoneMobileModalOpen) {
+                setSmartphoneMobileModalOpen(false);
+                return;
+            }
+        };
+
+        const preventInertiaNavigation = (event) => {
+            const pathname = event.detail?.visit?.url?.pathname || '';
+
+            if (smartphoneMobileModalOpen && pathname === '/') {
+                event.preventDefault();
+            }
+        };
+        window.addEventListener('popstate', handlePopState);
+        const removeRouterEvent = router.on('before', preventInertiaNavigation);
+
+        // Cleanup
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+            if (removeRouterEvent) removeRouterEvent();
+        };
+    }, [smartphoneMobileModalOpen]);
+
+    if (!smartphoneMobileModalOpen) return null;
     return (
         <>
             {/* No fade-in, no isReady - just render like Desktop */}
