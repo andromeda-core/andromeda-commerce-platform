@@ -45,14 +45,11 @@ const SmartphoneMobileModal = ({
         }
 
         return () => {
-            if (!smartphoneMobileModal) {
-                setSmartphoneMobileModal(false);
-                setSmartphone(null);
-                hasInitializedScroll.current = false;
-                window.history.replaceState({}, '', window.location.pathname);
-            }
+            setSmartphone(null);
+            hasInitializedScroll.current = false;
+            window.history.replaceState({}, '', window.location.pathname);
         };
-    }, [smartphoneMobileModal, smartphone?.slug, setSmartphoneMobileModal, setSmartphone]);
+    }, [smartphoneMobileModal, smartphone?.slug]);
 
     // Scroll to the currently selected smartphone when modal opens or index changes
     useEffect(() => {
