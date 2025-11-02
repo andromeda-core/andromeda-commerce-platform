@@ -11,10 +11,18 @@ export default function VideoPlayer({
 }) {
     const videoRef = useRef(null);
     const [showPlayButton, setShowPlayButton] = useState(true);
-    const lastTouchTimeRef = useRef(0);
+    const isTogglingRef = useRef(false);
 
-    // Simple toggle function
+    // Toggle with debounce to prevent double-firing
     const togglePlayPause = () => {
+        // Prevent rapid consecutive toggles
+        if (isTogglingRef.current) return;
+
+        isTogglingRef.current = true;
+        setTimeout(() => {
+            isTogglingRef.current = false;
+        }, 300);
+
         const video = videoRef.current;
         if (!video) return;
 
@@ -51,32 +59,19 @@ export default function VideoPlayer({
         };
     }, []);
 
-    // Handle video click/touch
-    const handleVideoClick = (e) => {
+    // Single handler for all interactions
+    const handleInteraction = (e) => {
         if (!feed) return;
 
         e.preventDefault();
         e.stopPropagation();
-
-        const now = Date.now();
-        const timeSinceLastTouch = now - lastTouchTimeRef.current;
-
-        // If this is a click event shortly after a touch, ignore it
-        if (e.type === 'click' && timeSinceLastTouch < 500) {
-            return;
-        }
-
-        // Update last touch time for touch events
-        if (e.type === 'touchstart') {
-            lastTouchTimeRef.current = now;
-        }
 
         togglePlayPause();
     };
 
     return (
         <div className="relative flex items-center justify-center w-full h-full">
-            {/* Video Player */}
+            {/* Video Player - NO click handlers when button is showing */}
             <video
                 ref={videoRef}
                 className={`w-full rounded-lg ${className || ''}`}
@@ -87,8 +82,9 @@ export default function VideoPlayer({
                 preload="metadata"
                 poster={thumbnail}
                 crossOrigin="anonymous"
-                onTouchStart={feed ? handleVideoClick : undefined}
-                onClick={feed ? handleVideoClick : undefined}
+                // Only allow video clicks when playing (button hidden)
+                onTouchEnd={feed && !showPlayButton ? handleInteraction : undefined}
+                onClick={feed && !showPlayButton ? handleInteraction : undefined}
                 style={{
                     WebkitTapHighlightColor: 'transparent',
                     touchAction: feed ? 'manipulation' : 'auto',
@@ -101,8 +97,8 @@ export default function VideoPlayer({
             {/* Custom Play Button - Only shows when paused */}
             {feed && showPlayButton && (
                 <button
-                    onTouchStart={handleVideoClick}
-                    onClick={handleVideoClick}
+                    onTouchEnd={handleInteraction}
+                    onClick={handleInteraction}
                     className="absolute z-10 flex items-center justify-center w-20 h-20 transition-all duration-300 -translate-x-1/2 -translate-y-1/2 rounded-full left-1/2 top-1/2 bg-black/60 backdrop-blur-sm hover:scale-110 hover:bg-black/80 active:scale-95"
                     style={{ WebkitTapHighlightColor: 'transparent' }}
                     aria-label="Play video"
