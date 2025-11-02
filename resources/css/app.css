@@ -381,3 +381,6 @@ video[data-mode='feed']::-webkit-media-controls-return-to-realtime-button,
 video[data-mode='feed']::-webkit-media-controls-toggle-closed-captions-button {
     display: none !important;
 }
+video[data-mode='feed']::-webkit-media-controls-start-playback-button {
+    display: none !important;
+}
