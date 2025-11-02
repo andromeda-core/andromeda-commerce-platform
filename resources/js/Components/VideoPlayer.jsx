@@ -46,7 +46,11 @@ export default function VideoPlayer({
         if (!feed) return;
         e.preventDefault();
         e.stopPropagation();
-        togglePlayPause();
+
+        setTimeout(() => {
+            if (toggleLock.current) return;
+            togglePlayPause();
+        }, 50);
     };
 
     return (
@@ -64,11 +68,9 @@ export default function VideoPlayer({
                 onTouchStart={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    alert('OnTOUCH FIRED');
                 }}
                 onClick={(e) => {
                     e.preventDefault();
-                    alert('On CLick');
                 }}
                 onPointerUp={feed ? handleInteraction : undefined}
                 style={{
