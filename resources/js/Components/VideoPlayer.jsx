@@ -11,38 +11,31 @@ export default function VideoPlayer({
 }) {
     const videoRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
-    const isTogglingRef = useRef(false);
+    const lastActionRef = useRef(0);
 
+    // Toggle logic that respects play state and avoids double triggers
     const togglePlayPause = () => {
-        if (isTogglingRef.current) return;
-
-        isTogglingRef.current = true;
-        setTimeout(() => {
-            isTogglingRef.current = false;
-        }, 300);
+        const now = Date.now();
+        if (now - lastActionRef.current < 300) return; // debounce
+        lastActionRef.current = now;
 
         const video = videoRef.current;
         if (!video) return;
 
-        if (video.paused) {
+        if (video.paused || video.ended) {
             video.play().catch((err) => console.warn('Play error:', err));
         } else {
             video.pause();
         }
     };
 
-    const handlePlay = () => {
-        setIsPlaying(true);
-    };
-
-    const handlePause = () => {
-        setIsPlaying(false);
-    };
-
-    // Sync with video events
+    // Sync play/pause state
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
+
+        const handlePlay = () => setIsPlaying(true);
+        const handlePause = () => setIsPlaying(false);
 
         video.addEventListener('play', handlePlay);
         video.addEventListener('pause', handlePause);
@@ -55,12 +48,11 @@ export default function VideoPlayer({
         };
     }, []);
 
+    // Unified interaction handler for feed
     const handleInteraction = (e) => {
         if (!feed) return;
-
         e.preventDefault();
         e.stopPropagation();
-
         togglePlayPause();
     };
 
@@ -76,8 +68,9 @@ export default function VideoPlayer({
                 preload="metadata"
                 poster={thumbnail}
                 crossOrigin="anonymous"
-                onTouchEnd={feed ? handleInteraction : undefined}
+                muted
                 onClick={feed ? handleInteraction : undefined}
+                onTouchEnd={feed ? handleInteraction : undefined}
                 style={{
                     WebkitTapHighlightColor: 'transparent',
                     touchAction: feed ? 'manipulation' : 'auto',
@@ -87,6 +80,7 @@ export default function VideoPlayer({
                 Your browser does not support the video tag.
             </video>
 
+            {/* Play icon overlay */}
             {feed && (
                 <div
                     className={`pointer-events-none absolute left-1/2 top-1/2 z-10 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 backdrop-blur-sm transition-all duration-300 ${
