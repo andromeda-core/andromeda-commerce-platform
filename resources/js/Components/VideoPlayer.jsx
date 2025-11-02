@@ -38,7 +38,14 @@ export default function VideoPlayer({
     }, [isPlaying]);
 
     return (
-        <div className="relative flex items-center justify-center w-full h-full select-none">
+        <div
+            className="relative flex items-center justify-center w-full h-full select-none"
+            onClick={() => {
+                if (feed) {
+                    togglePlayPause();
+                }
+            }}
+        >
             <video
                 ref={videoRef}
                 className={`w-full rounded-lg ${className || ''}`}
