@@ -279,6 +279,30 @@ class CustomerRepository implements ICustomerRepository
 
     public function updateCustomerProfile(Request $request, string $id)
     {
+
+        $user = $this->user->with(['customer'])->find($id);
+
+        if (empty($user)) {
+            return [
+                'status' => false,
+                'message' => 'Something Went Wrong While Finding Linked User To Customer',
+            ];
+        }
+
+        if (! $user->hasRole('Customer')) {
+            return [
+                'status' => false,
+                'message' => 'Only Customers Can Update Profile From Here',
+            ];
+        }
+
+        if (! $user->is($request->user())) {
+            return [
+                'status' => false,
+                'message' => 'You Can Only Update Your Profile',
+            ];
+        }
+
         $validated_req = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$id],
@@ -295,23 +319,6 @@ class CustomerRepository implements ICustomerRepository
 
         DB::beginTransaction();
         try {
-
-            $user = $this->user->with(['customer'])->find($id);
-
-            if (empty($user)) {
-                throw new Exception('Something Went Wrong While Finding Linked User To Customer');
-            }
-
-            if (! $user->is($request->user())) {
-                throw new Exception('You Can Only Update Your Profile');
-            }
-
-            if (! $user->hasRole('Customer')) {
-                return [
-                    'status' => false,
-                    'message' => 'Only Customers Can Update Profile From Here',
-                ];
-            }
 
             $user->update([
                 'name' => $validated_req['name'],
@@ -352,26 +359,35 @@ class CustomerRepository implements ICustomerRepository
 
     public function changeCustomerPassword(Request $request, string $id)
     {
-        $validated_req = $request->validate([
-            'current_password' => ['required', 'current_password'],
-            'password' => ['required', 'min:8', 'max:50', 'confirmed'],
-        ]);
 
         $user = $this->user->find($id);
         if (empty($user)) {
-            throw new Exception('Something Went Wrong While Updating Password');
+
+            return [
+                'status' => false,
+                'message' => 'Something Went Wrong While Updating Password',
+            ];
         }
 
         if (! $user->is($request->user())) {
-            throw new Exception('You Can Only Update Your Password');
+
+            return [
+                'status' => false,
+                'message' => 'You Can Only Update Your Password',
+            ];
         }
 
         if (! $user->hasRole('Customer')) {
             return [
                 'status' => false,
-                'message' => 'Only Customers Can Update Profile From Here',
+                'message' => 'Only Customers Can Update Password From Here',
             ];
         }
+
+        $validated_req = $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', 'min:8', 'max:50', 'confirmed'],
+        ]);
 
         if ($user->update(['password' => bcrypt($validated_req['password'])])) {
             return [

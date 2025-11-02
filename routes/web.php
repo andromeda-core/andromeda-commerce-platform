@@ -105,7 +105,7 @@ Route::group(['as' => 'website.'], function () {
     // Profile Routes
     Route::controller(WebsiteProfileController::class)->middleware('auth')->name('profile.')->group(function () {
         Route::get('/profile', 'index')->name('index');
-        Route::put('/profile/update/{id?}', 'update')->name('update');
+        Route::put('/profile/details/update/{id?}', 'update')->name('update-profile');
         Route::put('profile/change-password/{id?}', 'changePassword')->name('change-password');
     });
 

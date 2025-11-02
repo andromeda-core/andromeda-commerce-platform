@@ -32,6 +32,7 @@ class ProfileController extends Controller
 
     public function update(Request $request, ?string $id = null)
     {
+
         if (empty($id)) {
             return back()->with('error', 'User ID Not Found');
         }
@@ -40,6 +41,7 @@ class ProfileController extends Controller
 
         if ($response['status'] === false) {
             return back()->with('error', $response['message']);
+
         }
 
         return back()->with('success', $response['message']);
@@ -48,6 +50,7 @@ class ProfileController extends Controller
 
     public function changePassword(Request $request, ?string $id = null)
     {
+
         if (empty($id)) {
             return back()->with('error', 'User ID Not Found');
         }

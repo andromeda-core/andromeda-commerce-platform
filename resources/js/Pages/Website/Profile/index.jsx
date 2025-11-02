@@ -6,7 +6,7 @@ import Textarea from '@/Components/Textarea';
 import Toast from '@/Components/Toast';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import React, { memo, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -75,31 +75,36 @@ const Index = ({ user, countries }) => {
     // Profile Update Request
     const handleEditProfileSubmit = (e) => {
         e.preventDefault();
-        updateProfile(route('website.profile.update', user?.id), {
+        updateProfile(route('website.profile.update-profile', user?.id), {
+            preserveScroll: true,
+            preserveState: true,
             onSuccess: (page) => {
-                if (page.props.flash.success) {
+                // Check for flash messages
+                if (page.props.flash?.success) {
                     setIsEditProfileOpen(false);
                     setShowSuccessMessage(true);
-                    setSuccessMessage(page.props.flash.success || 'Profile Updated Successfully');
-                } else if (page.props.flash.error) {
+                    setSuccessMessage(page.props.flash.success);
+                } else if (page.props.flash?.error) {
                     setShowErrorMessage(true);
-                    setErrorMessage(
-                        page.props.flash.error || 'Something Went Wrong While Updating profile',
-                    );
-                } else {
+                    setErrorMessage(page.props.flash.error);
+                } else if (page.props.flash?.info) {
                     setShowInfoMessage(true);
-                    setInfoMessage(
-                        page.props.flash.info || 'Something Went Wrong While Updating Profile',
-                    );
+                    setInfoMessage(page.props.flash.info);
                 }
             },
 
-            onError: (error) => {
-                setShowErrorMessage(true);
-                setErrorMessage(
-                    error.message ||
-                        'Something Went Wrong While Updating profile Please Check Errors',
-                );
+            onError: (errors) => {
+                // Handle validation errors
+                const errorMessages = Object.values(errors).flat();
+
+                if (errorMessages.length > 0) {
+                    setShowErrorMessage(true);
+                    // Show first error or combine all errors
+                    setErrorMessage(errorMessages.join(', '));
+                } else {
+                    setShowErrorMessage(true);
+                    setErrorMessage('Something went wrong. Please check all fields and try again.');
+                }
             },
         });
     };
@@ -115,30 +120,37 @@ const Index = ({ user, countries }) => {
         }
 
         updatePassword(route('website.profile.change-password', user?.id), {
+            preserveScroll: true,
+            preserveState: true,
             onSuccess: (page) => {
-                if (page.props.flash.success) {
+                if (page.props.flash?.success) {
                     setIsChangePasswordOpen(false);
+                    setPasswordData({
+                        current_password: '',
+                        password: '',
+                        password_confirmation: '',
+                    });
                     setShowSuccessMessage(true);
-                    setSuccessMessage(page.props.flash.success || 'Password Updated Successfully');
-                } else if (page.props.flash.error) {
+                    setSuccessMessage(page.props.flash.success);
+                } else if (page.props.flash?.error) {
                     setShowErrorMessage(true);
-                    setErrorMessage(
-                        page.props.flash.error || 'Something Went Wrong While Updating Password',
-                    );
-                } else {
+                    setErrorMessage(page.props.flash.error);
+                } else if (page.props.flash?.info) {
                     setShowInfoMessage(true);
-                    setInfoMessage(
-                        page.props.flash.info || 'Something Went Wrong While Updating Password',
-                    );
+                    setInfoMessage(page.props.flash.info);
                 }
             },
 
-            onError: (error) => {
-                setShowErrorMessage(true);
-                setErrorMessage(
-                    error.message ||
-                        'Something Went Wrong While Updating Password Please Check Errors',
-                );
+            onError: (errors) => {
+                const errorMessages = Object.values(errors).flat();
+
+                if (errorMessages.length > 0) {
+                    setShowErrorMessage(true);
+                    setErrorMessage(errorMessages.join(', '));
+                } else {
+                    setShowErrorMessage(true);
+                    setErrorMessage('Something went wrong while changing password.');
+                }
             },
         });
     };
@@ -170,7 +182,7 @@ const Index = ({ user, countries }) => {
         };
     }, [isEditProfileOpen, isChangePasswordOpen]);
 
-    // Appedning modal to URL
+    // // Appedning modal to URL
     useEffect(() => {
         const url = new URL(window.location.href);
         if (isEditProfileOpen) {
@@ -186,7 +198,7 @@ const Index = ({ user, countries }) => {
         window.history.replaceState({}, '', url);
     }, [isEditProfileOpen, isChangePasswordOpen]);
 
-    // Handle browser/mobile back button to close modals
+    // // Handle browser/mobile back button to close modals
     useEffect(() => {
         const handlePopState = (e) => {
             if (isEditProfileOpen) {
@@ -204,7 +216,7 @@ const Index = ({ user, countries }) => {
             const pathname = event.detail?.visit?.url?.pathname || '';
 
             if (
-                pathname === '/profile/update/' + user?.id ||
+                pathname === 'profile/details/update/' + user?.id ||
                 pathname === 'profile/change-password'
             ) {
                 return;
@@ -223,7 +235,7 @@ const Index = ({ user, countries }) => {
         };
     }, [isEditProfileOpen, isChangePasswordOpen]);
 
-    // CleanUp Message States
+    // // CleanUp Message States
     useEffect(() => {
         if (showInfoMessage) {
             setTimeout(() => {
@@ -247,7 +259,7 @@ const Index = ({ user, countries }) => {
         }
     }, [showInfoMessage, showErrorMessage, showSuccessMessage]);
 
-    // Disable Profile Button State
+    // // Disable Profile Button State
     const [isProfileUpdateButtonDisabled, setIsProfileButtonDisabled] = useState(true);
 
     useEffect(() => {
@@ -264,7 +276,7 @@ const Index = ({ user, countries }) => {
         setIsProfileButtonDisabled(isIncomplete);
     }, [profileData]);
 
-    // Disable Password Change Button State
+    // // Disable Password Change Button State
     const [isPasswordChangeButtonDisabled, setIsPasswordChangeButtonDisabled] = useState(true);
     useEffect(() => {
         const isIncomplete =
