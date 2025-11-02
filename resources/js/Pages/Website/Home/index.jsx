@@ -3,13 +3,9 @@ import PostsGrid from '@/Pages/Website/Home/PostsGrid';
 import useDarkMode from '@/Hooks/useDarkMode';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import QRCode from 'react-qr-code';
-
-import videoThumbnail from '../../../../../public/assets/images/video-thumb/general-video.png';
-
-import VideoPlayer from '@/Components/VideoPlayer';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
 import GlobalSearch from '@/Components/GlobalSearch';
@@ -3586,6 +3582,8 @@ export default function index({ google_map_api_key, search_history }) {
                                                                             setIsMobilePostGallery(
                                                                                 true,
                                                                             );
+
+                                                                            handleStopVideoPlayer();
                                                                             window.history.pushState(
                                                                                 {
                                                                                     modal: 'post-gallery',

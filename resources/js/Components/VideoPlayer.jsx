@@ -11,17 +11,18 @@ export default function VideoPlayer({
 }) {
     const videoRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
-    const lastToggleTime = useRef(0);
+    const interactionTimeRef = useRef(0);
+    const isInteractingRef = useRef(false);
 
     const togglePlayPause = () => {
         const now = Date.now();
 
-        // Prevent rapid toggles (300ms debounce)
-        if (now - lastToggleTime.current < 300) {
+        // Ignore if we just toggled within 400ms
+        if (now - interactionTimeRef.current < 400) {
             return;
         }
 
-        lastToggleTime.current = now;
+        interactionTimeRef.current = now;
 
         const video = videoRef.current;
         if (!video) return;
@@ -51,11 +52,30 @@ export default function VideoPlayer({
         };
     }, []);
 
-    const handleClick = (e) => {
+    // Use mousedown/touchstart for immediate response
+    const handleInteractionStart = (e) => {
         if (!feed) return;
+
         e.preventDefault();
         e.stopPropagation();
+
+        // Mark that we're interacting
+        if (isInteractingRef.current) return;
+        isInteractingRef.current = true;
+
         togglePlayPause();
+    };
+
+    const handleInteractionEnd = (e) => {
+        if (!feed) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Release interaction lock after a delay
+        setTimeout(() => {
+            isInteractingRef.current = false;
+        }, 100);
     };
 
     return (
@@ -70,7 +90,11 @@ export default function VideoPlayer({
                 preload="metadata"
                 poster={thumbnail}
                 crossOrigin="anonymous"
-                onClick={feed ? handleClick : undefined}
+                onMouseDown={feed ? handleInteractionStart : undefined}
+                onMouseUp={feed ? handleInteractionEnd : undefined}
+                onTouchStart={feed ? handleInteractionStart : undefined}
+                onTouchEnd={feed ? handleInteractionEnd : undefined}
+                onContextMenu={(e) => feed && e.preventDefault()}
                 style={{
                     WebkitTapHighlightColor: 'transparent',
                     touchAction: feed ? 'manipulation' : 'auto',
