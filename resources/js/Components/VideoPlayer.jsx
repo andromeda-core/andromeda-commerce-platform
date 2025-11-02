@@ -4,13 +4,17 @@ export default function VideoPlayer({ videoUrl, thumbnail, className, controls, 
     const videoRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [showControls, setShowControls] = useState(true);
+    const hideTimeout = useRef(null);
 
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
 
-        // Attach a native (non-React) event listener for Safari
-        const handleNativeTap = () => {
+        const handleTap = () => {
+            // Clear any pending hide timer so overlay always shows briefly again
+            clearTimeout(hideTimeout.current);
+            setShowControls(true);
+
             if (video.paused || video.ended) {
                 video.play().catch((err) => console.warn('Play error:', err));
                 setIsPlaying(true);
@@ -18,30 +22,33 @@ export default function VideoPlayer({ videoUrl, thumbnail, className, controls, 
                 video.pause();
                 setIsPlaying(false);
             }
+
+            // Re-hide overlay after 1.2s
+            hideTimeout.current = setTimeout(() => {
+                if (!video.paused) setShowControls(false);
+            }, 1200);
         };
 
-        // Attach directly to the element (bypassing React)
-        video.addEventListener('touchend', handleNativeTap);
-        video.addEventListener('click', handleNativeTap);
+        // ✅ Attach native listener (not React synthetic)
+        video.addEventListener('touchstart', handleTap, { passive: true });
+        video.addEventListener('click', handleTap);
 
         return () => {
-            video.removeEventListener('touchend', handleNativeTap);
-            video.removeEventListener('click', handleNativeTap);
+            clearTimeout(hideTimeout.current);
+            video.removeEventListener('touchstart', handleTap);
+            video.removeEventListener('click', handleTap);
         };
     }, []);
 
-    // Hide overlay after play
-    useEffect(() => {
-        if (isPlaying) {
-            const t = setTimeout(() => setShowControls(false), 1000);
-            return () => clearTimeout(t);
-        } else {
-            setShowControls(true);
-        }
-    }, [isPlaying]);
-
     return (
         <div className="relative flex items-center justify-center w-full h-full select-none">
+            {/* ✅ Always leave an overlay layer that catches touches */}
+            <div
+                className="absolute inset-0 z-20 cursor-pointer"
+                style={{ background: 'transparent' }}
+                onTouchStart={(e) => e.preventDefault()} // prevents native tap delay
+            />
+
             <video
                 ref={videoRef}
                 className={`w-full rounded-lg ${className || ''}`}
@@ -61,9 +68,10 @@ export default function VideoPlayer({ videoUrl, thumbnail, className, controls, 
                 <source src={videoUrl} type="video/mp4" />
             </video>
 
+            {/* ✅ Show overlay briefly when tapped or paused */}
             {feed && showControls && (
                 <div
-                    className="absolute z-10 flex items-center justify-center w-20 h-20 transition-all duration-300 -translate-x-1/2 -translate-y-1/2 rounded-full left-1/2 top-1/2 bg-black/60 backdrop-blur-sm"
+                    className="absolute z-30 flex items-center justify-center w-20 h-20 transition-all duration-300 -translate-x-1/2 -translate-y-1/2 rounded-full left-1/2 top-1/2 bg-black/60 backdrop-blur-sm"
                     style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
                     {isPlaying ? (
