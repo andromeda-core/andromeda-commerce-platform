@@ -11,46 +11,51 @@ export default function VideoPlayer({
 }) {
     const videoRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
-    const toggleLock = useRef(false);
+    const lastToggleTime = useRef(0);
 
     const togglePlayPause = () => {
-        if (toggleLock.current) return;
-        toggleLock.current = true;
-        setTimeout(() => (toggleLock.current = false), 300);
+        const now = Date.now();
 
-        const v = videoRef.current;
-        if (!v) return;
+        // Prevent rapid toggles (300ms debounce)
+        if (now - lastToggleTime.current < 300) {
+            return;
+        }
 
-        if (v.paused || v.ended) v.play().catch(() => {});
-        else v.pause();
+        lastToggleTime.current = now;
+
+        const video = videoRef.current;
+        if (!video) return;
+
+        if (video.paused || video.ended) {
+            video.play().catch(() => {});
+        } else {
+            video.pause();
+        }
     };
 
     useEffect(() => {
-        const v = videoRef.current;
-        if (!v) return;
+        const video = videoRef.current;
+        if (!video) return;
+
         const handlePlay = () => setIsPlaying(true);
         const handlePause = () => setIsPlaying(false);
 
-        v.addEventListener('play', handlePlay);
-        v.addEventListener('pause', handlePause);
-        v.addEventListener('ended', handlePause);
+        video.addEventListener('play', handlePlay);
+        video.addEventListener('pause', handlePause);
+        video.addEventListener('ended', handlePause);
 
         return () => {
-            v.removeEventListener('play', handlePlay);
-            v.removeEventListener('pause', handlePause);
-            v.removeEventListener('ended', handlePause);
+            video.removeEventListener('play', handlePlay);
+            video.removeEventListener('pause', handlePause);
+            video.removeEventListener('ended', handlePause);
         };
     }, []);
 
-    const handleInteraction = (e) => {
+    const handleClick = (e) => {
         if (!feed) return;
         e.preventDefault();
         e.stopPropagation();
-
-        setTimeout(() => {
-            if (toggleLock.current) return;
-            togglePlayPause();
-        }, 50);
+        togglePlayPause();
     };
 
     return (
@@ -65,14 +70,7 @@ export default function VideoPlayer({
                 preload="metadata"
                 poster={thumbnail}
                 crossOrigin="anonymous"
-                onTouchStart={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }}
-                onClick={(e) => {
-                    e.preventDefault();
-                }}
-                onPointerUp={feed ? handleInteraction : undefined}
+                onClick={feed ? handleClick : undefined}
                 style={{
                     WebkitTapHighlightColor: 'transparent',
                     touchAction: feed ? 'manipulation' : 'auto',
@@ -86,7 +84,7 @@ export default function VideoPlayer({
             {feed && (
                 <div
                     className={`pointer-events-none absolute left-1/2 top-1/2 z-10 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 backdrop-blur-sm transition-all duration-300 ${
-                        isPlaying ? 'opacity-0' : 'opacity-100'
+                        isPlaying ? 'scale-0 opacity-0' : 'scale-100 opacity-100'
                     }`}
                 >
                     <svg
