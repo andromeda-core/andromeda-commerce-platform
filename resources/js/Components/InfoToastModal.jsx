@@ -14,7 +14,7 @@ export default function InfoToastModal({ showInfo, setShowInfo, message }) {
     if (!showInfo) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
                 className="fixed inset-0 bg-black/30 backdrop-blur-sm"
@@ -51,6 +51,6 @@ export default function InfoToastModal({ showInfo, setShowInfo, message }) {
                 </div>
             </div>
         </div>,
-        document.body,
+        document.getElementById('modal-root') || document.body,
     );
 }

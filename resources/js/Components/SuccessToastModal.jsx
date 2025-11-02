@@ -14,7 +14,7 @@ export default function SuccessToastModal({ showSuccess, setShowSuccess, message
     if (!showSuccess) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
                 className="fixed inset-0 bg-black/30 backdrop-blur-sm"
@@ -45,6 +45,6 @@ export default function SuccessToastModal({ showSuccess, setShowSuccess, message
                 </div>
             </div>
         </div>,
-        document.body,
+        document.getElementById('modal-root') || document.body,
     );
 }
