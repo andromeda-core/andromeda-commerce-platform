@@ -70,7 +70,7 @@ export default function VideoPlayer({
                 crossOrigin="anonymous"
                 muted
                 onClick={feed ? handleInteraction : undefined}
-                onTouchEnd={feed ? handleInteraction : undefined}
+                // onTouchEnd={feed ? handleInteraction : undefined}
                 style={{
                     WebkitTapHighlightColor: 'transparent',
                     touchAction: feed ? 'manipulation' : 'auto',
