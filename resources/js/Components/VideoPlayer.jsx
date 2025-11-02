@@ -31,12 +31,13 @@ export default function VideoPlayer({ videoUrl, thumbnail, className, controls, 
     };
 
     return (
-        <div className="relative flex items-center justify-center w-full h-full select-none">
+        <div className="relative flex h-full w-full select-none items-center justify-center">
             <video
                 ref={videoRef}
                 className={`w-full rounded-lg ${className || ''}`}
                 playsInline
                 preload="metadata"
+                controlsList="nodownload noremoteplayback"
                 // controls={feed ? false : controls}
                 autoPlay={autoPlay}
                 controls={controls}
