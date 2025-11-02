@@ -182,20 +182,29 @@ export default function VideoPlayer({
     const [isPlaying, setIsPlaying] = useState(false);
     const [showPlayButton, setShowPlayButton] = useState(true);
     const videoRef = useRef(null);
+    const clickTimeoutRef = useRef(null);
 
-    const handleVideoClick = () => {
+    const handleVideoClick = (e) => {
+        // Prevent default to stop native video click behavior
+        e.preventDefault();
+        e.stopPropagation();
+
         const video = videoRef.current;
         if (!video) return;
 
-        if (video.paused) {
-            video.play();
-            setIsPlaying(true);
-            setShowPlayButton(false);
-        } else {
-            video.pause();
-            setIsPlaying(false);
-            setShowPlayButton(true);
+        // Clear any pending clicks to prevent double-triggering
+        if (clickTimeoutRef.current) {
+            clearTimeout(clickTimeoutRef.current);
         }
+
+        // Small delay to debounce rapid clicks
+        clickTimeoutRef.current = setTimeout(() => {
+            if (video.paused) {
+                video.play().catch((err) => console.warn('Play failed:', err));
+            } else {
+                video.pause();
+            }
+        }, 50);
     };
 
     const handlePlay = () => {
@@ -208,6 +217,7 @@ export default function VideoPlayer({
         setShowPlayButton(true);
     };
 
+    // Sync state with video events
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
@@ -218,6 +228,9 @@ export default function VideoPlayer({
         return () => {
             video.removeEventListener('pause', handlePause);
             video.removeEventListener('play', handlePlay);
+            if (clickTimeoutRef.current) {
+                clearTimeout(clickTimeoutRef.current);
+            }
         };
     }, []);
 
