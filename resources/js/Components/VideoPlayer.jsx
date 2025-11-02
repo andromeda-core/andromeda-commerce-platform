@@ -90,8 +90,6 @@ export default function VideoPlayer({
                 preload="metadata"
                 poster={thumbnail}
                 crossOrigin="anonymous"
-                onMouseDown={feed ? handleInteractionStart : undefined}
-                onMouseUp={feed ? handleInteractionEnd : undefined}
                 onTouchStart={feed ? handleInteractionStart : undefined}
                 onTouchEnd={feed ? handleInteractionEnd : undefined}
                 onContextMenu={(e) => feed && e.preventDefault()}
