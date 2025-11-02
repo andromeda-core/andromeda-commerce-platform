@@ -32,6 +32,7 @@ use App\Http\Controllers\Website\HomeController as WebsiteHomeController;
 use App\Http\Controllers\Website\PostController as WebsitePostController;
 use App\Http\Controllers\Website\PrivacyPolicyController;
 use App\Http\Controllers\Website\ProductController;
+use App\Http\Controllers\Website\ProfileController as WebsiteProfileController;
 use Illuminate\Support\Facades\Route;
 
 // Website Un Auth Routes
@@ -99,6 +100,13 @@ Route::group(['as' => 'website.'], function () {
         Route::get('/cart-get-items-count', 'getItemsCount')->name('get-items-count');
         Route::post('/cart/add-item', 'addItem')->name('add-item');
         Route::delete('/cart/remove-item', 'removeItem')->name('remove-item');
+    });
+
+    // Profile Routes
+    Route::controller(WebsiteProfileController::class)->middleware('auth')->name('profile.')->group(function () {
+        Route::get('/profile', 'index')->name('index');
+        Route::put('/profile/update/{id?}', 'update')->name('update');
+        Route::put('profile/change-password/{id?}', 'changePassword')->name('change-password');
     });
 
 });

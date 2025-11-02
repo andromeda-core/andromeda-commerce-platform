@@ -451,6 +451,7 @@ Additional Work:
         21: Post Update Issue Fixed  ✅
         22: Video Plyr.js Currently Disabled And Will be Fixed Later
         23: Font SIZE UPDATED OF MAIN Page Posts And Products ✅
+        24: Profile Page Completed ✅
     )
 
 

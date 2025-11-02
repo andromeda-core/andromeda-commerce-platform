@@ -58,7 +58,7 @@ const Sidebar = ({
                         isCollapsed ? 'justify-center' : ''
                     }`}
                 >
-                    <div className="flex items-center justify-center w-12 h-12 rounded">
+                    <div className="flex h-12 w-12 items-center justify-center rounded">
                         <div className="block dark:hidden">
                             <img src={light_logo} alt="Logo" />
                         </div>
@@ -194,7 +194,7 @@ const Sidebar = ({
                                 <Link
                                     data-sidebar-link="true"
                                     title="Profile"
-                                    href={'#'}
+                                    href={route('website.profile.index')}
                                     className={`flex w-full items-center ${
                                         isCollapsed ? 'justify-center px-0' : 'gap-3 px-4'
                                     } rounded-full py-2.5 text-sm transition-colors ${
@@ -421,12 +421,12 @@ const Sidebar = ({
                                                             My Cart{' '}
                                                             {cartItemsCount > 0 && (
                                                                 <span className="relative ml-auto">
-                                                                    <span className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-indigo-500 rounded-full animate-pulse">
+                                                                    <span className="flex h-6 w-6 animate-pulse items-center justify-center rounded-full bg-indigo-500 text-xs font-bold text-white">
                                                                         {cartItemsCount > 99
                                                                             ? '99+'
                                                                             : cartItemsCount}
                                                                     </span>
-                                                                    <span className="absolute top-0 right-0 block w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></span>
+                                                                    <span className="absolute right-0 top-0 block h-2 w-2 animate-bounce rounded-full bg-indigo-400"></span>
                                                                 </span>
                                                             )}
                                                         </Link>

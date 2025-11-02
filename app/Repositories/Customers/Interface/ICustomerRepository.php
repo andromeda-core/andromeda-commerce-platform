@@ -19,4 +19,8 @@ interface ICustomerRepository
     public function destroyCustomerBySelection(Request $request);
 
     public function getCountries();
+
+    public function updateCustomerProfile(Request $request, string $id);
+
+    public function changeCustomerPassword(Request $request, string $id);
 }

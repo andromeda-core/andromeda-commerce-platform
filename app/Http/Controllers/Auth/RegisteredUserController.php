@@ -50,6 +50,8 @@ class RegisteredUserController extends Controller
         ]);
 
         $user->syncRoles('Customer');
+        $user->customer()->create();
+
         Auth::login($user);
 
         // Checking User Model Implements_MustVerifyEmail Inerface

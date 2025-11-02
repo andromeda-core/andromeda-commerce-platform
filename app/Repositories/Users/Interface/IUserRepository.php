@@ -25,4 +25,6 @@ interface IUserRepository
     public function destroyUserBySelection(Request $request);
 
     public function getAllRoles();
+
+    public function getSingleCustomer(string $user_id);
 }

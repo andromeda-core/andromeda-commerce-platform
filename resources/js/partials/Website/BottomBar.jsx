@@ -109,8 +109,12 @@ const BottomBar = ({
                     </Link>
 
                     <a
-                        href={'#'}
-                        className={`menu-item-inactive relative flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200`}
+                        href={route('website.profile.index')}
+                        className={`relative flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${
+                            route().current() === 'website.profile.index'
+                                ? 'menu-item-active'
+                                : 'menu-item-inactive'
+                        }`}
                         onClick={(e) => {
                             if (route().current() === 'website.profile.index') {
                                 e.preventDefault();

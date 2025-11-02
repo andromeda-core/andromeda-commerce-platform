@@ -536,4 +536,18 @@ class UserRepository implements IUserRepository
     {
         return $this->role->all();
     }
+
+    public function getSingleCustomer(string $user_id)
+    {
+        $user = User::with(['customer' => function ($query) {
+            $query->withCount('orders');
+        }, 'customer.country'])->find($user_id);
+        $user->member_since = $user->created_at->diffForHumans([
+            'parts' => 1,
+            'short' => false,
+            'syntax' => \Carbon\CarbonInterface::DIFF_ABSOLUTE,
+        ]);
+
+        return $user;
+    }
 }

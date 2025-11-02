@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Repositories\Customers\Interface\ICustomerRepository;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class CustomerRepository implements ICustomerRepository
@@ -270,6 +271,108 @@ class CustomerRepository implements ICustomerRepository
 
     public function getCountries()
     {
-        return $this->country->where('is_active', true)->get();
+
+        return Cache::rememberForever('countries', function () {
+            return $this->country->where('is_active', true)->get();
+        });
+    }
+
+    public function updateCustomerProfile(Request $request, string $id)
+    {
+        $validated_req = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$id],
+            'phone' => ['required', 'regex:/^\+\d+$/', 'unique:users,phone,'.$id, 'max:50'],
+            'country_id' => ['required', 'exists:countries,id'],
+            'state' => ['required', 'string', 'max:255'],
+            'city' => ['required', 'string', 'max:255'],
+            'postal_code' => ['required', 'string', 'max:255'],
+            'address_line1' => ['required', 'string'],
+            'address_line2' => ['nullable', 'string'],
+        ], [
+            'phone.regex' => 'The Number Accepted With + Country Code - Example: +8801xxxxxxxxx',
+        ]);
+
+        DB::beginTransaction();
+        try {
+
+            $user = $this->user->with(['customer'])->find($id);
+
+            if (empty($user)) {
+                throw new Exception('Something Went Wrong While Finding Linked User To Customer');
+            }
+
+            if (! $user->is($request->user())) {
+                throw new Exception('You Can Only Update Your Profile');
+            }
+
+            if (! $user->hasRole('Customer')) {
+                throw new Exception('Only Customers Can Update Profile From Here');
+            }
+
+            $user->update([
+                'name' => $validated_req['name'],
+                'email' => $validated_req['email'],
+                'phone' => $validated_req['phone'],
+            ]);
+
+            $customer = $user->customer;
+
+            if (empty($customer)) {
+                throw new Exception('Something Went Wrong While Finding Customer');
+            }
+
+            $customer->update([
+                'country_id' => $validated_req['country_id'],
+                'state' => $validated_req['state'],
+                'city' => $validated_req['city'],
+                'postal_code' => $validated_req['postal_code'],
+                'address_line1' => $validated_req['address_line1'],
+                'address_line2' => $validated_req['address_line2'],
+
+            ]);
+
+            DB::commit();
+
+            return [
+                'status' => true,
+                'message' => 'Profile Updated Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function changeCustomerPassword(Request $request, string $id)
+    {
+        $validated_req = $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', 'min:8', 'max:50', 'confirmed'],
+        ]);
+
+        $user = $this->user->find($id);
+        if (empty($user)) {
+            throw new Exception('Something Went Wrong While Updating Password');
+        }
+
+        if (! $user->is($request->user())) {
+            throw new Exception('You Can Only Update Your Password');
+        }
+
+        if (! $user->hasRole('Customer')) {
+            throw new Exception('Only Customers Can Update Profile From Here');
+        }
+
+        if ($user->update(['password' => bcrypt($validated_req['password'])])) {
+            return [
+                'status' => true,
+                'message' => 'Password Updated Successfully',
+            ];
+        }
+
     }
 }
