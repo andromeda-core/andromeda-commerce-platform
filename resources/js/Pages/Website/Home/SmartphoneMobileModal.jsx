@@ -19,7 +19,7 @@ const SmartphoneMobileModal = ({
     smartphoneMobileGallery,
     setSmartphoneMobileGallery,
 }) => {
-    if (!smartphoneMobileModal) return null;
+    console.log('MODAL OPENS');
 
     const [localSmartphones, setLocalSmartphones] = useState(smartphones || []);
     const hasInitializedScroll = useRef(false);
@@ -45,6 +45,7 @@ const SmartphoneMobileModal = ({
         }
 
         return () => {
+            console.log('MODAL CLODED');
             setSmartphone(null);
             hasInitializedScroll.current = false;
             window.history.replaceState({}, '', window.location.pathname);
@@ -366,6 +367,7 @@ const SmartphoneMobileModal = ({
         }
     };
 
+    if (!smartphoneMobileModal) return null;
     return (
         <>
             {/* No fade-in, no isReady - just render like Desktop */}
