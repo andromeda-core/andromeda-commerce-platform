@@ -9,202 +9,35 @@ export default function VideoPlayer({
     controls,
     feed,
 }) {
-    // const [loading, setLoading] = useState(true);
-    // const loadingRef = useRef(loading);
-    // const videoRef = useRef(null);
-    // const playerRef = useRef(null);
-
-    // useEffect(() => {
-    //     loadingRef.current = loading;
-    // }, [loading]);
-
-    // // Initialize Plyr
-    // useEffect(() => {
-    //     const video = videoRef.current;
-    //     if (!video) return;
-
-    //     // Cleanup previous player
-    //     if (playerRef.current) {
-    //         try {
-    //             playerRef.current.destroy();
-    //         } catch (e) {
-    //             console.warn('Player cleanup error:', e);
-    //         }
-    //         playerRef.current = null;
-    //     }
-
-    //     // Small delay to ensure DOM is ready
-    //     const initTimer = setTimeout(() => {
-    //         const player = new Plyr(video, {
-    //             controls: [
-    //                 'play-large',
-    //                 'play',
-    //                 'progress',
-    //                 'current-time',
-    //                 'duration',
-    //                 'mute',
-    //                 'volume',
-    //                 'settings',
-    //                 ...(fullscreen ? ['fullscreen'] : []),
-    //             ],
-    //             settings: ['quality', 'speed'],
-    //             quality: {
-    //                 default: 720,
-    //                 options: [1080, 720, 480, 360],
-    //             },
-    //             disableContextMenu: true,
-    //             hideControls: true,
-    //             resetOnEnd: false,
-    //             clickToPlay: true,
-    //             keyboard: { focused: false, global: false },
-    //             tooltips: { controls: true, seek: true },
-    //             displayDuration: true,
-    //             fullscreen: {
-    //                 enabled: fullscreen,
-    //                 fallback: true,
-    //                 iosNative: false,
-    //                 container: null,
-    //             },
-    //         });
-
-    //         playerRef.current = player;
-
-    //         let isMounted = true;
-
-    //         // Loading events
-    //         player.on('loadedmetadata', () => {
-    //             if (isMounted) setLoading(false);
-    //         });
-
-    //         player.on('loadeddata', () => {
-    //             if (isMounted) setLoading(false);
-    //         });
-
-    //         player.on('canplay', () => {
-    //             if (isMounted) setLoading(false);
-    //         });
-
-    //         player.on('playing', () => {
-    //             if (isMounted) setLoading(false);
-    //         });
-
-    //         player.on('waiting', () => {
-    //             if (isMounted) setLoading(true);
-    //         });
-
-    //         player.on('seeked', () => {
-    //             if (isMounted) setLoading(false);
-    //         });
-
-    //         // Force controls to show on initialization
-    //         player.on('ready', () => {
-    //             const controlsElement = player.elements.container.querySelector('.plyr__controls');
-    //             if (controlsElement) {
-    //                 controlsElement.style.opacity = '1';
-    //                 controlsElement.style.visibility = 'visible';
-    //             }
-    //         });
-
-    //         // Keyboard shortcuts
-    //         const handleKeyDown = (e) => {
-    //             if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
-    //             if (!player || loadingRef.current) return;
-
-    //             const key = e.key.toLowerCase();
-
-    //             try {
-    //                 switch (key) {
-    //                     case 'f':
-    //                         if (fullscreen && player.fullscreen.enabled) {
-    //                             e.preventDefault();
-    //                             player.fullscreen.toggle();
-    //                         }
-    //                         break;
-
-    //                     case 'm':
-    //                         e.preventDefault();
-    //                         player.muted = !player.muted;
-    //                         break;
-
-    //                     case ' ':
-    //                         e.preventDefault();
-    //                         player.togglePlay();
-    //                         break;
-
-    //                     case 'arrowright':
-    //                         e.preventDefault();
-    //                         player.forward(5);
-    //                         break;
-
-    //                     case 'arrowleft':
-    //                         e.preventDefault();
-    //                         player.rewind(5);
-    //                         break;
-
-    //                     case 'arrowup':
-    //                         e.preventDefault();
-    //                         player.increaseVolume(0.1);
-    //                         break;
-
-    //                     case 'arrowdown':
-    //                         e.preventDefault();
-    //                         player.decreaseVolume(0.1);
-    //                         break;
-
-    //                     default:
-    //                         break;
-    //                 }
-    //             } catch (err) {
-    //                 console.warn('Keyboard shortcut error:', err);
-    //             }
-    //         };
-
-    //         window.addEventListener('keydown', handleKeyDown);
-
-    //         return () => {
-    //             isMounted = false;
-    //             window.removeEventListener('keydown', handleKeyDown);
-    //             clearTimeout(initTimer);
-    //             if (playerRef.current) {
-    //                 try {
-    //                     playerRef.current.destroy();
-    //                 } catch (e) {
-    //                     console.warn('Player cleanup error:', e);
-    //                 }
-    //                 playerRef.current = null;
-    //             }
-    //         };
-    //     }, 100);
-
-    //     return () => clearTimeout(initTimer);
-    // }, [videoUrl, fullscreen]);
-
     const [isPlaying, setIsPlaying] = useState(false);
     const [showPlayButton, setShowPlayButton] = useState(true);
     const videoRef = useRef(null);
-    const clickTimeoutRef = useRef(null);
+    const lastInteractionRef = useRef(0);
 
-    const handleVideoClick = (e) => {
-        // Prevent default to stop native video click behavior
-        e.preventDefault();
-        e.stopPropagation();
-
+    const togglePlayPause = () => {
         const video = videoRef.current;
         if (!video) return;
 
-        // Clear any pending clicks to prevent double-triggering
-        if (clickTimeoutRef.current) {
-            clearTimeout(clickTimeoutRef.current);
+        const now = Date.now();
+        // Prevent rapid toggling within 300ms
+        if (now - lastInteractionRef.current < 300) {
+            return;
         }
+        lastInteractionRef.current = now;
 
-        // Small delay to debounce rapid clicks
-        clickTimeoutRef.current = setTimeout(() => {
-            if (video.paused) {
-                video.play().catch((err) => console.warn('Play failed:', err));
-            } else {
-                video.pause();
-            }
-        }, 50);
+        if (video.paused) {
+            video.play().catch((err) => console.warn('Play failed:', err));
+        } else {
+            video.pause();
+        }
+    };
+
+    const handleVideoInteraction = (e) => {
+        if (!feed) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+        togglePlayPause();
     };
 
     const handlePlay = () => {
@@ -228,9 +61,6 @@ export default function VideoPlayer({
         return () => {
             video.removeEventListener('pause', handlePause);
             video.removeEventListener('play', handlePlay);
-            if (clickTimeoutRef.current) {
-                clearTimeout(clickTimeoutRef.current);
-            }
         };
     }, []);
 
@@ -247,37 +77,54 @@ export default function VideoPlayer({
                 preload="metadata"
                 poster={thumbnail}
                 crossOrigin="anonymous"
-                onClick={feed ? handleVideoClick : undefined}
+                // Use onTouchStart for immediate response on mobile
+                onTouchStart={feed ? handleVideoInteraction : undefined}
+                // Click handler with touch detection
+                onClick={
+                    feed
+                        ? (e) => {
+                              // If touch was just used, ignore click
+                              if (Date.now() - lastInteractionRef.current < 300) {
+                                  e.preventDefault();
+                                  return;
+                              }
+                              handleVideoInteraction(e);
+                          }
+                        : undefined
+                }
                 onPlay={handlePlay}
                 onPause={handlePause}
+                style={{
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: feed ? 'manipulation' : 'auto',
+                }}
             >
                 <source src={videoUrl} type="video/mp4" />
                 Your browser does not support the video tag.
             </video>
 
+            {/* Custom Play Button */}
             {feed && showPlayButton && (
                 <button
-                    onClick={handleVideoClick}
+                    onTouchStart={handleVideoInteraction}
+                    onClick={(e) => {
+                        if (Date.now() - lastInteractionRef.current < 300) {
+                            e.preventDefault();
+                            return;
+                        }
+                        handleVideoInteraction(e);
+                    }}
                     className="absolute z-10 flex items-center justify-center w-20 h-20 transition-all duration-300 -translate-x-1/2 -translate-y-1/2 rounded-full left-1/2 top-1/2 bg-black/60 backdrop-blur-sm hover:scale-110 hover:bg-black/80"
-                    aria-label={isPlaying ? 'Pause' : 'Play'}
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                    aria-label="Play video"
                 >
-                    {!isPlaying ? (
-                        <svg
-                            className="w-10 h-10 ml-1 text-white"
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path d="M8 5v14l11-7z" />
-                        </svg>
-                    ) : (
-                        <svg
-                            className="w-10 h-10 text-white"
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-                        </svg>
-                    )}
+                    <svg
+                        className="w-10 h-10 ml-1 text-white"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path d="M8 5v14l11-7z" />
+                    </svg>
                 </button>
             )}
         </div>
