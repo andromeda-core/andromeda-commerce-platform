@@ -11,6 +11,7 @@ export default function VideoPlayer({
 }) {
     const videoRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [showControls, setShowControls] = useState(true);
 
     const togglePlayPause = () => {
         const video = videoRef.current;
@@ -26,6 +27,15 @@ export default function VideoPlayer({
             setIsPlaying(false);
         }
     };
+
+    useEffect(() => {
+        if (isPlaying) {
+            const timer = setTimeout(() => setShowControls(false), 1000);
+            return () => clearTimeout(timer);
+        } else {
+            setShowControls(true);
+        }
+    }, [isPlaying]);
 
     return (
         <div className="relative flex items-center justify-center w-full h-full select-none">
@@ -49,7 +59,7 @@ export default function VideoPlayer({
                 Your browser does not support the video tag.
             </video>
 
-            {feed && (
+            {feed && showControls && (
                 <button
                     onClick={togglePlayPause}
                     className="absolute z-10 flex items-center justify-center w-20 h-20 transition-all duration-300 -translate-x-1/2 -translate-y-1/2 rounded-full left-1/2 top-1/2 bg-black/60 backdrop-blur-sm hover:scale-110 active:scale-95"
