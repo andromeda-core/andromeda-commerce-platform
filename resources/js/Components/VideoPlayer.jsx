@@ -32,24 +32,14 @@ export default function VideoPlayer({ videoUrl, thumbnail, className, controls, 
 
     return (
         <div className="relative flex items-center justify-center w-full h-full select-none">
-            {/* ✅ Always leave an overlay layer that catches touches */}
-            <div
-                className="absolute inset-0 z-20 cursor-pointer"
-                style={{ background: 'transparent' }}
-                onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleTap(e);
-                }}
-            />
-
             <video
                 ref={videoRef}
                 className={`w-full rounded-lg ${className || ''}`}
                 playsInline
-                muted
                 preload="metadata"
-                controls={feed ? false : controls}
+                // controls={feed ? false : controls}
+                autoPlay={autoPlay}
+                controls={controls}
                 poster={thumbnail}
                 crossOrigin="anonymous"
                 style={{
@@ -61,32 +51,6 @@ export default function VideoPlayer({ videoUrl, thumbnail, className, controls, 
             >
                 <source src={videoUrl} type="video/mp4" />
             </video>
-
-            {/* ✅ Show overlay briefly when tapped or paused */}
-            {feed && showControls && (
-                <div
-                    className="absolute z-30 flex items-center justify-center w-20 h-20 transition-all duration-300 -translate-x-1/2 -translate-y-1/2 rounded-full left-1/2 top-1/2 bg-black/60 backdrop-blur-sm"
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
-                >
-                    {isPlaying ? (
-                        <svg
-                            className="w-10 h-10 text-white"
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-                        </svg>
-                    ) : (
-                        <svg
-                            className="w-10 h-10 ml-1 text-white"
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path d="M8 5v14l11-7z" />
-                        </svg>
-                    )}
-                </div>
-            )}
         </div>
     );
 }

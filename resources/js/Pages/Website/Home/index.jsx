@@ -3371,11 +3371,11 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                     .post_video_urls[0]
                                                                             }
                                                                             className={
-                                                                                'absolute inset-0 z-10 h-full w-full object-cover'
+                                                                                'absolute bottom-20 z-10 h-full w-full object-cover'
                                                                             }
                                                                             autoPlay={false}
                                                                             controls={true}
-                                                                            feed={true}
+                                                                            // feed={true}
                                                                         />
                                                                     )
                                                                 )}
@@ -3400,7 +3400,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                         .post_image_urls[0]
                                                                                 }
                                                                                 alt="Related Post"
-                                                                                className="absolute inset-0 z-10 object-cover w-full h-full"
+                                                                                className="absolute inset-0 z-10 object-cover w-full h-full bottom-20"
                                                                             />
                                                                         ) : (
                                                                             Array.isArray(
@@ -3418,7 +3418,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                                                     }
                                                                                     autoPlay={false}
                                                                                     controls={true}
-                                                                                    feed={true}
+                                                                                    // feed={true}
                                                                                 />
                                                                             )
                                                                         )}
