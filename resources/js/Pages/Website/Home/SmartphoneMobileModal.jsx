@@ -623,6 +623,4 @@ const SmartphoneMobileModal = ({
     );
 };
 
-export default SmartphoneMobileModal;
-
-// URL APpening Logic Review And When OpeningMobile Modal FromDesktop Wrong Post Selection and On Mobile Infinity Scroll isnt happenign when selection from bottom Any Smartphone
+export default React.memo(SmartphoneMobileModal);
