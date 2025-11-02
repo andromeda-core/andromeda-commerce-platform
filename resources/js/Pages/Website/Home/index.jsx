@@ -4139,7 +4139,7 @@ export default function index({ google_map_api_key, search_history }) {
                                             <div
                                                 ref={PostGalleryMediaContainerRef}
                                                 onScroll={handlePostGalleryMediaScroll}
-                                                className="relative h-[60vh] w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden p-2 scrollbar-none"
+                                                className="relative h-[60vh] w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden scrollbar-none"
                                             >
                                                 <div className="flex w-full h-full">
                                                     {mediaItems?.map((item, idx) => (
