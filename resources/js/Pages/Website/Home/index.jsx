@@ -403,7 +403,6 @@ export default function index({ google_map_api_key, search_history }) {
                 setViewableSmartphone(null);
                 setSmartphoneDesktopModal(false);
                 setSmartphoneMobileModal(false);
-                console.log('MODAL CLOSES FROM PARENT');
 
                 return;
             }
@@ -1786,7 +1785,9 @@ export default function index({ google_map_api_key, search_history }) {
         },
         [currentMediaIndex],
     );
-
+    useEffect(() => {
+        console.log(smartphoneMobileModal);
+    }, [smartphoneMobileModal]);
     return (
         <MainLayout>
             <Head title="Home" />
