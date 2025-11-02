@@ -9,60 +9,28 @@ export default function VideoPlayer({
     controls,
     feed,
 }) {
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [showPlayButton, setShowPlayButton] = useState(true);
+    const lastInteractionRef = useRef(null);
+    const lastTouchRef = useRef(0);
     const videoRef = useRef(null);
-    const lastInteractionRef = useRef(0);
 
-    const togglePlayPause = () => {
-        const video = videoRef.current;
-        if (!video) return;
-
-        const now = Date.now();
-        // Prevent rapid toggling within 300ms
-        if (now - lastInteractionRef.current < 300) {
-            return;
-        }
-        lastInteractionRef.current = now;
-
-        if (video.paused) {
-            video.play().catch((err) => console.warn('Play failed:', err));
-        } else {
-            video.pause();
-        }
-    };
+    const [showPlayButton, setShowPlayButton] = useState(true);
 
     const handleVideoInteraction = (e) => {
         if (!feed) return;
-
         e.preventDefault();
         e.stopPropagation();
-        togglePlayPause();
-    };
 
-    const handlePlay = () => {
-        setIsPlaying(true);
-        setShowPlayButton(false);
-    };
-
-    const handlePause = () => {
-        setIsPlaying(false);
-        setShowPlayButton(true);
-    };
-
-    // Sync state with video events
-    useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
 
-        video.addEventListener('pause', handlePause);
-        video.addEventListener('play', handlePlay);
-
-        return () => {
-            video.removeEventListener('pause', handlePause);
-            video.removeEventListener('play', handlePlay);
-        };
-    }, []);
+        if (video.paused) {
+            setShowPlayButton(false);
+            video.play();
+        } else {
+            video.pause();
+            setShowPlayButton(true);
+        }
+    };
 
     return (
         <div className="relative flex items-center justify-center w-full h-full">
@@ -77,23 +45,20 @@ export default function VideoPlayer({
                 preload="metadata"
                 poster={thumbnail}
                 crossOrigin="anonymous"
-                // Use onTouchStart for immediate response on mobile
-                onTouchStart={feed ? handleVideoInteraction : undefined}
-                // Click handler with touch detection
-                onClick={
-                    feed
-                        ? (e) => {
-                              // If touch was just used, ignore click
-                              if (Date.now() - lastInteractionRef.current < 300) {
-                                  e.preventDefault();
-                                  return;
-                              }
-                              handleVideoInteraction(e);
-                          }
-                        : undefined
-                }
-                onPlay={handlePlay}
-                onPause={handlePause}
+                onTouchStart={(e) => {
+                    if (!feed) return;
+                    lastTouchRef.current = Date.now();
+                    handleVideoInteraction(e);
+                }}
+                onClick={(e) => {
+                    if (!feed) return;
+                    // Ignore click if touch happened recently
+                    if (Date.now() - lastTouchRef.current < 500) {
+                        e.preventDefault();
+                        return;
+                    }
+                    handleVideoInteraction(e);
+                }}
                 style={{
                     WebkitTapHighlightColor: 'transparent',
                     touchAction: feed ? 'manipulation' : 'auto',
