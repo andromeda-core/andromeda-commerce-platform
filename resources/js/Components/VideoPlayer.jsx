@@ -1,7 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import Plyr from 'plyr';
-import 'plyr/dist/plyr.css';
-import Spinner from './Spinner';
 
 export default function VideoPlayer({
     videoUrl,
@@ -211,12 +208,26 @@ export default function VideoPlayer({
         setShowPlayButton(true);
     };
 
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        video.addEventListener('pause', handlePause);
+        video.addEventListener('play', handlePlay);
+
+        return () => {
+            video.removeEventListener('pause', handlePause);
+            video.removeEventListener('play', handlePlay);
+        };
+    }, []);
+
     return (
         <div className="relative flex items-center justify-center w-full h-full">
             {/* Video Player */}
             <video
                 ref={videoRef}
                 className={`w-full rounded-lg ${className || ''}`}
+                controlsList="nodownload noremoteplayback"
                 controls={feed ? false : controls}
                 autoPlay={autoPlay}
                 playsInline

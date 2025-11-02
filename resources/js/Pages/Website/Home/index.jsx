@@ -1756,24 +1756,38 @@ export default function index({ google_map_api_key, search_history }) {
     };
 
     const PostGalleryMediaContainerRef = useRef(null);
-
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
     // Handle scroll/swipe to stop videos On Post Gallery
-    const handlePostGalleryMediaScroll = (e) => {
-        const container = e.target;
-        const scrollLeft = container.scrollLeft;
-        const itemWidth = container.offsetWidth;
-        const newIndex = Math.round(scrollLeft / itemWidth);
+    const scrollTimeout = useRef(null);
 
-        if (newIndex !== currentMediaIndex) {
-            // Stop all videos
-            handleStopVideoPlayer();
+    // Debounced scroll handler to prevent rapid state changes
+    const handlePostGalleryMediaScroll = useCallback(
+        (e) => {
+            const container = e.target;
 
-            // Update current index
-            setCurrentMediaIndex(newIndex);
-        }
-    };
+            // Clear previous timeout
+            if (scrollTimeout.current) {
+                clearTimeout(scrollTimeout.current);
+            }
+
+            // Debounce the scroll event
+            scrollTimeout.current = setTimeout(() => {
+                const scrollLeft = container.scrollLeft;
+                const itemWidth = container.offsetWidth;
+                const newIndex = Math.round(scrollLeft / itemWidth);
+
+                if (newIndex !== currentMediaIndex) {
+                    // Stop all videos and reset their state
+                    handleStopVideoPlayer();
+
+                    // Update current index
+                    setCurrentMediaIndex(newIndex);
+                }
+            }, 150); // Wait 150ms after scrolling stops
+        },
+        [currentMediaIndex],
+    );
 
     return (
         <MainLayout>
@@ -4124,7 +4138,7 @@ export default function index({ google_map_api_key, search_history }) {
                                             <div
                                                 ref={PostGalleryMediaContainerRef}
                                                 onScroll={handlePostGalleryMediaScroll}
-                                                className="relative h-[60vh] w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden scrollbar-none"
+                                                className="relative h-[60vh] w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden p-2 scrollbar-none"
                                             >
                                                 <div className="flex w-full h-full">
                                                     {mediaItems?.map((item, idx) => (
