@@ -1882,6 +1882,8 @@ export default function index({ google_map_api_key, search_history }) {
                                             className="group relative mb-1 cursor-pointer break-inside-avoid overflow-hidden rounded-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl lg:mb-2"
                                             style={{ animationDelay: `${index * 100}ms` }}
                                             onClick={() => {
+                                                viewablePostRef.current = post;
+
                                                 setViewablePost(post);
                                                 updateRelatedPostsMap(
                                                     post?.slug,
@@ -2166,6 +2168,8 @@ export default function index({ google_map_api_key, search_history }) {
                                             key={index}
                                             className="group relative mb-1 cursor-pointer break-inside-avoid overflow-hidden rounded-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
                                             onClick={() => {
+                                                viewableSmartphoneRef.current = smartphone;
+
                                                 setViewableSmartphone(smartphone);
                                                 setSelectedSmartphoneIndex(index);
 
@@ -4359,6 +4363,7 @@ export default function index({ google_map_api_key, search_history }) {
                             smartphoneMobileGallery={smartphoneMobileGallery}
                             setSmartphoneMobileGallery={setSmartphoneMobileGallery}
                             viewableSmartphoneRef={viewableSmartphoneRef}
+                            viewableSmartphoneRefValue={viewableSmartphoneRef.current}
                         />
                     )}
                 </>
@@ -4366,9 +4371,3 @@ export default function index({ google_map_api_key, search_history }) {
         </MainLayout>
     );
 }
-
-// Remeaning Checking And Implemeting Proper X Scroll Logic
-// setting related post in first time posts fecthing and in get more and in single fetch done
-// Just relatedfetchmore logic implementation also remeaning
-
-// Post changing in x axis But Appening its URL in the Search Params and adding it to viewable post state remeaning

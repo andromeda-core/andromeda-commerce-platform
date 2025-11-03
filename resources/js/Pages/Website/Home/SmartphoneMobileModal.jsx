@@ -19,6 +19,7 @@ const SmartphoneMobileModal = ({
     smartphoneMobileGallery,
     setSmartphoneMobileGallery,
     viewableSmartphoneRef,
+    viewableSmartphoneRefValue,
 }) => {
     const [localSmartphones, setLocalSmartphones] = useState(smartphones || []);
     const hasInitializedScroll = useRef(false);
@@ -31,6 +32,9 @@ const SmartphoneMobileModal = ({
     const [linkCopied, setLinkCopied] = useState(false);
 
     useEffect(() => {
+        console.log('viewableSmartphoneRef', viewableSmartphoneRef?.current);
+        console.log('viewableSmartphoneRefValue', viewableSmartphoneRefValue);
+        console.log('viewableSmartphone', smartphone);
         if (viewableSmartphoneRef?.current === null && !smartphoneMobileModalOpen) {
             console.log('INSTNATSHTIFPWN');
             return;
