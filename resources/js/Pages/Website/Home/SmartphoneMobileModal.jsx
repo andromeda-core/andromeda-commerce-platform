@@ -32,37 +32,38 @@ const SmartphoneMobileModal = ({
     const [linkCopied, setLinkCopied] = useState(false);
 
     useEffect(() => {
-        console.log('viewableSmartphoneRef', viewableSmartphoneRef?.current);
-        console.log('viewableSmartphoneRefValue', viewableSmartphoneRefValue);
-        console.log('viewableSmartphone', smartphone);
-        if (viewableSmartphoneRef?.current === null && !smartphoneMobileModalOpen) {
-            console.log('INSTNATSHTIFPWN');
-            return;
-        }
-
         if (!smartphoneMobileModalOpen) {
             isClosingRef.current = true;
+
+            const url = new URL(window.location);
+            if (url.searchParams.has('m-slug')) {
+                url.searchParams.delete('m-slug');
+                window.history.replaceState({}, '', url.toString());
+            }
+
             return;
         }
 
+        if (viewableSmartphoneRef?.current === null) {
+            return;
+        }
+
+        // Reset closing flag when modal opens
         isClosingRef.current = false;
 
         const url = new URL(window.location);
         const currentSlug = url.searchParams.get('m-slug');
 
         if (smartphone?.slug && currentSlug !== smartphone.slug) {
-            console.log('SETTING SLUG');
             url.searchParams.set('m-slug', smartphone.slug);
 
             if (currentSlug) {
-                console.log('SETTING URL');
                 window.history.replaceState({ modal: 'smartphone-viewer' }, '', url.toString());
             } else {
-                console.log('SETTING URL ON SCROLL');
                 window.history.pushState({ modal: 'smartphone-viewer' }, '', url.toString());
             }
         }
-    }, [smartphoneMobileModalOpen, smartphone?.slug]);
+    }, [smartphoneMobileModalOpen, smartphone?.slug, viewableSmartphoneRef]);
 
     useEffect(() => {
         if (smartphoneMobileModalOpen) {
