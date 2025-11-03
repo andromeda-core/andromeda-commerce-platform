@@ -434,23 +434,8 @@ export default function index({ google_map_api_key, search_history }) {
                     return;
                 }
 
-                console.log('🔴 Closing smartphone modal completely');
-
-                console.log('🧹 Setting viewableSmartphoneRef.current to null');
                 viewableSmartphoneRef.current = null;
-                console.log(
-                    '📱 viewableSmartphoneRef.current AFTER:',
-                    viewableSmartphoneRef.current,
-                );
 
-                const url = new URL(window.location);
-                console.log('🔍 URL before cleanup:', url.href);
-                url.searchParams.delete('m-slug');
-                console.log('🔍 URL after delete:', url.toString());
-                window.history.replaceState({}, '', url.pathname);
-                console.log('✅ Final URL:', window.location.href);
-
-                console.log('🔄 Updating state: setViewableSmartphone(null)');
                 setViewableSmartphone(null);
                 setSmartphoneDesktopModal(false);
                 setSmartphoneMobileModal(false);

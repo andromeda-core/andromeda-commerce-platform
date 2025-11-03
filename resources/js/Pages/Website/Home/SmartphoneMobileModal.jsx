@@ -32,74 +32,27 @@ const SmartphoneMobileModal = ({
     const [linkCopied, setLinkCopied] = useState(false);
 
     useEffect(() => {
-        console.log('📱 SmartphoneMobileModal URL Effect Running:', {
-            smartphoneMobileModalOpen,
-            'smartphone?.slug': smartphone?.slug,
-            'viewableSmartphoneRef?.current': viewableSmartphoneRef?.current,
-            'current URL': window.location.href,
-        });
-
-        if (!smartphoneMobileModalOpen) {
-            console.log('🔴 Modal is CLOSING - Starting cleanup');
-            isClosingRef.current = true;
-
-            const url = new URL(window.location);
-            const hadSlug = url.searchParams.has('m-slug');
-
-            console.log('🔍 URL before cleanup:', {
-                href: url.href,
-                'has m-slug': hadSlug,
-                'search params': url.search,
-            });
-
-            if (hadSlug) {
-                url.searchParams.delete('m-slug');
-                console.log('🧹 Deleting m-slug, new URL:', url.toString());
-                window.history.replaceState({}, '', url.toString());
-                console.log('✅ URL after replaceState:', window.location.href);
-            } else {
-                console.log('ℹ️ No m-slug to remove');
-            }
-
-            return;
-        }
-
-        console.log('🟢 Modal is OPEN');
-
-        if (viewableSmartphoneRef?.current === null) {
-            console.log('⚠️ viewableSmartphoneRef.current is null, skipping URL update');
-            return;
-        }
-
-        // Reset closing flag when modal opens
-        isClosingRef.current = false;
-        console.log('🔄 Reset isClosingRef to false');
+        if (!smartphoneMobileModalOpen) return;
 
         const url = new URL(window.location);
-        const currentSlug = url.searchParams.get('m-slug');
 
-        console.log('📍 Current URL state:', {
-            'current m-slug': currentSlug,
-            'smartphone.slug': smartphone?.slug,
-            'need update': smartphone?.slug && currentSlug !== smartphone.slug,
-        });
-
-        if (smartphone?.slug && currentSlug !== smartphone.slug) {
-            url.searchParams.set('m-slug', smartphone.slug);
-
-            if (currentSlug) {
-                console.log('🔄 Replacing URL (slug changed):', url.toString());
-                window.history.replaceState({ modal: 'smartphone-viewer' }, '', url.toString());
-            } else {
-                console.log('➕ Pushing new URL (first time):', url.toString());
-                window.history.pushState({ modal: 'smartphone-viewer' }, '', url.toString());
+        if (!url.searchParams.get('m-slug')) {
+            if (smartphone?.slug) {
+                url.searchParams.set('m-slug', smartphone.slug);
             }
-
-            console.log('✅ URL after update:', window.location.href);
-        } else {
-            console.log('ℹ️ No URL update needed');
+            window.history.pushState({ modal: 'smartphone-viewer' }, '', url.toString() || '');
         }
-    }, [smartphoneMobileModalOpen, smartphone?.slug, viewableSmartphoneRef]);
+
+        return () => {
+            if (!smartphoneMobileModalOpen) {
+                const cleanUrl = new URL(window.location);
+                cleanUrl.searchParams.delete('m-slug');
+                window.history.replaceState({}, '', cleanUrl.pathname);
+                console.log('✅ Mobile modal cleaned URL:', window.location.href);
+            }
+        };
+    }, [smartphoneMobileModalOpen, smartphone?.slug]);
+
     useEffect(() => {
         if (smartphoneMobileModalOpen) {
             hasInitializedScroll.current = false;
