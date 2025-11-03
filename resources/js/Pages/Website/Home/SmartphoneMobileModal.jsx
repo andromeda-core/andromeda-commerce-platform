@@ -32,20 +32,22 @@ const SmartphoneMobileModal = ({
     useEffect(() => {
         if (!smartphoneMobileModalOpen) {
             isClosingRef.current = true;
-            const url = new URL(window.location);
-            if (url.searchParams.has('m-slug')) {
-                window.history.replaceState({}, '', window.location.pathname);
-            }
             return;
         }
 
         isClosingRef.current = false;
+
         const url = new URL(window.location);
         const currentSlug = url.searchParams.get('m-slug');
 
         if (smartphone?.slug && currentSlug !== smartphone.slug) {
             url.searchParams.set('m-slug', smartphone.slug);
-            window.history.pushState({ modal: 'smartphone-viewer' }, '', url.toString());
+
+            if (currentSlug) {
+                window.history.replaceState({ modal: 'smartphone-viewer' }, '', url.toString());
+            } else {
+                window.history.pushState({ modal: 'smartphone-viewer' }, '', url.toString());
+            }
         }
     }, [smartphoneMobileModalOpen, smartphone?.slug]);
 

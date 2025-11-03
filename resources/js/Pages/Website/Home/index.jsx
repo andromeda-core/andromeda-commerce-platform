@@ -368,21 +368,22 @@ export default function index({ google_map_api_key, search_history }) {
     // Stopping Overflow Of Body When Modal is Open Also Preventing Inertia Navigation When Pressing browser Naviagtion buttons for Posts Viewer and gallery
 
     useEffect(() => {
-        if (viewablePost !== '') {
-            setSelectedMediaIndex(0);
-            document.body.classList.add('overflow-hidden');
-        } else if (viewableSmartphone !== null) {
-            console.log(window.history);
+        if (viewablePost !== '' || viewableSmartphone !== null) {
             document.body.classList.add('overflow-hidden');
         } else {
-            console.log('HISTROY BEFORE', window.history);
-            window.history.replaceState({}, '', window.location.pathname);
             document.body.classList.remove('overflow-hidden');
-            console.log('HISTROY AFTER', window.history);
-            // if (document.fullscreenElement) closeFullscreen();
         }
 
-        console.log(viewableSmartphone);
+        if (viewablePost !== '') {
+            setSelectedMediaIndex(0);
+        }
+
+        return () => {
+            document.body.classList.remove('overflow-hidden');
+        };
+    }, [viewablePost, viewableSmartphone]);
+
+    useEffect(() => {
         const handlePopState = (e) => {
             const currentState = window.history.state;
 
@@ -451,7 +452,7 @@ export default function index({ google_map_api_key, search_history }) {
             if (removeRouterEvent) removeRouterEvent();
             // document.removeEventListener('fullscreenchange', handleFullscreenChange);
         };
-    }, [viewablePost, isSidebarClickActive, isMobilePostViewer, smartphoneMobileModal]);
+    }, [isSidebarClickActive]);
 
     const fetchMorePostsAndProducts = async () => {
         if (!nextPageUrl || isfetchingMorePosts.current) return;
