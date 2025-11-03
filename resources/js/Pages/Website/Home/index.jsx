@@ -395,7 +395,6 @@ export default function index({ google_map_api_key, search_history }) {
                 }
 
                 window.history.replaceState({}, '', window.location.pathname);
-
                 setViewablePost('');
                 setIsDesktopPostViewer(false);
                 setIsMobilePostViewer(false);
@@ -415,11 +414,10 @@ export default function index({ google_map_api_key, search_history }) {
 
                     return;
                 }
-
+                window.history.replaceState({}, '', window.location.pathname);
                 setViewableSmartphone(null);
                 setSmartphoneDesktopModal(false);
                 setSmartphoneMobileModal(false);
-                window.history.replaceState({}, '', window.location.pathname);
 
                 return;
             }

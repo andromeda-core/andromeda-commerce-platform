@@ -30,9 +30,14 @@ const SmartphoneMobileModal = ({
         }
 
         return () => {
+            if (!smartphoneMobileModalOpen) {
+                setSmartphoneMobileModalOpen(false);
+                setSmartphone(null);
+                window.history.replaceState({}, '', window.location.pathname);
+            }
             hasInitializedScroll.current = false;
         };
-    }, [smartphoneMobileModalOpen, smartphone?.slug]);
+    }, [smartphoneMobileModalOpen, smartphone?.slug, setSmartphoneMobileModalOpen, setSmartphone]);
 
     const [localSmartphones, setLocalSmartphones] = useState(smartphones || []);
 
@@ -550,6 +555,7 @@ const SmartphoneMobileModal = ({
                                                         modal: 'smartphone-gallery',
                                                     },
                                                     '',
+                                                    window.location.href,
                                                 );
                                             }}
                                             className="h-[30px] w-[130px] shrink-0 rounded-lg bg-black px-6 text-xs font-semibold text-white transition-colors hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-100"
