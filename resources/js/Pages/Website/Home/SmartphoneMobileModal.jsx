@@ -23,7 +23,8 @@ const SmartphoneMobileModal = ({
         if (!smartphoneMobileModalOpen) return;
 
         const url = new URL(window.location);
-        if (!url.searchParams.get('m-slug') && smartphone?.slug) {
+        if (!url.searchParams.get('m-slug') && smartphone?.slug && smartphoneMobileModalOpen) {
+            console.log('PUSHING URLSTATE');
             url.searchParams.set('m-slug', smartphone.slug);
             window.history.pushState({ modal: 'smartphone-viewer' }, '', url.toString());
         }
