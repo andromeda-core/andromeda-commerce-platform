@@ -20,10 +20,22 @@ const SmartphoneMobileModal = ({
     setSmartphoneMobileGallery,
 }) => {
     useEffect(() => {
-        console.log('MODAL OPENS');
-    }, []);
+        if (!smartphoneMobileModalOpen) return;
+
+        const url = new URL(window.location);
+        if (!url.searchParams.get('m-slug') && smartphone?.slug) {
+            url.searchParams.set('m-slug', smartphone.slug);
+            window.history.pushState({ modal: 'smartphone-viewer' }, '', url.toString());
+        }
+
+        return () => {
+            hasInitializedScroll.current = false;
+            window.history.replaceState({}, '', window.location.pathname);
+        };
+    }, [smartphoneMobileModalOpen, smartphone?.slug]);
 
     const [localSmartphones, setLocalSmartphones] = useState(smartphones || []);
+
     const hasInitializedScroll = useRef(false);
     useEffect(() => {
         setLocalSmartphones(smartphones);
@@ -34,22 +46,6 @@ const SmartphoneMobileModal = ({
     const actionDropdownRef = useRef(null);
     const [showQrCode, setShowQrCode] = useState(false);
     const [linkCopied, setLinkCopied] = useState(false);
-
-    useEffect(() => {
-        if (!smartphoneMobileModalOpen) return;
-
-        const url = new URL(window.location);
-        if (!url.searchParams.get('m-slug') && smartphone?.slug) {
-            url.searchParams.set('m-slug', smartphone.slug);
-            window.history.pushState({ modal: 'smartphone-viewer' }, '', url.toString());
-        }
-
-        return () => {
-            console.log('MODAL CLODED');
-            hasInitializedScroll.current = false;
-            window.history.replaceState({}, '', window.location.pathname);
-        };
-    }, [smartphoneMobileModalOpen, smartphone?.slug]);
 
     // Scroll to the currently selected smartphone when modal opens or index changes
     useEffect(() => {
