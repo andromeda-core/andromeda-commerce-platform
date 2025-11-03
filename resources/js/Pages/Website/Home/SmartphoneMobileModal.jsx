@@ -51,11 +51,14 @@ const SmartphoneMobileModal = ({
         const currentSlug = url.searchParams.get('m-slug');
 
         if (smartphone?.slug && currentSlug !== smartphone.slug) {
+            console.log('SETTING SLUG');
             url.searchParams.set('m-slug', smartphone.slug);
 
             if (currentSlug) {
+                console.log('SETTING URL');
                 window.history.replaceState({ modal: 'smartphone-viewer' }, '', url.toString());
             } else {
+                console.log('SETTING URL ON SCROLL');
                 window.history.pushState({ modal: 'smartphone-viewer' }, '', url.toString());
             }
         }
