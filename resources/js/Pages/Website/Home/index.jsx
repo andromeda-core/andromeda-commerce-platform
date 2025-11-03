@@ -377,7 +377,7 @@ export default function index({ google_map_api_key, search_history }) {
         } else {
             const currentState = window.history.state;
 
-            console.log(window.history);
+            console.log(Object.values(currentState).length);
             console.log(viewablePostRef.current);
             console.log('REF SMARTPHONE', viewableSmartphoneRef.current);
             console.log('NORMAL SMARTPHONE', viewableSmartphone);
