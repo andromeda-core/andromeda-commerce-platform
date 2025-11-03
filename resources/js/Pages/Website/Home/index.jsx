@@ -375,7 +375,12 @@ export default function index({ google_map_api_key, search_history }) {
             console.log(window.history);
             document.body.classList.add('overflow-hidden');
         } else {
+            const currentState = window.history.state;
+
             console.log(window.history);
+            console.log(viewablePostRef.current);
+            console.log('REF SMARTPHONE', viewableSmartphoneRef.current);
+            console.log('NORMAL SMARTPHONE', viewableSmartphone);
             document.body.classList.remove('overflow-hidden');
             // if (document.fullscreenElement) closeFullscreen();
         }
