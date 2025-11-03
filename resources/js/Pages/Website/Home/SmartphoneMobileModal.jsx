@@ -29,8 +29,18 @@ const SmartphoneMobileModal = ({
     const [linkCopied, setLinkCopied] = useState(false);
 
     useEffect(() => {
+        if (!smartphoneMobileModalOpen) {
+            const url = new URL(window.location);
+            if (url.searchParams.has('m-slug')) {
+                window.history.replaceState({}, '', window.location.pathname);
+            }
+            return;
+        }
+
         const url = new URL(window.location);
-        if (!url.searchParams.get('m-slug') && smartphone?.slug && smartphoneMobileModalOpen) {
+        const currentSlug = url.searchParams.get('m-slug');
+
+        if (smartphone?.slug && currentSlug !== smartphone.slug) {
             url.searchParams.set('m-slug', smartphone.slug);
             window.history.pushState({ modal: 'smartphone-viewer' }, '', url.toString());
         }
@@ -178,7 +188,10 @@ const SmartphoneMobileModal = ({
 
             const globalIndex = smartphones.findIndex((s) => s.id === newSmartphone.id);
             setSelectedSmartphoneIndex(globalIndex >= 0 ? globalIndex : newIndex);
-            setSmartphone({ ...newSmartphone });
+
+            if (smartphone?.id !== newSmartphone.id) {
+                setSmartphone({ ...newSmartphone });
+            }
 
             if (hasMoreSmartphones && newIndex >= localSmartphones.length - 4) {
                 fetchMorePostsAndProducts();
@@ -227,7 +240,9 @@ const SmartphoneMobileModal = ({
                             const globalIndex = smartphones.findIndex(
                                 (s) => s.id === viewingItem.id,
                             );
-                            setSmartphone({ ...viewingItem });
+                            if (smartphone?.id !== viewingItem.id) {
+                                setSmartphone({ ...viewingItem });
+                            }
                             setSelectedSmartphoneIndex(
                                 globalIndex >= 0 ? globalIndex : newItemIndex,
                             );
