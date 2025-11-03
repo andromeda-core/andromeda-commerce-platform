@@ -372,6 +372,7 @@ export default function index({ google_map_api_key, search_history }) {
             setSelectedMediaIndex(0);
             document.body.classList.add('overflow-hidden');
         } else if (viewableSmartphone !== null) {
+            console.log(window.history);
             document.body.classList.add('overflow-hidden');
         } else {
             document.body.classList.remove('overflow-hidden');
