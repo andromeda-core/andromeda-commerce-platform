@@ -21,6 +21,7 @@ const SmartphoneMobileModal = ({
 }) => {
     const [localSmartphones, setLocalSmartphones] = useState(smartphones || []);
     const hasInitializedScroll = useRef(false);
+    const isClosingRef = useRef(false);
 
     const scrollContainerRef = useRef(null);
     const [actionDropdownOpen, setActionDropdownOpen] = useState(null);
@@ -30,6 +31,7 @@ const SmartphoneMobileModal = ({
 
     useEffect(() => {
         if (!smartphoneMobileModalOpen) {
+            isClosingRef.current = true;
             const url = new URL(window.location);
             if (url.searchParams.has('m-slug')) {
                 window.history.replaceState({}, '', window.location.pathname);
@@ -37,6 +39,7 @@ const SmartphoneMobileModal = ({
             return;
         }
 
+        isClosingRef.current = false;
         const url = new URL(window.location);
         const currentSlug = url.searchParams.get('m-slug');
 
@@ -286,7 +289,13 @@ const SmartphoneMobileModal = ({
         };
 
         const loopTick = () => {
-            if (!hasInitializedScroll.current || isLocked || isProcessingLoop) return;
+            if (
+                isClosingRef.current ||
+                !hasInitializedScroll.current ||
+                isLocked ||
+                isProcessingLoop
+            )
+                return;
 
             const scrollTop = container.scrollTop;
             const scrollHeight = container.scrollHeight;
