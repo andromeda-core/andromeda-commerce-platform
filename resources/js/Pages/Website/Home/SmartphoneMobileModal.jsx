@@ -44,10 +44,6 @@ const SmartphoneMobileModal = ({
             url.searchParams.set('m-slug', smartphone.slug);
             window.history.pushState({ modal: 'smartphone-viewer' }, '', url.toString());
         }
-
-        return () => {
-            window.history.replaceState({}, '', window.location.pathname);
-        };
     }, [smartphoneMobileModalOpen, smartphone?.slug]);
 
     useEffect(() => {
