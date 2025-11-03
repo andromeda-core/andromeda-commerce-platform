@@ -17,8 +17,6 @@ const SmartphoneDesktopModal = ({
     setSmartphone,
     searchHistory,
 }) => {
-    if (!smartphoneDesktopModal) return null;
-
     const { currency, cart_items, auth } = usePage().props;
     const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
     const mediaThumbRefs = useRef([]);
@@ -337,6 +335,7 @@ const SmartphoneDesktopModal = ({
         }
     }, [cart_items, smartphone.id, smartphone?.colors]);
 
+    if (!smartphoneDesktopModal) return null;
     return (
         <>
             {(showErrorMessage || showInfoMessage || showSuccessMessage) && (

@@ -19,38 +19,42 @@ const SmartphoneMobileModal = ({
     smartphoneMobileGallery,
     setSmartphoneMobileGallery,
 }) => {
-    useEffect(() => {
-        if (!smartphoneMobileModalOpen) return;
-
-        const url = new URL(window.location);
-        if (!url.searchParams.get('m-slug') && smartphone?.slug && smartphoneMobileModalOpen) {
-            console.log('PUSHING URLSTATE');
-            url.searchParams.set('m-slug', smartphone.slug);
-            window.history.pushState({ modal: 'smartphone-viewer' }, '', url.toString());
-        }
-
-        return () => {
-            if (!smartphoneMobileModalOpen) {
-                setSmartphoneMobileModalOpen(false);
-                setSmartphone(null);
-                window.history.replaceState({}, '', window.location.pathname);
-            }
-            hasInitializedScroll.current = false;
-        };
-    }, [smartphoneMobileModalOpen, smartphone?.slug, setSmartphoneMobileModalOpen, setSmartphone]);
-
     const [localSmartphones, setLocalSmartphones] = useState(smartphones || []);
-
     const hasInitializedScroll = useRef(false);
-    useEffect(() => {
-        setLocalSmartphones(smartphones);
-    }, [smartphones]);
 
     const scrollContainerRef = useRef(null);
     const [actionDropdownOpen, setActionDropdownOpen] = useState(null);
     const actionDropdownRef = useRef(null);
     const [showQrCode, setShowQrCode] = useState(false);
     const [linkCopied, setLinkCopied] = useState(false);
+
+    useEffect(() => {
+        const url = new URL(window.location);
+        if (!url.searchParams.get('m-slug') && smartphone?.slug && smartphoneMobileModalOpen) {
+            url.searchParams.set('m-slug', smartphone.slug);
+            window.history.pushState({ modal: 'smartphone-viewer' }, '', url.toString());
+        }
+
+        return () => {
+            window.history.replaceState({}, '', window.location.pathname);
+        };
+    }, [smartphoneMobileModalOpen, smartphone?.slug]);
+
+    useEffect(() => {
+        if (smartphoneMobileModalOpen) {
+            hasInitializedScroll.current = false;
+        }
+
+        return () => {
+            if (!smartphoneMobileModalOpen) {
+                hasInitializedScroll.current = false;
+            }
+        };
+    }, [smartphoneMobileModalOpen]);
+
+    useEffect(() => {
+        setLocalSmartphones(smartphones);
+    }, [smartphones]);
 
     // Scroll to the currently selected smartphone when modal opens or index changes
     useEffect(() => {
@@ -555,7 +559,6 @@ const SmartphoneMobileModal = ({
                                                         modal: 'smartphone-gallery',
                                                     },
                                                     '',
-                                                    window.location.href,
                                                 );
                                             }}
                                             className="h-[30px] w-[130px] shrink-0 rounded-lg bg-black px-6 text-xs font-semibold text-white transition-colors hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-100"
