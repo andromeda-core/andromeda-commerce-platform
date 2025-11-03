@@ -447,13 +447,7 @@ export default function index({ google_map_api_key, search_history }) {
             if (removeRouterEvent) removeRouterEvent();
             // document.removeEventListener('fullscreenchange', handleFullscreenChange);
         };
-    }, [
-        viewablePost,
-        isSidebarClickActive,
-        viewableSmartphone,
-        isMobilePostViewer,
-        smartphoneMobileModal,
-    ]);
+    }, [viewablePost, isSidebarClickActive, isMobilePostViewer, smartphoneMobileModal]);
 
     const fetchMorePostsAndProducts = async () => {
         if (!nextPageUrl || isfetchingMorePosts.current) return;
