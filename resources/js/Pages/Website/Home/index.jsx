@@ -366,6 +366,7 @@ export default function index({ google_map_api_key, search_history }) {
     const isSidebarClickActive = useSidebarClick();
 
     // Stopping Overflow Of Body When Modal is Open Also Preventing Inertia Navigation When Pressing browser Naviagtion buttons for Posts Viewer and gallery
+
     useEffect(() => {
         if (viewablePost !== '') {
             setSelectedMediaIndex(0);
@@ -377,6 +378,7 @@ export default function index({ google_map_api_key, search_history }) {
             // if (document.fullscreenElement) closeFullscreen();
         }
 
+        console.log(viewableSmartphone);
         const handlePopState = (e) => {
             const currentState = window.history.state;
 
