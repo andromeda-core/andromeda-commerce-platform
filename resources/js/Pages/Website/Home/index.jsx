@@ -401,6 +401,8 @@ export default function index({ google_map_api_key, search_history }) {
                     return;
                 }
 
+                viewablePostRef.current = '';
+
                 window.history.replaceState({}, '', window.location.pathname);
                 setViewablePost('');
                 setIsDesktopPostViewer(false);
@@ -421,6 +423,8 @@ export default function index({ google_map_api_key, search_history }) {
 
                     return;
                 }
+
+                viewableSmartphoneRef.current = null;
                 window.history.replaceState({}, '', window.location.pathname);
                 setViewableSmartphone(null);
                 setSmartphoneDesktopModal(false);
@@ -4354,6 +4358,7 @@ export default function index({ google_map_api_key, search_history }) {
                             fetchMorePostsAndProducts={fetchMorePostsAndProducts}
                             smartphoneMobileGallery={smartphoneMobileGallery}
                             setSmartphoneMobileGallery={setSmartphoneMobileGallery}
+                            viewableSmartphoneRef={viewableSmartphoneRef}
                         />
                     )}
                 </>

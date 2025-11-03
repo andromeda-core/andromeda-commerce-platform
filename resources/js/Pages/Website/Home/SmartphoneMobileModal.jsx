@@ -18,6 +18,7 @@ const SmartphoneMobileModal = ({
     fetchMorePostsAndProducts,
     smartphoneMobileGallery,
     setSmartphoneMobileGallery,
+    viewableSmartphoneRef,
 }) => {
     const [localSmartphones, setLocalSmartphones] = useState(smartphones || []);
     const hasInitializedScroll = useRef(false);
@@ -30,6 +31,11 @@ const SmartphoneMobileModal = ({
     const [linkCopied, setLinkCopied] = useState(false);
 
     useEffect(() => {
+        if (viewableSmartphoneRef?.current === null && !smartphoneMobileModalOpen) {
+            console.log('INSTNATSHTIFPWN');
+            return;
+        }
+
         if (!smartphoneMobileModalOpen) {
             isClosingRef.current = true;
             return;
