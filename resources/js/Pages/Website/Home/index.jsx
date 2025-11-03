@@ -375,6 +375,7 @@ export default function index({ google_map_api_key, search_history }) {
             console.log(window.history);
             document.body.classList.add('overflow-hidden');
         } else {
+            console.log(window.history);
             document.body.classList.remove('overflow-hidden');
             // if (document.fullscreenElement) closeFullscreen();
         }
