@@ -301,7 +301,9 @@ const Index = ({ user, countries }) => {
                 />
             )}
 
-            <div className="min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+            <div
+                className={`min-h-screen px-4 py-8 sm:px-6 lg:px-8 ${windowSize.width < 1024 ? 'mb-20' : ''}`}
+            >
                 <div className="mx-auto max-w-7xl">
                     {/* Header Section with Points */}
                     <div className="relative mb-8 overflow-hidden rounded-3xl border border-gray-200 bg-white p-8 shadow-lg dark:border-gray-700 dark:bg-deepcharcoal sm:p-12">
