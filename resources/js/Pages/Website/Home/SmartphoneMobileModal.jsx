@@ -31,7 +31,6 @@ const SmartphoneMobileModal = ({
 
         return () => {
             hasInitializedScroll.current = false;
-            window.history.replaceState({}, '', window.location.pathname);
         };
     }, [smartphoneMobileModalOpen, smartphone?.slug]);
 
