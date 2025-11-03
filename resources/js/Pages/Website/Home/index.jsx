@@ -385,10 +385,7 @@ export default function index({ google_map_api_key, search_history }) {
 
     useEffect(() => {
         const handlePopState = (e) => {
-            console.log('🔙 POPSTATE EVENT TRIGGERED');
             const currentState = window.history.state;
-            console.log('📍 Current state:', currentState);
-            console.log('📍 Current URL:', window.location.href);
 
             if (viewablePostRef.current !== '') {
                 if (isMobilePostGalleryRef.current) {
@@ -414,14 +411,7 @@ export default function index({ google_map_api_key, search_history }) {
             }
 
             if (viewableSmartphoneRef.current !== null) {
-                console.log('📱 Handling SMARTPHONE closure');
-                console.log(
-                    '📱 viewableSmartphoneRef.current BEFORE:',
-                    viewableSmartphoneRef.current,
-                );
-
                 if (smartphoneMobileGalleryRef.current) {
-                    console.log('🖼️ Closing smartphone gallery only');
                     setSmartphoneMobileGallery(false);
                     if (currentState?.modal === 'smartphone-gallery') {
                         window.history.replaceState(
@@ -442,8 +432,6 @@ export default function index({ google_map_api_key, search_history }) {
 
                 return;
             }
-
-            console.log('ℹ️ No modal to close');
         };
 
         const preventInertiaNavigation = (event) => {

@@ -48,7 +48,6 @@ const SmartphoneMobileModal = ({
                 const cleanUrl = new URL(window.location);
                 cleanUrl.searchParams.delete('m-slug');
                 window.history.replaceState({}, '', cleanUrl.pathname);
-                console.log('✅ Mobile modal cleaned URL:', window.location.href);
             }
         };
     }, [smartphoneMobileModalOpen, smartphone?.slug]);
@@ -205,6 +204,9 @@ const SmartphoneMobileModal = ({
         const seamlessLoop = (direction) => {
             if (isProcessingLoop) return;
 
+            const total = smartphones.length;
+            if (total === 0) return;
+
             isProcessingLoop = true;
             lockScroll(1000);
 
@@ -219,77 +221,119 @@ const SmartphoneMobileModal = ({
             //     container.style.opacity = '0';
             // }
 
-            setTimeout(
-                () => {
-                    // Reorder array
-                    setLocalSmartphones((prev) => {
-                        const arr = [...prev];
+            if (total > 2) {
+                setTimeout(
+                    () => {
+                        setLocalSmartphones((prev) => {
+                            const arr = [...prev];
 
-                        if (direction === 'top') {
-                            const last = arr.pop();
-                            arr.unshift(last);
-                        } else {
-                            const first = arr.shift();
-                            arr.push(first);
-                        }
-
-                        requestAnimationFrame(() => {
-                            const newItemIndex = arr.findIndex((s) => s.id === viewingItem.id);
-                            const targetScroll = newItemIndex * itemHeight;
-
-                            container.scrollTop = targetScroll;
-                            lastScrollTopRef.current = targetScroll;
-
-                            const globalIndex = smartphones.findIndex(
-                                (s) => s.id === viewingItem.id,
-                            );
-                            if (smartphone?.id !== viewingItem.id) {
-                                setSmartphone({ ...viewingItem });
-                            }
-                            setSelectedSmartphoneIndex(
-                                globalIndex >= 0 ? globalIndex : newItemIndex,
-                            );
-
-                            const url = new URL(window.location);
-                            url.searchParams.set('m-slug', viewingItem.slug);
-                            window.history.replaceState(
-                                { modal: 'smartphone-viewer' },
-                                '',
-                                url.toString(),
-                            );
-
-                            // console.log(
-                            //     `${direction.toUpperCase()} LOOP:`,
-                            //     viewingItem.name,
-                            //     'at index',
-                            //     newItemIndex,
-                            // );
-
-                            // 🔥 Fade back in for top loop
                             if (direction === 'top') {
-                                setTimeout(() => {
-                                    container.style.opacity = '1';
-                                }, 10);
+                                const last = arr.pop();
+                                arr.unshift(last);
+                            } else {
+                                const first = arr.shift();
+                                arr.push(first);
                             }
 
-                            // Release lock
-                            setTimeout(
-                                () => {
-                                    isProcessingLoop = false;
-                                },
-                                direction === 'top' ? 100 : 50,
-                            );
+                            requestAnimationFrame(() => {
+                                const newItemIndex = arr.findIndex((s) => s.id === viewingItem.id);
+                                const targetScroll = newItemIndex * itemHeight;
+
+                                container.scrollTop = targetScroll;
+                                lastScrollTopRef.current = targetScroll;
+
+                                const globalIndex = smartphones.findIndex(
+                                    (s) => s.id === viewingItem.id,
+                                );
+                                if (smartphone?.id !== viewingItem.id) {
+                                    setSmartphone({ ...viewingItem });
+                                }
+                                setSelectedSmartphoneIndex(
+                                    globalIndex >= 0 ? globalIndex : newItemIndex,
+                                );
+
+                                const url = new URL(window.location);
+                                url.searchParams.set('m-slug', viewingItem.slug);
+                                window.history.replaceState(
+                                    { modal: 'smartphone-viewer' },
+                                    '',
+                                    url.toString(),
+                                );
+
+                                // console.log(
+                                //     `${direction.toUpperCase()} LOOP:`,
+                                //     viewingItem.name,
+                                //     'at index',
+                                //     newItemIndex,
+                                // );
+
+                                // 🔥 Fade back in for top loop
+                                if (direction === 'top') {
+                                    setTimeout(() => {
+                                        container.style.opacity = '1';
+                                    }, 10);
+                                }
+
+                                setTimeout(
+                                    () => {
+                                        isProcessingLoop = false;
+                                    },
+                                    direction === 'top' ? 100 : 50,
+                                );
+                            });
+
+                            return arr;
                         });
 
-                        return arr;
+                        if (direction === 'bottom' && hasMoreSmartphones) {
+                            fetchMorePostsAndProducts();
+                        }
+                    },
+                    direction === 'top' ? 60 : 0,
+                );
+            } else if (total === 2) {
+                if (direction === 'top') {
+                    isProcessingLoop = false;
+                    return;
+                }
+
+                setLocalSmartphones((prev) => {
+                    const arr = [...prev];
+                    [arr[0], arr[1]] = [arr[1], arr[0]];
+
+                    requestAnimationFrame(() => {
+                        const newItemIndex = arr.findIndex((s) => s.id === viewingItem.id);
+                        const targetScroll = newItemIndex * itemHeight;
+
+                        // Instantly reposition container
+                        container.scrollTop = targetScroll;
+                        lastScrollTopRef.current = targetScroll;
+
+                        const globalIndex = smartphones.findIndex((s) => s.id === viewingItem.id);
+                        if (smartphone?.id !== viewingItem.id) {
+                            setSmartphone({ ...viewingItem });
+                        }
+                        setSelectedSmartphoneIndex(globalIndex >= 0 ? globalIndex : newItemIndex);
+
+                        // Update slug safely (no delay)
+                        const url = new URL(window.location);
+                        url.searchParams.set('m-slug', viewingItem.slug);
+                        window.history.replaceState(
+                            { modal: 'smartphone-viewer' },
+                            '',
+                            url.toString(),
+                        );
+
+                        container.style.transition = 'opacity 0.08s ease';
+                        container.style.opacity = '0.7';
+                        setTimeout(() => (container.style.opacity = '1'), 50);
+
+                        isProcessingLoop = false;
                     });
 
-                    if (direction === 'bottom' && hasMoreSmartphones) {
-                        fetchMorePostsAndProducts();
-                    }
-                },
-                direction === 'top' ? 60 : 0,
-            ); // 60ms delay for top fade
+                    return arr;
+                });
+            }
         };
 
         const loopTick = () => {
