@@ -229,12 +229,16 @@ export default function index({ google_map_api_key, search_history }) {
         if (windowSize.width < 1024) {
             if (showQrCode) setShowQrCode(false);
 
+            window.history.replaceState({ modal: 'post-viewer' }, '', window.location.href);
+
             setIsDesktopPostViewer(false);
             setIsMobilePostViewer(true);
         }
 
         if (windowSize.width > 1024) {
             if (showQrCode) setShowQrCode(false);
+
+            window.history.replaceState({ modal: 'post-viewer' }, '', window.location.href);
 
             setIsMobilePostViewer(false);
             setIsDesktopPostViewer(true);
@@ -245,6 +249,8 @@ export default function index({ google_map_api_key, search_history }) {
         if (windowSize.width < 1024) {
             if (showQrCode) setShowQrCode(false);
 
+            window.history.replaceState({ modal: 'smartphone-viewer' }, '', window.location.href);
+
             setSmartphoneDesktopModal(false);
             setSmartphoneMobileGallery(false);
             setSmartphoneMobileModal(true);
@@ -252,6 +258,8 @@ export default function index({ google_map_api_key, search_history }) {
 
         if (windowSize.width > 1024) {
             if (showQrCode) setShowQrCode(false);
+
+            window.history.replaceState({ modal: 'smartphone-viewer' }, '', window.location.href);
 
             setSmartphoneMobileModal(false);
             setSmartphoneDesktopModal(true);
@@ -371,11 +379,16 @@ export default function index({ google_map_api_key, search_history }) {
 
         const handlePopState = (e) => {
             const currentState = window.history.state;
+
             if (viewablePostRef.current !== '') {
                 if (isMobilePostGalleryRef.current) {
                     setIsMobilePostGallery(false);
                     if (currentState?.modal === 'post-gallery') {
-                        window.history.replaceState({ modal: 'post-viewer' }, '');
+                        window.history.replaceState(
+                            { modal: 'post-viewer' },
+                            '',
+                            window.location.href,
+                        );
                     }
 
                     return;
@@ -393,7 +406,11 @@ export default function index({ google_map_api_key, search_history }) {
                 if (smartphoneMobileGalleryRef.current) {
                     setSmartphoneMobileGallery(false);
                     if (currentState?.modal === 'smartphone-gallery') {
-                        window.history.replaceState({ modal: 'smartphone-viewer' }, '');
+                        window.history.replaceState(
+                            { modal: 'smartphone-viewer' },
+                            '',
+                            window.location.href,
+                        );
                     }
 
                     return;
@@ -409,21 +426,13 @@ export default function index({ google_map_api_key, search_history }) {
         };
 
         const preventInertiaNavigation = (event) => {
-            const notAllowedRoutes = ['/'];
-
             const pathname = event.detail?.visit?.url?.pathname || '';
-
-            const isNotAllowedRoute = notAllowedRoutes.some((route) => {
-                if (route === '/') {
-                    return pathname === '/';
-                }
-                return pathname.startsWith(route);
-            });
 
             if (
                 (viewablePostRef.current !== '' || viewableSmartphoneRef.current !== null) &&
-                isNotAllowedRoute &&
-                !isSidebarClickActive
+                !isSidebarClickActive &&
+                pathname === '/' &&
+                !isMobilePostGalleryRef.current
             ) {
                 event.preventDefault();
             }
@@ -438,7 +447,13 @@ export default function index({ google_map_api_key, search_history }) {
             if (removeRouterEvent) removeRouterEvent();
             // document.removeEventListener('fullscreenchange', handleFullscreenChange);
         };
-    }, [viewablePost, isSidebarClickActive, viewableSmartphone]);
+    }, [
+        viewablePost,
+        isSidebarClickActive,
+        viewableSmartphone,
+        isMobilePostViewer,
+        smartphoneMobileModal,
+    ]);
 
     const fetchMorePostsAndProducts = async () => {
         if (!nextPageUrl || isfetchingMorePosts.current) return;
@@ -1785,9 +1800,7 @@ export default function index({ google_map_api_key, search_history }) {
         },
         [currentMediaIndex],
     );
-    useEffect(() => {
-        console.log(smartphoneMobileModal);
-    }, [smartphoneMobileModal]);
+
     return (
         <MainLayout>
             <Head title="Home" />
