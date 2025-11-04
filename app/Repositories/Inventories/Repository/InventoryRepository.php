@@ -236,7 +236,7 @@ class InventoryRepository implements IInventoryRepository
 
     public function getSmartphones()
     {
-        return $this->smartphone->whereNotIn('id', $this->smartphone_for_sale->pluck('smartphone_id'))->with(['model_name'])->get()->map(function ($smartphone) {
+        return $this->smartphone->with(['model_name'])->get()->map(function ($smartphone) {
             return [
                 'id' => $smartphone->id,
                 'name' => $smartphone->model_name->name,

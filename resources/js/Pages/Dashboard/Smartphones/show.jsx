@@ -180,7 +180,7 @@ export default function Show({ smartphone }) {
                                             loop
                                             navigation={true}
                                             modules={[Pagination, Navigation]}
-                                            className="mySwiper h-full w-full"
+                                            className="mySwiper h-[400px] w-full"
                                         >
                                             {Array.isArray(smartphone?.smartphone_image_urls) &&
                                                 smartphone.smartphone_image_urls.map(

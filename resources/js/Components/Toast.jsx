@@ -8,6 +8,12 @@ export default function Toast({ flash }) {
     const [showError, setShowError] = useState(!!flash.error);
     const [showInfo, setShowInfo] = useState(!!flash.info);
 
+    useEffect(() => {
+        setShowSuccess(!!flash.success);
+        setShowError(!!flash.error);
+        setShowInfo(!!flash.info);
+    }, [flash]);
+
     return (
         <>
             <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 transform space-y-3">

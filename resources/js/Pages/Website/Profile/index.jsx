@@ -82,14 +82,6 @@ const Index = ({ user, countries }) => {
                 // Check for flash messages
                 if (page.props.flash?.success) {
                     setIsEditProfileOpen(false);
-                    setShowSuccessMessage(true);
-                    setSuccessMessage(page.props.flash.success);
-                } else if (page.props.flash?.error) {
-                    setShowErrorMessage(true);
-                    setErrorMessage(page.props.flash.error);
-                } else if (page.props.flash?.info) {
-                    setShowInfoMessage(true);
-                    setInfoMessage(page.props.flash.info);
                 }
             },
 
@@ -130,14 +122,6 @@ const Index = ({ user, countries }) => {
                         password: '',
                         password_confirmation: '',
                     });
-                    setShowSuccessMessage(true);
-                    setSuccessMessage(page.props.flash.success);
-                } else if (page.props.flash?.error) {
-                    setShowErrorMessage(true);
-                    setErrorMessage(page.props.flash.error);
-                } else if (page.props.flash?.info) {
-                    setShowInfoMessage(true);
-                    setInfoMessage(page.props.flash.info);
                 }
             },
 

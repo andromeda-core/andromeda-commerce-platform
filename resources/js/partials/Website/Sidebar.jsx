@@ -402,7 +402,7 @@ const Sidebar = ({
                                                         <Link
                                                             data-sidebar-link="true"
                                                             href={route('website.carts.index')}
-                                                            className={`menu-item-inactive flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
+                                                            className={`${route().current() === 'website.carts.index' ? 'menu-item-active' : 'menu-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                                         >
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"

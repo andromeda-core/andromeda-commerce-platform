@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
-use App\Repositories\Inventories\Interface\IInventoryRepository;
 use App\Repositories\SmartphoneForSales\Interface\ISmartphoneForSaleRepository;
+use App\Repositories\Smartphones\Interface\ISmartphoneRepository;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -27,7 +27,8 @@ class SmartphoneForSaleController extends Controller implements HasMiddleware
 
     public function __construct(
         private ISmartphoneForSaleRepository $smartphone_for_sale,
-        private IInventoryRepository $inventory
+        private ISmartphoneRepository $smartphone,
+
     ) {}
 
     public function index(Request $request)
@@ -42,7 +43,7 @@ class SmartphoneForSaleController extends Controller implements HasMiddleware
     public function create()
     {
 
-        $smartphones = $this->inventory->getSmartphones();
+        $smartphones = $this->smartphone->getSmartphones();
         $additional_fee_lists = $this->smartphone_for_sale->getAllAdditionalFeeLists();
 
         return Inertia::render('Dashboard/SmartphoneForSales/create', compact('smartphones', 'additional_fee_lists'));
@@ -72,7 +73,8 @@ class SmartphoneForSaleController extends Controller implements HasMiddleware
             return to_route('dashboard.smartphone-for-sales.index')->with('error', 'Smartphone For Sale Not Found');
         }
 
-        $smartphones = $this->inventory->getSmartphones();
+        $smartphones = $this->smartphone->getSmartphones($smartphone_for_sale->smartphone_id);
+
         $additional_fee_lists = $this->smartphone_for_sale->getAllAdditionalFeeLists();
 
         return Inertia::render('Dashboard/SmartphoneForSales/edit', compact('smartphones', 'smartphone_for_sale', 'additional_fee_lists'));

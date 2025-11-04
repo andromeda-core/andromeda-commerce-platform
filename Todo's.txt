@@ -453,6 +453,7 @@ Additional Work:
         23: Font SIZE UPDATED OF MAIN Page Posts And Products ✅
         24: Profile Page Completed ✅
         25: Smatphone + POST Mobile Viewer Back Button Issue Fix FIXED   ✅
+        26: Backend SOME LOGIC Issues FIXED That Were Occured After Making Some Changes In Logic   ✅
     )
 
 

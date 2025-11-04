@@ -23,7 +23,7 @@ class InventoryController extends Controller implements HasMiddleware
     }
 
     public function __construct(
-        private IInventoryRepository $inventory
+        private IInventoryRepository $inventory,
     ) {}
 
     public function index(Request $request)

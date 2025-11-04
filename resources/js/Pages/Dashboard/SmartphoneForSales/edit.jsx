@@ -10,7 +10,7 @@ import SelectInput from '@/Components/SelectInput';
 import Toast from '@/Components/Toast';
 import Swal from 'sweetalert2';
 import BarcodeScannerComponent from 'react-qr-barcode-scanner';
-export default function create({ smartphone_for_sale, smartphones, additional_fee_lists }) {
+export default function edit({ smartphone_for_sale, smartphones, additional_fee_lists }) {
     // Create Data Form Data
     const { data, setData, put, processing, errors, reset } = useForm({
         smartphone_id: smartphone_for_sale.smartphone_id || '',

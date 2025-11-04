@@ -25,4 +25,6 @@ interface ISmartphoneRepository
     public function getCapacities();
 
     public function getCategories();
+
+    public function getSmartphones(?string $id = null);
 }

@@ -10,6 +10,7 @@ use App\Models\Category;
 use App\Models\Color;
 use App\Models\ModelName;
 use App\Models\Smartphone;
+use App\Models\SmartphoneForSale;
 use App\Repositories\Smartphones\Interface\ISmartphoneRepository;
 use Exception;
 use Illuminate\Http\Request;
@@ -27,6 +28,7 @@ class SmartphoneRepository implements ISmartphoneRepository
         private ModelName $model_name,
         private Capacity $capacity,
         private Category $category,
+        private SmartphoneForSale $smartphone_for_sale,
     ) {}
 
     public function getAllSmartphones(Request $request)
@@ -368,5 +370,24 @@ class SmartphoneRepository implements ISmartphoneRepository
     public function getCategories()
     {
         return $this->category->where('is_active', true)->get();
+    }
+
+    public function getSmartphones(?string $id = null)
+    {
+        $ids = collect($this->smartphone_for_sale->pluck('smartphone_id'))->toArray();
+        $excluded_ids = array_filter($ids, function ($ex_id) use ($id) {
+            return (int) $ex_id !== (int) $id;
+        });
+
+        return $this->smartphone
+            ->whereNotIn('id', $excluded_ids)
+            ->with(['model_name'])
+            ->get()
+            ->map(function ($smartphone) {
+                return [
+                    'id' => $smartphone->id,
+                    'name' => $smartphone->model_name->name,
+                ];
+            });
     }
 }

@@ -22,7 +22,7 @@ interface IInventoryRepository
 
     public function getStorageLocations();
 
-    public function getSmartphones();
-
     public function getSmartPhoneByUpc(string $upc);
+
+    public function getSmartphones();
 }
