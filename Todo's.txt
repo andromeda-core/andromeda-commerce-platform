@@ -454,6 +454,7 @@ Additional Work:
         24: Profile Page Completed ✅
         25: Smatphone + POST Mobile Viewer Back Button Issue Fix FIXED   ✅
         26: Backend SOME LOGIC Issues FIXED That Were Occured After Making Some Changes In Logic   ✅
+        27: Restriction Added For Customers To Prevent Adding Items In Cart From Multiple Distributor Product, SO It WOnt Be added If User Selected Logic Done ✅
     )
 
 

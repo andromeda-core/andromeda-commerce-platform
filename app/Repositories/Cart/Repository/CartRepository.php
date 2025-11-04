@@ -96,8 +96,20 @@ class CartRepository implements ICartRepository
             $quantity = $request->integer('quantity');
             $color_id = $request->integer('color');
 
+            $already_items_in_cart = $this->cart->where('customer_id', $customer->id)->get();
+
             if ($item_type === 'smartphone') {
-                $smartphone = $this->smartphone->where('id', $item_id)->with('selling_info')->first();
+                $smartphone = $this->smartphone->where('id', $item_id)
+                    ->with(['selling_info', 'category.distributor.user'])
+                    ->first();
+
+                if ($already_items_in_cart->isNotEmpty()) {
+                    $is_same_distributor = $this->checkIsSameDistributor($already_items_in_cart, $smartphone);
+
+                    if (! $is_same_distributor) {
+                        throw new Exception('You Cannot Add Product From Different Distributor');
+                    }
+                }
 
                 if (empty($smartphone)) {
                     throw new Exception('Wrong Product Selected Please Select Valid Product');
@@ -144,7 +156,6 @@ class CartRepository implements ICartRepository
         try {
 
             $user = $request->user();
-
             if (empty($user)) {
                 throw new Exception('Please login first');
             }
@@ -187,5 +198,18 @@ class CartRepository implements ICartRepository
                 'message' => $e->getMessage(),
             ];
         }
+    }
+
+    private function checkIsSameDistributor($cart_items, $smartphone)
+    {
+        foreach ($cart_items as $cart_item) {
+            $carted_smartphone = $this->smartphone->where('id', $cart_item->smartphone_id)->first();
+
+            if ($carted_smartphone->category->distributor_id === $smartphone->category->distributor_id) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

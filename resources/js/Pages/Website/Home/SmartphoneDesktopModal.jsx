@@ -178,28 +178,6 @@ const SmartphoneDesktopModal = ({
                 route('website.carts.add-item'),
                 { ...data },
                 {
-                    onSuccess: (page) => {
-                        if (page.props.flash.success) {
-                            setShowSuccessMessage(true);
-                            setSuccessMessage(page.props.flash.success);
-                        }
-
-                        if (page.props.flash.error) {
-                            setShowErrorMessage(true);
-                            setErrorMessage(page.props.flash.error);
-                        }
-
-                        if (!page.props.flash.success && !page.props.flash.error) {
-                            setShowSuccessMessage(true);
-                            setSuccessMessage('Product Added To Cart Successfully');
-                        }
-                    },
-                    onError: (errors) => {
-                        setShowErrorMessage(true);
-                        setErrorMessage(
-                            errors.message || 'Something Went Wrong While Removing Cart Item',
-                        );
-                    },
                     onFinish: () => setCartProcessing(false),
                     preserveScroll: true,
                     preserveUrl: true,

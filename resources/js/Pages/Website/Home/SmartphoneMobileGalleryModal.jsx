@@ -131,28 +131,6 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                 route('website.carts.add-item'),
                 { ...data },
                 {
-                    onSuccess: (page) => {
-                        if (page.props.flash.success) {
-                            setShowSuccessMessage(true);
-                            setSuccessMessage(page.props.flash.success);
-                        }
-
-                        if (page.props.flash.error) {
-                            setShowErrorMessage(true);
-                            setErrorMessage(page.props.flash.error);
-                        }
-
-                        if (!page.props.flash.success && !page.props.flash.error) {
-                            setShowSuccessMessage(true);
-                            setSuccessMessage('Product Added To Cart Successfully');
-                        }
-                    },
-                    onError: (errors) => {
-                        setShowErrorMessage(true);
-                        setErrorMessage(
-                            errors.message || 'Something Went Wrong While Removing Cart Item',
-                        );
-                    },
                     onFinish: () => setCartProcessing(false),
                     preserveScroll: true,
                     preserveUrl: true,
@@ -224,7 +202,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
             badgeClass = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
             text = `In Stock: ${stock}`;
             icon = (
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
                     <path
                         fillRule="evenodd"
                         d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -236,7 +214,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
             badgeClass = 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
             text = `Low Stock: ${stock}`;
             icon = (
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
                     <path
                         fillRule="evenodd"
                         d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
@@ -248,7 +226,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
             badgeClass = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
             text = 'Out of Stock';
             icon = (
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
                     <path
                         fillRule="evenodd"
                         d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -333,7 +311,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
             {createPortal(
                 <div className="fixed inset-0 z-[70] flex flex-col bg-white dark:bg-deepcharcoal">
                     {/* Header - Keep intact as requested */}
-                    <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
+                    <div className="flex shrink-0 items-center justify-between px-4 pb-2 pt-3">
                         {smartphone?.tag && (
                             <button
                                 onClick={() => navigateToHashtag(smartphone.tag)}
@@ -354,7 +332,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
                                     stroke="currentColor"
-                                    className="w-5 h-5"
+                                    className="h-5 w-5"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -365,7 +343,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                             </button>
 
                             {actionDropdownOpen && (
-                                <div className="absolute right-0 z-20 w-48 bg-white border border-gray-200 rounded-lg shadow-lg top-8 dark:border-white/10 dark:bg-deepcharcoal">
+                                <div className="absolute right-0 top-8 z-20 w-48 rounded-lg border border-gray-200 bg-white shadow-lg dark:border-white/10 dark:bg-deepcharcoal">
                                     <div className="py-1">
                                         <button
                                             onClick={() => {
@@ -380,7 +358,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={1.5}
                                                 stroke="currentColor"
-                                                className="w-5 h-5"
+                                                className="h-5 w-5"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -412,7 +390,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={1.5}
                                                 stroke="currentColor"
-                                                className="w-5 h-5"
+                                                className="h-5 w-5"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -429,7 +407,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                     </div>
 
                     {/* Scrollable Content Area */}
-                    <div className="flex-1 pb-10 overflow-y-auto">
+                    <div className="flex-1 overflow-y-auto pb-10">
                         <div className="px-4">
                             {/* Image Viewer with proper spacing for dots */}
                             {smartphone?.images?.length > 0 && (
@@ -438,7 +416,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                     <div
                                         ref={scrollContainerRef}
                                         onScroll={handleImageScroll}
-                                        className="flex overflow-x-auto snap-x snap-mandatory"
+                                        className="flex snap-x snap-mandatory overflow-x-auto"
                                         style={{
                                             scrollbarWidth: 'none',
                                             msOverflowStyle: 'none',
@@ -502,7 +480,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                     <span className="text-sm text-gray-900 dark:text-white/80">
                                         <strong>Payment :</strong>
                                     </span>
-                                    <div className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-orange-500 rounded-full">
+                                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-500 text-xs font-bold text-white">
                                         <svg
                                             className="size-10"
                                             viewBox="0.004 0 64 64"
@@ -527,7 +505,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                             </g>
                                         </svg>
                                     </div>
-                                    <div className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-orange-500 rounded-full">
+                                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-500 text-xs font-bold text-white">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             fill="none"
@@ -568,7 +546,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                 </div>
                             </div>
 
-                            <div className="w-full mt-6 space-y-4">
+                            <div className="mt-6 w-full space-y-4">
                                 <div className="flex justify-start">
                                     <StockBadge smartphone={smartphone} />
                                 </div>
@@ -588,7 +566,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                     />
                                 </div>
 
-                                <div className="flex items-center justify-between w-full">
+                                <div className="flex w-full items-center justify-between">
                                     <span className="text-sm text-gray-900 dark:text-white">
                                         Quantity
                                     </span>
@@ -596,10 +574,10 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                         <button
                                             type="button"
                                             onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                            className="flex items-center justify-center w-8 h-8 text-gray-600 bg-white border border-r-0 border-gray-300 rounded-l hover:bg-gray-50 focus:outline-none dark:border-gray-600 dark:bg-deepcharcoal dark:text-white/90 dark:hover:bg-zinc-900"
+                                            className="flex h-8 w-8 items-center justify-center rounded-l border border-r-0 border-gray-300 bg-white text-gray-600 hover:bg-gray-50 focus:outline-none dark:border-gray-600 dark:bg-deepcharcoal dark:text-white/90 dark:hover:bg-zinc-900"
                                         >
                                             <svg
-                                                className="w-3 h-3"
+                                                className="h-3 w-3"
                                                 fill="none"
                                                 stroke="currentColor"
                                                 viewBox="0 0 24 24"
@@ -622,15 +600,15 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                                     Math.max(1, parseInt(e.target.value) || 1),
                                                 )
                                             }
-                                            className="w-12 h-8 px-2 text-sm text-center bg-white border-t border-b border-gray-300 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-deepcharcoal dark:text-white/90"
+                                            className="h-8 w-12 border-b border-t border-gray-300 bg-white px-2 text-center text-sm focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-deepcharcoal dark:text-white/90"
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setQuantity(quantity + 1)}
-                                            className="flex items-center justify-center w-8 h-8 text-gray-600 bg-white border border-l-0 border-gray-300 rounded-r hover:bg-gray-50 focus:outline-none dark:border-gray-600 dark:bg-deepcharcoal dark:text-white/90 dark:hover:bg-zinc-900"
+                                            className="flex h-8 w-8 items-center justify-center rounded-r border border-l-0 border-gray-300 bg-white text-gray-600 hover:bg-gray-50 focus:outline-none dark:border-gray-600 dark:bg-deepcharcoal dark:text-white/90 dark:hover:bg-zinc-900"
                                         >
                                             <svg
-                                                className="w-3 h-3"
+                                                className="h-3 w-3"
                                                 fill="none"
                                                 stroke="currentColor"
                                                 viewBox="0 0 24 24"
@@ -652,7 +630,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                     </div>
 
                     {/* Sticky Bottom Bar - BLACK Background */}
-                    <div className="fixed bottom-0 left-0 right-0 px-4 py-5 bg-black">
+                    <div className="fixed bottom-0 left-0 right-0 bg-black px-4 py-5">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 {/* Price Display */}
@@ -678,7 +656,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                             viewBox="0 0 24 24"
                                             strokeWidth={1.5}
                                             stroke="currentColor"
-                                            className="w-3 h-3"
+                                            className="h-3 w-3"
                                         >
                                             <path
                                                 strokeLinecap="round"
