@@ -9,7 +9,7 @@ import axios from 'axios';
 import Spinner from '@/Components/Spinner';
 import useWindowSize from '@/Hooks/useWindowSize';
 import Confetti from 'react-confetti';
-export default function index({ cart_items }) {
+export default function index({ cart_items, refferalSessionData }) {
     const [quantities, setQuantities] = useState(
         cart_items.reduce((acc, item) => ({ ...acc, [item.id]: item.quantity }), {}),
     );
@@ -34,8 +34,8 @@ export default function index({ cart_items }) {
     const [error, setError] = useState(null);
 
     const [referalData, setReferalData] = useState({
-        referal_code: '',
-        total_points: 0,
+        referal_code: refferalSessionData?.referal_code || '',
+        total_points: refferalSessionData?.total_points ?? 0,
     });
 
     const [showConfetti, setShowConfetti] = useState(false);

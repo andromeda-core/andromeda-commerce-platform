@@ -18,7 +18,9 @@ class CartController extends Controller
         $data = $this->cart->getCartItems($request);
         $cart_items = $data['cart_items'];
 
-        return Inertia::render('Website/Cart/index', compact('cart_items'));
+        $refferalSessionData = session()->get('referal_data');
+
+        return Inertia::render('Website/Cart/index', compact('cart_items', 'refferalSessionData'));
     }
 
     public function getCartItems(Request $request)
