@@ -43,7 +43,7 @@ const BottomBar = ({
     return (
         <div className="fixed bottom-0 left-0 right-0 z-[60] lg:hidden">
             {/* Navigation bar */}
-            <nav className="rounded-md border-b border-gray-200 bg-white shadow-md backdrop-blur-lg dark:border-t dark:border-gray-800 dark:bg-deepcharcoal">
+            <nav className="rounded-sm border-b border-gray-200 bg-white shadow-md backdrop-blur-lg dark:border-t dark:border-gray-800 dark:bg-deepcharcoal">
                 <div className="flex items-center justify-around px-4 py-2">
                     {/* Home */}
                     <Link
