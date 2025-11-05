@@ -215,35 +215,32 @@ export default function Checkout({ cart_items, refferalSessionData }) {
         }
 
         setProcessingOrder(true);
-        setTimeout(() => {
-            alert('currently in Development');
-            setProcessingOrder(false);
-        }, 1000);
+
         // Your order processing logic here
-        // await axios
-        //     .post(route('website.orders.store'), {
-        //         shipping_info: shippingInfo,
-        //         payment_method: paymentMethod,
-        //         referal_code: referalData.referal_code,
-        //     })
-        //     .then((res) => {
-        //         const response = res.data;
-        //         if (response.status === true) {
-        //             setSuccessMessage('Order placed successfully!');
-        //             setShowSuccessMessage(true);
-        //             // Redirect to order confirmation page
-        //             setTimeout(() => {
-        //                 router.visit(route('website.orders.show', response.order_id));
-        //             }, 1500);
-        //         }
-        //     })
-        //     .catch((error) => {
-        //         setErrorMessage(error.message);
-        //         setShowErrorMessage(true);
-        //     })
-        //     .finally(() => {
-        //         setProcessingOrder(false);
-        //     });
+        await axios
+            .post(route('website.orders.store'), {
+                shipping_info: shippingInfo,
+                payment_method: paymentMethod,
+                referal_code: referalData.referal_code,
+            })
+            .then((res) => {
+                const response = res.data;
+                if (response.status === true) {
+                    setSuccessMessage('Order placed successfully!');
+                    setShowSuccessMessage(true);
+                    // Redirect to order confirmation page
+                    setTimeout(() => {
+                        router.visit(route('website.orders.show', response.order_id));
+                    }, 1500);
+                }
+            })
+            .catch((error) => {
+                setErrorMessage(error.message);
+                setShowErrorMessage(true);
+            })
+            .finally(() => {
+                setProcessingOrder(false);
+            });
     };
 
     return (

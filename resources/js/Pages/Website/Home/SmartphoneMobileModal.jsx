@@ -292,47 +292,19 @@ const SmartphoneMobileModal = ({
                     direction === 'top' ? 60 : 0,
                 );
             } else if (total === 2) {
-                if (direction === 'top') {
-                    isProcessingLoop = false;
-                    return;
+                if (smartphone?.id !== viewingItem.id) {
+                    setSmartphone({ ...viewingItem });
+
+                    // Update global index
+                    const globalIndex = smartphones.findIndex((s) => s.id === viewingItem.id);
+                    const localIndex = localSmartphones.findIndex((s) => s.id === viewingItem.id);
+                    setSelectedSmartphoneIndex(globalIndex >= 0 ? globalIndex : localIndex);
+                    const url = new URL(window.location);
+                    url.searchParams.set('m-slug', viewingItem.slug);
+                    window.history.replaceState({ modal: 'smartphone-viewer' }, '', url.toString());
                 }
 
-                setLocalSmartphones((prev) => {
-                    const arr = [...prev];
-                    [arr[0], arr[1]] = [arr[1], arr[0]];
-
-                    requestAnimationFrame(() => {
-                        const newItemIndex = arr.findIndex((s) => s.id === viewingItem.id);
-                        const targetScroll = newItemIndex * itemHeight;
-
-                        // Instantly reposition container
-                        container.scrollTop = targetScroll;
-                        lastScrollTopRef.current = targetScroll;
-
-                        const globalIndex = smartphones.findIndex((s) => s.id === viewingItem.id);
-                        if (smartphone?.id !== viewingItem.id) {
-                            setSmartphone({ ...viewingItem });
-                        }
-                        setSelectedSmartphoneIndex(globalIndex >= 0 ? globalIndex : newItemIndex);
-
-                        // Update slug safely (no delay)
-                        const url = new URL(window.location);
-                        url.searchParams.set('m-slug', viewingItem.slug);
-                        window.history.replaceState(
-                            { modal: 'smartphone-viewer' },
-                            '',
-                            url.toString(),
-                        );
-
-                        container.style.transition = 'opacity 0.08s ease';
-                        container.style.opacity = '0.7';
-                        setTimeout(() => (container.style.opacity = '1'), 50);
-
-                        isProcessingLoop = false;
-                    });
-
-                    return arr;
-                });
+                isProcessingLoop = false;
             }
         };
 
