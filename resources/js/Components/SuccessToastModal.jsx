@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
-export default function SuccessToastModal({ showSuccess, setShowSuccess, message }) {
+export default function SuccessToastModal({ showSuccess, setShowSuccess, message, closing }) {
     useEffect(() => {
         if (showSuccess) {
             const timer = setTimeout(() => {
                 setShowSuccess(false);
-            }, 3000);
+            }, 800);
             return () => clearTimeout(timer);
         }
     }, [showSuccess, setShowSuccess]);
@@ -18,11 +18,13 @@ export default function SuccessToastModal({ showSuccess, setShowSuccess, message
             {/* Backdrop */}
             <div
                 className="fixed inset-0 bg-black/30 backdrop-blur-sm"
-                onClick={() => setShowSuccess(false)}
+                // onClick={() => setShowSuccess(false)}
             />
 
             {/* Modal */}
-            <div className="relative z-10 w-full max-w-sm animate-scale-in rounded-2xl bg-white px-8 py-6 shadow-2xl dark:bg-deepcharcoal">
+            <div
+                className={`relative z-10 w-full max-w-sm animate-scale-in rounded-2xl bg-white px-8 py-6 shadow-2xl dark:bg-deepcharcoal`}
+            >
                 <div className="flex flex-col items-center text-center">
                     {/* Success Icon */}
                     <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">

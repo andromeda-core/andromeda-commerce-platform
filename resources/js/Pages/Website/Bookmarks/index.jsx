@@ -1,5 +1,5 @@
 import MainLayout from '@/Layouts/Website/MainLayout';
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import QRCode from 'react-qr-code';
 import { toast } from 'react-toastify';
 import { createPortal } from 'react-dom';
@@ -161,12 +161,12 @@ export default function index() {
             {showErrorMessage && <Toast flash={{ error: ErrorMessage }} />}
 
             {!isLoaded && (
-                <div className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80">
+                <div className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 dark:text-white/80">
                     <div className="flex items-center justify-center">
                         <div role="status">
                             <svg
                                 aria-hidden="true"
-                                className="w-5 h-5 text-gray-200 animate-spin fill-indigo-600 dark:text-white/80"
+                                className="h-5 w-5 animate-spin fill-indigo-600 text-gray-200 dark:text-white/80"
                                 viewBox="0 0 100 101"
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -190,14 +190,14 @@ export default function index() {
             {/* Masonry Layout */}
             {isLoaded && (
                 <div className="pb-20 sm:pb-20">
-                    <div className="mx-auto max-w-8xl sm:px-6 lg:px-8">
+                    <div className="max-w-8xl mx-auto sm:px-6 lg:px-8">
                         {/* Compact Masonry */}
                         <div className="columns-1 gap-1 [column-fill:_balance] min-[300px]:columns-2 lg:columns-4">
                             {bookmarkedPosts.map((post, index) => {
                                 return (
                                     <article
                                         key={post?.id}
-                                        className="relative mb-1 overflow-hidden transition-all duration-300 rounded-none shadow-md cursor-pointer group break-inside-avoid hover:-translate-y-1 hover:shadow-xl"
+                                        className="group relative mb-1 cursor-pointer break-inside-avoid overflow-hidden rounded-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
                                         style={{ animationDelay: `${index * 100}ms` }}
                                         onClick={() => handleOpenPost(post)}
                                     >
@@ -221,7 +221,7 @@ export default function index() {
 
                                                 {/* Share Button */}
                                                 <button
-                                                    className="absolute text-white right-3 top-3 opacity-80 drop-shadow-lg hover:opacity-100"
+                                                    className="absolute right-3 top-3 text-white opacity-80 drop-shadow-lg hover:opacity-100"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         const url =
@@ -275,10 +275,10 @@ export default function index() {
                                             </div>
                                         ) : (
                                             /* Text-only */
-                                            <div className="relative flex flex-col justify-between p-5 text-white bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 dark:from-gray-500 dark:via-gray-600 dark:to-gray-800">
+                                            <div className="relative flex flex-col justify-between bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 p-5 text-white dark:from-gray-500 dark:via-gray-600 dark:to-gray-800">
                                                 {/* Share Button */}
                                                 <button
-                                                    className="absolute text-white right-3 top-3 opacity-80 hover:opacity-100"
+                                                    className="absolute right-3 top-3 text-white opacity-80 hover:opacity-100"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         const url =
@@ -358,17 +358,17 @@ export default function index() {
                         </div>
 
                         {bookmarkedPosts?.length === 0 && (
-                            <div className="flex items-center justify-center px-6 py-8 bg-white border border-gray-200 shadow-sm rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
+                            <div className="flex items-center justify-center rounded-xl border border-gray-200 bg-white px-6 py-8 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal">
                                 <div className="flex flex-col items-center gap-3">
                                     {/* Icon */}
-                                    <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full dark:bg-gray-700">
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             strokeWidth={1.5}
                                             stroke="currentColor"
-                                            className="w-6 h-6 text-gray-500 dark:text-gray-400"
+                                            className="h-6 w-6 text-gray-500 dark:text-gray-400"
                                         >
                                             <path
                                                 strokeLinecap="round"
@@ -383,9 +383,16 @@ export default function index() {
                                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                                             No Bookmarks Found
                                         </h3>
-                                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                        <p className="mb-5 mt-1 text-sm text-gray-500 dark:text-gray-400">
                                             Start bookmarking your favorite Posts to see them here
                                         </p>
+
+                                        <Link
+                                            href={route('home')}
+                                            className="rounded-xl bg-indigo-600 px-4 py-3 font-medium text-white shadow-md transition-all hover:bg-indigo-500 hover:shadow-lg"
+                                        >
+                                            Let's Go
+                                        </Link>
                                     </div>
                                 </div>
                             </div>
@@ -397,13 +404,13 @@ export default function index() {
                                 {nextPageUrl && (
                                     <div
                                         ref={loaderRef}
-                                        className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80"
+                                        className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 dark:text-white/80"
                                     >
                                         <div className="flex items-center justify-center">
                                             <div role="status">
                                                 <svg
                                                     aria-hidden="true"
-                                                    className="w-5 h-5 text-gray-200 animate-spin fill-blue-600 dark:text-gray-600"
+                                                    className="h-5 w-5 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"
                                                     viewBox="0 0 100 101"
                                                     fill="none"
                                                     xmlns="http://www.w3.org/2000/svg"

@@ -13,4 +13,10 @@ interface ICartRepository
     public function addItem(Request $request);
 
     public function removeItem(Request $request);
+
+    public function updateItem(Request $request);
+
+    public function referalCode(Request $request);
+
+    public function removeReferal(Request $request);
 }

@@ -6,7 +6,7 @@ const LinkCopiedModal = ({ linkCopied, setLinkCopied }) => {
         if (linkCopied) {
             const timer = setTimeout(() => {
                 setLinkCopied(false);
-            }, 2000);
+            }, 800);
 
             return () => clearTimeout(timer);
         }
@@ -17,7 +17,7 @@ const LinkCopiedModal = ({ linkCopied, setLinkCopied }) => {
             {/* Overlay */}
             <div
                 className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
-                onClick={() => setLinkCopied(false)}
+                // onClick={() => setLinkCopied(false)}
             ></div>
 
             {/* Modal */}
@@ -25,7 +25,7 @@ const LinkCopiedModal = ({ linkCopied, setLinkCopied }) => {
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="linkCopiedTitle"
-                className="animate-scale-in relative z-[101] w-full max-w-sm rounded-2xl bg-white p-8 shadow-2xl dark:bg-deepcharcoal sm:max-w-md"
+                className="relative z-[101] w-full max-w-sm animate-scale-in rounded-2xl bg-white p-8 shadow-2xl dark:bg-deepcharcoal sm:max-w-md"
             >
                 {/* Success Icon */}
                 <div className="mb-4 flex justify-center">

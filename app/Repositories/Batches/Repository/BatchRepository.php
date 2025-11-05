@@ -271,30 +271,112 @@ class BatchRepository implements IBatchRepository
             ]);
         }
 
-        try {
-            // Uniqueness Checking Validation
-            foreach ($validated_req['inventory_items'] as $index => $item) {
-                if (empty($item['id'])) {
-                    continue;
-                }
+        $imei1Values = [];
+        $imei2Values = [];
+        $eidValues = [];
+        $serialNoValues = [];
 
-                if (! empty($item['imei1']) && $this->inventory->where('imei1', $item['imei1'])->where('id', '!=', $item['id'])->exists()) {
-                    throw ValidationException::withMessages(['file_error' => 'IMEI 1 Already Exists']);
+        foreach ($validated_req['inventory_items'] as $index => $item) {
+            // Check IMEI1 duplicates in current request
+            if (! empty($item['imei1'])) {
+                if (in_array($item['imei1'], $imei1Values)) {
+                    throw ValidationException::withMessages([
+                        'file_error' => "Duplicate IMEI 1 found in your submission: {$item['imei1']}",
+                    ]);
                 }
+                $imei1Values[] = $item['imei1'];
+            }
 
-                if (! empty($item['imei2']) && $this->inventory->where('imei2', $item['imei2'])->where('id', '!=', $item['id'])->exists()) {
-                    throw ValidationException::withMessages(['file_error' => 'IMEI 2 Already Exists']);
+            // Check IMEI2 duplicates in current request
+            if (! empty($item['imei2'])) {
+                if (in_array($item['imei2'], $imei2Values)) {
+                    throw ValidationException::withMessages([
+                        'file_error' => "Duplicate IMEI 2 found in your submission: {$item['imei2']}",
+                    ]);
                 }
+                $imei2Values[] = $item['imei2'];
+            }
 
-                if (! empty($item['eid']) && $this->inventory->where('eid', $item['eid'])->where('id', '!=', $item['id'])->exists()) {
-                    throw ValidationException::withMessages(['file_error' => 'EID Already Exists']);
+            // Check EID duplicates in current request
+            if (! empty($item['eid'])) {
+                if (in_array($item['eid'], $eidValues)) {
+                    throw ValidationException::withMessages([
+                        'file_error' => "Duplicate EID found in your submission: {$item['eid']}",
+                    ]);
                 }
+                $eidValues[] = $item['eid'];
+            }
 
-                if (! empty($item['serial_no']) && $this->inventory->where('serial_no', $item['serial_no'])->where('id', '!=', $item['id'])->exists()) {
-                    throw ValidationException::withMessages(['file_error' => 'Serial Number Already Exists']);
+            // Check Serial No duplicates in current request
+            if (! empty($item['serial_no'])) {
+                if (in_array($item['serial_no'], $serialNoValues)) {
+                    throw ValidationException::withMessages([
+                        'file_error' => "Duplicate Serial Number found in your submission: {$item['serial_no']}",
+                    ]);
+                }
+                $serialNoValues[] = $item['serial_no'];
+            }
+        }
+
+        $currentBatchId = $id;
+        // Uniqueness Checking Validation In Database
+        foreach ($validated_req['inventory_items'] as $index => $item) {
+            $itemId = $item['id'] ?? null;
+
+            // Check IMEI1 against database
+            if (! empty($item['imei1'])) {
+                $query = $this->inventory
+                    ->where('imei1', $item['imei1'])
+                    ->where('batch_id', '!=', $currentBatchId);
+
+                if ($query->exists()) {
+                    throw ValidationException::withMessages([
+                        'file_error' => "IMEI 1 '{$item['imei1']}' already exists in database",
+                    ]);
                 }
             }
 
+            // Check IMEI2 against database
+            if (! empty($item['imei2'])) {
+                $query = $this->inventory
+                    ->where('imei2', $item['imei2'])
+                    ->where('batch_id', '!=', $currentBatchId);
+
+                if ($query->exists()) {
+                    throw ValidationException::withMessages([
+                        'file_error' => "IMEI 2 '{$item['imei2']}' already exists in database",
+                    ]);
+                }
+            }
+
+            // Check EID against database
+            if (! empty($item['eid'])) {
+                $query = $this->inventory
+                    ->where('eid', $item['eid'])
+                    ->where('batch_id', '!=', $currentBatchId);
+
+                if ($query->exists()) {
+                    throw ValidationException::withMessages([
+                        'file_error' => "EID '{$item['eid']}' already exists in database",
+                    ]);
+                }
+            }
+
+            // Check Serial Number against database
+            if (! empty($item['serial_no'])) {
+                $query = $this->inventory
+                    ->where('serial_no', $item['serial_no'])
+                    ->where('batch_id', '!=', $currentBatchId);
+
+                if ($query->exists()) {
+                    throw ValidationException::withMessages([
+                        'file_error' => "Serial Number '{$item['serial_no']}' already exists in database",
+                    ]);
+                }
+            }
+        }
+
+        try {
             // dd($validated_req);
             DB::beginTransaction();
 

@@ -100,6 +100,9 @@ Route::group(['as' => 'website.'], function () {
         Route::get('/cart-get-items-count', 'getItemsCount')->name('get-items-count');
         Route::post('/cart/add-item', 'addItem')->name('add-item');
         Route::delete('/cart/remove-item', 'removeItem')->name('remove-item');
+        Route::put('/cart/update-item', 'updateItem')->name('update-item');
+        Route::post('/cart/referal-code', 'referalCode')->name('referal-code');
+        Route::delete('/cart/remove-referal', 'removeReferal')->name('remove-referal');
     });
 
     // Profile Routes

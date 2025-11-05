@@ -21,6 +21,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="manifest" href="{{ route('pwa.manifest') }}">
     <meta name="theme-color" content="#f1f5f9">
     <meta charset="utf-8">

@@ -8,7 +8,7 @@ import Toast from '@/Components/Toast';
 export default function AuthenticatedLayout({ children }) {
     // Global General Setting Prop
     const { auth, generalSetting, asset, flash } = usePage().props;
-    console.log(flash);
+
     useEffect(() => {
         if (!auth.user) {
             router.visit(route('login'));

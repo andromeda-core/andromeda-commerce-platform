@@ -10,7 +10,7 @@ const BookmarkStatusChangedModal = ({
         if (BookmarkStatusChanged) {
             const timer = setTimeout(() => {
                 setBookmarkStatusChanged(false);
-            }, 2000);
+            }, 800);
 
             return () => clearTimeout(timer);
         }
@@ -21,7 +21,7 @@ const BookmarkStatusChangedModal = ({
             {/* Overlay */}
             <div
                 className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
-                onClick={() => setBookmarkStatusChanged(false)}
+                // onClick={() => setBookmarkStatusChanged(false)}
             ></div>
 
             {/* Modal */}
@@ -29,7 +29,7 @@ const BookmarkStatusChangedModal = ({
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="bookmarkTitle"
-                className="animate-scale-in relative z-[101] w-full max-w-sm rounded-2xl bg-white p-8 shadow-2xl dark:bg-deepcharcoal sm:max-w-md"
+                className="relative z-[101] w-full max-w-sm animate-scale-in rounded-2xl bg-white p-8 shadow-2xl dark:bg-deepcharcoal sm:max-w-md"
             >
                 {/* Icon */}
                 <div className="mb-4 flex justify-center">

@@ -13,9 +13,12 @@ class CartController extends Controller
         private ICartRepository $cart
     ) {}
 
-    public function index()
+    public function index(Request $request)
     {
-        return Inertia::render('Website/Cart/index');
+        $data = $this->cart->getCartItems($request);
+        $cart_items = $data['cart_items'];
+
+        return Inertia::render('Website/Cart/index', compact('cart_items'));
     }
 
     public function getCartItems(Request $request)
@@ -42,12 +45,10 @@ class CartController extends Controller
         }
 
         $cart_items = $data['cart_items'];
-        $cart_items_count = $data['cart_items_count'];
 
         return response()->json([
             'status' => true,
             'cart_items' => $cart_items,
-            'cart_items_count' => $cart_items_count,
         ]);
 
     }
@@ -97,7 +98,23 @@ class CartController extends Controller
 
     public function removeItem(Request $request)
     {
+
         $response = $this->cart->removeItem($request);
+
+        if ($request->ajax() && $request->wantsJson()) {
+            if ($response['status'] === false) {
+                return response()->json([
+                    'status' => false,
+                    'message' => $response['message'],
+                ]);
+
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => $response['message'],
+            ]);
+        }
 
         if ($response['status'] === false) {
             return back()->with('error', $response['message']);
@@ -105,5 +122,58 @@ class CartController extends Controller
 
         return back()->with('success', $response['message']);
 
+    }
+
+    public function updateItem(Request $request)
+    {
+
+        $response = $this->cart->updateItem($request);
+
+        if ($response['status'] === false) {
+            return response()->json([
+                'status' => false,
+                'message' => $response['message'],
+            ]);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => $response['message'],
+        ]);
+    }
+
+    public function referalCode(Request $request)
+    {
+        $response = $this->cart->referalCode($request);
+
+        if ($response['status'] === false) {
+            return response()->json([
+                'status' => false,
+                'message' => $response['message'],
+            ]);
+        }
+
+        return response()->json([
+            'status' => true,
+            'total_points' => $response['total_points'],
+            'referal_code' => $response['referal_code'],
+        ]);
+    }
+
+    public function removeReferal(Request $request)
+    {
+        $response = $this->cart->removeReferal($request);
+
+        if ($response['status'] === false) {
+            return response()->json([
+                'status' => false,
+                'message' => $response['message'],
+            ]);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => $response['message'],
+        ]);
     }
 }

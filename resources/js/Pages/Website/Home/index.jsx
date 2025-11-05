@@ -18,6 +18,7 @@ import Toast from '@/Components/Toast';
 import SmartphoneMobileModal from './SmartphoneMobileModal';
 import VideoThumbnail from '@/Components/VideoThumbnail';
 import VideoWithThumbnail from '@/Components/VideoWithThumbnail';
+import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 
 export default function index({ google_map_api_key, search_history }) {
     const { currency } = usePage().props;
@@ -1904,6 +1905,9 @@ export default function index({ google_map_api_key, search_history }) {
                                                         src={post?.images[0]?.url}
                                                         alt={post?.title}
                                                         loading="lazy"
+                                                        onError={(e) =>
+                                                            (e.target.src = Placeholder)
+                                                        }
                                                         className="w-full object-cover text-[10px] text-gray-700 transition-all duration-500 group-hover:scale-105 dark:text-white/80 dark:opacity-80"
                                                     />
 
@@ -2181,6 +2185,7 @@ export default function index({ google_map_api_key, search_history }) {
                                                     src={smartphone.images?.[0]}
                                                     alt={smartphone.name}
                                                     loading="lazy"
+                                                    onError={(e) => (e.target.src = Placeholder)}
                                                     className="w-full object-cover transition-all duration-500 group-hover:scale-105"
                                                 />
 

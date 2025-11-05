@@ -1,160 +1,307 @@
-import React, { useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import Input from '@/Components/Input';
-
-// Sample Cart Items Data
-const sampleCartItems = [
-    {
-        id: 1,
-        name: 'Premium Wireless Headphones',
-        description: 'High-quality audio with active noise cancellation and 30-hour battery life',
-        price: 299.99,
-        originalPrice: 399.99,
-        quantity: 1,
-        image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&h=500&fit=crop',
-        variant: 'Black, Bluetooth 5.0',
-        stock: 15,
-    },
-    {
-        id: 2,
-        name: 'Smart Watch Pro',
-        description: 'Fitness tracking, heart rate monitor, and smartphone notifications',
-        price: 199.99,
-        originalPrice: null,
-        quantity: 2,
-        image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&h=500&fit=crop',
-        variant: 'Silver, 44mm',
-        stock: 5,
-    },
-    {
-        id: 3,
-        name: 'Mechanical Gaming Keyboard',
-        description: 'RGB backlit with Cherry MX switches and programmable keys',
-        price: 149.99,
-        originalPrice: 179.99,
-        quantity: 1,
-        image: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=500&h=500&fit=crop',
-        variant: 'RGB, Cherry MX Red',
-        stock: 25,
-    },
-    {
-        id: 4,
-        name: '4K Ultra HD Monitor',
-        description: '27-inch display with HDR support and 144Hz refresh rate',
-        price: 449.99,
-        originalPrice: 599.99,
-        quantity: 1,
-        image: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=500&h=500&fit=crop',
-        variant: '27", 4K, 144Hz',
-        stock: 3,
-    },
-    {
-        id: 5,
-        name: 'Wireless Mouse',
-        description: 'Ergonomic design with precision tracking and long battery life',
-        price: 49.99,
-        originalPrice: null,
-        quantity: 3,
-        image: 'https://images.unsplash.com/photo-1527814050087-3793815479db?w=500&h=500&fit=crop',
-        variant: 'Black, Wireless',
-        stock: 0,
-    },
-];
-
-// Sample Cart Summary Data
-const sampleCartSummary = {
-    subtotal: 1299.92,
-    shipping: 0,
-    tax: 104.0,
-    discount: 50.0,
-    total: 1353.92,
-    freeShippingThreshold: 500,
-};
-
-export default function index({ cartItems = sampleCartItems, cartSummary = sampleCartSummary }) {
-    // Initialize quantities from the actual cart items
+import Placeholder from 'asset/assets/images/product/placeholder.jpg';
+import getContrastingColor from '@/Hooks/useColorContraster';
+import Toast from '@/Components/Toast';
+import axios from 'axios';
+import Spinner from '@/Components/Spinner';
+import useWindowSize from '@/Hooks/useWindowSize';
+import Confetti from 'react-confetti';
+export default function index({ cart_items }) {
     const [quantities, setQuantities] = useState(
-        cartItems.reduce((acc, item) => ({ ...acc, [item.id]: item.quantity }), {}),
+        cart_items.reduce((acc, item) => ({ ...acc, [item.id]: item.quantity }), {}),
     );
+    const { currency } = usePage().props;
+    const windowSize = useWindowSize();
+
+    const [infoMessage, setInfoMessage] = useState(null);
+    const [showInfoMessage, setShowInfoMessage] = useState(false);
+
+    const [errorMessage, setErrorMessage] = useState(null);
+    const [showErrorMessage, setShowErrorMessage] = useState(false);
+
+    const [successMessage, setSuccessMessage] = useState(null);
+    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+
+    const [removingProcessing, setRemovingProcessing] = useState(false);
+    const [applyingReferalProcessing, setApplyingReferalProcessing] = useState(false);
+    const [closingReferalSection, setClosingReferalSection] = useState(false);
+    const [removingReferalProcessing, setRemovingReferalProcessing] = useState(false);
+
+    // Its For Referal Code Errors
+    const [error, setError] = useState(null);
+
+    const [referalData, setReferalData] = useState({
+        referal_code: '',
+        total_points: 0,
+    });
+
+    const [showConfetti, setShowConfetti] = useState(false);
+    const [confettiFading, setConfettiFading] = useState(false);
+
+    useEffect(() => {
+        if (showInfoMessage) {
+            const timer = setTimeout(() => {
+                setShowInfoMessage(false);
+                setInfoMessage(null);
+            }, 1500);
+            return () => clearTimeout(timer);
+        }
+
+        if (showErrorMessage) {
+            const timer = setTimeout(() => {
+                setErrorMessage(false);
+                setErrorMessage(null);
+            }, 1500);
+            return () => clearTimeout(timer);
+        }
+
+        if (showSuccessMessage) {
+            const timer = setTimeout(() => {
+                setShowSuccessMessage(false);
+                setSuccessMessage(null);
+            }, 1500);
+            return () => clearTimeout(timer);
+        }
+    }, [showInfoMessage, showErrorMessage, showSuccessMessage]);
+
+    useEffect(() => {
+        if (showConfetti) {
+            const fadeTimer = setTimeout(() => {
+                setConfettiFading(true);
+            }, 3000);
+
+            const hideTimer = setTimeout(() => {
+                setShowConfetti(false);
+                setConfettiFading(false);
+            }, 4000);
+
+            return () => {
+                clearTimeout(fadeTimer);
+                clearTimeout(hideTimer);
+            };
+        }
+    }, [showConfetti]);
 
     const updateQuantity = (itemId, newQuantity) => {
         if (newQuantity < 1) return;
+
+        const cartItem = cart_items.find((item) => item.id === itemId);
+
+        if (!cartItem) {
+            setInfoMessage('Item not found in cart');
+            setShowInfoMessage(true);
+            return;
+        }
+
+        const availableInventory = cartItem.smartphone.inventory_items_count;
+
+        if (newQuantity > availableInventory) {
+            setInfoMessage(
+                `Only ${availableInventory} item${availableInventory === 1 ? '' : 's'} available. Please adjust your quantity`,
+            );
+            setShowInfoMessage(true);
+            return;
+        }
+
         setQuantities((prev) => ({ ...prev, [itemId]: newQuantity }));
-        // Call your Laravel backend to update quantity
-        // router.post('/cart/update', { item_id: itemId, quantity: newQuantity });
+
+        axios
+            .put(route('website.carts.update-item'), {
+                item_id: itemId,
+                type: cartItem.type,
+                quantity: newQuantity,
+            })
+            .then((response) => {
+                if (response.data.status === false) {
+                    setErrorMessage(response.data.message);
+                    setShowErrorMessage(true);
+                }
+            })
+            .catch((error) => {
+                setErrorMessage(error.message);
+                setShowErrorMessage(true);
+            });
     };
 
-    const removeItem = (itemId) => {
-        // Call your Laravel backend to remove item
-        // router.delete(`/cart/${itemId}`);
+    const removeItem = (itemId, type) => {
+        setRemovingProcessing(true);
+        axios
+            .delete(route('website.carts.remove-item'), {
+                data: { item_id: itemId, type: type },
+            })
+            .then((response) => {
+                if (response.data.status === false) {
+                    setErrorMessage(response.data.message);
+                    setShowErrorMessage(true);
+                    return;
+                }
+
+                if (response.data.status === true) {
+                    setSuccessMessage(response.data.message);
+                    setShowSuccessMessage(true);
+                    router.reload(['cart_items']);
+                }
+            })
+            .catch((error) => {
+                setErrorMessage(error.message);
+                setShowErrorMessage(true);
+            })
+            .finally(() => {
+                setRemovingProcessing(false);
+            });
     };
 
-    const applyCoupon = (couponCode) => {
-        // Call your Laravel backend to apply coupon
-        // router.post('/cart/coupon', { code: couponCode });
+    const applyReferal = async (referalCode) => {
+        setError(null);
+        setApplyingReferalProcessing(true);
+        const request_response = await axios
+            .post(route('website.carts.referal-code'), { code: referalCode })
+            .then((res) => {
+                const response = res.data;
+
+                if (response.status === false) {
+                    setError(response.message);
+                    return false;
+                }
+
+                setReferalData({
+                    referal_code: response.referal_code,
+                    total_points: response.total_points,
+                });
+
+                setShowConfetti(true);
+                return true;
+            })
+            .catch((error) => {
+                setErrorMessage(error.message);
+                setShowErrorMessage(true);
+            })
+            .finally(() => {
+                setApplyingReferalProcessing(false);
+            });
+
+        return request_response;
     };
+
+    const removeReferal = async () => {
+        setRemovingReferalProcessing(true);
+        const request_response = axios
+            .delete(route('website.carts.remove-referal'))
+            .then((res) => {
+                const data = res.data;
+
+                if (data.status === false) {
+                    setErrorMessage(data.message);
+                    setShowErrorMessage(true);
+                    return false;
+                }
+
+                setReferalData({
+                    referal_code: '',
+                    total_points: 0,
+                });
+                return true;
+            })
+            .catch((error) => {
+                setErrorMessage(error.message);
+                setShowErrorMessage(true);
+            })
+            .finally(() => {
+                setRemovingReferalProcessing(false);
+            });
+
+        return request_response;
+    };
+
+    const calculatedSummary = useMemo(() => {
+        const subtotal = cart_items.reduce((total, item) => {
+            const quantity = quantities[item.id] || item.quantity;
+            const price = parseFloat(item.smartphone?.selling_info?.total_price || 0);
+            return total + price * quantity;
+        }, 0);
+
+        // Calculate total
+        const total = subtotal;
+
+        return {
+            subtotal: subtotal.toFixed(2),
+            total: total.toFixed(2),
+            itemCount: Object.values(quantities).reduce((sum, qty) => sum + qty, 0),
+        };
+    }, [cart_items, quantities]);
 
     return (
         <MainLayout>
-            <Head title="Shopping Cart" />
+            <Head title="Cart" />
+
+            {(showInfoMessage || showErrorMessage || showSuccessMessage) && (
+                <Toast
+                    flash={{
+                        ...(showInfoMessage
+                            ? { info: infoMessage }
+                            : showErrorMessage
+                              ? { error: errorMessage }
+                              : { success: successMessage }),
+                    }}
+                />
+            )}
 
             <div className="min-h-screen transition-colors duration-200">
-                {/* Header */}
-                <div className="border-b border-gray-200 dark:border-white/10">
-                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <Link
-                                    href={route('home')}
-                                    className="flex items-center gap-2 text-gray-600 transition-colors hover:text-gray-900 dark:text-white/60 dark:hover:text-white"
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        strokeWidth={1.5}
-                                        stroke="currentColor"
-                                        className="h-5 w-5"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
-                                        />
-                                    </svg>
-                                    <span className="text-sm font-medium">Continue Shopping</span>
-                                </Link>
-                            </div>
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                Shopping Cart ( {cartItems.length} )
-                            </h1>
-                        </div>
+                {showConfetti && (
+                    <div
+                        className={`pointer-events-none fixed inset-0 z-50 overflow-hidden transition-opacity duration-1000 ${
+                            confettiFading ? 'opacity-0' : 'opacity-100'
+                        }`}
+                    >
+                        <Confetti
+                            width={windowSize.width}
+                            height={windowSize.height}
+                            recycle={false}
+                            numberOfPieces={1000}
+                            gravity={1}
+                        />
                     </div>
-                </div>
+                )}
 
                 {/* Main Content */}
-                <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                    {cartItems.length === 0 ? (
+                <div
+                    className={`max-w-8xl mx-auto sm:px-6 lg:px-8 ${windowSize.width < 1024 && 'mb-20'}`}
+                >
+                    {cart_items.length === 0 ? (
                         <EmptyCart />
                     ) : (
                         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                             {/* Cart Items - Left Side */}
                             <div className="space-y-4 lg:col-span-2">
-                                {cartItems.map((item) => (
+                                {cart_items.map((item) => (
                                     <CartItem
                                         key={item.id}
                                         item={item}
                                         quantity={quantities[item.id] || item.quantity}
                                         onUpdateQuantity={updateQuantity}
                                         onRemove={removeItem}
+                                        currency={currency}
+                                        removing={removingProcessing}
                                     />
                                 ))}
                             </div>
 
                             {/* Order Summary - Right Side */}
                             <div className="lg:col-span-1">
-                                <OrderSummary summary={cartSummary} onApplyCoupon={applyCoupon} />
+                                <OrderSummary
+                                    error={error}
+                                    setError={setError}
+                                    summary={calculatedSummary}
+                                    onApplyReferal={applyReferal}
+                                    applyingReferal={applyingReferalProcessing}
+                                    closingReferalSection={closingReferalSection}
+                                    referalData={referalData}
+                                    onRemoveReferal={removeReferal}
+                                    removingReferal={removingReferalProcessing}
+                                />
                             </div>
                         </div>
                     )}
@@ -165,37 +312,55 @@ export default function index({ cartItems = sampleCartItems, cartSummary = sampl
 }
 
 // Cart Item Component
-function CartItem({ item, quantity, onUpdateQuantity, onRemove }) {
+function CartItem({ item, quantity, onUpdateQuantity, onRemove, currency, removing }) {
     return (
         <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all hover:shadow-md dark:border-white/10 dark:bg-deepcharcoal sm:p-6">
             <div className="flex gap-4">
                 {/* Product Image */}
                 <div className="flex-shrink-0">
-                    <div className="h-24 w-24 overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-700 sm:h-32 sm:w-32">
+                    <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-lg">
                         <img
-                            src={item.image || '/placeholder-product.png'}
-                            alt={item.name}
-                            className="h-full w-full object-cover"
+                            src={item?.smartphone?.smartphone_image_urls?.[0] || Placeholder}
+                            alt={item?.smartphone?.model_name?.name || 'N/A'}
+                            className="max-h-full max-w-full object-contain"
+                            loading="lazy"
+                            onError={(e) => (e.target.src = Placeholder)}
                         />
                     </div>
                 </div>
-
                 {/* Product Details */}
                 <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
                             <h3 className="mb-1 text-base font-semibold text-gray-900 dark:text-white sm:text-lg">
-                                {item.name}
+                                {item?.smartphone?.model_name?.name || 'N/A'}
                             </h3>
-                            <p className="mb-2 text-sm text-gray-600 dark:text-white/60">
-                                {item.description}
-                            </p>
+                            <p
+                                dangerouslySetInnerHTML={{ __html: item?.smartphone?.content }}
+                                className="mb-2 text-sm text-gray-600 dark:text-white/60"
+                            ></p>
+
+                            {item?.smartphone?.capacity && (
+                                <div className="mb-3 flex flex-wrap gap-2">
+                                    <span
+                                        className={`inline-flex items-center rounded-md bg-gray-200 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-900 dark:text-white/80`}
+                                    >
+                                        {'Capacity: ' + item?.smartphone?.capacity?.name || 'N/A'}
+                                    </span>
+                                </div>
+                            )}
 
                             {/* Variants/Options */}
-                            {item.variant && (
+                            {item?.color && (
                                 <div className="mb-3 flex flex-wrap gap-2">
-                                    <span className="inline-flex items-center rounded-md bg-gray-200 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-white/70">
-                                        {item.variant}
+                                    <span
+                                        className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-medium`}
+                                        style={{
+                                            backgroundColor: item?.color?.code,
+                                            color: getContrastingColor(item?.color?.code),
+                                        }}
+                                    >
+                                        {'Color: ' + item.color?.name || 'N/A'}
                                     </span>
                                 </div>
                             )}
@@ -203,36 +368,43 @@ function CartItem({ item, quantity, onUpdateQuantity, onRemove }) {
                             {/* Price */}
                             <div className="flex items-baseline gap-2">
                                 <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400 sm:text-xl">
-                                    ${item.price}
+                                    {currency?.symbol}
+                                    {item.smartphone?.selling_info?.total_price ?? 'N/A'}
                                 </span>
-                                {item.originalPrice && (
+                                {/* {item.originalPrice && (
                                     <span className="text-sm text-gray-500 line-through dark:text-white/50">
                                         ${item.originalPrice}
                                     </span>
-                                )}
+                                )} */}
                             </div>
                         </div>
 
                         {/* Remove Button */}
+
                         <button
-                            onClick={() => onRemove(item.id)}
-                            className="p-2 text-gray-400 transition-colors hover:text-red-500 dark:text-white/40 dark:hover:text-red-400"
+                            onClick={() => onRemove(item.smartphone_id, item.type)}
+                            disabled={removing}
+                            className={`p-2 text-gray-400 transition-colors hover:text-red-500 dark:text-white/40 dark:hover:text-red-400 ${removing ? 'cursor-not-allowed' : ''}`}
                             aria-label="Remove item"
                         >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={1.5}
-                                stroke="currentColor"
-                                className="h-5 w-5"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-                                />
-                            </svg>
+                            {removing ? (
+                                <Spinner />
+                            ) : (
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={1.5}
+                                    stroke="currentColor"
+                                    className="h-5 w-5"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                                    />
+                                </svg>
+                            )}
                         </button>
                     </div>
 
@@ -289,7 +461,10 @@ function CartItem({ item, quantity, onUpdateQuantity, onRemove }) {
                                 Total:{' '}
                             </span>
                             <span className="text-lg font-bold text-gray-900 dark:text-white">
-                                ${(item.price * quantity).toFixed(2)}
+                                $
+                                {(item?.smartphone?.selling_info?.total_price * quantity).toFixed(
+                                    2,
+                                )}
                             </span>
                         </div>
                     </div>
@@ -355,18 +530,50 @@ function CartItem({ item, quantity, onUpdateQuantity, onRemove }) {
 }
 
 // Order Summary Component
-function OrderSummary({ summary, onApplyCoupon }) {
-    const [couponCode, setCouponCode] = useState('');
-    const [showCoupon, setShowCoupon] = useState(false);
+function OrderSummary({
+    summary,
+    onApplyReferal,
+    applyingReferal,
+    closingReferalSection,
+    error,
+    setError,
+    referalData,
+    onRemoveReferal,
+    removingReferal,
+}) {
+    const [referalCode, setReferalCode] = useState('');
+    const [showReferal, setShowReferal] = useState(closingReferalSection ?? false);
 
-    const handleApplyCoupon = () => {
-        if (couponCode.trim()) {
-            onApplyCoupon(couponCode);
+    const handleApplyReferal = async () => {
+        if (referalCode === '') {
+            setError('Referal Code is Required');
+
+            setTimeout(() => {
+                setError(null);
+            }, 2000);
+            return;
+        }
+
+        if (referalCode.trim()) {
+            const response = await onApplyReferal(referalCode);
+
+            if (response) {
+                setShowReferal(false);
+                setReferalCode('');
+            }
+        }
+    };
+
+    const handleRemoveReferal = async () => {
+        const response = await onRemoveReferal();
+
+        if (response) {
+            setShowReferal(true);
         }
     };
 
     return (
-        <div className="sticky top-8 space-y-6">
+        <div className="sticky top-8 space-y-3">
             {/* Summary Card */}
             <div className="rounded-xl border border-gray-200 bg-gray-50 p-6 dark:border-white/10 dark:bg-deepcharcoal">
                 <h2 className="mb-6 flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white">
@@ -396,36 +603,79 @@ function OrderSummary({ summary, onApplyCoupon }) {
                         </span>
                     </div>
 
-                    <div className="flex justify-between text-sm">
-                        <span className="flex items-center gap-1 text-gray-600 dark:text-white/60">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={1.5}
-                                stroke="currentColor"
-                                className="h-4 w-4"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
-                                />
-                            </svg>
-                            Shipping
-                        </span>
-                        <span className="font-semibold text-gray-900 dark:text-white">
-                            {summary.shipping === 0 ? (
-                                <span className="text-green-600 dark:text-green-400">FREE</span>
-                            ) : (
-                                `$${summary.shipping || '0.00'}`
-                            )}
-                        </span>
-                    </div>
-
-                    {summary.discount > 0 && (
+                    {referalData.total_points > 0 && (
                         <div className="flex justify-between text-sm">
                             <span className="flex items-center gap-1 text-gray-600 dark:text-white/60">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={1.5}
+                                    stroke="currentColor"
+                                    className="size-4"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"
+                                    />
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M6 6h.008v.008H6V6z"
+                                    />
+                                </svg>
+                                <span className="mr-1">Referal Points</span>
+                                {!removingReferal ? (
+                                    <button
+                                        onClick={() => handleRemoveReferal()}
+                                        className="hover:text-red-400"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            strokeWidth={1.5}
+                                            stroke="currentColor"
+                                            className="size-4"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                d="M6 18 18 6M6 6l12 12"
+                                            />
+                                        </svg>
+                                    </button>
+                                ) : (
+                                    <Spinner customSize={'size-3'} />
+                                )}
+                            </span>
+                            <span className="font-semibold text-green-600 dark:text-green-400">
+                                {referalData.total_points ?? '0'}
+                            </span>
+                        </div>
+                    )}
+
+                    <div className="border-t border-gray-200 pt-4 dark:border-white/10">
+                        <div className="flex items-center justify-between">
+                            <span className="text-base font-semibold text-gray-900 dark:text-white">
+                                Total
+                            </span>
+                            <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                                ${summary.total || '0.00'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Coupon Code */}
+                {!referalData.referal_code && (
+                    <div className="mb-6">
+                        {!showReferal ? (
+                            <button
+                                onClick={() => setShowReferal(true)}
+                                className="flex w-full items-center justify-center gap-2 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                            >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
@@ -445,123 +695,39 @@ function OrderSummary({ summary, onApplyCoupon }) {
                                         d="M6 6h.008v.008H6V6z"
                                     />
                                 </svg>
-                                Discount
-                            </span>
-                            <span className="font-semibold text-green-600 dark:text-green-400">
-                                -${summary.discount}
-                            </span>
-                        </div>
-                    )}
-
-                    <div className="flex justify-between text-sm">
-                        <span className="text-gray-600 dark:text-white/60">Tax</span>
-                        <span className="font-semibold text-gray-900 dark:text-white">
-                            ${summary.tax || '0.00'}
-                        </span>
-                    </div>
-
-                    <div className="border-t border-gray-200 pt-4 dark:border-white/10">
-                        <div className="flex items-center justify-between">
-                            <span className="text-base font-semibold text-gray-900 dark:text-white">
-                                Total
-                            </span>
-                            <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                                ${summary.total || '0.00'}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Coupon Code */}
-                <div className="mb-6">
-                    {!showCoupon ? (
-                        <button
-                            onClick={() => setShowCoupon(true)}
-                            className="flex w-full items-center justify-center gap-2 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={1.5}
-                                stroke="currentColor"
-                                className="h-4 w-4"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"
-                                />
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M6 6h.008v.008H6V6z"
-                                />
-                            </svg>
-                            Have a coupon code?
-                        </button>
-                    ) : (
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between gap-2">
-                                <Input
-                                    Id={'coupon_code'}
-                                    Name={'coupon_code'}
-                                    Placeholder={'Enter Coupon Code'}
-                                    Type={'text'}
-                                    Value={couponCode}
-                                    Action={(e) => setCouponCode(e.target.value)}
-                                />
-                                <button
-                                    onClick={handleApplyCoupon}
-                                    className="mb-5 rounded-lg bg-indigo-600 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
-                                >
-                                    Apply
-                                </button>
+                                Wana Earn Points? Add Referal Code
+                            </button>
+                        ) : (
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between gap-2">
+                                    <Input
+                                        Id={'referal_code'}
+                                        Name={'referal_code'}
+                                        Placeholder={'Enter Referal Code To Earn Points'}
+                                        Type={'text'}
+                                        Value={referalCode}
+                                        Action={(e) => setReferalCode(e.target.value)}
+                                        Error={error}
+                                    />
+                                    <button
+                                        onClick={handleApplyReferal}
+                                        className="mb-6 rounded-lg bg-indigo-600 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-indigo-500"
+                                    >
+                                        {applyingReferal ? <Spinner /> : 'Apply'}
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    )}
-                </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Checkout Button */}
-                <Link
-                    href="/checkout"
-                    className="block w-full transform rounded-xl bg-indigo-600 px-6 py-3.5 text-center text-base font-semibold text-white shadow-lg shadow-indigo-500/30 transition-all hover:scale-[1.02] hover:bg-indigo-700 active:scale-[0.98] dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                <a
+                    href="#"
+                    className="block w-full rounded-xl bg-indigo-600 px-6 py-3.5 text-center text-base font-semibold text-white shadow-lg transition-all hover:bg-indigo-500"
                 >
                     Proceed to Checkout
-                </Link>
-
-                {/* Free Shipping Notice */}
-                {summary.freeShippingThreshold &&
-                    summary.subtotal < summary.freeShippingThreshold && (
-                        <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-500/30 dark:bg-amber-900/20">
-                            <div className="flex items-start gap-2">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth={1.5}
-                                    stroke="currentColor"
-                                    className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600 dark:text-amber-400"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
-                                    />
-                                </svg>
-                                <p className="text-xs text-amber-700 dark:text-amber-300">
-                                    Add{' '}
-                                    <strong>
-                                        $
-                                        {(summary.freeShippingThreshold - summary.subtotal).toFixed(
-                                            2,
-                                        )}
-                                    </strong>{' '}
-                                    more to get FREE shipping!
-                                </p>
-                            </div>
-                        </div>
-                    )}
+                </a>
             </div>
 
             {/* Secure Checkout Badge */}
@@ -591,58 +757,47 @@ function OrderSummary({ summary, onApplyCoupon }) {
                     We accept
                 </p>
                 <div className="flex items-center justify-center gap-4">
-                    <svg
-                        viewBox="0.004 0 64 64"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        className="h-8 w-8 text-gray-400 dark:text-white/40"
-                    >
-                        <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-                        <g
-                            id="SVGRepo_tracerCarrier"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        ></g>
-                        <g id="SVGRepo_iconCarrier">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 text-xs font-bold text-white">
+                        <svg
+                            className="size-10"
+                            viewBox="0.004 0 64 64"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                        >
+                            <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+                            <g
+                                id="SVGRepo_tracerCarrier"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            ></g>
+                            <g id="SVGRepo_iconCarrier">
+                                <path
+                                    d="M63.04 39.741c-4.274 17.143-21.638 27.575-38.783 23.301C7.12 58.768-3.313 41.404.962 24.262 5.234 7.117 22.597-3.317 39.737.957c17.144 4.274 27.576 21.64 23.302 38.784z"
+                                    fill="none"
+                                ></path>
+                                <path
+                                    d="M46.11 27.441c.636-4.258-2.606-6.547-7.039-8.074l1.438-5.768-3.512-.875-1.4 5.616c-.922-.23-1.87-.447-2.812-.662l1.41-5.653-3.509-.875-1.439 5.766c-.764-.174-1.514-.346-2.242-.527l.004-.018-4.842-1.209-.934 3.75s2.605.597 2.55.634c1.422.355 1.68 1.296 1.636 2.042l-1.638 6.571c.098.025.225.061.365.117l-.37-.092-2.297 9.205c-.174.432-.615 1.08-1.609.834.035.051-2.552-.637-2.552-.637l-1.743 4.02 4.57 1.139c.85.213 1.683.436 2.502.646l-1.453 5.835 3.507.875 1.44-5.772c.957.26 1.887.5 2.797.726L27.504 50.8l3.511.875 1.453-5.823c5.987 1.133 10.49.676 12.383-4.738 1.527-4.36-.075-6.875-3.225-8.516 2.294-.531 4.022-2.04 4.483-5.157zM38.087 38.69c-1.086 4.36-8.426 2.004-10.807 1.412l1.928-7.729c2.38.594 10.011 1.77 8.88 6.317zm1.085-11.312c-.99 3.966-7.1 1.951-9.083 1.457l1.748-7.01c1.983.494 8.367 1.416 7.335 5.553z"
+                                    fill="#ffffff"
+                                ></path>
+                            </g>
+                        </svg>
+                    </div>
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 text-xs font-bold text-white">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="size-6"
+                        >
                             <path
-                                d="M63.04 39.741c-4.274 17.143-21.638 27.575-38.783 23.301C7.12 58.768-3.313 41.404.962 24.262 5.234 7.117 22.597-3.317 39.737.957c17.144 4.274 27.576 21.64 23.302 38.784z"
-                                fill="none"
-                            ></path>
-                            <path
-                                d="M46.11 27.441c.636-4.258-2.606-6.547-7.039-8.074l1.438-5.768-3.512-.875-1.4 5.616c-.922-.23-1.87-.447-2.812-.662l1.41-5.653-3.509-.875-1.439 5.766c-.764-.174-1.514-.346-2.242-.527l.004-.018-4.842-1.209-.934 3.75s2.605.597 2.55.634c1.422.355 1.68 1.296 1.636 2.042l-1.638 6.571c.098.025.225.061.365.117l-.37-.092-2.297 9.205c-.174.432-.615 1.08-1.609.834.035.051-2.552-.637-2.552-.637l-1.743 4.02 4.57 1.139c.85.213 1.683.436 2.502.646l-1.453 5.835 3.507.875 1.44-5.772c.957.26 1.887.5 2.797.726L27.504 50.8l3.511.875 1.453-5.823c5.987 1.133 10.49.676 12.383-4.738 1.527-4.36-.075-6.875-3.225-8.516 2.294-.531 4.022-2.04 4.483-5.157zM38.087 38.69c-1.086 4.36-8.426 2.004-10.807 1.412l1.928-7.729c2.38.594 10.011 1.77 8.88 6.317zm1.085-11.312c-.99 3.966-7.1 1.951-9.083 1.457l1.748-7.01c1.983.494 8.367 1.416 7.335 5.553z"
-                                fill="#ffffff"
-                            ></path>
-                        </g>
-                    </svg>
-
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="h-8 w-8 text-gray-400 dark:text-white/40"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z"
-                        />
-                    </svg>
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="h-8 w-8 text-gray-400 dark:text-white/40"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"
-                        />
-                    </svg>
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z"
+                            />
+                        </svg>
+                    </div>
                 </div>
             </div>
         </div>
@@ -652,49 +807,43 @@ function OrderSummary({ summary, onApplyCoupon }) {
 // Empty Cart Component
 function EmptyCart() {
     return (
-        <div className="py-16 text-center">
-            <div className="mb-6 inline-flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="h-12 w-12 text-gray-400 dark:text-white/40"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
-                    />
-                </svg>
+        <div className="flex items-center justify-center rounded-xl border border-gray-200 bg-white px-6 py-8 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal">
+            <div className="flex flex-col items-center gap-3">
+                {/* Icon */}
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="h-6 w-6 text-gray-500 dark:text-gray-400"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+                        />
+                    </svg>
+                </div>
+
+                {/* Text */}
+                <div className="text-center">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        Your cart is empty
+                    </h3>
+                    <p className="mb-5 mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        Looks like you haven't added anything to your cart yet
+                    </p>
+
+                    <Link
+                        href={route('home')}
+                        className="rounded-xl bg-indigo-600 px-4 py-3 font-medium text-white shadow-md transition-all hover:bg-indigo-500 hover:shadow-lg"
+                    >
+                        Let's Go
+                    </Link>
+                </div>
             </div>
-            <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
-                Your cart is empty
-            </h2>
-            <p className="mb-8 text-gray-600 dark:text-white/60">
-                Looks like you haven't added anything to your cart yet
-            </p>
-            <Link
-                href="/shop"
-                className="inline-flex transform items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-base font-semibold text-white transition-all hover:scale-105 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
-            >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="h-5 w-5"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
-                    />
-                </svg>
-                Start Shopping
-            </Link>
         </div>
     );
 }
