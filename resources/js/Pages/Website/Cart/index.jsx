@@ -409,7 +409,7 @@ function CartItem({ item, quantity, onUpdateQuantity, onRemove, currency, removi
                     </div>
 
                     {/* Quantity Controls */}
-                    <div className="mt-4 flex items-center gap-4">
+                    <div className="mt-4 flex flex-wrap items-center gap-4">
                         <div className="flex items-center overflow-hidden rounded-lg border border-gray-300 dark:border-white/20">
                             <button
                                 onClick={() => onUpdateQuantity(item.id, quantity - 1)}
