@@ -312,15 +312,12 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                 <div className="fixed inset-0 z-[70] flex flex-col bg-white dark:bg-deepcharcoal">
                     {/* Header - Keep intact as requested */}
                     <div className="flex shrink-0 items-center justify-between px-4 pb-2 pt-3">
-                        {smartphone?.tag && (
-                            <button
-                                onClick={() => navigateToHashtag(smartphone.tag)}
-                                className="text-sm font-semibold text-gray-900 dark:text-white"
-                            >
-                                {smartphone.tag}
-                            </button>
-                        )}
-
+                        <button
+                            onClick={() => navigateToHashtag(smartphone.tag)}
+                            className="text-sm font-semibold text-gray-900 dark:text-white"
+                        >
+                            {smartphone.tag}
+                        </button>
                         <div className="relative" ref={actionDropdownRef}>
                             <button
                                 onClick={() => setActionDropdownOpen(!actionDropdownOpen)}

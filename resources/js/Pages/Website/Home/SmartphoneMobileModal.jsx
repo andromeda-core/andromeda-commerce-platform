@@ -442,14 +442,12 @@ const SmartphoneMobileModal = ({
                             >
                                 {/* Header: Tag + Three Dots */}
                                 <div className="flex shrink-0 items-center justify-between px-4 pb-2 pt-3">
-                                    {item?.tag && (
-                                        <button
-                                            onClick={() => navigateToHashtag(item.tag)}
-                                            className="text-sm font-semibold text-gray-900 dark:text-white"
-                                        >
-                                            {item.tag}
-                                        </button>
-                                    )}
+                                    <button
+                                        onClick={() => navigateToHashtag(item.tag)}
+                                        className="text-sm font-semibold text-gray-900 dark:text-white"
+                                    >
+                                        {item.tag}
+                                    </button>
 
                                     <div
                                         className="relative"
