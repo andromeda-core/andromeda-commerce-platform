@@ -9,6 +9,7 @@ import axios from 'axios';
 import Spinner from '@/Components/Spinner';
 import useWindowSize from '@/Hooks/useWindowSize';
 import Confetti from 'react-confetti';
+import { createPortal } from 'react-dom';
 
 export default function Checkout({ cart_items, refferalSessionData }) {
     const { currency, auth } = usePage().props;
@@ -259,12 +260,20 @@ export default function Checkout({ cart_items, refferalSessionData }) {
                 />
             )}
 
-            <div className="min-h-screen transition-colors duration-200">
-                {showConfetti && (
+            {showConfetti &&
+                createPortal(
                     <div
-                        className={`pointer-events-none fixed inset-0 z-50 overflow-hidden transition-opacity duration-1000 ${
+                        className={`pointer-events-none fixed inset-0 z-[99999] transition-opacity duration-1000 ${
                             confettiFading ? 'opacity-0' : 'opacity-100'
                         }`}
+                        style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            width: '100vw',
+                            height: '100vh',
+                            overflow: 'hidden',
+                        }}
                     >
                         <Confetti
                             width={windowSize.width}
@@ -273,9 +282,11 @@ export default function Checkout({ cart_items, refferalSessionData }) {
                             numberOfPieces={1000}
                             gravity={1}
                         />
-                    </div>
+                    </div>,
+                    document.body,
                 )}
 
+            <div className="min-h-screen transition-colors duration-200">
                 <div
                     className={`max-w-8xl mx-auto sm:px-6 lg:px-8 ${windowSize.width < 1024 && 'mb-20'}`}
                 >
