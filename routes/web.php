@@ -25,6 +25,7 @@ use App\Http\Controllers\Dashboard\SupplierController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\Website\BookmarkController as WebsiteBookmarkController;
 use App\Http\Controllers\Website\CartController;
+use App\Http\Controllers\Website\CheckoutController;
 use App\Http\Controllers\Website\DataDeletionRequestController as WebsiteDataDeletionRequestController;
 use App\Http\Controllers\Website\GlobalFilterController;
 use App\Http\Controllers\Website\GlobalSearchController;
@@ -103,6 +104,12 @@ Route::group(['as' => 'website.'], function () {
         Route::put('/cart/update-item', 'updateItem')->name('update-item');
         Route::post('/cart/referal-code', 'referalCode')->name('referal-code');
         Route::delete('/cart/remove-referal', 'removeReferal')->name('remove-referal');
+    });
+
+    // Checkout Routes
+
+    Route::controller(CheckoutController::class)->middleware('auth')->name('checkout.')->group(function () {
+        Route::get('/checkout', 'index')->name('index');
     });
 
     // Profile Routes

@@ -668,7 +668,7 @@ function OrderSummary({
                     </div>
                 </div>
 
-                {/* Coupon Code */}
+                {/* Referal Code */}
                 {!referalData.referal_code && (
                     <div className="mb-6">
                         {!showReferal ? (
@@ -699,19 +699,29 @@ function OrderSummary({
                             </button>
                         ) : (
                             <div className="space-y-2">
-                                <div className="flex items-center justify-between gap-2">
-                                    <Input
-                                        Id={'referal_code'}
-                                        Name={'referal_code'}
-                                        Placeholder={'Enter Referal Code To Earn Points'}
-                                        Type={'text'}
-                                        Value={referalCode}
-                                        Action={(e) => setReferalCode(e.target.value)}
-                                        Error={error}
-                                    />
+                                <div className="flex items-start gap-2">
+                                    <div className="flex-1">
+                                        <input
+                                            type="text"
+                                            value={referalCode}
+                                            onChange={(e) => setReferalCode(e.target.value)}
+                                            placeholder="Enter Referal Code To Earn Points"
+                                            className={`w-full rounded-lg border ${
+                                                error
+                                                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                                                    : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500/20'
+                                            } bg-white px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors focus:outline-none focus:ring-2 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40`}
+                                        />
+                                        {error && (
+                                            <p className="mt-1 text-xs text-red-500 dark:text-red-400">
+                                                {error}
+                                            </p>
+                                        )}
+                                    </div>
+
                                     <button
                                         onClick={handleApplyReferal}
-                                        className="mb-6 rounded-lg bg-indigo-600 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-indigo-500"
+                                        className="flex h-12 items-center justify-center rounded-lg bg-indigo-600 px-6 text-sm font-medium text-white transition-colors hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                         {applyingReferal ? <Spinner /> : 'Apply'}
                                     </button>
@@ -722,12 +732,12 @@ function OrderSummary({
                 )}
 
                 {/* Checkout Button */}
-                <a
-                    href="#"
+                <Link
+                    href={route('website.checkout.index')}
                     className="block w-full rounded-xl bg-indigo-600 px-6 py-3.5 text-center text-base font-semibold text-white shadow-lg transition-all hover:bg-indigo-500"
                 >
                     Proceed to Checkout
-                </a>
+                </Link>
             </div>
 
             {/* Secure Checkout Badge */}
