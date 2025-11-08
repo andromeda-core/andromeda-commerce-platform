@@ -100,16 +100,6 @@ const Index = () => {
         }));
     };
 
-    // Auto Making False Toast Info State
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setShowInfoToast(false);
-            setInfoMessage('');
-        }, 1500);
-
-        return () => clearTimeout(timer);
-    }, [showInfoToast]);
-
     // Filters Saving In Cookie Or Updating Existing
     const handleSaveFilters = () => {
         setFilterSaving(true);
@@ -193,7 +183,19 @@ const Index = () => {
     };
 
     const ToastModal = () => {
-        return showInfoToast && <Toast flash={{ info: infoMessage }} />;
+        return (
+            showInfoToast && (
+                <Toast
+                    flash={{ info: infoMessage }}
+                    onClosed={(type) => {
+                        if (type === 'info') {
+                            setInfoMessage(null);
+                            setShowInfoToast(false);
+                        }
+                    }}
+                />
+            )
+        );
     };
 
     // Mobile Design

@@ -65,10 +65,14 @@ export default function MainLayout({ children }) {
     const [isCollapsed, setIsCollapsed] = useState(true);
     const [moreDropdown, setMoreDropdown] = useState(false);
     const moreDropdownRef = useRef(null);
-
+    const preventDropdownCloseRef = useRef(false);
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (moreDropdownRef.current && !moreDropdownRef.current.contains(event.target)) {
+            if (
+                moreDropdownRef.current &&
+                !moreDropdownRef.current.contains(event.target) &&
+                !preventDropdownCloseRef.current
+            ) {
                 setMoreDropdown(false);
             }
         };
@@ -100,7 +104,11 @@ export default function MainLayout({ children }) {
         if (wasReload || cameExternally || wasNavigated) {
             const url = new URL(CurrentUrl);
 
-            if (url.searchParams.get('slug') || url.searchParams.get('m-slug')) {
+            if (
+                url.searchParams.get('slug') ||
+                url.searchParams.get('m-slug') ||
+                url.searchParams.get('modal')
+            ) {
                 setNeedsActivation(true);
             }
         }
@@ -134,7 +142,7 @@ export default function MainLayout({ children }) {
 
     return (
         <>
-            <div className="relative w-full min-h-screen bg-white dark:bg-zinc-950/70">
+            <div className="relative min-h-screen w-full bg-white dark:bg-zinc-950/70">
                 <Preloader loaded={loaded} setLoaded={setLoaded} />
 
                 <Toast flash={flash} />
@@ -152,6 +160,7 @@ export default function MainLayout({ children }) {
                         setMoreDropdown={setMoreDropdown}
                         moreDropdownRef={moreDropdownRef}
                         cartItemsCount={cartItemsCount}
+                        preventDropdownCloseRef={preventDropdownCloseRef}
                     />
                 )}
 
@@ -166,7 +175,7 @@ export default function MainLayout({ children }) {
                     }`}
                 >
                     {/* Main Content */}
-                    <main className="flex-1 min-h-screen px-3 pt-2 mx-0 bg-white dark:bg-zinc-950/70 lg:px-20 xl:px-36">
+                    <main className="mx-0 min-h-screen flex-1 bg-white px-3 pt-2 dark:bg-zinc-950/70 lg:px-20 xl:px-36">
                         {needsActivation &&
                             createPortal(
                                 <div
@@ -175,7 +184,7 @@ export default function MainLayout({ children }) {
                                         setNeedsActivation(false);
                                     }}
                                 >
-                                    <p className="mb-3 text-sm text-center opacity-80">
+                                    <p className="mb-3 text-center text-sm opacity-80">
                                         Tap anywhere to activate navigation
                                     </p>
                                 </div>,
@@ -201,6 +210,7 @@ export default function MainLayout({ children }) {
                             setMoreDropdown={setMoreDropdown}
                             moreDropdownRef={moreDropdownRef}
                             cartItemsCount={cartItemsCount}
+                            preventDropdownCloseRef={preventDropdownCloseRef}
                         />
                     </>
                 )}

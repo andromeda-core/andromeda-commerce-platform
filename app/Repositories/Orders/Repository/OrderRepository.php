@@ -4,14 +4,22 @@ namespace App\Repositories\Orders\Repository;
 
 use App\Jobs\CourierInvoiceDestroyOnAWS;
 use App\Jobs\CourierInvoiceStoreOnAWS;
+use App\Jobs\NotifyPaymentProofHasBeenUploaded;
 use App\Jobs\PayemntProofStoreOnAWS;
 use App\Jobs\PaymentProofDestroyOnAWS;
+use App\Models\CartItem;
 use App\Models\Collaborator;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\PackageRecording;
+use App\Models\RewardPoint;
 use App\Models\RewardSetting;
 use App\Models\Smartphone;
+use App\Models\User;
+use App\Notifications\NotifyCustomerAboutAwaitingPaymentOrderFromCrypto;
 use App\Repositories\Orders\Interface\IOrderRepository;
+use App\Services\NOWPaymentPaymentService;
+use Cache;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +33,12 @@ class OrderRepository implements IOrderRepository
         private Collaborator $collaborator,
         private Smartphone $smartphone,
         private Customer $customer,
-        private RewardSetting $reward_setting
+        private RewardSetting $reward_setting,
+        private CartItem $cart,
+        private User $user,
+        private RewardPoint $reward_point,
+        private NOWPaymentPaymentService $now_payment_service,
+        private PackageRecording $package_recording,
     ) {}
 
     public function getAllOrders(Request $request)
@@ -66,6 +79,7 @@ class OrderRepository implements IOrderRepository
                 'orderItems.smartphone.category',
                 'orderItems.smartphone.category.distributor',
                 'orderItems.smartphone.category.distributor.user',
+                'orderItems.color',
             ]
         )->find($id);
 
@@ -184,13 +198,6 @@ class OrderRepository implements IOrderRepository
                     throw new Exception("{$smartphone->model_name->name} Smartphone Dont have Selling Price Please Check");
                 }
 
-                /** Distributor Commission logic Remeaning
-                 *
-                 */
-
-                /** Collaborator Commission logic Remeaning
-                 *
-                 */
                 $quantity = $smartphoneQuantities[$smartphone->id];
                 $unit_price = $smartphone->selling_info->total_price;
                 $sub_total = $smartphone->selling_info->total_price * $quantity;
@@ -397,14 +404,20 @@ class OrderRepository implements IOrderRepository
                 throw new Exception('Order Not Found');
             }
 
-            if ($order->status === 'pending') {
-                $smartphone_ids = $order->orderItems()->pluck('smartphone_id')->toArray();
+            if ($order->status === 'pending' || $order->status === 'awaiting_payment' || $order->status === 'expired' || $order->status === 'failed') {
+                foreach ($order->orderItems as $item) {
+                    $quantity = $item->quantity;
 
-                $smartphones = $this->smartphone->with(['inventory_items'])->whereIn('id', $smartphone_ids)->get();
+                    $inventoryItems = $item->smartphone->inventory_items()
+                        ->where('status', 'on_hold')
+                        ->limit($quantity)
+                        ->get();
 
-                foreach ($smartphones as $smartphone) {
-                    $smartphone->inventory_items()->where('status', 'on_hold')->update(['status' => 'in_stock']);
+                    foreach ($inventoryItems as $inventoryItem) {
+                        $inventoryItem->update(['status' => 'in_stock']);
+                    }
                 }
+
             }
 
             if (! empty($order->payment_proof)) {
@@ -619,5 +632,455 @@ class OrderRepository implements IOrderRepository
                 'message' => $e->getMessage(),
             ];
         }
+    }
+
+    public function placeOrderFromWebsite(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $payment_method = $request->input('payment_method');
+            if (empty($payment_method)) {
+                return response()->json(['message' => 'Please Select A Payment Method'], 400);
+            }
+
+            $referal_code = $request->input('referal_code');
+            $refferalSessionData = $request->session()->get('referal_data');
+
+            $user = $request->user();
+
+            if (empty($user)) {
+                throw new Exception('Please Login First');
+            }
+
+            $customer = $user->customer;
+
+            if (empty($customer)) {
+                throw new Exception('Only Customers Can Place Order');
+            }
+
+            $cart_items = $this->cart->where('customer_id', $customer->id)->get();
+            if ($cart_items->isEmpty()) {
+                throw new Exception('Cart Is Empty');
+            }
+
+            $collaborator = $this->collaborator->where('referral_code', ! empty($refferalSessionData) ? $refferalSessionData['referal_code'] : $referal_code)->first();
+            if (empty($collaborator) && (! empty($referal_code) || ! empty($refferalSessionData))) {
+                throw new Exception('Invalid Referal Code');
+            }
+
+            $smartphone_ids = [];
+            $smartphone_quantities = [];
+            $smartphone_color_ids = [];
+            $order_items = [];
+            $inventoryItems = [];
+            $amount = 0;
+
+            foreach ($cart_items as $item) {
+                if ($item->type === 'smartphone') {
+                    $smartphone_ids[] = $item->smartphone_id;
+                    $smartphone_quantities[$item->smartphone_id] = $item->quantity;
+                    $smartphone_color_ids[$item->smartphone_id] = $item->color_id;
+
+                }
+            }
+
+            $smartphones = $this->smartphone->with(['selling_info', 'inventory_items', 'model_name', 'category.distributor'])
+                ->whereIn('id', $smartphone_ids)
+                ->get();
+
+            if ((count($smartphone_ids) !== $smartphones->count()) || $smartphones->isEmpty()) {
+                throw new Exception('Invalid Cart Items');
+            }
+
+            foreach ($smartphones as $smartphone) {
+                if ($smartphone->inventory_items->isEmpty()) {
+                    throw new Exception(" {$smartphone->model_name->name} Smartphone Is Out Of Stock Please Check");
+                }
+
+                if ($smartphone->inventory_items()->where('status', 'in_stock')->doesntExist()) {
+                    throw new Exception("{$smartphone->model_name->name} Smartphone Is Out Of Stock Please Check");
+                }
+
+                if ($smartphone->inventory_items()->where('status', 'in_stock')->count() < $smartphone_quantities[$smartphone->id]) {
+                    throw new Exception("{$smartphone->model_name->name} Smartphone Has Less Stock But You Have Selected More Quantity Please Check");
+                }
+
+                if (empty($smartphone->selling_info)) {
+                    throw new Exception("{$smartphone->model_name->name} Smartphone Dont have Selling Price Please Check");
+                }
+
+                $quantity = $smartphone_quantities[$smartphone->id];
+                $unit_price = $smartphone->selling_info->total_price;
+                $sub_total = $smartphone->selling_info->total_price * $quantity;
+                $amount += $sub_total;
+
+                $order_items[] = [
+                    'smartphone_id' => $smartphone->id,
+                    'unit_price' => $unit_price,
+                    'quantity' => $quantity,
+                    'sub_total' => $sub_total,
+                    'color_id' => $smartphone_color_ids[$smartphone->id],
+                ];
+
+                $backend_inventoryItems = $smartphone->inventory_items()
+                    ->where('status', 'in_stock')
+                    ->lockForUpdate()
+                    ->limit($quantity)
+                    ->get();
+
+                foreach ($backend_inventoryItems as $inventoryItem) {
+                    $inventoryItem->status = 'on_hold';
+                    $inventoryItem->save();
+                }
+
+                $inventoryItems[] = $backend_inventoryItems
+                    ->groupBy('smartphone_id')->toArray();
+
+            }
+
+            $order_data = [
+                'customer_id' => $customer->id,
+                'collaborator_id' => $collaborator ? $collaborator->id : null,
+                'amount' => $amount,
+                'payment_method' => $payment_method,
+            ];
+
+            if ($payment_method === 'bank_transfer') {
+                $order = $this->createOrderFromWebsite($order_data, $order_items);
+
+                if ($order['status'] === false) {
+                    throw new Exception($order['message']);
+                }
+
+                $this->clearCartExistingItems($customer->id);
+                DB::commit();
+
+                return [
+                    'status' => true,
+                    'message' => 'Order Placed Successfully',
+                    'order' => $order['order'],
+                    'type' => 'bank',
+                    'redirect_uri' => route('website.orders.order-view', ['order_no' => $order['order']->order_no]),
+                ];
+
+            } elseif ($payment_method === 'crypto') {
+                $order = $this->createOrderFromWebsite($order_data, $order_items, 'awaiting_payment');
+
+                $response = $this->now_payment_service->createPaymentSession($order);
+
+                if ($response['status'] === false) {
+                    throw new Exception($response['message']);
+                }
+
+                $this->clearCartExistingItems($customer->id);
+                DB::commit();
+
+                return [
+                    'status' => true,
+                    'message' => $response['message'],
+                    'type' => 'crypto',
+                    'redirect_uri' => $response['payment_url'],
+                ];
+
+            } elseif ($payment_method === 'points') {
+                $response = $this->payWithPoints($user->id, $amount);
+
+                if ($response['status'] === false) {
+                    throw new Exception($response['message']);
+                }
+
+                $order = $this->createOrderFromWebsite($order_data, $order_items, 'paid');
+
+                if ($order['status'] === false) {
+                    throw new Exception($order['message']);
+                }
+
+                $this->clearCartExistingItems($customer->id);
+                DB::commit();
+
+                return [
+                    'status' => true,
+                    'message' => 'Order Placed Successfully',
+                    'order' => $order['order'],
+                    'type' => 'points',
+                    'redirect_uri' => route('website.orders.order-view', ['order_no' => $order['order']->order_no]),
+                ];
+
+            }
+
+            throw new Exception('Invalid Payment Method');
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+
+    }
+
+    private function createOrderFromWebsite($order_data, $order_items, ?string $status = null)
+    {
+        try {
+            $order = $this->order->create([
+                'customer_id' => $order_data['customer_id'],
+                'collaborator_id' => $order_data['collaborator_id'],
+                'amount' => $order_data['amount'],
+                ...(! empty($status) ? ['status' => $status] : []),
+                'payment_method' => $order_data['payment_method'],
+
+            ]);
+
+            if (empty($order)) {
+
+                throw new Exception('Something Went Wrong While Placing An Order');
+            }
+
+            $order->orderItems()->createMany($order_items);
+
+            return [
+                'status' => true,
+                'message' => 'Order Placed Successfully',
+                'order' => $order,
+            ];
+        } catch (Exception $e) {
+
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    private function clearCartExistingItems(string $customer_id)
+    {
+        return $this->cart->where('customer_id', $customer_id)->delete();
+    }
+
+    private function payWithPoints(string $user_id, float $amount)
+    {
+        try {
+            $user = $this->user->with(['reward_points' => function ($q) {
+                $q->orderBy('expires_at', 'asc');
+            }])->find($user_id);
+
+            if (empty($user)) {
+                throw new Exception('User Not Found');
+            }
+
+            $total_points = (int) $user->points;
+
+            if ($total_points < $amount) {
+                throw new Exception('You Dont Have Enough Points To Pay');
+            }
+
+            $remaining = $amount;
+
+            foreach ($user->reward_points as $reward) {
+                if ($remaining <= 0) {
+                    break;
+                }
+
+                if ($reward->points >= $remaining) {
+
+                    $reward->points -= $remaining;
+                    $reward->save();
+                    $remaining = 0;
+                } else {
+
+                    $remaining -= $reward->points;
+                    $reward->points = 0;
+                    $reward->save();
+                }
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Paid With Points',
+            ];
+        } catch (Exception $e) {
+
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function getCustomerOrders(Request $request)
+    {
+        $user = $request->user();
+        if (empty($user)) {
+            return [
+                'status' => false,
+                'message' => 'Please Login First',
+            ];
+        }
+        $customer = $user->customer;
+
+        $orders = $this->order
+            ->with(['orderItems', 'orderItems.smartphone'])
+            ->withCount('orderItems')
+            ->where('customer_id', $customer->id)
+            ->latest()
+            ->paginate(10);
+
+        $orders->setCollection(
+            $orders->getCollection()->transform(function ($order) {
+                $order->order_placed_date = $order->created_at->format('M d, Y');
+
+                return $order;
+            })
+        );
+
+        return [
+            'status' => true,
+            'orders' => $orders->items(),
+            'next_page_url' => $orders->nextPageUrl(),
+        ];
+    }
+
+    public function getCustomerSingleOrder(string $order_no)
+    {
+        $order = $this->order->with(
+            [
+                'collaborator',
+                'customer',
+                'customer.user',
+                'customer.country',
+                'orderPackageRecordings',
+                'orderItems',
+                'orderItems.smartphone',
+                'orderItems.smartphone.model_name',
+                'orderItems.smartphone.capacity',
+                'orderItems.smartphone.selling_info',
+                'orderItems.smartphone.category',
+                'orderItems.smartphone.category.distributor',
+                'orderItems.smartphone.category.distributor.user',
+                'orderItems.color',
+            ]
+        )->where('order_no', $order_no)
+            ->first();
+
+        if (! empty($order)) {
+            $order->order_placed_date = $order->created_at->format('M d, Y');
+        }
+
+        return $order;
+    }
+
+    public function uploadPaymentProof(Request $request)
+    {
+
+        $request->validate([
+            'payment_proof' => ['required', 'image', 'max:5048'],
+        ]);
+
+        $order_id = $request->input('order_id');
+        $order_no = $request->input('order_no');
+
+        $order = $this->order->where('order_no', $order_no)->where('id', $order_id)->first();
+
+        if (empty($order)) {
+            return [
+                'status' => false,
+                'message' => 'Order Not Found',
+            ];
+        }
+
+        if (! $request->hasFile('payment_proof')) {
+            return [
+                'status' => false,
+                'message' => 'Payment Proof Not Found',
+            ];
+        }
+
+        if ($request->hasFile('payment_proof') && empty($order->payment_proof) && $order->status === 'pending') {
+            $file = $request->file('payment_proof');
+            $new_name = time().uniqid().'.'.$file->getClientOriginalExtension();
+            $temp_path = $file->storeAs('temp/uploads', $new_name, 'local');
+
+            dispatch_sync(new PayemntProofStoreOnAWS($temp_path, $order));
+            dispatch(new NotifyPaymentProofHasBeenUploaded($order));
+
+            return [
+                'status' => true,
+                'message' => 'Payment Proof Uploaded Successfully',
+            ];
+        }
+
+        return [
+            'status' => false,
+            'message' => 'Something Went Wrong While Uploading Payment Proof',
+        ];
+
+    }
+
+    // Not Needed  Becasue Instead Of Using IPN Now I am Using Background Job For Checking Status
+    // public function cryptoPaymentIPN(Request $request)
+    // {
+
+    //     //
+    // }
+
+    public function cryptoPaymentSuccess(Request $request)
+    {
+        $order = $this->order->where('order_no', $request->order_no)->first();
+
+        if (empty($order)) {
+            return [
+                'status' => false,
+                'message' => 'Order Not Found',
+            ];
+        }
+
+        if ($order->status === 'awaiting_payment') {
+
+            $order->status = 'blockchain_confirmation_pending';
+            $order->np_id = $request->NP_id;
+            $order->save();
+
+            $currency = Cache::get('currency');
+
+            $user = $order->customer->user;
+
+            $user->notify(new NotifyCustomerAboutAwaitingPaymentOrderFromCrypto($order, $currency));
+        }
+
+        return [
+            'status' => true,
+        ];
+
+    }
+
+    public function markPackagingVideoViewed(Request $request)
+    {
+
+        $package_video_id = $request->input('package_video_id');
+
+        if (empty($package_video_id)) {
+            return [
+                'status' => false,
+                'message' => 'Packaging Video Not Found',
+            ];
+        }
+
+        $package_video = $this->package_recording->find($package_video_id);
+
+        if (empty($package_video)) {
+            return [
+                'status' => false,
+                'message' => 'Packaging Video Not Found',
+            ];
+        }
+
+        $package_video->is_opened = true;
+        $package_video->save();
+
+        return [
+            'status' => true,
+            'message' => 'Packaging Video Viewed Successfully',
+        ];
     }
 }

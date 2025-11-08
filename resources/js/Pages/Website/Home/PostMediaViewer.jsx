@@ -145,7 +145,7 @@ export default function PostMediaViewer({
             >
                 {/* Big Viewer */}
                 <div
-                    className="relative flex items-center justify-center flex-shrink-0 overflow-hidden bg-gray-100 rounded-sm dark:bg-zinc-900/20"
+                    className="relative flex items-center justify-center flex-shrink-0 overflow-hidden rounded-sm"
                     style={{
                         height: windowSize.width >= 1024 ? '70vh' : '60vh',
                         minWidth: windowSize.width >= 1024 ? '30vw' : '100%',

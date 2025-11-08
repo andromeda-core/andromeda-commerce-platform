@@ -208,6 +208,10 @@ namespace App\Models{
  * @property int $id
  * @property int $user_id
  * @property string $address
+ * @property string|null $bank_name
+ * @property string|null $bank_account_name
+ * @property string|null $iban
+ * @property string|null $swift_code
  * @property string $bank_account_no
  * @property string|null $point_accumulation_rate
  * @property string $type
@@ -223,12 +227,16 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Collaborator newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Collaborator query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Collaborator whereAddress($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Collaborator whereBankAccountName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Collaborator whereBankAccountNo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Collaborator whereBankName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Collaborator whereCommissionRate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Collaborator whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Collaborator whereIban($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Collaborator whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Collaborator wherePointAccumulationRate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Collaborator whereReferralCode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Collaborator whereSwiftCode($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Collaborator whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Collaborator whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Collaborator whereUserId($value)
@@ -419,6 +427,10 @@ namespace App\Models{
  * @property int $id
  * @property int $user_id
  * @property string $address
+ * @property string|null $bank_name
+ * @property string|null $bank_account_name
+ * @property string|null $iban
+ * @property string|null $swift_code
  * @property string $bank_account_no
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -431,10 +443,14 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereAddress($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereBankAccountName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereBankAccountNo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereBankName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereCommissionRate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereIban($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereSwiftCode($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereUserId($value)
  */
@@ -629,10 +645,36 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
+ * @property string $now_payment_api_key
+ * @property string $now_payment_public_key
+ * @property string $now_payment_baseurl
+ * @property int $is_active
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read mixed $added_at
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NowPayment newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NowPayment newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NowPayment query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NowPayment whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NowPayment whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NowPayment whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NowPayment whereNowPaymentApiKey($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NowPayment whereNowPaymentBaseurl($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NowPayment whereNowPaymentPublicKey($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|NowPayment whereUpdatedAt($value)
+ */
+	class NowPayment extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
  * @property string|null $order_no
  * @property int|null $customer_id
  * @property string $amount
  * @property string $status
+ * @property string|null $payment_method
+ * @property string|null $np_id
  * @property int|null $collaborator_id
  * @property string|null $courier_company
  * @property \Illuminate\Support\Carbon|null $shipping_date
@@ -664,7 +706,9 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereCustomerId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereIsCashCollected($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereNpId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereOrderNo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order wherePaymentMethod($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order wherePaymentProof($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereShippingDate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereStatus($value)
@@ -678,18 +722,21 @@ namespace App\Models{
 /**
  * @property int $id
  * @property int $order_id
+ * @property int|null $color_id
  * @property int $smartphone_id
  * @property int $quantity
  * @property string $unit_price
  * @property string $sub_total
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Color|null $color
  * @property-read mixed $added_at
  * @property-read \App\Models\Order $order
  * @property-read \App\Models\Smartphone $smartphone
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem whereColorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem whereOrderId($value)
@@ -1128,13 +1175,14 @@ namespace App\Models{
  * @property-read \App\Models\Distributor|null $distributor
  * @property-read mixed $added_at
  * @property-read mixed $avatar
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\RewardPoint> $reward_points
+ * @property-read mixed $points
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
  * @property-read int|null $notifications_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Permission\Models\Permission> $permissions
  * @property-read int|null $permissions_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Post> $posts
  * @property-read int|null $posts_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\RewardPoint> $reward_points
  * @property-read int|null $reward_points_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Role> $roles
  * @property-read int|null $roles_count

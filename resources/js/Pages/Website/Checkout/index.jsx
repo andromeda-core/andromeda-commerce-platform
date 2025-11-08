@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import Input from '@/Components/Input';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
@@ -11,7 +11,7 @@ import useWindowSize from '@/Hooks/useWindowSize';
 import Confetti from 'react-confetti';
 import { createPortal } from 'react-dom';
 
-export default function Checkout({ cart_items, refferalSessionData }) {
+export default function Checkout({ cart_items, refferalSessionData, customer }) {
     const { currency, auth } = usePage().props;
     const windowSize = useWindowSize();
 
@@ -38,43 +38,18 @@ export default function Checkout({ cart_items, refferalSessionData }) {
     const [referalCode, setReferalCode] = useState('');
 
     const [shippingInfo, setShippingInfo] = useState({
-        full_name: auth?.user?.name || '',
-        email: auth?.user?.email || '',
-        phone: '',
-        address: '',
-        city: '',
-        postal_code: '',
-        country: '',
+        full_name: customer?.name || '',
+        email: customer?.email || '',
+        phone: customer?.phone || '',
+        address: customer.address || '',
+        city: customer.city || '',
+        state: customer.state || '',
+        postal_code: customer.postal_code || '',
+        country: customer.country || '',
     });
 
     const [showConfetti, setShowConfetti] = useState(false);
     const [confettiFading, setConfettiFading] = useState(false);
-
-    useEffect(() => {
-        if (showInfoMessage) {
-            const timer = setTimeout(() => {
-                setShowInfoMessage(false);
-                setInfoMessage(null);
-            }, 1500);
-            return () => clearTimeout(timer);
-        }
-
-        if (showErrorMessage) {
-            const timer = setTimeout(() => {
-                setShowErrorMessage(false);
-                setErrorMessage(null);
-            }, 1500);
-            return () => clearTimeout(timer);
-        }
-
-        if (showSuccessMessage) {
-            const timer = setTimeout(() => {
-                setShowSuccessMessage(false);
-                setSuccessMessage(null);
-            }, 1500);
-            return () => clearTimeout(timer);
-        }
-    }, [showInfoMessage, showErrorMessage, showSuccessMessage]);
 
     useEffect(() => {
         if (showConfetti) {
@@ -210,16 +185,21 @@ export default function Checkout({ cart_items, refferalSessionData }) {
         const emptyFields = requiredFields.filter((field) => !shippingInfo[field]);
 
         if (emptyFields.length > 0) {
-            setErrorMessage('Please fill in all required fields');
-            setShowErrorMessage(true);
+            setInfoMessage('Please Complete Your Profile Before Placing An Order');
+            setShowInfoMessage(true);
             return;
         }
 
+        // router.post(route('website.checkout.store'), {
+        //     shipping_info: shippingInfo,
+        //     payment_method: paymentMethod,
+        //     referal_code: referalData.referal_code,
+        // });
         setProcessingOrder(true);
 
         // Your order processing logic here
         await axios
-            .post(route('website.orders.store'), {
+            .post(route('website.checkout.store'), {
                 shipping_info: shippingInfo,
                 payment_method: paymentMethod,
                 referal_code: referalData.referal_code,
@@ -227,16 +207,19 @@ export default function Checkout({ cart_items, refferalSessionData }) {
             .then((res) => {
                 const response = res.data;
                 if (response.status === true) {
-                    setSuccessMessage('Order placed successfully!');
+                    setSuccessMessage(response.message);
                     setShowSuccessMessage(true);
-                    // Redirect to order confirmation page
+
                     setTimeout(() => {
-                        router.visit(route('website.orders.show', response.order_id));
-                    }, 1500);
+                        window.location.href = response.redirect_uri;
+                    }, 2000);
+                } else {
+                    setErrorMessage(response.message);
+                    setShowErrorMessage(true);
                 }
             })
             .catch((error) => {
-                setErrorMessage(error.message);
+                setErrorMessage(error.response.data.message || error.message);
                 setShowErrorMessage(true);
             })
             .finally(() => {
@@ -256,6 +239,20 @@ export default function Checkout({ cart_items, refferalSessionData }) {
                             : showErrorMessage
                               ? { error: errorMessage }
                               : { success: successMessage }),
+                    }}
+                    onClosed={(type) => {
+                        if (type === 'info') {
+                            setInfoMessage(null);
+                            setShowInfoMessage(false);
+                        }
+                        if (type === 'error') {
+                            setErrorMessage(null);
+                            setShowErrorMessage(false);
+                        }
+                        if (type === 'success') {
+                            setSuccessMessage(null);
+                            setShowSuccessMessage(false);
+                        }
                     }}
                 />
             )}
@@ -290,6 +287,27 @@ export default function Checkout({ cart_items, refferalSessionData }) {
                 <div
                     className={`max-w-8xl mx-auto sm:px-6 lg:px-8 ${windowSize.width < 1024 && 'mb-20'}`}
                 >
+                    <Link
+                        href={route('website.carts.index')}
+                        className="my-4 inline-flex items-center gap-2 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={2}
+                            stroke="currentColor"
+                            className="h-4 w-4"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+                            />
+                        </svg>
+                        Back to Cart
+                    </Link>
+
                     {/* Header */}
                     <div className="mb-6 px-4 sm:px-0">
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
@@ -362,28 +380,37 @@ export default function Checkout({ cart_items, refferalSessionData }) {
 function ShippingForm({ shippingInfo, handleInputChange }) {
     return (
         <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-white/10 dark:bg-deepcharcoal">
-            <h2 className="mb-6 flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="h-5 w-5"
+            <div className="flex items-center justify-between">
+                <h2 className="mb-6 flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="h-5 w-5"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"
+                        />
+                    </svg>
+                    Shipping Information
+                </h2>
+
+                <Link
+                    href={route('website.profile.index')}
+                    className="text-md font-medium text-indigo-600 hover:underline dark:text-indigo-400"
                 >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"
-                    />
-                </svg>
-                Shipping Information
-            </h2>
+                    Edit Information
+                </Link>
+            </div>
 
             <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -395,9 +422,10 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
                             type="text"
                             name="full_name"
                             value={shippingInfo.full_name}
-                            onChange={handleInputChange}
+                            // onChange={handleInputChange}
+                            disabled
                             placeholder="John Doe"
-                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
+                            className="pointer-events-none w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 opacity-50 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
                         />
                     </div>
 
@@ -409,9 +437,10 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
                             type="email"
                             name="email"
                             value={shippingInfo.email}
-                            onChange={handleInputChange}
+                            // onChange={handleInputChange}
+                            disabled
                             placeholder="john@example.com"
-                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
+                            className="pointer-events-none w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 opacity-50 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
                         />
                     </div>
                 </div>
@@ -424,9 +453,10 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
                         type="tel"
                         name="phone"
                         value={shippingInfo.phone}
-                        onChange={handleInputChange}
+                        // onChange={handleInputChange}
+                        disabled
                         placeholder="+1 (555) 000-0000"
-                        className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
+                        className="pointer-events-none w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 opacity-50 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
                     />
                 </div>
 
@@ -438,9 +468,10 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
                         type="text"
                         name="address"
                         value={shippingInfo.address}
-                        onChange={handleInputChange}
+                        // onChange={handleInputChange}
+                        disabled
                         placeholder="123 Main Street, Apt 4B"
-                        className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
+                        className="pointer-events-none w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 opacity-50 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
                     />
                 </div>
 
@@ -453,9 +484,10 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
                             type="text"
                             name="city"
                             value={shippingInfo.city}
-                            onChange={handleInputChange}
+                            // onChange={handleInputChange}
+                            disabled
                             placeholder="New York"
-                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
+                            className="pointer-events-none w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 opacity-50 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
                         />
                     </div>
 
@@ -467,9 +499,10 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
                             type="text"
                             name="postal_code"
                             value={shippingInfo.postal_code}
-                            onChange={handleInputChange}
+                            // onChange={handleInputChange}
+                            disabled
                             placeholder="10001"
-                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
+                            className="pointer-events-none w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 opacity-50 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
                         />
                     </div>
 
@@ -481,9 +514,10 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
                             type="text"
                             name="country"
                             value={shippingInfo.country}
-                            onChange={handleInputChange}
+                            // onChange={handleInputChange}
+                            disabled
                             placeholder="United States"
-                            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
+                            className="pointer-events-none w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 opacity-50 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
                         />
                     </div>
                 </div>
@@ -561,10 +595,10 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
                     </div>
                 </label>
 
-                {/* Bitcoin Option */}
+                {/* Crypto Option */}
                 <label
                     className={`flex cursor-pointer items-center gap-4 rounded-lg border-2 p-4 transition-all ${
-                        paymentMethod === 'bitcoin'
+                        paymentMethod === 'crypto'
                             ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
                             : 'border-gray-200 bg-gray-50 hover:border-gray-300 dark:border-white/10 dark:bg-gray-900/20 dark:hover:border-white/20'
                     }`}
@@ -572,8 +606,8 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
                     <input
                         type="radio"
                         name="payment_method"
-                        value="bitcoin"
-                        checked={paymentMethod === 'bitcoin'}
+                        value="crypto"
+                        checked={paymentMethod === 'crypto'}
                         onChange={(e) => setPaymentMethod(e.target.value)}
                         className="h-5 w-5 text-indigo-600 focus:ring-2 focus:ring-indigo-500"
                     />
@@ -594,10 +628,56 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
                             </div>
                             <div>
                                 <p className="font-semibold text-gray-900 dark:text-white">
-                                    Bitcoin Payment
+                                    Crypto Payment
                                 </p>
                                 <p className="text-sm text-gray-600 dark:text-white/60">
-                                    Pay with Bitcoin cryptocurrency
+                                    Pay with crypto currency
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </label>
+
+                {/* Points option */}
+                <label
+                    className={`flex cursor-pointer items-center gap-4 rounded-lg border-2 p-4 transition-all ${
+                        paymentMethod === 'points'
+                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
+                            : 'border-gray-200 bg-gray-50 hover:border-gray-300 dark:border-white/10 dark:bg-gray-900/20 dark:hover:border-white/20'
+                    }`}
+                >
+                    <input
+                        type="radio"
+                        name="payment_method"
+                        value="points"
+                        checked={paymentMethod === 'points'}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        className="h-5 w-5 text-indigo-600 focus:ring-2 focus:ring-indigo-500"
+                    />
+                    <div className="flex flex-1 items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-500">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={1.5}
+                                    stroke="currentColor"
+                                    className="h-5 w-5 text-white"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M21 11.25v8.25a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 1 0 9.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1 1 14.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"
+                                    />
+                                </svg>
+                            </div>
+                            <div>
+                                <p className="font-semibold text-gray-900 dark:text-white">
+                                    Points
+                                </p>
+                                <p className="text-sm text-gray-600 dark:text-white/60">
+                                    Pay directly with your points
                                 </p>
                             </div>
                         </div>
@@ -748,6 +828,7 @@ function OrderSummaryCard({
                                 />
                             </svg>
                             <span className="mr-1">Referal Points</span>
+                            <span className="mr-1">({referalData?.referal_code})</span>
                             {!removingReferalProcessing ? (
                                 <button
                                     onClick={handleRemoveReferal}
@@ -863,7 +944,6 @@ function OrderSummaryCard({
                 {processingOrder ? (
                     <>
                         <Spinner />
-                        <span>Processing...</span>
                     </>
                 ) : (
                     <>
@@ -881,9 +961,9 @@ function OrderSummaryCard({
                                 d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                             />
                         </svg>
-                        <span>Place Order</span>
                     </>
                 )}
+                <span>Place Order</span>
             </button>
 
             {/* Secure Checkout Badge */}

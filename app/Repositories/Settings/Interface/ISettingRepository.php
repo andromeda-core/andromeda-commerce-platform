@@ -218,4 +218,19 @@ interface ISettingRepository
     public function destroyMetaSettingBySelection(Request $request);
 
     public function toggleMetaSettingStatus(string $id);
+
+    // NOWPayment Settings
+    public function getAllNOWPaymentSettings();
+
+    public function getSingleNOWPayemntSetting(string $id);
+
+    public function storeNOWPaymentSetting(Request $request);
+
+    public function updateNOWPaymentSetting(Request $request, string $id);
+
+    public function destroyNOWPaymentSetting(string $id);
+
+    public function destroyNOWPaymentSettingBySelection(Request $request);
+
+    public function toggleNOWPaymentSettingStatus(string $id);
 }

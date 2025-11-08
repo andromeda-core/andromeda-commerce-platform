@@ -21,7 +21,11 @@ export default function create({ roles }) {
         company_name: '',
         type: '',
         address: '',
+        bank_name: '',
+        bank_account_name: '',
         bank_account_no: '',
+        iban: '',
+        swift_code: '',
     });
 
     const [togglePassword, setTogglePassword] = useState(false);
@@ -152,6 +156,29 @@ export default function create({ roles }) {
                                                     }
                                                 />
 
+                                                <SelectInput
+                                                    InputName={'User Role'}
+                                                    Id={'role_id'}
+                                                    Name={'role_id'}
+                                                    Value={data.role_id}
+                                                    items={roles}
+                                                    Error={errors.role_id}
+                                                    Placeholder={'Select User Role'}
+                                                    Required={true}
+                                                    itemKey={'name'}
+                                                    Action={(value) => {
+                                                        setData('role_id', value);
+                                                        setData('company_name', '');
+                                                        setData('type', '');
+                                                        setData('address', '');
+                                                        setData('bank_account_no', '');
+                                                        setData('bank_account_name', '');
+                                                        setData('iban', '');
+                                                        setData('swift_code', '');
+                                                        setData('bank_name', '');
+                                                    }}
+                                                />
+
                                                 {data.role_id === 4 && (
                                                     <Input
                                                         InputName={'Company Name'}
@@ -210,22 +237,92 @@ export default function create({ roles }) {
                                                         </div>
 
                                                         <Input
-                                                            InputName={'Bank Account Number'}
-                                                            Id={'bank_account_number'}
-                                                            Error={errors.bank_account_no}
-                                                            Name={'bank_account_no'}
-                                                            Type={'text'}
-                                                            Value={data.bank_account_no}
-                                                            Placeholder={
-                                                                'Enter Bank Account Number'
+                                                            InputName={'Collaborator Bank Name'}
+                                                            Error={errors.bank_name}
+                                                            Value={data.bank_name}
+                                                            Action={(e) =>
+                                                                setData('bank_name', e.target.value)
                                                             }
-                                                            Required={data.role_id === 3}
+                                                            Placeholder={
+                                                                'Enter Collaborator Bank Name'
+                                                            }
+                                                            Id={'bank_name'}
+                                                            Name={'bank_name'}
+                                                            Type={'text'}
+                                                            Required={true}
+                                                        />
+
+                                                        <Input
+                                                            InputName={
+                                                                'Collaborator Bank Account Name'
+                                                            }
+                                                            Error={errors.bank_account_name}
+                                                            Value={data.bank_account_name}
+                                                            Action={(e) =>
+                                                                setData(
+                                                                    'bank_account_name',
+                                                                    e.target.value,
+                                                                )
+                                                            }
+                                                            Placeholder={
+                                                                'Enter Collaborator Bank Account Name'
+                                                            }
+                                                            Id={'bank_account_name'}
+                                                            Name={'bank_account_name'}
+                                                            Type={'text'}
+                                                            Required={true}
+                                                        />
+
+                                                        <Input
+                                                            InputName={
+                                                                'Collaborator Bank Account No'
+                                                            }
+                                                            Error={errors.bank_account_no}
+                                                            Value={data.bank_account_no}
                                                             Action={(e) =>
                                                                 setData(
                                                                     'bank_account_no',
                                                                     e.target.value,
                                                                 )
                                                             }
+                                                            Placeholder={
+                                                                'Enter Collaborator Bank Account No'
+                                                            }
+                                                            Id={'bank_account_no'}
+                                                            Name={'bank_account_no'}
+                                                            Type={'text'}
+                                                            Required={true}
+                                                        />
+
+                                                        <Input
+                                                            InputName={'IBAN'}
+                                                            Error={errors.iban}
+                                                            Value={data.iban}
+                                                            Action={(e) =>
+                                                                setData('iban', e.target.value)
+                                                            }
+                                                            Placeholder={'Enter IBAN'}
+                                                            Id={'iban'}
+                                                            Name={'iban'}
+                                                            Type={'text'}
+                                                            Required={true}
+                                                        />
+
+                                                        <Input
+                                                            InputName={'SWIFT CODE'}
+                                                            Error={errors.swift_code}
+                                                            Value={data.swift_code}
+                                                            Action={(e) =>
+                                                                setData(
+                                                                    'swift_code',
+                                                                    e.target.value,
+                                                                )
+                                                            }
+                                                            Placeholder={'Enter SWIFT CODE'}
+                                                            Id={'swift_code'}
+                                                            Name={'swift_code'}
+                                                            Type={'text'}
+                                                            Required={true}
                                                         />
                                                     </>
                                                 )}
@@ -254,44 +351,95 @@ export default function create({ roles }) {
                                                         </div>
 
                                                         <Input
-                                                            InputName={'Bank Account Number'}
-                                                            Id={'bank_account_number'}
-                                                            Error={errors.bank_account_no}
-                                                            Name={'bank_account_no'}
-                                                            Type={'text'}
-                                                            Value={data.bank_account_no}
-                                                            Placeholder={
-                                                                'Enter Bank Account Number'
+                                                            InputName={'Distributor Bank Name'}
+                                                            Error={errors.bank_name}
+                                                            Value={data.bank_name}
+                                                            Action={(e) =>
+                                                                setData('bank_name', e.target.value)
                                                             }
-                                                            Required={data.role_id === 5}
+                                                            Placeholder={
+                                                                'Enter Distributor Bank Name'
+                                                            }
+                                                            Id={'bank_name'}
+                                                            Name={'bank_name'}
+                                                            Type={'text'}
+                                                            Required={true}
+                                                        />
+
+                                                        <Input
+                                                            InputName={
+                                                                'Distributor Bank Account Name'
+                                                            }
+                                                            Error={errors.bank_account_name}
+                                                            Value={data.bank_account_name}
+                                                            Action={(e) =>
+                                                                setData(
+                                                                    'bank_account_name',
+                                                                    e.target.value,
+                                                                )
+                                                            }
+                                                            Placeholder={
+                                                                'Enter Distributor Bank Account Name'
+                                                            }
+                                                            Id={'bank_account_name'}
+                                                            Name={'bank_account_name'}
+                                                            Type={'text'}
+                                                            Required={true}
+                                                        />
+
+                                                        <Input
+                                                            InputName={
+                                                                'Distributor Bank Account No'
+                                                            }
+                                                            Error={errors.bank_account_no}
+                                                            Value={data.bank_account_no}
                                                             Action={(e) =>
                                                                 setData(
                                                                     'bank_account_no',
                                                                     e.target.value,
                                                                 )
                                                             }
+                                                            Placeholder={
+                                                                'Enter Distributor Bank Account No'
+                                                            }
+                                                            Id={'bank_account_no'}
+                                                            Name={'bank_account_no'}
+                                                            Type={'text'}
+                                                            Required={true}
+                                                        />
+
+                                                        <Input
+                                                            InputName={'IBAN'}
+                                                            Error={errors.iban}
+                                                            Value={data.iban}
+                                                            Action={(e) =>
+                                                                setData('iban', e.target.value)
+                                                            }
+                                                            Placeholder={'Enter IBAN'}
+                                                            Id={'iban'}
+                                                            Name={'iban'}
+                                                            Type={'text'}
+                                                            Required={true}
+                                                        />
+
+                                                        <Input
+                                                            InputName={'SWIFT CODE'}
+                                                            Error={errors.swift_code}
+                                                            Value={data.swift_code}
+                                                            Action={(e) =>
+                                                                setData(
+                                                                    'swift_code',
+                                                                    e.target.value,
+                                                                )
+                                                            }
+                                                            Placeholder={'Enter SWIFT CODE'}
+                                                            Id={'swift_code'}
+                                                            Name={'swift_code'}
+                                                            Type={'text'}
+                                                            Required={true}
                                                         />
                                                     </>
                                                 )}
-
-                                                <SelectInput
-                                                    InputName={'User Role'}
-                                                    Id={'role_id'}
-                                                    Name={'role_id'}
-                                                    Value={data.role_id}
-                                                    items={roles}
-                                                    Error={errors.role_id}
-                                                    Placeholder={'Select User Role'}
-                                                    Required={true}
-                                                    itemKey={'name'}
-                                                    Action={(value) => {
-                                                        setData('role_id', value);
-                                                        setData('company_name', '');
-                                                        setData('type', '');
-                                                        setData('address', '');
-                                                        setData('bank_account_no', '');
-                                                    }}
-                                                />
 
                                                 <SelectInput
                                                     InputName={'Active Status'}

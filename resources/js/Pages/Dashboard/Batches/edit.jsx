@@ -187,7 +187,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                     child={'Edit Batch'}
                 />
 
-                {file_error != null && <Toast flash={{ info: file_error }} />}
+                {file_error != null && <Toast flash={{ error: file_error }} />}
                 <Card
                     Content={
                         <>

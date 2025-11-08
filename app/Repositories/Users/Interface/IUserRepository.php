@@ -27,4 +27,6 @@ interface IUserRepository
     public function getAllRoles();
 
     public function getSingleCustomer(string $user_id);
+
+    public function profileCompletionCheck(Request $request);
 }

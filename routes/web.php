@@ -30,6 +30,7 @@ use App\Http\Controllers\Website\DataDeletionRequestController as WebsiteDataDel
 use App\Http\Controllers\Website\GlobalFilterController;
 use App\Http\Controllers\Website\GlobalSearchController;
 use App\Http\Controllers\Website\HomeController as WebsiteHomeController;
+use App\Http\Controllers\Website\OrderController as WebsiteOrderController;
 use App\Http\Controllers\Website\PostController as WebsitePostController;
 use App\Http\Controllers\Website\PrivacyPolicyController;
 use App\Http\Controllers\Website\ProductController;
@@ -104,12 +105,26 @@ Route::group(['as' => 'website.'], function () {
         Route::put('/cart/update-item', 'updateItem')->name('update-item');
         Route::post('/cart/referal-code', 'referalCode')->name('referal-code');
         Route::delete('/cart/remove-referal', 'removeReferal')->name('remove-referal');
+        Route::post('/cart-item-buy-now', 'buyNow')->name('buy-now');
     });
 
     // Checkout Routes
 
     Route::controller(CheckoutController::class)->middleware('auth')->name('checkout.')->group(function () {
         Route::get('/checkout', 'index')->name('index');
+        Route::post('/checkout', 'store')->name('store');
+        Route::get('/checkout/crypto/success', 'cryptoPaymentSuccess')->name('crypto-payment-success');
+        // Route::get('/checkout/crypto/cancel', 'cryptoPaymentCancel')->name('crypto-payment-cancel');
+        // Route::post('/checkout/crypto/ipn', 'cryptoPaymentIpn')->name('crypto-payment-ipn');
+
+    });
+
+    // Order Routes
+    Route::controller(WebsiteOrderController::class)->middleware('auth')->name('orders.')->group(function () {
+        Route::get('/orders', 'index')->name('index');
+        Route::get('/orders/order-view/{order_no?}', 'show')->name('order-view');
+        Route::post('/orders/upload-payment-proof', 'uploadPaymentProof')->name('upload-payment-proof');
+        Route::post('/orders/mark-packaging-video-viewed', 'markPackagingVideoViewed')->name('mark-packaging-video-viewed');
     });
 
     // Profile Routes
@@ -530,6 +545,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
                     Route::put('/meta-settings-toggle-status/{id?}', 'metaSettingToggleStatus')->name('meta-settings.toggle-status');
                     Route::delete('/meta-settings-destroy/{id?}', 'metaSettingDestroy')->name('meta-settings.destroy');
                     Route::delete('/meta-settings-destroy-by-selection', 'metaSettingDestroyBySelection')->name('meta-settings.destroybyselection');
+
+                    // NOW Payment COnfig Routes
+                    Route::get('/now-payment-settings', 'NOWPaymentSettingsIndex')->name('now-payment-settings.index');
+                    Route::get('/now-payment-settings-create', 'NOWPaymentSettingCreate')->name('now-payment-settings.create');
+                    Route::post('/now-payment-settings-store', 'NOWPaymentSettingStore')->name('now-payment-settings.store');
+                    Route::get('/now-payment-settings-edit/{id?}', 'NOWPaymentSettingEdit')->name('now-payment-settings.edit');
+                    Route::put('/now-payment-settings-update/{id?}', 'NOWPaymentSettingUpdate')->name('now-payment-settings.update');
+                    Route::put('/now-payment-settings-toggle-status/{id?}', 'NOWPaymentSettingToggleStatus')->name('now-payment-settings.toggle-status');
+                    Route::delete('/now-payment-settings-destroy/{id?}', 'NOWPaymentSettingDestroy')->name('now-payment-settings.destroy');
+                    Route::delete('/now-payment-settings-destroy-by-selection', 'NOWPaymentSettingDestroyBySelection')->name('now-payment-settings.destroybyselection');
 
                 });
 

@@ -349,10 +349,10 @@ class CartRepository implements ICartRepository
             $total_points = 0;
 
             if (empty($collaborator->point_accumulation_rate)) {
-                $reward_rate = $this->reward_setting->first()->reward_rate;
+                $reward_rate = $this->reward_setting->first()->reward_rate ?? 0;
                 $total_points = $cart->sum('total_price') * $reward_rate / 100;
             } else {
-                $reward_rate = $collaborator->point_accumulation_rate;
+                $reward_rate = $collaborator->point_accumulation_rate ?? 0;
                 $total_points = $cart->sum('total_price') * $reward_rate / 100;
             }
 

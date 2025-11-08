@@ -56,6 +56,10 @@ class DistributorRepository implements IDistributorRepository
             'password' => ['required', 'string', 'min:8', 'max:50', 'confirmed'],
             'address' => ['required', 'string', 'max:255'],
             'bank_account_no' => ['required', 'string', 'max:255'],
+            'bank_name' => ['required', 'string', 'max:255'],
+            'bank_account_name' => ['required', 'string', 'max:255'],
+            'iban' => ['required', 'string', 'max:255'],
+            'swift_code' => ['required', 'string', 'max:255'],
             'commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'is_active' => ['required', 'boolean'],
         ], [
@@ -89,6 +93,10 @@ class DistributorRepository implements IDistributorRepository
                 'user_id' => $user->id,
                 'address' => $validated_req['address'],
                 'bank_account_no' => $validated_req['bank_account_no'],
+                'bank_name' => $validated_req['bank_name'],
+                'bank_account_name' => $validated_req['bank_account_name'],
+                'iban' => $validated_req['iban'],
+                'swift_code' => $validated_req['swift_code'],
                 'commission_rate' => $validated_req['commission_rate'] ?? null,
             ]);
 
@@ -142,6 +150,10 @@ class DistributorRepository implements IDistributorRepository
             ...(($request->filled('password') || $request->filled('password_confirmation')) ? ['password' => ['required', 'string', 'min:8', 'confirmed', 'max:50']] : []),
             'address' => ['required', 'string', 'max:255'],
             'bank_account_no' => ['required', 'string', 'max:255'],
+            'bank_name' => ['required', 'string', 'max:255'],
+            'bank_account_name' => ['required', 'string', 'max:255'],
+            'iban' => ['required', 'string', 'max:255'],
+            'swift_code' => ['required', 'string', 'max:255'],
             'commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'is_active' => ['required', 'boolean'],
         ], [
@@ -172,6 +184,10 @@ class DistributorRepository implements IDistributorRepository
             $distributor_updated = $distributor->update([
                 'address' => $validated_req['address'],
                 'bank_account_no' => $validated_req['bank_account_no'],
+                'bank_name' => $validated_req['bank_name'],
+                'bank_account_name' => $validated_req['bank_account_name'],
+                'iban' => $validated_req['iban'],
+                'swift_code' => $validated_req['swift_code'],
                 'commission_rate' => $validated_req['commission_rate'] ?? null,
             ]);
 

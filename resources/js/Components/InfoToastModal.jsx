@@ -6,7 +6,7 @@ export default function InfoToastModal({ showInfo, setShowInfo, message }) {
         if (showInfo) {
             const timer = setTimeout(() => {
                 setShowInfo(false);
-            }, 1500);
+            }, 5000);
             return () => clearTimeout(timer);
         }
     }, [showInfo, setShowInfo]);
@@ -18,7 +18,7 @@ export default function InfoToastModal({ showInfo, setShowInfo, message }) {
             {/* Backdrop */}
             <div
                 className="fixed inset-0 bg-black/30 backdrop-blur-sm"
-                // onClick={() => setShowInfo(false)}
+                onClick={() => setShowInfo(false)}
             />
 
             {/* Modal */}

@@ -19,6 +19,7 @@ use App\Models\GeneralSetting;
 use App\Models\GoogleMapSetting;
 use App\Models\MetaSetting;
 use App\Models\ModelName;
+use App\Models\NowPayment;
 use App\Models\Permission;
 use App\Models\RewardSetting;
 use App\Models\Role;
@@ -52,6 +53,7 @@ class SettingRepository implements ISettingRepository
         private AwsSetting $aws_setting,
         private GoogleMapSetting $google_map_setting,
         private MetaSetting $meta_setting,
+        private NowPayment $now_payment
 
     ) {}
 
@@ -2457,6 +2459,186 @@ class SettingRepository implements ISettingRepository
             return [
                 'status' => true,
                 'message' => 'Meta Setting Activated Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    // NOWPayment Settings
+    public function getAllNOWPaymentSettings()
+    {
+        $now_payment_settings = $this->now_payment->latest()->paginate(10);
+
+        return $now_payment_settings;
+    }
+
+    public function getSingleNOWPayemntSetting(string $id)
+    {
+        $now_payment_setting = $this->now_payment->find($id);
+
+        return $now_payment_setting;
+    }
+
+    public function storeNOWPaymentSetting(Request $request)
+    {
+        $validated_req = $request->validate([
+            'now_payment_api_key' => ['required', 'string', 'max:255', 'unique:now_payments,now_payment_api_key'],
+            'now_payment_public_key' => ['required', 'string', 'max:255', 'unique:now_payments,now_payment_public_key'],
+            'now_payment_baseurl' => ['required', 'string', 'max:255'],
+        ]);
+
+        try {
+            if ($this->now_payment->count() == 0) {
+                $validated_req['is_active'] = true;
+            }
+
+            $created = $this->now_payment->create($validated_req);
+
+            if (empty($created)) {
+                throw new Exception('Something went wrong while creating NOWPayment setting');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'NOWPayment Created Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function updateNOWPaymentSetting(Request $request, string $id)
+    {
+        $validated_req = $request->validate([
+            'now_payment_api_key' => ['required', 'string', 'max:255', 'unique:now_payments,now_payment_api_key,'.$id],
+            'now_payment_public_key' => ['required', 'string', 'max:255', 'unique:now_payments,now_payment_public_key,'.$id],
+            'now_payment_baseurl' => ['required', 'string', 'max:255'],
+        ]);
+
+        try {
+            $now_payment_setting = $this->getSingleNOWPayemntSetting($id);
+
+            if (empty($now_payment_setting)) {
+                throw new Exception('NOWPayment Setting Not Found');
+            }
+
+            $updated = $now_payment_setting->update($validated_req);
+
+            if (! $updated) {
+                throw new Exception('Something went wrong while updating NOWPayment setting');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'NOWPayment Setting Updated Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function destroyNOWPaymentSetting(string $id)
+    {
+        try {
+            $now_payment_setting = $this->getSingleNOWPayemntSetting($id);
+
+            if (empty($now_payment_setting)) {
+                throw new Exception('NOWPayemnt Setting Not Found');
+            }
+
+            DB::transaction(function () use ($now_payment_setting, $id) {
+
+                if ($now_payment_setting->is_active && $this->now_payment->count() > 1) {
+                    $this->now_payment->whereNot('id', $id)->first()->update(['is_active' => true]);
+                }
+
+                $deleted = $now_payment_setting->delete();
+
+                if (! $deleted) {
+                    throw new Exception('Something Went Wrong While Deleting NOWPayment Setting');
+                }
+            });
+
+            return [
+                'status' => true,
+                'message' => 'NOWPayment Setting deleted successfully',
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function destroyNOWPaymentSettingBySelection(Request $request)
+    {
+        try {
+            $ids = $request->array('ids');
+
+            if (blank($ids)) {
+                throw new Exception('Please select at least one NOWPayment setting');
+            }
+
+            foreach ($ids as $id) {
+                $response = $this->destroyNOWPaymentSetting($id);
+                if ($response['status'] == false) {
+                    throw new Exception($response['message']);
+                }
+            }
+
+            return [
+                'status' => true,
+                'message' => 'NOWPayment Setting deleted successfully',
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function toggleNOWPaymentSettingStatus(string $id)
+    {
+        try {
+
+            $now_payment_setting = $this->getSingleNOWPayemntSetting($id);
+
+            if (empty($now_payment_setting)) {
+                throw new Exception('NOWPayment Setting Not Found');
+            }
+
+            $already_active_setting = $this->now_payment->where('is_active', true)->first();
+            if (empty($already_active_setting)) {
+                throw new Exception('Something Went Wrong While Activating NOWPayment Setting Status');
+            }
+
+            if ($now_payment_setting->is($already_active_setting)) {
+                throw new Exception('This NOWPayment Setting Already Active. And Cannot Be Deactivated Until Another NOWPayment Setting Is Activated');
+            }
+
+            DB::transaction(function () use ($now_payment_setting, $already_active_setting) {
+                $already_active_setting->update(['is_active' => false]);
+                $now_payment_setting->update(['is_active' => true]);
+            });
+
+            return [
+                'status' => true,
+                'message' => 'NOWPayment Setting Activated Successfully',
             ];
 
         } catch (Exception $e) {

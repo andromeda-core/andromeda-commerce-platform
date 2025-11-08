@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import gsap from 'gsap';
 import SmartphoneMobileGalleryModal from './SmartphoneMobileGalleryModal';
+import useWindowSize from '@/Hooks/useWindowSize';
 
 const SmartphoneMobileModal = ({
     smartphones,
@@ -21,6 +22,7 @@ const SmartphoneMobileModal = ({
     viewableSmartphoneRef,
     viewableSmartphoneRefValue,
 }) => {
+    const windowSize = useWindowSize();
     const [localSmartphones, setLocalSmartphones] = useState(smartphones || []);
     const hasInitializedScroll = useRef(false);
     const isClosingRef = useRef(false);
@@ -433,7 +435,7 @@ const SmartphoneMobileModal = ({
                         {localSmartphones.map((item, index) => (
                             <div
                                 key={item.id}
-                                className="relative flex h-screen w-full snap-start flex-col"
+                                className="relative flex flex-col w-full h-screen snap-start"
                                 style={{
                                     height: '100%',
                                     scrollSnapAlign: 'start',
@@ -441,7 +443,7 @@ const SmartphoneMobileModal = ({
                                 }}
                             >
                                 {/* Header: Tag + Three Dots */}
-                                <div className="flex shrink-0 items-center justify-between px-4 pb-2 pt-3">
+                                <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
                                     <button
                                         onClick={() => navigateToHashtag(item.tag)}
                                         className="text-sm font-semibold text-gray-900 dark:text-white"
@@ -469,7 +471,7 @@ const SmartphoneMobileModal = ({
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={1.5}
                                                 stroke="currentColor"
-                                                className="h-5 w-5"
+                                                className="w-5 h-5"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -480,7 +482,7 @@ const SmartphoneMobileModal = ({
                                         </button>
 
                                         {actionDropdownOpen === index && (
-                                            <div className="absolute right-0 top-8 z-20 w-48 rounded-lg border border-gray-200 bg-white shadow-lg dark:border-white/10 dark:bg-deepcharcoal">
+                                            <div className="absolute right-0 z-20 w-48 bg-white border border-gray-200 rounded-lg shadow-lg top-8 dark:border-white/10 dark:bg-deepcharcoal">
                                                 <div className="py-1">
                                                     <button
                                                         onClick={() => {
@@ -495,7 +497,7 @@ const SmartphoneMobileModal = ({
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={1.5}
                                                             stroke="currentColor"
-                                                            className="h-5 w-5"
+                                                            className="w-5 h-5"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -531,7 +533,7 @@ const SmartphoneMobileModal = ({
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={1.5}
                                                             stroke="currentColor"
-                                                            className="h-5 w-5"
+                                                            className="w-5 h-5"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -550,12 +552,12 @@ const SmartphoneMobileModal = ({
                                 {/* Image - Takes remaining space */}
                                 <div className="relative flex-1 overflow-hidden">
                                     {item?.images?.length > 0 && (
-                                        <div className="flex h-full w-full items-center justify-center p-4">
+                                        <div className="flex items-center justify-center w-full h-full p-4">
                                             <img
                                                 key={item.id}
                                                 src={item.images[0]}
                                                 alt={item.name}
-                                                className="max-h-full max-w-full rounded-lg object-contain"
+                                                className="object-contain max-w-full max-h-full rounded-lg"
                                             />
                                         </div>
                                     )}
@@ -563,7 +565,7 @@ const SmartphoneMobileModal = ({
 
                                 {/* Bottom: Name + Shop Now Button */}
                                 <div
-                                    className="shrink-0 bg-white px-4 pt-3 dark:bg-deepcharcoal"
+                                    className="px-4 pt-3 bg-white shrink-0 dark:bg-deepcharcoal"
                                     style={{
                                         // paddingBottom:
                                         //     'calc(var(--bottom-bar-height, 60px) + 16px)',
@@ -628,18 +630,12 @@ const SmartphoneMobileModal = ({
                             role="dialog"
                             aria-modal="true"
                             aria-labelledby="qrCodeTitle"
-                            className={`relative z-[101] w-full max-w-sm rounded-2xl bg-white/50 p-6 text-gray-900 shadow-xl sm:max-w-md`}
+                            className={`relative z-[101] w-full max-w-[200px] rounded-2xl bg-white pt-3 text-gray-900 shadow-xl dark:bg-deepcharcoal lg:max-w-sm lg:p-6`}
                         >
-                            <div className="flex justify-end">
-                                <button onClick={() => setShowQrCode(false)}>✕</button>
-                            </div>
                             <div className="text-center">
-                                <h2 id="qrCodeTitle" className="mb-3 text-base font-semibold">
-                                    Scan QR Code
-                                </h2>
                                 <div className="flex justify-center">
                                     <QRCode
-                                        className="size-48 sm:size-52 md:size-60"
+                                        className={`${windowSize.width > 1024 ? 'size-30' : 'size-28'} border-2`}
                                         value={route('home') + '/?m-slug=' + smartphone?.slug}
                                         viewBox="0 0 256 256"
                                         level="H"
@@ -648,12 +644,18 @@ const SmartphoneMobileModal = ({
                                         fgColor="#000000"
                                     />
                                 </div>
+
+                                <h2
+                                    id="qrCodeTitle"
+                                    className="my-3 text-base font-semibold dark:text-white/80"
+                                >
+                                    Scan QR Code
+                                </h2>
                             </div>
                         </div>
                     </div>,
                     document.body,
                 )}
-
             {/* Link Copied Modal */}
             {linkCopied && (
                 <LinkCopiedModal linkCopied={linkCopied} setLinkCopied={setLinkCopied} />

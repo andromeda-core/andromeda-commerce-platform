@@ -84,7 +84,7 @@ export default function edit({ distributor }) {
                                                 </label>
                                                 <input
                                                     type="text"
-                                                    value={distributor?.user?.name}
+                                                    value={distributor?.user?.name ?? 'N/A'}
                                                     readOnly
                                                     className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
@@ -97,7 +97,7 @@ export default function edit({ distributor }) {
                                                 </label>
                                                 <input
                                                     type="email"
-                                                    value={distributor?.user?.email}
+                                                    value={distributor?.user?.email ?? 'N/A'}
                                                     readOnly
                                                     className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
@@ -110,20 +110,72 @@ export default function edit({ distributor }) {
                                                 </label>
                                                 <input
                                                     type="text"
-                                                    value={distributor?.user?.phone}
+                                                    value={distributor?.user?.phone ?? 'N/A'}
                                                     readOnly
                                                     className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
 
-                                            {/* Bank Account */}
+                                            {/* Bank Name */}
+                                            <div>
+                                                <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
+                                                    Bank Name
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={distributor?.bank_name ?? 'N/A'}
+                                                    readOnly
+                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
+                                                />
+                                            </div>
+
+                                            {/* Bank Account Name */}
+                                            <div>
+                                                <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
+                                                    Bank Account Name
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={distributor?.bank_account_name ?? 'N/A'}
+                                                    readOnly
+                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
+                                                />
+                                            </div>
+
+                                            {/* Bank Account NO */}
                                             <div>
                                                 <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
                                                     Bank Account Number
                                                 </label>
                                                 <input
                                                     type="text"
-                                                    value={distributor?.bank_account_no}
+                                                    value={distributor?.bank_account_no ?? 'N/A'}
+                                                    readOnly
+                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
+                                                />
+                                            </div>
+
+                                            {/* Bank Account IBAN */}
+                                            <div>
+                                                <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
+                                                    Bank Account IBAN
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={distributor?.iban ?? 'N/A'}
+                                                    readOnly
+                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
+                                                />
+                                            </div>
+
+                                            {/* Bank Account SWIFT CODE */}
+                                            <div>
+                                                <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
+                                                    Bank Account SWIFT CODE
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={distributor?.swift_code ?? 'N/A'}
                                                     readOnly
                                                     className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
@@ -136,7 +188,7 @@ export default function edit({ distributor }) {
                                                 </label>
                                                 <textarea
                                                     type="text"
-                                                    value={distributor?.address}
+                                                    value={distributor?.address ?? 'N/A'}
                                                     readOnly
                                                     className="w-full text-wrap break-words rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />

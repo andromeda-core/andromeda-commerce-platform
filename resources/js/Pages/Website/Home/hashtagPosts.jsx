@@ -145,28 +145,43 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
 
     // Infinite Scroll Observer
     useEffect(() => {
-        if (!loaderRef.current || !nextPageUrl) return;
+        const interval = setInterval(() => {
+            if (loaderRef.current && nextPageUrl) {
+                const observer = new IntersectionObserver(
+                    (entries) => {
+                        if (entries[0].isIntersecting && !isFetchingMore) {
+                            fetchMoreResults();
+                        }
+                    },
+                    { rootMargin: '200px', threshold: 0.1 },
+                );
+                observer.observe(loaderRef.current);
 
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting && !isFetchingMore) {
-                    fetchMoreResults();
-                }
-            },
-            { threshold: 1 },
-        );
+                clearInterval(interval);
 
-        observer.observe(loaderRef.current);
+                return () => {
+                    observer.disconnect();
+                };
+            }
+        }, 200);
 
-        return () => {
-            if (loaderRef.current) observer.unobserve(loaderRef.current);
-        };
+        return () => clearInterval(interval);
     }, [nextPageUrl, isFetchingMore]);
 
     return (
         <MainLayout>
             <Head title="HashTag" />
-            {showErrorMessage && <Toast flash={{ error: ErrorMessage }} />}
+            {showErrorMessage && (
+                <Toast
+                    flash={{ error: ErrorMessage }}
+                    onClosed={(type) => {
+                        if (type === 'error') {
+                            setErrorMessage(null);
+                            setShowErrorMessage(false);
+                        }
+                    }}
+                />
+            )}
 
             <GlobalSearch
                 google_map_api_key={google_map_api_key}
@@ -176,9 +191,9 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
             />
 
             <div className="pb-20 sm:px-6 sm:pb-20 lg:px-8">
-                <div className="px-3 text-gray-900 bg-white rounded-xl dark:bg-deepcharcoal dark:text-gray-100 sm:px-6 lg:px-8">
+                <div className="rounded-xl bg-white px-3 text-gray-900 dark:bg-deepcharcoal dark:text-gray-100 sm:px-6 lg:px-8">
                     {/* Header */}
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-slate-700">
+                    <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-slate-700">
                         <div className="relative flex items-center gap-6">
                             <button
                                 className={`relative scale-105 pb-2 text-sm text-indigo-600 transition-all duration-300 ease-in-out dark:text-indigo-400`}
@@ -196,7 +211,7 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                                 ></span>
                             </button>
                             <div
-                                className="relative flex items-center justify-between px-2 py-2 mt-2 mb-3 text-sm text-indigo-600 transition-all rounded-lg border-gray-5 group dark:text-indigo-400"
+                                className="border-gray-5 group relative mb-3 mt-2 flex items-center justify-between rounded-lg px-2 py-2 text-sm text-indigo-600 transition-all dark:text-indigo-400"
                                 title="Click to modify filters"
                             >
                                 <div className="flex flex-wrap items-center gap-x-2">{hashtag}</div>
@@ -209,12 +224,12 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                         {allResults.length === 0 ? (
                             <>
                                 {!isLoaded ? (
-                                    <div className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80">
+                                    <div className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 dark:text-white/80">
                                         <div className="flex items-center justify-center">
                                             <div role="status">
                                                 <svg
                                                     aria-hidden="true"
-                                                    className="w-5 h-5 text-gray-200 animate-spin fill-indigo-600 dark:text-white/80"
+                                                    className="h-5 w-5 animate-spin fill-indigo-600 text-gray-200 dark:text-white/80"
                                                     viewBox="0 0 100 101"
                                                     fill="none"
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -243,18 +258,18 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                             allResults.map((item) => (
                                 <div
                                     key={item.id}
-                                    className="flex items-center gap-4 px-6 py-4 transition-colors cursor-pointer group hover:bg-gray-50 dark:hover:bg-gray-800/80"
+                                    className="group flex cursor-pointer items-center gap-4 px-6 py-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/80"
                                 >
                                     {/* Thumbnail */}
-                                    <div className="flex-shrink-0 w-12 h-12 overflow-hidden bg-indigo-600 rounded-lg dark:bg-indigo-500">
+                                    <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-indigo-600 dark:bg-indigo-500">
                                         {item.image ? (
                                             <img
                                                 src={item.image}
                                                 alt={item.title || item.name}
-                                                className="object-cover w-full h-full"
+                                                className="h-full w-full object-cover"
                                             />
                                         ) : (
-                                            <div className="flex items-center justify-center h-full text-sm text-white/80">
+                                            <div className="flex h-full items-center justify-center text-sm text-white/80">
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     fill="none"
@@ -274,29 +289,29 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                                     </div>
 
                                     {/* Info */}
-                                    <div className="flex-1 min-w-0">
+                                    <div className="min-w-0 flex-1">
                                         <h3 className="truncate">{item.title || item.name}</h3>
-                                        <p className="text-xs text-gray-500 truncate dark:text-gray-400">
+                                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
                                             {item?.location_name || ''}
                                         </p>
 
-                                        <p className="text-xs text-gray-500 truncate dark:text-gray-400">
+                                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
                                             {item?.capacity || ''}
                                         </p>
 
-                                        <p className="text-xs text-gray-500 truncate dark:text-gray-400">
+                                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
                                             {item?.tag}
                                         </p>
-                                        <p className="text-xs text-gray-500 truncate dark:text-gray-400">
+                                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
                                             {item.created_at}
                                         </p>
                                     </div>
 
                                     {/* Right Info */}
-                                    <div className="flex flex-wrap items-center justify-center gap-2 transition-all duration-200 opacity-0 group-hover:opacity-100 lg:flex-nowrap">
+                                    <div className="flex flex-wrap items-center justify-center gap-2 opacity-0 transition-all duration-200 group-hover:opacity-100 lg:flex-nowrap">
                                         <button
                                             title="Copy Link"
-                                            className="flex items-center justify-center w-8 h-8 p-2 text-gray-500 rounded-full hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+                                            className="flex h-8 w-8 items-center justify-center rounded-full p-2 text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                                             onClick={() => {
                                                 setLinkCopied(true);
                                                 item.type === 'posts'
@@ -332,7 +347,7 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                                                     : route('home') + '?m-slug=' + item.slug
                                             }
                                             {...(windowSize.width > 1024 && { target: '_blank' })}
-                                            className="flex items-center justify-center w-full h-8 gap-2 p-2 text-gray-500 rounded-full hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+                                            className="flex h-8 w-full items-center justify-center gap-2 rounded-full p-2 text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -359,13 +374,13 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                     {allResults.length > 0 && nextPageUrl && (
                         <div
                             ref={loaderRef}
-                            className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80"
+                            className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 dark:text-white/80"
                         >
                             <div className="flex items-center justify-center">
                                 <div role="status">
                                     <svg
                                         aria-hidden="true"
-                                        className="w-5 h-5 text-gray-200 animate-spin fill-indigo-600 dark:text-gray-600"
+                                        className="h-5 w-5 animate-spin fill-indigo-600 text-gray-200 dark:text-gray-600"
                                         viewBox="0 0 100 101"
                                         fill="none"
                                         xmlns="http://www.w3.org/2000/svg"

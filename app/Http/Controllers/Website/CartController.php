@@ -178,4 +178,16 @@ class CartController extends Controller
             'message' => $response['message'],
         ]);
     }
+
+    public function buyNow(Request $request)
+    {
+
+        $response = $this->cart->addItem($request);
+
+        if ($response['status'] === false) {
+            return back()->with('error', $response['message']);
+        }
+
+        return to_route('website.checkout.index');
+    }
 }

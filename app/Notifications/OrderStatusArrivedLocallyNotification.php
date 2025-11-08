@@ -38,7 +38,8 @@ class OrderStatusArrivedLocallyNotification extends Notification implements Shou
             ->line('**Order Number:** '.$this->order->order_no)
             ->line('**Current Status:**  Arrived Locally')
             ->line('Our delivery partner will be reaching out to you shortly to complete the final step of your delivery.')
-            ->line('You can always check the latest status of your order in the *Orders* section of your account.')
+            ->line('You can always check the latest status of your order in the *My Orders* section of your account.')
+            ->action('View Your Order', route('website.orders.order-view', $this->order->order_no))
             ->line('Thank you for your patience and for choosing us! We look forward to delivering your package soon!');
     }
 

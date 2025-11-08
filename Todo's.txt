@@ -464,6 +464,59 @@ Additional Work:
             Referal Code And Points Showing,
             Confiti Effect Added And Shows After Applying Referal Code
         )✅
+
+        30: Added Button in Dashboard To Navigate On Home ✅
+
+        31: Placing Order Logic Completed just NowPayments gateway integration remeaning so than bitcoin payment option will work
+        32: My Orders Page Is In Progress Remeaning things (
+            1: Prompt Customer To Give Payment Proof If Not Paid Via Bitcoin, ✅
+            2: Courier Detail Showing On Order Detail Page, ✅
+            3: Pop State Work For Better Pop State Handling -> done but not perfect as it has to be,
+            4: Order Notification Jobs Updated Needed For Adding Appropriate URLS OF THE SITE, ✅
+            5: Color Showing On Smartphones In Order Details Page Of Website and On Dashboard (Because The Color Column Added Recently), ✅
+            6: Smartphone Viewer Buy Now Button Will Redirect user To The Cart page and that product will be automatically added in cart if not already
+                and if already exists than simply we will redirects, ✅
+            7: Eager Loading On Orders Added  ✅
+
+        )
+        33: Distributor Table and backend Will be updated and will add new columns ✅
+
+        (
+            Bank Name,
+            Account Name,
+            IBAN,
+            SWIFT Code.
+        )
+
+        34: Collaborator Table and backend Will be updated and will add new columns ✅
+
+        (
+            Bank Name,
+            Account Name,
+            IBAN,
+            SWIFT Code.
+        )
+
+        35: New PDF Received For Changes (
+            1: DESKTOP (PC) LAYOUT CHANGES ✅
+            2: Mobile LAYOUT CHANGES -> pending
+
+        )
+
+        36: NOWPayment CREDNETIALS STORING AND SETTING IN ENVIROMENT WITH ADDING IN REDIS CACHE FOR OPTIMIZED FECTHING COMPLETED  ✅
+        37: Integration With Order Placing  ✅
+
+        38: Points Assigning Logic Corrected Now After Order Status Changed To Paid Than it will assign Points  ✅
+        39: Auto Status Checking Background Job Added To Check Order Payment Status FROm NOWPayment Using np_id ✅
+        40: Auto Marking Order As Expired After 30 minutes When didnt Paid And Leave The Checkout Page Of NOWPayment  ✅
+        41: New  3 Status Added On Order Table ✅(
+            1: awaiting payment => It User Created NOWPayment Session but the payment havent been deducted yet If we say he just created session to go on NOWPayment Checkout Page1
+            2: expired: => When user created session and goes to NOWPayment checkout page and didnt Adds his wallet address and closes the CHECKOUT PAGE
+            3: failed: => When user Submits His Information And ALl Goes well But his wallet havent That Much Money So it will be marked as failed
+        )
+
+        42: Marking Uploaded Package Video mark as viewed when customer viewed the package video for internal tracking ✅
+
     )
 
 

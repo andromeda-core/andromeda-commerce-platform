@@ -32,7 +32,7 @@ class OrderPackageVideoAddedNotification extends Notification implements ShouldQ
             ->subject('Your Order Packaging Video is Ready')
             ->greeting('Hello '.$notifiable->name.',')
             ->line('We’ve uploaded the packaging video for your recent order. You can now view how your package was prepared before it was shipped.')
-            ->action('View Packaging Video', url(route('dashboard')))// route('website.order.show', $this->package_recording->order_id))
+            ->action('View Packaging Video', url(route('website.orders.order-view', $this->package_recording->order->order_no)))
             ->line('Thank you for choosing us! We appreciate your trust and look forward to serving you again.');
     }
 

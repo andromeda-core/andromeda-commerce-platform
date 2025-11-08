@@ -9,6 +9,7 @@ const BottomBar = ({
     moreDropdown,
     setMoreDropdown,
     cartItemsCount,
+    preventDropdownCloseRef,
 }) => {
     const { user } = usePage().props.auth;
 
@@ -255,7 +256,7 @@ const BottomBar = ({
                                                 <Link
                                                     data-sidebar-link="true"
                                                     href={route('website.carts.index')}
-                                                    className={`menu-item-inactive flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
+                                                    className={`${route().current() === 'website.carts.index' ? 'menu-item-active' : 'menu-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                                 >
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -286,9 +287,9 @@ const BottomBar = ({
                                             </li>
 
                                             <li>
-                                                <a
-                                                    href="#"
-                                                    className={`menu-item-inactive flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
+                                                <Link
+                                                    href={route('website.orders.index')}
+                                                    className={`${route().current() === 'website.orders.index' ? 'menu-item-active' : 'menu-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                                 >
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -305,7 +306,7 @@ const BottomBar = ({
                                                         />
                                                     </svg>
                                                     My Orders
-                                                </a>
+                                                </Link>
                                             </li>
 
                                             <li>
@@ -455,8 +456,14 @@ const BottomBar = ({
                                         <button
                                             className={`menu-item-inactive flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                             onClick={() => {
+                                                preventDropdownCloseRef.current = true;
+
                                                 setDarkMode(!darkMode);
                                                 localStorage.setItem('darkMode', !darkMode);
+
+                                                setTimeout(() => {
+                                                    preventDropdownCloseRef.current = false;
+                                                }, 0);
                                             }}
                                         >
                                             <svg
@@ -483,9 +490,9 @@ const BottomBar = ({
                                                     fill="currentColor"
                                                 />
                                             </svg>
-                                            <div className="block dark:hidden">Light Mode</div>
+                                            <div className="hidden dark:block">Light Mode</div>
 
-                                            <div className="hidden dark:block">Dark Mode</div>
+                                            <div className="block dark:hidden">Dark Mode</div>
                                         </button>
                                     </li>
 

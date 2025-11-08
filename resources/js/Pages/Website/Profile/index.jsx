@@ -6,7 +6,7 @@ import Textarea from '@/Components/Textarea';
 import Toast from '@/Components/Toast';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
-import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import React, { memo, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -219,30 +219,6 @@ const Index = ({ user, countries }) => {
         };
     }, [isEditProfileOpen, isChangePasswordOpen]);
 
-    // // CleanUp Message States
-    useEffect(() => {
-        if (showInfoMessage) {
-            setTimeout(() => {
-                setShowInfoMessage(false);
-                setInfoMessage('');
-            }, 1500);
-        }
-
-        if (showErrorMessage) {
-            setTimeout(() => {
-                setShowErrorMessage(false);
-                setErrorMessage('');
-            }, 1500);
-        }
-
-        if (showSuccessMessage) {
-            setTimeout(() => {
-                setShowSuccessMessage(false);
-                setSuccessMessage('');
-            }, 1500);
-        }
-    }, [showInfoMessage, showErrorMessage, showSuccessMessage]);
-
     // // Disable Profile Button State
     const [isProfileUpdateButtonDisabled, setIsProfileButtonDisabled] = useState(true);
 
@@ -281,6 +257,20 @@ const Index = ({ user, countries }) => {
                         ...(showErrorMessage && { error: ErrorMessage }),
                         ...(showInfoMessage && { info: infoMessage }),
                         ...(showSuccessMessage && { success: SuccessMessage }),
+                    }}
+                    onClosed={(type) => {
+                        if (type === 'info') {
+                            setInfoMessage(null);
+                            setShowInfoMessage(false);
+                        }
+                        if (type === 'error') {
+                            setErrorMessage(null);
+                            setShowErrorMessage(false);
+                        }
+                        if (type === 'success') {
+                            setSuccessMessage(null);
+                            setShowSuccessMessage(false);
+                        }
                     }}
                 />
             )}
@@ -322,7 +312,7 @@ const Index = ({ user, countries }) => {
                                     Reward Points
                                 </div>
                                 <div className="mb-1 text-4xl font-bold text-gray-700 dark:text-white/80">
-                                    {user?.reward_points ?? 0}
+                                    {user?.points ?? 0}
                                 </div>
                                 <div className="text-xs text-gray-700 dark:text-white/80">
                                     pts available
@@ -436,25 +426,6 @@ const Index = ({ user, countries }) => {
                             </div>
                             <div className="space-y-3 p-6">
                                 <button
-                                    onClick={() => setIsChangePasswordOpen(true)}
-                                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-gray-100 px-4 py-3 font-medium text-gray-700 transition-all hover:bg-gray-200 dark:bg-gray-800 dark:text-white/80 dark:hover:bg-gray-700"
-                                >
-                                    <svg
-                                        className="h-5 w-5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                                        />
-                                    </svg>
-                                    Change Password
-                                </button>
-                                <button
                                     onClick={() => setIsEditProfileOpen(true)}
                                     className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 font-medium text-white shadow-md transition-all hover:bg-indigo-500 hover:shadow-lg"
                                 >
@@ -474,7 +445,30 @@ const Index = ({ user, countries }) => {
                                     Edit Profile
                                 </button>
 
-                                <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-gray-100 px-4 py-3 font-medium text-gray-700 transition-all hover:bg-gray-200 dark:bg-gray-800 dark:text-white/80 dark:hover:bg-gray-700">
+                                <button
+                                    onClick={() => setIsChangePasswordOpen(true)}
+                                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-gray-100 px-4 py-3 font-medium text-gray-700 transition-all hover:bg-gray-200 dark:bg-gray-800 dark:text-white/80 dark:hover:bg-gray-700"
+                                >
+                                    <svg
+                                        className="h-5 w-5"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                                        />
+                                    </svg>
+                                    Change Password
+                                </button>
+
+                                <Link
+                                    href={route('website.orders.index')}
+                                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-gray-100 px-4 py-3 font-medium text-gray-700 transition-all hover:bg-gray-200 dark:bg-gray-800 dark:text-white/80 dark:hover:bg-gray-700"
+                                >
                                     <svg
                                         className="h-5 w-5"
                                         fill="none"
@@ -489,7 +483,7 @@ const Index = ({ user, countries }) => {
                                         />
                                     </svg>
                                     Order History
-                                </button>
+                                </Link>
                             </div>
                         </div>
 

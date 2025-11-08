@@ -44,7 +44,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'remember_token',
     ];
 
-    protected $appends = ['avatar', 'added_at', 'reward_points'];
+    protected $appends = ['avatar', 'added_at', 'points'];
 
     /**
      * Get the attributes that should be cast.
@@ -64,7 +64,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return ! empty($this->created_at) ? $this->created_at->format('Y-m-d') : null;
     }
 
-    public function getRewardPointsAttribute()
+    public function getPointsAttribute()
     {
         return $this->reward_points()->sum('points');
     }

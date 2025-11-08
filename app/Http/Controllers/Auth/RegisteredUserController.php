@@ -71,11 +71,9 @@ class RegisteredUserController extends Controller
             return redirect(route('verification.notice', absolute: false))
                 ->with('success', 'Registration successful! Please Check Your Inbox For Verification Mail');
         } elseif ($request->user()->hasRole('Customer')) {
-            return redirect(route('home', absolute: false))
-                ->with('success', 'Registration successful!');
+            return redirect(route('home', absolute: false));
         } else {
-            return redirect(route('dashboard', absolute: false))
-                ->with('success', 'Registration successful!');
+            return redirect(route('dashboard', absolute: false));
         }
     }
 }

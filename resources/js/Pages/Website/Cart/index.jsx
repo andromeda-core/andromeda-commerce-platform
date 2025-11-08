@@ -43,32 +43,6 @@ export default function index({ cart_items, refferalSessionData }) {
     const [confettiFading, setConfettiFading] = useState(false);
 
     useEffect(() => {
-        if (showInfoMessage) {
-            const timer = setTimeout(() => {
-                setShowInfoMessage(false);
-                setInfoMessage(null);
-            }, 1500);
-            return () => clearTimeout(timer);
-        }
-
-        if (showErrorMessage) {
-            const timer = setTimeout(() => {
-                setErrorMessage(false);
-                setErrorMessage(null);
-            }, 1500);
-            return () => clearTimeout(timer);
-        }
-
-        if (showSuccessMessage) {
-            const timer = setTimeout(() => {
-                setShowSuccessMessage(false);
-                setSuccessMessage(null);
-            }, 1500);
-            return () => clearTimeout(timer);
-        }
-    }, [showInfoMessage, showErrorMessage, showSuccessMessage]);
-
-    useEffect(() => {
         if (showConfetti) {
             const fadeTimer = setTimeout(() => {
                 setConfettiFading(true);
@@ -246,6 +220,20 @@ export default function index({ cart_items, refferalSessionData }) {
                             : showErrorMessage
                               ? { error: errorMessage }
                               : { success: successMessage }),
+                    }}
+                    onClosed={(type) => {
+                        if (type === 'info') {
+                            setInfoMessage(null);
+                            setShowInfoMessage(false);
+                        }
+                        if (type === 'error') {
+                            setErrorMessage(null);
+                            setShowErrorMessage(false);
+                        }
+                        if (type === 'success') {
+                            setSuccessMessage(null);
+                            setShowSuccessMessage(false);
+                        }
                     }}
                 />
             )}
@@ -637,6 +625,7 @@ function OrderSummary({
                                     />
                                 </svg>
                                 <span className="mr-1">Referal Points</span>
+                                <span className="mr-1">({referalData?.referal_code})</span>
                                 {!removingReferal ? (
                                     <button
                                         onClick={() => handleRemoveReferal()}

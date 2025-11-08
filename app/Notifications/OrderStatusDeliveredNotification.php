@@ -38,7 +38,8 @@ class OrderStatusDeliveredNotification extends Notification implements ShouldQue
             ->line('**Order Number:** '.$this->order->order_no)
             ->line('**Current Status:** Delivered')
             ->line('We hope you’re satisfied with your purchase and enjoy using your new product(s).')
-            ->line('You can view your order details anytime in the *Orders* section of your account.')
+            ->line('You can view your order details anytime in the *My Orders* section of your account.')
+            ->action('View Your Order', route('website.orders.order-view', $this->order->order_no))
             ->line('Thank you for choosing us! We look forward to serving you again soon.');
     }
 

@@ -33,8 +33,16 @@ return [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
+
     ],
 
     'google_maps_api_key' => env('GOOGLE_MAPS_API_KEY'),
+
+    'now_payments' => [
+        'api_key' => '',
+        'base_url' => '',
+        'success_url' => env('NOWPAYMENTS_SUCCESS_URL'),
+        'cancel_url' => env('NOWPAYMENTS_CANCEL_URL'),
+    ],
 
 ];

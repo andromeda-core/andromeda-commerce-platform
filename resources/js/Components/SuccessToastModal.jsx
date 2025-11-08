@@ -6,7 +6,7 @@ export default function SuccessToastModal({ showSuccess, setShowSuccess, message
         if (showSuccess) {
             const timer = setTimeout(() => {
                 setShowSuccess(false);
-            }, 800);
+            }, 3000);
             return () => clearTimeout(timer);
         }
     }, [showSuccess, setShowSuccess]);
@@ -18,7 +18,7 @@ export default function SuccessToastModal({ showSuccess, setShowSuccess, message
             {/* Backdrop */}
             <div
                 className="fixed inset-0 bg-black/30 backdrop-blur-sm"
-                // onClick={() => setShowSuccess(false)}
+                onClick={() => setShowSuccess(false)}
             />
 
             {/* Modal */}

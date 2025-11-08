@@ -6,7 +6,7 @@ export default function ErrorToastModal({ showError, setShowError, message }) {
         if (showError) {
             const timer = setTimeout(() => {
                 setShowError(false);
-            }, 1500);
+            }, 5000);
             return () => clearTimeout(timer);
         }
     }, [showError, setShowError]);
@@ -18,7 +18,7 @@ export default function ErrorToastModal({ showError, setShowError, message }) {
             {/* Backdrop */}
             <div
                 className="fixed inset-0 bg-black/30 backdrop-blur-sm"
-                // onClick={() => setShowError(false)}
+                onClick={() => setShowError(false)}
             />
 
             {/* Modal */}

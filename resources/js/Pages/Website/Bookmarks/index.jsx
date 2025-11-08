@@ -158,7 +158,17 @@ export default function index() {
         <MainLayout>
             <Head title="Bookmarks" />
 
-            {showErrorMessage && <Toast flash={{ error: ErrorMessage }} />}
+            {showErrorMessage && (
+                <Toast
+                    flash={{ error: ErrorMessage }}
+                    onClosed={(type) => {
+                        if (type === 'error') {
+                            setErrorMessage(null);
+                            setShowErrorMessage(false);
+                        }
+                    }}
+                />
+            )}
 
             {!isLoaded && (
                 <div className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 dark:text-white/80">

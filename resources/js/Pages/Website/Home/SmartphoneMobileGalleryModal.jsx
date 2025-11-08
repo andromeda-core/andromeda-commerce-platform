@@ -53,6 +53,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
     const windowSize = useWindowSize();
 
     const [cartProcessing, setCartProcessing] = useState(false);
+    const [buyNowProcessing, setBuyNowProcessing] = useState(false);
     const [showErrorMessage, setShowErrorMessage] = useState(false);
     const [ErrorMessage, setErrorMessage] = useState('');
 
@@ -64,33 +65,6 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
 
     const [selectedColor, setSelectedColor] = useState('');
     const [quantity, setQuantity] = useState(1);
-
-    // Auto Closing The Message Alerts
-    useEffect(() => {
-        if (showErrorMessage) {
-            const timer = setTimeout(() => {
-                setShowErrorMessage(false);
-                setErrorMessage('');
-            }, 1500);
-            return () => clearTimeout(timer);
-        }
-
-        if (showInfoMessage) {
-            const timer = setTimeout(() => {
-                setShowInfoMessage(false);
-                setInfoMessage('');
-            }, 1500);
-            return () => clearTimeout(timer);
-        }
-
-        if (showSuccessMessage) {
-            const timer = setTimeout(() => {
-                setShowSuccessMessage(false);
-                setSuccessMessage('');
-            }, 700);
-            return () => clearTimeout(timer);
-        }
-    }, [showErrorMessage, showInfoMessage, showSuccessMessage]);
 
     const handleAddCartItem = async (type, item_id, quantity, color, total_stock) => {
         try {
@@ -188,6 +162,57 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
             setShowErrorMessage(true);
             setErrorMessage(error?.message || 'Something Went Wrong While Removing Cart Item');
             setCartProcessing(false);
+        }
+    };
+
+    const handleBuyNow = async (type, item_id, quantity, color, total_stock) => {
+        try {
+            setBuyNowProcessing(true);
+            const alreadyExists = cart_items.some((item) => item.smartphone_id === item_id);
+
+            if (alreadyExists) {
+                router.visit(route('website.checkout.index'));
+                setBuyNowProcessing(false);
+                return;
+            }
+
+            if (color === '' || !color) {
+                setInfoMessage('Please select a color first');
+                setShowInfoMessage(true);
+                setBuyNowProcessing(false);
+                return;
+            }
+
+            if (!isInStock) {
+                setInfoMessage(
+                    'Sorry, this item is currently out of stock and cannot be added to your cart',
+                );
+                setShowInfoMessage(true);
+                setBuyNowProcessing(false);
+                return;
+            }
+
+            if (quantity > total_stock) {
+                setInfoMessage(
+                    `Only ${total_stock} item${total_stock === 1 ? '' : 's'} available. Please adjust your quantity`,
+                );
+                setShowInfoMessage(true);
+                setBuyNowProcessing(false);
+                return;
+            }
+
+            const data = {
+                type: type,
+                item_id: item_id,
+                quantity: quantity,
+                color: color,
+            };
+
+            router.post(route('website.carts.buy-now'), { ...data });
+        } catch (error) {
+            setBuyNowProcessing(false);
+            setShowErrorMessage(true);
+            setErrorMessage(error.message);
         }
     };
 
@@ -304,6 +329,20 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                         ...(showErrorMessage && { error: ErrorMessage }),
                         ...(showInfoMessage && { info: InfoMessage }),
                         ...(showSuccessMessage && { success: SuccessMessage }),
+                    }}
+                    onClosed={(type) => {
+                        if (type === 'info') {
+                            setInfoMessage(null);
+                            setShowInfoMessage(false);
+                        }
+                        if (type === 'error') {
+                            setErrorMessage(null);
+                            setShowErrorMessage(false);
+                        }
+                        if (type === 'success') {
+                            setSuccessMessage(null);
+                            setShowSuccessMessage(false);
+                        }
                     }}
                 />
             )}
@@ -736,15 +775,18 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
 
                                     <button
                                         disabled={!isInStock}
-                                        className={` ${!isInStock && 'pointer-events-none opacity-50'} h-[30px] w-[100px] rounded-lg bg-white text-xs text-black transition-colors hover:bg-gray-200`}
+                                        className={` ${!isInStock && 'pointer-events-none opacity-50'} flex h-[30px] w-[100px] items-center justify-center gap-2 rounded-lg bg-white text-xs text-black transition-colors hover:bg-gray-200 lg:w-[200px] lg:px-6 lg:text-base`}
                                         onClick={() => {
-                                            console.log('Buy now:', {
-                                                smartphone,
-                                                selectedColor,
+                                            handleBuyNow(
+                                                'smartphone',
+                                                smartphone.id,
                                                 quantity,
-                                            });
+                                                selectedColor,
+                                                smartphone.inventory_items_count,
+                                            );
                                         }}
                                     >
+                                        {buyNowProcessing && <Spinner customSize={'size-3'} />}
                                         Buy now
                                     </button>
                                 </div>
@@ -771,18 +813,12 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                             role="dialog"
                             aria-modal="true"
                             aria-labelledby="qrCodeTitle"
-                            className={`relative z-[101] w-full max-w-sm rounded-2xl bg-white/50 p-6 text-gray-900 shadow-xl sm:max-w-md`}
+                            className={`relative z-[101] w-full max-w-[200px] rounded-2xl bg-white pt-3 text-gray-900 shadow-xl dark:bg-deepcharcoal lg:max-w-sm lg:p-6`}
                         >
-                            <div className="flex justify-end">
-                                <button onClick={() => setShowQrCode(false)}>✕</button>
-                            </div>
                             <div className="text-center">
-                                <h2 id="qrCodeTitle" className="mb-3 text-base font-semibold">
-                                    Scan QR Code
-                                </h2>
                                 <div className="flex justify-center">
                                     <QRCode
-                                        className="size-48 sm:size-52 md:size-60"
+                                        className={`${windowSize.width > 1024 ? 'size-30' : 'size-28'} border-2`}
                                         value={route('home') + '/?m-slug=' + smartphone?.slug}
                                         viewBox="0 0 256 256"
                                         level="H"
@@ -791,6 +827,13 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                         fgColor="#000000"
                                     />
                                 </div>
+
+                                <h2
+                                    id="qrCodeTitle"
+                                    className="my-3 text-base font-semibold dark:text-white/80"
+                                >
+                                    Scan QR Code
+                                </h2>
                             </div>
                         </div>
                     </div>,

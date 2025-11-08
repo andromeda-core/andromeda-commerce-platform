@@ -7,6 +7,7 @@ use App\Models\Currency;
 use App\Models\GeneralSetting;
 use App\Models\GoogleMapSetting;
 use App\Models\MetaSetting;
+use App\Models\NowPayment;
 use App\Models\SmtpSetting;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
@@ -108,10 +109,23 @@ class AppServiceProvider extends ServiceProvider
 
             }
 
+            if (Schema::hasTable('now_payments')) {
+                $now_payment_setting = Cache::rememberForever('now_payment_setting', fn () => NowPayment::where('is_active', true)->first() ?? null);
+
+                if (! empty($now_payment_setting)) {
+                    Config::set([
+                        'services.now_payments.api_key' => $now_payment_setting?->now_payment_api_key,
+                        'services.now_payments.public_key' => $now_payment_setting?->now_payment_public_key,
+                        'services.now_payments.base_url' => $now_payment_setting?->now_payment_baseurl,
+                    ]);
+                }
+
+            }
+
             if (Schema::hasTable('meta_settings')) {
                 $meta_setting = Cache::rememberForever('meta_setting', fn () => MetaSetting::where('is_active', true)->first() ?? null);
 
-                // For Later
+                // For Later META SETTING SET LOGIC
                 // if (! empty($google_map_setting)) {
                 //     Config::set([
                 //         'services.google_maps_api_key' => $google_map_setting?->google_map_api_key,

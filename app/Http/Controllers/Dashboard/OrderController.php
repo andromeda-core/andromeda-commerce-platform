@@ -92,6 +92,18 @@ class OrderController extends Controller implements HasMiddleware
             return back()->with('error', 'Already Completed Orders Cannot Be Edited');
         }
 
+        if ($order->status === 'awaiting_payment') {
+            return back()->with('error', 'Awaiting Payment Orders Cannot Be Edited');
+        }
+
+        if ($order->status === 'failed') {
+            return back()->with('error', 'Failed Payment Orders Cannot Be Edited');
+        }
+
+        if ($order->status === 'expired') {
+            return back()->with('error', 'Expired Payment Orders Cannot Be Edited');
+        }
+
         $smartphones = $this->order->getSmartphones();
         $customers = $this->order->getCustomers();
 

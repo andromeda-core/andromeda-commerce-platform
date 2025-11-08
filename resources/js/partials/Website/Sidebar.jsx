@@ -1,6 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 const Sidebar = ({
@@ -14,8 +14,10 @@ const Sidebar = ({
     moreDropdown,
     setMoreDropdown,
     cartItemsCount,
+    preventDropdownCloseRef,
 }) => {
     const { user } = usePage().props.auth;
+    const darkModeButtonRef = useRef(null);
 
     // Toggle Mode Dark + Light
     useEffect(() => {
@@ -53,23 +55,27 @@ const Sidebar = ({
                 }`}
             >
                 {/* Logo */}
-                <div
-                    className={`flex items-center gap-2 px-6 py-6 transition-all ${
-                        isCollapsed ? 'justify-center' : ''
-                    }`}
-                >
-                    <div className="flex h-12 w-12 items-center justify-center rounded">
-                        <div className="block dark:hidden">
-                            <img src={light_logo} alt="Logo" />
+                <Link href={route('home')}>
+                    <div
+                        className={`flex items-center gap-2 px-6 py-6 transition-all ${
+                            isCollapsed ? 'justify-center' : ''
+                        }`}
+                    >
+                        <div className="flex items-center justify-center w-12 h-12 rounded">
+                            <div className="block dark:hidden">
+                                <img src={light_logo} alt="Logo" />
+                            </div>
+                            <div className="hidden dark:block">
+                                <img src={dark_logo} alt="Logo" />
+                            </div>
                         </div>
-                        <div className="hidden dark:block">
-                            <img src={dark_logo} alt="Logo" />
-                        </div>
+                        {!isCollapsed && (
+                            <span className="text-lg text-gray-600 dark:text-white/80">
+                                {app_name}
+                            </span>
+                        )}
                     </div>
-                    {!isCollapsed && (
-                        <span className="text-lg text-gray-600 dark:text-white/80">{app_name}</span>
-                    )}
-                </div>
+                </Link>
 
                 {/* Navigation */}
                 <nav className="flex-1 px-2 py-2">
@@ -189,45 +195,6 @@ const Sidebar = ({
                             </Link>
                         </li>
 
-                        {user && (
-                            <li>
-                                <Link
-                                    data-sidebar-link="true"
-                                    title="Profile"
-                                    href={route('website.profile.index')}
-                                    className={`flex w-full items-center ${
-                                        isCollapsed ? 'justify-center px-0' : 'gap-3 px-4'
-                                    } rounded-full py-2.5 text-sm transition-colors ${
-                                        route().current() === 'website.profile.index'
-                                            ? 'menu-item-active'
-                                            : 'menu-item-inactive'
-                                    }`}
-                                    onClick={(e) => {
-                                        if (route().current() === 'website.profile.index') {
-                                            e.preventDefault();
-                                        }
-                                    }}
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        strokeWidth={1.5}
-                                        stroke="currentColor"
-                                        className="size-6"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
-                                        />
-                                    </svg>
-
-                                    {!isCollapsed && <span>Profile</span>}
-                                </Link>
-                            </li>
-                        )}
-
                         {/* <li>
                             <a
                                 href="#"
@@ -252,83 +219,6 @@ const Sidebar = ({
                                 {!isCollapsed && <span>Contact Us</span>}
                             </a>
                         </li> */}
-
-                        <li>
-                            <Link
-                                data-sidebar-link="true"
-                                title="Privacy Policy"
-                                prefetch
-                                href={route('website.privacy-policy.index')}
-                                className={`flex w-full items-center ${
-                                    isCollapsed ? 'justify-center px-0' : 'gap-3 px-4'
-                                } rounded-full py-2.5 text-sm transition-colors ${
-                                    route().current() === 'website.privacy-policy.index'
-                                        ? 'menu-item-active'
-                                        : 'menu-item-inactive'
-                                }`}
-                                onClick={(e) => {
-                                    if (route().current() === 'website.privacy-policy.index') {
-                                        e.preventDefault();
-                                    }
-                                }}
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth={1.5}
-                                    stroke="currentColor"
-                                    className={`size-6`}
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.25-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z"
-                                    />
-                                </svg>
-                                {!isCollapsed && <span>Privacy Policy</span>}
-                            </Link>
-                        </li>
-
-                        {user && (
-                            <li>
-                                <Link
-                                    data-sidebar-link="true"
-                                    title="Data Deletion"
-                                    prefetch
-                                    href={route('website.data-deletion.index')}
-                                    className={`flex w-full items-center ${
-                                        isCollapsed ? 'justify-center px-0' : 'gap-3 px-4'
-                                    } rounded-full py-2.5 text-sm transition-colors ${
-                                        route().current() === 'website.data-deletion.index'
-                                            ? 'menu-item-active'
-                                            : 'menu-item-inactive'
-                                    }`}
-                                    onClick={(e) => {
-                                        if (route().current() === 'website.data-deletion.index') {
-                                            e.preventDefault();
-                                        }
-                                    }}
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        strokeWidth={1.5}
-                                        stroke="currentColor"
-                                        className={`size-6`}
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                                        />
-                                    </svg>
-
-                                    {!isCollapsed && <span>Data Deletion</span>}
-                                </Link>
-                            </li>
-                        )}
 
                         <li>
                             <button
@@ -368,7 +258,7 @@ const Sidebar = ({
                                                 : 'translateX(260px)',
                                         }}
                                     >
-                                        <ul className="flex flex-col">
+                                        <ul className="flex flex-col overflow-auto overscroll-contain lg:max-h-[200px] xl:max-h-[300px]">
                                             {user && (
                                                 <>
                                                     {user?.role === 'Admin' && (
@@ -401,6 +291,39 @@ const Sidebar = ({
                                                     <li>
                                                         <Link
                                                             data-sidebar-link="true"
+                                                            title="Profile"
+                                                            href={route('website.profile.index')}
+                                                            className={`${route().current() === 'website.profile.index' ? 'menu-item-active' : 'menu-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
+                                                            onClick={(e) => {
+                                                                if (
+                                                                    route().current() ===
+                                                                    'website.profile.index'
+                                                                ) {
+                                                                    e.preventDefault();
+                                                                }
+                                                            }}
+                                                        >
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                strokeWidth={1.5}
+                                                                stroke="currentColor"
+                                                                className={` ${isCollapsed ? 'size-4' : 'size-5'} `}
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                                                                />
+                                                            </svg>
+                                                            Profile
+                                                        </Link>
+                                                    </li>
+
+                                                    <li>
+                                                        <Link
+                                                            data-sidebar-link="true"
                                                             href={route('website.carts.index')}
                                                             className={`${route().current() === 'website.carts.index' ? 'menu-item-active' : 'menu-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                                         >
@@ -421,22 +344,22 @@ const Sidebar = ({
                                                             My Cart{' '}
                                                             {cartItemsCount > 0 && (
                                                                 <span className="relative ml-auto">
-                                                                    <span className="flex h-6 w-6 animate-pulse items-center justify-center rounded-full bg-indigo-500 text-xs font-bold text-white">
+                                                                    <span className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-indigo-500 rounded-full animate-pulse">
                                                                         {cartItemsCount > 99
                                                                             ? '99+'
                                                                             : cartItemsCount}
                                                                     </span>
-                                                                    <span className="absolute right-0 top-0 block h-2 w-2 animate-bounce rounded-full bg-indigo-400"></span>
+                                                                    <span className="absolute top-0 right-0 block w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></span>
                                                                 </span>
                                                             )}
                                                         </Link>
                                                     </li>
 
                                                     <li>
-                                                        <a
+                                                        <Link
                                                             data-sidebar-link="true"
-                                                            href="#"
-                                                            className={`menu-item-inactive flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
+                                                            href={route('website.orders.index')}
+                                                            className={`${route().current() === 'website.orders.index' ? 'menu-item-active' : 'menu-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                                         >
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -453,7 +376,7 @@ const Sidebar = ({
                                                                 />
                                                             </svg>
                                                             My Orders
-                                                        </a>
+                                                        </Link>
                                                     </li>
 
                                                     <li>
@@ -487,6 +410,42 @@ const Sidebar = ({
                                                             My Bookmarks
                                                         </Link>
                                                     </li>
+
+                                                    <li>
+                                                        <Link
+                                                            data-sidebar-link="true"
+                                                            title="Data Deletion"
+                                                            prefetch
+                                                            href={route(
+                                                                'website.data-deletion.index',
+                                                            )}
+                                                            className={`${route().current() === 'website.data-deletion.index' ? 'menu-item-active' : 'menu-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
+                                                            onClick={(e) => {
+                                                                if (
+                                                                    route().current() ===
+                                                                    'website.data-deletion.index'
+                                                                ) {
+                                                                    e.preventDefault();
+                                                                }
+                                                            }}
+                                                        >
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                strokeWidth={1.5}
+                                                                stroke="currentColor"
+                                                                className={` ${isCollapsed ? 'size-4' : 'size-5'} `}
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                                                                />
+                                                            </svg>
+                                                            Data Deletion
+                                                        </Link>
+                                                    </li>
                                                 </>
                                             )}
 
@@ -517,6 +476,40 @@ const Sidebar = ({
                                             )}
 
                                             <li>
+                                                <Link
+                                                    data-sidebar-link="true"
+                                                    title="Privacy Policy"
+                                                    prefetch
+                                                    href={route('website.privacy-policy.index')}
+                                                    className={`${route().current() === 'website.privacy-policy.index' ? 'menu-item-active' : 'menu-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
+                                                    onClick={(e) => {
+                                                        if (
+                                                            route().current() ===
+                                                            'website.privacy-policy.index'
+                                                        ) {
+                                                            e.preventDefault();
+                                                        }
+                                                    }}
+                                                >
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        strokeWidth={1.5}
+                                                        stroke="currentColor"
+                                                        className={` ${isCollapsed ? 'size-4' : 'size-5'} `}
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.25-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z"
+                                                        />
+                                                    </svg>
+                                                    Privacy Policy
+                                                </Link>
+                                            </li>
+
+                                            <li>
                                                 <a
                                                     href="#"
                                                     data-sidebar-link="true"
@@ -540,12 +533,17 @@ const Sidebar = ({
                                                 </a>
                                             </li>
 
-                                            <li>
+                                            <li ref={darkModeButtonRef}>
                                                 <button
                                                     className={`menu-item-inactive flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                                     onClick={() => {
+                                                        preventDropdownCloseRef.current = true;
                                                         setDarkMode(!darkMode);
                                                         localStorage.setItem('darkMode', !darkMode);
+
+                                                        setTimeout(() => {
+                                                            preventDropdownCloseRef.current = false;
+                                                        }, 0);
                                                     }}
                                                 >
                                                     <svg
@@ -572,11 +570,11 @@ const Sidebar = ({
                                                             fill="currentColor"
                                                         />
                                                     </svg>
-                                                    <div className="block dark:hidden">
+                                                    <div className="hidden dark:block">
                                                         Light Mode
                                                     </div>
 
-                                                    <div className="hidden dark:block">
+                                                    <div className="block dark:hidden">
                                                         Dark Mode
                                                     </div>
                                                 </button>

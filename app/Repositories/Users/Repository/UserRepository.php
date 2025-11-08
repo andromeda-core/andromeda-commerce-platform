@@ -205,7 +205,11 @@ class UserRepository implements IUserRepository
                 $request->validate([
                     'type' => ['required', 'in:Company,Indivisual'],
                     'address' => ['required', 'max:255'],
-                    'bank_account_no' => ['required', 'max:255'],
+                    'bank_account_no' => ['required', 'string', 'max:255'],
+                    'bank_name' => ['required', 'string', 'max:255'],
+                    'bank_account_name' => ['required', 'string', 'max:255'],
+                    'iban' => ['required', 'string', 'max:255'],
+                    'swift_code' => ['required', 'string', 'max:255'],
                 ], [
                     'type.required' => 'The Collaborator Type Field Is Required.',
                     'type.in' => 'The Collaborator Type Must Be Company Or Indivisual.',
@@ -216,8 +220,12 @@ class UserRepository implements IUserRepository
             // Distributor Logic
             if ($role->name === 'Distributor') {
                 $request->validate([
-                    'address' => ['required', 'max:255'],
-                    'bank_account_no' => ['required', 'max:255'],
+                    'address' => ['required', 'max:255', 'string'],
+                    'bank_account_no' => ['required', 'string', 'max:255'],
+                    'bank_name' => ['required', 'string', 'max:255'],
+                    'bank_account_name' => ['required', 'string', 'max:255'],
+                    'iban' => ['required', 'string', 'max:255'],
+                    'swift_code' => ['required', 'string', 'max:255'],
                 ]);
             }
             // Distributor Logic
@@ -241,6 +249,10 @@ class UserRepository implements IUserRepository
                         'type' => $request->input('type'),
                         'referral_code' => $referral_code,
                         'bank_account_no' => $request->input('bank_account_no'),
+                        'bank_name' => $request->input('bank_name'),
+                        'bank_account_name' => $request->input('bank_account_name'),
+                        'iban' => $request->input('iban'),
+                        'swift_code' => $request->input('swift_code'),
                         'address' => $request->input('address'),
                     ]
                 );
@@ -252,6 +264,10 @@ class UserRepository implements IUserRepository
                 $created->distributor()->create(
                     [
                         'bank_account_no' => $request->input('bank_account_no'),
+                        'bank_name' => $request->input('bank_name'),
+                        'bank_account_name' => $request->input('bank_account_name'),
+                        'iban' => $request->input('iban'),
+                        'swift_code' => $request->input('swift_code'),
                         'address' => $request->input('address'),
                     ]
                 );
@@ -339,7 +355,11 @@ class UserRepository implements IUserRepository
                 $request->validate([
                     'type' => ['required', 'in:Company,Indivisual'],
                     'address' => ['required', 'max:255'],
-                    'bank_account_no' => ['required', 'max:255'],
+                    'bank_account_no' => ['required', 'string', 'max:255'],
+                    'bank_name' => ['required', 'string', 'max:255'],
+                    'bank_account_name' => ['required', 'string', 'max:255'],
+                    'iban' => ['required', 'string', 'max:255'],
+                    'swift_code' => ['required', 'string', 'max:255'],
                 ], [
                     'type.required' => 'The Collaborator Type Field Is Required.',
                     'type.in' => 'The Collaborator Type Must Be Company Or Indivisual.',
@@ -350,8 +370,12 @@ class UserRepository implements IUserRepository
             // Distributor Logic
             if ($role->name === 'Distributor') {
                 $request->validate([
-                    'address' => ['required', 'max:255'],
-                    'bank_account_no' => ['required', 'max:255'],
+                    'address' => ['required', 'max:255', 'string'],
+                    'bank_account_no' => ['required', 'string', 'max:255'],
+                    'bank_name' => ['required', 'string', 'max:255'],
+                    'bank_account_name' => ['required', 'string', 'max:255'],
+                    'iban' => ['required', 'string', 'max:255'],
+                    'swift_code' => ['required', 'string', 'max:255'],
                 ]);
             }
             // Distributor Logic
@@ -388,11 +412,31 @@ class UserRepository implements IUserRepository
 
             if ($role->name === 'Collaborator' && ! $user->collaborator()->exists()) {
                 $referral_code = 'Ref-'.Str::random(12);
-                $user->collaborator()->create(['type' => $request->input('type'), 'referral_code' => $referral_code, 'address' => $request->input('address'), 'bank_account_no' => $request->input('bank_account_no')]);
+                $user->collaborator()->create(
+                    [
+                        'type' => $request->input('type'),
+                        'referral_code' => $referral_code,
+                        'address' => $request->input('address'),
+                        'bank_account_no' => $request->input('bank_account_no'),
+                        'bank_name' => $request->input('bank_name'),
+                        'bank_account_name' => $request->input('bank_account_name'),
+                        'iban' => $request->input('iban'),
+                        'swift_code' => $request->input('swift_code'),
+                    ]
+                );
             }
 
             if ($role->name === 'Collaborator' && $user->collaborator()->exists()) {
-                $user->collaborator()->update(['type' => $request->input('type'), 'address' => $request->input('address'), 'bank_account_no' => $request->input('bank_account_no')]);
+                $user->collaborator()->update(
+                    [
+                        'type' => $request->input('type'),
+                        'address' => $request->input('address'),
+                        'bank_account_no' => $request->input('bank_account_no'),
+                        'bank_name' => $request->input('bank_name'),
+                        'bank_account_name' => $request->input('bank_account_name'),
+                        'iban' => $request->input('iban'),
+                        'swift_code' => $request->input('swift_code'),
+                    ]);
             }
             // Collaborator Logic
 
@@ -402,11 +446,31 @@ class UserRepository implements IUserRepository
             }
 
             if ($role->name === 'Distributor' && ! $user->distributor()->exists()) {
-                $user->distributor()->create(['address' => $request->input('address'), 'bank_account_no' => $request->input('bank_account_no')]);
+                $user->distributor()->create(
+                    [
+                        'address' => $request->input('address'),
+                        'bank_account_no' => $request->input('bank_account_no'),
+                        'bank_name' => $request->input('bank_name'),
+                        'bank_account_name' => $request->input('bank_account_name'),
+                        'iban' => $request->input('iban'),
+                        'swift_code' => $request->input('swift_code'),
+
+                    ]
+                );
             }
 
             if ($role->name === 'Distributor' && $user->distributor()->exists()) {
-                $user->distributor()->update(['address' => $request->input('address'), 'bank_account_no' => $request->input('bank_account_no')]);
+                $user->distributor()->update(
+                    [
+                        'address' => $request->input('address'),
+                        'bank_account_no' => $request->input('bank_account_no'),
+                        'bank_name' => $request->input('bank_name'),
+                        'bank_account_name' => $request->input('bank_account_name'),
+                        'iban' => $request->input('iban'),
+                        'swift_code' => $request->input('swift_code'),
+
+                    ]
+                );
             }
             // Distributor Logic
 
@@ -549,5 +613,26 @@ class UserRepository implements IUserRepository
         ]);
 
         return $user;
+    }
+
+    public function profileCompletionCheck(Request $request)
+    {
+        $customer = $this->user->where('id', $request->user()?->id)->first()?->customer;
+
+        if (empty($customer)) {
+            return false;
+        }
+
+        if (
+            empty($customer->country_id) ||
+            empty($customer->state) ||
+            empty($customer->city) ||
+            (empty($customer->address_line1) && empty($customer->address_line2)) ||
+            empty($customer->postal_code)
+        ) {
+            return false;
+        }
+
+        return true;
     }
 }

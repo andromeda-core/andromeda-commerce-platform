@@ -77,8 +77,28 @@ export default function index({ distributors }) {
             },
 
             {
+                key: 'bank_name',
+                label: 'Distributor Bank Name',
+            },
+
+            {
+                key: 'bank_account_name',
+                label: 'Distributor Bank Account Name',
+            },
+
+            {
                 key: 'bank_account_no',
                 label: 'Distributor Bank Account No',
+            },
+
+            {
+                key: 'iban',
+                label: 'Distributor Bank IBAN',
+            },
+
+            {
+                key: 'swift_code',
+                label: 'Distributor Bank SWIFT Code',
             },
 
             {

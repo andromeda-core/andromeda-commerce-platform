@@ -39,9 +39,10 @@ class OrderStatusShippedNotification extends Notification implements ShouldQueue
             ->line('**Current Status:**  Shipped')
             ->line('**Courier Company:** '.$this->order->courier_company)
             ->line('**Tracking Number:** '.$this->order->tracking_no)
-            ->line('**Shipping Date:** '.$this->order->shipping_date->format('F d, Y'))
+            ->line('**Shipping Date:** '.$this->order->shipping_date->format('M d, Y'))
             ->line('You can track your shipment directly on **'.$this->order->courier_company.'**’s website using your tracking number: **'.$this->order->tracking_no.'**.')
-            ->line('For complete details and the latest status of your order, please visit the *Orders* section in your account.')
+            ->line('For complete details and the latest status of your order, please visit the *My Orders* Page in your account.')
+            ->action('View Your Order', route('website.orders.order-view', $this->order->order_no))
             ->line('Thank you for shopping with us! We look forward to delivering your order soon.');
     }
 

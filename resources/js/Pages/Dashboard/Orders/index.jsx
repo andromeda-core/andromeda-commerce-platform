@@ -63,7 +63,12 @@ export default function index({ orders }) {
             {
                 label: 'Cash Collected Status',
                 render: (item) => {
-                    if (item.status !== 'pending') {
+                    if (
+                        item.status !== 'pending' &&
+                        item.status !== 'failed' &&
+                        item.status !== 'expired' &&
+                        item.status !== 'awaiting_payment'
+                    ) {
                         if (item.is_cash_collected === 1) {
                             return (
                                 <>
@@ -144,6 +149,24 @@ export default function index({ orders }) {
                         return (
                             <span className="rounded-lg bg-green-500 p-2 text-white">
                                 Delivered
+                            </span>
+                        );
+                    } else if (item.status === 'awaiting_payment') {
+                        return (
+                            <span className="rounded-lg bg-indigo-500 p-2 text-white">
+                                Awaiting Payment
+                            </span>
+                        );
+                    } else if (item.status === 'failed') {
+                        return <span className="rounded-lg bg-red-500 p-2 text-white">Failed</span>;
+                    } else if (item.status === 'expired') {
+                        return (
+                            <span className="rounded-lg bg-red-500 p-2 text-white">Expired</span>
+                        );
+                    } else if (item.status === 'blockchain_confirmation_pending') {
+                        return (
+                            <span className="rounded-lg bg-indigo-500 p-2 text-white">
+                                BlockChain Confirmation Pending
                             </span>
                         );
                     } else {

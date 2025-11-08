@@ -103,6 +103,7 @@ const SmartphoneDesktopModal = ({
     }, []);
 
     const [cartProcessing, setCartProcessing] = useState(false);
+    const [buyNowProcessing, setBuyNowProcessing] = useState(false);
     const [showErrorMessage, setShowErrorMessage] = useState(false);
     const [ErrorMessage, setErrorMessage] = useState('');
 
@@ -112,32 +113,7 @@ const SmartphoneDesktopModal = ({
     const [showInfoMessage, setShowInfoMessage] = useState(false);
     const [InfoMessage, setInfoMessage] = useState('');
 
-    // Auto Closing The Message Alerts
-    useEffect(() => {
-        if (showErrorMessage) {
-            const timer = setTimeout(() => {
-                setShowErrorMessage(false);
-                setErrorMessage('');
-            }, 1500);
-            return () => clearTimeout(timer);
-        }
 
-        if (showInfoMessage) {
-            const timer = setTimeout(() => {
-                setShowInfoMessage(false);
-                setInfoMessage('');
-            }, 1500);
-            return () => clearTimeout(timer);
-        }
-
-        if (showSuccessMessage) {
-            const timer = setTimeout(() => {
-                setShowSuccessMessage(false);
-                setSuccessMessage('');
-            }, 700);
-            return () => clearTimeout(timer);
-        }
-    }, [showErrorMessage, showInfoMessage, showSuccessMessage]);
 
     const handleAddCartItem = async (type, item_id, quantity, color, total_stock) => {
         try {
@@ -238,6 +214,57 @@ const SmartphoneDesktopModal = ({
         }
     };
 
+    const handleBuyNow = async (type, item_id, quantity, color, total_stock) => {
+        try {
+            setBuyNowProcessing(true);
+            const alreadyExists = cart_items.some((item) => item.smartphone_id === item_id);
+
+            if (alreadyExists) {
+                router.visit(route('website.checkout.index'));
+                setBuyNowProcessing(false);
+                return;
+            }
+
+            if (color === '' || !color) {
+                setInfoMessage('Please select a color first');
+                setShowInfoMessage(true);
+                setBuyNowProcessing(false);
+                return;
+            }
+
+            if (!isInStock) {
+                setInfoMessage(
+                    'Sorry, this item is currently out of stock and cannot be added to your cart',
+                );
+                setShowInfoMessage(true);
+                setBuyNowProcessing(false);
+                return;
+            }
+
+            if (quantity > total_stock) {
+                setInfoMessage(
+                    `Only ${total_stock} item${total_stock === 1 ? '' : 's'} available. Please adjust your quantity`,
+                );
+                setShowInfoMessage(true);
+                setBuyNowProcessing(false);
+                return;
+            }
+
+            const data = {
+                type: type,
+                item_id: item_id,
+                quantity: quantity,
+                color: color,
+            };
+
+            router.post(route('website.carts.buy-now'), { ...data });
+        } catch (error) {
+            setBuyNowProcessing(false);
+            setShowErrorMessage(true);
+            setErrorMessage(error.message);
+        }
+    };
+
     // Checking Stock
     const [isInStock, setIsInStock] = useState(smartphone?.inventory_items_count > 0);
     const StockBadge = ({ smartphone }) => {
@@ -249,7 +276,7 @@ const SmartphoneDesktopModal = ({
             badgeClass = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
             text = `In Stock: ${stock}`;
             icon = (
-                <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                     <path
                         fillRule="evenodd"
                         d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -261,7 +288,7 @@ const SmartphoneDesktopModal = ({
             badgeClass = 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
             text = `Low Stock: ${stock}`;
             icon = (
-                <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                     <path
                         fillRule="evenodd"
                         d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
@@ -273,7 +300,7 @@ const SmartphoneDesktopModal = ({
             badgeClass = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
             text = 'Out of Stock';
             icon = (
-                <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                     <path
                         fillRule="evenodd"
                         d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -323,13 +350,27 @@ const SmartphoneDesktopModal = ({
                         ...(showInfoMessage && { info: InfoMessage }),
                         ...(showSuccessMessage && { success: SuccessMessage }),
                     }}
+                    onClosed={(type) => {
+                        if (type === 'info') {
+                            setInfoMessage(null);
+                            setShowInfoMessage(false);
+                        }
+                        if (type === 'error') {
+                            setErrorMessage(null);
+                            setShowErrorMessage(false);
+                        }
+                        if (type === 'success') {
+                            setSuccessMessage(null);
+                            setShowSuccessMessage(false);
+                        }
+                    }}
                 />
             )}
 
             {createPortal(
                 <>
                     <div className="fixed inset-0 left-0 z-50 bg-white dark:bg-zinc-950 lg:left-20">
-                        <div className="mx-auto w-full lg:w-1/2">
+                        <div className="w-full mx-auto lg:w-1/2">
                             <GlobalSearch
                                 mainPage={true}
                                 search_history={searchHistory}
@@ -339,10 +380,10 @@ const SmartphoneDesktopModal = ({
                         </div>
 
                         <div className="relative h-[calc(100vh-60px)] overflow-y-auto pb-24 scrollbar-none">
-                            <div className="flex min-h-full flex-col lg:flex-row">
+                            <div className="flex flex-col min-h-full lg:flex-row">
                                 <div className="w-full flex-shrink-0 p-2 lg:w-[45%] lg:p-4">
                                     {smartphone?.images?.length > 0 && (
-                                        <div className="translate-y-3 transform transition-all duration-500 ease-in-out">
+                                        <div className="transition-all duration-500 ease-in-out transform translate-y-3">
                                             <SmartphoneMediaViewer
                                                 viewableSmartphone={smartphone}
                                                 selectedMediaIndex={selectedMediaIndex}
@@ -357,7 +398,7 @@ const SmartphoneDesktopModal = ({
                                     <div className="w-full bg-transparent lg:w-1/2">
                                         {(!smartphone?.images?.length ||
                                             windowSize.width > 1024) && (
-                                            <div className="mx-auto w-full space-y-4 p-4 md:px-10 lg:pl-6 lg:pr-10">
+                                            <div className="w-full p-4 mx-auto space-y-4 md:px-10 lg:pl-6 lg:pr-10">
                                                 <div className="flex items-center justify-between">
                                                     <span className="text-lg font-medium dark:text-white/80">
                                                         <div>
@@ -400,7 +441,7 @@ const SmartphoneDesktopModal = ({
                                                         {showSmartphoneDesktopActionsDropdown && (
                                                             <div
                                                                 data-smartphone-actions-dropdown
-                                                                className="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg border border-gray-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-deepcharcoal"
+                                                                className="absolute right-0 z-50 w-48 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg top-full dark:border-zinc-800 dark:bg-deepcharcoal"
                                                             >
                                                                 <div className="py-1">
                                                                     <button
@@ -418,7 +459,7 @@ const SmartphoneDesktopModal = ({
                                                                             viewBox="0 0 24 24"
                                                                             strokeWidth={1.5}
                                                                             stroke="currentColor"
-                                                                            className="h-5 w-5"
+                                                                            className="w-5 h-5"
                                                                         >
                                                                             <path
                                                                                 strokeLinecap="round"
@@ -456,7 +497,7 @@ const SmartphoneDesktopModal = ({
                                                                             viewBox="0 0 24 24"
                                                                             strokeWidth={1.5}
                                                                             stroke="currentColor"
-                                                                            className="h-5 w-5"
+                                                                            className="w-5 h-5"
                                                                         >
                                                                             <path
                                                                                 strokeLinecap="round"
@@ -481,10 +522,10 @@ const SmartphoneDesktopModal = ({
 
                                                 <div className="space-y-3">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-md text-gray-900 dark:text-white/80">
+                                                        <span className="text-gray-900 text-md dark:text-white/80">
                                                             <strong>Payment :</strong>
                                                         </span>
-                                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 text-xs font-bold text-white">
+                                                        <div className="flex items-center justify-center w-8 h-8 text-xs font-bold text-white bg-orange-500 rounded-full">
                                                             <svg
                                                                 className="size-10"
                                                                 viewBox="0.004 0 64 64"
@@ -512,7 +553,7 @@ const SmartphoneDesktopModal = ({
                                                                 </g>
                                                             </svg>
                                                         </div>
-                                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 text-xs font-bold text-white">
+                                                        <div className="flex items-center justify-center w-8 h-8 text-xs font-bold text-white bg-orange-500 rounded-full">
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
                                                                 fill="none"
@@ -530,7 +571,7 @@ const SmartphoneDesktopModal = ({
                                                         </div>
                                                     </div>
 
-                                                    <div className="text-md text-gray-900 dark:text-white/80">
+                                                    <div className="text-gray-900 text-md dark:text-white/80">
                                                         <div>
                                                             <strong>Shipping :</strong> EUR 24.99
                                                             (approx. KRW 41,515.74) KGB
@@ -542,11 +583,11 @@ const SmartphoneDesktopModal = ({
                                                         </div>
                                                     </div>
 
-                                                    <div className="text-md text-gray-900 dark:text-white/80">
+                                                    <div className="text-gray-900 text-md dark:text-white/80">
                                                         <strong>Location :</strong> Korea
                                                     </div>
 
-                                                    <div className="text-md text-gray-900 dark:text-white/80">
+                                                    <div className="text-gray-900 text-md dark:text-white/80">
                                                         <strong>Return & Exchange Policy :</strong>
                                                         <button className="ml-1 font-bold text-black underline hover:text-gray-800 dark:text-gray-400">
                                                             See details
@@ -555,7 +596,7 @@ const SmartphoneDesktopModal = ({
                                                 </div>
 
                                                 <div className="w-full max-w-[300px] space-y-4">
-                                                    <div className="my-5 flex justify-start">
+                                                    <div className="flex justify-start my-5">
                                                         <StockBadge smartphone={smartphone} />
                                                     </div>
 
@@ -574,7 +615,7 @@ const SmartphoneDesktopModal = ({
                                                         />
                                                     </div>
 
-                                                    <div className="flex w-full items-center justify-between">
+                                                    <div className="flex items-center justify-between w-full">
                                                         <span className="text-sm text-gray-900 dark:text-white">
                                                             Quantity
                                                         </span>
@@ -586,10 +627,10 @@ const SmartphoneDesktopModal = ({
                                                                         Math.max(1, quantity - 1),
                                                                     )
                                                                 }
-                                                                className="flex h-8 w-8 items-center justify-center rounded-l border border-r-0 border-gray-300 bg-white text-gray-600 hover:bg-gray-50 focus:outline-none dark:border-gray-600 dark:bg-deepcharcoal dark:text-white/90 dark:hover:bg-zinc-900"
+                                                                className="flex items-center justify-center w-8 h-8 text-gray-600 bg-white border border-r-0 border-gray-300 rounded-l hover:bg-gray-50 focus:outline-none dark:border-gray-600 dark:bg-deepcharcoal dark:text-white/90 dark:hover:bg-zinc-900"
                                                             >
                                                                 <svg
-                                                                    className="h-3 w-3"
+                                                                    className="w-3 h-3"
                                                                     fill="none"
                                                                     stroke="currentColor"
                                                                     viewBox="0 0 24 24"
@@ -617,17 +658,17 @@ const SmartphoneDesktopModal = ({
                                                                         ),
                                                                     )
                                                                 }
-                                                                className="h-8 w-12 border-b border-t border-gray-300 bg-white px-2 text-center text-sm focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-deepcharcoal dark:text-white/90"
+                                                                className="w-12 h-8 px-2 text-sm text-center bg-white border-t border-b border-gray-300 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-deepcharcoal dark:text-white/90"
                                                             />
                                                             <button
                                                                 type="button"
                                                                 onClick={() =>
                                                                     setQuantity(quantity + 1)
                                                                 }
-                                                                className="flex h-8 w-8 items-center justify-center rounded-r border border-l-0 border-gray-300 bg-white text-gray-600 hover:bg-gray-50 focus:outline-none dark:border-gray-600 dark:bg-deepcharcoal dark:text-white/90 dark:hover:bg-zinc-900"
+                                                                className="flex items-center justify-center w-8 h-8 text-gray-600 bg-white border border-l-0 border-gray-300 rounded-r hover:bg-gray-50 focus:outline-none dark:border-gray-600 dark:bg-deepcharcoal dark:text-white/90 dark:hover:bg-zinc-900"
                                                             >
                                                                 <svg
-                                                                    className="h-3 w-3"
+                                                                    className="w-3 h-3"
                                                                     fill="none"
                                                                     stroke="currentColor"
                                                                     viewBox="0 0 24 24"
@@ -652,7 +693,7 @@ const SmartphoneDesktopModal = ({
                             </div>
                         </div>
 
-                        <div className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-7xl bg-black p-20 py-4 text-white">
+                        <div className="fixed bottom-0 left-0 right-0 z-50 p-20 py-4 mx-auto text-white bg-black max-w-7xl">
                             <div className="flex items-center justify-between">
                                 <div className="flex flex-col">
                                     <div className="text-xl font-bold lg:text-2xl">
@@ -678,7 +719,7 @@ const SmartphoneDesktopModal = ({
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={1.5}
                                                 stroke="currentColor"
-                                                className="h-4 w-4"
+                                                className="w-4 h-4"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -690,7 +731,7 @@ const SmartphoneDesktopModal = ({
                                         </button>
 
                                         <button
-                                            className="rounded-lg bg-white px-4 py-3 text-sm text-black transition-colors hover:bg-gray-200 lg:px-6 lg:text-base"
+                                            className="px-4 py-3 text-sm text-black transition-colors bg-white rounded-lg hover:bg-gray-200 lg:px-6 lg:text-base"
                                             onClick={() => {
                                                 router.visit(route('register'));
                                             }}
@@ -763,15 +804,20 @@ const SmartphoneDesktopModal = ({
 
                                         <button
                                             disabled={!isInStock}
-                                            className={`px-4 py-3 text-sm ${!isInStock && 'pointer-events-none opacity-50'} rounded-lg bg-white text-black transition-colors hover:bg-gray-200 lg:px-6 lg:text-base`}
+                                            className={`flex gap-2 px-4 py-3 text-sm ${!isInStock && 'pointer-events-none opacity-50'} rounded-lg bg-white text-black transition-colors hover:bg-gray-200 lg:px-6 lg:text-base`}
                                             onClick={() => {
-                                                console.log('Buy now:', {
-                                                    smartphone,
-                                                    selectedColor,
+                                                handleBuyNow(
+                                                    'smartphone',
+                                                    smartphone.id,
                                                     quantity,
-                                                });
+                                                    selectedColor,
+                                                    smartphone.inventory_items_count,
+                                                );
                                             }}
                                         >
+                                            {buyNowProcessing && (
+                                                <Spinner customSize={'size-5 text-black'} />
+                                            )}
                                             Buy now
                                         </button>
                                     </div>
@@ -786,27 +832,23 @@ const SmartphoneDesktopModal = ({
             {showQrCode &&
                 createPortal(
                     <div className="fixed inset-0 z-[100] flex items-center justify-center">
+                        {/* Overlay */}
                         <div
                             className="fixed inset-0 bg-black/40 backdrop-blur-sm"
                             onClick={() => setShowQrCode(false)}
                         ></div>
 
+                        {/* Modal */}
                         <div
                             role="dialog"
                             aria-modal="true"
                             aria-labelledby="qrCodeTitle"
-                            className={`relative z-[101] w-full max-w-sm rounded-2xl bg-white/50 p-6 text-gray-900 shadow-xl sm:max-w-md`}
+                            className={`relative z-[101] w-full max-w-[200px] rounded-2xl bg-white pt-3 text-gray-900 shadow-xl dark:bg-deepcharcoal lg:max-w-sm lg:p-6`}
                         >
-                            <div className="flex justify-end">
-                                <button onClick={() => setShowQrCode(false)}>✕</button>
-                            </div>
                             <div className="text-center">
-                                <h2 id="qrCodeTitle" className="mb-3 text-base font-semibold">
-                                    Scan QR Code
-                                </h2>
                                 <div className="flex justify-center">
                                     <QRCode
-                                        className="size-48 sm:size-52 md:size-60"
+                                        className={`${windowSize.width > 1024 ? 'size-30' : 'size-28'} border-2`}
                                         value={route('home') + '/?m-slug=' + smartphone?.slug}
                                         viewBox="0 0 256 256"
                                         level="H"
@@ -815,6 +857,13 @@ const SmartphoneDesktopModal = ({
                                         fgColor="#000000"
                                     />
                                 </div>
+
+                                <h2
+                                    id="qrCodeTitle"
+                                    className="my-3 text-base font-semibold dark:text-white/80"
+                                >
+                                    Scan QR Code
+                                </h2>
                             </div>
                         </div>
                     </div>,

@@ -3,7 +3,7 @@ import SuccessToastModal from './SuccessToastModal';
 import ErrorToastModal from './ErrorToastModal';
 import InfoToastModal from './InfoToastModal';
 
-const Toast = ({ flash }) => {
+const Toast = ({ flash, onClosed }) => {
     const [showSuccess, setShowSuccess] = useState(false);
     const [showError, setShowError] = useState(false);
     const [showInfo, setShowInfo] = useState(false);
@@ -28,14 +28,17 @@ const Toast = ({ flash }) => {
 
     const handleSuccessClose = () => {
         setShowSuccess(false);
+        if (onClosed) onClosed('success');
     };
 
     const handleErrorClose = () => {
         setShowError(false);
+        if (onClosed) onClosed('error');
     };
 
     const handleInfoClose = () => {
         setShowInfo(false);
+        if (onClosed) onClosed('info');
     };
 
     return (

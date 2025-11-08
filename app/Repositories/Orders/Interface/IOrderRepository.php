@@ -27,4 +27,19 @@ interface IOrderRepository
     public function customerOrderInvoiceByOrderNo(Request $request, string $order_no);
 
     public function ShippingOrderInvoice(Request $request, string $order_no);
+
+    public function placeOrderFromWebsite(Request $request);
+
+    public function getCustomerOrders(Request $request);
+
+    public function getCustomerSingleOrder(string $order_no);
+
+    public function uploadPaymentProof(Request $request);
+
+    public function cryptoPaymentSuccess(Request $request);
+
+    // Not Needed  Becasue Instead Of Using IPN Now I am Using Background Job For Checking Status
+    // public function cryptoPaymentIPN(Request $request);
+
+    public function markPackagingVideoViewed(Request $request);
 }

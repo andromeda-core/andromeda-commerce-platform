@@ -1267,4 +1267,100 @@ class SettingController extends Controller
         return back()->with('success', $updated['message']);
 
     }
+
+    public function NOWPaymentSettingsIndex()
+    {
+
+        $now_payment_settings = $this->setting->getAllNOWPaymentSettings();
+
+        return Inertia::render('Dashboard/Settings/NowPaymentSettings/index', compact('now_payment_settings'));
+    }
+
+    public function NOWPaymentSettingCreate()
+    {
+        return Inertia::render('Dashboard/Settings/NowPaymentSettings/create');
+    }
+
+    public function NOWPaymentSettingStore(Request $request)
+    {
+        $response = $this->setting->storeNOWPaymentSetting($request);
+        if ($response['status'] === false) {
+            return back()->with('error', $response['message']);
+        }
+
+        return to_route('dashboard.settings.now-payment-settings.index')->with('success', $response['message']);
+    }
+
+    public function NOWPaymentSettingEdit(?string $id = null)
+    {
+
+        if (empty($id)) {
+            return to_route('dashboard.settings.now-payment-settings.index')->with('error', 'Now Payment Setting ID not found');
+        }
+
+        $now_payment_setting = $this->setting->getSingleNOWPayemntSetting($id);
+
+        if (empty($now_payment_setting)) {
+            return to_route('dashboard.settings.now-payment-settings.index')->with('error', 'Now Payment Setting Not Found');
+        }
+
+        return Inertia::render('Dashboard/Settings/NowPaymentSettings/edit', compact('now_payment_setting'));
+    }
+
+    public function NOWPaymentSettingUpdate(Request $request, ?string $id = null)
+    {
+
+        if (empty($id)) {
+            return to_route('dashboard.settings.now-payment-settings.index')->with('error', 'Now Payment Setting ID not found');
+        }
+
+        $updated = $this->setting->updateNOWPaymentSetting($request, $id);
+
+        if ($updated['status'] === false) {
+            return back()->with('error', $updated['message']);
+        }
+
+        return to_route('dashboard.settings.now-payment-settings.index')->with('success', $updated['message']);
+    }
+
+    public function NOWPaymentSettingToggleStatus(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.now-payment-settings.index')->with('error', 'Now Payment Setting ID not found');
+        }
+
+        $response = $this->setting->toggleNOWPaymentSettingStatus($id);
+        if ($response['status'] === false) {
+            return back()->with('error', $response['message']);
+        }
+
+        return back()->with('success', $response['message']);
+    }
+
+    public function NOWPaymentSettingDestroy(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.now-payment-settings.index')->with('error', 'Now Payment Setting ID not found');
+        }
+
+        $deleted = $this->setting->destroyNOWPaymentSetting($id);
+
+        if ($deleted['status'] === false) {
+            return back()->with('error', $deleted['message']);
+        }
+
+        return back()->with('success', $deleted['message']);
+
+    }
+
+    public function NOWPaymentSettingDestroyBySelection(Request $request)
+    {
+        $deleted = $this->setting->destroyNOWPaymentSettingBySelection($request);
+        if ($deleted['status'] === false) {
+            return back()->with('error', $deleted['message']);
+        }
+
+        return back()->with('success', $deleted['message']);
+
+    }
 }

@@ -7,6 +7,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import PrimaryButton from '@/Components/PrimaryButton';
 import Swal from 'sweetalert2';
 import Toast from '@/Components/Toast';
+import Placeholder from 'asset/assets/images/product/placeholder.jpg';
+import getContrastingColor from '@/Hooks/useColorContraster';
 
 export default function show({ order }) {
     // Currency
@@ -17,11 +19,14 @@ export default function show({ order }) {
     const [ValidationErrors, setValidationErrors] = useState({});
     const getStatusColor = (status) => {
         const colors = {
-            pending: 'bg-yellow-500 text-yellow-800 ',
+            pending: 'bg-yellow-500 text-white ',
             paid: 'bg-blue-500 text-white ',
             shipped: 'bg-pink-500 text-white ',
             arrived_locally: 'bg-stone-500 text-white ',
             delivered: 'bg-green-500 text-white ',
+            awaiting_payment: 'bg-indigo-500 text-white ',
+            failed: 'bg-red-500 text-white ',
+            expired: 'bg-gray-500 text-white ',
         };
         return colors[status] || colors.pending;
     };
@@ -74,6 +79,7 @@ export default function show({ order }) {
     const [error, setError] = useState(null);
     const [availableDevices, setAvailableDevices] = useState([]);
     const [useFrontCamera, setUseFrontCamera] = useState(false);
+    const [videoIsntBeignUploadedYetOnAWS, setVideoIsntBeignUploadedYetOnAWS] = useState(false);
 
     const videoRef = useRef(null);
 
@@ -362,6 +368,16 @@ export default function show({ order }) {
         }
     }, [package_video]);
 
+    useEffect(() => {
+        if (videoIsntBeignUploadedYetOnAWS) {
+            const timer = setTimeout(() => {
+                setVideoIsntBeignUploadedYetOnAWS(false);
+            }, 5000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [videoIsntBeignUploadedYetOnAWS]);
+
     return (
         <>
             <AuthenticatedLayout>
@@ -507,6 +523,9 @@ export default function show({ order }) {
                                                                         ?.smartphone_image_urls[0]
                                                                 }
                                                                 alt="Smartphone"
+                                                                onError={(e) =>
+                                                                    (e.target.src = Placeholder)
+                                                                }
                                                                 className="h-[100px] w-[100px] rounded-lg object-cover"
                                                             />
                                                             <div className="min-w-0">
@@ -518,6 +537,19 @@ export default function show({ order }) {
                                                                     UPC/EAN:{' '}
                                                                     {item?.smartphone?.upc || 'N/A'}
                                                                 </p>
+
+                                                                <span
+                                                                    className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium"
+                                                                    style={{
+                                                                        backgroundColor:
+                                                                            item?.color?.code,
+                                                                        color: getContrastingColor(
+                                                                            item?.color?.code,
+                                                                        ),
+                                                                    }}
+                                                                >
+                                                                    {item?.color?.name}
+                                                                </span>
                                                             </div>
                                                         </div>
 
@@ -952,10 +984,18 @@ export default function show({ order }) {
                                                                     {/* Action Buttons */}
                                                                     <div className="flex justify-center space-x-2">
                                                                         <button
-                                                                            onClick={() =>
-                                                                                (window.location.href =
-                                                                                    item.package_video)
-                                                                            }
+                                                                            onClick={() => {
+                                                                                if (
+                                                                                    !item.package_video
+                                                                                ) {
+                                                                                    setVideoIsntBeignUploadedYetOnAWS(
+                                                                                        true,
+                                                                                    );
+                                                                                } else {
+                                                                                    window.location.href =
+                                                                                        item.package_video;
+                                                                                }
+                                                                            }}
                                                                             className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-600 transition-colors hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
                                                                         >
                                                                             <svg
@@ -1357,42 +1397,136 @@ export default function show({ order }) {
                                             <div className="grid grid-cols-1 gap-3 text-sm">
                                                 <div className="flex justify-between">
                                                     <span className="mx-3 text-gray-600 dark:text-white/90">
-                                                        Account No:
+                                                        Bank Name:
+                                                    </span>
+                                                    <span className="min-w-0 whitespace-normal break-all font-medium text-gray-900 dark:text-white/90">
+                                                        {order?.order_items[0]?.smartphone?.category
+                                                            ?.distributor?.bank_name || 'N/A'}
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex justify-between">
+                                                    <span className="mx-3 text-gray-600 dark:text-white/90">
+                                                        Bank Account Name :
+                                                    </span>
+                                                    <span className="min-w-0 whitespace-normal break-all font-medium text-gray-900 dark:text-white/90">
+                                                        {order?.order_items[0]?.smartphone?.category
+                                                            ?.distributor?.bank_account_name ||
+                                                            'N/A'}
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex justify-between">
+                                                    <span className="mx-3 text-gray-600 dark:text-white/90">
+                                                        Bank Account No:
                                                     </span>
                                                     <span className="min-w-0 whitespace-normal break-all font-medium text-gray-900 dark:text-white/90">
                                                         {order?.order_items[0]?.smartphone?.category
                                                             ?.distributor?.bank_account_no || 'N/A'}
                                                     </span>
                                                 </div>
+
+                                                <div className="flex justify-between">
+                                                    <span className="mx-3 text-gray-600 dark:text-white/90">
+                                                        IBAN:
+                                                    </span>
+                                                    <span className="min-w-0 whitespace-normal break-all font-medium text-gray-900 dark:text-white/90">
+                                                        {order?.order_items[0]?.smartphone?.category
+                                                            ?.distributor?.iban || 'N/A'}
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex justify-between">
+                                                    <span className="mx-3 text-gray-600 dark:text-white/90">
+                                                        SWIFT CODE:
+                                                    </span>
+                                                    <span className="min-w-0 whitespace-normal break-all font-medium text-gray-900 dark:text-white/90">
+                                                        {order?.order_items[0]?.smartphone?.category
+                                                            ?.distributor?.swift_code || 'N/A'}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
 
                                         {/* Payment Method */}
-                                        {order.status !== 'pending' && (
-                                            <div className="my-3 flex items-center space-x-3">
-                                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
-                                                    <svg
-                                                        className="h-4 w-4 text-green-600"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        viewBox="0 0 24 24"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth="2"
-                                                            d="M5 13l4 4L19 7"
-                                                        />
-                                                    </svg>
-                                                </div>
+                                        <div className="my-4 flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-deepcharcoal">
+                                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                                Payment Method
+                                            </span>
 
-                                                <div>
-                                                    <p className="text-sm font-medium text-gray-900 dark:text-white/90">
-                                                        Bank Transfered
-                                                    </p>
-                                                </div>
+                                            <div className="flex items-center space-x-2">
+                                                {order.payment_method === 'bank_transfer' && (
+                                                    <>
+                                                        <svg
+                                                            className="h-5 w-5 text-blue-600 dark:text-blue-400"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                                                            />
+                                                        </svg>
+                                                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                                                            Bank Transfer
+                                                        </span>
+                                                    </>
+                                                )}
+
+                                                {order.payment_method === 'crypto' && (
+                                                    <>
+                                                        <svg
+                                                            className="h-5 w-5 text-orange-600 dark:text-orange-400"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                            />
+                                                        </svg>
+                                                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                                                            Crypto Currency
+                                                        </span>
+                                                    </>
+                                                )}
+
+                                                {order.payment_method === 'points' && (
+                                                    <>
+                                                        <svg
+                                                            className="h-5 w-5 text-green-600 dark:text-green-400"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                                                            />
+                                                        </svg>
+                                                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                                                            Reward Points
+                                                        </span>
+                                                    </>
+                                                )}
+
+                                                {!['bank', 'crypto', 'points'].includes(
+                                                    order.payment_method,
+                                                ) && (
+                                                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                        N/A
+                                                    </span>
+                                                )}
                                             </div>
-                                        )}
+                                        </div>
 
                                         {/* Cash Collected Status */}
                                         {order.is_cash_collected == 1 && (
@@ -1475,6 +1609,47 @@ export default function show({ order }) {
                             <div className="text-center">
                                 <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                     Please Wait While We Are Uploading Package Video
+                                </h2>
+
+                                <div className="mt-5 flex items-center justify-center">
+                                    <div role="status">
+                                        <svg
+                                            aria-hidden="true"
+                                            className="h-8 w-8 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"
+                                            viewBox="0 0 100 101"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                                                fill="currentColor"
+                                            />
+                                            <path
+                                                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                                                fill="currentFill"
+                                            />
+                                        </svg>
+                                        <span className="sr-only">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {videoIsntBeignUploadedYetOnAWS && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                        <div
+                            className="fixed inset-0 backdrop-blur-[32px]"
+                            onClick={() => setVideoIsntBeignUploadedYetOnAWS(false)}
+                        ></div>
+
+                        {/* Modal content */}
+                        <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
+                            <div className="text-center">
+                                <h2 className="text-lg font-medium text-gray-800 dark:text-white">
+                                    Please Wait The Package Recording Is Processing In Backend
+                                    Please Refresh Page After 2 to 3 minutes
                                 </h2>
 
                                 <div className="mt-5 flex items-center justify-center">

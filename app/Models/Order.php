@@ -30,6 +30,8 @@ class Order extends Model
         'courier_invoice',
         'payment_proof',
         'is_cash_collected',
+        'payment_method',
+        'np_id',
     ];
 
     //    Attributes
@@ -76,11 +78,12 @@ class Order extends Model
     {
         static::created(function ($order) {
             $order->order_no = 'ORD-'.str_pad($order->id, 5, '0', STR_PAD_LEFT);
+            $currency = Cache::get('currency');
 
             $reward_rate = null;
             $total_points = null;
 
-            if (! empty($order->collaborator_id)) {
+            if (! empty($order->collaborator_id) && $order->status === 'paid') {
                 if (empty($order->collaborator->point_accumulation_rate)) {
                     $reward_rate = RewardSetting::first()->reward_rate;
                     $total_points = $order->amount * $reward_rate / 100;
@@ -107,8 +110,10 @@ class Order extends Model
                 dispatch(new CollaboratorCommissionSet($order));
             }
 
-            if (Cache::has('smtp_config') && $order->status === 'pending') {
-                $order->customer->user->notify(new OrderStatusPendingNotification($order));
+            if (Cache::has('smtp_config')) {
+                if ($order->status === 'pending') {
+                    $order->customer->user->notify(new OrderStatusPendingNotification($order, $currency));
+                }
             }
 
             // Distributor Commission Set Event
@@ -133,8 +138,41 @@ class Order extends Model
                 return;
             }
 
-            if ($order->status === 'paid') {
-                $order->customer->user->notify(new OrderStatusPaidNotification($order));
+            $currency = Cache::get('currency');
+
+            if ($order->status === 'paid' && empty($order->np_id)) {
+                $order->customer->user->notify(new OrderStatusPaidNotification($order, $currency));
+
+                $reward_rate = null;
+                $total_points = null;
+
+                if (! empty($order->collaborator_id) && $order->status === 'paid') {
+                    if (empty($order->collaborator->point_accumulation_rate)) {
+                        $reward_rate = RewardSetting::first()->reward_rate;
+                        $total_points = $order->amount * $reward_rate / 100;
+                    } else {
+                        $reward_rate = $order->collaborator->point_accumulation_rate;
+                        $total_points = $order->amount * $reward_rate / 100;
+                    }
+
+                    $user_id = $order->customer->user_id;
+
+                    $reward_point = RewardPoint::where('user_id', $user_id)->first();
+
+                    if (empty($reward_point)) {
+                        RewardPoint::create([
+                            'user_id' => $user_id,
+                            'points' => $total_points,
+                            'expires_at' => now()->addYears(5),
+                        ]);
+                    } else {
+                        $reward_point->points += round($total_points);
+                        $reward_point->save();
+                    }
+                    // Collaborator Commission Set Event
+                    dispatch(new CollaboratorCommissionSet($order));
+                }
+
             } elseif ($order->status === 'shipped') {
                 $order->customer->user->notify(new OrderStatusShippedNotification($order));
             } elseif ($order->status === 'arrived_locally') {

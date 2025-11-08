@@ -18,8 +18,12 @@ export default function edit({ distributor }) {
         password_confirmation: '',
         is_active: distributor?.user?.is_active ?? 1,
         address: distributor?.address || '',
-        bank_account_no: distributor?.bank_account_no || '',
         commission_rate: distributor?.commission_rate ?? '',
+        bank_name: distributor?.bank_name || '',
+        bank_account_name: distributor?.bank_account_name || '',
+        bank_account_no: distributor?.bank_account_no || '',
+        iban: distributor?.iban || '',
+        swift_code: distributor?.swift_code || '',
     });
 
     const [togglePassword, setTogglePassword] = useState(false);
@@ -115,6 +119,36 @@ export default function edit({ distributor }) {
                                                 </div>
 
                                                 <Input
+                                                    InputName={'Distributor Bank Name'}
+                                                    Error={errors.bank_name}
+                                                    Value={data.bank_name}
+                                                    Action={(e) =>
+                                                        setData('bank_name', e.target.value)
+                                                    }
+                                                    Placeholder={'Enter Distributor Bank Name'}
+                                                    Id={'bank_name'}
+                                                    Name={'bank_name'}
+                                                    Type={'text'}
+                                                    Required={true}
+                                                />
+
+                                                <Input
+                                                    InputName={'Distributor Bank Account Name'}
+                                                    Error={errors.bank_account_name}
+                                                    Value={data.bank_account_name}
+                                                    Action={(e) =>
+                                                        setData('bank_account_name', e.target.value)
+                                                    }
+                                                    Placeholder={
+                                                        'Enter Distributor Bank Account Name'
+                                                    }
+                                                    Id={'bank_account_name'}
+                                                    Name={'bank_account_name'}
+                                                    Type={'text'}
+                                                    Required={true}
+                                                />
+
+                                                <Input
                                                     InputName={'Distributor Bank Account No'}
                                                     Error={errors.bank_account_no}
                                                     Value={data.bank_account_no}
@@ -130,32 +164,31 @@ export default function edit({ distributor }) {
                                                     Required={true}
                                                 />
 
-                                                <div>
-                                                    <label
-                                                        htmlFor="address"
-                                                        className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
-                                                    >
-                                                        Distributor Address{' '}
-                                                        <span className="text-red-500 dark:text-white">
-                                                            *
-                                                        </span>
-                                                    </label>
-                                                    <textarea
-                                                        id="address"
-                                                        rows="3"
-                                                        className="dark:bg-dark-900 shadow-theme-xs focus:ring-3 focus:outline-hidden mb-2 w-full min-w-0 max-w-full rounded-lg border border-gray-300 bg-transparent py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-blue-300 focus:ring-blue-500/10 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-blue-800"
-                                                        placeholder="Enter Distributor Address here..."
-                                                        value={data.address}
-                                                        onChange={(e) =>
-                                                            setData('address', e.target.value)
-                                                        }
-                                                    ></textarea>
-                                                    {errors.address && (
-                                                        <span className="ml-2 text-red-500 dark:text-white">
-                                                            {errors.address}
-                                                        </span>
-                                                    )}
-                                                </div>
+                                                <Input
+                                                    InputName={'IBAN'}
+                                                    Error={errors.iban}
+                                                    Value={data.iban}
+                                                    Action={(e) => setData('iban', e.target.value)}
+                                                    Placeholder={'Enter IBAN'}
+                                                    Id={'iban'}
+                                                    Name={'iban'}
+                                                    Type={'text'}
+                                                    Required={true}
+                                                />
+
+                                                <Input
+                                                    InputName={'SWIFT CODE'}
+                                                    Error={errors.swift_code}
+                                                    Value={data.swift_code}
+                                                    Action={(e) =>
+                                                        setData('swift_code', e.target.value)
+                                                    }
+                                                    Placeholder={'Enter SWIFT CODE'}
+                                                    Id={'swift_code'}
+                                                    Name={'swift_code'}
+                                                    Type={'text'}
+                                                    Required={true}
+                                                />
 
                                                 <Input
                                                     InputName={'Distributor Password'}
@@ -221,6 +254,33 @@ export default function edit({ distributor }) {
                                                     />
                                                 </div>
 
+                                                <div>
+                                                    <label
+                                                        htmlFor="address"
+                                                        className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
+                                                    >
+                                                        Distributor Address{' '}
+                                                        <span className="text-red-500 dark:text-white">
+                                                            *
+                                                        </span>
+                                                    </label>
+                                                    <textarea
+                                                        id="address"
+                                                        rows="3"
+                                                        className="dark:bg-dark-900 shadow-theme-xs focus:ring-3 focus:outline-hidden mb-2 w-full min-w-0 max-w-full rounded-lg border border-gray-300 bg-transparent py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-blue-300 focus:ring-blue-500/10 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-blue-800"
+                                                        placeholder="Enter Distributor Address here..."
+                                                        value={data.address}
+                                                        onChange={(e) =>
+                                                            setData('address', e.target.value)
+                                                        }
+                                                    ></textarea>
+                                                    {errors.address && (
+                                                        <span className="ml-2 text-red-500 dark:text-white">
+                                                            {errors.address}
+                                                        </span>
+                                                    )}
+                                                </div>
+
                                                 <SelectInput
                                                     InputName={'Active Status'}
                                                     Id={'is_active'}
@@ -256,6 +316,10 @@ export default function edit({ distributor }) {
                                                     data.phone.trim() === '' ||
                                                     data.address.trim() === '' ||
                                                     data.bank_account_no.trim() === '' ||
+                                                    data.bank_name.trim() === '' ||
+                                                    data.bank_account_name.trim() === '' ||
+                                                    data.iban.trim() === '' ||
+                                                    data.swift_code.trim() === '' ||
                                                     (data.password.trim() !== '' &&
                                                         data.password_confirmation.trim() === '') ||
                                                     (data.password.trim() === '' &&

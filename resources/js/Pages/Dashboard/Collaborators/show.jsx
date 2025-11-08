@@ -142,14 +142,53 @@ export default function edit({ collaborator }) {
                                                 />
                                             </div>
 
-                                            {/* Bank Account */}
+                                            {/* Bank Account Name */}
+                                            <div>
+                                                <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
+                                                    Bank Account Name
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={collaborator?.bank_account_name ?? 'N/A'}
+                                                    readOnly
+                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
+                                                />
+                                            </div>
+
+                                            {/* Bank Account NO */}
                                             <div>
                                                 <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
                                                     Bank Account Number
                                                 </label>
                                                 <input
                                                     type="text"
-                                                    value={collaborator?.bank_account_no}
+                                                    value={collaborator?.bank_account_no ?? 'N/A'}
+                                                    readOnly
+                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
+                                                />
+                                            </div>
+
+                                            {/* Bank Account IBAN */}
+                                            <div>
+                                                <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
+                                                    Bank Account IBAN
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={collaborator?.iban ?? 'N/A'}
+                                                    readOnly
+                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
+                                                />
+                                            </div>
+
+                                            {/* Bank Account SWIFT CODE */}
+                                            <div>
+                                                <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
+                                                    Bank Account SWIFT CODE
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={collaborator?.swift_code ?? 'N/A'}
                                                     readOnly
                                                     className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
