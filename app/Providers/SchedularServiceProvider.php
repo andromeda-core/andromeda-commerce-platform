@@ -27,6 +27,6 @@ class SchedularServiceProvider extends ServiceProvider
         $schedule->command(CheckRewardPointExpiry::class)->daily();
         $schedule->command(ClearPreviousOrderPackageRecordings::class)->daily();
         $schedule->command(NOWPaymentInvoiceStatusCheck::class)->everyMinute();
-        $schedule->command(NOWPaymentAutoMarkingOrderFailedIfNotPaid::class)->everyTenMinutes();
+        $schedule->command(NOWPaymentAutoMarkingOrderFailedIfNotPaid::class)->everyMinute();
     }
 }
