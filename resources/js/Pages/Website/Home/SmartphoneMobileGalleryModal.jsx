@@ -171,7 +171,11 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
             const alreadyExists = cart_items.some((item) => item.smartphone_id === item_id);
 
             if (alreadyExists) {
-                router.visit(route('website.checkout.index'));
+                router.visit(route('website.checkout.index'), {
+                    onFinish: () => {
+                        setBuyNowProcessing(false);
+                    },
+                });
                 setBuyNowProcessing(false);
                 return;
             }
@@ -208,14 +212,21 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                 color: color,
             };
 
-            router.post(route('website.carts.buy-now'), { ...data });
+            router.post(
+                route('website.carts.buy-now'),
+                { ...data },
+                {
+                    onFinish: () => {
+                        setBuyNowProcessing(false);
+                    },
+                },
+            );
         } catch (error) {
             setBuyNowProcessing(false);
             setShowErrorMessage(true);
             setErrorMessage(error.message);
         }
     };
-
     // Checking Stock
     const [isInStock, setIsInStock] = useState(smartphone?.inventory_items_count > 0);
     const StockBadge = ({ smartphone }) => {
