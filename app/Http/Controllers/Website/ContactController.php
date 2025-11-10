@@ -19,8 +19,12 @@ class ContactController extends Controller
         $validated_req = $request->validate([
             'name' => ['required', 'string', 'max:255', 'min:3'],
             'email' => ['required', 'email', 'max:255'],
+            'phone' => ['required', 'regex:/^\+\d+$/', 'max:50'],
             'subject' => ['required', 'string', 'max:255', 'min:10'],
             'message' => ['required', 'string', 'max:255', 'min:30'],
+
+        ], [
+            'phone.regex' => 'The Number Accepted With + Country Code - Example: +8801xxxxxxxxx',
         ]);
 
         dispatch(new ContactFormSubmissionJob($validated_req));

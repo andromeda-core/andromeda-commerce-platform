@@ -36,6 +36,7 @@ class NotifyAdminsAboutContactSubmission extends Notification implements ShouldQ
             ->line('A new contact form has been submitted:')
             ->line('**Name:** '.$this->data['name'])
             ->line('**Email:** '.$this->data['email'])
+            ->line('**Phone:** '.$this->data['phone'])
             ->line('**Subject:** '.$this->data['subject'])
             ->line('**Message:**')
             ->line($this->data['message'])

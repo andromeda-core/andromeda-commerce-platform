@@ -163,8 +163,8 @@ const Index = () => {
                                     Send us a Message
                                 </h2>
 
-                                {submitted && (
-                                    <div className="mb-6 rounded-xl border-l-4 border-green-500 bg-green-50 p-4 dark:bg-green-900/20">
+                                {/* {submitted && (
+                                    <div className="p-4 mb-6 border-l-4 border-green-500 rounded-xl bg-green-50 dark:bg-green-900/20">
                                         <div className="flex items-center gap-3">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -172,7 +172,7 @@ const Index = () => {
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={2}
                                                 stroke="currentColor"
-                                                className="h-6 w-6 text-green-600 dark:text-green-400"
+                                                className="w-6 h-6 text-green-600 dark:text-green-400"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -186,7 +186,7 @@ const Index = () => {
                                             </p>
                                         </div>
                                     </div>
-                                )}
+                                )} */}
 
                                 <form onSubmit={handleSubmit} className="space-y-6">
                                     {/* Name */}
