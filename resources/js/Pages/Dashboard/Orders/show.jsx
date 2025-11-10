@@ -1518,7 +1518,7 @@ export default function show({ order }) {
                                                     </>
                                                 )}
 
-                                                {!['bank', 'crypto', 'points'].includes(
+                                                {!['bank_transfer', 'crypto', 'points'].includes(
                                                     order.payment_method,
                                                 ) && (
                                                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">

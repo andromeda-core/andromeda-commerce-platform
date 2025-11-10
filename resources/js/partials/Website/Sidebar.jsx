@@ -61,7 +61,7 @@ const Sidebar = ({
                             isCollapsed ? 'justify-center' : ''
                         }`}
                     >
-                        <div className="flex items-center justify-center w-12 h-12 rounded">
+                        <div className="flex h-12 w-12 items-center justify-center rounded">
                             <div className="block dark:hidden">
                                 <img src={light_logo} alt="Logo" />
                             </div>
@@ -344,12 +344,12 @@ const Sidebar = ({
                                                             My Cart{' '}
                                                             {cartItemsCount > 0 && (
                                                                 <span className="relative ml-auto">
-                                                                    <span className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-indigo-500 rounded-full animate-pulse">
+                                                                    <span className="flex h-6 w-6 animate-pulse items-center justify-center rounded-full bg-indigo-500 text-xs font-bold text-white">
                                                                         {cartItemsCount > 99
                                                                             ? '99+'
                                                                             : cartItemsCount}
                                                                     </span>
-                                                                    <span className="absolute top-0 right-0 block w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></span>
+                                                                    <span className="absolute right-0 top-0 block h-2 w-2 animate-bounce rounded-full bg-indigo-400"></span>
                                                                 </span>
                                                             )}
                                                         </Link>
@@ -510,8 +510,8 @@ const Sidebar = ({
                                             </li>
 
                                             <li>
-                                                <a
-                                                    href="#"
+                                                <Link
+                                                    href={route('website.contact.index')}
                                                     data-sidebar-link="true"
                                                     className={`menu-item-inactive flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                                 >
@@ -529,8 +529,8 @@ const Sidebar = ({
                                                             d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"
                                                         />
                                                     </svg>
-                                                    Help
-                                                </a>
+                                                    Contact Us
+                                                </Link>
                                             </li>
 
                                             <li ref={darkModeButtonRef}>

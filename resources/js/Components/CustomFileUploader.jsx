@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import Toast from './Toast';
 
 export default function CustomFileUploader({
     onFileSelect,
@@ -16,6 +17,9 @@ export default function CustomFileUploader({
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef(null);
     const dropZoneRef = useRef(null);
+
+    const [infoMessage, setInfoMessage] = useState(null);
+    const [showInfoMessage, setShowInfoMessage] = useState(false);
 
     // Get file type name for display
     const getFileTypeName = () => {
@@ -40,14 +44,17 @@ export default function CustomFileUploader({
         });
 
         if (!isValidType) {
-            alert(`Please select a valid file type: ${getFileTypeName()}`);
+            setInfoMessage(`Please select a valid file type: ${getFileTypeName()}`);
+            setShowInfoMessage(true);
+
             return false;
         }
 
         // Validate file size
         if (file.size > maxSize) {
             const maxSizeMB = (maxSize / 1024 / 1024).toFixed(2);
-            alert(`File size must be less than ${maxSizeMB}MB`);
+            setInfoMessage(`File size must be less than ${maxSizeMB}MB`);
+            setShowInfoMessage(true);
             return false;
         }
 
@@ -125,6 +132,18 @@ export default function CustomFileUploader({
 
     return (
         <div className={className}>
+            {showInfoMessage && infoMessage && (
+                <Toast
+                    flash={{ info: infoMessage }}
+                    onClosed={(type) => {
+                        if (type === 'info') {
+                            setInfoMessage(null);
+                            setShowInfoMessage(false);
+                        }
+                    }}
+                />
+            )}
+
             {/* Hidden file input */}
             <input
                 ref={fileInputRef}

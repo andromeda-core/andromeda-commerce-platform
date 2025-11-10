@@ -101,9 +101,7 @@ export default function Input({
                 )}
             </div>
 
-            <div className="h-5">
-                {Error && <p className="mt-1.5 text-red-500 dark:text-white">{Error}</p>}
-            </div>
+            <div className="h-5">{Error && <p className="text-sm text-red-500">{Error}</p>}</div>
         </div>
     );
 }

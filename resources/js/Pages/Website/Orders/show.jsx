@@ -361,7 +361,7 @@ export default function OrderView({ order }) {
                                         </div>
                                     </div>
                                     <Link
-                                        href="#"
+                                        href={route('website.contact.index')}
                                         className="flex-shrink-0 whitespace-nowrap rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-amber-700"
                                     >
                                         Contact Support
@@ -1064,7 +1064,7 @@ export default function OrderView({ order }) {
                                     order.
                                 </p>
                                 <Link
-                                    href="#"
+                                    href={route('website.contact.index')}
                                     className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-indigo-500"
                                 >
                                     <svg

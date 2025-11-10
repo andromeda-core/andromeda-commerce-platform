@@ -26,6 +26,7 @@ use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\Website\BookmarkController as WebsiteBookmarkController;
 use App\Http\Controllers\Website\CartController;
 use App\Http\Controllers\Website\CheckoutController;
+use App\Http\Controllers\Website\ContactController;
 use App\Http\Controllers\Website\DataDeletionRequestController as WebsiteDataDeletionRequestController;
 use App\Http\Controllers\Website\GlobalFilterController;
 use App\Http\Controllers\Website\GlobalSearchController;
@@ -132,6 +133,12 @@ Route::group(['as' => 'website.'], function () {
         Route::get('/profile', 'index')->name('index');
         Route::put('/profile/details/update/{id?}', 'update')->name('update-profile');
         Route::put('profile/change-password/{id?}', 'changePassword')->name('change-password');
+    });
+
+    // Contact Us Routes
+    Route::controller(ContactController::class)->name('contact.')->group(function () {
+        Route::get('/contact', 'index')->name('index');
+        Route::post('/contact-store', 'store')->name('store');
     });
 
 });

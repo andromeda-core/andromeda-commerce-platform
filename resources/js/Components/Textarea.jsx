@@ -37,7 +37,7 @@ const Textarea = ({
                     {...Props}
                 />
 
-                {Error && <p className="mt-1.5 text-red-500 dark:text-white">{Error}</p>}
+                {Error && <p className="text-sm text-red-500">{Error}</p>}
             </div>
         </>
     );

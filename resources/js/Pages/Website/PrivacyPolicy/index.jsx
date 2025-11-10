@@ -885,8 +885,8 @@ const index = () => {
                                         We're here to help. Contact our Data Protection Officer for
                                         any privacy-related inquiries.
                                     </p>
-                                    <a
-                                        href="mailto:privacy@windoublespace.com"
+                                    <Link
+                                        href={route('website.contact.index')}
                                         className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-8 py-4 font-semibold text-white shadow-lg transition-all hover:bg-indigo-400"
                                     >
                                         <svg
@@ -903,7 +903,7 @@ const index = () => {
                                             />
                                         </svg>
                                         Contact Us
-                                    </a>
+                                    </Link>
                                 </div>
                             </section>
                         </main>

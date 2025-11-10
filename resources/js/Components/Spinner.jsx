@@ -5,7 +5,7 @@ export default function Spinner({ customSize }) {
         <div role="status">
             <svg
                 aria-hidden="true"
-                className={`${customSize ?? 'h-4 w-8'} animate-spin fill-indigo-600 text-gray-200 dark:text-white`}
+                className={`${customSize ?? 'h-4 w-8'} animate-spin fill-indigo-600 text-gray-200 dark:text-white/80`}
                 viewBox="0 0 100 101"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
