@@ -26,7 +26,7 @@ export default function SelectInput({
             backgroundColor: '#0D0E12',
             color: '#ffffff',
             borderColor: state.isFocused ? '#3b82f6' : '#4b5563',
-            boxShadow: 'none', // <- important
+            boxShadow: 'none',
             '&:hover': {
                 borderColor: '#3b82f6',
             },
@@ -34,12 +34,12 @@ export default function SelectInput({
 
         menu: (base) => ({
             ...base,
-            backgroundColor: '#1f2937',
+            backgroundColor: '#0D0E12',
             color: '#fff',
         }),
         option: (base, state) => ({
             ...base,
-            backgroundColor: '#111827',
+            backgroundColor: '#0D0E12',
             color: '#fff',
             '&:active': {
                 backgroundColor: '#4b5563',
@@ -68,7 +68,7 @@ export default function SelectInput({
             ...base,
             backgroundColor: '#ffffff', // white
             color: '#111827', // gray-900
-            borderColor: state.isFocused ? '#2563eb' : '#d1d5db', // indigo-600 or gray-300
+            borderColor: state.isFocused ? '#2563eb' : '#d1d5db',
             boxShadow: 'none',
             '&:hover': {
                 borderColor: '#2563eb',
@@ -81,10 +81,10 @@ export default function SelectInput({
         }),
         option: (base, state) => ({
             ...base,
-            backgroundColor: state.isFocused ? '#f3f4f6' : '#ffffff', // gray-100 hover
-            color: '#111827', // gray-900
+            backgroundColor: state.isFocused ? '#f3f4f6' : '#ffffff',
+            color: '#111827',
             '&:active': {
-                backgroundColor: '#e5e7eb', // gray-200
+                backgroundColor: '#e5e7eb',
             },
         }),
         singleValue: (base) => ({
