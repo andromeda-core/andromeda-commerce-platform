@@ -22,6 +22,11 @@ class CheckoutController extends Controller
 
         $data = $this->cart->getCartItems($request);
         $cart_items = $data['cart_items'];
+
+        if (empty($cart_items)) {
+            return to_route('home');
+        }
+
         $refferalSessionData = session()->get('referal_data');
 
         $raw_customer = $this->user->getSingleCustomer($request->user()->id);
