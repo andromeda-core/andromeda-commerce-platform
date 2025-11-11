@@ -370,7 +370,7 @@ video.feed-video::-webkit-media-controls {
 }
 
 @media (hover: none), (pointer: coarse) {
-    *:hover {
+    .no-touch-hover:hover {
         transform: none !important;
         filter: none !important;
         transition: none !important;

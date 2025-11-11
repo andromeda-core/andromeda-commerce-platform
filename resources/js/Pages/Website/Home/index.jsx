@@ -1870,7 +1870,7 @@ export default function index({ google_map_api_key, search_history }) {
                                     return (
                                         <article
                                             key={post?.id}
-                                            className="group relative mb-1 cursor-pointer break-inside-avoid overflow-hidden rounded-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl lg:mb-2"
+                                            className="no-touch-hover group relative mb-1 cursor-pointer break-inside-avoid overflow-hidden rounded-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl lg:mb-2"
                                             style={{ animationDelay: `${index * 100}ms` }}
                                             onClick={() => {
                                                 viewablePostRef.current = post;
@@ -2158,7 +2158,7 @@ export default function index({ google_map_api_key, search_history }) {
                                     return (
                                         <article
                                             key={index}
-                                            className="group relative mb-1 cursor-pointer break-inside-avoid overflow-hidden rounded-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                                            className="no-touch-hover group relative mb-1 cursor-pointer break-inside-avoid overflow-hidden rounded-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
                                             onClick={() => {
                                                 viewableSmartphoneRef.current = smartphone;
 
