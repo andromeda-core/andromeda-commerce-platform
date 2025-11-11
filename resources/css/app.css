@@ -371,8 +371,9 @@ video.feed-video::-webkit-media-controls {
 
 @media (hover: none), (pointer: coarse) {
     *:hover {
+        transform: none !important;
         filter: none !important;
         transition: none !important;
-        scale: 1;
+        scale: 1 !important;
     }
 }
