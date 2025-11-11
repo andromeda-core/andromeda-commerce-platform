@@ -28,7 +28,7 @@ export default function SelectInput({
             borderColor: state.isFocused ? '#3b82f6' : '#4b5563',
             boxShadow: 'none',
             '&:hover': {
-                borderColor: '#3b82f6',
+                borderColor: 'none',
             },
         }),
 
@@ -71,7 +71,7 @@ export default function SelectInput({
             borderColor: state.isFocused ? '#2563eb' : '#d1d5db',
             boxShadow: 'none',
             '&:hover': {
-                borderColor: '#2563eb',
+                borderColor: 'none',
             },
         }),
         menu: (base) => ({
