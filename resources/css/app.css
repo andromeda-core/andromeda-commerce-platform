@@ -373,5 +373,6 @@ video.feed-video::-webkit-media-controls {
     *:hover {
         filter: none !important;
         transition: none !important;
+        scale: 1;
     }
 }
