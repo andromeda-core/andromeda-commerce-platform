@@ -368,3 +368,10 @@ video.feed-video {
 video.feed-video::-webkit-media-controls {
     display: none !important;
 }
+
+@media (hover: none), (pointer: coarse) {
+    *:hover {
+        filter: none !important;
+        transition: none !important;
+    }
+}
