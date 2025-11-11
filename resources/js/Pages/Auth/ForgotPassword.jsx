@@ -103,7 +103,7 @@ export default function ForgotPassword() {
                         </div>
                         <div>
                             <form onSubmit={submit}>
-                                <div className="space-y-5">
+                                <div className="space-y-0">
                                     <Input
                                         InputName={'Email'}
                                         Error={errors.email}

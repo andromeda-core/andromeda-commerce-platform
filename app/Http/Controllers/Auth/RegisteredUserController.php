@@ -22,7 +22,9 @@ class RegisteredUserController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Auth/Register');
+        $countries = Cache::get('countries');
+
+        return Inertia::render('Auth/Register', compact('countries'));
     }
 
     /**
@@ -37,9 +39,12 @@ class RegisteredUserController extends Controller
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'phone' => 'required|regex:/^\+\d+$/|max:50|unique:users,phone',
             'password' => ['required', 'min:8', 'max:50', 'confirmed', Rules\Password::defaults()],
+            'country_id' => ['required', 'exists:countries,id'],
         ],
             [
                 'phone.regex' => 'The Number Accepted With + Country Code - Example: +8801xxxxxxxxx',
+                'country_id.exists' => 'The Selected Country Does Not Exists',
+                'country_id.required' => 'The Country Field Is Required',
             ]);
 
         $user = User::create([
@@ -50,7 +55,9 @@ class RegisteredUserController extends Controller
         ]);
 
         $user->syncRoles('Customer');
-        $user->customer()->create();
+        $user->customer()->create([
+            'country_id' => $request->country_id,
+        ]);
 
         Auth::login($user);
 

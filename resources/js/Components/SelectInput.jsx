@@ -165,8 +165,8 @@ export default function SelectInput({
                     />
                 </div>
 
-                <div className="h-5">
-                    {Error && <p className="mt-1.5 text-red-500 dark:text-white">{Error}</p>}
+                <div className="mt-2 h-5">
+                    {Error && <p className="text-sm text-red-500">{Error}</p>}
                 </div>
             </div>
         </>

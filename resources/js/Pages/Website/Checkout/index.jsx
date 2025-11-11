@@ -493,7 +493,7 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
 
                     <div>
                         <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white/80">
-                            Postal Code
+                            Postal Code <span className="text-red-500">*</span>
                         </label>
                         <input
                             type="text"

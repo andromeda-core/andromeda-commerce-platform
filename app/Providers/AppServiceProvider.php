@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\AwsSetting;
+use App\Models\Country;
 use App\Models\Currency;
 use App\Models\GeneralSetting;
 use App\Models\GoogleMapSetting;
@@ -132,6 +133,10 @@ class AppServiceProvider extends ServiceProvider
                 //     ]);
                 // }
 
+            }
+
+            if (Schema::hasTable('countries')) {
+                Cache::rememberForever('countries', fn () => Country::where('is_active', true)->get());
             }
 
         } catch (Exception $e) {

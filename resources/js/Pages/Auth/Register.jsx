@@ -1,10 +1,11 @@
 import Input from '@/Components/Input';
 import PrimaryButton from '@/Components/PrimaryButton';
+import SelectInput from '@/Components/SelectInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function Register() {
+export default function Register({ countries }) {
     // Toggle Show Password States
     const [showPasswordToggle, setshowPasswordToggle] = useState(false);
     const [showPasswordConfirmationToggle, setShowPasswordConfirmationToggle] = useState(false);
@@ -14,6 +15,7 @@ export default function Register() {
         name: '',
         phone: '',
         email: '',
+        country_id: '',
         password: '',
         password_confirmation: '',
     });
@@ -68,7 +70,7 @@ export default function Register() {
                         </div>
                         <div>
                             <form onSubmit={submit}>
-                                <div className="space-y-5">
+                                <div className="space-y-0">
                                     <Input
                                         InputName={'Name'}
                                         Error={errors.name}
@@ -105,7 +107,22 @@ export default function Register() {
                                         Required={true}
                                     />
 
-                                    {errors?.phone && <p className="mt-10">&nbsp;</p>}
+                                    {errors?.phone && <p className="mt-2">&nbsp;</p>}
+
+                                    <div className="relative bottom-3 z-[50]">
+                                        <SelectInput
+                                            InputName={'Country'}
+                                            Id={'country_id'}
+                                            Name={'country_id'}
+                                            Error={errors.country_id}
+                                            Value={data.country_id}
+                                            items={countries}
+                                            itemKey={'name'}
+                                            Placeholder={'Select Country'}
+                                            Required={true}
+                                            Action={(value) => setData('country_id', value)}
+                                        />
+                                    </div>
 
                                     <Input
                                         InputName={'Password'}
