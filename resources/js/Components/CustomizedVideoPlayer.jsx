@@ -325,7 +325,9 @@ export default function CustomizedVideoPlayer({
                     onTimeUpdate={onTimeUpdate}
                     onClick={() => {
                         handleVideoClick();
-                        setShowControls(!showControls);
+                        if (isPlaying) {
+                            setShowControls(!showControls);
+                        }
                     }}
                     style={{
                         WebkitTapHighlightColor: 'transparent',
