@@ -323,7 +323,10 @@ export default function CustomizedVideoPlayer({
                     poster={thumbnail}
                     crossOrigin="anonymous"
                     onTimeUpdate={onTimeUpdate}
-                    onClick={handleVideoClick}
+                    onClick={() => {
+                        handleVideoClick();
+                        setShowControls(!showControls);
+                    }}
                     style={{
                         WebkitTapHighlightColor: 'transparent',
                         touchAction: 'manipulation',
