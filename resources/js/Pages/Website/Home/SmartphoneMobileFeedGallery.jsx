@@ -1,19 +1,19 @@
-import LinkCopiedModal from '@/Components/LinkCopiedModal';
+
 import SelectInput from '@/Components/SelectInput';
 import Spinner from '@/Components/Spinner';
 import Toast from '@/Components/Toast';
-import useWindowSize from '@/Hooks/useWindowSize';
-import { router, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import QRCode from 'react-qr-code';
 
-const SmartphoneMobileGalleryModal = ({ smartphone }) => {
-    const { currency, cart_items, auth } = usePage().props;
-    const [showQrCode, setShowQrCode] = useState(false);
-    const [linkCopied, setLinkCopied] = useState(false);
+
+
+const SmartphoneMobileGalleryModal = (
+    { smartphone, setShowQrCode, setLinkCopied, currency, cart_items, auth, navigateToHashtag, placeholderImage }
+) => {
+
+
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
     const [actionDropdownOpen, setActionDropdownOpen] = useState(null);
     const actionDropdownRef = useRef(null);
     const scrollContainerRef = useRef(null);
@@ -28,19 +28,6 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const navigateToHashtag = async (hashtag) => {
-        const tag = encodeURIComponent(hashtag);
-        try {
-            router.visit(route('website.posts.hashtag.index', tag), {
-                replace: true,
-                preserveState: true,
-                preserveScroll: true,
-            });
-        } catch (error) {
-            console.error('Hashtag navigation failed:', error);
-        }
-    };
-
     // Handle image scroll for pagination dots
     const handleImageScroll = (e) => {
         const container = e.target;
@@ -50,15 +37,15 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
         setCurrentImageIndex(index);
     };
 
-    const windowSize = useWindowSize();
+
 
     const [cartProcessing, setCartProcessing] = useState(false);
     const [buyNowProcessing, setBuyNowProcessing] = useState(false);
+
     const [showErrorMessage, setShowErrorMessage] = useState(false);
     const [ErrorMessage, setErrorMessage] = useState('');
 
-    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-    const [SuccessMessage, setSuccessMessage] = useState('');
+
 
     const [showInfoMessage, setShowInfoMessage] = useState(false);
     const [InfoMessage, setInfoMessage] = useState('');
@@ -129,25 +116,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
 
             router.delete(route('website.carts.remove-item'), {
                 data: data,
-                onSuccess: (page) => {
-                    if (page.props.flash.success) {
-                        setShowSuccessMessage(true);
-                        setSuccessMessage(page.props.flash.success || 'Product Removing From Cart');
-                    }
 
-                    if (page.props.flash.error) {
-                        setShowErrorMessage(true);
-                        setErrorMessage(
-                            page.props.flash.error ||
-                                'Something Went Wrong While Removing Cart Item',
-                        );
-                    }
-
-                    if (!page.props.flash.success && !page.props.flash.error) {
-                        setShowSuccessMessage(true);
-                        setSuccessMessage('Product Removed From Cart Successfully');
-                    }
-                },
                 onError: (errors) => {
                     setShowErrorMessage(true);
                     setErrorMessage(
@@ -238,7 +207,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
             badgeClass = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
             text = `In Stock: ${stock}`;
             icon = (
-                <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                     <path
                         fillRule="evenodd"
                         d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -250,7 +219,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
             badgeClass = 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
             text = `Low Stock: ${stock}`;
             icon = (
-                <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                     <path
                         fillRule="evenodd"
                         d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
@@ -262,7 +231,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
             badgeClass = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
             text = 'Out of Stock';
             icon = (
-                <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                     <path
                         fillRule="evenodd"
                         d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -332,14 +301,28 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
 
     const visibleDots = getVisibleDots();
 
+
+    // LOCKING BODY WHEN MOUNT TO PREVENT SCROLLS BENEATH MODAL
+    useEffect(() => {
+
+        document.body.style.overflow = "hidden";
+        document.body.style.touchAction = "none";
+
+        return () => {
+            // Restore scroll when modal closes
+            document.body.style.overflow = "";
+            document.body.style.touchAction = "";
+        };
+    }, []);
+
     return (
         <>
-            {(showErrorMessage || showInfoMessage || showSuccessMessage) && (
+            {(showErrorMessage || showInfoMessage) && (
                 <Toast
                     flash={{
                         ...(showErrorMessage && { error: ErrorMessage }),
                         ...(showInfoMessage && { info: InfoMessage }),
-                        ...(showSuccessMessage && { success: SuccessMessage }),
+
                     }}
                     onClosed={(type) => {
                         if (type === 'info') {
@@ -350,18 +333,15 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                             setErrorMessage(null);
                             setShowErrorMessage(false);
                         }
-                        if (type === 'success') {
-                            setSuccessMessage(null);
-                            setShowSuccessMessage(false);
-                        }
+
                     }}
                 />
             )}
 
             {createPortal(
-                <div className="fixed inset-0 z-[70] flex flex-col bg-white dark:bg-deepcharcoal">
+                <div className="fixed inset-0 z-[70] flex flex-col bg-white dark:bg-deepcharcoal overscroll-contain">
                     {/* Header - Keep intact as requested */}
-                    <div className="flex shrink-0 items-center justify-between px-4 pb-2 pt-3">
+                    <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
                         <button
                             onClick={() => navigateToHashtag(smartphone.tag)}
                             className="text-sm font-semibold text-gray-900 dark:text-white"
@@ -379,7 +359,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
                                     stroke="currentColor"
-                                    className="h-5 w-5"
+                                    className="w-5 h-5"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -390,7 +370,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                             </button>
 
                             {actionDropdownOpen && (
-                                <div className="absolute right-0 top-8 z-20 w-48 rounded-lg border border-gray-200 bg-white shadow-lg dark:border-white/10 dark:bg-deepcharcoal">
+                                <div className="absolute right-0 z-20 w-48 bg-white border border-gray-200 rounded-lg shadow-lg top-8 dark:border-white/10 dark:bg-deepcharcoal">
                                     <div className="py-1">
                                         <button
                                             onClick={() => {
@@ -405,7 +385,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={1.5}
                                                 stroke="currentColor"
-                                                className="h-5 w-5"
+                                                className="w-5 h-5"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -437,7 +417,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={1.5}
                                                 stroke="currentColor"
-                                                className="h-5 w-5"
+                                                className="w-5 h-5"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -454,7 +434,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                     </div>
 
                     {/* Scrollable Content Area */}
-                    <div className="flex-1 overflow-y-auto pb-10">
+                    <div className="flex-1 pb-10 overflow-y-auto scrollbar-none">
                         <div className="px-4">
                             {/* Image Viewer with proper spacing for dots */}
                             {smartphone?.images?.length > 0 && (
@@ -463,12 +443,13 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                     <div
                                         ref={scrollContainerRef}
                                         onScroll={handleImageScroll}
-                                        className="flex snap-x snap-mandatory overflow-x-auto"
+                                        className="flex overflow-x-auto snap-x snap-mandatory"
                                         style={{
                                             scrollbarWidth: 'none',
                                             msOverflowStyle: 'none',
                                             WebkitOverflowScrolling: 'touch',
                                             scrollSnapType: 'x mandatory',
+
                                         }}
                                     >
                                         {smartphone.images.map((image, index) => (
@@ -476,12 +457,15 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                                 key={index}
                                                 className="relative flex min-h-[450px] w-full shrink-0 snap-center snap-always items-center justify-center px-1"
                                             >
-                                                {/* Image wrapper - NO dots inside anymore */}
+
                                                 <div className="relative inline-block pb-10">
                                                     <img
                                                         src={image}
                                                         alt={`${smartphone.name} ${index + 1}`}
                                                         className="h-auto max-h-[380px] w-auto max-w-full rounded-lg object-contain"
+                                                        onError={(e) =>
+                                                            (e.target.src = placeholderImage)
+                                                        }
                                                     />
                                                 </div>
                                             </div>
@@ -489,32 +473,29 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                     </div>
 
                                     {/* Fixed Pagination Dots - Outside scroll container, stays in place */}
-                                    {smartphone.images.length > 1 && (
-                                        <div className="pointer-events-none absolute bottom-8 left-0 right-0 z-10 flex items-center justify-center gap-1.5">
-                                            {visibleDots.map((dotIndex) => (
-                                                <div
-                                                    key={dotIndex}
-                                                    className={`rounded-full shadow-lg transition-all duration-300 ${
-                                                        dotIndex === currentImageIndex
-                                                            ? 'h-2 w-2 bg-black shadow-black/60 dark:bg-white'
-                                                            : 'h-1.5 w-1.5 bg-black/50 shadow-black/30 dark:bg-white/50'
+                                    <div className="pointer-events-none absolute bottom-8 left-0 right-0 z-10 flex items-center justify-center gap-1.5">
+                                        {visibleDots.map((dotIndex) => (
+                                            <div
+                                                key={dotIndex}
+                                                className={`rounded-full shadow-lg transition-all duration-300 ${dotIndex === currentImageIndex
+                                                    ? 'h-2 w-2 bg-black shadow-black/60 dark:bg-white'
+                                                    : 'h-1.5 w-1.5 bg-black/50 shadow-black/30 dark:bg-white/50'
                                                     }`}
-                                                    style={{
-                                                        transitionProperty: 'all',
-                                                        transitionTimingFunction:
-                                                            'cubic-bezier(0.4, 0, 0.2, 1)',
-                                                    }}
-                                                />
-                                            ))}
-                                        </div>
-                                    )}
+                                                style={{
+                                                    transitionProperty: 'all',
+                                                    transitionTimingFunction:
+                                                        'cubic-bezier(0.4, 0, 0.2, 1)',
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                             {/* Full Content - Scrollable, No Truncation */}
                             <div className="mb-4">
                                 {smartphone?.content && (
                                     <div
-                                        className="text-sm leading-relaxed text-gray-900 dark:text-white/80"
+                                        className="text-sm leading-relaxed prose text-gray-900 dark:text-white/80"
                                         dangerouslySetInnerHTML={{
                                             __html: smartphone.content,
                                         }}
@@ -527,7 +508,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                     <span className="text-sm text-gray-900 dark:text-white/80">
                                         <strong>Payment :</strong>
                                     </span>
-                                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-500 text-xs font-bold text-white">
+                                    <div className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-orange-500 rounded-full">
                                         <svg
                                             className="size-10"
                                             viewBox="0.004 0 64 64"
@@ -552,7 +533,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                             </g>
                                         </svg>
                                     </div>
-                                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-500 text-xs font-bold text-white">
+                                    <div className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-orange-500 rounded-full">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             fill="none"
@@ -593,7 +574,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                 </div>
                             </div>
 
-                            <div className="mt-6 w-full space-y-4">
+                            <div className="w-full mt-6 space-y-4">
                                 <div className="flex justify-start">
                                     <StockBadge smartphone={smartphone} />
                                 </div>
@@ -613,7 +594,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                     />
                                 </div>
 
-                                <div className="flex w-full items-center justify-between">
+                                <div className="flex items-center justify-between w-full">
                                     <span className="text-sm text-gray-900 dark:text-white">
                                         Quantity
                                     </span>
@@ -621,10 +602,10 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                         <button
                                             type="button"
                                             onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                            className="flex h-8 w-8 items-center justify-center rounded-l border border-r-0 border-gray-300 bg-white text-gray-600 hover:bg-gray-50 focus:outline-none dark:border-gray-600 dark:bg-deepcharcoal dark:text-white/90 dark:hover:bg-zinc-900"
+                                            className="flex items-center justify-center w-8 h-8 text-gray-600 bg-white border border-r-0 border-gray-300 rounded-l hover:bg-gray-50 focus:outline-none dark:border-gray-600 dark:bg-deepcharcoal dark:text-white/90 dark:hover:bg-zinc-900"
                                         >
                                             <svg
-                                                className="h-3 w-3"
+                                                className="w-3 h-3"
                                                 fill="none"
                                                 stroke="currentColor"
                                                 viewBox="0 0 24 24"
@@ -647,15 +628,15 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                                     Math.max(1, parseInt(e.target.value) || 1),
                                                 )
                                             }
-                                            className="h-8 w-12 border-b border-t border-gray-300 bg-white px-2 text-center text-sm focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-deepcharcoal dark:text-white/90"
+                                            className="w-12 h-8 px-2 text-sm text-center bg-white border-t border-b border-gray-300 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-deepcharcoal dark:text-white/90"
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setQuantity(quantity + 1)}
-                                            className="flex h-8 w-8 items-center justify-center rounded-r border border-l-0 border-gray-300 bg-white text-gray-600 hover:bg-gray-50 focus:outline-none dark:border-gray-600 dark:bg-deepcharcoal dark:text-white/90 dark:hover:bg-zinc-900"
+                                            className="flex items-center justify-center w-8 h-8 text-gray-600 bg-white border border-l-0 border-gray-300 rounded-r hover:bg-gray-50 focus:outline-none dark:border-gray-600 dark:bg-deepcharcoal dark:text-white/90 dark:hover:bg-zinc-900"
                                         >
                                             <svg
-                                                className="h-3 w-3"
+                                                className="w-3 h-3"
                                                 fill="none"
                                                 stroke="currentColor"
                                                 viewBox="0 0 24 24"
@@ -676,23 +657,23 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                         </div>
                     </div>
 
-                    {/* Sticky Bottom Bar - BLACK Background */}
-                    <div className="fixed bottom-0 left-0 right-0 bg-black px-4 py-5">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                {/* Price Display */}
-                                <div className="flex items-center gap-1">
-                                    <span className="text-lg font-bold text-white">
-                                        {currency?.symbol}
-                                        {smartphone?.selling_info?.total_price}
-                                    </span>
-                                </div>
+                    {/* Sticky Bottom Bar */}
+
+                    <div className="fixed bottom-0 left-0 right-0 bg-black px-3 py-3 z-[100] sm:px-4 sm:py-5">
+                        <div className="flex items-center justify-between gap-2 sm:gap-3">
+                            {/* Price Display */}
+                            <div className="flex items-center min-w-0 gap-1 shrink">
+                                <span className="text-base font-bold text-white truncate sm:text-lg">
+                                    {currency?.symbol}
+                                    {smartphone?.selling_info?.total_price}
+                                </span>
                             </div>
 
+                            {/* Action Buttons */}
                             {!auth?.user && (
-                                <div className="flex gap-2 lg:gap-3">
+                                <div className="flex gap-2 shrink-0">
                                     <button
-                                        className="flex h-[30px] w-[123px] items-center justify-center gap-1 rounded-lg border border-white text-xs text-white transition-colors hover:bg-white hover:text-black"
+                                        className="flex h-[30px] w-[110px] items-center justify-center gap-1 rounded-md border border-white text-[10px] font-medium text-white transition-colors hover:bg-white hover:text-black sm:h-[38px] sm:w-[130px] sm:text-xs"
                                         onClick={() => {
                                             router.visit(route('login'));
                                         }}
@@ -703,7 +684,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                             viewBox="0 0 24 24"
                                             strokeWidth={1.5}
                                             stroke="currentColor"
-                                            className="h-3 w-3"
+                                            className="w-3 h-3 shrink-0"
                                         >
                                             <path
                                                 strokeLinecap="round"
@@ -711,11 +692,11 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                                 d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
                                             />
                                         </svg>
-                                        Login to Purchase
+                                        <span className="truncate">Login</span>
                                     </button>
 
                                     <button
-                                        className="h-[30px] w-[100px] rounded-lg bg-white text-xs text-black transition-colors hover:bg-gray-200"
+                                        className="h-[30px] w-[80px] rounded-md bg-white text-[10px] font-medium text-black transition-colors hover:bg-gray-200 sm:h-[38px] sm:w-[90px] sm:text-xs"
                                         onClick={() => {
                                             router.visit(route('register'));
                                         }}
@@ -726,13 +707,13 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                             )}
 
                             {auth?.user && (
-                                <div className="flex gap-2 lg:gap-3">
+                                <div className="flex gap-2 shrink-0">
                                     {cart_items.length > 0 ? (
                                         cart_items.some(
                                             (item) => item.smartphone_id === smartphone.id,
                                         ) ? (
                                             <button
-                                                className={`flex ${cartProcessing ? 'w-[100px]' : 'w-[100px]'} items-center justify-center gap-2 rounded-lg border border-white text-xs text-white transition-colors hover:bg-white hover:text-black`}
+                                                className={`flex h-[30px] w-[85px] items-center justify-center gap-1.5 rounded-md border border-white text-[10px] font-medium text-white transition-colors hover:bg-white hover:text-black sm:h-[38px] sm:w-[100px] sm:text-xs`}
                                                 onClick={() => {
                                                     handleRemoveCartItem(
                                                         'smartphone',
@@ -743,11 +724,11 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                                 {cartProcessing && (
                                                     <Spinner customSize={'size-3'} />
                                                 )}
-                                                Remove
+                                                <span className="truncate">Remove</span>
                                             </button>
                                         ) : (
                                             <button
-                                                className={`flex w-[100px] ${!isInStock && 'pointer-events-none opacity-50'} items-center justify-center gap-2 rounded-lg border border-white text-xs text-white transition-colors hover:bg-white hover:text-black`}
+                                                className={`flex h-[30px] w-[70px] ${!isInStock && 'pointer-events-none opacity-50'} items-center justify-center gap-1.5 rounded-md border border-white text-[10px] font-medium text-white transition-colors hover:bg-white hover:text-black sm:h-[38px] sm:w-[85px] sm:text-xs`}
                                                 disabled={!isInStock}
                                                 onClick={() => {
                                                     handleAddCartItem(
@@ -762,13 +743,13 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                                 {cartProcessing && (
                                                     <Spinner customSize={'size-3'} />
                                                 )}
-                                                Cart
+                                                <span className="truncate">Cart</span>
                                             </button>
                                         )
                                     ) : (
                                         <button
                                             disabled={!isInStock}
-                                            className={`flex w-[100px] ${!isInStock && 'pointer-events-none opacity-50'} items-center justify-center gap-2 rounded-lg border border-white text-xs text-white transition-colors hover:bg-white hover:text-black lg:w-[200px] lg:px-6 lg:text-base`}
+                                            className={`flex h-[30px] w-[70px] ${!isInStock && 'pointer-events-none opacity-50'} items-center justify-center gap-1.5 rounded-md border border-white text-[10px] font-medium text-white transition-colors hover:bg-white hover:text-black sm:h-[38px] sm:w-[85px] sm:text-xs`}
                                             onClick={() => {
                                                 handleAddCartItem(
                                                     'smartphone',
@@ -780,13 +761,13 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                             }}
                                         >
                                             {cartProcessing && <Spinner customSize={'size-3'} />}
-                                            Cart
+                                            <span className="truncate">Cart</span>
                                         </button>
                                     )}
 
                                     <button
                                         disabled={!isInStock}
-                                        className={` ${!isInStock && 'pointer-events-none opacity-50'} flex h-[30px] w-[100px] items-center justify-center gap-2 rounded-lg bg-white text-xs text-black transition-colors hover:bg-gray-200 lg:w-[200px] lg:px-6 lg:text-base`}
+                                        className={`${!isInStock && 'pointer-events-none opacity-50'} flex h-[30px] w-[85px] items-center justify-center gap-1.5 rounded-md bg-white text-[10px] font-medium text-black transition-colors hover:bg-gray-200 sm:h-[38px] sm:w-[100px] sm:text-xs`}
                                         onClick={() => {
                                             handleBuyNow(
                                                 'smartphone',
@@ -798,7 +779,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                                         }}
                                     >
                                         {buyNowProcessing && <Spinner customSize={'size-3'} />}
-                                        Buy now
+                                        <span className="truncate">Buy now</span>
                                     </button>
                                 </div>
                             )}
@@ -808,53 +789,7 @@ const SmartphoneMobileGalleryModal = ({ smartphone }) => {
                 document.getElementById('modal-root') || document.body,
             )}
 
-            {/* QR Code Modal */}
 
-            {showQrCode &&
-                createPortal(
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center">
-                        {/* Overlay */}
-                        <div
-                            className="fixed inset-0 bg-black/40 backdrop-blur-sm"
-                            onClick={() => setShowQrCode(false)}
-                        ></div>
-
-                        {/* Modal */}
-                        <div
-                            role="dialog"
-                            aria-modal="true"
-                            aria-labelledby="qrCodeTitle"
-                            className={`relative z-[101] w-full max-w-[200px] rounded-2xl bg-white pt-3 text-gray-900 shadow-xl dark:bg-deepcharcoal lg:max-w-sm lg:p-6`}
-                        >
-                            <div className="text-center">
-                                <div className="flex justify-center">
-                                    <QRCode
-                                        className={`${windowSize.width > 1024 ? 'size-30' : 'size-28'} border-2`}
-                                        value={route('home') + '/?m-slug=' + smartphone?.slug}
-                                        viewBox="0 0 256 256"
-                                        level="H"
-                                        includemargin="true"
-                                        bgColor="#ffffff"
-                                        fgColor="#000000"
-                                    />
-                                </div>
-
-                                <h2
-                                    id="qrCodeTitle"
-                                    className="my-3 text-base font-semibold dark:text-white/80"
-                                >
-                                    Scan QR Code
-                                </h2>
-                            </div>
-                        </div>
-                    </div>,
-                    document.body,
-                )}
-
-            {/* Link Copied Modal */}
-            {linkCopied && (
-                <LinkCopiedModal linkCopied={linkCopied} setLinkCopied={setLinkCopied} />
-            )}
         </>
     );
 };

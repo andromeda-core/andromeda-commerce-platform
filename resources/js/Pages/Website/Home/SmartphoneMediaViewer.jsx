@@ -8,6 +8,7 @@ export default function SmartphoneMediaViewer({
     selectedMediaIndex,
     onSelectMediaIndex,
     mediaThumbRefs,
+    Placeholder
 }) {
     const selected = selectedMediaIndex ?? 0;
     const MediaRef = useRef(null);
@@ -99,11 +100,11 @@ export default function SmartphoneMediaViewer({
 
     return (
         <div
-            className="relative mx-auto mb-5 mt-5 flex flex-col items-center lg:mt-0"
+            className="relative flex flex-col items-center mx-auto mt-5 mb-5 lg:mt-0"
             ref={MediaRef}
         >
             <div
-                className="relative flex flex-shrink-0 items-center justify-center overflow-hidden rounded-sm bg-gray-100 dark:bg-zinc-900/20"
+                className="relative flex items-center justify-center flex-shrink-0 overflow-hidden bg-gray-100 rounded-sm dark:bg-zinc-900/20"
                 style={{
                     height: windowSize.width >= 1024 ? '70vh' : '60vh',
                     minWidth: windowSize.width >= 1024 ? '30vw' : '100%',
@@ -113,7 +114,7 @@ export default function SmartphoneMediaViewer({
                 }}
                 {...handlers}
             >
-                <div className="invisible h-full w-full">
+                <div className="invisible w-full h-full">
                     <img
                         src={mediaItems[selected]?.url}
                         alt={`Smartphone ${selected}`}
@@ -122,7 +123,7 @@ export default function SmartphoneMediaViewer({
                     />
                 </div>
                 <AnimatePresence initial={false} custom={direction}>
-                    <div className="absolute inset-0 flex h-full w-full items-center justify-center">
+                    <div className="absolute inset-0 flex items-center justify-center w-full h-full">
                         {mediaItems.map((item, idx) => (
                             <motion.div
                                 key={item.url}
@@ -132,13 +133,14 @@ export default function SmartphoneMediaViewer({
                                     zIndex: idx === selected ? 1 : 0,
                                 }}
                                 transition={{ duration: 0.4, ease: 'easeInOut' }}
-                                className="absolute inset-0 flex h-full w-full items-center justify-center"
+                                className="absolute inset-0 flex items-center justify-center w-full h-full"
                             >
                                 <img
                                     src={item.url}
                                     alt={`Smartphone ${idx}`}
-                                    className="h-full w-full rounded-xl object-contain"
+                                    className="object-contain w-full h-full rounded-xl"
                                     onLoad={() => loadedCache.current.add(item.url)}
+                                    onError={(e) => e.target.src = Placeholder}
                                 />
                             </motion.div>
                         ))}
@@ -153,16 +155,16 @@ export default function SmartphoneMediaViewer({
                             key={idx}
                             ref={(el) => (mediaThumbRefs.current[idx] = el)}
                             onClick={() => onSelectMediaIndex(idx)}
-                            className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-sm border transition-all duration-200 ${
-                                selectedMediaIndex === idx
-                                    ? 'border-indigo-600 ring-2 ring-indigo-400'
-                                    : 'border-gray-300 hover:border-gray-500'
-                            }`}
+                            className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-sm border transition-all duration-200 ${selectedMediaIndex === idx
+                                ? 'border-indigo-600 ring-2 ring-indigo-400'
+                                : 'border-gray-300 hover:border-gray-500'
+                                }`}
                         >
                             <img
                                 src={item.url}
                                 alt={`Smartphone ${idx}`}
-                                className="h-full w-full object-cover"
+                                className="object-cover w-full h-full"
+                                onError={(e) => e.target.src = Placeholder}
                             />
                         </button>
                     ))}

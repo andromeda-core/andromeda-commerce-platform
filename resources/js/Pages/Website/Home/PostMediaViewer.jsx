@@ -162,6 +162,7 @@ export default function PostMediaViewer({
                                 alt={`Media ${selected}`}
                                 className="h-full w-full min-w-[300px] max-w-[300px] object-contain lg:min-w-[500px]"
                                 loading="lazy"
+                                onError={(e) => e.target.src = Placeholder}
                             />
                         ) : (
                             <VideoWithThumbnail
@@ -220,11 +221,10 @@ export default function PostMediaViewer({
                                 key={`${idx}-${item.url}`}
                                 ref={(el) => (mediaThumbRefs.current[idx] = el)}
                                 onClick={() => onSelectMediaIndex(idx)}
-                                className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-sm border transition-all duration-200 ${
-                                    selectedMediaIndex === idx
+                                className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-sm border transition-all duration-200 ${selectedMediaIndex === idx
                                         ? 'border-indigo-600 ring-2 ring-indigo-400'
                                         : 'border-gray-300 hover:border-gray-500'
-                                }`}
+                                    }`}
                             >
                                 {item.type === 'image' ? (
                                     <img

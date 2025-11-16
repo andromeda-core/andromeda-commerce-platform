@@ -5,7 +5,7 @@ import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, Link } from '@inertiajs/react';
 import axios from 'axios';
-
+import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 import React, { useEffect, useRef, useState } from 'react';
 
 const index = ({
@@ -82,80 +82,80 @@ const index = ({
 
         ...(hasHashtags
             ? [
-                  {
-                      key: 'hashtags',
-                      label: 'HashTags',
-                      count: hashtags.length,
-                      icon: (
-                          <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth={1.5}
-                              stroke="currentColor"
-                              className="size-5 text-gray-600 dark:text-white/80"
-                          >
-                              <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M5.25 8.25h15m-16.5 7.5h15m-1.8-13.5-3.9 19.5m-2.1-19.5-3.9 19.5"
-                              />
-                          </svg>
-                      ),
-                  },
-              ]
+                {
+                    key: 'hashtags',
+                    label: 'HashTags',
+                    count: hashtags.length,
+                    icon: (
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="text-gray-600 size-5 dark:text-white/80"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M5.25 8.25h15m-16.5 7.5h15m-1.8-13.5-3.9 19.5m-2.1-19.5-3.9 19.5"
+                            />
+                        </svg>
+                    ),
+                },
+            ]
             : []),
 
         ...(hasSearchTerms
             ? [
-                  {
-                      key: 'searchterms',
-                      label: 'Search Terms',
-                      count: searchTerms.length,
-                      icon: (
-                          <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth={1.5}
-                              stroke="currentColor"
-                              className="size-5 text-gray-600 dark:text-white/80"
-                          >
-                              <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m5.231 13.481L15 17.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v16.5c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Zm3.75 11.625a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"
-                              />
-                          </svg>
-                      ),
-                  },
-              ]
+                {
+                    key: 'searchterms',
+                    label: 'Search Terms',
+                    count: searchTerms.length,
+                    icon: (
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="text-gray-600 size-5 dark:text-white/80"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m5.231 13.481L15 17.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v16.5c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Zm3.75 11.625a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"
+                            />
+                        </svg>
+                    ),
+                },
+            ]
             : []),
 
         ...(hasUrls
             ? [
-                  {
-                      key: 'urls',
-                      label: "URL's",
-                      count: urls.length,
-                      icon: (
-                          <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth={1.5}
-                              stroke="currentColor"
-                              className="size-5 text-gray-600 dark:text-white/80"
-                          >
-                              <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13"
-                              />
-                          </svg>
-                      ),
-                  },
-              ]
+                {
+                    key: 'urls',
+                    label: "URL's",
+                    count: urls.length,
+                    icon: (
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="text-gray-600 size-5 dark:text-white/80"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13"
+                            />
+                        </svg>
+                    ),
+                },
+            ]
             : []),
     ];
 
@@ -261,19 +261,18 @@ const index = ({
             />
 
             <div className="pb-20 sm:px-6 sm:pb-20 lg:px-8">
-                <div className="rounded-xl bg-white px-3 text-gray-900 dark:bg-deepcharcoal dark:text-gray-100 sm:px-6 lg:px-8">
+                <div className="px-3 text-gray-900 bg-white rounded-xl dark:bg-deepcharcoal dark:text-gray-100 sm:px-6 lg:px-8">
                     {/* Header */}
-                    <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-slate-700">
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-slate-700">
                         <div className="relative flex items-center gap-6">
                             {tabs.map((tab) => (
                                 <button
                                     key={tab.key}
                                     onClick={() => setActiveTab(tab.key)}
-                                    className={`relative pb-2 text-sm transition-all duration-300 ease-in-out ${
-                                        activeTab === tab.key
-                                            ? 'scale-105 text-indigo-600 dark:text-indigo-400'
-                                            : 'text-gray-600 hover:scale-105 hover:text-gray-700 dark:text-gray-300'
-                                    }`}
+                                    className={`relative pb-2 text-sm transition-all duration-300 ease-in-out ${activeTab === tab.key
+                                        ? 'scale-105 text-indigo-600 dark:text-indigo-400'
+                                        : 'text-gray-600 hover:scale-105 hover:text-gray-700 dark:text-gray-300'
+                                        }`}
                                 >
                                     <div className="flex items-center">
                                         {tab.icon} {' ' + tab.label}{' '}
@@ -311,7 +310,7 @@ const index = ({
 
                                     return (
                                         <div
-                                            className="border-gray-5 group relative mx-6 mb-3 mt-2 flex cursor-pointer items-center justify-between rounded-lg border bg-white px-6 py-2 text-sm text-gray-800 transition-all hover:bg-indigo-50 hover:shadow-md dark:border-slate-700 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-700"
+                                            className="relative flex items-center justify-between px-6 py-2 mx-6 mt-2 mb-3 text-sm text-gray-800 transition-all bg-white border rounded-lg cursor-pointer border-gray-5 group hover:bg-indigo-50 hover:shadow-md dark:border-slate-700 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-700"
                                             title="Click to modify filters"
                                         >
                                             <div className="flex flex-wrap items-center gap-x-2">
@@ -372,7 +371,7 @@ const index = ({
                                             {/* Clear Button */}
                                             <button
                                                 onClick={handleClearFilters}
-                                                className="absolute right-0 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 opacity-0 transition-all group-hover:opacity-100 hover:bg-gray-200 hover:text-red-500 dark:hover:bg-slate-600"
+                                                className="absolute right-0 p-1 text-gray-400 transition-all -translate-y-1/2 rounded-full opacity-0 top-1/2 group-hover:opacity-100 hover:bg-gray-200 hover:text-red-500 dark:hover:bg-slate-600"
                                                 title="Clear filters"
                                             >
                                                 <svg
@@ -381,7 +380,7 @@ const index = ({
                                                     viewBox="0 0 24 24"
                                                     strokeWidth={1.5}
                                                     stroke="currentColor"
-                                                    className="h-4 w-4"
+                                                    className="w-4 h-4"
                                                 >
                                                     <path
                                                         strokeLinecap="round"
@@ -406,18 +405,19 @@ const index = ({
                             tabResults.map((item) => (
                                 <div
                                     key={item.id}
-                                    className="group flex cursor-pointer items-center gap-4 px-6 py-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/80"
+                                    className="flex items-center gap-4 px-6 py-4 transition-colors cursor-pointer group hover:bg-gray-50 dark:hover:bg-gray-800/80"
                                 >
                                     {/* Thumbnail */}
-                                    <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-indigo-600 dark:bg-indigo-500">
+                                    <div className="flex-shrink-0 w-12 h-12 overflow-hidden rounded-lg">
                                         {item.image ? (
                                             <img
                                                 src={item.image}
                                                 alt={item.title || item.name}
-                                                className="h-full w-full object-cover"
+                                                className="object-cover w-full h-full"
+                                                onError={(e) => e.target.src = Placeholder}
                                             />
                                         ) : (
-                                            <div className="flex h-full items-center justify-center text-sm text-white/80">
+                                            <div className="flex items-center justify-center h-full text-sm text-white/80">
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     fill="none"
@@ -437,36 +437,36 @@ const index = ({
                                     </div>
 
                                     {/* Info */}
-                                    <div className="min-w-0 flex-1">
+                                    <div className="flex-1 min-w-0">
                                         <h3 className="truncate">{item.title || item.name}</h3>
-                                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                                        <p className="text-xs text-gray-500 truncate dark:text-gray-400">
                                             {item.type === 'posts'
                                                 ? item.location_name || ''
                                                 : item.capacity || ''}
                                         </p>
 
-                                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                                        <p className="text-xs text-gray-500 truncate dark:text-gray-400">
                                             {item?.tag || ''}
                                         </p>
-                                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                                        <p className="text-xs text-gray-500 truncate dark:text-gray-400">
                                             {item.created_at}
                                         </p>
                                     </div>
 
                                     {/* Right Info */}
-                                    <div className="flex flex-wrap items-center justify-center gap-2 opacity-0 transition-all duration-200 group-hover:opacity-100 lg:flex-nowrap">
+                                    <div className="flex flex-wrap items-center justify-center gap-2 transition-all duration-200 opacity-0 group-hover:opacity-100 lg:flex-nowrap">
                                         <button
                                             title="Copy Link"
-                                            className="flex h-8 w-8 items-center justify-center rounded-full p-2 text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+                                            className="flex items-center justify-center w-8 h-8 p-2 text-gray-500 rounded-full hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                                             onClick={() => {
                                                 setLinkCopied(true);
                                                 item.type === 'posts'
                                                     ? navigator.clipboard.writeText(
-                                                          route('home') + generateURL(item),
-                                                      )
+                                                        route('home') + generateURL(item),
+                                                    )
                                                     : navigator.clipboard.writeText(
-                                                          route('home') + '?m-slug=' + item.slug,
-                                                      );
+                                                        route('home') + '?m-slug=' + item.slug,
+                                                    );
                                             }}
                                         >
                                             <svg
@@ -485,7 +485,7 @@ const index = ({
                                             </svg>
                                         </button>
 
-                                        <a
+                                        <Link
                                             title="Open"
                                             href={
                                                 item.type === 'posts'
@@ -495,16 +495,18 @@ const index = ({
                                             onClick={() => {
                                                 item.type === 'posts'
                                                     ? window.history.replaceState(
-                                                          { modal: 'post-viewer' },
-                                                          '',
-                                                      )
+                                                        {},
+                                                        '',
+                                                        route('home'),
+                                                    )
                                                     : window.history.replaceState(
-                                                          { modal: 'smartphone-viewer' },
-                                                          '',
-                                                      );
+                                                        {},
+                                                        '',
+                                                        route('home'),
+                                                    );
                                             }}
-                                            {...(windowSize.width > 1024 && { target: '_blank' })}
-                                            className="flex h-8 w-full items-center justify-center gap-2 rounded-full p-2 text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+
+                                            className="flex items-center justify-center w-full h-8 gap-2 p-2 text-gray-500 rounded-full hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -521,7 +523,7 @@ const index = ({
                                                 />
                                             </svg>
                                             <span className="text-xs">New Tab</span>
-                                        </a>
+                                        </Link>
                                     </div>
                                 </div>
                             ))
@@ -531,13 +533,13 @@ const index = ({
                     {tabResults.length > 0 && nextPageUrl && (
                         <div
                             ref={loaderRef}
-                            className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 dark:text-white/80"
+                            className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80"
                         >
                             <div className="flex items-center justify-center">
                                 <div role="status">
                                     <svg
                                         aria-hidden="true"
-                                        className="h-5 w-5 animate-spin fill-indigo-600 text-gray-200 dark:text-gray-600"
+                                        className="w-5 h-5 text-gray-200 animate-spin fill-indigo-600 dark:text-gray-600"
                                         viewBox="0 0 100 101"
                                         fill="none"
                                         xmlns="http://www.w3.org/2000/svg"

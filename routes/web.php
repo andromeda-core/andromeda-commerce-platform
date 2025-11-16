@@ -47,7 +47,7 @@ Route::group(['as' => 'website.'], function () {
     Route::controller(WebsitePostController::class)->name('posts.')->group(function () {
         Route::get('/posts', 'index')->name('index');
         Route::get('/posts-getmore', 'getMorePosts')->name('getmore');
-        Route::get('posts-getrelated/{slug?}', 'getRelatedPosts')->name('getrelated');
+        Route::get('posts-getrelated/{slug?}', 'getRelated')->name('getrelated');
         Route::get('/posts-getsingle/{slug?}', 'getSinglePostBySlug')->name('getsingle');
         Route::put('/posts-bookmark', 'bookmark')->name('bookmark')->middleware('auth');
         Route::get('/hashtag/{hashtag?}', 'hashtagIndex')->name('hashtag.index');

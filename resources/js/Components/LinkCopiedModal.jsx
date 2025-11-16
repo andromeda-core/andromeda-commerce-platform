@@ -6,62 +6,68 @@ const LinkCopiedModal = ({ linkCopied, setLinkCopied }) => {
         if (linkCopied) {
             const timer = setTimeout(() => {
                 setLinkCopied(false);
-            }, 800);
-
+            }, 900);
             return () => clearTimeout(timer);
         }
     }, [linkCopied]);
 
+    if (!linkCopied) return null;
+
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center">
-            {/* Overlay */}
+        <div className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none">
             <div
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
-                // onClick={() => setLinkCopied(false)}
-            ></div>
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm"
 
-            {/* Modal */}
+            />
+
             <div
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="linkCopiedTitle"
-                className="relative z-[101] w-full max-w-sm animate-scale-in rounded-2xl bg-white p-8 shadow-2xl dark:bg-deepcharcoal sm:max-w-md"
+                className="flex flex-col items-center z-[100] justify-center px-6 py-4 bg-white border shadow-lg pointer-events-auto animate-fade-in-up rounded-xl dark:bg-deepcharcoal border-black/5 dark:border-gray-900"
+                style={{
+                    minWidth: "200px",
+                }}
             >
-                {/* Success Icon */}
-                <div className="mb-4 flex justify-center">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={2}
-                            stroke="currentColor"
-                            className="h-8 w-8 text-green-600 dark:text-green-400"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                            />
-                        </svg>
-                    </div>
+                {/* Success icon */}
+                <div className="mb-2">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="currentColor"
+                        className="w-6 h-6 text-black dark:text-white"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                        />
+                    </svg>
                 </div>
 
-                {/* Title */}
-                <div className="text-center">
-                    <h2
-                        id="linkCopiedTitle"
-                        className="mb-2 text-xl font-bold text-gray-900 dark:text-white"
-                    >
-                        Link Copied!
-                    </h2>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                        The link has been copied to your clipboard
-                    </p>
-                </div>
+
+                <p className="text-sm font-medium text-black dark:text-white">
+                    Link copied!
+                </p>
             </div>
+
+
+            <style>{`
+                @keyframes fade-in-up {
+                    0% {
+                        opacity: 0;
+                        transform: translateY(10px);
+                    }
+                    100% {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                .animate-fade-in-up {
+                    animation: fade-in-up 0.25s ease-out;
+                }
+            `}</style>
         </div>,
-        document.body,
+        document.body
     );
 };
 

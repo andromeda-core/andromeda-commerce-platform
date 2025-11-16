@@ -33,7 +33,7 @@ interface IPostRepository
 
     public function getGoogleMapSettings();
 
-    public function getRelatedPosts(Request $request, ?string $slug);
+    public function getRelated(Request $request, ?string $slug);
 
     public function hashtagResults(Request $request, ?string $hashtag, array $preferences = []);
 }

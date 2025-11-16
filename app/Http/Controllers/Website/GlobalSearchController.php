@@ -4,15 +4,15 @@ namespace App\Http\Controllers\Website;
 
 use App\Http\Controllers\Controller;
 use App\Repositories\Floors\Interface\IFloorRepostitory;
-use App\Repositories\GlobalSearch\Repository\GlobalSearchRepository;
-use App\Repositories\Posts\Repository\PostRepository;
+use App\Repositories\GlobalSearch\Interface\IGlobalSearchRepository;
+use App\Repositories\Posts\Interface\IPostRepository;
 use App\Repositories\SearchHistories\Repository\SearchHistoryRepository;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class GlobalSearchController extends Controller
 {
-    public function __construct(private PostRepository $post, private GlobalSearchRepository $globalSearch, private IFloorRepostitory $floor, private SearchHistoryRepository $searchHistory) {}
+    public function __construct(private IPostRepository $post, private IGlobalSearchRepository $globalSearch, private IFloorRepostitory $floor, private SearchHistoryRepository $searchHistory) {}
 
     /**
      * @Perfect But Joseph Changed The Filter Logic

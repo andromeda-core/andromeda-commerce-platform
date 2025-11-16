@@ -449,7 +449,7 @@ Additional Work:
              Mobile Post Viewer  -> pending
         )
         21: Post Update Issue Fixed  ✅
-        22: Video Plyr.js Currently Disabled And Will be Fixed Later
+        22: Video Plyr.js Currently Disabled And Will be Fixed Later ✅
         23: Font SIZE UPDATED OF MAIN Page Posts And Products ✅
         24: Profile Page Completed ✅
         25: Smatphone + POST Mobile Viewer Back Button Issue Fix FIXED   ✅
@@ -471,7 +471,7 @@ Additional Work:
         32: My Orders Page Is In Progress Remeaning things (
             1: Prompt Customer To Give Payment Proof If Not Paid Via Bitcoin, ✅
             2: Courier Detail Showing On Order Detail Page, ✅
-            3: Pop State Work For Better Pop State Handling -> done but not perfect as it has to be,
+            3: Pop State Work For Better Pop State Handling -> done but not perfect as it has to be, ✅
             4: Order Notification Jobs Updated Needed For Adding Appropriate URLS OF THE SITE, ✅
             5: Color Showing On Smartphones In Order Details Page Of Website and On Dashboard (Because The Color Column Added Recently), ✅
             6: Smartphone Viewer Buy Now Button Will Redirect user To The Cart page and that product will be automatically added in cart if not already
@@ -520,7 +520,35 @@ Additional Work:
         44: POSTAL CODE AT CHECKOUT (*) Added ✅
         45: Country Selection Added When Registering ✅
         46: Hover Prevented On  Touch Devices ✅
-    )
+        47: (
+            1:  DESKTOP PC POST AND PRODUCT Viewers Fully Rewrote And MERGED ALL STATES INTO FEED   ✅
+            2:  MOBILE FEED ADDED POST AND PRODUCTS MERGED (
+                1: Infinity Loop On BOTH Y AND X AXIS MOBILE FEED ✅
+                2: Gallery Viewer ✅
+                3: Video Player Enhancement  ✅
+                4: Fecthing More Results In Feed When Scrolled ✅
+                5: UI ADJUSTEMENTS  ✅
+                6: Importantly X Axis Whole UI AND LOGIc Remeaning ✅
+                7: FECTHING MORE X Axis Releated FEED LOGIC NEEDEd ANd BACKEND WIll BE UPDATED ✅
+                8: X Axis RELATED FEED FECTHING AND Backend Updates Done ✅
+                9: Optimized X And Y axis FEED FOR CORRECTLY FECTHING ITEMS ✅
+                10: FLICKING SHOWING In Y AXIS FEED NEEDED OPTIMIZATION ✅
+                11: Y Axis Fetching More FIX NEEDED It doesnt Add More Or Doesnt Show Will be Checked ✅
+                12: X AXis Fecthing Logic NEeded FIX ✅
+                13: X Axis Feed Dont Show After Refresh Needed Fix ✅
+
+            )
+        )
+        48: Backend UPDATED FOR FECTHING FEED ✅
+        49: HASHTAG AND RESULTS PAGE REDIRETCING TO MAIN PAGE WITH POST OR PRODUCT LOGIC UPDATED AND Brwoser History controlled Correctly✅
+        50: Encoding Done For Slug On Fecthing Single Post And Single Smartphone  ✅
+        51: MAIN FEED STATES CORRECTED AND BROWSER HISTORY ALSO MANAGED CORRECTLY NOW Tracking History With Each Feed item and closing correctly  as well as with feed gallery✅
+        52: Bookmark Page Layout Updated ✅
+        53: Hashtag and results page POST/Product Image if missing than fallback to placeholder for better UX done ✅
+        54: Hashtag Page filter Applying Logic Were Broken so That is FIXED  now ✅
+        55: Popups For Mobile Feed And Desktop UPDATED To THe Latest PDF Design But Normal Alert Toast Notifications will be same ✅
+
+    ) Redesigned Whole Website 4th Time Completed According To The LAYOUT Design Reference Provided ✅
 
 
 

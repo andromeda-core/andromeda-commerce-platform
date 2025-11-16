@@ -39,14 +39,19 @@ class PostRepository implements IPostRepository
 
     public function getSinglePostBySlug(string $slug, ?Request $request = null)
     {
+
         $images = ! empty($request) ? ($request->has('images') ? $request->boolean('images') : true) : null;
         $videos = ! empty($request) ? ($request->has('videos') ? $request->boolean('videos') : true) : null;
         $text = ! empty($request) ? ($request->has('text') ? $request->boolean('text') : true) : null;
         $show_posts = ! empty($request) ? ($request->has('show_posts') ? $request->boolean('show_posts') : true) : null;
+        $show_products = ! empty($request) ? ($request->has('show_products') ? $request->boolean('show_products') : true) : null;
 
         if ($show_posts) {
             $post = $this->post->with(['floor', 'user'])
                 ->where('slug', $slug)
+                ->when(! empty($show_posts), function ($q) {
+                    $q->where('status', true);
+                })
                 ->when($request && $request->hasAny(['text', 'images', 'videos']), function ($q) use ($text, $images, $videos) {
                     $q->where(function ($q) use ($text, $images, $videos) {
                         if ($text) {
@@ -76,6 +81,9 @@ class PostRepository implements IPostRepository
                 ->first();
 
             if (! empty($post)) {
+                $related_posts = collect();
+                $related_smartphones = collect();
+
                 $related_posts = $this->post
                     ->where('id', '!=', $post->id)
                     ->where(function ($q) use ($text, $images, $videos) {
@@ -110,9 +118,57 @@ class PostRepository implements IPostRepository
                     ->where('status', true)
                     ->with(['floor', 'user'])
                     ->take(5)
-                    ->get();
+                    ->get()
+                    ->map(function ($post) {
+                        $post->type = 'posts';
 
-                $post->related_posts = $related_posts;
+                        return $post;
+                    });
+
+                if ($show_products) {
+                    $related_smartphones = $this->smartphone
+                        ->whereHas('selling_info')
+                        ->whereNotNull('slug')
+                        ->with(['model_name', 'capacity', 'selling_info'])
+                        ->where(function ($query) use ($post) {
+                            $query->where('tag', 'like', '%'.$post->tag.'%')
+                                ->orWhere('content', 'like', '%'.$post->content.'%')
+                                ->orWhereHas('model_name', function ($q) use ($post) {
+                                    $q->where('name', 'like', '%'.$post->title.'%')
+                                        ->orWhere('name', 'like', '%'.$post->content.'%')
+                                        ->orWhere('name', 'like', '%'.$post->tag.'%');
+                                });
+                        })
+                        ->withCount([
+                            'inventory_items' => function ($query) {
+                                $query->where('status', 'in_stock');
+                            },
+                        ])
+                        ->latest()
+                        ->take(5)
+                        ->get()
+                        ->map(function ($smartphone) {
+
+                            return [
+                                'id' => $smartphone->id,
+                                'name' => $smartphone->model_name->name,
+                                'capacity' => $smartphone->capacity->name,
+                                'images' => $smartphone->smartphone_image_urls,
+                                'colors' => $smartphone->colors,
+                                'upc' => $smartphone->upc,
+                                'selling_info' => $smartphone->selling_info,
+                                'inventory_items_count' => $smartphone->inventory_items_count,
+                                'slug' => $smartphone->slug,
+                                'tag' => $smartphone->tag,
+                                'content' => $smartphone->content,
+                                'type' => 'smartphones',
+                            ];
+
+                        });
+                }
+
+                $post->related = collect([...$related_posts, ...$related_smartphones])->shuffle();
+                $post->type = 'posts';
             }
 
             return $post;
@@ -647,7 +703,7 @@ class PostRepository implements IPostRepository
                 ->latest()
                 ->forPage($page, $perPage)
                 ->get()
-                ->map(function ($post) use ($images, $text, $videos) {
+                ->map(function ($post) use ($images, $text, $videos, $show_products) {
                     $related_posts = $this->post
                         ->where('id', '!=', $post->id)
                         ->where(function ($q) use ($text, $images, $videos) {
@@ -675,15 +731,67 @@ class PostRepository implements IPostRepository
                             }
                         })
                         ->where(function ($query) use ($post) {
-                            $query->where('title', 'like', '%'.$post->title.'%')
+                            $query->where('tag', 'like', '%'.$post->tag.'%')
                                 ->orWhere('content', 'like', '%'.$post->content.'%')
-                                ->orWhere('tag', 'like', '%'.$post->tag.'%');
+                                ->orWhere('title', 'like', '%'.$post->title.'%');
                         })
+
                         ->where('status', true)
                         ->with(['floor', 'user'])
-                        ->take(5);
+                        ->take(5)
+                        ->get()
+                        ->map(function ($post) {
 
-                    $post->related_posts = $related_posts->get();
+                            $post->type = 'posts';
+
+                            return $post;
+                        });
+
+                    $related_smartphones = collect();
+
+                    if ($show_products) {
+                        $related_smartphones = $this->smartphone
+                            ->whereHas('selling_info')
+                            ->whereNotNull('slug')
+                            ->with(['model_name', 'capacity', 'selling_info'])
+                            ->where(function ($query) use ($post) {
+                                $query->where('tag', 'like', '%'.$post->tag.'%')
+                                    ->orWhere('content', 'like', '%'.$post->content.'%')
+                                    ->orWhereHas('model_name', function ($q) use ($post) {
+                                        $q->where('name', 'like', '%'.$post->title.'%')
+                                            ->orWhere('name', 'like', '%'.$post->content.'%')
+                                            ->orWhere('name', 'like', '%'.$post->tag.'%');
+                                    });
+                            })
+                            ->withCount([
+                                'inventory_items' => function ($query) {
+                                    $query->where('status', 'in_stock');
+                                },
+                            ])
+                            ->latest()
+                            ->take(5)
+                            ->get()
+                            ->map(function ($smartphone) {
+
+                                return [
+                                    'id' => $smartphone->id,
+                                    'name' => $smartphone->model_name->name,
+                                    'capacity' => $smartphone->capacity->name,
+                                    'images' => $smartphone->smartphone_image_urls,
+                                    'colors' => $smartphone->colors,
+                                    'upc' => $smartphone->upc,
+                                    'selling_info' => $smartphone->selling_info,
+                                    'inventory_items_count' => $smartphone->inventory_items_count,
+                                    'slug' => $smartphone->slug,
+                                    'tag' => $smartphone->tag,
+                                    'content' => $smartphone->content,
+                                    'type' => 'smartphones',
+                                ];
+
+                            });
+                    }
+
+                    $post->related = collect([...$related_posts, ...$related_smartphones])->shuffle();
 
                     $post->type = 'posts';
 
@@ -707,7 +815,93 @@ class PostRepository implements IPostRepository
                 ->latest()
                 ->forPage($page, $perPage)
                 ->get()
-                ->map(function ($smartphone) {
+                ->map(function ($smartphone) use ($show_posts, $images, $videos, $text) {
+
+                    $related_smartphones = $this->smartphone
+                        ->where('id', '!=', $smartphone->id)
+                        ->whereHas('selling_info')
+                        ->whereNotNull('slug')
+                        ->with(['model_name', 'capacity', 'selling_info'])
+                        ->where(function ($query) use ($smartphone) {
+                            $query->where('tag', 'like', '%'.$smartphone->tag.'%')
+                                ->orWhere('content', 'like', '%'.$smartphone->content.'%')
+                                ->orWhereHas('model_name', function ($q) use ($smartphone) {
+                                    $q->where('name', 'like', '%'.$smartphone->model_name->name.'%')
+                                        ->orWhere('name', 'like', '%'.$smartphone->content.'%')
+                                        ->orWhere('name', 'like', '%'.$smartphone->tag.'%');
+                                });
+                        })
+
+                        ->withCount([
+                            'inventory_items' => function ($query) {
+                                $query->where('status', 'in_stock');
+                            },
+                        ])
+                        ->latest()
+                        ->take(5)
+                        ->get()
+                        ->map(function ($smartphone) {
+                            return [
+                                'id' => $smartphone->id,
+                                'name' => $smartphone->model_name->name,
+                                'capacity' => $smartphone->capacity->name,
+                                'images' => $smartphone->smartphone_image_urls,
+                                'colors' => $smartphone->colors,
+                                'upc' => $smartphone->upc,
+                                'selling_info' => $smartphone->selling_info,
+                                'inventory_items_count' => $smartphone->inventory_items_count,
+                                'slug' => $smartphone->slug,
+                                'tag' => $smartphone->tag,
+                                'content' => $smartphone->content,
+                                'type' => 'smartphones',
+
+                            ];
+                        });
+
+                    $related_posts = collect();
+                    if ($show_posts) {
+                        $related_posts = $this->post
+                            ->where(function ($q) use ($text, $images, $videos) {
+                                if ($text) {
+
+                                    $q->orWhere(function ($sub) {
+                                        $sub->whereNull('images')
+                                            ->whereNull('videos');
+                                    });
+                                }
+
+                                if ($images) {
+
+                                    $q->orWhere(function ($sub) {
+                                        $sub->whereNotNull('images')
+                                            ->whereNull('videos');
+                                    });
+                                }
+
+                                if ($videos) {
+
+                                    $q->orWhere(function ($sub) {
+                                        $sub->whereNotNull('videos');
+                                    });
+                                }
+                            })
+                            ->where(function ($query) use ($smartphone) {
+                                $query->where('tag', 'like', '%'.$smartphone->tag.'%')
+                                    ->orWhere('content', 'like', '%'.$smartphone->content.'%')
+                                    ->orWhere('title', 'like', '%'.$smartphone->model_name->name.'%');
+                            })
+                            ->where('status', true)
+                            ->with(['floor', 'user'])
+                            ->take(5)
+                            ->get()
+                            ->map(function ($post) {
+
+                                $post->type = 'posts';
+
+                                return $post;
+                            });
+                    }
+
                     return [
                         'id' => $smartphone->id,
                         'name' => $smartphone->model_name->name,
@@ -720,7 +914,8 @@ class PostRepository implements IPostRepository
                         'slug' => $smartphone->slug,
                         'tag' => $smartphone->tag,
                         'content' => $smartphone->content,
-                        'type' => 'smartphone',
+                        'type' => 'smartphones',
+                        'related' => collect([...$related_posts, ...$related_smartphones])->shuffle(),
 
                     ];
                 });
@@ -866,67 +1061,212 @@ class PostRepository implements IPostRepository
         return Cache::get('google_map_settings');
     }
 
-    public function getRelatedPosts(Request $request, ?string $slug = null)
+    // Remeaning FOR UPDATE
+    public function getRelated(Request $request, ?string $slug = null)
     {
 
         try {
+
+            $existing_slugs = $request->input('excluded_slugs');
+
             $post = $this->post->where('slug', $slug)->where('status', true)->first();
+            $smartphone = null;
+            $page = $request->input('page', 1);
+            $perPage = 10;
 
             if (empty($post)) {
-                return [
-                    'status' => true,
-                    'related_posts' => [],
-                ];
+                $smartphone = $this->smartphone
+                    ->where('slug', $slug)
+                    ->with(['model_name', 'capacity', 'selling_info'])
+                    ->withCount([
+                        'inventory_items' => function ($query) {
+                            $query->where('status', 'in_stock');
+                        },
+                    ])
+                    ->whereHas('selling_info')
+                    ->whereNotNull('slug')
+                    ->latest()
+                    ->first();
+
+                if (empty($smartphone)) {
+                    return [
+                        'status' => false,
+                        'type' => 'nothing_found',
+
+                    ];
+                }
+
             }
 
             $images = $request->boolean('images', true);
             $text = $request->boolean('text', true);
             $videos = $request->boolean('videos', true);
+            $show_posts = $request->boolean('show_posts', true);
+            $show_products = $request->boolean('show_products', true);
 
-            $related_posts = $this->post
-                ->where('id', '!=', $post->id)
-                ->where(function ($q) use ($text, $images, $videos) {
-                    if ($text) {
+            $hasMore = false;
+            $related_posts = [];
+            $related_smartphones = [];
 
-                        $q->orWhere(function ($sub) {
-                            $sub->whereNull('images')
-                                ->whereNull('videos');
+            if ($show_posts) {
+                $related_posts = $this->post
+                    ->when(! empty($post), function ($q) use ($post) {
+                        $q->where('id', '!=', $post->id);
+                    })
+                    ->when(! blank($existing_slugs), function ($query) use ($existing_slugs) {
+                        $query->whereNotIn('slug', $existing_slugs);
+                    })
+                    ->where(function ($q) use ($text, $images, $videos) {
+                        if ($text) {
+
+                            $q->orWhere(function ($sub) {
+                                $sub->whereNull('images')
+                                    ->whereNull('videos');
+                            });
+                        }
+
+                        if ($images) {
+
+                            $q->orWhere(function ($sub) {
+                                $sub->whereNotNull('images')
+                                    ->whereNull('videos');
+                            });
+                        }
+
+                        if ($videos) {
+
+                            $q->orWhere(function ($sub) {
+                                $sub->whereNotNull('videos');
+                            });
+                        }
+                    })
+                    ->when(! empty($post), function ($q) use ($post) {
+                        $q->where(function ($query) use ($post) {
+                            $query->where('title', 'like', '%'.$post->title.'%')
+                                ->orWhere('content', 'like', '%'.$post->content.'%')
+                                ->orWhere('tag', 'like', '%'.$post->tag.'%');
                         });
-                    }
+                    })
 
-                    if ($images) {
-
-                        $q->orWhere(function ($sub) {
-                            $sub->whereNotNull('images')
-                                ->whereNull('videos');
+                    ->when(! empty($smartphone), function ($q) use ($smartphone) {
+                        $q->where(function ($query) use ($smartphone) {
+                            $query->where('title', 'like', '%'.$smartphone->model_name->name.'%')
+                                ->orWhere('content', 'like', '%'.$smartphone->content.'%')
+                                ->orWhere('tag', 'like', '%'.$smartphone->tag.'%');
                         });
-                    }
+                    })
+                    ->where('status', true)
+                    ->with(['floor', 'user'])
+                    ->forPage($page, $perPage)
+                    ->latest()
+                    ->get()
+                    ->map(function ($post) {
+                        $post->type = 'posts';
 
-                    if ($videos) {
+                        return $post;
+                    });
 
-                        $q->orWhere(function ($sub) {
-                            $sub->whereNotNull('videos');
+                $hasMore = $hasMore || ($related_posts->count() === $perPage);
+
+            }
+
+            if ($show_products) {
+                $related_smartphones = $this->smartphone
+                    ->when(! empty($smartphone), function ($q) use ($smartphone) {
+                        $q->where('id', '!=', $smartphone->id);
+                    })
+                    ->when(! blank($existing_slugs), function ($query) use ($existing_slugs) {
+                        $query->whereNotIn('slug', $existing_slugs);
+                    })
+                    ->whereHas('selling_info')
+                    ->whereNotNull('slug')
+                    ->with(['model_name', 'capacity', 'selling_info'])
+                    ->when(! empty($smartphone), function ($q) use ($smartphone) {
+                        $q->where(function ($query) use ($smartphone) {
+                            $query->where('tag', 'like', '%'.$smartphone->tag.'%')
+                                ->orWhere('content', 'like', '%'.$smartphone->content.'%')
+                                ->orWhereHas('model_name', function ($q) use ($smartphone) {
+                                    $q->where('name', 'like', '%'.$smartphone->model_name->name.'%')
+                                        ->orWhere('name', 'like', '%'.$smartphone->content.'%')
+                                        ->orWhere('name', 'like', '%'.$smartphone->tag.'%');
+                                });
                         });
-                    }
-                })
-                ->where(function ($query) use ($post) {
-                    $query->where('title', 'like', '%'.$post->title.'%')
-                        ->orWhere('content', 'like', '%'.$post->content.'%')
-                        ->orWhere('tag', 'like', '%'.$post->tag.'%');
-                })
-                ->where('status', true)
-                ->with(['floor', 'user'])
-                ->paginate(10)
-                ->appends(array_merge(
-                    $request->only(['images', 'text', 'videos']),
-                    ['slug' => $slug]
-                ))
-                ->withPath(route('website.posts.getrelated'));
+                    })
+
+                    ->when(! empty($post), function ($q) use ($post) {
+                        $q->where(function ($query) use ($post) {
+                            $query->where('tag', 'like', '%'.$post->tag.'%')
+                                ->orWhere('content', 'like', '%'.$post->content.'%')
+                                ->orWhereHas('model_name', function ($q) use ($post) {
+                                    $q->where('name', 'like', '%'.$post->title.'%')
+                                        ->orWhere('name', 'like', '%'.$post->content.'%')
+                                        ->orWhere('name', 'like', '%'.$post->tag.'%');
+                                });
+                        });
+                    })
+                    ->withCount([
+                        'inventory_items' => function ($query) {
+                            $query->where('status', 'in_stock');
+                        },
+                    ])
+
+                    ->forPage($page, $perPage)
+                    ->latest()
+                    ->get()
+                    ->map(function ($smartphone) {
+                        return [
+                            'id' => $smartphone->id,
+                            'name' => $smartphone->model_name->name,
+                            'capacity' => $smartphone->capacity->name,
+                            'images' => $smartphone->smartphone_image_urls,
+                            'colors' => $smartphone->colors,
+                            'upc' => $smartphone->upc,
+                            'selling_info' => $smartphone->selling_info,
+                            'inventory_items_count' => $smartphone->inventory_items_count,
+                            'slug' => $smartphone->slug,
+                            'tag' => $smartphone->tag,
+                            'content' => $smartphone->content,
+                            'type' => 'smartphones',
+
+                        ];
+                    });
+
+                $hasMore = $hasMore || ($related_smartphones->count() === $perPage);
+            }
+
+            $results = collect([...$related_posts, ...$related_smartphones])->toArray();
+
+            $queryParams = [
+                'page' => $page + 1,
+                'images' => $images,
+                'text' => $text,
+                'videos' => $videos,
+                'show_products' => $show_products,
+                'show_posts' => $show_posts,
+            ];
+
+            $nextParams = $queryParams;
+            $nextParams['page'] = $page + 1;
+
+            $prevParams = $queryParams;
+            $prevParams['page'] = max(1, $page - 1);
 
             return [
                 'status' => true,
-                'related_posts' => $related_posts,
+                'slug' => $slug,
+                'data' => $results,
+                'pagination' => [
+                    'current_page' => (int) $page,
+                    'per_page' => (int) $perPage,
+                    'has_more_pages' => $hasMore,
+                    'next_page' => $hasMore ? $page + 1 : null,
+                    'total' => (count($results) ?? 0),
+                    'next_page_url' => $hasMore ? route('website.posts.getrelated').'?'.http_build_query($nextParams) : null,
+                    'prev_page_url' => $page > 1 ? route('website.posts.getrelated').'?'.http_build_query($prevParams) : null,
+                ],
+
             ];
+
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -948,7 +1288,12 @@ class PostRepository implements IPostRepository
             $page = $request->input('page', 1);
             $perPage = 10;
             $hasMore = false;
-            $data = [];
+            $data = [
+                'posts' => [],
+                'products' => [
+                    'smartphones' => [],
+                ],
+            ];
 
             if ($show_posts) {
                 $posts = $this->post
@@ -1007,7 +1352,11 @@ class PostRepository implements IPostRepository
                 $smartphones = $this->smartphone
                     ->where('tag', $hashtag)
                     ->with(['model_name', 'capacity', 'selling_info'])
-                    ->withCount('inventory_items')
+                    ->withCount([
+                        'inventory_items' => function ($query) {
+                            $query->where('status', 'in_stock');
+                        },
+                    ])
                     ->whereHas('selling_info')
                     ->whereNotNull('slug')
                     ->latest()

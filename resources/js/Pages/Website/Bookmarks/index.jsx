@@ -1,7 +1,6 @@
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import QRCode from 'react-qr-code';
-import { toast } from 'react-toastify';
 import { createPortal } from 'react-dom';
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
@@ -9,6 +8,8 @@ import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import useWindowSize from '@/Hooks/useWindowSize';
 import Toast from '@/Components/Toast';
 import getCookie from '@/Hooks/useGetCookie';
+import Placeholder from 'asset/assets/images/product/placeholder.jpg';
+import VideoThumbnail from '@/Components/VideoThumbnail';
 
 export default function index() {
     const [bookmarkedPosts, setBookmarkedPosts] = useState([]);
@@ -22,7 +23,6 @@ export default function index() {
     const [ErrorMessage, setErrorMessage] = useState(null);
     const [showErrorMessage, setShowErrorMessage] = useState(false);
 
-    const windowSize = useWindowSize();
 
     const generateURL = (post) => {
         return (
@@ -135,22 +135,16 @@ export default function index() {
 
     const handleOpenPost = (post) => {
         const url = generateURL(post);
+        window.history.replaceState(
+            {},
+            '',
+            route('home'),
+        )
         router.visit(route('home') + url, {
             replace: false,
             preserveState: true,
             preserveScroll: true,
-            onSuccess: () => {
-                if (windowSize.width > 1024) {
-                    window.history.pushState({ modal: 'post-viewer' }, '');
-                } else {
-                    window.history.pushState(
-                        {
-                            modal: 'post-gallery',
-                        },
-                        '',
-                    );
-                }
-            },
+
         });
     };
 
@@ -171,12 +165,12 @@ export default function index() {
             )}
 
             {!isLoaded && (
-                <div className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 dark:text-white/80">
+                <div className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80">
                     <div className="flex items-center justify-center">
                         <div role="status">
                             <svg
                                 aria-hidden="true"
-                                className="h-5 w-5 animate-spin fill-indigo-600 text-gray-200 dark:text-white/80"
+                                className="w-5 h-5 text-gray-200 animate-spin fill-indigo-600 dark:text-white/80"
                                 viewBox="0 0 100 101"
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -200,167 +194,130 @@ export default function index() {
             {/* Masonry Layout */}
             {isLoaded && (
                 <div className="pb-20 sm:pb-20">
-                    <div className="max-w-8xl mx-auto sm:px-6 lg:px-8">
+                    <div className="mx-auto max-w-8xl sm:px-6 lg:px-8">
                         {/* Compact Masonry */}
                         <div className="columns-1 gap-1 [column-fill:_balance] min-[300px]:columns-2 lg:columns-4">
-                            {bookmarkedPosts.map((post, index) => {
+                            {bookmarkedPosts.map((item, index) => {
                                 return (
                                     <article
-                                        key={post?.id}
-                                        className="group relative mb-1 cursor-pointer break-inside-avoid overflow-hidden rounded-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                                        key={item?.id}
+                                        className="relative mb-1 overflow-hidden transition-all duration-300 rounded-none shadow-md cursor-pointer no-touch-hover group break-inside-avoid hover:-translate-y-1 hover:shadow-xl lg:mb-2"
                                         style={{ animationDelay: `${index * 100}ms` }}
-                                        onClick={() => handleOpenPost(post)}
+                                        onClick={() => {
+                                            handleOpenPost(item);
+                                        }}
                                     >
-                                        {post?.images ? (
+                                        {item?.images ? (
                                             <div className="relative">
                                                 <img
-                                                    src={post?.images[0]?.url}
-                                                    alt={post?.title}
+                                                    src={item?.images[0]?.url}
+                                                    alt={item?.title}
                                                     loading="lazy"
+                                                    onError={(e) =>
+                                                        (e.target.src = Placeholder)
+                                                    }
                                                     className="w-full object-cover text-[10px] text-gray-700 transition-all duration-500 group-hover:scale-105 dark:text-white/80 dark:opacity-80"
                                                 />
 
                                                 {/* Title */}
                                                 <div className="absolute left-3 top-3">
-                                                    <h2 className="line-clamp-2 text-[8px] font-semibold text-white drop-shadow-lg sm:text-[9px] md:text-[10px] lg:text-lg">
-                                                        {post?.title.length > 20
-                                                            ? post?.title.slice(0, 20) + '...'
-                                                            : post?.title}
-                                                    </h2>
+                                                    <span className="text-[8px] text-white drop-shadow-md sm:text-[9px] md:text-[10px] lg:text-[17px]">
+                                                        {item?.tag}
+                                                    </span>
                                                 </div>
-
-                                                {/* Share Button */}
-                                                <button
-                                                    className="absolute right-3 top-3 text-white opacity-80 drop-shadow-lg hover:opacity-100"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        const url =
-                                                            route('home') + generateURL(post);
-                                                        navigator.clipboard.writeText(url.trim());
-
-                                                        setLinkCopied(true);
-                                                    }}
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        strokeWidth={1.5}
-                                                        stroke="currentColor"
-                                                        className="size-3 lg:size-5"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z"
-                                                        />
-                                                    </svg>
-                                                </button>
 
                                                 {/* Title + Meta */}
                                                 <div className="absolute inset-x-0 bottom-0 p-4">
-                                                    <div className="mt-1 flex items-center justify-between text-[6px] font-bold text-gray-200 drop-shadow-sm sm:text-[7px] md:text-[8px] lg:text-xs">
+                                                    <div className="mt-1 flex items-center justify-between text-[8px] font-bold text-gray-200 drop-shadow-sm sm:text-[9px] md:text-[10px] lg:text-[17px]">
                                                         <span className="text-white drop-shadow-md">
-                                                            {post?.tag}
-                                                        </span>
-                                                        <span className="flex items-center gap-1 text-white drop-shadow-md lg:gap-2">
-                                                            <svg
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                fill="none"
-                                                                viewBox="0 0 24 24"
-                                                                strokeWidth={1.5}
-                                                                stroke="currentColor"
-                                                                className="size-2 md:size-3 lg:size-4"
-                                                            >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                                                                />
-                                                            </svg>
-                                                            {post?.added_at}
+                                                            {item?.title.length > 25
+                                                                ? item?.title.slice(
+                                                                    0,
+                                                                    25,
+                                                                ) + '...'
+                                                                : item?.title}
                                                         </span>
                                                     </div>
                                                 </div>
                                             </div>
+                                        ) : !item?.images && item?.videos ? (
+                                            <>
+                                                <div className="relative">
+                                                    <VideoThumbnail
+                                                        key={`${index}-${item?.post_video_urls[0]}`}
+                                                        videoUrl={
+                                                            item?.post_video_urls[0]
+                                                        }
+                                                        alt={item?.title}
+                                                        className="w-full object-cover text-[10px] text-gray-700 transition-all duration-500 group-hover:scale-105 dark:text-white/80 dark:opacity-80"
+                                                    />
+
+                                                    {/* Title */}
+                                                    <div className="absolute left-3 top-3">
+                                                        <span className="text-[8px] text-white drop-shadow-md sm:text-[9px] md:text-[10px] lg:text-[17px]">
+                                                            {item?.tag}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Title + Meta */}
+                                                    <div className="absolute inset-x-0 bottom-0 p-4">
+                                                        <div className="mt-1 flex items-center justify-between text-[8px] font-bold text-gray-200 drop-shadow-sm sm:text-[9px] md:text-[10px] lg:text-[17px]">
+                                                            <span className="text-white drop-shadow-md">
+                                                                {item?.title.length > 25
+                                                                    ? item?.title.slice(
+                                                                        0,
+                                                                        25,
+                                                                    ) + '...'
+                                                                    : item?.title}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </>
                                         ) : (
-                                            /* Text-only */
-                                            <div className="relative flex flex-col justify-between bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 p-5 text-white dark:from-gray-500 dark:via-gray-600 dark:to-gray-800">
-                                                {/* Share Button */}
-                                                <button
-                                                    className="absolute right-3 top-3 text-white opacity-80 hover:opacity-100"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        const url =
-                                                            route('home') + generateURL(post);
-                                                        navigator.clipboard.writeText(url.trim());
+                                            <>
+                                                {/* /* Text-only */}
+                                                <div className="relative flex flex-col justify-between bg-[#F2F2F2] p-5 text-gray-700 dark:bg-[#485260] dark:text-white/80">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="mb-3 text-[8px] drop-shadow-md sm:text-[9px] md:text-[10px] lg:text-[17px]">
+                                                            {item?.tag}
+                                                        </span>
+                                                    </div>
 
-                                                        setLinkCopied(true);
-                                                    }}
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        strokeWidth={1.5}
-                                                        stroke="currentColor"
-                                                        className="size-3 lg:size-5"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z"
-                                                        />
-                                                    </svg>
-                                                </button>
-
-                                                <div>
-                                                    <h2 className="mb-2 line-clamp-2 text-[10px] font-semibold text-white drop-shadow-lg sm:text-[9px] md:text-[10px] lg:text-lg">
-                                                        {post?.title}
-                                                    </h2>
-                                                    <p className="line-clamp-4 text-[10px] opacity-90 lg:text-sm">
-                                                        {post.content.length > 200 ? (
-                                                            <span
-                                                                dangerouslySetInnerHTML={{
-                                                                    __html:
-                                                                        post?.content.substring(
-                                                                            0,
-                                                                            200,
-                                                                        ) + '...',
-                                                                }}
-                                                            ></span>
-                                                        ) : (
-                                                            <span
-                                                                dangerouslySetInnerHTML={{
-                                                                    __html: post?.content,
-                                                                }}
-                                                            ></span>
-                                                        )}
-                                                    </p>
+                                                    <div>
+                                                        <p className="line-clamp-5 text-[8px] opacity-90 sm:text-[9px] md:text-[10px] lg:text-[17px]">
+                                                            {item.content.length >
+                                                                400 ? (
+                                                                <span
+                                                                    dangerouslySetInnerHTML={{
+                                                                        __html:
+                                                                            item?.content.substring(
+                                                                                0,
+                                                                                400,
+                                                                            ) + '...',
+                                                                    }}
+                                                                ></span>
+                                                            ) : (
+                                                                <span
+                                                                    dangerouslySetInnerHTML={{
+                                                                        __html: item?.content,
+                                                                    }}
+                                                                ></span>
+                                                            )}
+                                                        </p>
+                                                    </div>
+                                                    <div className="mt-1 flex items-center justify-between text-[8px] font-medium drop-shadow-sm sm:text-[9px] md:text-[10px] lg:text-[17px]">
+                                                        <span>
+                                                            {item?.title.length > 20
+                                                                ? item?.title.slice(
+                                                                    0,
+                                                                    20,
+                                                                ) + '...'
+                                                                : item?.title}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <div className="mt-2 flex items-center justify-between text-[7px] font-bold text-gray-200 drop-shadow-sm sm:text-[7px] md:text-[8px] lg:text-xs">
-                                                    <span className="text-white drop-shadow-md">
-                                                        {post?.tag}
-                                                    </span>
-                                                    <span className="flex items-center gap-1 text-white drop-shadow-md lg:gap-2">
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            strokeWidth={1.5}
-                                                            stroke="currentColor"
-                                                            className="size-2 md:size-3 lg:size-4"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                                                            />
-                                                        </svg>
-                                                        {post?.added_at}
-                                                    </span>
-                                                </div>
-                                            </div>
+                                            </>
                                         )}
                                     </article>
                                 );
@@ -368,17 +325,17 @@ export default function index() {
                         </div>
 
                         {bookmarkedPosts?.length === 0 && (
-                            <div className="flex items-center justify-center rounded-xl border border-gray-200 bg-white px-6 py-8 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal">
+                            <div className="flex items-center justify-center px-6 py-8 bg-white border border-gray-200 shadow-sm rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
                                 <div className="flex flex-col items-center gap-3">
                                     {/* Icon */}
-                                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                                    <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full dark:bg-gray-700">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             strokeWidth={1.5}
                                             stroke="currentColor"
-                                            className="h-6 w-6 text-gray-500 dark:text-gray-400"
+                                            className="w-6 h-6 text-gray-500 dark:text-gray-400"
                                         >
                                             <path
                                                 strokeLinecap="round"
@@ -393,13 +350,13 @@ export default function index() {
                                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                                             No Bookmarks Found
                                         </h3>
-                                        <p className="mb-5 mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                        <p className="mt-1 mb-5 text-sm text-gray-500 dark:text-gray-400">
                                             Start bookmarking your favorite Posts to see them here
                                         </p>
 
                                         <Link
                                             href={route('home')}
-                                            className="rounded-xl bg-indigo-600 px-4 py-3 font-medium text-white shadow-md transition-all hover:bg-indigo-500 hover:shadow-lg"
+                                            className="px-4 py-3 font-medium text-white transition-all bg-indigo-600 shadow-md rounded-xl hover:bg-indigo-500 hover:shadow-lg"
                                         >
                                             Let's Go
                                         </Link>
@@ -414,13 +371,13 @@ export default function index() {
                                 {nextPageUrl && (
                                     <div
                                         ref={loaderRef}
-                                        className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 dark:text-white/80"
+                                        className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80"
                                     >
                                         <div className="flex items-center justify-center">
                                             <div role="status">
                                                 <svg
                                                     aria-hidden="true"
-                                                    className="h-5 w-5 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"
+                                                    className="w-5 h-5 text-gray-200 animate-spin fill-blue-600 dark:text-gray-600"
                                                     viewBox="0 0 100 101"
                                                     fill="none"
                                                     xmlns="http://www.w3.org/2000/svg"

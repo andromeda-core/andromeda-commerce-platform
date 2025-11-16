@@ -4,9 +4,11 @@ import Toast from '@/Components/Toast';
 import getCookie from '@/Hooks/useGetCookie';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
-import { Head, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import axios from 'axios';
+import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 import React, { useEffect, useRef, useState } from 'react';
+
 
 const hashtagPosts = ({ hashtag, google_map_api_key }) => {
     const [results, setResults] = useState([]);
@@ -191,9 +193,9 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
             />
 
             <div className="pb-20 sm:px-6 sm:pb-20 lg:px-8">
-                <div className="rounded-xl bg-white px-3 text-gray-900 dark:bg-deepcharcoal dark:text-gray-100 sm:px-6 lg:px-8">
+                <div className="px-3 text-gray-900 bg-white rounded-xl dark:bg-deepcharcoal dark:text-gray-100 sm:px-6 lg:px-8">
                     {/* Header */}
-                    <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-slate-700">
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-slate-700">
                         <div className="relative flex items-center gap-6">
                             <button
                                 className={`relative scale-105 pb-2 text-sm text-indigo-600 transition-all duration-300 ease-in-out dark:text-indigo-400`}
@@ -211,7 +213,7 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                                 ></span>
                             </button>
                             <div
-                                className="border-gray-5 group relative mb-3 mt-2 flex items-center justify-between rounded-lg px-2 py-2 text-sm text-indigo-600 transition-all dark:text-indigo-400"
+                                className="relative flex items-center justify-between px-2 py-2 mt-2 mb-3 text-sm text-indigo-600 transition-all rounded-lg border-gray-5 group dark:text-indigo-400"
                                 title="Click to modify filters"
                             >
                                 <div className="flex flex-wrap items-center gap-x-2">{hashtag}</div>
@@ -224,12 +226,12 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                         {allResults.length === 0 ? (
                             <>
                                 {!isLoaded ? (
-                                    <div className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 dark:text-white/80">
+                                    <div className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80">
                                         <div className="flex items-center justify-center">
                                             <div role="status">
                                                 <svg
                                                     aria-hidden="true"
-                                                    className="h-5 w-5 animate-spin fill-indigo-600 text-gray-200 dark:text-white/80"
+                                                    className="w-5 h-5 text-gray-200 animate-spin fill-indigo-600 dark:text-white/80"
                                                     viewBox="0 0 100 101"
                                                     fill="none"
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -258,18 +260,19 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                             allResults.map((item) => (
                                 <div
                                     key={item.id}
-                                    className="group flex cursor-pointer items-center gap-4 px-6 py-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/80"
+                                    className="flex items-center gap-4 px-6 py-4 transition-colors cursor-pointer group hover:bg-gray-50 dark:hover:bg-gray-800/80"
                                 >
                                     {/* Thumbnail */}
-                                    <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-indigo-600 dark:bg-indigo-500">
+                                    <div className="flex-shrink-0 w-12 h-12 overflow-hidden rounded-lg ">
                                         {item.image ? (
                                             <img
                                                 src={item.image}
                                                 alt={item.title || item.name}
-                                                className="h-full w-full object-cover"
+                                                className="object-cover w-full h-full"
+                                                onError={(e) => e.target.src = Placeholder}
                                             />
                                         ) : (
-                                            <div className="flex h-full items-center justify-center text-sm text-white/80">
+                                            <div className="flex items-center justify-center h-full text-sm text-white/80">
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     fill="none"
@@ -289,38 +292,38 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                                     </div>
 
                                     {/* Info */}
-                                    <div className="min-w-0 flex-1">
+                                    <div className="flex-1 min-w-0">
                                         <h3 className="truncate">{item.title || item.name}</h3>
-                                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                                        <p className="text-xs text-gray-500 truncate dark:text-gray-400">
                                             {item?.location_name || ''}
                                         </p>
 
-                                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                                        <p className="text-xs text-gray-500 truncate dark:text-gray-400">
                                             {item?.capacity || ''}
                                         </p>
 
-                                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                                        <p className="text-xs text-gray-500 truncate dark:text-gray-400">
                                             {item?.tag}
                                         </p>
-                                        <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                                        <p className="text-xs text-gray-500 truncate dark:text-gray-400">
                                             {item.created_at}
                                         </p>
                                     </div>
 
                                     {/* Right Info */}
-                                    <div className="flex flex-wrap items-center justify-center gap-2 opacity-0 transition-all duration-200 group-hover:opacity-100 lg:flex-nowrap">
+                                    <div className="flex flex-wrap items-center justify-center gap-2 transition-all duration-200 opacity-0 group-hover:opacity-100 lg:flex-nowrap">
                                         <button
                                             title="Copy Link"
-                                            className="flex h-8 w-8 items-center justify-center rounded-full p-2 text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+                                            className="flex items-center justify-center w-8 h-8 p-2 text-gray-500 rounded-full hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                                             onClick={() => {
                                                 setLinkCopied(true);
                                                 item.type === 'posts'
                                                     ? navigator.clipboard.writeText(
-                                                          route('home') + generateURL(item),
-                                                      )
+                                                        route('home') + generateURL(item),
+                                                    )
                                                     : navigator.clipboard.writeText(
-                                                          route('home') + '?m-slug=' + item.slug,
-                                                      );
+                                                        route('home') + '?m-slug=' + item.slug,
+                                                    );
                                             }}
                                         >
                                             <svg
@@ -339,15 +342,28 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                                             </svg>
                                         </button>
 
-                                        <a
+                                        <Link
                                             title="Open"
                                             href={
                                                 item.type === 'posts'
                                                     ? route('home') + generateURL(item)
                                                     : route('home') + '?m-slug=' + item.slug
                                             }
-                                            {...(windowSize.width > 1024 && { target: '_blank' })}
-                                            className="flex h-8 w-full items-center justify-center gap-2 rounded-full p-2 text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+                                            onClick={() => {
+                                                item.type === 'posts'
+                                                    ? window.history.replaceState(
+                                                        {},
+                                                        '',
+                                                        route('home'),
+                                                    )
+                                                    : window.history.replaceState(
+                                                        {},
+                                                        '',
+                                                        route('home'),
+                                                    );
+                                            }}
+
+                                            className="flex items-center justify-center w-full h-8 gap-2 p-2 text-gray-500 rounded-full hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -364,7 +380,7 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                                                 />
                                             </svg>
                                             <span className="text-xs">New Tab</span>
-                                        </a>
+                                        </Link>
                                     </div>
                                 </div>
                             ))
@@ -374,13 +390,13 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                     {allResults.length > 0 && nextPageUrl && (
                         <div
                             ref={loaderRef}
-                            className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 dark:text-white/80"
+                            className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80"
                         >
                             <div className="flex items-center justify-center">
                                 <div role="status">
                                     <svg
                                         aria-hidden="true"
-                                        className="h-5 w-5 animate-spin fill-indigo-600 text-gray-200 dark:text-gray-600"
+                                        className="w-5 h-5 text-gray-200 animate-spin fill-indigo-600 dark:text-gray-600"
                                         viewBox="0 0 100 101"
                                         fill="none"
                                         xmlns="http://www.w3.org/2000/svg"

@@ -4,7 +4,7 @@ import QRCode from 'react-qr-code';
 import { createPortal } from 'react-dom';
 import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import gsap from 'gsap';
-import SmartphoneMobileGalleryModal from './SmartphoneMobileGalleryModal';
+import SmartphoneMobileGalleryModal from './SmartphoneMobileFeedGallery';
 import useWindowSize from '@/Hooks/useWindowSize';
 
 const SmartphoneMobileModal = ({

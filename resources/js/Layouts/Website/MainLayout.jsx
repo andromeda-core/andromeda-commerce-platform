@@ -142,7 +142,7 @@ export default function MainLayout({ children }) {
 
     return (
         <>
-            <div className="relative min-h-screen w-full bg-white dark:bg-zinc-950/70">
+            <div className="relative w-full min-h-screen bg-white dark:bg-zinc-950/70">
                 <Preloader loaded={loaded} setLoaded={setLoaded} />
 
                 <Toast flash={flash} />
@@ -166,16 +166,15 @@ export default function MainLayout({ children }) {
 
                 {/* Main Content Area */}
                 <div
-                    className={`absolute left-0 top-0 min-h-screen w-full transition-all duration-300 ${
-                        windowSize.width > 1024
-                            ? isCollapsed
-                                ? 'pl-[30px]'
-                                : 'pl-[208px]'
-                            : 'pl-0'
-                    }`}
+                    className={`absolute left-0 top-0 min-h-screen w-full transition-all duration-300 ${windowSize.width > 1024
+                        ? isCollapsed
+                            ? 'pl-[30px]'
+                            : 'pl-[208px]'
+                        : 'pl-0'
+                        }`}
                 >
                     {/* Main Content */}
-                    <main className="mx-0 min-h-screen flex-1 bg-white px-3 pt-2 dark:bg-zinc-950/70 lg:px-20 xl:px-36">
+                    <main className="flex-1 min-h-screen px-3 pt-2 mx-0 bg-white dark:bg-zinc-950/70 lg:px-20 xl:px-36">
                         {needsActivation &&
                             createPortal(
                                 <div
@@ -184,7 +183,7 @@ export default function MainLayout({ children }) {
                                         setNeedsActivation(false);
                                     }}
                                 >
-                                    <p className="mb-3 text-center text-sm opacity-80">
+                                    <p className="mb-3 text-sm text-center opacity-80">
                                         Tap anywhere to activate navigation
                                     </p>
                                 </div>,

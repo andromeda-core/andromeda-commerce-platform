@@ -80,7 +80,6 @@ class PostController extends Controller
         }
 
         $post = $this->post->getSinglePostBySlug($slug, $request);
-        // info($slug);
 
         if (empty($post)) {
             return response()->json(['status' => false]);
@@ -89,7 +88,7 @@ class PostController extends Controller
         return response()->json(['status' => true, 'post' => $post]);
     }
 
-    public function getRelatedPosts(Request $request, ?string $slug = null)
+    public function getRelated(Request $request, ?string $slug = null)
     {
         if (! $request->ajax()) {
             return to_route('home');
@@ -102,12 +101,21 @@ class PostController extends Controller
 
         }
 
-        $posts = $this->post->getRelatedPosts($request, $slug);
-        if ($posts['status'] == false) {
-            return response()->json(['status' => false, 'message' => $posts['message']], 400);
+        $results = $this->post->getRelated($request, $slug);
+        if ($results['status'] == false && isset($results['message'])) {
+            return response()->json(['status' => false, 'message' => $results['message']], 400);
         }
 
-        return response()->json(['status' => true, 'posts' => $posts['related_posts']], 200);
+        if ($results['status'] === false && isset($results['type']) && $results['type'] === 'nothing_found') {
+            return response()->json(['status' => false, 'type' => 'nothing_found'], 200);
+        }
+
+        $nextUrl = $results['pagination']['next_page_url'];
+
+        $relatedFeed = $results['data'];
+        $related_slug = $results['slug'];
+
+        return response()->json(['status' => true, 'results' => $relatedFeed, 'nextUrl' => $nextUrl, 'related_slug' => $related_slug], 200);
     }
 
     public function hashtagIndex(?string $hashtag = null)
