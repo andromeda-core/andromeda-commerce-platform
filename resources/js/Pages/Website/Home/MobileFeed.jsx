@@ -67,8 +67,6 @@ const MobileFeed = ({
 
     // CONTROLING THE VISIBILITY OF VIEWER AFTER OPENING FEED Y Axis
     const [isScrollCompleted, setIsScrollCompleted] = useState(false);
-    const [showSkeleton, setShowSkeleton] = useState(false);
-    const renderedItemsRef = useRef(new Set());
 
 
     // TRACKING VISIBILITY OF SKELETON FOR X AXIS
@@ -754,10 +752,7 @@ const MobileFeed = ({
         if (!feedGallery) return;
         parentFeedSlugRef.current = feedGallery?.slug;
 
-        // ADDING FIRST ITEM TO RENDERED ITEMS SO IT WONT TRIGGERSKELETOn AGAIN
-        if (!renderedItemsRef.current.has(feedGallery?.slug)) {
-            renderedItemsRef.current.add(feedGallery?.slug);
-        }
+
     }, []);
 
     // SETTING ACTUAL FEED In THIS JUST TO APPEND OR PREPEND FEED WHEN LOOPING So IT WONT DISTRUB ACTUAL FEED
@@ -863,41 +858,50 @@ const MobileFeed = ({
     }, []);
 
 
+
+
+    // At the top with other refs
+    const scrollTimeoutRef = useRef(null);
+    const lastProcessedIndexRef = useRef(null);
+
     // X Axis Scroll Setting Logic
     useEffect(() => {
         if (!isScrollCompleted) return;
 
-        const row = horizontalRefs.current[feedIndex];
-        if (!row) return;
+        if (lastProcessedIndexRef.current === feedIndex) {
+            return;
+        }
 
-        const stabilize = () => {
-            const c = row.children;
+        if (scrollTimeoutRef.current) {
+            clearTimeout(scrollTimeoutRef.current);
+        }
 
+        scrollTimeoutRef.current = setTimeout(() => {
+            const row = horizontalRefs.current[feedIndex];
+            if (!row || !row.children || row.children.length < 2) return;
 
-            if (!c || c.length < 3 || !c[1]) {
-                requestAnimationFrame(stabilize);
-                return;
-            }
+            const firstReal = row.children[1];
+            if (!firstReal) return;
 
-            const width = c[1].offsetWidth;
+            const width = firstReal.offsetWidth;
+
             row.style.scrollBehavior = "auto";
-
-            requestAnimationFrame(() => {
-                row.scrollLeft = width;
-
-                requestAnimationFrame(() => {
-                    row.style.scrollBehavior = "smooth";
-                    hasInitializedHorizontalRef.current = true;
+            row.scrollLeft = width;
 
 
-                });
-            });
+            lastProcessedIndexRef.current = feedIndex;
+
+            hasInitializedHorizontalRef.current = true;
+
+        }, 50);
+
+        return () => {
+            if (scrollTimeoutRef.current) {
+                clearTimeout(scrollTimeoutRef.current);
+            }
         };
 
-        requestAnimationFrame(stabilize);
-
     }, [feedIndex, isScrollCompleted]);
-
 
 
 
@@ -1089,12 +1093,6 @@ const MobileFeed = ({
                 }
 
 
-                //  Checking if this item has been rendered before
-                const hasBeenRendered = renderedItemsRef.current.has(newFeedItem.slug);
-
-                if (!hasBeenRendered) {
-                    setShowSkeleton(true);
-                }
 
                 // Update tracking refs
                 lastUpdateRef.current = {
@@ -1129,15 +1127,7 @@ const MobileFeed = ({
 
                 parentFeedSlugRef.current = newFeedItem.slug;
 
-                // Marking this item as rendered and hide skeleton after render
-                if (!hasBeenRendered) {
-                    requestAnimationFrame(() => {
-                        setTimeout(() => {
-                            renderedItemsRef.current.add(newFeedItem.slug);
-                            setShowSkeleton(false);
-                        }, 200);
-                    });
-                }
+
 
                 // Fetch more Y-axis (unchanged)
                 const total = feedRef.current.length;
@@ -1395,7 +1385,7 @@ const MobileFeed = ({
         <>
             {createPortal(
                 <div className="fixed inset-0 z-50 text-gray-700 bg-white scrollbar-none dark:bg-deepcharcoal dark:text-white/80">
-                    {(!isScrollCompleted || isXAxisLooping || showSkeleton) && (
+                    {(!isScrollCompleted || isXAxisLooping) && (
                         <RenderFeedItemSkeleton index={0} />
                     )}
                     <div className='scrollbar-none'
