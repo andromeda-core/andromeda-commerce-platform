@@ -64,9 +64,11 @@ const MobileFeed = ({
     const hasInitializedHorizontalRef = useRef(false);
     const isXLoopingRef = useRef(false);
 
+
     // CONTROLING THE VISIBILITY OF VIEWER AFTER OPENING FEED Y Axis
     const [isScrollCompleted, setIsScrollCompleted] = useState(false);
-
+    const [showSkeleton, setShowSkeleton] = useState(false);
+    const renderedItemsRef = useRef(new Set());
 
 
     // TRACKING VISIBILITY OF SKELETON FOR X AXIS
@@ -751,6 +753,11 @@ const MobileFeed = ({
     useEffect(() => {
         if (!feedGallery) return;
         parentFeedSlugRef.current = feedGallery?.slug;
+
+        // ADDING FIRST ITEM TO RENDERED ITEMS SO IT WONT TRIGGERSKELETOn AGAIN
+        if (!renderedItemsRef.current.has(feedGallery?.slug)) {
+            renderedItemsRef.current.add(feedGallery?.slug);
+        }
     }, []);
 
     // SETTING ACTUAL FEED In THIS JUST TO APPEND OR PREPEND FEED WHEN LOOPING So IT WONT DISTRUB ACTUAL FEED
@@ -881,6 +888,8 @@ const MobileFeed = ({
                 requestAnimationFrame(() => {
                     row.style.scrollBehavior = "smooth";
                     hasInitializedHorizontalRef.current = true;
+
+
                 });
             });
         };
@@ -1079,6 +1088,14 @@ const MobileFeed = ({
                     return;
                 }
 
+
+                //  Checking if this item has been rendered before
+                const hasBeenRendered = renderedItemsRef.current.has(newFeedItem.slug);
+
+                if (!hasBeenRendered) {
+                    setShowSkeleton(true);
+                }
+
                 // Update tracking refs
                 lastUpdateRef.current = {
                     id: newFeedItem.id,
@@ -1111,6 +1128,16 @@ const MobileFeed = ({
                 });
 
                 parentFeedSlugRef.current = newFeedItem.slug;
+
+                // Marking this item as rendered and hide skeleton after render
+                if (!hasBeenRendered) {
+                    requestAnimationFrame(() => {
+                        setTimeout(() => {
+                            renderedItemsRef.current.add(newFeedItem.slug);
+                            setShowSkeleton(false);
+                        }, 200);
+                    });
+                }
 
                 // Fetch more Y-axis (unchanged)
                 const total = feedRef.current.length;
@@ -1368,7 +1395,7 @@ const MobileFeed = ({
         <>
             {createPortal(
                 <div className="fixed inset-0 z-50 text-gray-700 bg-white scrollbar-none dark:bg-deepcharcoal dark:text-white/80">
-                    {(!isScrollCompleted || isXAxisLooping) && (
+                    {(!isScrollCompleted || isXAxisLooping || showSkeleton) && (
                         <RenderFeedItemSkeleton index={0} />
                     )}
                     <div className='scrollbar-none'
