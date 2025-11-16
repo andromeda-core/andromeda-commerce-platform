@@ -574,7 +574,7 @@ const MobileFeed = ({
                 {/* Bottom */}
                 {item.type === 'smartphones' && (
                     <div
-                        className="px-4 pt-3 pb-32 bg-white dark:bg-deepcharcoal shrink-0"
+                        className="px-4 pt-3 pb-20 bg-white dark:bg-deepcharcoal shrink-0"
 
                     >
                         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -615,7 +615,7 @@ const MobileFeed = ({
 
                 {item.type === 'posts' && (
                     <div
-                        className="px-4 pt-3 pb-32 bg-white shrink-0 dark:bg-deepcharcoal"
+                        className="px-4 pt-3 pb-20 bg-white shrink-0 dark:bg-deepcharcoal"
 
                     >
                         <div className={`flex items-center justify-between gap-3 flex-wrap`}>
