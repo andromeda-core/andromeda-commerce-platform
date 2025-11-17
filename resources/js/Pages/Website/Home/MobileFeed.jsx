@@ -83,7 +83,9 @@ const MobileFeed = ({
     // STORING PARENT FEED SLUG
     const parentFeedSlugRef = useRef(null);
 
-
+    // ITEM HEIGHT AND WIDTH REF FOR CACHING AND PREVENTING TO GET AGAIn AND AGAIn On TICKER
+    const itemHeightRef = useRef(null);
+    const itemWidthRef = useRef({});
 
     // LOCAL FEED REFS JUST TO SYNC AND SHOW DATA INSTANTLY
     const localRelatedFeedRef = useRef(null);
@@ -1034,7 +1036,8 @@ const MobileFeed = ({
 
             const firstRealItem = container.children[1];
             if (firstRealItem) {
-                itemHeight = firstRealItem.getBoundingClientRect().height;
+                itemHeightRef.current ||= firstRealItem.getBoundingClientRect().height;
+                itemHeight = itemHeightRef.current;
             }
 
             if (
@@ -1059,7 +1062,7 @@ const MobileFeed = ({
 
 
             // LOOPING LOGIC
-            const currentIndex = Math.round(currentScrollTop / itemHeight);
+            const currentIndex = ((currentScrollTop + itemHeight * 0.5) / itemHeight) | 0;
             const realCount = localFeedRef.current.length;
             const DUMMY_TOP_INDEX = 0;
             const FIRST_REAL_INDEX = 1;
@@ -1304,7 +1307,10 @@ const MobileFeed = ({
 
                 const firstReal = children[1];
                 if (firstReal) {
-                    itemWidth = firstReal.getBoundingClientRect().width;
+                    if (!itemWidthRef.current[rowIndex]) {
+                        itemWidthRef.current[rowIndex] = firstReal.getBoundingClientRect().width;
+                    }
+                    itemWidth = itemWidthRef.current[rowIndex];
 
                 }
                 if (!itemWidth) return;
@@ -1590,7 +1596,7 @@ const MobileFeed = ({
                                     }}
                                 >
                                     <div
-                                        className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-none "
+                                        className="flex w-full h-full overflow-x-auto snap-x snap-mandatory "
                                         ref={(el) => {
                                             horizontalRefs.current[index] = el;
 
