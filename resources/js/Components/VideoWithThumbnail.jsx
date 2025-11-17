@@ -7,7 +7,7 @@ import CustomizedVideoPlayer from './CustomizedVideoPlayer';
 // Global cache to store video timelines
 const videoTimeCache = new Map();
 
-const VideoWithThumbnail = ({ className, videoUrl, autoPlay = false, controls = true, type = 'normal' }) => {
+const VideoWithThumbnail = ({ className, videoUrl, autoPlay = false, controls = true, type = 'normal', OnLoadedMetaData = () => { } }) => {
     const [thumbnail, setThumbnail] = useState(null);
     const [loaded, setLoaded] = useState(false);
     const [autoPlayEnabled, setAutoPlayEnabled] = useState(false);
@@ -193,6 +193,7 @@ const VideoWithThumbnail = ({ className, videoUrl, autoPlay = false, controls = 
                     fullscreen={true}
                     initialTime={initialTime}
                     videoElementRef={videoElementRef}
+                    OnLoadedMetaData={OnLoadedMetaData}
                 />
             )}
 

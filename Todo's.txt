@@ -548,6 +548,8 @@ Additional Work:
         54: Hashtag Page filter Applying Logic Were Broken so That is FIXED  now ✅
         55: Popups For Mobile Feed And Desktop UPDATED To THe Latest PDF Design But Normal Alert Toast Notifications will be same ✅
         56: MOBILE FEED Optimization And Rerenmdering Bugs And Some Improvements  ✅
+        57: VIDEO PLAYER BUFFERING EVENT ADDED AND ITS LOADER ✅
+        58: OPTIMZIED MOBILE FEED PERFECTLY AND SHOWING CONTENT SKELETON WHEN FEED MEDIA IS LOADING FOR BETTER UX ✅
 
     ) Redesigned Whole Website 4th Time Completed According To The LAYOUT Design Reference Provided ✅
 

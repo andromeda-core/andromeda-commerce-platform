@@ -3,7 +3,6 @@ import getCookie from '@/Hooks/useGetCookie';
 import { router } from '@inertiajs/react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal, flushSync } from 'react-dom';
-
 import gsap from 'gsap';
 import MobileFeedGallery from './MobileFeedGallery';
 import useDarkMode from '@/Hooks/useDarkMode';
@@ -45,7 +44,8 @@ const MobileFeed = ({
     const isMobileFeedGalleryOpenRef = useRef(MobileFeedGalleryOpen);
     const hasUserInteractedRef = useRef(false);
 
-
+    // its for FEED ITEMS To TRACK WHIHC ITEMS LOADED OR WHICH ARENT To SHOW SKELETON
+    const [loadedItems, setLoadedItems] = useState(new Set());
 
     const [mobileFeedGalleryOpening, setMobileFeedGalleryOpening] = useState(false);
 
@@ -175,7 +175,72 @@ const MobileFeed = ({
         return result;
     };
 
+    // Helper Function to Render Feed Skeleton before Showing Actual Feed After Opening
+    const RenderFeedItemSkeleton = (index) => {
+        return (
+            <div
+                key={`skeleton-${index}`}
+                className="relative flex flex-col h-screen min-w-full snap-start"
+                style={{
+                    height: '100%',
+                    scrollSnapAlign: 'start',
+                    scrollSnapStop: 'always',
+                }}
+            >
+                {/* Header: Tag + Three Dots Skeleton */}
+                <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
+                    {/* Tag skeleton */}
+                    <div className="w-20 h-5 bg-gray-200 rounded animate-pulse dark:bg-zinc-700" />
 
+                    {/* Three dots skeleton */}
+                    <div className="w-5 h-5 bg-gray-200 rounded animate-pulse dark:bg-zinc-700" />
+                </div>
+
+                {/* Image/Video Area Skeleton - Takes remaining space */}
+                <div className="relative flex-1 overflow-hidden">
+                    <div className="flex items-center justify-center w-full h-full p-4">
+                        <div className="w-full h-full max-w-full max-h-full bg-gray-200 rounded-lg animate-pulse dark:bg-zinc-700" />
+                    </div>
+                </div>
+
+                {/* Bottom Section Skeleton */}
+                <div
+                    className="px-4 pt-3 bg-white shrink-0 dark:bg-deepcharcoal"
+                    style={{
+                        paddingBottom: '5rem',
+                    }}
+                >
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        {/* Content text skeleton */}
+                        <div className="flex-1 space-y-2">
+                            <div className="w-full h-4 bg-gray-200 rounded animate-pulse dark:bg-zinc-700" />
+                            <div className="w-3/4 h-4 bg-gray-200 rounded animate-pulse dark:bg-zinc-700" />
+                        </div>
+
+                        {/* Button skeleton */}
+                        <div className="h-[30px] w-[130px] shrink-0 rounded-lg bg-gray-200 animate-pulse dark:bg-zinc-700" />
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // Helper Function to Render Feed CONTENT Skeleton before Showing Actual ITEM
+    const RenderFeedItemContentSkeleton = () => {
+        return (
+            <div className="flex flex-col h-full">
+
+                {/* Content/Image Skeleton - Takes remaining space */}
+                <div className="relative flex-1 min-h-0 overflow-hidden">
+                    <div className="flex items-center justify-center w-full h-full p-4">
+                        <div className="w-full h-full max-w-full max-h-full bg-gray-200 rounded-lg animate-pulse dark:bg-zinc-700" />
+                    </div>
+                </div>
+
+
+            </div>
+        );
+    };
 
 
 
@@ -235,6 +300,16 @@ const MobileFeed = ({
             item.post_image_urls?.length === 0 &&
             item.post_video_urls?.length === 0;
 
+
+
+        const isLoaded = isTextPost || loadedItems.has(item?.slug);
+
+        const handleOnLoad = () => {
+            if (item?.slug) {
+                setLoadedItems(prev => new Set(prev).add(item.slug));
+            }
+        };
+
         return (
             <div
                 key={index}
@@ -243,8 +318,13 @@ const MobileFeed = ({
                     height: '100%',
                     scrollSnapAlign: 'start',
                     scrollSnapStop: 'always',
+                    contain: 'layout style paint',
+                    willChange: 'transform',
                 }}
             >
+
+
+
                 {/* Header: Tag + Three Dots */}
                 <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
                     <button
@@ -521,75 +601,104 @@ const MobileFeed = ({
                     </div>
                 </div>
 
-                {/* Image + Videos - Takes remaining space */}
-                <div className="flex-1 min-h-0 overflow-hidden">
-                    {item.type === 'smartphones' && (
-                        <>
-                            {item?.images?.length > 0 && (
-                                <div className="flex items-center justify-center w-full h-full p-4">
-                                    <img
-                                        key={item.id}
-                                        src={item.images[0]}
-                                        alt={item.name}
-                                        className="object-contain max-w-full max-h-full rounded-lg"
-                                        loading="lazy"
-                                        decoding="async"
-                                        onError={(e) => {
-                                            if (e.target.src !== placeholderImage) {
-                                                e.target.src = placeholderImage;
-                                            }
-                                        }}
-                                    />
-                                </div>
-                            )}
-                        </>
-                    )}
+                {!isLoaded && <RenderFeedItemContentSkeleton />}
 
-                    {item.type === 'posts' && (
-                        <>
-                            {item?.post_image_urls?.length > 0 ? (
-                                <div className="flex items-center justify-center w-full h-full p-4">
-                                    <img
-                                        key={item.id}
-                                        src={item.post_image_urls[0]}
-                                        alt={item.title}
-                                        className="object-contain max-w-full max-h-full rounded-lg"
-                                        loading="lazy"
-                                        decoding="async"
-                                        onError={(e) => {
-                                            if (e.target.src !== placeholderImage) {
-                                                e.target.src = placeholderImage;
-                                            }
-                                        }}
-                                    />
-                                </div>
-                            ) : item.post_video_urls.length > 0 ? (
-                                <div className="flex items-center justify-center w-full h-full p-4">
-                                    <VideoWithThumbnail
-                                        type='customized'
-                                        videoUrl={item.post_video_urls[0]}
-                                        className={
-                                            'max-h-full w-full object-contain'
-                                        }
-                                        autoPlay={videoAutoplay}
-                                        controls={true}
-                                    />
-                                </div>
-                            ) : (
-                                item.post_image_urls.length === 0 &&
-                                item.post_video_urls.length === 0 && (
-                                    <div className="px-4 pt-3 pb-2 text-gray-700">
-                                        <div
-                                            className="line-clamp-[18] text-sm leading-relaxed text-gray-700 dark:text-white/80"
-                                            dangerouslySetInnerHTML={{
-                                                __html: item.content,
+                <div style={{
+                    display: isLoaded ? 'flex' : 'none',
+                    flexDirection: 'column',
+                    flex: 1,
+                    minHeight: 0,
+                    overflow: 'hidden'
+                }}>
+
+                    {/* Image + Videos - Takes remaining space */}
+                    <div className="flex-1 min-h-0 overflow-hidden">
+                        {item.type === 'smartphones' && (
+                            <>
+                                {item?.images?.length > 0 && (
+                                    <div className="flex items-center justify-center w-full h-full p-4">
+                                        <img
+                                            key={item.id}
+                                            src={item.images[0]}
+                                            alt={item.name}
+                                            className="object-contain max-w-full max-h-full rounded-lg"
+                                            loading="eager"
+                                            decoding="async"
+                                            onLoad={handleOnLoad}
+                                            onError={(e) => {
+                                                handleOnLoad();
+                                                if (e.target.src !== placeholderImage) {
+                                                    e.target.src = placeholderImage;
+                                                }
                                             }}
                                         />
                                     </div>
-                                )
-                            )}
-                        </>
-                    )}
+                                )}
+                            </>
+                        )}
+
+                        {item.type === 'posts' && (
+                            <>
+                                {item?.post_image_urls?.length > 0 ? (
+                                    <div className="flex items-center justify-center w-full h-full p-4">
+                                        <img
+                                            key={item.id}
+                                            src={item.post_image_urls[0]}
+                                            alt={item.title}
+                                            className="object-contain max-w-full max-h-full rounded-lg"
+                                            loading="eager"
+                                            decoding="async"
+                                            onLoad={handleOnLoad}
+                                            onError={(e) => {
+                                                handleOnLoad();
+                                                if (e.target.src !== placeholderImage) {
+                                                    e.target.src = placeholderImage;
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                ) : item.post_video_urls.length > 0 ? (
+                                    <div className="flex items-center justify-center w-full h-full p-4">
+                                        <VideoWithThumbnail
+                                            type='customized'
+                                            videoUrl={item.post_video_urls[0]}
+                                            className={
+                                                'max-h-full w-full object-contain'
+                                            }
+                                            autoPlay={videoAutoplay}
+                                            controls={true}
+                                            OnLoadedMetaData={() => {
+                                                if (item?.slug) {
+                                                    setLoadedItems(prev => new Set(prev).add(item.slug));
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                ) : (
+                                    item.post_image_urls.length === 0 &&
+                                    item.post_video_urls.length === 0 && (
+                                        <div className="px-4 pt-3 pb-2 overflow-y-auto text-gray-700"
+                                            style={{
+                                                contain: 'layout style paint',
+                                            }}
+                                        >
+                                            <div
+                                                className="line-clamp-[18] text-sm leading-relaxed text-gray-700 dark:text-white/80"
+                                                style={{
+
+                                                    minHeight: '200px',
+                                                }}
+                                                dangerouslySetInnerHTML={{
+                                                    __html: item.content,
+                                                }}
+                                            />
+                                        </div>
+                                    )
+                                )}
+                            </>
+                        )}
+                    </div>
+
                 </div>
 
                 {/* Bottom */}
@@ -701,59 +810,13 @@ const MobileFeed = ({
                         </div>
                     </div>
                 )}
+
+
             </div>
         );
-    }, [videoAutoplay, mobileFeedGalleryOpening, actionDropdownOpen, isDarkMode]);
+    }, [videoAutoplay, mobileFeedGalleryOpening, actionDropdownOpen, isDarkMode, loadedItems]);
 
-    // Helper Function to Render Feed Skeleton before Showing Actual Feed After Opening
-    const RenderFeedItemSkeleton = (index) => {
-        return (
-            <div
-                key={`skeleton-${index}`}
-                className="relative flex flex-col h-screen min-w-full snap-start"
-                style={{
-                    height: '100%',
-                    scrollSnapAlign: 'start',
-                    scrollSnapStop: 'always',
-                }}
-            >
-                {/* Header: Tag + Three Dots Skeleton */}
-                <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
-                    {/* Tag skeleton */}
-                    <div className="w-20 h-5 bg-gray-200 rounded animate-pulse dark:bg-zinc-700" />
 
-                    {/* Three dots skeleton */}
-                    <div className="w-5 h-5 bg-gray-200 rounded animate-pulse dark:bg-zinc-700" />
-                </div>
-
-                {/* Image/Video Area Skeleton - Takes remaining space */}
-                <div className="relative flex-1 overflow-hidden">
-                    <div className="flex items-center justify-center w-full h-full p-4">
-                        <div className="w-full h-full max-w-full max-h-full bg-gray-200 rounded-lg animate-pulse dark:bg-zinc-700" />
-                    </div>
-                </div>
-
-                {/* Bottom Section Skeleton */}
-                <div
-                    className="px-4 pt-3 bg-white shrink-0 dark:bg-deepcharcoal"
-                    style={{
-                        paddingBottom: '5rem',
-                    }}
-                >
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                        {/* Content text skeleton */}
-                        <div className="flex-1 space-y-2">
-                            <div className="w-full h-4 bg-gray-200 rounded animate-pulse dark:bg-zinc-700" />
-                            <div className="w-3/4 h-4 bg-gray-200 rounded animate-pulse dark:bg-zinc-700" />
-                        </div>
-
-                        {/* Button skeleton */}
-                        <div className="h-[30px] w-[130px] shrink-0 rounded-lg bg-gray-200 animate-pulse dark:bg-zinc-700" />
-                    </div>
-                </div>
-            </div>
-        );
-    };
 
     // Syncing the ref when prop changes
     useEffect(() => {
@@ -943,12 +1006,6 @@ const MobileFeed = ({
         checkAndAlign();
 
     }, [feedIndex, isScrollCompleted, localFeed]);
-
-
-
-
-
-
 
 
 
@@ -1501,9 +1558,8 @@ const MobileFeed = ({
                             scrollSnapType: 'y mandatory',
                             overscrollBehavior: 'contain',
                             WebkitOverflowScrolling: 'touch',
-                            willChange: 'scroll-position, opacity',
-                            transform: 'translateZ(0)',
-                            transition: 'opacity 0.08s ease-out',
+                            willChange: 'transform',
+                            transform: 'translate3d(0, 0, 0)',
                             overflowX: 'hidden',
                         }}
                     >
@@ -1527,6 +1583,11 @@ const MobileFeed = ({
                                 <div
                                     key={`feed-${item.id}`}
                                     className="min-w-full feed-page snap-start"
+                                    style={{
+
+                                        contain: 'layout style paint',
+                                        willChange: 'transform',
+                                    }}
                                 >
                                     <div
                                         className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-none "
@@ -1579,7 +1640,10 @@ const MobileFeed = ({
                                             touchAction: "pan-y pan-x",
                                             WebkitOverflowScrolling: "touch",
                                             display: "flex",
-                                            flexDirection: 'row'
+                                            flexDirection: 'row',
+                                            willChange: 'transform',
+                                            transform: 'translate3d(0, 0, 0)',
+                                            contain: 'layout style paint',
                                         }}
                                     >
 

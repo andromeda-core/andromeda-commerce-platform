@@ -8,7 +8,8 @@ export default function CustomizedVideoPlayer({
     autoPlay,
     initialTime = 0,
     videoElementRef,
-    loaded
+    loaded,
+    OnLoadedMetaData
 }) {
     const videoRef = useRef(null);
     const containerRef = useRef(null);
@@ -21,6 +22,8 @@ export default function CustomizedVideoPlayer({
     const [isPlaying, setIsPlaying] = useState(false);
     const [showControls, setShowControls] = useState(true);
     const [hasEnded, setHasEnded] = useState(false);
+
+    const [isBuffering, setIsBuffering] = useState(false);
 
     const hideTimeout = useRef(null);
     const shouldAutoPlayRef = useRef(false);
@@ -117,8 +120,32 @@ export default function CustomizedVideoPlayer({
             clearTimeout(hideTimeout.current);
         };
 
+        const handleWaiting = () => {
+            setIsBuffering(true);
+        };
+
+        const handleCanPlay = () => {
+            setIsBuffering(false);
+        };
+
+        const handlePlaying = () => {
+            setIsBuffering(false);
+        };
+
+        const handleStalled = () => {
+            setIsBuffering(true);
+        };
+
+
+
         video.addEventListener('loadedmetadata', handleLoadedMetadata);
         video.addEventListener('ended', handleEnded);
+
+        // Buffering events
+        video.addEventListener('waiting', handleWaiting);
+        video.addEventListener('canplay', handleCanPlay);
+        video.addEventListener('playing', handlePlaying);
+        video.addEventListener('stalled', handleStalled);
 
         // Expose video element to parent via ref
         if (videoElementRef) {
@@ -128,6 +155,13 @@ export default function CustomizedVideoPlayer({
         return () => {
             video.removeEventListener('loadedmetadata', handleLoadedMetadata);
             video.removeEventListener('ended', handleEnded);
+
+            video.removeEventListener('waiting', handleWaiting);
+            video.removeEventListener('canplay', handleCanPlay);
+            video.removeEventListener('playing', handlePlaying);
+            video.removeEventListener('stalled', handleStalled);
+
+
             if (videoElementRef) {
                 videoElementRef.current = null;
             }
@@ -137,7 +171,6 @@ export default function CustomizedVideoPlayer({
 
 
     // Tracking Outside clicks to close the dropdown of actins
-
     useEffect(() => {
         if (!showActions) return;
 
@@ -302,6 +335,9 @@ export default function CustomizedVideoPlayer({
         }
     };
 
+
+
+
     return (
         <div
             ref={containerRef}
@@ -323,6 +359,7 @@ export default function CustomizedVideoPlayer({
                     poster={thumbnail}
                     crossOrigin="anonymous"
                     onTimeUpdate={onTimeUpdate}
+                    onLoadedMetadata={OnLoadedMetaData}
                     onClick={() => {
                         handleVideoClick();
 
@@ -335,6 +372,35 @@ export default function CustomizedVideoPlayer({
                 >
                     <source src={videoUrl} type="video/mp4" />
                 </video>
+
+                {/* BUFFERING  */}
+                {isBuffering && isPlaying && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-black/50 backdrop-blur-sm">
+                            <svg
+                                className="w-10 h-10 text-white animate-spin"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
+                                <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                />
+                                <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                />
+                            </svg>
+                        </div>
+                    </div>
+                )}
+
 
                 {/* Center Controls Overlay - ONLY SHOWS WHEN showControls is true */}
                 <div
@@ -360,7 +426,7 @@ export default function CustomizedVideoPlayer({
                     )}
 
                     {/* When video IS playing AND controls visible, show pause and seek controls */}
-                    {isPlaying && showControls && !hasEnded && (
+                    {!isBuffering && isPlaying && showControls && !hasEnded && (
                         <div
                             ref={controlsRef}
                             className="flex items-center justify-center gap-12"
