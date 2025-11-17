@@ -46,6 +46,7 @@ const MobileFeed = ({
     const hasUserInteractedRef = useRef(false);
 
 
+
     const [mobileFeedGalleryOpening, setMobileFeedGalleryOpening] = useState(false);
 
 
@@ -763,6 +764,7 @@ const MobileFeed = ({
         isMobileFeedGalleryOpenRef.current = MobileFeedGalleryOpen;
     }, [MobileFeedGalleryOpen]);
 
+
     useEffect(() => {
         relatedItemsCache.current.clear();
     }, [relatedFeed]);
@@ -969,7 +971,6 @@ const MobileFeed = ({
         let initialScrollTop = container.scrollTop;
 
 
-
         const scrollTick = () => {
 
             if (isLoopingRef.current) return;
@@ -990,6 +991,7 @@ const MobileFeed = ({
 
             // Stop if scroll didn’t change
             if (Math.abs(currentScrollTop - lastScrollTop) < 1) return;
+
 
             if (isFirstCheck) {
                 isFirstCheck = false;
@@ -1228,12 +1230,10 @@ const MobileFeed = ({
                 // Blocking ticker if:
                 // 1. Feed opened directly from URL/refresh AND
                 // 2. User hasn't scrolled Y-axis yet
-                if (
-                    (isFeedOpeningDirectlyRef.current && !hasUserInteractedRef.current) ||
-                    isMobileFeedGalleryOpenRef.current
-                ) {
+                if (isMobileFeedGalleryOpenRef.current) {
                     return;
                 }
+
 
                 if (
                     isXLoopingRef.current ||
@@ -1259,6 +1259,15 @@ const MobileFeed = ({
                 const parentFeedItem = localFeedRef.current[rowIndex];
                 if (!parentFeedItem) return;
 
+                if (isFeedOpeningDirectlyRef.current && !hasUserInteractedRef.current) {
+                    const currentParentSlug = parentFeedSlugRef.current;
+                    const thisRowParentSlug = parentFeedItem.slug;
+
+                    if (currentParentSlug !== thisRowParentSlug) {
+                        return;
+                    }
+                }
+
                 const relatedItems = getRelatedItems(parentFeedItem);
 
                 const totalItems = relatedItems.length;
@@ -1280,6 +1289,7 @@ const MobileFeed = ({
                 const now = Date.now();
                 if (now - lastLoopTime < 300) return;
 
+
                 // RIGHT LOOP
                 if (currentIndex === DUMMY_RIGHT && !isXLoopingRef.current) {
                     lastLoopTime = now;
@@ -1295,9 +1305,23 @@ const MobileFeed = ({
 
                         const firstItem = relatedItems[0];
 
-                        flushSync(() => {
-                            setFeedGallery(firstItem);
-                        });
+                        lastHorizontalUpdateRef.current[rowIndex] = {
+                            id: firstItem.id,
+                            index: 0,
+                        };
+
+
+                        if (firstItem.type === "smartphones") {
+                            const url = new URL(window.location.origin + window.location.pathname);
+                            url.searchParams.set("m-slug", firstItem.slug);
+                            window.history.replaceState({}, "", url.toString());
+                        } else if (firstItem.type === "posts") {
+                            const fullUrl = route("home") + generateURL(firstItem);
+                            window.history.replaceState({}, "", fullUrl);
+                        }
+
+                        setFeedGallery(firstItem);
+
 
                         requestAnimationFrame(() => {
                             rowContainer.style.scrollBehavior = "smooth";
@@ -1334,9 +1358,25 @@ const MobileFeed = ({
 
                         const lastItem = relatedItems[relatedItems.length - 1];
 
-                        flushSync(() => {
-                            setFeedGallery(lastItem);
-                        });
+
+                        const lastIndex = relatedItems.length - 1;
+                        lastHorizontalUpdateRef.current[rowIndex] = {
+                            id: lastItem.id,
+                            index: lastIndex,
+                        };
+
+
+                        if (lastItem.type === "smartphones") {
+                            const url = new URL(window.location.origin + window.location.pathname);
+                            url.searchParams.set("m-slug", lastItem.slug);
+                            window.history.replaceState({}, "", url.toString());
+                        } else if (lastItem.type === "posts") {
+                            const fullUrl = route("home") + generateURL(lastItem);
+                            window.history.replaceState({}, "", fullUrl);
+                        }
+
+                        setFeedGallery(lastItem);
+
 
                         requestAnimationFrame(() => {
                             rowContainer.style.scrollBehavior = "smooth";
@@ -1357,6 +1397,8 @@ const MobileFeed = ({
 
                     return;
                 }
+
+
 
                 lastScrollLeft = currentScrollLeft;
 
@@ -1487,7 +1529,7 @@ const MobileFeed = ({
                                     className="min-w-full feed-page snap-start"
                                 >
                                     <div
-                                        className="flex w-full h-full overflow-x-auto snap-x snap-mandatory "
+                                        className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-none "
                                         ref={(el) => {
                                             horizontalRefs.current[index] = el;
 
