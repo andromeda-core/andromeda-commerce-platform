@@ -202,7 +202,7 @@ export default function MainLayout({ children }) {
                 {/* Mobile Bottom Navigation */}
                 {windowSize.width < 1024 && (
                     <>
-                        <BottomBar
+                        {/* <BottomBar
                             darkMode={darkMode}
                             setDarkMode={setDarkMode}
                             moreDropdown={moreDropdown}
@@ -210,7 +210,7 @@ export default function MainLayout({ children }) {
                             moreDropdownRef={moreDropdownRef}
                             cartItemsCount={cartItemsCount}
                             preventDropdownCloseRef={preventDropdownCloseRef}
-                        />
+                        /> */}
                     </>
                 )}
 

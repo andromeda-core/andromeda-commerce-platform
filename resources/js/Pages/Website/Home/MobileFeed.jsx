@@ -1,7 +1,7 @@
 import VideoWithThumbnail from '@/Components/VideoWithThumbnail';
 import getCookie from '@/Hooks/useGetCookie';
 import { router } from '@inertiajs/react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal, flushSync } from 'react-dom';
 
 import gsap from 'gsap';
@@ -32,14 +32,18 @@ const MobileFeed = ({
     fetchRelatedFeed,
     relatedFeedNextUrlsRef,
     nextPageUrl,
-    Placeholder,
     isfetchingMoreYAxisFeed,
+    isFeedOpeningDirectly,
 
 }) => {
 
 
     // Local feed state for seamless looping
     const [localFeed, setLocalFeed] = useState([]);
+
+    const isFeedOpeningDirectlyRef = useRef(isFeedOpeningDirectly);
+    const isMobileFeedGalleryOpenRef = useRef(MobileFeedGalleryOpen);
+    const hasUserInteractedRef = useRef(false);
 
 
     const [mobileFeedGalleryOpening, setMobileFeedGalleryOpening] = useState(false);
@@ -63,6 +67,9 @@ const MobileFeed = ({
     const lastHorizontalUpdateRef = useRef({});
     const hasInitializedHorizontalRef = useRef(false);
     const isXLoopingRef = useRef(false);
+
+    // X Axis Scroll INDEX STORING REF
+    const initializedXAxisRef = useRef(new Set());
 
 
     // CONTROLING THE VISIBILITY OF VIEWER AFTER OPENING FEED Y Axis
@@ -142,49 +149,60 @@ const MobileFeed = ({
 
     // Helper Function to Get Related Feed Count
     const getRelatedCount = (slug) => {
+        if (!slug || !localRelatedFeedRef.current) return 0;
         const arr = localRelatedFeedRef.current[slug];
-        if (!arr) return 0;
-        return arr.length;
+        return arr ? arr.length : 0;
     };
+
 
 
     // Helper function to get related items for a feed item
+    const relatedItemsCache = useRef(new Map());
+
     const getRelatedItems = (item) => {
-        const relatedItems = localRelatedFeedRef.current[item.slug] || [];
-        // Return array with current item first, then related items
-        return [item, ...relatedItems];
+        if (!item) return [];
+
+        const cached = relatedItemsCache.current.get(item.id);
+        if (cached) return cached;
+
+        const relatedItems = localRelatedFeedRef.current?.[item.slug] || [];
+        const result = [item, ...relatedItems];
+
+
+        relatedItemsCache.current.set(item.id, result);
+
+        return result;
     };
+
+
 
 
 
     // Helper Function To Render Dummy items WithActual Related Feed To Perform Looping
-    const wrapWithHorizontalDummies = (items) => {
 
-        if (!items || items.length === 0 || !parentFeedSlugRef.current) return [];
+    const wrapWithHorizontalDummies = useMemo(() => {
+        return (items) => {
+            if (!items || items.length === 0 || !parentFeedSlugRef.current) return items;
 
-        const slug = parentFeedSlugRef.current;
-        const relatedCount = getRelatedCount(slug);
+            const slug = parentFeedSlugRef.current;
+            const relatedCount = getRelatedCount(slug);
 
+            // No related items, return as-is
+            if (relatedCount < 1) return items;
 
-        if (relatedCount < 1) {
-
-            return [...items];
-        }
-
-
-
-
-        return [
-            { __dummy: "left" },
-            ...items,
-            { __dummy: "right" },
-        ];
-    };
+            // Has related items, add dummies
+            return [
+                { __dummy: "left" },
+                ...items,
+                { __dummy: "right" },
+            ];
+        };
+    }, [localRelatedFeedRef.current]);
 
 
 
     // Helper function to render a single feed item (used for both main and related items)
-    const renderFeedItem = (item, isRelated = false, index) => {
+    const renderFeedItem = useCallback((item, isRelated = false, index) => {
 
         const relatedCount = getRelatedCount(parentFeedSlugRef.current);
 
@@ -205,20 +223,16 @@ const MobileFeed = ({
         }
 
 
-        let plain = item?.content || null;
-        if (plain !== null) {
-            plain = plain.replace(/<[^>]+>/g, '');
-        }
+        const plain = item?.content ? item.content.replace(/<[^>]+>/g, '') : null;
+
         const charsPerLine = 80;
         const clampLimit = 18 * charsPerLine;
         const shouldShowMore = plain?.length > clampLimit;
-        let isTextPost = null;
 
-        // Taking TExt Post Type For Tracking And Controlling More Button
-        if (item.type === 'posts') {
-            isTextPost = item.post_image_urls.length === 0 && item.post_video_urls.length === 0;
-        }
 
+        const isTextPost = item.type === 'posts' &&
+            item.post_image_urls?.length === 0 &&
+            item.post_video_urls?.length === 0;
 
         return (
             <div
@@ -518,9 +532,12 @@ const MobileFeed = ({
                                         alt={item.name}
                                         className="object-contain max-w-full max-h-full rounded-lg"
                                         loading="lazy"
-                                        onError={(e) =>
-                                            (e.target.src = placeholderImage)
-                                        }
+                                        decoding="async"
+                                        onError={(e) => {
+                                            if (e.target.src !== placeholderImage) {
+                                                e.target.src = placeholderImage;
+                                            }
+                                        }}
                                     />
                                 </div>
                             )}
@@ -537,9 +554,12 @@ const MobileFeed = ({
                                         alt={item.title}
                                         className="object-contain max-w-full max-h-full rounded-lg"
                                         loading="lazy"
-                                        onError={(e) =>
-                                            (e.target.src = Placeholder)
-                                        }
+                                        decoding="async"
+                                        onError={(e) => {
+                                            if (e.target.src !== placeholderImage) {
+                                                e.target.src = placeholderImage;
+                                            }
+                                        }}
                                     />
                                 </div>
                             ) : item.post_video_urls.length > 0 ? (
@@ -682,7 +702,7 @@ const MobileFeed = ({
                 )}
             </div>
         );
-    };
+    }, [videoAutoplay, mobileFeedGalleryOpening, actionDropdownOpen, isDarkMode]);
 
     // Helper Function to Render Feed Skeleton before Showing Actual Feed After Opening
     const RenderFeedItemSkeleton = (index) => {
@@ -734,7 +754,18 @@ const MobileFeed = ({
         );
     };
 
+    // Syncing the ref when prop changes
+    useEffect(() => {
+        isFeedOpeningDirectlyRef.current = isFeedOpeningDirectly;
+    }, [isFeedOpeningDirectly]);
 
+    useEffect(() => {
+        isMobileFeedGalleryOpenRef.current = MobileFeedGalleryOpen;
+    }, [MobileFeedGalleryOpen]);
+
+    useEffect(() => {
+        relatedItemsCache.current.clear();
+    }, [relatedFeed]);
 
     // SYNCING WITH FEED REFS
     useEffect(() => {
@@ -858,50 +889,62 @@ const MobileFeed = ({
     }, []);
 
 
-
-
-    // At the top with other refs
-    const scrollTimeoutRef = useRef(null);
-    const lastProcessedIndexRef = useRef(null);
-
-    // X Axis Scroll Setting Logic
+    // Fallback X-axis alignment + looping flag management
     useEffect(() => {
         if (!isScrollCompleted) return;
 
-        if (lastProcessedIndexRef.current === feedIndex) {
+        const currentItem = localFeed[feedIndex];
+        if (!currentItem) return;
+
+        const relatedCount = getRelatedCount(currentItem.slug);
+        if (relatedCount < 1) {
+            // No related items, but still enable looping for future items
+            hasInitializedHorizontalRef.current = true;
             return;
         }
 
-        if (scrollTimeoutRef.current) {
-            clearTimeout(scrollTimeoutRef.current);
+        // If already initialized, just ensure looping is enabled
+        if (initializedXAxisRef.current.has(currentItem.id)) {
+            hasInitializedHorizontalRef.current = true;
+            return;
         }
 
-        scrollTimeoutRef.current = setTimeout(() => {
-            const row = horizontalRefs.current[feedIndex];
-            if (!row || !row.children || row.children.length < 2) return;
+
+        const row = horizontalRefs.current[feedIndex];
+        if (!row) return;
+
+        // Wait for children to be ready
+        const checkAndAlign = () => {
+            if (row.children.length < 2) {
+                requestAnimationFrame(checkAndAlign);
+                return;
+            }
 
             const firstReal = row.children[1];
-            if (!firstReal) return;
+            if (!firstReal) {
+                requestAnimationFrame(checkAndAlign);
+                return;
+            }
 
             const width = firstReal.offsetWidth;
+            if (width === 0) {
+                requestAnimationFrame(checkAndAlign);
+                return;
+            }
 
             row.style.scrollBehavior = "auto";
             row.scrollLeft = width;
-
-
-            lastProcessedIndexRef.current = feedIndex;
-
+            initializedXAxisRef.current.add(currentItem.id);
             hasInitializedHorizontalRef.current = true;
-
-        }, 50);
-
-        return () => {
-            if (scrollTimeoutRef.current) {
-                clearTimeout(scrollTimeoutRef.current);
-            }
         };
 
-    }, [feedIndex, isScrollCompleted]);
+        checkAndAlign();
+
+    }, [feedIndex, isScrollCompleted, localFeed]);
+
+
+
+
 
 
 
@@ -922,6 +965,9 @@ const MobileFeed = ({
         let itemHeight = window.innerHeight;
         let lastScrollTop = container.scrollTop;
         let scrollTimeout = null;
+        let isFirstCheck = true;
+        let initialScrollTop = container.scrollTop;
+
 
 
         const scrollTick = () => {
@@ -945,7 +991,12 @@ const MobileFeed = ({
             // Stop if scroll didn’t change
             if (Math.abs(currentScrollTop - lastScrollTop) < 1) return;
 
-
+            if (isFirstCheck) {
+                isFirstCheck = false;
+                initialScrollTop = currentScrollTop;
+            } else if (!hasUserInteractedRef.current) {
+                hasUserInteractedRef.current = true;
+            }
 
 
             // LOOPING LOGIC
@@ -1055,6 +1106,9 @@ const MobileFeed = ({
             }
             // LOOPING LOGIC
 
+
+
+
             // Update scrollPos
             lastScrollTop = currentScrollTop;
 
@@ -1129,6 +1183,7 @@ const MobileFeed = ({
 
 
 
+
                 // Fetch more Y-axis (unchanged)
                 const total = feedRef.current.length;
                 const remaining = total - globalIndex - 1;
@@ -1170,6 +1225,16 @@ const MobileFeed = ({
             let lastLoopTime = 0;
 
             const scrollTick = () => {
+                // Blocking ticker if:
+                // 1. Feed opened directly from URL/refresh AND
+                // 2. User hasn't scrolled Y-axis yet
+                if (
+                    (isFeedOpeningDirectlyRef.current && !hasUserInteractedRef.current) ||
+                    isMobileFeedGalleryOpenRef.current
+                ) {
+                    return;
+                }
+
                 if (
                     isXLoopingRef.current ||
                     isProcessingRef.current ||
@@ -1379,8 +1444,6 @@ const MobileFeed = ({
         };
     }, [isScrollCompleted, localFeed]);
 
-
-
     return (
         <>
             {createPortal(
@@ -1424,9 +1487,48 @@ const MobileFeed = ({
                                     className="min-w-full feed-page snap-start"
                                 >
                                     <div
-                                        className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-none"
+                                        className="flex w-full h-full overflow-x-auto snap-x snap-mandatory "
                                         ref={(el) => {
                                             horizontalRefs.current[index] = el;
+
+                                            if (!el) return;
+
+                                            const relatedCount = getRelatedCount(item.slug);
+
+                                            // Skip if no related items or already initialized
+                                            if (initializedXAxisRef.current.has(item.id)) return;
+
+                                            if (relatedCount < 1) {
+                                                hasInitializedHorizontalRef.current = true;
+                                                return;
+                                            }
+                                            // Try immediate alignment
+                                            const tryAlign = () => {
+
+                                                const firstReal = el.children[1];
+                                                if (!firstReal) return false;
+
+                                                const width = firstReal.offsetWidth;
+                                                if (width === 0) return false;
+
+                                                el.style.scrollBehavior = "auto";
+                                                el.scrollLeft = width;
+                                                initializedXAxisRef.current.add(item.id);
+
+                                                if (index === feedIndex) {
+                                                    hasInitializedHorizontalRef.current = true;
+                                                }
+
+                                                return true;
+                                            };
+
+                                            // Try immediate alignment
+                                            if (!tryAlign()) {
+                                                // If failed, try again after a frame
+                                                requestAnimationFrame(() => {
+                                                    tryAlign();
+                                                });
+                                            }
                                         }}
                                         style={{
                                             width: "100%",
@@ -1467,28 +1569,30 @@ const MobileFeed = ({
                         )}
 
                     </div>
-                </div>,
+                </div >,
                 document.getElementById('modal-root') || document.body,
             )}
 
 
 
-            {MobileFeedGalleryOpen && (
-                <MobileFeedGallery
-                    feedGallery={feedGallery}
+            {
+                MobileFeedGalleryOpen && (
+                    <MobileFeedGallery
+                        feedGallery={feedGallery}
 
-                    setShowQrCode={setShowQrCode}
+                        setShowQrCode={setShowQrCode}
 
-                    setLinkCopied={setLinkCopied}
-                    auth={auth}
-                    currency={currency}
-                    cart_items={cart_items}
-                    navigateToHashtag={navigateToHashtag}
-                    placeholderImage={placeholderImage}
-                    generateURL={generateURL}
+                        setLinkCopied={setLinkCopied}
+                        auth={auth}
+                        currency={currency}
+                        cart_items={cart_items}
+                        navigateToHashtag={navigateToHashtag}
+                        placeholderImage={placeholderImage}
+                        generateURL={generateURL}
 
-                />
-            )}
+                    />
+                )
+            }
         </>
     );
 };

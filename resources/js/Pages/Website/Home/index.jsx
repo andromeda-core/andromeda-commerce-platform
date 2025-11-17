@@ -35,7 +35,8 @@ export default function index({ google_map_api_key, search_history }) {
     const relatedFeedNextUrlsRef = useRef({});
     const [MobileFeedGalleryOpen, setMobileFeedGalleryOpen] = useState(false);
 
-
+    // This State is For Tracking If The FEED ITEM Is Opening After refresh or FROM URL DIRECTLY
+    const [isFeedOpeningDirectly, setIsFeedOpeningDirectly] = useState(false);
 
 
 
@@ -229,7 +230,7 @@ export default function index({ google_map_api_key, search_history }) {
         const smartphone_slug = params.get('m-slug');
 
         if (!post_slug && !smartphone_slug) return;
-
+        setIsFeedOpeningDirectly(true);
         let feedItem = null;
         if (post_slug) {
             feedItem = feed.find((item) => item.type === 'posts' && item.slug === post_slug);
@@ -853,6 +854,8 @@ export default function index({ google_map_api_key, search_history }) {
 
 
 
+
+
     return (
         <MainLayout>
             <Head title="Home" />
@@ -941,6 +944,8 @@ export default function index({ google_map_api_key, search_history }) {
                                                     onClick={() => {
                                                         feedOpenCountRef.current++;
 
+                                                        // here its stop To Re-runs The Gsap Ticker The because When First opened it
+                                                        setIsFeedOpeningDirectly(true);
                                                         setFeedGallery(item);
                                                         setFeedIndex(index);
                                                         setFeedOpen(true);
@@ -1076,6 +1081,8 @@ export default function index({ google_map_api_key, search_history }) {
                                                     className="relative mb-1 overflow-hidden transition-all duration-300 rounded-none shadow-md cursor-pointer no-touch-hover group break-inside-avoid hover:-translate-y-1 hover:shadow-xl"
                                                     onClick={() => {
                                                         feedOpenCountRef.current++;
+                                                        // here its stop To Re-runs The Gsap Ticker The because When First opened it
+                                                        setIsFeedOpeningDirectly(true);
                                                         setFeedGallery(item);
                                                         setFeedIndex(index);
                                                         setFeedOpen(true);
@@ -1386,6 +1393,7 @@ export default function index({ google_map_api_key, search_history }) {
                             nextPageUrl={nextPageUrlRef.current}
                             Placeholder={Placeholder}
                             isfetchingMoreYAxisFeed={isfetchingMoreYAxisFeed.current}
+                            isFeedOpeningDirectly={isFeedOpeningDirectly}
 
 
 
