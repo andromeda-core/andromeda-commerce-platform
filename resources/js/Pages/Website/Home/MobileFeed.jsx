@@ -1596,7 +1596,7 @@ const MobileFeed = ({
                                     }}
                                 >
                                     <div
-                                        className="flex w-full h-full overflow-x-auto snap-x snap-mandatory "
+                                        className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-none "
                                         ref={(el) => {
                                             horizontalRefs.current[index] = el;
 
