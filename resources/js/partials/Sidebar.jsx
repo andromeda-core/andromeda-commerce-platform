@@ -1,4 +1,4 @@
-import can from '@/Hooks/can';
+import can from '@/Hooks/useCan';
 import useWindowSize from '@/Hooks/useWindowSize';
 import { Link } from '@inertiajs/react';
 import React, { useEffect, useRef, useState } from 'react';
@@ -45,9 +45,8 @@ export default function Sidebar({
     return (
         <>
             <aside
-                className={`${
-                    sidebarToggle ? 'translate-x-0 lg:w-[90px]' : '-translate-x-full'
-                } sidebar fixed left-0 top-0 z-[12] flex h-screen w-[290px] flex-col overflow-y-hidden border-r border-gray-200 bg-white px-5 dark:border-gray-800 dark:bg-deepcharcoal lg:static lg:translate-x-0`}
+                className={`${sidebarToggle ? 'translate-x-0 lg:w-[90px]' : '-translate-x-full'
+                    } sidebar fixed left-0 top-0 z-[12] flex h-screen w-[290px] flex-col overflow-y-hidden border-r border-gray-200 bg-white px-5 dark:border-gray-800 dark:bg-deepcharcoal lg:static lg:translate-x-0`}
             >
                 <div
                     className={`flex items-center ${sidebarToggle ? 'justify-center' : 'justify-between'} sidebar-header gap-2 pb-7 pt-8`}
@@ -1327,91 +1326,91 @@ export default function Sidebar({
                                     'Smartphone For Sales View',
                                     'Smartphone For Sales Create',
                                 ]) && (
-                                    <li>
-                                        <a
-                                            onClick={() => {
-                                                if (selected === 'Smartphone For Sales') {
-                                                    setSelected(null);
-                                                } else {
-                                                    setSelected('Smartphone For Sales');
-                                                }
-                                            }}
-                                            className={`menu-item group cursor-pointer ${route().current().includes('dashboard.smartphone-for-sales.') || selected === 'Smartphone For Sales' ? 'menu-item-active' : 'menu-item-inactive'} `}
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
-                                                stroke="currentColor"
-                                                className="size-6"
+                                        <li>
+                                            <a
+                                                onClick={() => {
+                                                    if (selected === 'Smartphone For Sales') {
+                                                        setSelected(null);
+                                                    } else {
+                                                        setSelected('Smartphone For Sales');
+                                                    }
+                                                }}
+                                                className={`menu-item group cursor-pointer ${route().current().includes('dashboard.smartphone-for-sales.') || selected === 'Smartphone For Sales' ? 'menu-item-active' : 'menu-item-inactive'} `}
                                             >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"
-                                                />
-                                            </svg>
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    strokeWidth={1.5}
+                                                    stroke="currentColor"
+                                                    className="size-6"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"
+                                                    />
+                                                </svg>
 
-                                            <span
-                                                className={`menu-item-text ${sidebarToggle ? 'lg:hidden' : ''}`}
+                                                <span
+                                                    className={`menu-item-text ${sidebarToggle ? 'lg:hidden' : ''}`}
+                                                >
+                                                    Smartphone For Sales
+                                                </span>
+
+                                                <svg
+                                                    className={`menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current ${route().current().includes('dashboard.smartphone-for-sales.') || (selected === 'Smartphone For Sales' && 'menu-item-arrow-active')} ${sidebarToggle ? 'lg:hidden' : ''}`}
+                                                    width="20"
+                                                    height="20"
+                                                    viewBox="0 0 20 20"
+                                                    fill="none"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                >
+                                                    <path
+                                                        d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585"
+                                                        stroke=""
+                                                        strokeWidth="1.5"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                    />
+                                                </svg>
+                                            </a>
+
+                                            <div
+                                                className={`translate transform overflow-hidden ${selected === 'Smartphone For Sales' ? 'block' : 'hidden'}`}
                                             >
-                                                Smartphone For Sales
-                                            </span>
+                                                <ul
+                                                    className={`menu-dropdown mt-2 flex flex-col gap-1 pl-9 ${sidebarToggle ? 'lg:hidden' : 'flex'} `}
+                                                >
+                                                    {can('Smartphone For Sales View') && (
+                                                        <li>
+                                                            <Link
+                                                                href={route(
+                                                                    'dashboard.smartphone-for-sales.index',
+                                                                )}
+                                                                className={`menu-dropdown-item group ${route().current() === 'dashboard.smartphone-for-sales.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                            >
+                                                                Smartphone For Sales List
+                                                            </Link>
+                                                        </li>
+                                                    )}
 
-                                            <svg
-                                                className={`menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current ${route().current().includes('dashboard.smartphone-for-sales.') || (selected === 'Smartphone For Sales' && 'menu-item-arrow-active')} ${sidebarToggle ? 'lg:hidden' : ''}`}
-                                                width="20"
-                                                height="20"
-                                                viewBox="0 0 20 20"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585"
-                                                    stroke=""
-                                                    strokeWidth="1.5"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                />
-                                            </svg>
-                                        </a>
-
-                                        <div
-                                            className={`translate transform overflow-hidden ${selected === 'Smartphone For Sales' ? 'block' : 'hidden'}`}
-                                        >
-                                            <ul
-                                                className={`menu-dropdown mt-2 flex flex-col gap-1 pl-9 ${sidebarToggle ? 'lg:hidden' : 'flex'} `}
-                                            >
-                                                {can('Smartphone For Sales View') && (
-                                                    <li>
-                                                        <Link
-                                                            href={route(
-                                                                'dashboard.smartphone-for-sales.index',
-                                                            )}
-                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.smartphone-for-sales.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
-                                                        >
-                                                            Smartphone For Sales List
-                                                        </Link>
-                                                    </li>
-                                                )}
-
-                                                {can('Smartphone For Sales Create') && (
-                                                    <li>
-                                                        <Link
-                                                            href={route(
-                                                                'dashboard.smartphone-for-sales.create',
-                                                            )}
-                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.smartphone-for-sales.create' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
-                                                        >
-                                                            Create Smartphone For Sale
-                                                        </Link>
-                                                    </li>
-                                                )}
-                                            </ul>
-                                        </div>
-                                    </li>
-                                )}
+                                                    {can('Smartphone For Sales Create') && (
+                                                        <li>
+                                                            <Link
+                                                                href={route(
+                                                                    'dashboard.smartphone-for-sales.create',
+                                                                )}
+                                                                className={`menu-dropdown-item group ${route().current() === 'dashboard.smartphone-for-sales.create' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                            >
+                                                                Create Smartphone For Sale
+                                                            </Link>
+                                                        </li>
+                                                    )}
+                                                </ul>
+                                            </div>
+                                        </li>
+                                    )}
 
                                 {can(['Reward Points View', 'Reward Points Create']) && (
                                     <li>
@@ -1505,104 +1504,104 @@ export default function Sidebar({
                                     'Collaborator Commissions View',
                                     'Distributor Commissions View',
                                 ]) && (
-                                    <li>
-                                        <a
-                                            onClick={() => {
-                                                if (selected === 'Commissions') {
-                                                    setSelected(null);
-                                                } else {
-                                                    setSelected('Commissions');
-                                                }
-                                            }}
-                                            className={`menu-item group cursor-pointer ${route().current().includes('dashboard.commissions.') || selected === 'Commissions' ? 'menu-item-active' : 'menu-item-inactive'} `}
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
-                                                stroke="currentColor"
-                                                className="size-6"
+                                        <li>
+                                            <a
+                                                onClick={() => {
+                                                    if (selected === 'Commissions') {
+                                                        setSelected(null);
+                                                    } else {
+                                                        setSelected('Commissions');
+                                                    }
+                                                }}
+                                                className={`menu-item group cursor-pointer ${route().current().includes('dashboard.commissions.') || selected === 'Commissions' ? 'menu-item-active' : 'menu-item-inactive'} `}
                                             >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"
-                                                />
-                                            </svg>
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    strokeWidth={1.5}
+                                                    stroke="currentColor"
+                                                    className="size-6"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"
+                                                    />
+                                                </svg>
 
-                                            <span
-                                                className={`menu-item-text ${sidebarToggle ? 'lg:hidden' : ''}`}
+                                                <span
+                                                    className={`menu-item-text ${sidebarToggle ? 'lg:hidden' : ''}`}
+                                                >
+                                                    Commissions
+                                                </span>
+
+                                                <svg
+                                                    className={`menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current ${route().current().includes('dashboard.commissions.') || (selected === 'Commissions' && 'menu-item-arrow-active')} ${sidebarToggle ? 'lg:hidden' : ''}`}
+                                                    width="20"
+                                                    height="20"
+                                                    viewBox="0 0 20 20"
+                                                    fill="none"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                >
+                                                    <path
+                                                        d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585"
+                                                        stroke=""
+                                                        strokeWidth="1.5"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                    />
+                                                </svg>
+                                            </a>
+
+                                            <div
+                                                className={`translate transform overflow-hidden ${selected === 'Commissions' ? 'block' : 'hidden'}`}
                                             >
-                                                Commissions
-                                            </span>
+                                                <ul
+                                                    className={`menu-dropdown mt-2 flex flex-col gap-1 pl-9 ${sidebarToggle ? 'lg:hidden' : 'flex'} `}
+                                                >
+                                                    {can('Supplier Commissions View') && (
+                                                        <li>
+                                                            <Link
+                                                                href={route(
+                                                                    'dashboard.commissions.supplier-commissions.index',
+                                                                )}
+                                                                className={`menu-dropdown-item group ${route().current() === 'dashboard.commissions.supplier-commissions.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                            >
+                                                                Supplier Commissions
+                                                            </Link>
+                                                        </li>
+                                                    )}
 
-                                            <svg
-                                                className={`menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current ${route().current().includes('dashboard.commissions.') || (selected === 'Commissions' && 'menu-item-arrow-active')} ${sidebarToggle ? 'lg:hidden' : ''}`}
-                                                width="20"
-                                                height="20"
-                                                viewBox="0 0 20 20"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585"
-                                                    stroke=""
-                                                    strokeWidth="1.5"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                />
-                                            </svg>
-                                        </a>
+                                                    {can('Collaborator Commissions View') && (
+                                                        <li>
+                                                            <Link
+                                                                href={route(
+                                                                    'dashboard.commissions.collaborator-commissions.index',
+                                                                )}
+                                                                className={`menu-dropdown-item group ${route().current() === 'dashboard.commissions.collaborator-commissions.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                            >
+                                                                Collaborator Commissions
+                                                            </Link>
+                                                        </li>
+                                                    )}
 
-                                        <div
-                                            className={`translate transform overflow-hidden ${selected === 'Commissions' ? 'block' : 'hidden'}`}
-                                        >
-                                            <ul
-                                                className={`menu-dropdown mt-2 flex flex-col gap-1 pl-9 ${sidebarToggle ? 'lg:hidden' : 'flex'} `}
-                                            >
-                                                {can('Supplier Commissions View') && (
-                                                    <li>
-                                                        <Link
-                                                            href={route(
-                                                                'dashboard.commissions.supplier-commissions.index',
-                                                            )}
-                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.commissions.supplier-commissions.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
-                                                        >
-                                                            Supplier Commissions
-                                                        </Link>
-                                                    </li>
-                                                )}
-
-                                                {can('Collaborator Commissions View') && (
-                                                    <li>
-                                                        <Link
-                                                            href={route(
-                                                                'dashboard.commissions.collaborator-commissions.index',
-                                                            )}
-                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.commissions.collaborator-commissions.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
-                                                        >
-                                                            Collaborator Commissions
-                                                        </Link>
-                                                    </li>
-                                                )}
-
-                                                {can('Distributor Commissions View') && (
-                                                    <li>
-                                                        <Link
-                                                            href={route(
-                                                                'dashboard.commissions.distributor-commissions.index',
-                                                            )}
-                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.commissions.distributor-commissions.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
-                                                        >
-                                                            Distributor Commissions
-                                                        </Link>
-                                                    </li>
-                                                )}
-                                            </ul>
-                                        </div>
-                                    </li>
-                                )}
+                                                    {can('Distributor Commissions View') && (
+                                                        <li>
+                                                            <Link
+                                                                href={route(
+                                                                    'dashboard.commissions.distributor-commissions.index',
+                                                                )}
+                                                                className={`menu-dropdown-item group ${route().current() === 'dashboard.commissions.distributor-commissions.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                            >
+                                                                Distributor Commissions
+                                                            </Link>
+                                                        </li>
+                                                    )}
+                                                </ul>
+                                            </div>
+                                        </li>
+                                    )}
 
                                 {can('Data Deletion Requests View') && (
                                     <li>

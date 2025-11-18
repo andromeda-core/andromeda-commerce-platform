@@ -6,7 +6,7 @@ import Table from '@/Components/Table';
 
 import { useEffect, useState } from 'react';
 import SelectInput from '@/Components/SelectInput';
-import can from '@/Hooks/can';
+import can from '@/Hooks/useCan';
 
 export default function index({ distributor_commissions }) {
     // Bulk Delete Form Data
@@ -109,13 +109,13 @@ export default function index({ distributor_commissions }) {
         const customActions = [
             ...(canView
                 ? [
-                      {
-                          label: 'View',
-                          type: 'link',
-                          href: (item) =>
-                              route('dashboard.distributors.show', item?.distributor?.id),
-                      },
-                  ]
+                    {
+                        label: 'View',
+                        type: 'link',
+                        href: (item) =>
+                            route('dashboard.distributors.show', item?.distributor?.id),
+                    },
+                ]
                 : []),
         ];
 

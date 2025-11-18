@@ -553,6 +553,9 @@ Additional Work:
         59: Mobile FEED BUG FIXES AND GALLERy Ui UPDATE And VIDEO PAUSE ISSUE FIXED ✅
         60: POST AND SMARTPHONE DESKTOP MEDIA LOADING PRIORITY ASSINING FOr LOADING TO OPTIMZIE THE PERFORMANCE LOGIC DONE ✅
         61: MOBILE FEED MEDIA LOADING PRIORITY ASSIGNING FOR LOADING Instantly TO OPTIMZIE THE PERFORMANCE LOGIC DONE ✅
+        62: Online and Offline Events Are Optimized To Show a Clean And Professional Alert And Organized The Code And Removed Everything
+         related To it From Main app.jsx And Added Those In Components To make consistency and clear code   ✅
+        63: Dashbaord ERROR RElated Hook Of can hook -> that uses for Checking Permissions Is Now renamed as UseCan And FIxed✅
 
     ) Redesigned Whole Website 4th Time Completed According To The LAYOUT Design Reference Provided ✅
 

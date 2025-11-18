@@ -1,3 +1,4 @@
+import AppStatusManager from '@/Components/AppStatusManager';
 import Preloader from '@/Components/Preloader';
 import PWAAlertBar from '@/Components/PWAAlertBar';
 import Toast from '@/Components/Toast';
@@ -144,7 +145,7 @@ export default function MainLayout({ children }) {
         <>
             <div className="relative w-full min-h-screen bg-white dark:bg-zinc-950/70">
                 <Preloader loaded={loaded} setLoaded={setLoaded} />
-
+                <AppStatusManager />
                 <Toast flash={flash} />
 
                 {/* Sidebar */}

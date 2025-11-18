@@ -6,7 +6,7 @@ import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import Table from '@/Components/Table';
 
 import { useEffect, useState } from 'react';
-import can from '@/Hooks/can';
+import can from '@/Hooks/useCan';
 
 export default function index({ categories }) {
     // Bulk Delete Form Data

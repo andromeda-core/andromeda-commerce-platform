@@ -7,7 +7,7 @@ import Table from '@/Components/Table';
 
 import { useEffect, useState } from 'react';
 import getContrastingColor from '@/Hooks/useColorContraster';
-import can from '@/Hooks/can';
+import can from '@/Hooks/useCan';
 
 export default function index({ smartphones }) {
     // Bulk Delete Form Data

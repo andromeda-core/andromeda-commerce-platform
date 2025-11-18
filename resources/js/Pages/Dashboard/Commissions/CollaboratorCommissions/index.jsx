@@ -6,7 +6,7 @@ import Table from '@/Components/Table';
 
 import { useEffect, useState } from 'react';
 import SelectInput from '@/Components/SelectInput';
-import can from '@/Hooks/can';
+import can from '@/Hooks/useCan';
 
 export default function index({ collaborator_commissions }) {
     // Bulk Delete Form Data
@@ -110,13 +110,13 @@ export default function index({ collaborator_commissions }) {
         const customActions = [
             ...(canView
                 ? [
-                      {
-                          label: 'View',
-                          type: 'link',
-                          href: (item) =>
-                              route('dashboard.collaborators.show', item?.collaborator?.id),
-                      },
-                  ]
+                    {
+                        label: 'View',
+                        type: 'link',
+                        href: (item) =>
+                            route('dashboard.collaborators.show', item?.collaborator?.id),
+                    },
+                ]
                 : []),
         ];
 

@@ -1,5 +1,4 @@
 import { usePage } from '@inertiajs/react';
-import React from 'react';
 
 export default function can(permissions) {
     const { auth } = usePage().props;

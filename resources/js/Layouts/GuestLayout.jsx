@@ -3,6 +3,7 @@ import { Link, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import Preloader from '@/Components/Preloader';
 import Toast from '@/Components/Toast';
+import AppStatusManager from '@/Components/AppStatusManager';
 
 export default function GuestLayout({ children }) {
     // Global General Setting Prop
@@ -47,20 +48,20 @@ export default function GuestLayout({ children }) {
     return (
         <>
             <Preloader loaded={loaded} setLoaded={setLoaded} />
-
+            <AppStatusManager />
             <Toast flash={flash} />
 
-            <div className="z-1 relative bg-slate-50 p-6 dark:bg-deepcharcoal sm:p-0">
-                <div className="relative flex min-h-screen w-full flex-col justify-center overflow-y-auto dark:bg-deepcharcoal sm:p-0 lg:flex-row">
+            <div className="relative p-6 z-1 bg-slate-50 dark:bg-deepcharcoal sm:p-0">
+                <div className="relative flex flex-col justify-center w-full min-h-screen overflow-y-auto dark:bg-deepcharcoal sm:p-0 lg:flex-row">
                     {children}
 
-                    <div className="relative hidden min-h-screen w-full items-center bg-indigo-950 dark:bg-white/5 lg:grid lg:w-1/2">
-                        <div className="z-1 flex items-center justify-center">
+                    <div className="relative items-center hidden w-full min-h-screen bg-indigo-950 dark:bg-white/5 lg:grid lg:w-1/2">
+                        <div className="flex items-center justify-center z-1">
                             <CommonGridShape />
-                            <div className="flex max-w-xs flex-col items-center">
+                            <div className="flex flex-col items-center max-w-xs">
                                 <Link
                                     href={route('home')}
-                                    className="dark:none mb-4 block rounded-2xl"
+                                    className="block mb-4 dark:none rounded-2xl"
                                 >
                                     <img src={ApplicationLogo} alt="Logo" />
                                 </Link>
@@ -68,9 +69,9 @@ export default function GuestLayout({ children }) {
                         </div>
                     </div>
 
-                    <div className="fixed bottom-6 right-6 z-50 hidden sm:block">
+                    <div className="fixed z-50 hidden bottom-6 right-6 sm:block">
                         <button
-                            className="hover:bg-brand-600 inline-flex size-14 items-center justify-center rounded-full bg-indigo-600 text-white transition-colors"
+                            className="inline-flex items-center justify-center text-white transition-colors bg-indigo-600 rounded-full hover:bg-brand-600 size-14"
                             onClick={() => {
                                 setDarkMode(!darkMode);
                                 localStorage.setItem(

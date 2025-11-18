@@ -5,7 +5,7 @@ import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import Table from '@/Components/Table';
 import { useEffect, useState } from 'react';
-import can from '@/Hooks/can';
+import can from '@/Hooks/useCan';
 export default function index({ smartphone_for_sales }) {
     // Bulk Delete Form Data
     const { props } = usePage();

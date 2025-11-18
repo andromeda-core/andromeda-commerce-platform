@@ -5,6 +5,7 @@ import Sidebar from '@/partials/Sidebar';
 import { router, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import Toast from '@/Components/Toast';
+import AppStatusManager from '@/Components/AppStatusManager';
 export default function AuthenticatedLayout({ children }) {
     // Global General Setting Prop
     const { auth, generalSetting, asset, flash } = usePage().props;
@@ -67,7 +68,7 @@ export default function AuthenticatedLayout({ children }) {
         <>
             <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-deepcharcoal">
                 <Preloader loaded={loaded} setLoaded={setLoaded} />
-
+                <AppStatusManager />
                 <Sidebar
                     sidebarToggle={sidebarToggle}
                     setSidebarToggle={setSidebarToggle}
@@ -75,7 +76,7 @@ export default function AuthenticatedLayout({ children }) {
                     ApplicationLogoDark={ApplicationLogoDark}
                 />
 
-                <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+                <div className="relative flex flex-col flex-1 overflow-x-hidden overflow-y-auto">
                     <Overlay sidebarToggle={sidebarToggle} setSidebarToggle={setSidebarToggle} />
 
                     <Header

@@ -6,7 +6,7 @@ import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import Table from '@/Components/Table';
 
 import { useEffect, useState } from 'react';
-import can from '@/Hooks/can';
+import can from '@/Hooks/useCan';
 
 export default function index({ posts }) {
     // Bulk Delete Form Data
@@ -92,13 +92,13 @@ export default function index({ posts }) {
 
             ...(canEdit
                 ? [
-                      {
-                          label: 'Edit',
-                          type: 'link',
-                          href: (item) =>
-                              route('dashboard.posts.edit', encodeURIComponent(item.slug)),
-                      },
-                  ]
+                    {
+                        label: 'Edit',
+                        type: 'link',
+                        href: (item) =>
+                            route('dashboard.posts.edit', encodeURIComponent(item.slug)),
+                    },
+                ]
                 : []),
         ];
 

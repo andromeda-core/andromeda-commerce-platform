@@ -7,7 +7,7 @@ import Table from '@/Components/Table';
 import { useEffect, useState } from 'react';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SelectInput from '@/Components/SelectInput';
-import can from '@/Hooks/can';
+import can from '@/Hooks/useCan';
 
 export default function index({ inventories, batches, storage_locations, smartphones }) {
     // Bulk Delete Form Data
