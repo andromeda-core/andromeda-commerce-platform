@@ -305,7 +305,15 @@ export default function CustomizedVideoPlayer({
 
         const rect = e.currentTarget.getBoundingClientRect();
         const pos = (e.clientX - rect.left) / rect.width;
-        video.currentTime = pos * video.duration;
+
+        const newTime = pos * video.duration;
+
+        //
+        setProgress(pos * 100);
+        setCurrentTime(newTime);
+
+
+        video.currentTime = newTime;
     };
 
 

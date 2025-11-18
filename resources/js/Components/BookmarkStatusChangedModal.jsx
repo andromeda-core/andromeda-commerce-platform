@@ -100,7 +100,7 @@ const BookmarkStatusChangedModal = ({
                 }
             `}</style>
         </div>,
-        document.body
+        document.getElementById('modal-root') || document.body
     );
 };
 

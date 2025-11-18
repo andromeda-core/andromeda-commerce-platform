@@ -1112,7 +1112,7 @@ const index = ({ google_map_api_key, search_history }) => {
                                                             onError={(e) =>
                                                                 (e.target.src = Placeholder)
                                                             }
-                                                            className="object-cover w-full transition-all duration-500 group-hover:scale-105"
+                                                            className="object-cover w-full transition-all duration-500 group-hover:scale-105 dark:opacity-80"
                                                         />
 
                                                         <div className="absolute left-3 top-3">
