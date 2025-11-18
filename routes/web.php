@@ -603,8 +603,8 @@ Route::get('/pwa-manifest', function () {
 
     $favicon = $general_setting->app_favicon ?? asset('assets/images/Logo/512512.png');
 
-    $themeColor = '#f1f5f9';
-    $backgroundColor = '#f1f5f9';
+    $themeColor = '#FFFFFF';
+    $backgroundColor = '#FFFFFF';
 
     $manifest = [
         'name' => $name,

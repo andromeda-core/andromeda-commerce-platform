@@ -9,7 +9,8 @@ export default function CustomizedVideoPlayer({
     initialTime = 0,
     videoElementRef,
     loaded,
-    OnLoadedMetaData
+    OnLoadedMetaData,
+    Preload,
 }) {
     const videoRef = useRef(null);
     const containerRef = useRef(null);
@@ -371,7 +372,7 @@ export default function CustomizedVideoPlayer({
                     ref={videoRef}
                     className={`w-full h-full  ${className || ''}`}
                     playsInline
-                    preload="metadata"
+                    preload={Preload}
                     controlsList="nodownload noremoteplayback"
                     controls={false}
                     poster={thumbnail}

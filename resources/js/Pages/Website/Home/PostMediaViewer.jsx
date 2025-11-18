@@ -1,9 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import videoThumbnail from '../../../../../public/assets/images/video-thumb/general-video.png';
 import { useSwipeable } from 'react-swipeable';
 import useWindowSize from '@/Hooks/useWindowSize';
 import { motion, AnimatePresence } from 'framer-motion';
-import VideoPlayer from '@/Components/VideoPlayer';
 import VideoWithThumbnail from '@/Components/VideoWithThumbnail';
 import VideoThumbnail from '@/Components/VideoThumbnail';
 
@@ -161,7 +159,9 @@ export default function PostMediaViewer({
                                 src={mediaItems[selected]?.url}
                                 alt={`Media ${selected}`}
                                 className="h-full w-full min-w-[300px] max-w-[300px] object-contain lg:min-w-[500px]"
-                                loading="lazy"
+                                loading={"high"}
+                                decoding={"async"}
+                                fetchpriority={"high"}
                                 onError={(e) => e.target.src = Placeholder}
                             />
                         ) : (
@@ -176,39 +176,42 @@ export default function PostMediaViewer({
                     {/* Animated layers */}
                     <AnimatePresence initial={false} custom={direction}>
                         <div className="absolute inset-0 flex items-center justify-center w-full h-full">
-                            {mediaItems.map((item, idx) => (
-                                <motion.div
-                                    key={`${idx}-${item.url}`}
-                                    initial={false}
-                                    animate={{
-                                        opacity: idx === selected ? 1 : 0,
-                                        zIndex: idx === selected ? 1 : 0,
-                                    }}
-                                    transition={{ duration: 0.4, ease: 'easeInOut' }}
-                                    className="absolute inset-0 flex items-center justify-center w-full h-full"
-                                >
-                                    {item.type === 'image' ? (
-                                        <img
-                                            src={item.url}
-                                            alt={`Media ${idx}`}
-                                            className="object-contain w-full h-full rounded-xl"
-                                            onLoad={() => loadedCache.current.add(item.url)}
-                                        />
-                                    ) : (
-                                        // <video
-                                        //     src={item.url}
-                                        //     controls
-                                        //     preload="auto"
-                                        //     className="object-contain w-full h-full rounded-xl"
-                                        // />
+                            {mediaItems.map((item, idx) => {
+                                const isCurrent = idx === selected;
 
-                                        <VideoWithThumbnail
-                                            className={'h-full w-full rounded-md object-contain'}
-                                            videoUrl={item.url}
-                                        />
-                                    )}
-                                </motion.div>
-                            ))}
+                                return (
+                                    <motion.div
+                                        key={`${idx}-${item.url}`}
+                                        initial={false}
+                                        animate={{
+                                            opacity: isCurrent ? 1 : 0,
+                                            zIndex: isCurrent ? 1 : 0,
+                                        }}
+                                        transition={{ duration: 0.4, ease: "easeInOut" }}
+                                        className="absolute inset-0 flex items-center justify-center w-full h-full"
+                                    >
+                                        {item.type === "image" ? (
+                                            <img
+                                                src={item.url}
+                                                alt={`Media ${idx}`}
+                                                className="object-contain w-full h-full rounded-xl"
+                                                loading={isCurrent ? "eager" : "lazy"}
+                                                decoding="async"
+                                                fetchpriority={isCurrent ? "high" : "low"}
+                                                onLoad={() => loadedCache.current.add(item.url)}
+                                            />
+                                        ) : (
+                                            <VideoWithThumbnail
+                                                className="object-contain w-full h-full rounded-md"
+                                                videoUrl={item.url}
+                                                Preload={isCurrent ? "auto" : "metadata"}
+                                                OnLoadedMetaData={() => loadedCache.current.add(item.url)}
+                                            />
+                                        )}
+                                    </motion.div>
+                                );
+                            })}
+
                         </div>
                     </AnimatePresence>
                 </div>
@@ -222,8 +225,8 @@ export default function PostMediaViewer({
                                 ref={(el) => (mediaThumbRefs.current[idx] = el)}
                                 onClick={() => onSelectMediaIndex(idx)}
                                 className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-sm border transition-all duration-200 ${selectedMediaIndex === idx
-                                        ? 'border-indigo-600 ring-2 ring-indigo-400'
-                                        : 'border-gray-300 hover:border-gray-500'
+                                    ? 'border-indigo-600 ring-2 ring-indigo-400'
+                                    : 'border-gray-300 hover:border-gray-500'
                                     }`}
                             >
                                 {item.type === 'image' ? (
@@ -231,18 +234,20 @@ export default function PostMediaViewer({
                                         src={item.url}
                                         alt={`Image ${idx}`}
                                         className="object-cover w-full h-full"
+                                        loading={selectedMediaIndex === idx ? "eager" : "lazy"}
+                                        decoding="async"
+                                        fetchpriority={selectedMediaIndex === idx ? "high" : "low"}
                                     />
                                 ) : (
-                                    // <img
-                                    //     src={videoThumbnail}
-                                    //     alt={`Video ${idx}`}
-                                    //     className="object-cover w-full h-full opacity-80"
-                                    // />
+
 
                                     <VideoThumbnail
                                         className={'h-full w-full object-cover opacity-80'}
                                         videoUrl={item.url}
                                         alt={`Video ${idx}`}
+                                        FetchPriority={selectedMediaIndex === idx ? "high" : "low"}
+                                        Loading={selectedMediaIndex === idx ? "eager" : "lazy"}
+                                        Decoding={"async"}
                                     />
                                 )}
                             </button>

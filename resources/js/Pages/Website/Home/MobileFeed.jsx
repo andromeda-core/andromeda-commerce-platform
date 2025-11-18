@@ -330,6 +330,8 @@ const MobileFeed = ({
 
         const isLoaded = isTextPost || loadedItems.has(item?.slug);
 
+        const isCurrent = item?.slug === manualFeedGalleryItem?.slug;
+
         const handleOnLoad = () => {
             if (item?.slug) {
                 setLoadedItems(prev => new Set(prev).add(item.slug));
@@ -348,8 +350,6 @@ const MobileFeed = ({
                     willChange: 'transform',
                 }}
             >
-
-
 
                 {/* Header: Tag + Three Dots */}
                 <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
@@ -647,8 +647,9 @@ const MobileFeed = ({
                                             key={item.id}
                                             src={item.images[0]}
                                             alt={item.name}
-                                            className="object-contain max-w-full max-h-full rounded-lg"
-                                            loading="eager"
+                                            className="max-w-full max-h-full rounded-lg will-change-transform"
+                                            loading={isCurrent ? "eager" : "lazy"}
+                                            fetchpriority={isCurrent ? "high" : "low"}
                                             decoding="async"
                                             onLoad={handleOnLoad}
                                             onError={(e) => {
@@ -672,7 +673,8 @@ const MobileFeed = ({
                                             src={item.post_image_urls[0]}
                                             alt={item.title}
                                             className="object-contain max-w-full max-h-full rounded-lg"
-                                            loading="eager"
+                                            loading={isCurrent ? "eager" : "lazy"}
+                                            fetchpriority={isCurrent ? "high" : "low"}
                                             decoding="async"
                                             onLoad={handleOnLoad}
                                             onError={(e) => {
@@ -699,6 +701,7 @@ const MobileFeed = ({
                                                 }
                                             }}
                                             videoElementRef={handleVideoRef(item.slug)}
+                                            Preload={isCurrent ? 'auto' : 'metadata'}
                                         />
                                     </div>
                                 ) : (
@@ -847,6 +850,10 @@ const MobileFeed = ({
     }, [videoAutoplay, mobileFeedGalleryOpening, actionDropdownOpen, isDarkMode, loadedItems]);
 
 
+    // Syncing FeedGallery With Manual FeedGallery State
+    useEffect(() => {
+        setManualFeedGalleryItem(feedGallery);
+    }, [feedGallery]);
 
     // Syncing the ref when prop changes
     useEffect(() => {
@@ -1634,12 +1641,13 @@ const MobileFeed = ({
                                     className="min-w-full feed-page snap-start"
                                     style={{
 
-                                        contain: 'layout style paint',
-                                        willChange: 'transform',
+                                        contentVisibility: "auto",
+                                        contain: 'layout',
+                                        willChange: 'scroll-position',
                                     }}
                                 >
                                     <div
-                                        className="flex w-full h-full overflow-x-auto snap-x snap-mandatory "
+                                        className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-none"
                                         ref={(el) => {
                                             horizontalRefs.current[index] = el;
 

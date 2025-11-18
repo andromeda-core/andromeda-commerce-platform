@@ -120,30 +120,41 @@ export default function SmartphoneMediaViewer({
                         alt={`Smartphone ${selected}`}
                         className="h-full w-full min-w-[300px] max-w-[300px] object-contain lg:min-w-[500px]"
                         loading="lazy"
+                        decoding="async"
+                        fetchpriority="low"
                     />
                 </div>
                 <AnimatePresence initial={false} custom={direction}>
                     <div className="absolute inset-0 flex items-center justify-center w-full h-full">
-                        {mediaItems.map((item, idx) => (
-                            <motion.div
-                                key={item.url}
-                                initial={false}
-                                animate={{
-                                    opacity: idx === selected ? 1 : 0,
-                                    zIndex: idx === selected ? 1 : 0,
-                                }}
-                                transition={{ duration: 0.4, ease: 'easeInOut' }}
-                                className="absolute inset-0 flex items-center justify-center w-full h-full"
-                            >
-                                <img
-                                    src={item.url}
-                                    alt={`Smartphone ${idx}`}
-                                    className="object-contain w-full h-full rounded-xl"
-                                    onLoad={() => loadedCache.current.add(item.url)}
-                                    onError={(e) => e.target.src = Placeholder}
-                                />
-                            </motion.div>
-                        ))}
+                        {mediaItems.map((item, idx) => {
+
+                            const isCurrent = idx === selected;
+
+
+                            return (
+                                <motion.div
+                                    key={item.url}
+                                    initial={false}
+                                    animate={{
+                                        opacity: isCurrent ? 1 : 0,
+                                        zIndex: isCurrent ? 1 : 0,
+                                    }}
+                                    transition={{ duration: 0.4, ease: 'easeInOut' }}
+                                    className="absolute inset-0 flex items-center justify-center w-full h-full"
+                                >
+                                    <img
+                                        src={item.url}
+                                        alt={`Smartphone ${idx}`}
+                                        className="object-contain w-full h-full rounded-xl"
+                                        onLoad={() => loadedCache.current.add(item.url)}
+                                        onError={(e) => e.target.src = Placeholder}
+                                        loading={isCurrent ? "eager" : "lazy"}
+                                        decoding="async"
+                                        fetchpriority={isCurrent ? "high" : "low"}
+                                    />
+                                </motion.div>
+                            )
+                        })}
                     </div>
                 </AnimatePresence>
             </div>
@@ -165,6 +176,9 @@ export default function SmartphoneMediaViewer({
                                 alt={`Smartphone ${idx}`}
                                 className="object-cover w-full h-full"
                                 onError={(e) => e.target.src = Placeholder}
+                                loading={selectedMediaIndex === idx ? "eager" : "lazy"}
+                                decoding="async"
+                                fetchpriority={selectedMediaIndex === idx ? "high" : "low"}
                             />
                         </button>
                     ))}

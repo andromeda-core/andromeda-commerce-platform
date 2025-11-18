@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const VideoThumbnail = ({ videoUrl, alt, className }) => {
+const VideoThumbnail = ({ videoUrl, alt, className, Loading = 'lazy', FetchPriority = 'low', Decoding = 'async' }) => {
     const [thumbnail, setThumbnail] = useState(null);
 
     useEffect(() => {
@@ -65,7 +65,10 @@ const VideoThumbnail = ({ videoUrl, alt, className }) => {
             src={thumbnail}
             alt={alt || 'Video thumbnail'}
             className={className || 'w-full rounded object-cover'}
-            loading="lazy"
+            loading={Loading}
+            fetchpriority={FetchPriority}
+            decoding={Decoding}
+
         />
     );
 };

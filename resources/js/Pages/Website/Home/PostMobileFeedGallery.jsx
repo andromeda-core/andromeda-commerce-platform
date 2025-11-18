@@ -268,14 +268,16 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                                     {mediaItems.map((item, index) => (
                                                         <div
                                                             key={index}
-                                                            className="flex items-center justify-center w-full h-full shrink-0 snap-center snap-always"
+                                                            className="flex items-center justify-center w-full h-full overflow-y-hidden shrink-0 snap-center snap-always"
                                                         >
                                                             {item.type === 'image' ? (
                                                                 <img
                                                                     src={item.url}
                                                                     alt={`Media ${index}`}
-                                                                    className="object-contain rounded-lg"
-                                                                    loading="lazy"
+                                                                    className="rounded-lg will-change-transform"
+                                                                    loading={"eager"}
+                                                                    fetchpriority={"high"}
+                                                                    decoding="async"
                                                                     onError={(e) => (e.target.src = placeholderImage)}
                                                                 />
                                                             ) : (
@@ -284,6 +286,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                                                         type='customized'
                                                                         className="object-contain rounded-lg"
                                                                         videoUrl={item.url}
+                                                                        Preload='auto'
                                                                     />
                                                                 </div>
                                                             )}

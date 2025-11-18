@@ -388,3 +388,6 @@ video.feed-video::-webkit-media-controls {
     scroll-snap-align: start;
     scroll-snap-stop: always;
 }
+.masonry-item {
+    animation-delay: calc(var(--i) * 100ms);
+}

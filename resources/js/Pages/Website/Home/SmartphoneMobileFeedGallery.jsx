@@ -463,7 +463,10 @@ const SmartphoneMobileGalleryModal = (
                                                     <img
                                                         src={image}
                                                         alt={`${smartphone.name} ${index + 1}`}
-                                                        className="object-contain rounded-lg"
+                                                        className="rounded-lg will-change-transform"
+                                                        loading={"eager"}
+                                                        fetchpriority={"high"}
+                                                        decoding="async"
                                                         onError={(e) =>
                                                             (e.target.src = placeholderImage)
                                                         }

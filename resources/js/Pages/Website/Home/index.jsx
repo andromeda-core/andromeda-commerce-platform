@@ -1,7 +1,7 @@
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, router, usePage } from '@inertiajs/react';
-import React, { Fragment, useEffect, useRef, useState } from 'react';
+import React, { Fragment, memo, useEffect, useRef, useState } from 'react';
 import QRCode from 'react-qr-code';
 import { createPortal, flushSync } from 'react-dom';
 import axios from 'axios';
@@ -17,7 +17,7 @@ import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 import PostDesktopModal from './PostDesktopModal';
 import MobileFeed from './MobileFeed';
 
-export default function index({ google_map_api_key, search_history }) {
+const index = ({ google_map_api_key, search_history }) => {
     const { currency, auth, cart_items } = usePage().props;
 
     const [ErrorMessage, setErrorMessage] = useState(null);
@@ -935,12 +935,12 @@ export default function index({ google_map_api_key, search_history }) {
                             <div className="lg:columns:2 columns-1 gap-1  [column-fill:_balance] min-[300px]:columns-2 md:columns-2 lg:gap-2 xl:columns-4">
                                 {feed.map((item, index) => {
                                     return (
-                                        <Fragment key={index}>
+                                        <Fragment key={item.id}>
                                             {item?.type === 'posts' && (
                                                 <article
                                                     key={item?.id}
-                                                    className="relative mb-1 overflow-hidden transition-all duration-300 rounded-none shadow-md cursor-pointer no-touch-hover group break-inside-avoid hover:-translate-y-1 hover:shadow-xl lg:mb-2"
-                                                    style={{ animationDelay: `${index * 100}ms` }}
+                                                    className="relative mb-1 overflow-hidden transition-all duration-300 rounded-none shadow-md cursor-pointer will-change-transform masonry-item no-touch-hover group break-inside-avoid hover:-translate-y-1 hover:shadow-xl lg:mb-2"
+                                                    style={{ "--i": index, contentVisibility: "auto" }}
                                                     onClick={() => {
                                                         feedOpenCountRef.current++;
 
@@ -966,6 +966,8 @@ export default function index({ google_map_api_key, search_history }) {
                                                                 src={item?.images[0]?.url}
                                                                 alt={item?.title}
                                                                 loading="lazy"
+                                                                decoding="async"
+                                                                fetchpriority="low"
                                                                 onError={(e) =>
                                                                     (e.target.src = Placeholder)
                                                                 }
@@ -1077,8 +1079,9 @@ export default function index({ google_map_api_key, search_history }) {
 
                                             {item?.type === 'smartphones' && (
                                                 <article
-                                                    key={index}
-                                                    className="relative mb-1 overflow-hidden transition-all duration-300 rounded-none shadow-md cursor-pointer no-touch-hover group break-inside-avoid hover:-translate-y-1 hover:shadow-xl"
+                                                    key={item?.id}
+                                                    className="relative mb-1 overflow-hidden transition-all duration-300 rounded-none shadow-md cursor-pointer will-change-transform no-touch-hover group break-inside-avoid hover:-translate-y-1 hover:shadow-xl"
+                                                    style={{ "--i": index, contentVisibility: "auto" }}
                                                     onClick={() => {
                                                         feedOpenCountRef.current++;
                                                         // here its stop To Re-runs The Gsap Ticker The because When First opened it
@@ -1104,6 +1107,8 @@ export default function index({ google_map_api_key, search_history }) {
                                                             src={item.images?.[0]}
                                                             alt={item.name}
                                                             loading="lazy"
+                                                            decoding="async"
+                                                            fetchpriority="low"
                                                             onError={(e) =>
                                                                 (e.target.src = Placeholder)
                                                             }
@@ -1468,3 +1473,6 @@ export default function index({ google_map_api_key, search_history }) {
         </MainLayout>
     );
 }
+
+
+export default memo(index);

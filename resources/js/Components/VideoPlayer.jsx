@@ -8,6 +8,7 @@ export default function VideoPlayer({
     autoPlay,
     initialTime = 0,
     videoElementRef,
+    Preload,
 }) {
 
 
@@ -113,7 +114,7 @@ export default function VideoPlayer({
                 ref={videoRef}
                 className={`w-full rounded-lg ${className || ''}`}
                 playsInline
-                preload="metadata"
+                preload={Preload}
                 controlsList="nodownload noremoteplayback"
                 controls={controls}
                 poster={thumbnail}
