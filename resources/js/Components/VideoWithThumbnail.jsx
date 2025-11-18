@@ -7,7 +7,7 @@ import CustomizedVideoPlayer from './CustomizedVideoPlayer';
 // Global cache to store video timelines
 const videoTimeCache = new Map();
 
-const VideoWithThumbnail = ({ className, videoUrl, autoPlay = false, controls = true, type = 'normal', OnLoadedMetaData = () => { } }) => {
+const VideoWithThumbnail = ({ className, videoUrl, autoPlay = false, controls = true, type = 'normal', OnLoadedMetaData = () => { }, videoElementRef }) => {
     const [thumbnail, setThumbnail] = useState(null);
     const [loaded, setLoaded] = useState(false);
     const [autoPlayEnabled, setAutoPlayEnabled] = useState(false);
@@ -15,8 +15,8 @@ const VideoWithThumbnail = ({ className, videoUrl, autoPlay = false, controls = 
     const [initialTime, setInitialTime] = useState(0);
     const containerRef = useRef(null);
     const hasBeenVisibleRef = useRef(false);
-    const videoElementRef = useRef(null);
     const cacheIntervalRef = useRef(null);
+    const internalVideoRef = useRef(null);
 
     // Function to load cached time
     const loadCachedTime = () => {
@@ -44,13 +44,12 @@ const VideoWithThumbnail = ({ className, videoUrl, autoPlay = false, controls = 
 
     // Function to save current time to cache
     const saveCachedTime = () => {
-        if (videoElementRef.current && !isNaN(videoElementRef.current.currentTime)) {
-            const currentTime = videoElementRef.current.currentTime;
+        if (internalVideoRef.current && !isNaN(internalVideoRef.current.currentTime)) {
+            const currentTime = internalVideoRef.current.currentTime;
             videoTimeCache.set(videoUrl, {
                 currentTime: currentTime,
                 timestamp: Date.now()
             });
-
         }
     };
 
@@ -80,64 +79,51 @@ const VideoWithThumbnail = ({ className, videoUrl, autoPlay = false, controls = 
 
     // Continuous cache updates while video is visible and playing
     useEffect(() => {
-        if (isVisible && videoElementRef.current) {
+        if (isVisible && internalVideoRef.current) {
             // Save immediately when becoming visible
             saveCachedTime();
 
             // Then save every 2 seconds while visible
             cacheIntervalRef.current = setInterval(() => {
                 saveCachedTime();
-            }, 2000); // Save every 2 seconds
-
-
+            }, 2000);
         }
 
         return () => {
             if (cacheIntervalRef.current) {
                 clearInterval(cacheIntervalRef.current);
                 cacheIntervalRef.current = null;
-
             }
         };
     }, [isVisible, videoUrl]);
 
-    // Intersection observer - checks cookie EVERY TIME video becomes visible
+    // Intersection observer - checks cookie EVERY TIME video becomes visible or invisible AND Works Both In Y And X Axis
     useEffect(() => {
         if (!containerRef.current) return;
 
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
-                    if (entry.isIntersecting && entry.intersectionRatio >= 0.1) {
 
-                        // Load cached time when becoming visible
+                    if (entry.isIntersecting && entry.intersectionRatio >= 0.5) { // Changed to 0.5 for better X-axis detection
                         loadCachedTime();
-
-                        // Update visibility state to force VideoPlayer remount
                         setIsVisible(true);
-
-                        // Update autoplay from cookie
                         updateAutoplayFromCookie();
                         hasBeenVisibleRef.current = true;
                     } else if (!entry.isIntersecting && hasBeenVisibleRef.current) {
-
-
-                        // Save one final time before leaving
                         saveCachedTime();
-
                         setIsVisible(false);
                         hasBeenVisibleRef.current = false;
                     }
                 });
             },
             {
-                threshold: 0.1,
+                threshold: 0.5,
                 rootMargin: '0px'
             }
         );
 
         observer.observe(containerRef.current);
-
         return () => observer.disconnect();
     }, [autoPlay, videoUrl]);
 
@@ -171,7 +157,17 @@ const VideoWithThumbnail = ({ className, videoUrl, autoPlay = false, controls = 
     }, [videoUrl]);
 
 
+    const handleVideoElementRef = (videoElement) => {
+        internalVideoRef.current = videoElement;
 
+        if (videoElementRef) {
+            if (typeof videoElementRef === 'function') {
+                videoElementRef(videoElement);
+            } else {
+                videoElementRef.current = videoElement;
+            }
+        }
+    };
 
 
     return (
@@ -192,7 +188,7 @@ const VideoWithThumbnail = ({ className, videoUrl, autoPlay = false, controls = 
                     controls={controls}
                     fullscreen={true}
                     initialTime={initialTime}
-                    videoElementRef={videoElementRef}
+                    videoElementRef={handleVideoElementRef}
                     OnLoadedMetaData={OnLoadedMetaData}
                 />
             )}

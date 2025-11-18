@@ -40,6 +40,9 @@ const MobileFeed = ({
     // Local feed state for seamless looping
     const [localFeed, setLocalFeed] = useState([]);
 
+    // Manually Passing Correct Feed To Feed Gallery To Open
+    const [manualFeedGalleryItem, setManualFeedGalleryItem] = useState(null);
+
     const isFeedOpeningDirectlyRef = useRef(isFeedOpeningDirectly);
     const isMobileFeedGalleryOpenRef = useRef(MobileFeedGalleryOpen);
     const hasUserInteractedRef = useRef(false);
@@ -97,6 +100,7 @@ const MobileFeed = ({
 
     const isDarkMode = useDarkMode();
 
+    const videoRefs = useRef({});
 
     // Pause all videos except the one in the current viewport
     const pauseAllVideosExceptCurrent = (currentIndex) => {
@@ -118,36 +122,58 @@ const MobileFeed = ({
         });
     };
 
-    const pauseCurrentVideo = (currentIndex) => {
-        const index = currentIndex + 1;
-        const container = scrollContainerRef.current;
-        if (!container) {
 
+    // Parent Function To Pause Video
+    const pauseVideoAtSlug = (slug) => {
+
+        const videoRef = videoRefs.current[slug];
+
+        if (videoRef?.current) {
+            videoRef.current.pause();
             return;
         }
+        // console.warn(`⚠️ Ref not found, trying DOM query for: ${slug}`);
+        // const container = scrollContainerRef.current;
+        // if (container) {
+        //     const videos = container.querySelectorAll('video');
+        //     videos.forEach(video => {
+        //         const videoContainer = video.closest('.feed-page');
+        //         if (videoContainer) {
+        //             if (!video.paused) {
+        //                 video.pause();
+        //             }
+        //         }
+        //     });
+        // }
+    };
 
-        const feedItems = container.querySelectorAll('.snap-start');
+    // const pauseAllVideos = () => {
+    //     Object.keys(videoRefs.current).forEach(index => {
+    //         pauseVideoAtIndex(parseInt(index));
+    //     });
+    // };
 
+    // Function to pause current video (for gallery open)
+    const pauseCurrentVideo = (slug) => {
 
-        const targetItem = feedItems[index];
-
-        if (!targetItem) {
-            return;
-        }
-        // Log ALL elements with data-video-player in the target
-        const allVideoPlayers = targetItem.querySelectorAll('[data-video-player]');
-
-
-        // Find VideoPlayer's root div
-        const videoPlayer = targetItem.querySelector('[data-video-player="true"]');
-
-
-        if (videoPlayer) {
-            videoPlayer.dispatchEvent(new CustomEvent('forcePause'));
-        }
+        pauseVideoAtSlug(slug);
     };
 
 
+
+    // Function Add Video Refs From render Feed
+    const handleVideoRef = useCallback((itemKey) => {
+        return (videoElement) => {
+
+
+            if (!videoRefs.current[itemKey]) {
+                videoRefs.current[itemKey] = { current: null };
+            }
+            videoRefs.current[itemKey].current = videoElement;
+
+
+        };
+    }, []);
 
 
     // Helper Function to Get Related Feed Count
@@ -156,8 +182,6 @@ const MobileFeed = ({
         const arr = localRelatedFeedRef.current[slug];
         return arr ? arr.length : 0;
     };
-
-
 
     // Helper function to get related items for a feed item
     const relatedItemsCache = useRef(new Map());
@@ -674,6 +698,7 @@ const MobileFeed = ({
                                                     setLoadedItems(prev => new Set(prev).add(item.slug));
                                                 }
                                             }}
+                                            videoElementRef={handleVideoRef(item.slug)}
                                         />
                                     </div>
                                 ) : (
@@ -730,6 +755,7 @@ const MobileFeed = ({
 
                             <button
                                 onClick={() => {
+                                    setManualFeedGalleryItem(item);
                                     setMobileFeedGalleryOpening(true);
 
                                     setTimeout(() => {
@@ -779,6 +805,7 @@ const MobileFeed = ({
                                 shouldShowMore && (
                                     <button
                                         onClick={() => {
+                                            setManualFeedGalleryItem(item);
                                             setMobileFeedGalleryOpening(true);
 
                                             setTimeout(() => {
@@ -794,10 +821,11 @@ const MobileFeed = ({
                             ) : (
                                 <button
                                     onClick={() => {
+                                        setManualFeedGalleryItem(item);
                                         setMobileFeedGalleryOpening(true);
 
                                         setTimeout(() => {
-                                            pauseCurrentVideo(feedIndex);
+                                            pauseCurrentVideo(item?.slug);
                                             setMobileFeedGalleryOpen(true);
                                             setMobileFeedGalleryOpening(false);
                                         }, 500);
@@ -849,7 +877,7 @@ const MobileFeed = ({
     useEffect(() => {
         if (!feedGallery) return;
         parentFeedSlugRef.current = feedGallery?.slug;
-
+        setManualFeedGalleryItem(feedGallery);
 
     }, []);
 
@@ -1027,7 +1055,6 @@ const MobileFeed = ({
         let lastScrollTop = container.scrollTop;
         let scrollTimeout = null;
         let isFirstCheck = true;
-        let initialScrollTop = container.scrollTop;
 
 
         const scrollTick = () => {
@@ -1168,9 +1195,6 @@ const MobileFeed = ({
             }
             // LOOPING LOGIC
 
-
-
-
             // Update scrollPos
             lastScrollTop = currentScrollTop;
 
@@ -1191,7 +1215,6 @@ const MobileFeed = ({
 
                 // Convert to REAL feed index
                 const feedIndexReal = newIndex - 1; // because feed[0] = index 1
-
                 const currentFeed = localFeedRef.current;
                 const newFeedItem = currentFeed[feedIndexReal];
 
@@ -1216,13 +1239,29 @@ const MobileFeed = ({
                     index: feedIndexReal
                 };
 
+
+                const rowXAxisData = lastHorizontalUpdateRef.current[feedIndexReal];
+                let itemToUse = newFeedItem; // Default to parent
+
+                if (rowXAxisData && rowXAxisData.id) {
+                    // This row has X-axis scroll history
+                    const relatedItems = getRelatedItems(newFeedItem);
+                    const xAxisItem = relatedItems.find(item => item.id === rowXAxisData.id);
+
+                    if (xAxisItem && !xAxisItem.__dummy) {
+                        itemToUse = xAxisItem; // Using X-axis scrolled item
+                    }
+                }
+
+
+
                 // URL updates
-                if (newFeedItem.type === 'smartphones') {
+                if (itemToUse.type === 'smartphones') {
                     const url = new URL(window.location.origin + window.location.pathname);
-                    url.searchParams.set('m-slug', newFeedItem.slug);
+                    url.searchParams.set('m-slug', itemToUse.slug);
                     window.history.replaceState({}, '', url.toString());
-                } else if (newFeedItem.type === 'posts') {
-                    const fullUrl = route('home') + generateURL(newFeedItem);
+                } else if (itemToUse.type === 'posts') {
+                    const fullUrl = route('home') + generateURL(itemToUse);
                     window.history.replaceState({}, '', fullUrl);
                 }
 
@@ -1238,7 +1277,7 @@ const MobileFeed = ({
                 // Update state
                 flushSync(() => {
                     setFeedIndex(targetIndex);
-                    setFeedGallery(newFeedItem);
+                    setFeedGallery(itemToUse);
                 });
 
                 parentFeedSlugRef.current = newFeedItem.slug;
@@ -1502,6 +1541,10 @@ const MobileFeed = ({
                         index: arrayIndex,
                     };
 
+
+
+
+
                     if (newItem.type === "smartphones") {
                         const url = new URL(window.location.origin + window.location.pathname);
                         url.searchParams.set("m-slug", newItem.slug);
@@ -1596,7 +1639,7 @@ const MobileFeed = ({
                                     }}
                                 >
                                     <div
-                                        className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-none "
+                                        className="flex w-full h-full overflow-x-auto snap-x snap-mandatory "
                                         ref={(el) => {
                                             horizontalRefs.current[index] = el;
 
@@ -1685,15 +1728,11 @@ const MobileFeed = ({
                 document.getElementById('modal-root') || document.body,
             )}
 
-
-
             {
                 MobileFeedGalleryOpen && (
                     <MobileFeedGallery
-                        feedGallery={feedGallery}
-
+                        feedGallery={manualFeedGalleryItem?.slug === feedGallery?.slug ? feedGallery : manualFeedGalleryItem}
                         setShowQrCode={setShowQrCode}
-
                         setLinkCopied={setLinkCopied}
                         auth={auth}
                         currency={currency}

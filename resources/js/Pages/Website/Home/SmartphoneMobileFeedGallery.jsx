@@ -449,20 +449,21 @@ const SmartphoneMobileGalleryModal = (
                                             msOverflowStyle: 'none',
                                             WebkitOverflowScrolling: 'touch',
                                             scrollSnapType: 'x mandatory',
+                                            height: 'calc(100vh - 180px)'
 
                                         }}
                                     >
                                         {smartphone.images.map((image, index) => (
                                             <div
                                                 key={index}
-                                                className="relative flex min-h-[450px] w-full shrink-0 snap-center snap-always items-center justify-center px-1"
+                                                className="flex items-center justify-center w-full h-full shrink-0 snap-center snap-always"
                                             >
 
                                                 <div className="relative inline-block pb-10">
                                                     <img
                                                         src={image}
                                                         alt={`${smartphone.name} ${index + 1}`}
-                                                        className="h-auto max-h-[380px] w-auto max-w-full rounded-lg object-contain"
+                                                        className="object-contain rounded-lg"
                                                         onError={(e) =>
                                                             (e.target.src = placeholderImage)
                                                         }
@@ -473,7 +474,7 @@ const SmartphoneMobileGalleryModal = (
                                     </div>
 
                                     {/* Fixed Pagination Dots - Outside scroll container, stays in place */}
-                                    <div className="pointer-events-none absolute bottom-8 left-0 right-0 z-10 flex items-center justify-center gap-1.5">
+                                    <div className="pointer-events-none absolute bottom-20 left-0 right-0 z-10 flex items-center justify-center gap-1.5">
                                         {visibleDots.map((dotIndex) => (
                                             <div
                                                 key={dotIndex}

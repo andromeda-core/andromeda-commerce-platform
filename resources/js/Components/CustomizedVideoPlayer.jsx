@@ -40,7 +40,7 @@ export default function CustomizedVideoPlayer({
 
         const handleForcePause = () => {
             const video = videoRef.current;
-            if (video && !video.paused) {
+            if (video) {
                 video.pause();
                 setIsPlaying(false);
                 setShowControls(true);
@@ -136,10 +136,22 @@ export default function CustomizedVideoPlayer({
             setIsBuffering(true);
         };
 
+        const handlePause = () => {
+            setIsPlaying(false);
+            setShowControls(true);
+        };
+
+        const handlePlay = () => {
+            setIsPlaying(true);
+        };
+
+
 
 
         video.addEventListener('loadedmetadata', handleLoadedMetadata);
         video.addEventListener('ended', handleEnded);
+        video.addEventListener('pause', handlePause);
+        video.addEventListener('play', handlePlay);
 
         // Buffering events
         video.addEventListener('waiting', handleWaiting);
@@ -147,14 +159,21 @@ export default function CustomizedVideoPlayer({
         video.addEventListener('playing', handlePlaying);
         video.addEventListener('stalled', handleStalled);
 
+
         // Expose video element to parent via ref
         if (videoElementRef) {
-            videoElementRef.current = video;
+            if (typeof videoElementRef === 'function') {
+                videoElementRef(video);
+            } else if (videoElementRef.current !== undefined) {
+                videoElementRef.current = video;
+            }
         }
 
         return () => {
             video.removeEventListener('loadedmetadata', handleLoadedMetadata);
             video.removeEventListener('ended', handleEnded);
+            video.removeEventListener('pause', handlePause);
+            video.removeEventListener('play', handlePlay);
 
             video.removeEventListener('waiting', handleWaiting);
             video.removeEventListener('canplay', handleCanPlay);
@@ -334,7 +353,6 @@ export default function CustomizedVideoPlayer({
                 document.mozCancelFullScreen?.();
         }
     };
-
 
 
 

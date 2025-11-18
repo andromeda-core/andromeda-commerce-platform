@@ -232,11 +232,11 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                     </div>
 
                     {/* Scrollable Content Area */}
-                    <div className="flex-1 pb-10 overflow-y-auto scrollbar-none">
+                    <div className="flex-1 overflow-y-auto scrollbar-none">
                         <div className="px-4">
 
                             {mediaItems?.length > 0 && (
-                                <div className="relative mb-4 overflow-hidden rounded-2xl">
+                                <div className="relative overflow-hidden">
                                     {/* Horizontal Scroll Container - Swipeable */}
                                     <div
                                         ref={scrollContainerRef}
@@ -247,41 +247,57 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                             msOverflowStyle: 'none',
                                             WebkitOverflowScrolling: 'touch',
                                             scrollSnapType: 'x mandatory',
+                                            height: 'calc(100vh - 60px)'
                                         }}
                                     >
-                                        {mediaItems.map((item, index) => (
-                                            <div
-                                                key={index}
-                                                className="relative flex min-h-[450px] w-full shrink-0 snap-center snap-always items-center justify-center px-1"
-                                            >
-
-                                                <div className="relative w-full pb-10">
-                                                    {item.type === 'image' ? (
-                                                        <img
-                                                            src={item.url}
-                                                            alt={`Media ${index}`}
-                                                            className="h-auto max-h-[380px] w-full rounded-lg object-contain"
-                                                            loading="lazy"
-                                                            onError={(e) => (e.target.src = placeholderImage)}
-                                                        />
-                                                    ) : (
-                                                        <>
-                                                            <div className="w-full my-2">
-                                                                <VideoWithThumbnail
-                                                                    type='customized'
-                                                                    className="h-auto min-h-[380px] max-h-[780px] w-full rounded-lg object-contain"
-                                                                    videoUrl={item.url}
+                                        {mediaItems?.length > 0 && (
+                                            <div className="flex flex-col ">
+                                                {/* Horizontal Scroll Container - Swipeable */}
+                                                <div
+                                                    ref={scrollContainerRef}
+                                                    onScroll={handleScroll}
+                                                    className="flex overflow-x-auto snap-x snap-mandatory"
+                                                    style={{
+                                                        scrollbarWidth: 'none',
+                                                        msOverflowStyle: 'none',
+                                                        WebkitOverflowScrolling: 'touch',
+                                                        scrollSnapType: 'x mandatory',
+                                                        height: 'calc(100vh - 180px)'
+                                                    }}
+                                                >
+                                                    {mediaItems.map((item, index) => (
+                                                        <div
+                                                            key={index}
+                                                            className="flex items-center justify-center w-full h-full shrink-0 snap-center snap-always"
+                                                        >
+                                                            {item.type === 'image' ? (
+                                                                <img
+                                                                    src={item.url}
+                                                                    alt={`Media ${index}`}
+                                                                    className="object-contain rounded-lg"
+                                                                    loading="lazy"
+                                                                    onError={(e) => (e.target.src = placeholderImage)}
                                                                 />
-                                                            </div>
-                                                        </>
-                                                    )}
+                                                            ) : (
+                                                                <div className="flex items-center justify-center w-full h-full">
+                                                                    <VideoWithThumbnail
+                                                                        type='customized'
+                                                                        className="object-contain rounded-lg"
+                                                                        videoUrl={item.url}
+                                                                    />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ))}
                                                 </div>
+
+
                                             </div>
-                                        ))}
+                                        )}
                                     </div>
 
                                     {/* Fixed Pagination Dots - Outside scroll container, stays in place */}
-                                    <div className="pointer-events-none absolute bottom-8 left-0 right-0 z-10 flex items-center justify-center gap-1.5">
+                                    <div className="pointer-events-none absolute bottom-20 left-0 right-0 z-10 flex items-center justify-center gap-1.5">
                                         {visibleDots.map((dotIndex) => (
                                             <div
                                                 key={dotIndex}
