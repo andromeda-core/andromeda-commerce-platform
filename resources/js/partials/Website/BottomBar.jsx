@@ -1,3 +1,4 @@
+import { useHomeNavStore } from '@/Hooks/useHomeNavStore';
 import { Link, router, usePage } from '@inertiajs/react';
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
@@ -49,9 +50,13 @@ const BottomBar = ({
             <nav className="bg-white border-b border-gray-200 rounded-sm shadow-md backdrop-blur-lg dark:border-t dark:border-gray-800 dark:bg-deepcharcoal">
                 <div className="flex items-center justify-around px-4 py-2">
                     {/* Home */}
-                    <Link
+                    <button
                         data-sidebar-link="true"
-                        href={route('home')}
+                        onClick={() => {
+                            useHomeNavStore.getState().startHomeNavigation();
+                            window.history.replaceState({}, '', window.location.pathname);
+                            router.visit(route('home'));
+                        }}
                         className={`flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${route().current() === 'home' ? 'menu-item-active' : 'menu-item-inactive'
                             }`}
 
@@ -75,7 +80,7 @@ const BottomBar = ({
                                 ></path>
                             </g>
                         </svg>
-                    </Link>
+                    </button>
 
                     {/* Search */}
                     <Link

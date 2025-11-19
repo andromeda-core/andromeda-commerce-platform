@@ -8,6 +8,7 @@ import MobileFeedGallery from './MobileFeedGallery';
 import useDarkMode from '@/Hooks/useDarkMode';
 import Spinner from '@/Components/Spinner';
 import { useFilterStore } from '@/Hooks/useFilterStore';
+import { useHomeNavStore } from '@/Hooks/useHomeNavStore';
 
 
 const MobileFeed = ({
@@ -864,6 +865,8 @@ const MobileFeed = ({
     }, []);
 
 
+
+
     // Syncing FeedGallery With Manual FeedGallery State
     useEffect(() => {
         setManualFeedGalleryItem(feedGallery);
@@ -1358,6 +1361,11 @@ const MobileFeed = ({
 
 
                 if (isFilterOpenRef.current) {
+                    return;
+                }
+
+                if (useHomeNavStore.getState().navigatingHome) {
+
                     return;
                 }
 

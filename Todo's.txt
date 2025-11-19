@@ -567,6 +567,7 @@ Additional Work:
         70: Mobile Feed Viewer Single Page User Avatar Wil be Updated ✅
         71: Mobile Feed Button Chnaged To Simple text ✅
         72: GLobal Filter Issue Fixed On Mobile Feed And Added Zustand Library and IOts hook to check Live Status Of global Filter State  ✅
+        73: Mobile Home Navigation Issue Fixed And Prevented With Hook When feed open and home button clicked  ✅
 
     ) Redesigned Whole Website 4th Time Completed According To The LAYOUT Design Reference Provided ✅
 
