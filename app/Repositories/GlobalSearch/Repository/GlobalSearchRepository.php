@@ -236,16 +236,16 @@ class GlobalSearchRepository implements IGlobalSearchRepository
 
         try {
             $request->validate([
-                'post_filters' => ['required', 'array'],
-                'post_preferences' => ['required', 'array'],
+                'filters' => ['required', 'array'],
+                'filters' => ['required', 'array'],
 
                 'post_preferences.text' => ['required'],
                 'post_preferences.images' => ['required'],
                 'post_preferences.videos' => ['required'],
                 'query' => ['nullable', 'string'],
             ], [
-                'post_filters.required' => 'Please select at least one filter before searching.',
-                'post_filters.array' => 'Invalid filter format. Please refresh the page and try again.',
+                'filters.required' => 'Please select at least one filter before searching.',
+                'filters.array' => 'Invalid filter format. Please refresh the page and try again.',
 
                 'post_preferences.required' => 'Please choose your content preferences before searching.',
                 'post_preferences.array' => 'Invalid preferences data. Please refresh and try again.',
@@ -263,7 +263,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
             $post_preferences = $request->input('post_preferences');
 
             // Post Additional Filters
-            $post_filters = $request->input('post_filters');
+            $post_filters = $request->input('filters');
 
             $query = trim($request->input('query'));
 
@@ -455,9 +455,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
             // Storing Search History
             if ($request->user() && (! empty($query) || (! empty($post_filters['address']['lat']) && ! empty($post_filters['address']['lng'])))) {
 
-                $normalizedFilters = ! empty($post_filters['address']['lat']) && ! empty($post_filters['address']['lng'])
-                 ? json_encode($post_filters, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
-                 : null;
+                $normalizedFilters = json_encode($post_filters, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
                 $filtersHash = $this->stableJsonHash($post_filters);
 
@@ -531,7 +529,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
             $queryParams = [
                 'page' => $page + 1,
                 'query' => $query,
-                'post_filters' => json_encode($post_filters),
+                'filters' => json_encode($post_filters),
                 'post_preferences' => json_encode($post_preferences),
             ];
 

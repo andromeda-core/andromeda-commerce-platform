@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import SunSpinner from './SunSpinner';
 
 export default function CustomizedVideoPlayer({
     videoUrl,
@@ -403,30 +404,15 @@ export default function CustomizedVideoPlayer({
                 {/* BUFFERING  */}
                 {isBuffering && isPlaying && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-black/50 backdrop-blur-sm">
-                            <svg
-                                className="w-10 h-10 text-white animate-spin"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                            >
-                                <circle
-                                    className="opacity-25"
-                                    cx="12"
-                                    cy="12"
-                                    r="10"
-                                    stroke="currentColor"
-                                    strokeWidth="4"
-                                />
-                                <path
-                                    className="opacity-75"
-                                    fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                />
-                            </svg>
+                        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-black/20 backdrop-blur-sm">
+                            <SunSpinner color='#fff' />
+
                         </div>
                     </div>
                 )}
+
+
+
 
 
                 {/* Center Controls Overlay - ONLY SHOWS WHEN showControls is true */}
@@ -446,7 +432,7 @@ export default function CustomizedVideoPlayer({
                             onClick={togglePlay}
                             className="flex items-center justify-center w-20 h-20 text-white transition-all rounded-full shadow-lg bg-deepcharcoal/70 hover:bg-deepcharcoal/80 backdrop-blur-sm active:scale-95"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-10">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-10 fill-white">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
                             </svg>
                         </button>
@@ -506,38 +492,43 @@ export default function CustomizedVideoPlayer({
                 </div>
 
                 {/* Timeline Bar - ALWAYS VISIBLE at bottom */}
-                <div className="absolute bottom-0 left-0 right-0 w-full">
-                    {/* Blurred background layer */}
-                    <div className="absolute inset-0 bg-white/70 dark:bg-black/60 backdrop-blur-sm" />
+                {isPlaying && showControls && (
+                    <div className="absolute bottom-0 left-0 right-0 w-full pb-safe">
+                        {/* Background */}
+                        <div className="absolute inset-0 bg-white dark:bg-black/50 backdrop-blur-md" />
 
-                    {/* Timeline content - NOT blurred */}
-                    <div className="relative px-3 py-2">
-                        {/* Progress Bar Row */}
-                        <div className="flex items-center gap-2">
+                        {/* Timeline Content */}
+                        <div className="relative flex items-center gap-3 px-3 py-2">
+
                             {/* Current Time */}
-                            <span className="text-gray-900 dark:text-white text-xs font-medium min-w-[35px]">
+                            <span className="text-[10px] text-gray-900 dark:text-white font-semibold min-w-[26px] text-right">
                                 {formatTime(currentTime)}
                             </span>
 
                             {/* Progress Bar */}
                             <div
-                                className="relative flex-1 h-1 overflow-hidden rounded-full cursor-pointer bg-gray-400/40 dark:bg-white/30 group"
+                                className="relative flex-1 h-2 overflow-hidden rounded-full bg-gray-400/40 dark:bg-white/30 touch-pan-y"
                                 onClick={handleProgressBarClick}
                             >
+                                {/* Filled portion */}
                                 <div
-                                    className="h-full transition-all duration-100 bg-gray-900 dark:bg-white"
+                                    className="h-full bg-gray-900 dark:bg-white transition-[width] duration-100"
                                     style={{ width: `${progress}%` }}
                                 />
-                                {/* Hover effect */}
-                                <div className="absolute inset-0 transition-opacity opacity-0 bg-gray-900/20 dark:bg-white/20 group-hover:opacity-100" />
+
+                                {/* Larger thumb for mobile precision */}
+                                <div
+                                    className="absolute w-4 h-4 -translate-y-1/2 bg-gray-900 rounded-full top-1/2 dark:bg-white"
+                                    style={{ left: `calc(${progress}% - 8px)` }}
+                                />
                             </div>
 
-                            {/* Duration */}
-                            <span className="text-gray-900 dark:text-white text-xs font-medium min-w-[35px] text-right">
+                            {/* Remaining Time */}
+                            <span className="text-[10px] text-gray-900 dark:text-white font-semibold min-w-[26px]">
                                 -{formatTime(duration - currentTime)}
                             </span>
 
-
+                            {/* Options */}
                             <div className="relative">
                                 <button
                                     onClick={() => setShowActions(!showActions)}
@@ -583,24 +574,24 @@ export default function CustomizedVideoPlayer({
 
                                             {/* Volume Slider - Shows on hover FOr LAter */}
                                             {/* {showVolumeSlider && !isMuted && (
-                                                <div className="absolute top-0 p-3 ml-2 bg-white border border-gray-200 rounded-lg shadow-lg left-full dark:bg-deepcharcoal dark:border-white/10">
-                                                    <input
-                                                        type="range"
-                                                        min="0"
-                                                        max="1"
-                                                        step="0.1"
-                                                        value={volume}
-                                                        onChange={handleVolumeChange}
-                                                        className="accent-gray-900 dark:accent-white"
-                                                        style={{
-                                                            writingMode: 'bt-lr',
-                                                            WebkitAppearance: 'slider-vertical',
-                                                            height: '80px',
-                                                            width: '6px'
-                                                        }}
-                                                    />
-                                                </div>
-                                            )} */}
+<div className="absolute top-0 p-3 ml-2 bg-white border border-gray-200 rounded-lg shadow-lg left-full dark:bg-deepcharcoal dark:border-white/10">
+<input
+type="range"
+min="0"
+max="1"
+step="0.1"
+value={volume}
+onChange={handleVolumeChange}
+className="accent-gray-900 dark:accent-white"
+style={{
+writingMode: 'bt-lr',
+WebkitAppearance: 'slider-vertical',
+height: '80px',
+width: '6px'
+}}
+/>
+</div>
+)} */}
                                         </div>
 
                                         {/* Fullscreen Button */}
@@ -621,7 +612,8 @@ export default function CustomizedVideoPlayer({
                             </div>
                         </div>
                     </div>
-                </div>
+                )}
+
             </div>
         </div>
     );

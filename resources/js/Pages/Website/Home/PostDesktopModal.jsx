@@ -62,10 +62,8 @@ const PostDesktopModal = ({
             <div className="fixed inset-0 left-0 z-50 bg-white overscroll-contain dark:bg-zinc-950 lg:left-20">
                 <div className="w-full mx-auto lg:w-1/2">
                     <GlobalSearch
-                        mainPage={true}
                         search_history={search_history}
                         additional_filters={false}
-                        filters={false}
                     />
                 </div>
 
@@ -97,13 +95,13 @@ const PostDesktopModal = ({
                                         (Array.isArray(post?.post_image_urls) &&
                                             post.post_image_urls.length > 0)
                                         ? 'lg:w-1/2'
-                                        : 'lg:w-full'
+                                        : "w-full mx-auto space-y-4 max-w-[40rem] md:max-w-[60rem] lg:max-w-[70rem] xl:max-w-[100rem] px-4 md:px-10 lg:px-16 xl:px-24 "
                                         }`}
                                 >
                                     {((!post?.post_video_urls?.length &&
                                         !post?.post_image_urls?.length) ||
                                         windowSize.width > 1024) && (
-                                            <div className="w-full p-4 mx-auto space-y-4 max-w-7xl md:px-10 lg:pl-6 lg:pr-10">
+                                            <div className="w-full p-4 mx-auto space-y-4 md:px-10 lg:pl-6 lg:pr-10">
                                                 <div className="flex items-center justify-between">
                                                     <span className="font-medium text-md dark:text-white/80">
                                                         <div>

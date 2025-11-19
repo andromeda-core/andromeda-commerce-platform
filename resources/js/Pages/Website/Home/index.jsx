@@ -17,6 +17,7 @@ import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 import PostDesktopModal from './PostDesktopModal';
 import MobileFeed from './MobileFeed';
 
+
 const index = ({ google_map_api_key, search_history }) => {
     const { currency, auth, cart_items } = usePage().props;
 
@@ -37,6 +38,7 @@ const index = ({ google_map_api_key, search_history }) => {
 
     // This State is For Tracking If The FEED ITEM Is Opening After refresh or FROM URL DIRECTLY
     const [isFeedOpeningDirectly, setIsFeedOpeningDirectly] = useState(false);
+
 
 
 
@@ -732,6 +734,8 @@ const index = ({ google_map_api_key, search_history }) => {
         feedOpenCountRef.current = 0;
     }, []);
 
+
+    // POP STATE HANDLING
     useEffect(() => {
         const handlePopState = (e) => {
             const currentUrl = new URL(window.location.href);
@@ -790,6 +794,14 @@ const index = ({ google_map_api_key, search_history }) => {
 
         const preventInertiaNavigation = (event) => {
             const pathname = event.detail?.visit?.url?.pathname || '';
+            const url = new URL(window.location.href);
+            const modalValue = url.searchParams.get('modal');
+
+            if (modalValue === 'global-filters') {
+                window.history.replaceState({}, '', window.location.pathname)
+                return true;
+            }
+
 
             // console.log('🚦 Inertia check:', {
             //     isClosing: isClosingMobileGalleryRef.current,
@@ -797,6 +809,7 @@ const index = ({ google_map_api_key, search_history }) => {
             //     feedOpen: feedGalleryRef.current !== null,
             //     pathname
             // });
+
 
             // Block if we just closed mobile gallery
             if (isClosingMobileGalleryRef.current && pathname === '/' && !isSidebarClickActive) {
@@ -911,19 +924,9 @@ const index = ({ google_map_api_key, search_history }) => {
                     {windowSize.width > 1024 && (
                         <div className="w-1/2 m-auto mb-3">
                             <GlobalSearch
-                                filters={false}
                                 additional_filters={false}
                                 google_map_api_key={google_map_api_key}
-                                OnPostFilterChange={() => {
-                                    window.history.replaceState({}, '', window.location.pathname);
-                                    setIsFeedLoaded(false);
-                                    setPosts(null);
-                                    setProducts(null);
-                                    setNextPageUrl(null);
-                                    fetchPostsAndProducts();
-                                }}
                                 search_history={search_history}
-                                mainPage={true}
                             />
                         </div>
                     )}

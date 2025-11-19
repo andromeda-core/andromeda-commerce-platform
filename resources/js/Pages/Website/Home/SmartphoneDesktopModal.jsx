@@ -377,10 +377,8 @@ const SmartphoneDesktopModal = ({
                     <div className="fixed inset-0 left-0 z-50 bg-white dark:bg-zinc-950 lg:left-20">
                         <div className="w-full mx-auto lg:w-1/2">
                             <GlobalSearch
-                                mainPage={true}
                                 search_history={searchHistory}
                                 additional_filters={false}
-                                filters={false}
                             />
                         </div>
 

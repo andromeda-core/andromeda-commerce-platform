@@ -10,7 +10,7 @@ import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 import React, { useEffect, useRef, useState } from 'react';
 
 
-const hashtagPosts = ({ hashtag, google_map_api_key }) => {
+const hashtagPosts = ({ hashtag, google_map_api_key, search_history }) => {
     const [results, setResults] = useState([]);
     const [nextPageUrl, setNextPageUrl] = useState(null);
 
@@ -188,8 +188,7 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
             <GlobalSearch
                 google_map_api_key={google_map_api_key}
                 additional_filters={false}
-                hashtagPage={true}
-                hashtag={hashtag}
+                search_history={search_history}
             />
 
             <div className="pb-20 sm:px-6 sm:pb-20 lg:px-8">

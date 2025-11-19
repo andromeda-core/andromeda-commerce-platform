@@ -1,7 +1,6 @@
 import GlobalSearch from '@/Components/GlobalSearch';
 import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import Toast from '@/Components/Toast';
-import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, Link } from '@inertiajs/react';
 import axios from 'axios';
@@ -16,7 +15,7 @@ const index = ({
     pagination,
     search_history,
 }) => {
-    const windowSize = useWindowSize();
+
 
     const [defaultPostFilters, setDefaultPostFilters] = useState(post_filters || []);
     const [defaultFiltersCleared, setDefaultFiltersCleared] = useState(false);

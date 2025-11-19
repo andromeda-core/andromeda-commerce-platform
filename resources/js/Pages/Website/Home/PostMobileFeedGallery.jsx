@@ -233,92 +233,91 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
 
                     {/* Scrollable Content Area */}
                     <div className="flex-1 overflow-y-auto scrollbar-none">
-                        <div className="px-4">
-
-                            {mediaItems?.length > 0 && (
-                                <div className="relative overflow-hidden">
-                                    {/* Horizontal Scroll Container - Swipeable */}
-                                    <div
-                                        ref={scrollContainerRef}
-                                        onScroll={handleScroll}
-                                        className="flex overflow-x-auto snap-x snap-mandatory"
-                                        style={{
-                                            scrollbarWidth: 'none',
-                                            msOverflowStyle: 'none',
-                                            WebkitOverflowScrolling: 'touch',
-                                            scrollSnapType: 'x mandatory',
-                                            height: 'calc(100vh - 60px)'
-                                        }}
-                                    >
-                                        {mediaItems?.length > 0 && (
-                                            <div className="flex flex-col ">
-                                                {/* Horizontal Scroll Container - Swipeable */}
-                                                <div
-                                                    ref={scrollContainerRef}
-                                                    onScroll={handleScroll}
-                                                    className="flex overflow-x-auto snap-x snap-mandatory"
-                                                    style={{
-                                                        scrollbarWidth: 'none',
-                                                        msOverflowStyle: 'none',
-                                                        WebkitOverflowScrolling: 'touch',
-                                                        scrollSnapType: 'x mandatory',
-                                                        height: 'calc(100vh - 180px)'
-                                                    }}
-                                                >
-                                                    {mediaItems.map((item, index) => (
-                                                        <div
-                                                            key={index}
-                                                            className="flex items-center justify-center w-full h-full overflow-y-hidden shrink-0 snap-center snap-always"
-                                                        >
-                                                            {item.type === 'image' ? (
-                                                                <img
-                                                                    src={item.url}
-                                                                    alt={`Media ${index}`}
-                                                                    className="rounded-lg will-change-transform"
-                                                                    loading={"eager"}
-                                                                    fetchpriority={"high"}
-                                                                    decoding="async"
-                                                                    onError={(e) => (e.target.src = placeholderImage)}
-                                                                />
-                                                            ) : (
-                                                                <div className="flex items-center justify-center w-full h-full">
-                                                                    <VideoWithThumbnail
-                                                                        type='customized'
-                                                                        className="object-contain rounded-lg"
-                                                                        videoUrl={item.url}
-                                                                        Preload='auto'
-                                                                    />
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    ))}
-                                                </div>
-
-
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Fixed Pagination Dots - Outside scroll container, stays in place */}
-                                    <div className="pointer-events-none absolute bottom-20 left-0 right-0 z-10 flex items-center justify-center gap-1.5">
-                                        {visibleDots.map((dotIndex) => (
+                        {mediaItems?.length > 0 && (
+                            <div className="relative overflow-hidden">
+                                {/* Horizontal Scroll Container - Swipeable */}
+                                <div
+                                    ref={scrollContainerRef}
+                                    onScroll={handleScroll}
+                                    className="flex overflow-x-auto snap-x snap-mandatory"
+                                    style={{
+                                        scrollbarWidth: 'none',
+                                        msOverflowStyle: 'none',
+                                        WebkitOverflowScrolling: 'touch',
+                                        scrollSnapType: 'x mandatory',
+                                        height: 'calc(100vh - 60px)'
+                                    }}
+                                >
+                                    {mediaItems?.length > 0 && (
+                                        <div className="flex flex-col ">
+                                            {/* Horizontal Scroll Container - Swipeable */}
                                             <div
-                                                key={dotIndex}
-                                                className={`rounded-full shadow-lg transition-all duration-300 ${dotIndex === currentMediaIndex
-                                                    ? 'h-2 w-2 bg-black shadow-black/60 dark:bg-white'
-                                                    : 'h-1.5 w-1.5 bg-black/50 shadow-black/30 dark:bg-white/50'
-                                                    }`}
+                                                ref={scrollContainerRef}
+                                                onScroll={handleScroll}
+                                                className="flex overflow-x-auto snap-x snap-mandatory"
                                                 style={{
-                                                    transitionProperty: 'all',
-                                                    transitionTimingFunction:
-                                                        'cubic-bezier(0.4, 0, 0.2, 1)',
+                                                    scrollbarWidth: 'none',
+                                                    msOverflowStyle: 'none',
+                                                    WebkitOverflowScrolling: 'touch',
+                                                    scrollSnapType: 'x mandatory',
+                                                    height: 'calc(100vh - 180px)'
                                                 }}
-                                            />
-                                        ))}
-                                    </div>
+                                            >
+                                                {mediaItems.map((item, index) => (
+                                                    <div
+                                                        key={index}
+                                                        className="flex items-center justify-center w-full h-full overflow-y-hidden shrink-0 snap-center snap-always"
+                                                    >
+                                                        {item.type === 'image' ? (
+                                                            <img
+                                                                src={item.url}
+                                                                alt={`Media ${index}`}
+                                                                className="will-change-transform "
+                                                                loading={"eager"}
+                                                                fetchpriority={"high"}
+                                                                decoding="async"
+                                                                onError={(e) => (e.target.src = placeholderImage)}
+                                                            />
+                                                        ) : (
+                                                            <div className="flex items-center justify-center w-full h-full">
+                                                                <VideoWithThumbnail
+                                                                    type='customized'
+                                                                    className="object-cover"
+                                                                    videoUrl={item.url}
+                                                                    Preload='auto'
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+
+
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                            {/* Full Content - Scrollable, No Truncation */}
+
+                                {/* Fixed Pagination Dots - Outside scroll container, stays in place */}
+                                <div className="pointer-events-none absolute bottom-20 left-0 right-0 z-10 flex items-center justify-center gap-1.5">
+                                    {visibleDots.map((dotIndex) => (
+                                        <div
+                                            key={dotIndex}
+                                            className={`rounded-full shadow-lg transition-all duration-300 ${dotIndex === currentMediaIndex
+                                                ? 'h-2 w-2 bg-black shadow-black/60 dark:bg-white'
+                                                : 'h-1.5 w-1.5 bg-black/50 shadow-black/30 dark:bg-white/50'
+                                                }`}
+                                            style={{
+                                                transitionProperty: 'all',
+                                                transitionTimingFunction:
+                                                    'cubic-bezier(0.4, 0, 0.2, 1)',
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        {/* Full Content - Scrollable, No Truncation */}
+                        <div className="px-4">
                             <div className="mb-4">
                                 {post?.content && (
                                     <div
@@ -333,7 +332,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
 
                             <div className="space-y-3">
                                 <div className="flex flex-wrap gap-2 my-2 text-sm text-gray-700 dark:text-white/80">
-                                    <span className="flex items-center gap-2 p-1 bg-gray-200 rounded-full dark:bg-zinc-900">
+                                    <span className="flex items-center gap-2 p-1 ">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             fill="none"
@@ -359,8 +358,6 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
 
 
                             </div>
-
-
                         </div>
                     </div>
 

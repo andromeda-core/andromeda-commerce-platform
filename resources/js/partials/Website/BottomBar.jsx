@@ -10,6 +10,8 @@ const BottomBar = ({
     setMoreDropdown,
     cartItemsCount,
     preventDropdownCloseRef,
+    setFilterModal,
+    filterModal,
 }) => {
     const { user } = usePage().props.auth;
 
@@ -44,19 +46,15 @@ const BottomBar = ({
     return (
         <div className="fixed bottom-0 left-0 right-0 z-[60] lg:hidden">
             {/* Navigation bar */}
-            <nav className="rounded-sm border-b border-gray-200 bg-white shadow-md backdrop-blur-lg dark:border-t dark:border-gray-800 dark:bg-deepcharcoal">
+            <nav className="bg-white border-b border-gray-200 rounded-sm shadow-md backdrop-blur-lg dark:border-t dark:border-gray-800 dark:bg-deepcharcoal">
                 <div className="flex items-center justify-around px-4 py-2">
                     {/* Home */}
                     <Link
+                        data-sidebar-link="true"
                         href={route('home')}
-                        className={`flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${
-                            route().current() === 'home' ? 'menu-item-active' : 'menu-item-inactive'
-                        }`}
-                        // onClick={(e) => {
-                        //     if (route().current() === 'home') {
-                        //         e.preventDefault();
-                        //     }
-                        // }}
+                        className={`flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${route().current() === 'home' ? 'menu-item-active' : 'menu-item-inactive'
+                            }`}
+
                     >
                         <svg
                             className={`size-8`}
@@ -82,16 +80,11 @@ const BottomBar = ({
                     {/* Search */}
                     <Link
                         href={route('website.global-search.index')}
-                        className={`relative flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${
-                            route().current() === 'website.global-search.index'
-                                ? 'menu-item-active'
-                                : 'menu-item-inactive'
-                        }`}
-                        onClick={(e) => {
-                            if (route().current() === 'website.global-search.index') {
-                                e.preventDefault();
-                            }
-                        }}
+                        className={`relative flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${route().current() === 'website.global-search.index'
+                            ? 'menu-item-active'
+                            : 'menu-item-inactive'
+                            }`}
+
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -112,16 +105,11 @@ const BottomBar = ({
                     {user && (
                         <Link
                             href={route('website.profile.index')}
-                            className={`relative flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${
-                                route().current() === 'website.profile.index'
-                                    ? 'menu-item-active'
-                                    : 'menu-item-inactive'
-                            }`}
-                            onClick={(e) => {
-                                if (route().current() === 'website.profile.index') {
-                                    e.preventDefault();
-                                }
-                            }}
+                            className={`relative flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${route().current() === 'website.profile.index'
+                                ? 'menu-item-active'
+                                : 'menu-item-inactive'
+                                }`}
+
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -166,13 +154,10 @@ const BottomBar = ({
                         </svg>
                     </Link> */}
 
-                    <Link
-                        href={route('website.global-filters.index')}
-                        className={`${route().current() === 'website.global-filters.index' ? 'menu-item-active' : 'menu-item-inactive'} flex cursor-pointer items-center rounded-lg p-2 text-white/80`}
+                    <button
+                        className={`${filterModal ? 'menu-item-active' : 'menu-item-inactive'} flex cursor-pointer items-center rounded-lg p-2 text-white/80`}
                         onClick={(e) => {
-                            if (route().current() === 'website.global-filters.index') {
-                                e.preventDefault();
-                            }
+                            setFilterModal(!filterModal);
                         }}
                     >
                         <svg
@@ -189,7 +174,7 @@ const BottomBar = ({
                                 d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
                             />
                         </svg>
-                    </Link>
+                    </button>
 
                     <button
                         className={`flex cursor-pointer items-center rounded-lg p-2 text-white/80 ${moreDropdown ? 'menu-item-active' : 'menu-item-inactive'}`}
@@ -275,12 +260,12 @@ const BottomBar = ({
                                                     My Cart{' '}
                                                     {cartItemsCount > 0 && (
                                                         <span className="relative ml-auto">
-                                                            <span className="flex h-6 w-6 animate-pulse items-center justify-center rounded-full bg-indigo-500 text-xs font-bold text-white">
+                                                            <span className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-indigo-500 rounded-full animate-pulse">
                                                                 {cartItemsCount > 99
                                                                     ? '99+'
                                                                     : cartItemsCount}
                                                             </span>
-                                                            <span className="absolute right-0 top-0 block h-2 w-2 animate-bounce rounded-full bg-indigo-400"></span>
+                                                            <span className="absolute top-0 right-0 block w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></span>
                                                         </span>
                                                     )}
                                                 </Link>
@@ -313,14 +298,7 @@ const BottomBar = ({
                                                 <Link
                                                     href={route('website.bookmarks.index')}
                                                     className={`${route().current() === 'website.bookmarks.index' ? 'menu-item-active' : 'menu-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
-                                                    onClick={(e) => {
-                                                        if (
-                                                            route().current() ===
-                                                            'website.bookmarks.index'
-                                                        ) {
-                                                            e.preventDefault();
-                                                        }
-                                                    }}
+
                                                 >
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -344,14 +322,7 @@ const BottomBar = ({
                                                 <Link
                                                     href={route('website.data-deletion.index')}
                                                     className={`${route().current() === 'website.data-deletion.index' ? 'menu-item-active' : 'menu-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
-                                                    onClick={(e) => {
-                                                        if (
-                                                            route().current() ===
-                                                            'website.data-deletion.index'
-                                                        ) {
-                                                            e.preventDefault();
-                                                        }
-                                                    }}
+
                                                 >
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -403,14 +374,7 @@ const BottomBar = ({
                                             prefetch
                                             href={route('website.privacy-policy.index')}
                                             className={`${route().current() === 'website.privacy-policy.index' ? 'menu-item-active' : 'menu-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
-                                            onClick={(e) => {
-                                                if (
-                                                    route().current() ===
-                                                    'website.privacy-policy.index'
-                                                ) {
-                                                    e.preventDefault();
-                                                }
-                                            }}
+
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -433,7 +397,7 @@ const BottomBar = ({
                                     <li>
                                         <Link
                                             href={route('website.contact.index')}
-                                            className={`menu-item-inactive flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
+                                            className={`${route().current() === 'website.contact.index' ? 'menu-item-active' : 'menu-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"

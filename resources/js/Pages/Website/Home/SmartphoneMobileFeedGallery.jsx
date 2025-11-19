@@ -435,66 +435,68 @@ const SmartphoneMobileGalleryModal = (
 
                     {/* Scrollable Content Area */}
                     <div className="flex-1 pb-10 overflow-y-auto scrollbar-none">
-                        <div className="px-4">
-                            {/* Image Viewer with proper spacing for dots */}
-                            {smartphone?.images?.length > 0 && (
-                                <div className="relative mb-4 overflow-hidden rounded-2xl">
-                                    {/* Horizontal Scroll Container - Swipeable */}
-                                    <div
-                                        ref={scrollContainerRef}
-                                        onScroll={handleImageScroll}
-                                        className="flex overflow-x-auto snap-x snap-mandatory"
-                                        style={{
-                                            scrollbarWidth: 'none',
-                                            msOverflowStyle: 'none',
-                                            WebkitOverflowScrolling: 'touch',
-                                            scrollSnapType: 'x mandatory',
-                                            height: 'calc(100vh - 180px)'
 
-                                        }}
-                                    >
-                                        {smartphone.images.map((image, index) => (
-                                            <div
-                                                key={index}
-                                                className="flex items-center justify-center w-full h-full shrink-0 snap-center snap-always"
-                                            >
+                        {/* Image Viewer with proper spacing for dots */}
+                        {smartphone?.images?.length > 0 && (
+                            <div className="relative mb-4 overflow-hidden ">
+                                {/* Horizontal Scroll Container - Swipeable */}
+                                <div
+                                    ref={scrollContainerRef}
+                                    onScroll={handleImageScroll}
+                                    className="flex overflow-x-auto snap-x snap-mandatory"
+                                    style={{
+                                        scrollbarWidth: 'none',
+                                        msOverflowStyle: 'none',
+                                        WebkitOverflowScrolling: 'touch',
+                                        scrollSnapType: 'x mandatory',
+                                        height: 'calc(100vh - 180px)'
 
-                                                <div className="relative inline-block pb-10">
-                                                    <img
-                                                        src={image}
-                                                        alt={`${smartphone.name} ${index + 1}`}
-                                                        className="rounded-lg will-change-transform"
-                                                        loading={"eager"}
-                                                        fetchpriority={"high"}
-                                                        decoding="async"
-                                                        onError={(e) =>
-                                                            (e.target.src = placeholderImage)
-                                                        }
-                                                    />
-                                                </div>
+                                    }}
+                                >
+                                    {smartphone.images.map((image, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex items-center justify-center w-full h-full shrink-0 snap-center snap-always"
+                                        >
+
+                                            <div className="relative inline-block pb-10">
+                                                <img
+                                                    src={image}
+                                                    alt={`${smartphone.name} ${index + 1}`}
+                                                    className=" will-change-transform"
+                                                    loading={"eager"}
+                                                    fetchpriority={"high"}
+                                                    decoding="async"
+                                                    onError={(e) =>
+                                                        (e.target.src = placeholderImage)
+                                                    }
+                                                />
                                             </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Fixed Pagination Dots - Outside scroll container, stays in place */}
-                                    <div className="pointer-events-none absolute bottom-20 left-0 right-0 z-10 flex items-center justify-center gap-1.5">
-                                        {visibleDots.map((dotIndex) => (
-                                            <div
-                                                key={dotIndex}
-                                                className={`rounded-full shadow-lg transition-all duration-300 ${dotIndex === currentImageIndex
-                                                    ? 'h-2 w-2 bg-black shadow-black/60 dark:bg-white'
-                                                    : 'h-1.5 w-1.5 bg-black/50 shadow-black/30 dark:bg-white/50'
-                                                    }`}
-                                                style={{
-                                                    transitionProperty: 'all',
-                                                    transitionTimingFunction:
-                                                        'cubic-bezier(0.4, 0, 0.2, 1)',
-                                                }}
-                                            />
-                                        ))}
-                                    </div>
+                                        </div>
+                                    ))}
                                 </div>
-                            )}
+
+                                {/* Fixed Pagination Dots - Outside scroll container, stays in place */}
+                                <div className="pointer-events-none absolute bottom-20 left-0 right-0 z-10 flex items-center justify-center gap-1.5">
+                                    {visibleDots.map((dotIndex) => (
+                                        <div
+                                            key={dotIndex}
+                                            className={`rounded-full shadow-lg transition-all duration-300 ${dotIndex === currentImageIndex
+                                                ? 'h-2 w-2 bg-black shadow-black/60 dark:bg-white'
+                                                : 'h-1.5 w-1.5 bg-black/50 shadow-black/30 dark:bg-white/50'
+                                                }`}
+                                            style={{
+                                                transitionProperty: 'all',
+                                                transitionTimingFunction:
+                                                    'cubic-bezier(0.4, 0, 0.2, 1)',
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="px-4">
                             {/* Full Content - Scrollable, No Truncation */}
                             <div className="mb-4">
                                 {smartphone?.content && (

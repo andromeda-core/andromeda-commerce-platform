@@ -56,7 +56,7 @@ Route::group(['as' => 'website.'], function () {
 
     // Global Search Route
     Route::controller(GlobalSearchController::class)->name('global-search.')->group(function () {
-        Route::get('/global-search', 'index')->name('index');
+        Route::match(['get', 'post'], '/global-search', 'index')->name('index');
 
         /**
          * @Perfect But Joseph Changed The Filter Logic
@@ -65,9 +65,8 @@ Route::group(['as' => 'website.'], function () {
 
         Route::post('/global-search-auto-completion', 'autoCompletion')->name('auto-completion');
         Route::post('/global-search-get-place-details', 'getPlaceDetails')->name('get-place-details');
-        Route::match(['get', 'post'], 'global-search-results', 'results')->name('results');
         Route::get('/global-search-getmoreresults', 'getMoreResults')->name('getmoreresults');
-        Route::delete('/global-search-search-session-destroy', 'searchSessionDestroy')->name('search-session-destroy');
+        // Route::delete('/global-search-search-session-destroy', 'searchSessionDestroy')->name('search-session-destroy');
         Route::delete('global-search-destroy-history', 'destroyHistory')->name('search-history-destroy');
     });
 
@@ -580,7 +579,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // Dynamic Manifest JSON Route For PWA
-
 Route::get('/pwa-manifest', function () {
 
     $general_setting = Cache::get('general_config');

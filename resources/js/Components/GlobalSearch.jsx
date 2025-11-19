@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-
 import SelectInput from '@/Components/SelectInput';
 import useWindowSize from '@/Hooks/useWindowSize';
 import axios from 'axios';
@@ -11,20 +10,15 @@ import { router } from '@inertiajs/react';
 import getCookie from '@/Hooks/useGetCookie';
 import Toast from './Toast';
 
+
 const GlobalSearch = ({
     floors,
     google_map_api_key,
-    filters = true,
     additional_filters,
-    OnPostFilterChange = () => { },
     defaultQuery = '',
-    resultsPage = false,
-    hashtagPage = false,
-    mainPage = false,
     defaultPostFilters = {},
     defaultFiltersCleared = false,
     search_history = [],
-    hashtag = '',
 }) => {
     const windowSize = useWindowSize();
     const [searchApplying, setSearchApplying] = useState(false);
@@ -41,8 +35,7 @@ const GlobalSearch = ({
     const [mobileSearchHistoryOpen, setMobileSearchHistoryOpen] = useState(false);
     const [filterModalSearchHistoryOpen, setFilterModalSearchHistoryOpen] = useState(false);
 
-    // Filter Setting
-    const [isPostFilterSetting, setIsPostFilterSetting] = useState(false);
+    const isSearchApplyingRef = useRef(false);
 
     const [isSpatiotemporalFilters, setIsSpatiotemporalFilters] = useState(false);
 
@@ -82,9 +75,7 @@ const GlobalSearch = ({
         const param = url.searchParams.get('modal');
 
         if (param) {
-            if (param === 'filters') {
-                setIsPostFilterSetting(true);
-            } else if (param === 'spatiotemporal-filters') {
+            if (param === 'spatiotemporal-filters') {
                 setIsSpatiotemporalFilters(true);
             }
         }
@@ -298,182 +289,43 @@ const GlobalSearch = ({
         }
     }, [placeId]);
 
-    const handlePostPreferences = (type, value) => {
-        if (postPreferences) {
-            setPostPreferences((prev) => {
-                const updated = { ...prev, [type]: value };
 
-                const postTypes = ['text', 'images', 'videos'];
-                const visibilityFilters = ['show_posts', 'show_products'];
+    // const clearSession = async () => {
+    //     try {
+    //         await axios.delete(route('website.global-search.search-session-destroy'));
+    //     } catch (e) { }
+    // };
 
-                const postTypesAllFalse = postTypes.every((k) => updated[k] === false);
-                const visibilityAllFalse = visibilityFilters.every((k) => updated[k] === false);
 
-                // Prevent all post types from being false
-                if (postTypes.includes(type) && postTypesAllFalse) {
-                    setInfoMessage(
-                        'At least one post type (text, image, or video) must remain enabled.',
-                    );
-                    setShowInfoMessage(true);
-
-                    return prev;
-                }
-
-                // Prevent all visibility filters from being false
-                if (visibilityFilters.includes(type) && visibilityAllFalse) {
-                    setInfoMessage(
-                        'At least one visibility option (posts or products) must remain enabled.',
-                    );
-                    setShowInfoMessage(true);
-                    return prev;
-                }
-                setIsPrefChanged(true);
-                return updated;
-            });
-        }
-    };
-
-    const clearSession = async () => {
-        try {
-            await axios.delete(route('website.global-search.search-session-destroy'));
-        } catch (e) { }
-    };
 
     const searchQueryRef = useRef('');
     const searchInputRef = useRef('');
+    const modalSearchInputRef = useRef('');
     useEffect(() => {
         searchQueryRef.current = searchQuery;
     }, [searchQuery]);
 
-    // Focusing On Component Mount If Search Query Already Exists
-    // useEffect(() => {
-    //     if (searchQueryRef.current !== '') {
-    //         searchInputRef.current.focus();
-    //     }
-    // }, []);
 
-    const ApplyFilter = async (type, search_history = []) => {
+    const ApplyFilter = (type, search_history = []) => {
         document.cookie = `post_preferences=${JSON.stringify(postPreferences)};path=/;max-age=31536000;SameSite=Lax;`;
 
-        const isAnyAdditionalFilterApplied = Object.values(postFilters).some((value) => {
-            if (value === '' || value === null || value === undefined) return false;
+        // const isAnyAdditionalFilterApplied = Object.values(postFilters).some((value) => {
+        //     if (value === '' || value === null || value === undefined) return false;
 
-            if (Array.isArray(value)) {
-                return value.length > 0;
-            }
+        //     if (Array.isArray(value)) {
+        //         return value.length > 0;
+        //     }
 
-            if (typeof value === 'object') {
-                const innerValues = Object.values(value);
-                const hasNonEmpty = innerValues.some(
-                    (v) => v !== '' && v !== null && v !== undefined,
-                );
-                return hasNonEmpty;
-            }
+        //     if (typeof value === 'object') {
+        //         const innerValues = Object.values(value);
+        //         const hasNonEmpty = innerValues.some(
+        //             (v) => v !== '' && v !== null && v !== undefined,
+        //         );
+        //         return hasNonEmpty;
+        //     }
 
-            return true;
-        });
-
-        if (type === 'filter') {
-            if (resultsPage) {
-                setSearchApplying(true);
-                OnPostFilterChange(true);
-                await clearSession();
-                await axios
-                    .post(
-                        route('website.global-search.results'),
-                        {
-                            post_filters: postFilters,
-                            post_preferences: postPreferences,
-                            query: searchQueryRef.current,
-                        },
-                        {
-                            headers: { 'X-Inertia': true },
-                        },
-                    )
-                    .then((response) => {
-                        router.replace(response.data);
-                        window.history.replaceState({}, '', route('website.global-search.results'));
-                    })
-                    .catch((error) => {
-                        setErrorMessage(error.message);
-                        setShowErrorMessage(true);
-                    })
-                    .finally(() => {
-                        setSearchApplying(false);
-                    });
-
-                setIsPrefChanged(false);
-            }
-
-            if (hashtagPage) {
-                setSearchApplying(true);
-                OnPostFilterChange(true);
-                await clearSession();
-
-                await axios
-                    .get(
-                        route('website.posts.hashtag.index', encodeURIComponent(hashtag)),
-                    )
-                    .then((response) => {
-
-                        router.replace(response.data);
-                        window.history.replaceState(
-                            {},
-                            '',
-                            route('website.posts.hashtag.index', encodeURIComponent(hashtag)),
-                        );
-                    })
-                    .catch((error) => {
-                        setErrorMessage(error.message);
-                        setShowErrorMessage(true);
-                    })
-                    .finally(() => {
-                        setSearchApplying(false);
-                    });
-
-                setIsPrefChanged(false);
-            }
-
-            if (mainPage) {
-                setSearchApplying(true);
-                OnPostFilterChange(true);
-                await axios
-                    .get(
-                        route('home'),
-                        {
-                            images: postPreferences.images,
-                            videos: postPreferences.videos,
-                            text: postPreferences.text,
-                            show_posts: postPreferences.show_posts,
-                            show_products: postPreferences.show_products,
-                        },
-                        {
-                            headers: { 'X-Inertia': true },
-                        },
-                    )
-                    .then((response) => {
-                        window.history.replaceState({}, '', route('home'));
-                    })
-                    .catch((error) => {
-                        setErrorMessage(error.message);
-                        setShowErrorMessage(true);
-                    })
-                    .finally(() => {
-                        setSearchApplying(false);
-                    });
-
-                setIsPrefChanged(false);
-                return;
-            }
-
-            if (!isAnyAdditionalFilterApplied) {
-                OnPostFilterChange(true);
-                setIsPrefChanged(false);
-                setSearchQuery('');
-
-                return;
-            }
-        }
+        //     return true;
+        // });
 
         if (type == 'search_history') {
             if (postFilters.from_floor_id != '' && postFilters.to_floor_id == '') {
@@ -486,37 +338,30 @@ const GlobalSearch = ({
                 return;
             }
             setSearchApplying(true);
-            await clearSession();
-            await axios
-                .post(
-                    route('website.global-search.results'),
-                    {
-                        post_filters: search_history.filters ?? postFilters,
-                        post_preferences: postPreferences,
-                        query: search_history.query,
-                    },
-                    {
-                        headers: { 'X-Inertia': true },
-                    },
-                )
-                .then((response) => {
-                    router.replace(response.data);
-                    window.history.replaceState({}, '', route('website.global-search.results'));
-                })
-                .catch((error) => {
-                    setErrorMessage(error.message);
-                    setShowErrorMessage(true);
-                })
-                .finally(() => {
-                    setSearchApplying(false);
-                });
+            isSearchApplyingRef.current = true;
+
+            router.post(
+                route('website.global-search.index'),
+                {
+                    filters: search_history.filters ?? postFilters,
+                    post_preferences: postPreferences,
+                    query: search_history.query,
+                    search: true,
+                },
+                {
+                    preserveState: false,
+                    preserveScroll: false,
+                }
+            );
 
             setIsPrefChanged(false);
+            isSearchApplyingRef.current = false;
 
             return;
         }
 
         if (type !== 'filter') {
+
             if (postFilters.from_floor_id != '' && postFilters.to_floor_id == '') {
                 setInfoMessage('Please Select (To Floor)');
                 setShowInfoMessage(true);
@@ -527,34 +372,30 @@ const GlobalSearch = ({
                 return;
             }
             setSearchApplying(true);
-            await clearSession();
-            await axios
-                .post(
-                    route('website.global-search.results'),
-                    {
-                        post_filters: postFilters,
-                        post_preferences: postPreferences,
-                        query: searchQueryRef.current,
-                    },
-                    {
-                        headers: { 'X-Inertia': true },
-                    },
-                )
-                .then((response) => {
-                    router.replace(response.data);
-                    window.history.replaceState({}, '', route('website.global-search.results'));
-                })
-                .catch((error) => {
-                    setErrorMessage(error.message);
-                    setShowErrorMessage(true);
-                })
-                .finally(() => {
-                    setSearchApplying(false);
-                });
+            isSearchApplyingRef.current = true;
+
+            router.post(
+                route('website.global-search.index'),
+                {
+                    filters: postFilters,
+                    post_preferences: postPreferences,
+                    query: searchQueryRef.current,
+                    search: true,
+                },
+                {
+                    preserveState: false,
+                    preserveScroll: false,
+                }
+            );
+
 
             setIsPrefChanged(false);
+            isSearchApplyingRef.current = false;
         }
     };
+
+
+
 
     useEffect(() => {
         setPostFilters((prev) => ({
@@ -587,13 +428,15 @@ const GlobalSearch = ({
         const handleKeyDown = (e) => {
             const active = document.activeElement;
 
-            const isInInput = active === searchInputRef.current;
+            const isInInputMain = active === searchInputRef.current;
+            const isInInputModal = active === modalSearchInputRef.current;
 
-            if (e.key === 'Enter' && isInInput) {
+            if (e.key === 'Enter' && (isInInputMain || isInInputModal)) {
                 e.preventDefault();
 
                 setTimeout(() => {
                     const currentQuery = searchQueryRef.current.trim();
+
                     if (!isPrefChanged) {
                         if (currentQuery !== '') {
                             setInfoMessage('To Apply Search Please Search Anything Else');
@@ -617,10 +460,7 @@ const GlobalSearch = ({
     // Post Filters State Checking And Appending Query If Modal Opens Of Post Filter
     useEffect(() => {
         const url = new URL(window.location.href);
-        if (isPostFilterSetting) {
-            window.history.pushState({}, '', window.location.pathname);
-            url.searchParams.set('modal', 'filters');
-        } else if (isSpatiotemporalFilters) {
+        if (isSpatiotemporalFilters) {
             window.history.pushState({}, '', window.location.pathname);
             url.searchParams.set('modal', 'spatiotemporal-filters');
         } else {
@@ -628,16 +468,11 @@ const GlobalSearch = ({
         }
 
         window.history.replaceState({}, '', url);
-    }, [isPostFilterSetting, isSpatiotemporalFilters]);
+    }, [isSpatiotemporalFilters]);
 
     // Handle browser/mobile back button to close modals
     useEffect(() => {
         const handlePopState = (e) => {
-            if (isPostFilterSetting) {
-                setIsPostFilterSetting(false);
-                return;
-            }
-
             if (isSpatiotemporalFilters) {
                 setIsSpatiotemporalFilters(false);
                 return;
@@ -645,7 +480,8 @@ const GlobalSearch = ({
         };
 
         const preventInertiaNavigation = (event) => {
-            if (isSpatiotemporalFilters || isPostFilterSetting) {
+            if (isSpatiotemporalFilters && !isSearchApplyingRef.current) {
+
                 event.preventDefault();
             }
         };
@@ -657,7 +493,7 @@ const GlobalSearch = ({
             window.removeEventListener('popstate', handlePopState);
             if (removeRouterEvent) removeRouterEvent();
         };
-    }, [isPostFilterSetting, isSpatiotemporalFilters]);
+    }, [isSpatiotemporalFilters]);
 
     // Delete Search History and fetching new onces
     const deleteSearchHistory = (id) => {
@@ -681,25 +517,6 @@ const GlobalSearch = ({
             });
     };
 
-    // Auto Resetting Error Message States
-    useEffect(() => {
-        if (showErrorMessage) {
-            setTimeout(() => {
-                setShowErrorMessage(false);
-                setErrorMessage(null);
-            }, 1500);
-        }
-    }, [showErrorMessage]);
-
-    // Auto Resetting Info Message States
-    useEffect(() => {
-        if (showInfoMessage) {
-            setTimeout(() => {
-                setShowInfoMessage(false);
-                setInfoMessage(null);
-            }, 1500);
-        }
-    }, [showInfoMessage]);
 
     return (
         <>
@@ -707,6 +524,17 @@ const GlobalSearch = ({
                 <Toast
                     flash={{
                         ...(showErrorMessage ? { error: ErrorMessage } : { info: InfoMessage }),
+                    }}
+
+                    onClosed={(type) => {
+                        if (type === 'error') {
+                            setShowErrorMessage(false);
+                            setErrorMessage(null);
+                        }
+                        if (type === 'info') {
+                            setShowInfoMessage(false);
+                            setInfoMessage(null);
+                        }
                     }}
                 />
             )}
@@ -1021,444 +849,12 @@ const GlobalSearch = ({
                             </button>
                         )}
 
-                        {filters && (
-                            <button
-                                className="mr-1.5 rounded-full p-1.5 text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-900 sm:mr-2 sm:p-2"
-                                onClick={() => {
-                                    setIsPostFilterSetting(true);
-                                }}
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth={1.5}
-                                    stroke="currentColor"
-                                    className="w-5 h-5 sm:h-6 sm:w-6"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
-                                    />
-                                </svg>
-                            </button>
-                        )}
-                    </div>
 
-                    {/* {isPrefChanged && (
-                        <div className="flex items-center justify-center mt-2 animate-fadeInDown">
-                            <div className="flex justify-center pt-5">
-                                <button
-                                    onClick={() => ApplyFilter('query')}
-                                    className="flex w-[200px] items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-500"
-                                    disabled={searchApplying}
-                                >
-                                    {searchApplying && (
-                                        <div role="status">
-                                            <svg
-                                                aria-hidden="true"
-                                                className="w-8 h-4 text-gray-200 animate-spin fill-white/80 dark:text-gray-200"
-                                                viewBox="0 0 100 101"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                                                    fill="currentColor"
-                                                />
-                                                <path
-                                                    d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                                                    fill="currentFill"
-                                                />
-                                            </svg>
-                                            <span className="sr-only"></span>
-                                        </div>
-                                    )}
-                                    Apply Search
-                                </button>
-                            </div>
-                        </div>
-                    )} */}
+                    </div>
                 </div>
             </div>
 
-            {/* Post Filter Setting */}
-            {isPostFilterSetting && (
-                <>
-                    {createPortal(
-                        windowSize.width > 1024 ? (
-                            //  PC VERSION
-                            <div className="fixed inset-0 z-50 flex items-center justify-center">
-                                {/* Backdrop */}
-                                <div
-                                    className="fixed inset-0 transition-opacity duration-300 bg-black/60 backdrop-blur-sm"
-                                    onClick={() => setIsPostFilterSetting(false)}
-                                />
 
-                                {/* Modal Card */}
-                                <div className="relative z-10 w-full max-w-2xl p-8 shadow-2xl rounded-2xl bg-white/95 dark:bg-deepcharcoal dark:text-white/80">
-                                    {/* Header */}
-                                    <div className="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
-                                        <h2 className="text-xl font-semibold tracking-tight text-gray-600 dark:text-white/80">
-                                            Filter Settings
-                                        </h2>
-                                        <button
-                                            onClick={() => setIsPostFilterSetting(false)}
-                                            className="rounded-full p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-900"
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
-                                                stroke="currentColor"
-                                                className="size-6"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M6 18L18 6M6 6l12 12"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </div>
-
-                                    {/* Content */}
-                                    <div className="mt-6 max-h-[70vh] space-y-8 overflow-y-auto pr-1">
-                                        {/* SECTION: General Location */}
-                                        {/* <section>
-                                            <h3 className="mb-4 text-sm font-medium tracking-wider text-gray-500 uppercase">
-                                                Location
-                                            </h3>
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-sm font-medium">
-                                                    Show posts near current location
-                                                </span>
-                                                <label className="relative inline-flex items-center cursor-pointer">
-                                                    <input
-                                                        type="checkbox"
-                                                        className="sr-only peer"
-                                                    />
-                                                    <div className="peer h-5 w-9 rounded-full bg-gray-300 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-indigo-500 peer-checked:after:translate-x-4"></div>
-                                                </label>
-                                            </div>
-                                        </section> */}
-
-                                        {/* SECTION: Post Type Filters */}
-                                        <section>
-                                            <h3 className="mb-4 text-sm font-medium tracking-wider text-gray-500 uppercase">
-                                                Post Type Filters
-                                            </h3>
-                                            <div className="space-y-4">
-                                                {[
-                                                    { key: 'text', label: 'Text' },
-                                                    { key: 'images', label: 'Images' },
-                                                    { key: 'videos', label: 'Videos' },
-                                                ].map(({ key, label }) => (
-                                                    <div
-                                                        key={key}
-                                                        className="flex items-center justify-between"
-                                                    >
-                                                        <span className="text-sm font-medium text-gray-600 dark:text-white/80">
-                                                            {label}
-                                                        </span>
-                                                        <label className="relative inline-flex items-center cursor-pointer">
-                                                            <input
-                                                                type="checkbox"
-                                                                className="sr-only peer"
-                                                                checked={postPreferences[key]}
-                                                                onChange={(e) =>
-                                                                    handlePostPreferences(
-                                                                        key,
-                                                                        e.target.checked,
-                                                                    )
-                                                                }
-                                                            />
-                                                            <div className="peer h-5 w-9 rounded-full bg-gray-300 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-indigo-500 peer-checked:after:translate-x-4"></div>
-                                                        </label>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </section>
-
-                                        {/* SECTION RESULTS PAGE FILTER */}
-                                        {(resultsPage || mainPage) && (
-                                            <section>
-                                                <h3 className="mb-4 text-sm font-medium tracking-wider text-gray-500 uppercase">
-                                                    Visibility Filter
-                                                </h3>
-                                                <div className="space-y-4">
-                                                    {[
-                                                        { key: 'show_posts', label: 'Posts' },
-                                                        {
-                                                            key: 'show_products',
-                                                            label: 'Products',
-                                                        },
-                                                    ].map(({ key, label }) => (
-                                                        <div
-                                                            key={key}
-                                                            className="flex items-center justify-between"
-                                                        >
-                                                            <span className="text-sm font-medium text-gray-600 dark:text-white/80">
-                                                                {label}
-                                                            </span>
-                                                            <label className="relative inline-flex items-center cursor-pointer">
-                                                                <input
-                                                                    type="checkbox"
-                                                                    className="sr-only peer"
-                                                                    checked={postPreferences[key]}
-                                                                    onChange={(e) =>
-                                                                        handlePostPreferences(
-                                                                            key,
-                                                                            e.target.checked,
-                                                                        )
-                                                                    }
-                                                                />
-                                                                <div className="peer h-5 w-9 rounded-full bg-gray-300 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-indigo-500 peer-checked:after:translate-x-4"></div>
-                                                            </label>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </section>
-                                        )}
-
-                                        {isPrefChanged && (
-                                            <div className="flex justify-center pt-5">
-                                                <button
-                                                    onClick={() => ApplyFilter('filter')}
-                                                    className="flex w-[200px] items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-500"
-                                                >
-                                                    {searchApplying && (
-                                                        <div role="status">
-                                                            <svg
-                                                                aria-hidden="true"
-                                                                className="w-8 h-4 text-gray-200 animate-spin fill-white/80 dark:text-gray-200"
-                                                                viewBox="0 0 100 101"
-                                                                fill="none"
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                            >
-                                                                <path
-                                                                    d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                                                                    fill="currentColor"
-                                                                />
-                                                                <path
-                                                                    d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                                                                    fill="currentFill"
-                                                                />
-                                                            </svg>
-                                                            <span className="sr-only"></span>
-                                                        </div>
-                                                    )}
-                                                    Apply Filter
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            //  MOBILE VERSION
-                            <div className="fixed inset-0 z-50 bg-black">
-                                {/* Backdrop */}
-                                <div className="absolute inset-0 bg-black/70"></div>
-
-                                {/* Fullscreen slide-over */}
-                                <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-white text-black dark:bg-deepcharcoal dark:text-white/80 sm:pb-20">
-                                    {/* Top Bar */}
-                                    <div className="relative flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800">
-                                        <button
-                                            onClick={() => setIsPostFilterSetting(false)}
-                                            className="absolute p-1 rounded-full left-4 hover:bg-gray-100 dark:hover:bg-gray-800"
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
-                                                stroke="currentColor"
-                                                className="size-6"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-                                                />
-                                            </svg>
-                                        </button>
-
-                                        <h2 className="mx-10 text-xl font-semibold tracking-tight text-gray-800 dark:text-gray-100">
-                                            Filter Settings
-                                        </h2>
-                                    </div>
-
-                                    {/* Content */}
-                                    <div className="flex-1 p-4 my-4 space-y-6">
-                                        {/* Location Section */}
-                                        {/* <div className="space-y-4">
-                                            <h3 className="mb-4 text-sm font-medium tracking-wider text-gray-500 uppercase">
-                                                Location
-                                            </h3>
-
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-sm">
-                                                    Show content near current location
-                                                </span>
-                                                <label className="relative inline-flex items-center cursor-pointer">
-                                                    <input
-                                                        type="checkbox"
-                                                        className="sr-only peer"
-                                                    />
-                                                    <div className="peer h-5 w-9 rounded-full bg-gray-300 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-indigo-500 peer-checked:after:translate-x-4"></div>
-                                                </label>
-                                            </div>
-                                        </div> */}
-
-                                        {/* Post Feed Settings */}
-                                        <div>
-                                            <h3 className="mb-4 text-sm font-medium tracking-wider text-gray-500 uppercase">
-                                                Post Type Filters
-                                            </h3>
-                                            <div className="space-y-5">
-                                                {/* Text */}
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-sm">Text</span>
-                                                    <label className="relative inline-flex items-center cursor-pointer">
-                                                        <input
-                                                            type="checkbox"
-                                                            className="sr-only peer"
-                                                            checked={postPreferences.text}
-                                                            onChange={(e) =>
-                                                                handlePostPreferences(
-                                                                    'text',
-                                                                    e.target.checked,
-                                                                )
-                                                            }
-                                                        />
-                                                        <div className="peer h-5 w-9 rounded-full bg-gray-300 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-indigo-500 peer-checked:after:translate-x-4"></div>
-                                                    </label>
-                                                </div>
-
-                                                {/* Images */}
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-sm">Images</span>
-                                                    <label className="relative inline-flex items-center cursor-pointer">
-                                                        <input
-                                                            type="checkbox"
-                                                            className="sr-only peer"
-                                                            checked={postPreferences.images}
-                                                            onChange={(e) =>
-                                                                handlePostPreferences(
-                                                                    'images',
-                                                                    e.target.checked,
-                                                                )
-                                                            }
-                                                        />
-                                                        <div className="peer h-5 w-9 rounded-full bg-gray-300 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-indigo-500 peer-checked:after:translate-x-4"></div>
-                                                    </label>
-                                                </div>
-
-                                                {/* Videos */}
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-sm">Videos</span>
-                                                    <label className="relative inline-flex items-center cursor-pointer">
-                                                        <input
-                                                            type="checkbox"
-                                                            className="sr-only peer"
-                                                            checked={postPreferences.videos}
-                                                            onChange={(e) =>
-                                                                handlePostPreferences(
-                                                                    'videos',
-                                                                    e.target.checked,
-                                                                )
-                                                            }
-                                                        />
-                                                        <div className="peer h-5 w-9 rounded-full bg-gray-300 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-indigo-500 peer-checked:after:translate-x-4"></div>
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* SECTION RESULTS PAGE FILTER */}
-                                        {(resultsPage || mainPage) && (
-                                            <section>
-                                                <h3 className="mb-4 text-sm font-medium tracking-wider text-gray-500 uppercase">
-                                                    Visibility Filter
-                                                </h3>
-                                                <div className="space-y-4">
-                                                    {[
-                                                        { key: 'show_posts', label: 'Posts' },
-                                                        {
-                                                            key: 'show_products',
-                                                            label: 'Products',
-                                                        },
-                                                    ].map(({ key, label }) => (
-                                                        <div
-                                                            key={key}
-                                                            className="flex items-center justify-between"
-                                                        >
-                                                            <span className="text-sm font-medium text-gray-600 dark:text-white/80">
-                                                                {label}
-                                                            </span>
-                                                            <label className="relative inline-flex items-center cursor-pointer">
-                                                                <input
-                                                                    type="checkbox"
-                                                                    className="sr-only peer"
-                                                                    checked={postPreferences[key]}
-                                                                    onChange={(e) =>
-                                                                        handlePostPreferences(
-                                                                            key,
-                                                                            e.target.checked,
-                                                                        )
-                                                                    }
-                                                                />
-                                                                <div className="peer h-5 w-9 rounded-full bg-gray-300 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-indigo-500 peer-checked:after:translate-x-4"></div>
-                                                            </label>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </section>
-                                        )}
-
-                                        {isPrefChanged && (
-                                            <div className="flex justify-center pt-5">
-                                                <button
-                                                    onClick={() => ApplyFilter('filter')}
-                                                    className="flex w-[200px] items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-500"
-                                                >
-                                                    {searchApplying && (
-                                                        <div role="status">
-                                                            <svg
-                                                                aria-hidden="true"
-                                                                className="w-8 h-4 text-gray-200 animate-spin fill-white/80 dark:text-gray-200"
-                                                                viewBox="0 0 100 101"
-                                                                fill="none"
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                            >
-                                                                <path
-                                                                    d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                                                                    fill="currentColor"
-                                                                />
-                                                                <path
-                                                                    d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                                                                    fill="currentFill"
-                                                                />
-                                                            </svg>
-                                                            <span className="sr-only"></span>
-                                                        </div>
-                                                    )}
-                                                    Apply Filter
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        ),
-                        document.body,
-                    )}
-                </>
-            )}
 
             {/* Spatitemporal Filters */}
             {isSpatiotemporalFilters && additional_filters && (
@@ -1476,29 +872,11 @@ const GlobalSearch = ({
                                 {/* Modal Card */}
                                 <div className="relative z-10 w-full max-w-2xl p-8 shadow-2xl rounded-2xl bg-white/95 dark:bg-deepcharcoal dark:text-white/80">
                                     {/* Header */}
-                                    <div className="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
-                                        <h2 className="text-xl font-semibold tracking-tight text-gray-600 dark:text-white/80">
+                                    <div className="flex items-center justify-center pb-4 border-b border-gray-200 dark:border-gray-700">
+                                        <h2 className="text-2xl font-semibold tracking-tight text-gray-600 dark:text-white/80">
                                             Advanced Search
                                         </h2>
-                                        <button
-                                            onClick={() => setIsSpatiotemporalFilters(false)}
-                                            className="rounded-full p-1.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-900"
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
-                                                stroke="currentColor"
-                                                className="size-6"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M6 18L18 6M6 6l12 12"
-                                                />
-                                            </svg>
-                                        </button>
+
                                     </div>
 
                                     {/* Content */}
@@ -1514,7 +892,7 @@ const GlobalSearch = ({
                                                                     onClick={() => {
                                                                         setSearchQuery('');
                                                                         setIsPrefChanged(true);
-                                                                        searchInputRef.current?.focus();
+                                                                        modalSearchInputRef?.current?.focus();
                                                                     }}
                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                     fill="none"
@@ -1547,7 +925,7 @@ const GlobalSearch = ({
                                                                 />
                                                             </svg>
                                                             <input
-                                                                ref={searchInputRef}
+                                                                ref={modalSearchInputRef}
                                                                 type="search"
                                                                 className="flex-1 ml-6 text-xs text-gray-600 placeholder-gray-400 bg-transparent border-none outline-none focus:outline-none focus:ring-0 dark:text-white/80 sm:text-base"
                                                                 value={searchQuery}
@@ -1594,18 +972,18 @@ const GlobalSearch = ({
                                                             searchHistory.length > 0 &&
                                                             createPortal(
                                                                 <div
-                                                                    className="fixed z-[9999] rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-700 dark:bg-deepcharcoal"
+                                                                    className="fixed z-[50] rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-700 dark:bg-deepcharcoal"
                                                                     style={{
                                                                         top:
-                                                                            searchInputRef.current?.getBoundingClientRect()
+                                                                            modalSearchInputRef.current?.getBoundingClientRect()
                                                                                 .bottom +
                                                                             8 +
                                                                             'px',
                                                                         left:
-                                                                            searchInputRef.current?.getBoundingClientRect()
+                                                                            modalSearchInputRef.current?.getBoundingClientRect()
                                                                                 .left + 'px',
                                                                         width:
-                                                                            searchInputRef.current?.getBoundingClientRect()
+                                                                            modalSearchInputRef.current?.getBoundingClientRect()
                                                                                 .width + 'px',
                                                                     }}
                                                                 >
@@ -1854,7 +1232,7 @@ const GlobalSearch = ({
                                                                         )}
                                                                     </ul>
                                                                 </div>,
-                                                                document.body,
+                                                                document.getElementById('modak-root') || document.body,
                                                             )}
                                                     </div>
                                                 </div>
@@ -2100,7 +1478,7 @@ const GlobalSearch = ({
                                 {/* Fullscreen slide-over */}
                                 <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-white text-black dark:bg-deepcharcoal dark:text-white/80 sm:pb-20">
                                     {/* Top Bar */}
-                                    <div className="relative flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800">
+                                    <div className="flex items-center justify-center px-4 py-3 border-b border-gray-200 dark:border-gray-800">
                                         <button
                                             onClick={() => setIsSpatiotemporalFilters(false)}
                                             className="absolute p-1 rounded-full left-4 hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -2139,7 +1517,7 @@ const GlobalSearch = ({
                                                                     onClick={() => {
                                                                         setSearchQuery('');
                                                                         setIsPrefChanged(true);
-                                                                        searchInputRef.current?.focus();
+                                                                        modalSearchInputRef.current?.focus();
                                                                     }}
                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                     fill="none"
@@ -2173,7 +1551,7 @@ const GlobalSearch = ({
                                                             </svg>
 
                                                             <input
-                                                                ref={searchInputRef}
+                                                                ref={modalSearchInputRef}
                                                                 type="search"
                                                                 className="flex-1 ml-6 text-sm text-gray-600 placeholder-gray-400 bg-transparent border-none outline-none focus:outline-none focus:ring-0 dark:text-white/80 sm:text-base"
                                                                 value={searchQuery}
@@ -2220,18 +1598,18 @@ const GlobalSearch = ({
                                                             searchHistory.length > 0 &&
                                                             createPortal(
                                                                 <div
-                                                                    className="fixed z-[9999] rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-700 dark:bg-deepcharcoal"
+                                                                    className="fixed z-[50] rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-700 dark:bg-deepcharcoal"
                                                                     style={{
                                                                         top:
-                                                                            searchInputRef.current?.getBoundingClientRect()
+                                                                            modalSearchInputRef.current?.getBoundingClientRect()
                                                                                 .bottom +
                                                                             8 +
                                                                             'px',
                                                                         left:
-                                                                            searchInputRef.current?.getBoundingClientRect()
+                                                                            modalSearchInputRef.current?.getBoundingClientRect()
                                                                                 .left + 'px',
                                                                         width:
-                                                                            searchInputRef.current?.getBoundingClientRect()
+                                                                            modalSearchInputRef.current?.getBoundingClientRect()
                                                                                 .width + 'px',
                                                                     }}
                                                                 >
@@ -2480,7 +1858,7 @@ const GlobalSearch = ({
                                                                         )}
                                                                     </ul>
                                                                 </div>,
-                                                                document.body,
+                                                                document.getElementById('modak-root') || document.body,
                                                             )}
                                                     </div>
                                                 </div>
@@ -2717,7 +2095,7 @@ const GlobalSearch = ({
                                 </div>
                             </div>
                         ),
-                        document.body,
+                        document.getElementById('modak-root') || document.body,
                     )}
                 </>
             )}
@@ -2759,11 +2137,11 @@ const GlobalSearch = ({
                             </div>
                         </div>
                     </div>,
-                    document.body,
+                    document.getElementById('modak-root') || document.body,
                 )}
 
             {/* Searching On Main Searching Archive Page Loader */}
-            {searchApplying && !isPostFilterSetting && !isSpatiotemporalFilters && (
+            {searchApplying && !isSpatiotemporalFilters && (
                 <>
                     {createPortal(
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
@@ -2800,7 +2178,7 @@ const GlobalSearch = ({
                                 </div>
                             </div>
                         </div>,
-                        document.body,
+                        document.getElementById('modak-root') || document.body,
                     )}
                 </>
             )}

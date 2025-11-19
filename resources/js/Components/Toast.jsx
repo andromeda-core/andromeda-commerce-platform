@@ -42,7 +42,7 @@ const Toast = ({ flash, onClosed }) => {
     };
 
     return (
-        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 transform space-y-3">
+        <div className="fixed z-50 space-y-3 transform -translate-x-1/2 bottom-6 left-1/2">
             {showSuccess && flash.success && (
                 <SuccessToastModal
                     showSuccess={showSuccess}

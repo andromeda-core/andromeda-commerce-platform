@@ -15,6 +15,8 @@ const Sidebar = ({
     setMoreDropdown,
     cartItemsCount,
     preventDropdownCloseRef,
+    setFilterModal,
+    filterModal,
 }) => {
     const { user } = usePage().props.auth;
     const darkModeButtonRef = useRef(null);
@@ -50,18 +52,16 @@ const Sidebar = ({
     return (
         <div className="flex min-h-screen">
             <aside
-                className={`fixed left-0 top-0 z-[50] flex h-full flex-col overflow-y-auto bg-white transition-all duration-300 dark:bg-zinc-950/70 ${
-                    isCollapsed ? 'w-20' : 'w-64'
-                }`}
+                className={`fixed left-0 top-0 z-[50] flex h-full flex-col overflow-y-auto bg-white transition-all duration-300 dark:bg-zinc-950/70 ${isCollapsed ? 'w-20' : 'w-64'
+                    }`}
             >
                 {/* Logo */}
-                <Link href={route('home')}>
+                <Link href={route('home')} data-sidebar-link="true" >
                     <div
-                        className={`flex items-center gap-2 px-6 py-6 transition-all ${
-                            isCollapsed ? 'justify-center' : ''
-                        }`}
+                        className={`flex items-center gap-2 px-6 py-6 transition-all ${isCollapsed ? 'justify-center' : ''
+                            }`}
                     >
-                        <div className="flex h-12 w-12 items-center justify-center rounded">
+                        <div className="flex items-center justify-center w-12 h-12 rounded">
                             <div className="block dark:hidden">
                                 <img src={light_logo} alt="Logo" />
                             </div>
@@ -85,18 +85,12 @@ const Sidebar = ({
                                 data-sidebar-link="true"
                                 title="Explore"
                                 href={route('home')}
-                                className={`flex w-full items-center ${
-                                    isCollapsed ? 'justify-center px-0' : 'gap-3 px-4'
-                                } rounded-full py-2.5 text-sm transition-colors ${
-                                    route().current() === 'home'
+                                className={`flex w-full items-center ${isCollapsed ? 'justify-center px-0' : 'gap-3 px-4'
+                                    } rounded-full py-2.5 text-sm transition-colors ${route().current() === 'home'
                                         ? 'menu-item-active'
                                         : 'menu-item-inactive'
-                                }`}
-                                onClick={(e) => {
-                                    if (route().current() === 'home') {
-                                        e.preventDefault();
-                                    }
-                                }}
+                                    }`}
+
                             >
                                 <svg
                                     className={`size-6`}
@@ -128,18 +122,12 @@ const Sidebar = ({
                                 title="Search"
                                 prefetch
                                 href={route('website.global-search.index')}
-                                className={`flex w-full items-center ${
-                                    isCollapsed ? 'justify-center px-0' : 'gap-3 px-4'
-                                } rounded-full py-2.5 text-sm transition-colors ${
-                                    route().current() === 'website.global-search.index'
+                                className={`flex w-full items-center ${isCollapsed ? 'justify-center px-0' : 'gap-3 px-4'
+                                    } rounded-full py-2.5 text-sm transition-colors ${route().current() === 'website.global-search.index'
                                         ? 'menu-item-active'
                                         : 'menu-item-inactive'
-                                }`}
-                                onClick={(e) => {
-                                    if (route().current() === 'website.global-search.index') {
-                                        e.preventDefault();
-                                    }
-                                }}
+                                    }`}
+
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -159,41 +147,7 @@ const Sidebar = ({
                             </Link>
                         </li>
 
-                        <li>
-                            <Link
-                                data-sidebar-link="true"
-                                title="Filters"
-                                href={route('website.global-filters.index')}
-                                className={`flex w-full items-center ${
-                                    isCollapsed ? 'justify-center px-0' : 'gap-3 px-4'
-                                } rounded-full py-2.5 text-sm transition-colors ${
-                                    route().current() === 'website.global-filters.index'
-                                        ? 'menu-item-active'
-                                        : 'menu-item-inactive'
-                                }`}
-                                onClick={(e) => {
-                                    if (route().current() === 'website.global-filters.index') {
-                                        e.preventDefault();
-                                    }
-                                }}
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth={1.5}
-                                    stroke="currentColor"
-                                    className="size-6"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
-                                    />
-                                </svg>
-                                {!isCollapsed && <span>Filters</span>}
-                            </Link>
-                        </li>
+
 
                         {/* <li>
                             <a
@@ -225,9 +179,8 @@ const Sidebar = ({
                                 title="More"
                                 ref={moreDropdownRef}
                                 onClick={() => setMoreDropdown(!moreDropdown)}
-                                className={`group flex w-full items-center ${
-                                    isCollapsed ? 'justify-center px-0 text-sm' : 'gap-3 px-4'
-                                } menu-item-inactive rounded-full py-3 transition-colors`}
+                                className={`group flex w-full items-center ${isCollapsed ? 'justify-center px-0 text-sm' : 'gap-3 px-4'
+                                    } menu-item-inactive rounded-full py-3 transition-colors`}
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -294,14 +247,7 @@ const Sidebar = ({
                                                             title="Profile"
                                                             href={route('website.profile.index')}
                                                             className={`${route().current() === 'website.profile.index' ? 'menu-item-active' : 'menu-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
-                                                            onClick={(e) => {
-                                                                if (
-                                                                    route().current() ===
-                                                                    'website.profile.index'
-                                                                ) {
-                                                                    e.preventDefault();
-                                                                }
-                                                            }}
+
                                                         >
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -344,12 +290,12 @@ const Sidebar = ({
                                                             My Cart{' '}
                                                             {cartItemsCount > 0 && (
                                                                 <span className="relative ml-auto">
-                                                                    <span className="flex h-6 w-6 animate-pulse items-center justify-center rounded-full bg-indigo-500 text-xs font-bold text-white">
+                                                                    <span className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-indigo-500 rounded-full animate-pulse">
                                                                         {cartItemsCount > 99
                                                                             ? '99+'
                                                                             : cartItemsCount}
                                                                     </span>
-                                                                    <span className="absolute right-0 top-0 block h-2 w-2 animate-bounce rounded-full bg-indigo-400"></span>
+                                                                    <span className="absolute top-0 right-0 block w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></span>
                                                                 </span>
                                                             )}
                                                         </Link>
@@ -384,14 +330,7 @@ const Sidebar = ({
                                                             data-sidebar-link="true"
                                                             href={route('website.bookmarks.index')}
                                                             className={`${route().current() === 'website.bookmarks.index' ? 'menu-item-active' : 'menu-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
-                                                            onClick={(e) => {
-                                                                if (
-                                                                    route().current() ===
-                                                                    'website.bookmarks.index'
-                                                                ) {
-                                                                    e.preventDefault();
-                                                                }
-                                                            }}
+
                                                         >
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -420,14 +359,7 @@ const Sidebar = ({
                                                                 'website.data-deletion.index',
                                                             )}
                                                             className={`${route().current() === 'website.data-deletion.index' ? 'menu-item-active' : 'menu-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
-                                                            onClick={(e) => {
-                                                                if (
-                                                                    route().current() ===
-                                                                    'website.data-deletion.index'
-                                                                ) {
-                                                                    e.preventDefault();
-                                                                }
-                                                            }}
+
                                                         >
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -476,20 +408,41 @@ const Sidebar = ({
                                             )}
 
                                             <li>
+                                                <button
+                                                    data-sidebar-link="true"
+                                                    title="Filters"
+
+                                                    className={`${filterModal ? 'menu-item-active' : 'menu-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
+                                                    onClick={(e) => {
+                                                        setFilterModal(!filterModal);
+                                                    }}
+                                                >
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        strokeWidth={1.5}
+                                                        stroke="currentColor"
+                                                        className={` ${isCollapsed ? 'size-4' : 'size-5'} `}
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
+                                                        />
+                                                    </svg>
+                                                    Filters
+                                                </button>
+                                            </li>
+
+                                            <li>
                                                 <Link
                                                     data-sidebar-link="true"
                                                     title="Privacy Policy"
                                                     prefetch
                                                     href={route('website.privacy-policy.index')}
                                                     className={`${route().current() === 'website.privacy-policy.index' ? 'menu-item-active' : 'menu-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
-                                                    onClick={(e) => {
-                                                        if (
-                                                            route().current() ===
-                                                            'website.privacy-policy.index'
-                                                        ) {
-                                                            e.preventDefault();
-                                                        }
-                                                    }}
+
                                                 >
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -513,7 +466,7 @@ const Sidebar = ({
                                                 <Link
                                                     href={route('website.contact.index')}
                                                     data-sidebar-link="true"
-                                                    className={`menu-item-inactive flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
+                                                    className={`${route().current() === 'website.contact.index' ? 'menu-item-active' : 'menu-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                                 >
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"

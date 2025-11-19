@@ -3,6 +3,7 @@ import Preloader from '@/Components/Preloader';
 import PWAAlertBar from '@/Components/PWAAlertBar';
 import Toast from '@/Components/Toast';
 import useWindowSize from '@/Hooks/useWindowSize';
+import GlobalFilterModal from '@/Pages/Website/GlobalFilters/GlobalFilterModal';
 import BottomBar from '@/partials/Website/BottomBar';
 
 import Sidebar from '@/partials/Website/Sidebar';
@@ -10,6 +11,8 @@ import { usePage } from '@inertiajs/react';
 import axios from 'axios';
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useFilterStore } from '@/Hooks/useFilterStore';
+
 
 export default function MainLayout({ children }) {
     const { asset, generalSetting, flash, auth } = usePage().props;
@@ -141,11 +144,25 @@ export default function MainLayout({ children }) {
         }
     }, []);
 
+
+
+
+    // Filter Pop Up Modal
+    const [filterModal, setFilterModal] = useState(false);
+    const setIsOpen = useFilterStore((s) => s.setIsOpen);
+
+    useEffect(() => {
+        setIsOpen(filterModal);
+    }, [filterModal]);
+
     return (
         <>
             <div className="relative w-full min-h-screen bg-white dark:bg-zinc-950/70">
                 <Preloader loaded={loaded} setLoaded={setLoaded} />
                 <AppStatusManager />
+
+                <GlobalFilterModal filterModal={filterModal} setFilterModal={setFilterModal} />
+
                 <Toast flash={flash} />
 
                 {/* Sidebar */}
@@ -162,6 +179,8 @@ export default function MainLayout({ children }) {
                         moreDropdownRef={moreDropdownRef}
                         cartItemsCount={cartItemsCount}
                         preventDropdownCloseRef={preventDropdownCloseRef}
+                        setFilterModal={setFilterModal}
+                        filterModal={filterModal}
                     />
                 )}
 
@@ -211,6 +230,8 @@ export default function MainLayout({ children }) {
                             moreDropdownRef={moreDropdownRef}
                             cartItemsCount={cartItemsCount}
                             preventDropdownCloseRef={preventDropdownCloseRef}
+                            setFilterModal={setFilterModal}
+                            filterModal={filterModal}
                         />
                     </>
                 )}

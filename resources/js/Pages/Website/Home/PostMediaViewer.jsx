@@ -202,6 +202,7 @@ export default function PostMediaViewer({
                                             />
                                         ) : (
                                             <VideoWithThumbnail
+                                                type='customized'
                                                 className="object-contain w-full h-full rounded-md"
                                                 videoUrl={item.url}
                                                 Preload={isCurrent ? "auto" : "metadata"}

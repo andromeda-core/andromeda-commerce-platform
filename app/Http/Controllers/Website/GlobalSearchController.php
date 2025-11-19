@@ -31,11 +31,25 @@ class GlobalSearchController extends Controller
         $floors = $this->floor->getFloorsForSearch();
         $google_map_api_key = $this->globalSearch->getGoogleMapApiKey();
         $search_history = $this->searchHistory->getHistory($request);
-        $current_time = now();
+        $filters = [];
+        $results = [];
+        $pagination = ['next_page_url' => null];
+        $query = null;
+        $has_searched = false;
+        if ($request->has('search')) {
+            $response = $this->results($request);
 
-        // dd($search_history->toArray());
+            $filters = $response['filters'];
+            $results = $response['results'];
+            $pagination = $response['pagination'];
+            $query = $response['query'];
+            $has_searched = true;
 
-        return Inertia::render('Website/Search/index', compact('floors', 'google_map_api_key', 'search_history', 'current_time'));
+            return Inertia::render('Website/Search/index', compact('floors', 'has_searched', 'google_map_api_key', 'search_history', 'filters', 'results', 'pagination', 'query'));
+
+        }
+
+        return Inertia::render('Website/Search/index', compact('floors', 'google_map_api_key', 'has_searched', 'search_history', 'filters', 'results', 'pagination', 'query'));
     }
 
     public function autoCompletion(Request $request)
@@ -63,55 +77,39 @@ class GlobalSearchController extends Controller
 
     }
 
-    public function results(Request $request)
+    private function results(Request $request)
     {
 
-        if ($request->hasAny(['query', 'post_filters', 'post_preferences'])) {
-            session([
-                'search_data' => $request->only(['query', 'post_filters', 'post_preferences']),
-            ]);
-        } elseif (session()->has('search_data')) {
-            $request->merge(session('search_data'));
-        } else {
-            return to_route('website.global-search.index');
-        }
-
         $query = $request->input('query');
-        $post_filters = $request->input('post_filters');
-
-        // if (empty($query) && blank($post_filters['address']['lat']) && blank($post_filters['address']['lng'])) {
-        //     return to_route('website.global-search.index');
-        // }
+        $filters = $request->input('filters');
 
         $data = $this->globalSearch->search($request);
 
-        if ($data['status'] == false && ! $request->ajax()) {
-            return to_route('website.global-search.index')->with('error', $data['message']);
+        if ($data['status'] === false) {
+            return [
+                'status' => false,
+                'message' => $data['message'],
 
+            ];
         }
 
-        if ($request->ajax() && $data['status'] == false) {
-
-            return response()->json(['status' => false, 'message' => $data['message']], 400);
-        }
-
-        $results = $data['data'];
-        $pagination = $data['pagination'];
-
-        $google_map_api_key = $this->globalSearch->getGoogleMapApiKey();
-        $search_history = $this->searchHistory->getHistory($request);
-
-        return Inertia::render('Website/Result/index', compact('results', 'query', 'google_map_api_key', 'post_filters', 'pagination', 'search_history'));
+        return [
+            'status' => true,
+            'results' => $data['data'],
+            'pagination' => $data['pagination'],
+            'query' => $query,
+            'filters' => $filters,
+        ];
     }
 
-    public function searchSessionDestroy()
-    {
-        if (session()->has('search_data')) {
-            session()->forget('search_data');
-        }
+    // public function searchSessionDestroy()
+    // {
+    //     if (session()->has('search_data')) {
+    //         session()->forget('search_data');
+    //     }
 
-        return response()->noContent();
-    }
+    //     return response()->noContent();
+    // }
 
     public function getMoreResults(Request $request)
     {
@@ -119,8 +117,8 @@ class GlobalSearchController extends Controller
             return to_route('website.global-search.index');
         }
 
-        if ($request->filled('post_filters') && is_string($request->post_filters)) {
-            $request->merge(['post_filters' => json_decode($request->post_filters, true)]);
+        if ($request->filled('filters') && is_string($request->filters)) {
+            $request->merge(['filters' => json_decode($request->filters, true)]);
         }
 
         if ($request->filled('post_preferences') && is_string($request->post_preferences)) {

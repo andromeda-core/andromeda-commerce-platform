@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Website;
 
 use App\Http\Controllers\Controller;
-use App\Repositories\GlobalSearch\Repository\GlobalSearchRepository;
+use App\Repositories\GlobalSearch\Interface\IGlobalSearchRepository;
 use App\Repositories\Posts\Interface\IPostRepository;
+use App\Repositories\SearchHistories\Interface\ISearchHistoryRepository;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -12,7 +13,8 @@ class PostController extends Controller
 {
     public function __construct(
         private IPostRepository $post,
-        private GlobalSearchRepository $globalSearch,
+        private IGlobalSearchRepository $globalSearch,
+        private ISearchHistoryRepository $search_history
     ) {}
 
     public function index(Request $request)
@@ -118,15 +120,16 @@ class PostController extends Controller
         return response()->json(['status' => true, 'results' => $relatedFeed, 'nextUrl' => $nextUrl, 'related_slug' => $related_slug], 200);
     }
 
-    public function hashtagIndex(?string $hashtag = null)
+    public function hashtagIndex(Request $request, ?string $hashtag = null)
     {
 
         if (empty($hashtag)) {
             return to_route('home')->with('info', 'Hashtag Not Found');
         }
         $google_map_api_key = $this->globalSearch->getGoogleMapApiKey();
+        $search_history = $this->search_history->getHistory($request);
 
-        return Inertia::render('Website/Home/hashtagPosts', compact('hashtag', 'google_map_api_key'));
+        return Inertia::render('Website/Home/hashtagPosts', compact('hashtag', 'google_map_api_key', 'search_history'));
     }
 
     public function hashtagResults(Request $request)

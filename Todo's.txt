@@ -556,6 +556,17 @@ Additional Work:
         62: Online and Offline Events Are Optimized To Show a Clean And Professional Alert And Organized The Code And Removed Everything
          related To it From Main app.jsx And Added Those In Components To make consistency and clear code   ✅
         63: Dashbaord ERROR RElated Hook Of can hook -> that uses for Checking Permissions Is Now renamed as UseCan And FIxed✅
+        64: Links Enabled When On Feed Or Somewhere And Already Active Links Also Activated For Easier Navigation ✅
+        65: GLobal Filters Remvoed FromThe Single Page Instead Added In The Modal Globally Can Be accessed From Anywhere in website ✅
+        66: Filter Icon Moved Into The More Elipises Dropdown ✅
+        67: Post Desktop Only Text Post Text Content Alignment Adjusted  ✅
+        68: Results Page Removed And Added Results Showing In the Search Page it self And Radius Map Modal Also Updated And added Spinner to show on
+            when user clicks on it for better UX ✅
+
+        69: Mobile Feed Single Page Media Will BE changed to Full Take width Of Screen
+        70: Mobile Feed Viewer Single Page User Avatar Wil be Updated ✅
+        71: Mobile Feed Button Chnaged To Simple text ✅
+        72: GLobal Filter Issue Fixed On Mobile Feed And Added Zustand Library and IOts hook to check Live Status Of global Filter State  ✅
 
     ) Redesigned Whole Website 4th Time Completed According To The LAYOUT Design Reference Provided ✅
 

@@ -7,6 +7,7 @@ import gsap from 'gsap';
 import MobileFeedGallery from './MobileFeedGallery';
 import useDarkMode from '@/Hooks/useDarkMode';
 import Spinner from '@/Components/Spinner';
+import { useFilterStore } from '@/Hooks/useFilterStore';
 
 
 const MobileFeed = ({
@@ -39,6 +40,7 @@ const MobileFeed = ({
 
     // Local feed state for seamless looping
     const [localFeed, setLocalFeed] = useState([]);
+
 
     // Manually Passing Correct Feed To Feed Gallery To Open
     const [manualFeedGalleryItem, setManualFeedGalleryItem] = useState(null);
@@ -766,9 +768,10 @@ const MobileFeed = ({
                                         setMobileFeedGalleryOpening(false);
                                     }, 500);
                                 }}
-                                className="h-[30px] w-[130px] shrink-0 rounded-lg bg-black px-6 text-xs font-semibold text-white transition-colors hover:bg-gray-800 dark:bg-white flex gap-2 items-center justify-center dark:text-black dark:hover:bg-gray-100"
+                                className="h-[30px] w-[120px] shrink-0 rounded-lg px-6 text-xs font-bold text-gray-700 transition-colors flex gap-2 items-center justify-center dark:text-white/80 "
                             >
-                                {mobileFeedGalleryOpening && <Spinner customSize={"size-3"} />}  Shop Now
+
+                                {mobileFeedGalleryOpening ? <Spinner customSize={"size-3"} /> : 'Shop Now'}
                             </button>
                         </div>
                     </div>
@@ -816,9 +819,9 @@ const MobileFeed = ({
                                                 setMobileFeedGalleryOpening(false);
                                             }, 500);
                                         }}
-                                        className="h-[30px] w-[90px] shrink-0 rounded-lg bg-black px-6 text-xs font-semibold text-white transition-colors hover:bg-gray-800 dark:bg-white flex gap-2 items-center justify-center dark:text-black dark:hover:bg-gray-100"
+                                        className="h-[30px] w-[90px] shrink-0 rounded-lg  px-6 text-xs font-bold text-gray-700 transition-colors flex gap-2 items-center justify-center dark:text-white/80 "
                                     >
-                                        {mobileFeedGalleryOpening && <Spinner customSize={"size-3"} />} More
+                                        {mobileFeedGalleryOpening ? <Spinner customSize={"size-3"} /> : 'More'}
                                     </button>
                                 )
                             ) : (
@@ -833,9 +836,9 @@ const MobileFeed = ({
                                             setMobileFeedGalleryOpening(false);
                                         }, 500);
                                     }}
-                                    className="h-[30px] w-[90px] shrink-0 rounded-lg bg-black px-6 text-xs font-semibold text-white transition-colors hover:bg-gray-800 flex gap-2 items-center justify-center dark:bg-white dark:text-black dark:hover:bg-gray-100"
+                                    className="h-[30px] w-[90px] shrink-0 rounded-lg  px-6 text-xs font-bold text-gray-700 transition-colors flex gap-2 items-center justify-center dark:text-white/80 "
                                 >
-                                    {mobileFeedGalleryOpening && <Spinner customSize={"size-3"} />} More
+                                    {mobileFeedGalleryOpening ? <Spinner customSize={"size-3"} /> : 'More'}
                                 </button>
                             )}
 
@@ -848,6 +851,17 @@ const MobileFeed = ({
             </div>
         );
     }, [videoAutoplay, mobileFeedGalleryOpening, actionDropdownOpen, isDarkMode, loadedItems]);
+
+
+    // Tracking GLobal Filter Open Or Not
+    const isFilterOpenRef = useRef(false);
+
+    // subscribing to filter store
+    useEffect(() => {
+        return useFilterStore.subscribe((state) => {
+            isFilterOpenRef.current = state.isOpen;
+        });
+    }, []);
 
 
     // Syncing FeedGallery With Manual FeedGallery State
@@ -993,7 +1007,9 @@ const MobileFeed = ({
 
     // Fallback X-axis alignment + looping flag management
     useEffect(() => {
+
         if (!isScrollCompleted) return;
+
 
         const currentItem = localFeed[feedIndex];
         if (!currentItem) return;
@@ -1341,6 +1357,10 @@ const MobileFeed = ({
                 }
 
 
+                if (isFilterOpenRef.current) {
+                    return;
+                }
+
                 if (
                     isXLoopingRef.current ||
                     isProcessingRef.current ||
@@ -1508,7 +1528,6 @@ const MobileFeed = ({
                 }
 
 
-
                 lastScrollLeft = currentScrollLeft;
 
                 if (scrollTimeout) clearTimeout(scrollTimeout);
@@ -1516,6 +1535,8 @@ const MobileFeed = ({
                 scrollTimeout = setTimeout(() => {
 
                     isProcessingRef.current = true;
+
+
                     const newIndex = Math.round(currentScrollLeft / itemWidth);
 
 

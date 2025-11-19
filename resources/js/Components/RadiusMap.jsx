@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { createPortal } from 'react-dom';
+import Spinner from './Spinner';
 
 export default function RadiusMap({
     lat,
@@ -15,6 +16,7 @@ export default function RadiusMap({
     const circleRef = useRef(null);
     const markerRef = useRef(null);
     const [radius, setRadius] = useState(defaultRadius ?? 1000);
+    const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
         if (!lat || !lng || !isModalOpen || !mapRef.current) return;
@@ -59,6 +61,8 @@ export default function RadiusMap({
                     editable: true,
                 });
 
+                setIsLoaded(true);
+
                 // Lock center but allow resizing
                 centerChangedListener = circleRef.current.addListener('center_changed', () => {
                     clearTimeout(centerLockTimeout);
@@ -74,6 +78,7 @@ export default function RadiusMap({
                     () => {
                         const newRadius = Math.round(circleRef.current.getRadius());
                         setRadius(newRadius);
+
                     },
                 );
             }, 1000);
@@ -106,16 +111,16 @@ export default function RadiusMap({
     if (!isModalOpen) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
             <div
                 className="fixed inset-0 backdrop-blur-[32px]"
                 onClick={() => setIsModalOpen(false)}
             ></div>
 
             {/* Modal content */}
-            <div className="relative z-10 max-h-full w-full max-w-4xl overflow-y-auto rounded-2xl bg-white/95 p-8 shadow-2xl dark:bg-deepcharcoal dark:text-white/80">
+            <div className="relative z-10 w-full max-w-4xl max-h-full p-8 overflow-y-auto shadow-2xl rounded-2xl bg-white/95 dark:bg-deepcharcoal dark:text-white/80">
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                         Select Radius
                     </h3>
@@ -141,13 +146,27 @@ export default function RadiusMap({
                 </div>
 
                 {/* Map */}
-                <div className="flex flex-col items-center gap-2 p-4">
+
+
+
+                <div className="relative flex flex-col items-center gap-2 p-4">
+
+                    {/* Map container */}
                     <div
                         ref={mapRef}
                         id="radiusMap"
                         className="h-[50vh] w-full rounded-xl border border-gray-300 dark:border-gray-700"
                     />
-                    <div className="flex w-full flex-col items-center gap-3">
+
+                    {/* Loader Overlay */}
+                    {!isLoaded && (
+                        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm rounded-xl">
+                            <Spinner customSize="size-12" />
+                        </div>
+                    )}
+
+                    {/* Radius text */}
+                    <div className="flex flex-col items-center w-full gap-3">
                         <span className="text-sm text-gray-700 dark:text-gray-300">
                             Radius: {(radius / 1000).toFixed(2)} km
                         </span>
@@ -155,17 +174,17 @@ export default function RadiusMap({
                 </div>
 
                 {/* Footer */}
-                <div className="flex justify-center gap-3 border-t border-gray-200 px-4 py-3 dark:border-gray-700">
+                <div className="flex justify-center gap-3 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
                     <button
                         onClick={() => setIsModalOpen(false)}
-                        className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600"
+                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600"
                     >
                         Close
                     </button>
 
                     <button
                         onClick={() => radiusConfirmed()}
-                        className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white/80 hover:bg-indigo-500"
+                        className="px-4 py-2 text-sm font-medium bg-indigo-600 rounded-lg text-white/80 hover:bg-indigo-500"
                     >
                         Save Radius
                     </button>
