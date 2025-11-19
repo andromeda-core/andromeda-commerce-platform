@@ -24,13 +24,11 @@ export default function index({ orders, next_page_url }) {
     const [activeTab, setActiveTab] = useState('all');
 
     const loaderRef = useRef(null);
-    console.log('LoaderRef:', loaderRef.current);
-    console.log('Next Page:', nextPageUrl);
+
 
     const isfetchingMorePosts = useRef(false);
 
     const fetchMoreOrders = () => {
-        console.log('fetching more orders');
         if (!nextPageUrl) return;
         isfetchingMorePosts.current = true;
         axios
@@ -100,8 +98,8 @@ export default function index({ orders, next_page_url }) {
                         ...(showInfoMessage
                             ? { info: infoMessage }
                             : showErrorMessage
-                              ? { error: errorMessage }
-                              : { success: successMessage }),
+                                ? { error: errorMessage }
+                                : { success: successMessage }),
                     }}
                     onClosed={(type) => {
                         if (type === 'info') {
@@ -125,7 +123,7 @@ export default function index({ orders, next_page_url }) {
                     className={`mx-auto max-w-7xl sm:px-6 lg:px-8 ${windowSize.width < 1024 && 'mb-20'}`}
                 >
                     {/* Status Tabs */}
-                    <div className="mb-8 overflow-x-auto px-4 sm:px-0">
+                    <div className="px-4 mb-8 overflow-x-auto sm:px-0">
                         <div className="flex gap-2 border-b border-gray-200 dark:border-white/10 sm:justify-center">
                             <TabButton
                                 label="All"
@@ -206,13 +204,13 @@ export default function index({ orders, next_page_url }) {
             {nextPageUrl && (
                 <div
                     ref={loaderRef}
-                    className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 dark:text-white/80"
+                    className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80"
                 >
                     <div className="flex items-center justify-center">
                         <div role="status">
                             <svg
                                 aria-hidden="true"
-                                className="h-5 w-5 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"
+                                className="w-5 h-5 text-gray-200 animate-spin fill-blue-600 dark:text-gray-600"
                                 viewBox="0 0 100 101"
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -241,20 +239,18 @@ function TabButton({ label, count, active, onClick }) {
     return (
         <button
             onClick={onClick}
-            className={`flex items-center gap-2 whitespace-nowrap border-b-2 px-5 py-3.5 text-sm font-semibold transition-all ${
-                active
+            className={`flex items-center gap-2 whitespace-nowrap border-b-2 px-5 py-3.5 text-sm font-semibold transition-all ${active
                     ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
                     : 'border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-700 dark:text-white/80 dark:hover:border-white/20 dark:hover:text-white'
-            }`}
+                }`}
         >
             <span>{label}</span>
             {count > 0 && (
                 <span
-                    className={`flex h-6 min-w-[24px] items-center justify-center rounded-full px-2 text-xs font-bold ${
-                        active
+                    className={`flex h-6 min-w-[24px] items-center justify-center rounded-full px-2 text-xs font-bold ${active
                             ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400'
                             : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-white/80'
-                    }`}
+                        }`}
                 >
                     {count}
                 </span>
@@ -300,21 +296,21 @@ function OrderCard({ order, currency }) {
         <>
             <Link
                 href={route('website.orders.order-view', order.order_no)}
-                className="group relative block overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all hover:shadow-xl dark:border-white/10 dark:bg-deepcharcoal"
+                className="relative block overflow-hidden transition-all bg-white border border-gray-200 group rounded-2xl hover:shadow-xl dark:border-white/10 dark:bg-deepcharcoal"
             >
                 {!order.payment_proof &&
                     order.status === 'pending' &&
                     order.payment_method === 'bank_transfer' && (
-                        <div className="rounded-t-2xl border-b border-red-200 bg-gradient-to-r from-red-50 to-orange-50 px-4 py-3 dark:border-red-900/30 dark:from-red-900/20 dark:to-orange-900/20">
+                        <div className="px-4 py-3 border-b border-red-200 rounded-t-2xl bg-gradient-to-r from-red-50 to-orange-50 dark:border-red-900/30 dark:from-red-900/20 dark:to-orange-900/20">
                             <div className="flex items-center gap-3">
-                                <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-red-500">
+                                <div className="flex items-center justify-center flex-shrink-0 w-6 h-6 bg-red-500 rounded-full">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         strokeWidth={2}
                                         stroke="currentColor"
-                                        className="h-4 w-4 text-white"
+                                        className="w-4 h-4 text-white"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -324,7 +320,7 @@ function OrderCard({ order, currency }) {
                                     </svg>
                                 </div>
                                 <div className="flex-1">
-                                    <p className="text-xs font-semibold uppercase tracking-wide text-red-900 dark:text-red-100">
+                                    <p className="text-xs font-semibold tracking-wide text-red-900 uppercase dark:text-red-100">
                                         Payment Proof Required
                                     </p>
                                 </div>
@@ -336,16 +332,16 @@ function OrderCard({ order, currency }) {
                 {order.payment_proof &&
                     order.status === 'pending' &&
                     order.payment_method === 'bank_transfer' && (
-                        <div className="rounded-t-2xl border-b border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 px-4 py-3 dark:border-amber-900/30 dark:from-amber-900/20 dark:to-yellow-900/20">
+                        <div className="px-4 py-3 border-b rounded-t-2xl border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 dark:border-amber-900/30 dark:from-amber-900/20 dark:to-yellow-900/20">
                             <div className="flex items-center gap-3">
-                                <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-amber-500">
+                                <div className="flex items-center justify-center flex-shrink-0 w-6 h-6 rounded-full bg-amber-500">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         strokeWidth={2}
                                         stroke="currentColor"
-                                        className="h-4 w-4 text-white"
+                                        className="w-4 h-4 text-white"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -355,7 +351,7 @@ function OrderCard({ order, currency }) {
                                     </svg>
                                 </div>
                                 <div className="flex-1">
-                                    <p className="text-xs font-semibold uppercase tracking-wide text-amber-900 dark:text-amber-100">
+                                    <p className="text-xs font-semibold tracking-wide uppercase text-amber-900 dark:text-amber-100">
                                         Awaiting Payment Approval
                                     </p>
                                 </div>
@@ -364,10 +360,10 @@ function OrderCard({ order, currency }) {
                     )}
 
                 {/* Order Header */}
-                <div className="border-b border-gray-200 bg-gray-50 p-5 dark:border-white/10 dark:bg-deepcharcoal">
+                <div className="p-5 border-b border-gray-200 bg-gray-50 dark:border-white/10 dark:bg-deepcharcoal">
                     <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
-                            <div className="mb-2 flex flex-wrap items-center gap-3">
+                            <div className="flex flex-wrap items-center gap-3 mb-2">
                                 <h3 className="text-lg font-bold text-gray-700 dark:text-white/80">
                                     #{order.order_no}
                                 </h3>
@@ -385,7 +381,7 @@ function OrderCard({ order, currency }) {
                                         viewBox="0 0 24 24"
                                         strokeWidth={2}
                                         stroke="currentColor"
-                                        className="h-4 w-4"
+                                        className="w-4 h-4"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -402,7 +398,7 @@ function OrderCard({ order, currency }) {
                                         viewBox="0 0 24 24"
                                         strokeWidth={2}
                                         stroke="currentColor"
-                                        className="h-4 w-4"
+                                        className="w-4 h-4"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -427,23 +423,23 @@ function OrderCard({ order, currency }) {
 
                 {/* Product Images Grid */}
                 <div className="p-5">
-                    <div className="mb-4 grid grid-cols-4 gap-3">
+                    <div className="grid grid-cols-4 gap-3 mb-4">
                         {displayImages.map((item) => (
                             <div
                                 key={item.id}
-                                className="group/img relative aspect-square overflow-hidden rounded-xl border-2 border-gray-200 bg-white transition-all hover:border-indigo-400 hover:shadow-lg dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-500"
+                                className="relative overflow-hidden transition-all bg-white border-2 border-gray-200 group/img aspect-square rounded-xl hover:border-indigo-400 hover:shadow-lg dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-500"
                             >
                                 <img
                                     src={
                                         item?.smartphone?.smartphone_image_urls?.[0] || Placeholder
                                     }
                                     alt={item?.smartphone?.model_name?.name || 'Product'}
-                                    className="h-full w-full object-cover transition-transform duration-300 group-hover/img:scale-110"
+                                    className="object-cover w-full h-full transition-transform duration-300 group-hover/img:scale-110"
                                     loading="lazy"
                                     onError={(e) => (e.target.src = Placeholder)}
                                 />
                                 {item.quantity > 1 && (
-                                    <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white shadow-lg">
+                                    <div className="absolute flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-indigo-600 rounded-full shadow-lg right-2 top-2">
                                         {item.quantity}
                                     </div>
                                 )}
@@ -451,8 +447,8 @@ function OrderCard({ order, currency }) {
                         ))}
 
                         {remainingCount > 0 && (
-                            <div className="flex aspect-square items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 dark:border-white/20 dark:bg-gray-900/50">
-                                <span className="dark:text-white/80/70 text-center text-sm font-bold text-gray-600">
+                            <div className="flex items-center justify-center border-2 border-gray-300 border-dashed aspect-square rounded-xl bg-gray-50 dark:border-white/20 dark:bg-gray-900/50">
+                                <span className="text-sm font-bold text-center text-gray-600 dark:text-white/80/70">
                                     +{remainingCount}
                                     <br />
                                     <span className="text-xs font-normal">More</span>
@@ -462,12 +458,12 @@ function OrderCard({ order, currency }) {
                     </div>
 
                     {/* Payment Method Badge */}
-                    <div className="mb-4 flex items-center justify-center gap-2 rounded-xl bg-gray-50 py-3 dark:bg-gray-900/30">
+                    <div className="flex items-center justify-center gap-2 py-3 mb-4 rounded-xl bg-gray-50 dark:bg-gray-900/30">
                         {order.payment_method === 'crypto' ? (
                             <>
-                                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-500">
+                                <div className="flex items-center justify-center bg-orange-500 rounded-full h-7 w-7">
                                     <svg
-                                        className="dark:text-white/80/80 h-6 w-6 text-gray-700"
+                                        className="w-6 h-6 text-gray-700 dark:text-white/80/80"
                                         viewBox="0.004 0 64 64"
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
@@ -484,14 +480,14 @@ function OrderCard({ order, currency }) {
                             </>
                         ) : order.payment_method === 'points' ? (
                             <>
-                                <div className="flex h-7 w-7 items-center justify-center rounded-full">
+                                <div className="flex items-center justify-center rounded-full h-7 w-7">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         strokeWidth={1.5}
                                         stroke="currentColor"
-                                        className="h-6 w-6 text-gray-700 dark:text-white/80"
+                                        className="w-6 h-6 text-gray-700 dark:text-white/80"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -506,14 +502,14 @@ function OrderCard({ order, currency }) {
                             </>
                         ) : (
                             <>
-                                <div className="flex h-7 w-7 items-center justify-center rounded-full">
+                                <div className="flex items-center justify-center rounded-full h-7 w-7">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         strokeWidth={2}
                                         stroke="currentColor"
-                                        className="h-6 w-6 text-gray-700 dark:text-white/80"
+                                        className="w-6 h-6 text-gray-700 dark:text-white/80"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -530,14 +526,14 @@ function OrderCard({ order, currency }) {
                     </div>
 
                     {/* View Order Button */}
-                    <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-indigo-500">
+                    <button className="flex items-center justify-center w-full gap-2 px-4 py-3 text-sm font-semibold text-white transition-all bg-indigo-600 rounded-xl hover:bg-indigo-500">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
                             strokeWidth={2}
                             stroke="currentColor"
-                            className="h-4 w-4"
+                            className="w-4 h-4"
                         >
                             <path
                                 strokeLinecap="round"
@@ -578,16 +574,16 @@ function EmptyOrders({ status }) {
     };
 
     return (
-        <div className="flex items-center justify-center rounded-xl border border-gray-200 bg-white px-6 py-16 dark:border-white/10 dark:bg-deepcharcoal">
+        <div className="flex items-center justify-center px-6 py-16 bg-white border border-gray-200 rounded-xl dark:border-white/10 dark:bg-deepcharcoal">
             <div className="flex flex-col items-center gap-3">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+                <div className="flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full dark:bg-gray-800">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
                         strokeWidth={1.5}
                         stroke="currentColor"
-                        className="h-8 w-8 text-gray-500 dark:text-gray-400"
+                        className="w-8 h-8 text-gray-500 dark:text-gray-400"
                     >
                         <path
                             strokeLinecap="round"
@@ -600,7 +596,7 @@ function EmptyOrders({ status }) {
                     <h3 className="text-lg font-semibold text-gray-700 dark:text-white/80">
                         {getMessage()}
                     </h3>
-                    <p className="mb-5 mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    <p className="mt-1 mb-5 text-sm text-gray-500 dark:text-gray-400">
                         {status === 'all'
                             ? 'Start shopping to see your orders here'
                             : `You don't have any ${status.replace('_', ' ')} orders`}
@@ -608,7 +604,7 @@ function EmptyOrders({ status }) {
                     {status === 'all' && (
                         <Link
                             href={route('home')}
-                            className="rounded-xl bg-indigo-600 px-6 py-3 font-medium text-white transition-all hover:bg-indigo-500"
+                            className="px-6 py-3 font-medium text-white transition-all bg-indigo-600 rounded-xl hover:bg-indigo-500"
                         >
                             Start Shopping
                         </Link>
