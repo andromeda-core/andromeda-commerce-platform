@@ -317,13 +317,65 @@ const InstagramStyledVideoPlayer = ({
                 onClick={handleVideoClick}
                 style={{ cursor: 'pointer' }}
             />
-            <div className={`${showControls || !isPlaying ? 'opacity-100' : 'opacity-0'}`}>
-                {/* Play/Pause Button Overlay */}
-                <div
-                    className={`absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-300`}>
+
+            <div
+                className={`absolute inset-0 flex items-center justify-center pointer-events-none transition-opacity duration-300
+        ${showControls || !isPlaying ? 'opacity-100' : 'opacity-0'}`}
+            >
+                {/* Center Control Group */}
+                <div className="relative flex flex-col items-center justify-center gap-4 pointer-events-auto">
+
+
+                    {/* Volume Button */}
+                    <button
+                        onClick={toggleMute}
+                        className="flex items-center justify-center w-12 h-12 transition-all rounded-full bg-black/50 backdrop-blur-sm hover:bg-black/70"
+                    >
+                        {isMuted ? (
+                            // Muted Icon
+                            <svg
+                                className="w-5 h-5 text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                                />
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
+                                />
+                            </svg>
+                        ) : (
+                            // Unmuted Icon
+                            <svg
+                                className="w-5 h-5 text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                                />
+                            </svg>
+                        )}
+                    </button>
+
+
+
+                    {/* Play / Pause Button */}
                     <button
                         onClick={togglePlayPause}
-                        className="flex items-center justify-center w-16 h-16 transition-all duration-200 rounded-full pointer-events-auto bg-black/50 backdrop-blur-sm hover:bg-black/70"
+                        className="flex items-center justify-center w-16 h-16 transition-all rounded-full bg-black/50 backdrop-blur-sm hover:bg-black/70"
                     >
                         {isPlaying ? (
                             // Pause Icon
@@ -345,52 +397,11 @@ const InstagramStyledVideoPlayer = ({
                             </svg>
                         )}
                     </button>
-                </div>
 
-                {/* Volume Button */}
-                <button
-                    onClick={toggleMute}
-                    className="absolute z-10 left-[46%] flex items-center justify-center w-10 h-10 transition-all duration-200 rounded-full top-[40%] bg-black/50 backdrop-blur-sm hover:bg-black/70"
-                >
-                    {isMuted ? (
-                        // Muted Icon
-                        <svg
-                            className="w-5 h-5 text-white"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
-                            />
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
-                            />
-                        </svg>
-                    ) : (
-                        // Unmuted Icon
-                        <svg
-                            className="w-5 h-5 text-white"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
-                            />
-                        </svg>
-                    )}
-                </button>
+
+                </div>
             </div>
+
 
             {/* Timeline - Bottom */}
             <div

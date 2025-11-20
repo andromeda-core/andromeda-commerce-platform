@@ -234,88 +234,67 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                     {/* Scrollable Content Area */}
                     <div className="flex-1 overflow-y-auto scrollbar-none">
                         {mediaItems?.length > 0 && (
-                            <div className="relative overflow-hidden">
+                            <div className="relative">
                                 {/* Horizontal Scroll Container - Swipeable */}
                                 <div
                                     ref={scrollContainerRef}
                                     onScroll={handleScroll}
-                                    className="flex overflow-x-auto snap-x snap-mandatory"
+                                    className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none"
                                     style={{
                                         scrollbarWidth: 'none',
                                         msOverflowStyle: 'none',
                                         WebkitOverflowScrolling: 'touch',
                                         scrollSnapType: 'x mandatory',
-                                        height: 'calc(100vh - 60px)'
+                                        height: 'calc(100vh - 180px)'
                                     }}
                                 >
-                                    {mediaItems?.length > 0 && (
-                                        <div className="flex flex-col ">
-                                            {/* Horizontal Scroll Container - Swipeable */}
-                                            <div
-                                                ref={scrollContainerRef}
-                                                onScroll={handleScroll}
-                                                className="flex overflow-x-auto snap-x snap-mandatory"
-                                                style={{
-                                                    scrollbarWidth: 'none',
-                                                    msOverflowStyle: 'none',
-                                                    WebkitOverflowScrolling: 'touch',
-                                                    scrollSnapType: 'x mandatory',
-                                                    height: 'calc(100vh - 180px)'
-                                                }}
-                                            >
-                                                {mediaItems.map((item, index) => (
-                                                    <div
-                                                        key={index}
-                                                        className="flex items-center justify-center w-full h-full overflow-y-hidden shrink-0 snap-center snap-always"
-                                                    >
-                                                        {item.type === 'image' ? (
-                                                            <img
-                                                                src={item.url}
-                                                                alt={`Media ${index}`}
-                                                                className="object-cover object-center will-change-transform "
-                                                                loading={"eager"}
-                                                                fetchpriority={"high"}
-                                                                decoding="async"
-                                                                onError={(e) => (e.target.src = placeholderImage)}
-                                                            />
-                                                        ) : (
-                                                            <div className="flex items-center justify-center w-full h-full">
-                                                                <VideoWithThumbnail
-                                                                    type='instagram'
-                                                                    className="object-cover object-center"
-                                                                    videoUrl={item.url}
-                                                                    Preload='auto'
-                                                                />
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                ))}
-                                            </div>
-
-
+                                    {mediaItems.map((item, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex items-center justify-center w-full h-full shrink-0 snap-center snap-always"
+                                        >
+                                            {item.type === 'image' ? (
+                                                <img
+                                                    src={item.url}
+                                                    alt={`Media ${index}`}
+                                                    className="object-cover w-full h-full max-w-full max-h-full"
+                                                    loading="eager"
+                                                    fetchpriority="high"
+                                                    decoding="async"
+                                                    onError={(e) => (e.target.src = placeholderImage)}
+                                                />
+                                            ) : (
+                                                <div className="flex items-center justify-center w-full h-full">
+                                                    <VideoWithThumbnail
+                                                        type='instagram'
+                                                        className="object-cover w-full h-full"
+                                                        videoUrl={item.url}
+                                                        Preload='auto'
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
+                                    ))}
                                 </div>
 
-                                {/* Fixed Pagination Dots - Outside scroll container, stays in place */}
-                                <div className="pointer-events-none absolute bottom-20 left-0 right-0 z-10 flex items-center justify-center gap-1.5">
+                                {/* Fixed Pagination Dots */}
+                                <div className="pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-sm bg-transparent  shadow-lg">
+
                                     {visibleDots.map((dotIndex) => (
                                         <div
                                             key={dotIndex}
-                                            className={`rounded-full shadow-lg transition-all duration-300 ${dotIndex === currentMediaIndex
-                                                ? 'h-2 w-2 bg-black shadow-black/60 dark:bg-white'
-                                                : 'h-1.5 w-1.5 bg-black/50 shadow-black/30 dark:bg-white/50'
-                                                }`}
+                                            className={`rounded-full transition-all duration-300 h-2 w-2 bg-white`}
                                             style={{
-                                                transitionProperty: 'all',
-                                                transitionTimingFunction:
-                                                    'cubic-bezier(0.4, 0, 0.2, 1)',
+                                                transitionProperty: "all",
+                                                transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
                                             }}
                                         />
                                     ))}
                                 </div>
+
                             </div>
                         )}
+
                         {/* Full Content - Scrollable, No Truncation */}
                         <div className="px-4">
                             <div className="mb-4">
@@ -329,10 +308,9 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                 )}
                             </div>
 
-
                             <div className="space-y-3">
                                 <div className="flex flex-wrap gap-2 my-2 text-sm text-gray-700 dark:text-white/80">
-                                    <span className="flex items-center gap-2 p-1 ">
+                                    <span className="flex items-center gap-2 p-1">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             fill="none"
@@ -349,14 +327,11 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                         </svg>
                                         <span>
                                             {post?.user?.name.length > 15
-                                                ? post?.user?.name.substring(0, 15) +
-                                                '...'
+                                                ? post?.user?.name.substring(0, 15) + '...'
                                                 : post?.user?.name || 'Unknown User'}
                                         </span>
                                     </span>
                                 </div>
-
-
                             </div>
                         </div>
                     </div>
