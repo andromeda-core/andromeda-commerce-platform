@@ -569,6 +569,7 @@ Additional Work:
         72: GLobal Filter Issue Fixed On Mobile Feed And Added Zustand Library and IOts hook to check Live Status Of global Filter State  ✅
         73: Mobile Home Navigation Issue Fixed And Prevented With Hook When feed open and home button clicked  ✅
         74: Mobile Feed Layout Style changed to Immerseview Style and The skeletons also updated to new design layout✅
+        74: Mobile Feed X Axis Loop Fixed Broked After Immerse View✅
 
     ) Redesigned Whole Website 4th Time Completed According To The LAYOUT Design Reference Provided ✅
 

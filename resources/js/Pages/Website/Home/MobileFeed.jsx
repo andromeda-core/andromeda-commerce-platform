@@ -1422,7 +1422,15 @@ const MobileFeed = ({
                     return;
                 }
 
-                const currentIndex = Math.round(currentScrollLeft / itemWidth);
+                // FIXED index logic with tolerance
+                const rawIndex = currentScrollLeft / itemWidth;
+
+                // Prevent false loop triggers by absorbing jitter
+                const currentIndex =
+                    Math.abs(rawIndex - Math.round(rawIndex)) < 0.08
+                        ? Math.round(rawIndex)
+                        : Math.floor(rawIndex + 0.0001);
+
 
                 const DUMMY_LEFT = 0;
                 const FIRST_REAL = 1;
@@ -1683,7 +1691,7 @@ const MobileFeed = ({
                                     }}
                                 >
                                     <div
-                                        className="flex w-full overflow-x-auto snap-x snap-mandatory scrollbar-none"
+                                        className="flex w-full overflow-x-auto snap-x snap-mandatory"
 
                                         ref={(el) => {
                                             horizontalRefs.current[index] = el;
