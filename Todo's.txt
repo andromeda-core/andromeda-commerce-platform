@@ -572,6 +572,7 @@ Additional Work:
         74: Mobile Feed X Axis Loop Fixed Broked After Immerse View✅
         75: Video Players Are Optimzied And Updated To New Layout and new Instagram like player added for Mobile Feed ✅
         76: Mobile Feed Header Changed To Overlay On The Feed Media ✅
+        77: Mobile Feed Smartphone Feed Gallery Layout Updated And Now Its Just Like mobile Post Feed  Gallery ✅
 
     ) Redesigned Whole Website 4th Time Completed According To The LAYOUT Design Reference Provided ✅
 

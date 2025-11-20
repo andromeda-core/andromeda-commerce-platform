@@ -283,7 +283,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                     {visibleDots.map((dotIndex) => (
                                         <div
                                             key={dotIndex}
-                                            className={`rounded-full transition-all duration-300 h-2 w-2 bg-white`}
+                                            className={`rounded-full transition-all duration-300 h-2 w-2 bg-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]`}
                                             style={{
                                                 transitionProperty: "all",
                                                 transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",

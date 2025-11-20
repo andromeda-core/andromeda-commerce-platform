@@ -433,10 +433,8 @@ const SmartphoneMobileGalleryModal = (
                         </div>
                     </div>
 
-                    {/* Scrollable Content Area */}
-                    <div className="flex-1 pb-10 overflow-y-auto scrollbar-none">
 
-                        {/* Image Viewer with proper spacing for dots */}
+                    <div className="flex-1 overflow-y-auto scrollbar-none">
                         {smartphone?.images?.length > 0 && (
                             <div className="relative mb-4 overflow-hidden ">
                                 {/* Horizontal Scroll Container - Swipeable */}
@@ -459,36 +457,32 @@ const SmartphoneMobileGalleryModal = (
                                             className="flex items-center justify-center w-full h-full shrink-0 snap-center snap-always"
                                         >
 
-                                            <div className="relative inline-block pb-10">
-                                                <img
-                                                    src={image}
-                                                    alt={`${smartphone.name} ${index + 1}`}
-                                                    className=" will-change-transform"
-                                                    loading={"eager"}
-                                                    fetchpriority={"high"}
-                                                    decoding="async"
-                                                    onError={(e) =>
-                                                        (e.target.src = placeholderImage)
-                                                    }
-                                                />
-                                            </div>
+                                            <img
+                                                src={image}
+                                                alt={`${smartphone.name} ${index + 1}`}
+                                                className="object-cover w-full h-full max-w-full max-h-full"
+                                                loading={"eager"}
+                                                fetchpriority={"high"}
+                                                decoding="async"
+                                                onError={(e) =>
+                                                    (e.target.src = placeholderImage)
+                                                }
+                                            />
                                         </div>
                                     ))}
                                 </div>
 
                                 {/* Fixed Pagination Dots - Outside scroll container, stays in place */}
-                                <div className="pointer-events-none absolute bottom-20 left-0 right-0 z-10 flex items-center justify-center gap-1.5">
+
+                                <div className="pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-sm bg-transparent  shadow-lg">
+
                                     {visibleDots.map((dotIndex) => (
                                         <div
                                             key={dotIndex}
-                                            className={`rounded-full shadow-lg transition-all duration-300 ${dotIndex === currentImageIndex
-                                                ? 'h-2 w-2 bg-black shadow-black/60 dark:bg-white'
-                                                : 'h-1.5 w-1.5 bg-black/50 shadow-black/30 dark:bg-white/50'
-                                                }`}
+                                            className={`rounded-full transition-all duration-300 h-2 w-2 bg-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]`}
                                             style={{
-                                                transitionProperty: 'all',
-                                                transitionTimingFunction:
-                                                    'cubic-bezier(0.4, 0, 0.2, 1)',
+                                                transitionProperty: "all",
+                                                transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
                                             }}
                                         />
                                     ))}
@@ -496,7 +490,8 @@ const SmartphoneMobileGalleryModal = (
                             </div>
                         )}
 
-                        <div className="px-4">
+                        {/* Full Content - Scrollable, No Truncation */}
+                        <div className="px-4 mt-14">
                             {/* Full Content - Scrollable, No Truncation */}
                             <div className="mb-4">
                                 {smartphone?.content && (
@@ -662,6 +657,8 @@ const SmartphoneMobileGalleryModal = (
                             </div>
                         </div>
                     </div>
+
+
 
                     {/* Sticky Bottom Bar */}
 
