@@ -232,7 +232,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                     </div>
 
                     {/* Scrollable Content Area */}
-                    <div className="flex-1 mx-auto overflow-y-auto scrollbar-none">
+                    <div className="flex-1 overflow-y-auto scrollbar-none">
                         {mediaItems?.length > 0 && (
                             <div className="relative overflow-hidden">
                                 {/* Horizontal Scroll Container - Swipeable */}
@@ -272,7 +272,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                                             <img
                                                                 src={item.url}
                                                                 alt={`Media ${index}`}
-                                                                className="will-change-transform "
+                                                                className="object-cover object-center will-change-transform "
                                                                 loading={"eager"}
                                                                 fetchpriority={"high"}
                                                                 decoding="async"
@@ -282,7 +282,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                                             <div className="flex items-center justify-center w-full h-full">
                                                                 <VideoWithThumbnail
                                                                     type='instagram'
-                                                                    className="object-cover"
+                                                                    className="object-cover object-center"
                                                                     videoUrl={item.url}
                                                                     Preload='auto'
                                                                 />
