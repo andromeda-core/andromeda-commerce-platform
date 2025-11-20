@@ -278,12 +278,12 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                 </div>
 
                                 {/* Fixed Pagination Dots */}
-                                <div className="pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-sm bg-transparent  shadow-lg">
+                                <div className="pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-sm bg-transparent shadow-lg">
 
                                     {visibleDots.map((dotIndex) => (
                                         <div
                                             key={dotIndex}
-                                            className={`rounded-full transition-all duration-300 h-2 w-2 bg-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]`}
+                                            className={`rounded-full transition-all duration-300 h-2 w-2 bg-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] ${dotIndex === currentMediaIndex ? "scale-125" : "scale-100"} `}
                                             style={{
                                                 transitionProperty: "all",
                                                 transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
