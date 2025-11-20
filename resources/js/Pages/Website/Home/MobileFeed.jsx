@@ -723,7 +723,7 @@ const MobileFeed = ({
                                 ) : (
                                     item.post_image_urls.length === 0 &&
                                     item.post_video_urls.length === 0 && (
-                                        <div className="px-4 pt-3 pb-2 overflow-y-auto text-gray-700"
+                                        <div className="px-4 pt-3 pb-2 overflow-y-auto text-gray-700 mt-14"
                                             style={{
                                                 contain: 'layout style paint',
                                             }}
