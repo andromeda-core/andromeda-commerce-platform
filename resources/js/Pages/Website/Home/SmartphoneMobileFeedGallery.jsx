@@ -501,7 +501,7 @@ const SmartphoneMobileGalleryModal = (
                             <div className="mb-4">
                                 {smartphone?.content && (
                                     <div
-                                        className="text-sm leading-relaxed prose text-gray-900 dark:text-white/80"
+                                        className="text-sm leading-relaxed prose text-gray-900 break-words dark:text-white/80"
                                         dangerouslySetInnerHTML={{
                                             __html: smartphone.content,
                                         }}

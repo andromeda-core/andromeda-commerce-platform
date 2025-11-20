@@ -19,6 +19,7 @@ const VideoThumbnail = ({ videoUrl, alt, className, Loading = 'lazy', FetchPrior
         const capture = () => {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
+
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             const imageData = canvas.toDataURL('image/jpeg');
             setThumbnail(imageData);

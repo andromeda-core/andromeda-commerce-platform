@@ -394,6 +394,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                     });
 
                 $results = $results->merge($posts);
+
             }
 
             if (isset($post_preferences['show_products']) && $post_preferences['show_products'] == true) {

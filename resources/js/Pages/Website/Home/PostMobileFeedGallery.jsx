@@ -321,7 +321,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                             <div className="mb-4">
                                 {post?.content && (
                                     <div
-                                        className="text-sm leading-relaxed prose text-gray-700 dark:text-white/80"
+                                        className="text-sm leading-relaxed prose text-gray-700 break-words dark:text-white/80"
                                         dangerouslySetInnerHTML={{
                                             __html: post.content,
                                         }}

@@ -45,7 +45,7 @@ const BottomBar = ({
     }, [darkMode]);
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-[60] lg:hidden">
+        <div id="bottom-bar" className="fixed bottom-0 left-0 right-0 z-[60] lg:hidden ">
             {/* Navigation bar */}
             <nav className="bg-white border-b border-gray-200 rounded-sm shadow-md backdrop-blur-lg dark:border-t dark:border-gray-800 dark:bg-deepcharcoal">
                 <div className="flex items-center justify-around px-4 py-2">

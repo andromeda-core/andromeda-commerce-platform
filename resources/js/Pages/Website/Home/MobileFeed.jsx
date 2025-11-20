@@ -209,15 +209,15 @@ const MobileFeed = ({
         return (
             <div
                 key={`skeleton-${index}`}
-                className="relative flex flex-col h-screen min-w-full snap-start"
+                className="relative min-w-full snap-start"
                 style={{
                     height: '100%',
                     scrollSnapAlign: 'start',
                     scrollSnapStop: 'always',
                 }}
             >
-                {/* Header: Tag + Three Dots Skeleton */}
-                <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
+                {/* HEADER SKELETON */}
+                <div className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-4 pt-3 pb-2">
                     {/* Tag skeleton */}
                     <div className="w-20 h-5 bg-gray-200 rounded animate-pulse dark:bg-zinc-700" />
 
@@ -225,51 +225,66 @@ const MobileFeed = ({
                     <div className="w-5 h-5 bg-gray-200 rounded animate-pulse dark:bg-zinc-700" />
                 </div>
 
-                {/* Image/Video Area Skeleton - Takes remaining space */}
-                <div className="relative flex-1 overflow-hidden">
-                    <div className="flex items-center justify-center w-full h-full p-4">
-                        <div className="w-full h-full max-w-full max-h-full bg-gray-200 rounded-lg animate-pulse dark:bg-zinc-700" />
+                {/* MEDIA AREA SKELETON */}
+                <div className="relative w-full h-full overflow-hidden">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="object-cover w-full h-full bg-gray-200 animate-pulse dark:bg-zinc-700" />
                     </div>
                 </div>
 
-                {/* Bottom Section Skeleton */}
-                <div
-                    className="px-4 pt-3 bg-white shrink-0 dark:bg-deepcharcoal"
-                    style={{
-                        paddingBottom: '5rem',
-                    }}
-                >
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                        {/* Content text skeleton */}
+                {/*  OVERLAY BOTTOM SKELETON (IMMERVIEW STYLE)  */}
+                <div className="absolute bottom-0 left-0 right-0 px-4 pb-[90px] pt-6
+                            z-30 bg-gradient-to-t from-black/50 via-black/20 to-transparent">
+
+                    <div className="flex items-center justify-between gap-3">
+
+                        {/* Text skeleton */}
                         <div className="flex-1 space-y-2">
                             <div className="w-full h-4 bg-gray-200 rounded animate-pulse dark:bg-zinc-700" />
-                            <div className="w-3/4 h-4 bg-gray-200 rounded animate-pulse dark:bg-zinc-700" />
+                            <div className="w-2/3 h-4 bg-gray-200 rounded animate-pulse dark:bg-zinc-700" />
                         </div>
 
                         {/* Button skeleton */}
-                        <div className="h-[30px] w-[130px] shrink-0 rounded-lg bg-gray-200 animate-pulse dark:bg-zinc-700" />
+                        <div className="h-[30px] w-[90px] shrink-0 rounded-lg bg-gray-200 animate-pulse dark:bg-zinc-700" />
                     </div>
                 </div>
             </div>
         );
     };
+
 
     // Helper Function to Render Feed CONTENT Skeleton before Showing Actual ITEM
     const RenderFeedItemContentSkeleton = () => {
         return (
-            <div className="flex flex-col h-full">
+            <div className="relative w-full h-full overflow-hidden">
 
-                {/* Content/Image Skeleton - Takes remaining space */}
-                <div className="relative flex-1 min-h-0 overflow-hidden">
-                    <div className="flex items-center justify-center w-full h-full p-4">
-                        <div className="w-full h-full max-w-full max-h-full bg-gray-200 rounded-lg animate-pulse dark:bg-zinc-700" />
-                    </div>
+
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="object-cover w-full h-full bg-gray-200 animate-pulse dark:bg-zinc-700" />
                 </div>
-
 
             </div>
         );
     };
+
+
+    // State And Effect For Tracking The height Of Feed Item To Adjust Window
+    const [feedItemHeight, setFeedItemHeight] = useState(window.innerHeight);
+    useEffect(() => {
+        const bottomBar = document.getElementById("bottom-bar");
+        const barHeight = bottomBar ? bottomBar.offsetHeight : 0;
+
+        setFeedItemHeight(window.innerHeight - barHeight);
+
+        const resizeHandler = () => {
+            const barHeight = bottomBar ? bottomBar.offsetHeight : 0;
+            setFeedItemHeight(window.innerHeight - barHeight);
+        };
+
+        window.addEventListener("resize", resizeHandler);
+        return () => window.removeEventListener("resize", resizeHandler);
+    }, []);
+
 
 
 
@@ -300,6 +315,9 @@ const MobileFeed = ({
     const renderFeedItem = useCallback((item, isRelated = false, index) => {
 
         const relatedCount = getRelatedCount(parentFeedSlugRef.current);
+
+        const headerHeight = 46;
+
 
         if (relatedCount < 1 && item?.__dummy) {
             return (
@@ -346,7 +364,7 @@ const MobileFeed = ({
                 key={index}
                 className="min-w-full feed-page snap-start "
                 style={{
-                    height: '100%',
+                    height: feedItemHeight,
                     scrollSnapAlign: 'start',
                     scrollSnapStop: 'always',
                     contain: 'layout style paint',
@@ -641,28 +659,27 @@ const MobileFeed = ({
                 }}>
 
                     {/* Image + Videos - Takes remaining space */}
-                    <div className="flex-1 min-h-0 overflow-hidden">
+                    <div className="relative w-full overflow-hidden"
+                        style={{ height: feedItemHeight - headerHeight }}>
                         {item.type === 'smartphones' && (
                             <>
                                 {item?.images?.length > 0 && (
-                                    <div className="flex items-center justify-center w-full h-full p-4">
-                                        <img
-                                            key={item.id}
-                                            src={item.images[0]}
-                                            alt={item.name}
-                                            className="max-w-full max-h-full rounded-lg will-change-transform"
-                                            loading={isCurrent ? "eager" : "lazy"}
-                                            fetchpriority={isCurrent ? "high" : "low"}
-                                            decoding="async"
-                                            onLoad={handleOnLoad}
-                                            onError={(e) => {
-                                                handleOnLoad();
-                                                if (e.target.src !== placeholderImage) {
-                                                    e.target.src = placeholderImage;
-                                                }
-                                            }}
-                                        />
-                                    </div>
+                                    <img
+                                        key={item.id}
+                                        src={item.images[0]}
+                                        alt={item.name}
+                                        className="object-fill w-full h-full rounded-none will-change-transform"
+                                        loading={isCurrent ? "eager" : "lazy"}
+                                        fetchpriority={isCurrent ? "high" : "low"}
+                                        decoding="async"
+                                        onLoad={handleOnLoad}
+                                        onError={(e) => {
+                                            handleOnLoad();
+                                            if (e.target.src !== placeholderImage) {
+                                                e.target.src = placeholderImage;
+                                            }
+                                        }}
+                                    />
                                 )}
                             </>
                         )}
@@ -670,43 +687,37 @@ const MobileFeed = ({
                         {item.type === 'posts' && (
                             <>
                                 {item?.post_image_urls?.length > 0 ? (
-                                    <div className="flex items-center justify-center w-full h-full p-4">
-                                        <img
-                                            key={item.id}
-                                            src={item.post_image_urls[0]}
-                                            alt={item.title}
-                                            className="object-contain max-w-full max-h-full rounded-lg"
-                                            loading={isCurrent ? "eager" : "lazy"}
-                                            fetchpriority={isCurrent ? "high" : "low"}
-                                            decoding="async"
-                                            onLoad={handleOnLoad}
-                                            onError={(e) => {
-                                                handleOnLoad();
-                                                if (e.target.src !== placeholderImage) {
-                                                    e.target.src = placeholderImage;
-                                                }
-                                            }}
-                                        />
-                                    </div>
-                                ) : item.post_video_urls.length > 0 ? (
-                                    <div className="flex items-center justify-center w-full h-full p-4">
-                                        <VideoWithThumbnail
-                                            type='customized'
-                                            videoUrl={item.post_video_urls[0]}
-                                            className={
-                                                'max-h-full w-full object-contain'
+                                    <img
+                                        key={item.id}
+                                        src={item.post_image_urls[0]}
+                                        alt={item.title}
+                                        className="object-fill w-full h-full rounded-none"
+                                        loading={isCurrent ? "eager" : "lazy"}
+                                        fetchpriority={isCurrent ? "high" : "low"}
+                                        decoding="async"
+                                        onLoad={handleOnLoad}
+                                        onError={(e) => {
+                                            handleOnLoad();
+                                            if (e.target.src !== placeholderImage) {
+                                                e.target.src = placeholderImage;
                                             }
-                                            autoPlay={videoAutoplay}
-                                            controls={true}
-                                            OnLoadedMetaData={() => {
-                                                if (item?.slug) {
-                                                    setLoadedItems(prev => new Set(prev).add(item.slug));
-                                                }
-                                            }}
-                                            videoElementRef={handleVideoRef(item.slug)}
-                                            Preload={isCurrent ? 'auto' : 'metadata'}
-                                        />
-                                    </div>
+                                        }}
+                                    />
+                                ) : item.post_video_urls.length > 0 ? (
+                                    <VideoWithThumbnail
+                                        type='customized'
+                                        videoUrl={item.post_video_urls[0]}
+                                        className="object-fill w-full h-full rounded-none"
+                                        autoPlay={videoAutoplay}
+                                        controls={true}
+                                        OnLoadedMetaData={() => {
+                                            if (item?.slug) {
+                                                setLoadedItems(prev => new Set(prev).add(item.slug));
+                                            }
+                                        }}
+                                        videoElementRef={handleVideoRef(item.slug)}
+                                        Preload={isCurrent ? 'auto' : 'metadata'}
+                                    />
                                 ) : (
                                     item.post_image_urls.length === 0 &&
                                     item.post_video_urls.length === 0 && (
@@ -736,17 +747,14 @@ const MobileFeed = ({
 
                 {/* Bottom */}
                 {item.type === 'smartphones' && (
-                    <div
-                        className="px-4 pt-3 pb-20 bg-white dark:bg-deepcharcoal shrink-0"
-
-                    >
+                    <div className="absolute bottom-0 left-0 right-0 px-4 pb-[90px] pt-6 z-20">
                         <div className="flex flex-wrap items-center justify-between gap-3">
-                            <p className="flex-1 text-sm leading-relaxed text-gray-700 dark:text-white/80">
-                                {item?.content && item.content.length > 35 ? (
+                            <p className="flex-1 text-sm leading-relaxed break-words text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
+                                {item?.content && item.content.length > 30 ? (
                                     <span
                                         dangerouslySetInnerHTML={{
                                             __html:
-                                                item.content.substring(0, 35) +
+                                                item.content.substring(0, 30) +
                                                 '...',
                                         }}
                                     />
@@ -769,7 +777,7 @@ const MobileFeed = ({
                                         setMobileFeedGalleryOpening(false);
                                     }, 500);
                                 }}
-                                className="h-[30px] w-[120px] shrink-0 rounded-lg px-6 text-xs font-bold text-gray-700 transition-colors flex gap-2 items-center justify-center dark:text-white/80 "
+                                className="h-[30px] w-[120px] shrink-0 rounded-lg px-6 text-xs font-bold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]  transition-colors flex gap-2 items-center justify-center  "
                             >
 
                                 {mobileFeedGalleryOpening ? <Spinner customSize={"size-3"} /> : 'Shop Now'}
@@ -779,22 +787,20 @@ const MobileFeed = ({
                 )}
 
                 {item.type === 'posts' && (
-                    <div
-                        className="px-4 pt-3 pb-20 bg-white shrink-0 dark:bg-deepcharcoal"
-
-                    >
-                        <div className={`flex items-center justify-between gap-3 flex-wrap`}>
+                    <div className="absolute bottom-0 left-0 right-0 px-4 pb-[90px] pt-6 z-20
+                    text-white ">
+                        <div className={`flex items-center justify-between gap-3 flex-wrap `}>
                             {/* CHECKING IF MEDIA IS EMPTY THAN ITS TEXT ONLY POST SO THIS WONT SHOW BECAUSE WE ALREADY SHOWED In CONTENT */}
                             {item?.post_image_urls?.length === 0 &&
                                 item?.post_video_urls?.length === 0 ? (
                                 <p></p>
                             ) : (
-                                <p className="flex-1 text-sm leading-relaxed text-gray-700 dark:text-white/80">
-                                    {item?.content && item.content.length > 35 ? (
+                                <p className="flex-1 text-sm leading-relaxed text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] ">
+                                    {item?.content && item.content.length > 30 ? (
                                         <span
                                             dangerouslySetInnerHTML={{
                                                 __html:
-                                                    item.content.substring(0, 35) +
+                                                    item.content.substring(0, 30) +
                                                     '...',
                                             }}
                                         />
@@ -837,7 +843,7 @@ const MobileFeed = ({
                                             setMobileFeedGalleryOpening(false);
                                         }, 500);
                                     }}
-                                    className="h-[30px] w-[90px] shrink-0 rounded-lg  px-6 text-xs font-bold text-gray-700 transition-colors flex gap-2 items-center justify-center dark:text-white/80 "
+                                    className="h-[30px] w-[90px] shrink-0 rounded-lg  px-6 text-xs font-bold text-white transition-colors flex gap-2 items-center justify-center drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] "
                                 >
                                     {mobileFeedGalleryOpening ? <Spinner customSize={"size-3"} /> : 'More'}
                                 </button>
@@ -863,6 +869,7 @@ const MobileFeed = ({
             isFilterOpenRef.current = state.isOpen;
         });
     }, []);
+
 
 
 
@@ -1669,14 +1676,15 @@ const MobileFeed = ({
                                     key={`feed-${item.id}`}
                                     className="min-w-full feed-page snap-start"
                                     style={{
-
+                                        height: feedItemHeight,
                                         contentVisibility: "auto",
                                         contain: 'layout',
                                         willChange: 'scroll-position',
                                     }}
                                 >
                                     <div
-                                        className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-none"
+                                        className="flex w-full overflow-x-auto snap-x snap-mandatory scrollbar-none"
+
                                         ref={(el) => {
                                             horizontalRefs.current[index] = el;
 
@@ -1721,6 +1729,7 @@ const MobileFeed = ({
                                         }}
                                         style={{
                                             width: "100%",
+                                            height: feedItemHeight,
                                             maxWidth: "100%",
                                             overflowY: "hidden",
                                             touchAction: "pan-y pan-x",
