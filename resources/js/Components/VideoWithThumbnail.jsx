@@ -3,60 +3,22 @@ import VideoPlayer from './VideoPlayer';
 import Spinner from './Spinner';
 import getCookie from '@/Hooks/useGetCookie';
 import CustomizedVideoPlayer from './CustomizedVideoPlayer';
+import InstagramStyledVideoPlayer from './InstagramStyledVideoPlayer';
 
-// Global cache to store video timelines
-const videoTimeCache = new Map();
-
-const VideoWithThumbnail = ({ className, videoUrl, autoPlay = false, controls = true, type = 'normal', OnLoadedMetaData = () => { }, videoElementRef, Preload = 'metadata' }) => {
+const VideoWithThumbnail = ({ className, videoUrl, autoPlay = false, controls = true, type = 'normal', OnLoadedMetaData = () => { }, videoElementRef, Preload = 'metadata', }) => {
     const [thumbnail, setThumbnail] = useState(null);
     const [loaded, setLoaded] = useState(false);
     const [autoPlayEnabled, setAutoPlayEnabled] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
-    const [initialTime, setInitialTime] = useState(0);
     const containerRef = useRef(null);
     const hasBeenVisibleRef = useRef(false);
-    const cacheIntervalRef = useRef(null);
     const internalVideoRef = useRef(null);
 
-    // Function to load cached time
-    const loadCachedTime = () => {
-        const cachedData = videoTimeCache.get(videoUrl);
-        if (cachedData) {
-            const timeDiff = Date.now() - cachedData.timestamp;
-
-
-            // Use cached time if less than 5 minutes old
-            if (timeDiff < 5 * 60 * 1000) {
-
-                setInitialTime(cachedData.currentTime);
-                return cachedData.currentTime;
-            } else {
-                videoTimeCache.delete(videoUrl);
-                setInitialTime(0);
-                return 0;
-            }
-        } else {
-
-            setInitialTime(0);
-            return 0;
-        }
-    };
-
-    // Function to save current time to cache
-    const saveCachedTime = () => {
-        if (internalVideoRef.current && !isNaN(internalVideoRef.current.currentTime)) {
-            const currentTime = internalVideoRef.current.currentTime;
-            videoTimeCache.set(videoUrl, {
-                currentTime: currentTime,
-                timestamp: Date.now()
-            });
-        }
-    };
 
     // Function to check and update autoplay from cookie
     const updateAutoplayFromCookie = () => {
         const cookieValue = getCookie('video_autoplay');
-        const shouldAutoplay = autoPlay || (cookieValue === 'true');
+        const shouldAutoplay = autoPlay ?? (cookieValue === 'true');
         setAutoPlayEnabled(shouldAutoplay);
         return shouldAutoplay;
     };
@@ -64,7 +26,6 @@ const VideoWithThumbnail = ({ className, videoUrl, autoPlay = false, controls = 
     // Initialize on mount
     useEffect(() => {
         updateAutoplayFromCookie();
-        loadCachedTime();
     }, [videoUrl, autoPlay]);
 
     // Listen for global cookie change event
@@ -77,41 +38,23 @@ const VideoWithThumbnail = ({ className, videoUrl, autoPlay = false, controls = 
         return () => window.removeEventListener('videoAutoplayChanged', handleChange);
     }, [autoPlay]);
 
-    // Continuous cache updates while video is visible and playing
-    useEffect(() => {
-        if (isVisible && internalVideoRef.current) {
-            // Save immediately when becoming visible
-            saveCachedTime();
 
-            // Then save every 2 seconds while visible
-            cacheIntervalRef.current = setInterval(() => {
-                saveCachedTime();
-            }, 2000);
-        }
-
-        return () => {
-            if (cacheIntervalRef.current) {
-                clearInterval(cacheIntervalRef.current);
-                cacheIntervalRef.current = null;
-            }
-        };
-    }, [isVisible, videoUrl]);
 
     // Intersection observer - checks cookie EVERY TIME video becomes visible or invisible AND Works Both In Y And X Axis
     useEffect(() => {
-        if (!containerRef.current) return;
+        if (!containerRef.current || type !== 'instagram') return;
 
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
 
                     if (entry.isIntersecting && entry.intersectionRatio >= 0.5) { // Changed to 0.5 for better X-axis detection
-                        loadCachedTime();
+
                         setIsVisible(true);
                         updateAutoplayFromCookie();
                         hasBeenVisibleRef.current = true;
                     } else if (!entry.isIntersecting && hasBeenVisibleRef.current) {
-                        saveCachedTime();
+
                         setIsVisible(false);
                         hasBeenVisibleRef.current = false;
                     }
@@ -126,6 +69,8 @@ const VideoWithThumbnail = ({ className, videoUrl, autoPlay = false, controls = 
         observer.observe(containerRef.current);
         return () => observer.disconnect();
     }, [autoPlay, videoUrl]);
+
+
 
     // Generate thumbnail
     useEffect(() => {
@@ -170,6 +115,10 @@ const VideoWithThumbnail = ({ className, videoUrl, autoPlay = false, controls = 
     };
 
 
+
+
+
+
     return (
         <div ref={containerRef} className="relative w-full h-full">
             {!loaded && (
@@ -177,34 +126,45 @@ const VideoWithThumbnail = ({ className, videoUrl, autoPlay = false, controls = 
                     <Spinner customSize={'size-10'} />
                 </div>
             )}
-            {type === 'customized' && (
-                <CustomizedVideoPlayer
-                    key={`${videoUrl}-${autoPlayEnabled}-${isVisible}-${initialTime}`}
+
+            {/* Instagram-styled video player */}
+            {type === 'instagram' && (
+                <InstagramStyledVideoPlayer
+                    key={`${videoUrl}-${autoPlayEnabled}`}
                     videoUrl={videoUrl}
-                    loaded={loaded}
                     thumbnail={thumbnail}
                     className={className}
                     autoPlay={autoPlayEnabled && isVisible}
-                    controls={controls}
-                    fullscreen={true}
-                    initialTime={initialTime}
                     videoElementRef={handleVideoElementRef}
                     OnLoadedMetaData={OnLoadedMetaData}
                     Preload={Preload}
                 />
             )}
 
+            {/* Customized video player */}
+            {type === 'customized' && (
+                <CustomizedVideoPlayer
+                    key={`${videoUrl}-${autoPlayEnabled}`}
+                    videoUrl={videoUrl}
+                    loaded={loaded}
+                    thumbnail={thumbnail}
+                    className={className}
+                    autoPlay={isVisible && autoPlayEnabled}
+                    videoElementRef={handleVideoElementRef}
+                    OnLoadedMetaData={OnLoadedMetaData}
+                    Preload={Preload}
+                />
+            )}
 
+            {/* Normal video player */}
             {type === 'normal' && (
                 <VideoPlayer
-                    key={`${videoUrl}-${autoPlayEnabled}-${isVisible}-${initialTime}`}
+                    key={`${videoUrl}-${autoPlayEnabled}`}
                     videoUrl={videoUrl}
                     thumbnail={thumbnail}
                     className={className}
                     autoPlay={autoPlayEnabled && isVisible}
                     controls={controls}
-                    fullscreen={true}
-                    initialTime={initialTime}
                     videoElementRef={videoElementRef}
                     Preload={Preload}
                 />

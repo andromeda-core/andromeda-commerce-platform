@@ -5,9 +5,7 @@ export default function CustomizedVideoPlayer({
     videoUrl,
     thumbnail,
     className,
-    controls,
     autoPlay,
-    initialTime = 0,
     videoElementRef,
     loaded,
     OnLoadedMetaData,
@@ -16,9 +14,11 @@ export default function CustomizedVideoPlayer({
     const videoRef = useRef(null);
     const containerRef = useRef(null);
     const controlsRef = useRef(null);
+    const progressBarRef = useRef(null);
+
+
 
     const [isMuted, setIsMuted] = useState(autoPlay ? true : false);
-    // const [volume, setVolume] = useState(1);
     const [showVolumeSlider, setShowVolumeSlider] = useState(false);
 
     const [isPlaying, setIsPlaying] = useState(false);
@@ -28,13 +28,14 @@ export default function CustomizedVideoPlayer({
     const [isBuffering, setIsBuffering] = useState(false);
 
     const hideTimeout = useRef(null);
-    const shouldAutoPlayRef = useRef(false);
 
     const [progress, setProgress] = useState(0);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
+    const [isDragging, setIsDragging] = useState(false);
 
     const [showActions, setShowActions] = useState(false);
+
     // event listener for force pause
     useEffect(() => {
         const container = containerRef.current;
@@ -62,63 +63,15 @@ export default function CustomizedVideoPlayer({
         const video = videoRef.current;
         if (!video) return;
 
-        shouldAutoPlayRef.current = autoPlay;
 
         const handleLoadedMetadata = () => {
             setDuration(video.duration);
-
-            if (initialTime > 0) {
-                video.pause();
-                video.currentTime = initialTime;
-
-                // Wait for seek to complete
-                const handleSeeked = () => {
-                    video.removeEventListener('seeked', handleSeeked);
-
-                    // NOW autoplay if needed
-                    if (shouldAutoPlayRef.current) {
-                        video.muted = true;
-                        video.play()
-                            .then(() => {
-                                setIsPlaying(true);
-                                setHasEnded(false);
-                                // Hide controls immediately after playback starts
-                                hideTimeout.current = setTimeout(() => {
-                                    setShowControls(false);
-                                }, 100);
-                            })
-                            .catch((err) => {
-                                console.error('❌ Autoplay failed:', err.message);
-                                setIsPlaying(false);
-                            });
-                    }
-                };
-
-                video.addEventListener('seeked', handleSeeked);
-            } else {
-                if (shouldAutoPlayRef.current) {
-                    video.muted = true;
-                    video.play()
-                        .then(() => {
-                            setIsPlaying(true);
-                            setHasEnded(false);
-                            // Hide controls immediately after playback starts
-                            hideTimeout.current = setTimeout(() => {
-                                setShowControls(false);
-                            }, 100);
-                        })
-                        .catch((err) => {
-                            console.error('❌ Autoplay failed:', err.message);
-                            setIsPlaying(false);
-                        });
-                }
-            }
         };
 
         const handleEnded = () => {
             setIsPlaying(false);
             setHasEnded(true);
-            setShowControls(false);
+
             clearTimeout(hideTimeout.current);
         };
 
@@ -147,22 +100,16 @@ export default function CustomizedVideoPlayer({
             setIsPlaying(true);
         };
 
-
-
-
         video.addEventListener('loadedmetadata', handleLoadedMetadata);
         video.addEventListener('ended', handleEnded);
         video.addEventListener('pause', handlePause);
         video.addEventListener('play', handlePlay);
 
-        // Buffering events
         video.addEventListener('waiting', handleWaiting);
         video.addEventListener('canplay', handleCanPlay);
         video.addEventListener('playing', handlePlaying);
         video.addEventListener('stalled', handleStalled);
 
-
-        // Expose video element to parent via ref
         if (videoElementRef) {
             if (typeof videoElementRef === 'function') {
                 videoElementRef(video);
@@ -182,21 +129,17 @@ export default function CustomizedVideoPlayer({
             video.removeEventListener('playing', handlePlaying);
             video.removeEventListener('stalled', handleStalled);
 
-
             if (videoElementRef) {
                 videoElementRef.current = null;
             }
         };
-    }, [initialTime, autoPlay, videoElementRef, videoUrl]);
+    }, [autoPlay, videoElementRef, videoUrl]);
 
-
-
-    // Tracking Outside clicks to close the dropdown of actins
+    // Tracking Outside clicks to close the dropdown of actions
     useEffect(() => {
         if (!showActions) return;
 
         const handleClickOutside = (event) => {
-
             const isClickOutside = !event.target.closest('.actions-dropdown') &&
                 !event.target.closest('.ellipsis-button');
 
@@ -205,7 +148,6 @@ export default function CustomizedVideoPlayer({
             }
         };
 
-        // Small delay to prevent immediate closing when opening
         setTimeout(() => {
             document.addEventListener('mousedown', handleClickOutside);
         }, 0);
@@ -213,14 +155,50 @@ export default function CustomizedVideoPlayer({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [showActions]);
 
+    // Handle dragging with mouse/touch
+    useEffect(() => {
+        if (isDragging) {
+            const handleMouseMove = (e) => {
+                updateProgressFromEvent(e);
+            };
+
+            const handleTouchMove = (e) => {
+                updateProgressFromEvent(e.touches[0]);
+            };
+
+            const handleMouseUp = () => {
+                setIsDragging(false);
+            };
+
+            const handleTouchEnd = () => {
+                setIsDragging(false);
+            };
+
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+            document.addEventListener('touchmove', handleTouchMove);
+            document.addEventListener('touchend', handleTouchEnd);
+
+            return () => {
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+                document.removeEventListener('touchmove', handleTouchMove);
+                document.removeEventListener('touchend', handleTouchEnd);
+            };
+        }
+    }, [isDragging, duration]);
+
+
+
+
     const onTimeUpdate = () => {
         const video = videoRef.current;
-        if (!video) return;
+        if (!video || isDragging) return;
         setProgress((video.currentTime / video.duration) * 100);
         setCurrentTime(video.currentTime);
     };
 
-    const togglePlay = () => {
+    const togglePlayPause = () => {
         const video = videoRef.current;
         if (!video) return;
 
@@ -235,14 +213,13 @@ export default function CustomizedVideoPlayer({
             setIsPlaying(true);
             setShowControls(true);
 
-            // Hide controls immediately after play starts
             hideTimeout.current = setTimeout(() => {
                 setShowControls(false);
             }, 100);
         } else {
             video.pause();
             setIsPlaying(false);
-            setShowControls(true); // Keep controls visible when paused
+            setShowControls(true);
         }
     };
 
@@ -268,13 +245,10 @@ export default function CustomizedVideoPlayer({
     };
 
     const handleVideoClick = (e) => {
-        if (e.target === videoRef.current || e.target.closest('video')) {
-            togglePlay();
-        }
+        togglePlayPause();
     };
 
     const handleContainerInteraction = (e) => {
-
         if (isPlaying) {
             clearTimeout(hideTimeout.current);
             setShowControls(true);
@@ -286,7 +260,6 @@ export default function CustomizedVideoPlayer({
                 e.target.tagName === 'path' ||
                 e.target.tagName === 'text' ||
                 e.target.tagName === 'circle';
-
 
             if (isControlElement) {
                 clearTimeout(hideTimeout.current);
@@ -300,23 +273,40 @@ export default function CustomizedVideoPlayer({
         }
     };
 
-    const handleProgressBarClick = (e) => {
+    // Update progress from mouse/touch event
+    const updateProgressFromEvent = (e) => {
         const video = videoRef.current;
-        if (!video) return;
+        const progressBar = progressBarRef.current;
 
-        const rect = e.currentTarget.getBoundingClientRect();
-        const pos = (e.clientX - rect.left) / rect.width;
+        if (!video || !progressBar) return;
 
+        const rect = progressBar.getBoundingClientRect();
+        const clientX = e.clientX || e.pageX;
+        const pos = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
         const newTime = pos * video.duration;
 
-        //
         setProgress(pos * 100);
         setCurrentTime(newTime);
-
-
         video.currentTime = newTime;
     };
 
+    const handleProgressBarMouseDown = (e) => {
+        e.preventDefault();
+        setIsDragging(true);
+        updateProgressFromEvent(e);
+    };
+
+    const handleProgressBarTouchStart = (e) => {
+        e.preventDefault();
+        setIsDragging(true);
+        updateProgressFromEvent(e.touches[0]);
+    };
+
+    const handleProgressBarClick = (e) => {
+        if (!isDragging) {
+            updateProgressFromEvent(e);
+        }
+    };
 
     const toggleMute = () => {
         const video = videoRef.current;
@@ -331,23 +321,6 @@ export default function CustomizedVideoPlayer({
             setIsMuted(true);
         }
     };
-
-    // const handleVolumeChange = (e) => {
-    //     const video = videoRef.current;
-    //     if (!video) return;
-
-    //     const newVolume = parseFloat(e.target.value);
-    //     video.volume = newVolume;
-    //     setVolume(newVolume);
-
-    //     if (newVolume === 0) {
-    //         setIsMuted(true);
-    //         video.muted = true;
-    //     } else {
-    //         setIsMuted(false);
-    //         video.muted = false;
-    //     }
-    // };
 
     const toggleFullscreen = () => {
         const container = containerRef.current;
@@ -365,7 +338,6 @@ export default function CustomizedVideoPlayer({
     };
 
 
-
     return (
         <div
             ref={containerRef}
@@ -377,9 +349,11 @@ export default function CustomizedVideoPlayer({
         >
             {/* Video Container */}
             <div className="relative flex items-center justify-center w-full h-full">
+                {/* Video with click handler */}
                 <video
+
                     ref={videoRef}
-                    className={`w-full h-full  ${className || ''}`}
+                    className={`w-full h-full ${className || ''}`}
                     playsInline
                     preload={Preload}
                     controlsList="nodownload noremoteplayback"
@@ -387,11 +361,9 @@ export default function CustomizedVideoPlayer({
                     poster={thumbnail}
                     crossOrigin="anonymous"
                     onTimeUpdate={onTimeUpdate}
+                    autoPlay={autoPlay}
                     onLoadedMetadata={OnLoadedMetaData}
-                    onClick={() => {
-                        handleVideoClick();
-
-                    }}
+                    onClick={handleVideoClick}
                     style={{
                         WebkitTapHighlightColor: 'transparent',
                         touchAction: 'manipulation',
@@ -406,31 +378,25 @@ export default function CustomizedVideoPlayer({
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                         <div className="flex items-center justify-center w-16 h-16 rounded-full bg-black/20 backdrop-blur-sm">
                             <SunSpinner color='#fff' />
-
                         </div>
                     </div>
                 )}
 
-
-
-
-
-                {/* Center Controls Overlay - ONLY SHOWS WHEN showControls is true */}
+                {/* Center Controls Overlay */}
                 <div
-                    className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${showControls || !isPlaying || hasEnded
+                    className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 pointer-events-none ${showControls || !isPlaying || hasEnded
                         ? 'opacity-100'
-                        : 'opacity-0 pointer-events-none'
+                        : 'opacity-0'
                         }`}
-                    style={{
-                        background: 'transparent'
-
-                    }}
                 >
                     {/* When video is NOT playing or has ended, show only play button */}
                     {((!isPlaying || hasEnded) && loaded) && (
                         <button
-                            onClick={togglePlay}
-                            className="flex items-center justify-center w-20 h-20 text-white transition-all rounded-full shadow-lg bg-deepcharcoal/70 hover:bg-deepcharcoal/80 backdrop-blur-sm active:scale-95"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                togglePlayPause();
+                            }}
+                            className="flex items-center justify-center w-20 h-20 text-white transition-all rounded-full shadow-lg pointer-events-auto bg-deepcharcoal/70 hover:bg-deepcharcoal/80 backdrop-blur-sm active:scale-95"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-10 fill-white">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
@@ -442,11 +408,14 @@ export default function CustomizedVideoPlayer({
                     {!isBuffering && isPlaying && showControls && !hasEnded && (
                         <div
                             ref={controlsRef}
-                            className="flex items-center justify-center gap-12"
+                            className="flex items-center justify-center gap-12 pointer-events-auto"
                         >
                             {/* Rewind 10s */}
                             <button
-                                onClick={() => seek(-10)}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    seek(-10);
+                                }}
                                 className="relative flex items-center justify-center w-16 h-16 transition-transform active:scale-90"
                             >
                                 <svg
@@ -463,7 +432,10 @@ export default function CustomizedVideoPlayer({
 
                             {/* Pause Button */}
                             <button
-                                onClick={togglePlay}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    togglePlayPause();
+                                }}
                                 className="flex items-center justify-center w-16 h-16 transition-transform active:scale-90"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="#ffffff" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="font-bold text-white size-14">
@@ -473,7 +445,10 @@ export default function CustomizedVideoPlayer({
 
                             {/* Forward 10s */}
                             <button
-                                onClick={() => seek(10)}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    seek(10);
+                                }}
                                 className="relative flex items-center justify-center w-16 h-16 transition-transform active:scale-90"
                             >
                                 <svg
@@ -491,15 +466,12 @@ export default function CustomizedVideoPlayer({
                     )}
                 </div>
 
-                {/* Timeline Bar - ALWAYS VISIBLE at bottom */}
-                {isPlaying && showControls && (
-                    <div className="absolute bottom-0 left-0 right-0 w-full pb-safe">
-                        {/* Background */}
+                {/* Timeline Bar */}
+                {showControls && (
+                    <div className="absolute bottom-0 left-0 right-0 z-50 w-full pointer-events-none pb-safe">
                         <div className="absolute inset-0 bg-white dark:bg-black/50 backdrop-blur-md" />
 
-                        {/* Timeline Content */}
-                        <div className="relative flex items-center gap-3 px-3 py-2">
-
+                        <div className="relative flex items-center gap-3 px-3 py-2 pointer-events-auto">
                             {/* Current Time */}
                             <span className="text-[10px] text-gray-900 dark:text-white font-semibold min-w-[26px] text-right">
                                 {formatTime(currentTime)}
@@ -507,18 +479,30 @@ export default function CustomizedVideoPlayer({
 
                             {/* Progress Bar */}
                             <div
-                                className="relative flex-1 h-2 overflow-hidden rounded-full bg-gray-400/40 dark:bg-white/30 touch-pan-y"
-                                onClick={handleProgressBarClick}
+                                ref={progressBarRef}
+                                className="relative flex-1 h-2 overflow-hidden rounded-full cursor-pointer bg-gray-400/40 dark:bg-white/30"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleProgressBarClick(e);
+                                }}
+                                onMouseDown={(e) => {
+                                    e.stopPropagation();
+                                    handleProgressBarMouseDown(e);
+                                }}
+                                onTouchStart={(e) => {
+                                    e.stopPropagation();
+                                    handleProgressBarTouchStart(e);
+                                }}
                             >
                                 {/* Filled portion */}
                                 <div
-                                    className="h-full bg-gray-900 dark:bg-white transition-[width] duration-100"
+                                    className="h-full transition-none bg-gray-900 pointer-events-none dark:bg-white"
                                     style={{ width: `${progress}%` }}
                                 />
 
-                                {/* Larger thumb for mobile precision */}
+                                {/* Thumb */}
                                 <div
-                                    className="absolute w-4 h-4 -translate-y-1/2 bg-gray-900 rounded-full top-1/2 dark:bg-white"
+                                    className="absolute w-4 h-4 transition-none -translate-y-1/2 bg-gray-900 rounded-full pointer-events-none top-1/2 dark:bg-white"
                                     style={{ left: `calc(${progress}% - 8px)` }}
                                 />
                             </div>
@@ -531,20 +515,23 @@ export default function CustomizedVideoPlayer({
                             {/* Options */}
                             <div className="relative">
                                 <button
-                                    onClick={() => setShowActions(!showActions)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowActions(!showActions);
+                                    }}
                                     className="flex items-center justify-center w-6 h-6 transition-colors rounded-full ellipsis-button hover:bg-gray-900/10 dark:hover:bg-white/10"
                                 >
-
-
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-900 dark:text-white">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                     </svg>
-
                                 </button>
 
                                 {/* Dropdown Menu */}
                                 {showActions && (
-                                    <div className="absolute right-0 w-48 mb-2 overflow-hidden bg-white border border-gray-200 rounded-lg shadow-lg actions-dropdown bottom-full dark:bg-deepcharcoal dark:border-white/10">
+                                    <div
+                                        className="absolute right-0 w-48 mb-2 overflow-hidden bg-white border border-gray-200 rounded-lg shadow-lg actions-dropdown bottom-full dark:bg-deepcharcoal dark:border-white/10"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
                                         {/* Volume Control */}
                                         <div
                                             className="relative"
@@ -552,7 +539,10 @@ export default function CustomizedVideoPlayer({
                                             onMouseLeave={() => setShowVolumeSlider(false)}
                                         >
                                             <button
-                                                onClick={toggleMute}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    toggleMute();
+                                                }}
                                                 className="flex items-center w-full gap-3 px-4 py-3 text-sm text-gray-700 transition-colors dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800"
                                             >
                                                 {isMuted ? (
@@ -571,32 +561,12 @@ export default function CustomizedVideoPlayer({
                                                     </>
                                                 )}
                                             </button>
-
-                                            {/* Volume Slider - Shows on hover FOr LAter */}
-                                            {/* {showVolumeSlider && !isMuted && (
-<div className="absolute top-0 p-3 ml-2 bg-white border border-gray-200 rounded-lg shadow-lg left-full dark:bg-deepcharcoal dark:border-white/10">
-<input
-type="range"
-min="0"
-max="1"
-step="0.1"
-value={volume}
-onChange={handleVolumeChange}
-className="accent-gray-900 dark:accent-white"
-style={{
-writingMode: 'bt-lr',
-WebkitAppearance: 'slider-vertical',
-height: '80px',
-width: '6px'
-}}
-/>
-</div>
-)} */}
                                         </div>
 
                                         {/* Fullscreen Button */}
                                         <button
-                                            onClick={() => {
+                                            onClick={(e) => {
+                                                e.stopPropagation();
                                                 toggleFullscreen();
                                                 setShowActions(false);
                                             }}
@@ -607,13 +577,15 @@ width: '6px'
                                             </svg>
                                             <span>Fullscreen</span>
                                         </button>
+
+
+
                                     </div>
                                 )}
                             </div>
                         </div>
                     </div>
                 )}
-
             </div>
         </div>
     );

@@ -570,6 +570,8 @@ Additional Work:
         73: Mobile Home Navigation Issue Fixed And Prevented With Hook When feed open and home button clicked  ✅
         74: Mobile Feed Layout Style changed to Immerseview Style and The skeletons also updated to new design layout✅
         74: Mobile Feed X Axis Loop Fixed Broked After Immerse View✅
+        75: Video Players Are Optimzied And Updated To New Layout and new Instagram like player added for Mobile Feed ✅
+        76: Mobile Feed Header Changed To Overlay On The Feed Media ✅
 
     ) Redesigned Whole Website 4th Time Completed According To The LAYOUT Design Reference Provided ✅
 

@@ -6,7 +6,7 @@ export default function VideoPlayer({
     className,
     controls,
     autoPlay,
-    initialTime = 0,
+
     videoElementRef,
     Preload,
 }) {
@@ -29,47 +29,17 @@ export default function VideoPlayer({
         const handleLoadedMetadata = () => {
 
 
-            if (initialTime > 0) {
-                video.pause();
-                video.currentTime = initialTime;
+            if (shouldAutoPlayRef.current) {
+                video.muted = true;
+                video.play()
+                    .then(() => {
 
-                // Wait for seek to complete
-                const handleSeeked = () => {
-
-                    video.removeEventListener('seeked', handleSeeked);
-
-                    // NOW autoplay if needed
-                    if (shouldAutoPlayRef.current) {
-
-                        video.muted = true;
-                        video.play()
-                            .then(() => {
-
-                                setIsPlaying(true);
-                            })
-                            .catch((err) => {
-                                console.error('❌ Autoplay failed:', err.message);
-                                setIsPlaying(false);
-                            });
-                    }
-                };
-
-                video.addEventListener('seeked', handleSeeked);
-            } else {
-
-
-                if (shouldAutoPlayRef.current) {
-                    video.muted = true;
-                    video.play()
-                        .then(() => {
-
-                            setIsPlaying(true);
-                        })
-                        .catch((err) => {
-                            console.error('❌ Autoplay failed:', err.message);
-                            setIsPlaying(false);
-                        });
-                }
+                        setIsPlaying(true);
+                    })
+                    .catch((err) => {
+                        console.error('❌ Autoplay failed:', err.message);
+                        setIsPlaying(false);
+                    });
             }
         };
 
@@ -86,7 +56,7 @@ export default function VideoPlayer({
                 videoElementRef.current = null;
             }
         };
-    }, [initialTime, autoPlay, videoElementRef, videoUrl]);
+    }, [autoPlay, videoElementRef, videoUrl]);
 
     const handleTap = () => {
         const video = videoRef.current;

@@ -130,10 +130,13 @@ export default function PostMediaViewer({
                 onSelectMediaIndex((prev) => (prev - 1 + mediaItems.length) % mediaItems.length);
             }
         },
-        trackTouch: true,
-        trackMouse: true,
+
+
         preventScrollOnSwipe: true,
     });
+
+
+
 
     return (
         <>

@@ -168,7 +168,6 @@ const MobileFeed = ({
     const handleVideoRef = useCallback((itemKey) => {
         return (videoElement) => {
 
-
             if (!videoRefs.current[itemKey]) {
                 videoRefs.current[itemKey] = { current: null };
             }
@@ -316,7 +315,7 @@ const MobileFeed = ({
 
         const relatedCount = getRelatedCount(parentFeedSlugRef.current);
 
-        const headerHeight = 46;
+        const headerHeight = 0.;
 
 
         if (relatedCount < 1 && item?.__dummy) {
@@ -373,10 +372,10 @@ const MobileFeed = ({
             >
 
                 {/* Header: Tag + Three Dots */}
-                <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
+                <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between  px-4 pt-6 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] text-white ">
                     <button
                         onClick={() => navigateToHashtag(item.tag)}
-                        className="text-sm font-semibold"
+                        className="text-sm font-bold"
                     >
                         {item.tag}
                     </button>
@@ -390,8 +389,8 @@ const MobileFeed = ({
                         }}
                     >
                         <button
+                            className='font-bold'
                             data-dropdown-toggle="true"
-
                             onClick={(e) => {
 
                                 e.stopPropagation();
@@ -406,9 +405,10 @@ const MobileFeed = ({
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
                                 viewBox="0 0 24 24"
-                                strokeWidth={1.5}
+                                strokeWidth={2.5}
                                 stroke="currentColor"
                                 className="w-5 h-5"
+
                             >
                                 <path
                                     strokeLinecap="round"
@@ -570,6 +570,8 @@ const MobileFeed = ({
                                                     setVideoAutoplay(
                                                         (prev) => !prev,
                                                     );
+
+
                                                 }}
                                             >
                                                 {videoAutoplay ? (
@@ -668,7 +670,7 @@ const MobileFeed = ({
                                         key={item.id}
                                         src={item.images[0]}
                                         alt={item.name}
-                                        className="object-fill w-full h-full rounded-none will-change-transform"
+                                        className="object-cover object-center w-full h-full rounded-none will-change-transform"
                                         loading={isCurrent ? "eager" : "lazy"}
                                         fetchpriority={isCurrent ? "high" : "low"}
                                         decoding="async"
@@ -691,7 +693,7 @@ const MobileFeed = ({
                                         key={item.id}
                                         src={item.post_image_urls[0]}
                                         alt={item.title}
-                                        className="object-fill w-full h-full rounded-none"
+                                        className="object-cover object-center w-full h-full rounded-none"
                                         loading={isCurrent ? "eager" : "lazy"}
                                         fetchpriority={isCurrent ? "high" : "low"}
                                         decoding="async"
@@ -705,9 +707,9 @@ const MobileFeed = ({
                                     />
                                 ) : item.post_video_urls.length > 0 ? (
                                     <VideoWithThumbnail
-                                        type='customized'
+                                        type='instagram'
                                         videoUrl={item.post_video_urls[0]}
-                                        className="object-fill w-full h-full rounded-none"
+                                        className="object-cover object-center w-full h-full rounded-none"
                                         autoPlay={videoAutoplay}
                                         controls={true}
                                         OnLoadedMetaData={() => {
@@ -747,7 +749,7 @@ const MobileFeed = ({
 
                 {/* Bottom */}
                 {item.type === 'smartphones' && (
-                    <div className="absolute bottom-0 left-0 right-0 px-4 pb-[90px] pt-6 z-20">
+                    <div className="absolute left-0 right-0 z-20 px-4 pt-6 text-white bottom-24 ">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                             <p className="flex-1 text-sm leading-relaxed break-words text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
                                 {item?.content && item.content.length > 30 ? (
@@ -787,8 +789,7 @@ const MobileFeed = ({
                 )}
 
                 {item.type === 'posts' && (
-                    <div className="absolute bottom-0 left-0 right-0 px-4 pb-[90px] pt-6 z-20
-                    text-white ">
+                    <div className="absolute left-0 right-0 z-20 px-4 pt-6 text-white bottom-24 ">
                         <div className={`flex items-center justify-between gap-3 flex-wrap `}>
                             {/* CHECKING IF MEDIA IS EMPTY THAN ITS TEXT ONLY POST SO THIS WONT SHOW BECAUSE WE ALREADY SHOWED In CONTENT */}
                             {item?.post_image_urls?.length === 0 &&

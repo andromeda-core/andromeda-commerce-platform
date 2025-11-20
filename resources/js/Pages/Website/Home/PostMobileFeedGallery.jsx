@@ -281,7 +281,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                                         ) : (
                                                             <div className="flex items-center justify-center w-full h-full">
                                                                 <VideoWithThumbnail
-                                                                    type='customized'
+                                                                    type='instagram'
                                                                     className="object-cover"
                                                                     videoUrl={item.url}
                                                                     Preload='auto'
