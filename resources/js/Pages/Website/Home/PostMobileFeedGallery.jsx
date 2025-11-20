@@ -296,7 +296,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                         )}
 
                         {/* Full Content - Scrollable, No Truncation */}
-                        <div className="px-4">
+                        <div className="px-4 mt-14">
                             <div className="mb-4">
                                 {post?.content && (
                                     <div
