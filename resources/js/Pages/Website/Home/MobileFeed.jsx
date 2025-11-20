@@ -1454,6 +1454,9 @@ const MobileFeed = ({
 
                     requestAnimationFrame(() => {
                         rowContainer.style.scrollBehavior = "auto";
+                        rowContainer.style.scrollSnapType = "none";
+                        rowContainer.parentElement.style.scrollSnapType = "none";
+                        rowContainer.style.pointerEvents = "none";
 
                         const target = itemWidth;
                         rowContainer.scrollLeft = target;
@@ -1474,13 +1477,18 @@ const MobileFeed = ({
 
                         setFeedGallery(firstItem);
 
-                        requestAnimationFrame(() => {
+                        setTimeout(() => {
+                            rowContainer.style.scrollSnapType = "";
+                            rowContainer.parentElement.style.scrollSnapType = "";
                             rowContainer.style.scrollBehavior = "smooth";
-                            requestAnimationFrame(() => rowContainer.scrollLeft = target);
+                            rowContainer.style.pointerEvents = "";
+                        }, 50);
 
-                            isXLoopingRef.current = false;
-                            setTimeout(() => setIsXAxisLooping(false), 400);
-                        });
+
+                        isXLoopingRef.current = false;
+                        setTimeout(() => {
+                            setIsXAxisLooping(false)
+                        }, 1000);
                     });
 
                     return;
@@ -1494,6 +1502,9 @@ const MobileFeed = ({
 
                     requestAnimationFrame(() => {
                         rowContainer.style.scrollBehavior = "auto";
+                        rowContainer.style.scrollSnapType = "none";
+                        rowContainer.parentElement.style.scrollSnapType = "none";
+                        rowContainer.style.pointerEvents = "none";
 
                         const target = itemWidth * totalItems;
                         rowContainer.scrollLeft = target;
@@ -1517,13 +1528,18 @@ const MobileFeed = ({
 
                         setFeedGallery(lastItem);
 
-                        requestAnimationFrame(() => {
+                        setTimeout(() => {
+                            rowContainer.style.scrollSnapType = "";
+                            rowContainer.parentElement.style.scrollSnapType = "";
                             rowContainer.style.scrollBehavior = "smooth";
-                            requestAnimationFrame(() => rowContainer.scrollLeft = target);
+                            rowContainer.style.pointerEvents = "";
+                        }, 50);
 
-                            isXLoopingRef.current = false;
-                            setTimeout(() => setIsXAxisLooping(false), 400);
-                        });
+                        isXLoopingRef.current = false;
+
+                        setTimeout(() => {
+                            setIsXAxisLooping(false)
+                        }, 1000);
                     });
 
                     return;
