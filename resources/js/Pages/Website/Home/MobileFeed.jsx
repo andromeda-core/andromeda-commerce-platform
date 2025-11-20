@@ -1386,14 +1386,11 @@ const MobileFeed = ({
                 const children = rowContainer.children;
                 if (!children || children.length < 2) return;
 
-                const firstReal = children[1];
-                if (firstReal) {
-                    if (!itemWidthRef.current[rowIndex]) {
-                        itemWidthRef.current[rowIndex] = firstReal.getBoundingClientRect().width;
-                    }
-                    itemWidth = itemWidthRef.current[rowIndex];
+                itemWidth = itemWidthRef.current[rowIndex]
+                    || (itemWidthRef.current[rowIndex] = rowContainer.offsetWidth);
 
-                }
+                if (!itemWidth) return;
+
                 if (!itemWidth) return;
 
                 const currentScrollLeft = rowContainer.scrollLeft;
