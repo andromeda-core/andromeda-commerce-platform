@@ -232,7 +232,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                     </div>
 
                     {/* Scrollable Content Area */}
-                    <div className="flex-1 overflow-y-auto scrollbar-none">
+                    <div className="flex-1 mx-auto overflow-y-auto scrollbar-none">
                         {mediaItems?.length > 0 && (
                             <div className="relative overflow-hidden">
                                 {/* Horizontal Scroll Container - Swipeable */}
