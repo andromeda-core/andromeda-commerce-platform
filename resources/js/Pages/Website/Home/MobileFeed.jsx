@@ -1385,11 +1385,15 @@ const MobileFeed = ({
 
                 const children = rowContainer.children;
                 if (!children || children.length < 2) return;
+                const firstReal = children[1];
 
-                itemWidth = itemWidthRef.current[rowIndex]
-                    || (itemWidthRef.current[rowIndex] = rowContainer.offsetWidth);
+                if (firstReal) {
+                    itemWidth = itemWidthRef.current[rowIndex]
+                        || (itemWidthRef.current[rowIndex] = rowContainer.offsetWidth);
+                }
 
-                if (!itemWidth) return;
+
+
 
                 if (!itemWidth) return;
 
