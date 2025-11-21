@@ -20,6 +20,7 @@ export default function CustomizedVideoPlayer({
 
     const [isMuted, setIsMuted] = useState(autoPlay ? true : false);
     const [showVolumeSlider, setShowVolumeSlider] = useState(false);
+    const [isFullscreen, setIsFullscreen] = useState(false);
 
     const [isPlaying, setIsPlaying] = useState(false);
     const [showControls, setShowControls] = useState(true);
@@ -337,6 +338,35 @@ export default function CustomizedVideoPlayer({
         }
     };
 
+    useEffect(() => {
+        const videoElement = videoRef.current;
+        if (!videoElement) return;
+
+        // Track fullscreen changes
+        const handleFullscreenChange = () => {
+            const isCurrentlyFullscreen = !!(
+                document.fullscreenElement ||
+                document.webkitFullscreenElement ||
+                document.mozFullScreenElement ||
+                document.msFullscreenElement
+            );
+
+            setIsFullscreen(isCurrentlyFullscreen);
+        };
+
+        // Add listeners for all browser prefixes
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+        return () => {
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+            document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+        };
+    }, []);
 
     return (
         <div
@@ -353,7 +383,7 @@ export default function CustomizedVideoPlayer({
                 <video
 
                     ref={videoRef}
-                    className={`w-full h-full ${className || ''}`}
+                    className={`w-full h-full ${!isFullscreen && className || 'object-contain'}`}
                     playsInline
                     preload={Preload}
                     controlsList="nodownload noremoteplayback"

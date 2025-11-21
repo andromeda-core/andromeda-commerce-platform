@@ -436,6 +436,30 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
                             <h1 className="text-2xl font-bold text-gray-600 dark:text-white/80">
                                 Filter Settings
                             </h1>
+
+
+                            <button
+                                onClick={() => {
+                                    setFilterModal(false)
+                                }}
+                                className="absolute z-50 p-2 text-gray-600 transition-colors rounded-full top-7 right-4 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-zinc-800"
+                                aria-label="Close modal"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={2}
+                                    stroke="currentColor"
+                                    className="w-6 h-6"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M6 18L18 6M6 6l12 12"
+                                    />
+                                </svg>
+                            </button>
                         </div>
 
                         {/* Desktop Card */}

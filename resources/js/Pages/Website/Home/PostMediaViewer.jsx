@@ -161,7 +161,7 @@ export default function PostMediaViewer({
                             <img
                                 src={mediaItems[selected]?.url}
                                 alt={`Media ${selected}`}
-                                className="h-full w-full min-w-[300px] max-w-[300px] object-contain lg:min-w-[500px]"
+                                className="h-full w-full min-w-[300px] max-w-[300px] object-cover object-center lg:min-w-[500px]"
                                 loading={"high"}
                                 decoding={"async"}
                                 fetchpriority={"high"}
@@ -169,8 +169,9 @@ export default function PostMediaViewer({
                             />
                         ) : (
                             <VideoWithThumbnail
+                                type='customized'
                                 className={
-                                    'h-full w-full min-w-[300px] max-w-[300px] rounded-xl object-contain lg:min-w-[500px]'
+                                    'h-full w-full min-w-[300px] max-w-[300px] rounded-xl object-cover object-center lg:min-w-[500px]'
                                 }
                                 videoUrl={mediaItems[selected]?.url}
                             />
@@ -206,7 +207,7 @@ export default function PostMediaViewer({
                                         ) : (
                                             <VideoWithThumbnail
                                                 type='customized'
-                                                className="object-contain w-full h-full rounded-md"
+                                                className="object-cover object-center w-full h-full rounded-md"
                                                 videoUrl={item.url}
                                                 Preload={isCurrent ? "auto" : "metadata"}
                                                 OnLoadedMetaData={() => loadedCache.current.add(item.url)}
@@ -237,7 +238,7 @@ export default function PostMediaViewer({
                                     <img
                                         src={item.url}
                                         alt={`Image ${idx}`}
-                                        className="object-cover w-full h-full"
+                                        className="object-contain w-full h-full "
                                         loading={selectedMediaIndex === idx ? "eager" : "lazy"}
                                         decoding="async"
                                         fetchpriority={selectedMediaIndex === idx ? "high" : "low"}
@@ -246,7 +247,7 @@ export default function PostMediaViewer({
 
 
                                     <VideoThumbnail
-                                        className={'h-full w-full object-cover opacity-80'}
+                                        className={'h-full w-full object-cover object-center opacity-80'}
                                         videoUrl={item.url}
                                         alt={`Video ${idx}`}
                                         FetchPriority={selectedMediaIndex === idx ? "high" : "low"}

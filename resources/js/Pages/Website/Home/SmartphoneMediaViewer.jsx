@@ -104,7 +104,7 @@ export default function SmartphoneMediaViewer({
             ref={MediaRef}
         >
             <div
-                className="relative flex items-center justify-center flex-shrink-0 overflow-hidden bg-gray-100 rounded-sm dark:bg-zinc-900/20"
+                className="relative flex items-center justify-center flex-shrink-0 overflow-hidden rounded-sm "
                 style={{
                     height: windowSize.width >= 1024 ? '70vh' : '60vh',
                     minWidth: windowSize.width >= 1024 ? '30vw' : '100%',
@@ -174,7 +174,7 @@ export default function SmartphoneMediaViewer({
                             <img
                                 src={item.url}
                                 alt={`Smartphone ${idx}`}
-                                className="object-cover w-full h-full"
+                                className="object-contain object-center w-full h-full "
                                 onError={(e) => e.target.src = Placeholder}
                                 loading={selectedMediaIndex === idx ? "eager" : "lazy"}
                                 decoding="async"

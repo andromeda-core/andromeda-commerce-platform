@@ -276,14 +276,14 @@ const Index = ({ user, countries }) => {
             )}
 
             <div className={`min-h-screen ${windowSize.width < 1024 ? 'mb-20' : ''}`}>
-                <div className="max-w-8xl mx-auto sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-8xl sm:px-6 lg:px-8">
                     {/* Header Section with Points */}
-                    <div className="relative mb-8 overflow-hidden rounded-3xl border border-gray-200 bg-white p-8 shadow-lg dark:border-gray-700 dark:bg-deepcharcoal sm:p-12">
+                    <div className="relative p-8 mb-8 overflow-hidden bg-white border border-gray-200 shadow-lg rounded-3xl dark:border-gray-700 dark:bg-deepcharcoal sm:p-12">
                         <div className="relative z-10 flex flex-col items-center justify-between gap-6 sm:flex-row sm:items-start">
                             <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
                                 {/* Avatar */}
                                 <div className="relative">
-                                    <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2 backdrop-blur-sm dark:border-gray-700 dark:bg-deepcharcoal sm:h-32 sm:w-32">
+                                    <div className="flex items-center justify-center w-24 h-24 overflow-hidden border-2 rounded-full backdrop-blur-sm dark:border-gray-700 dark:bg-deepcharcoal sm:h-32 sm:w-32">
                                         <span className="text-4xl font-bold text-gray-700 dark:text-white/80 sm:text-5xl">
                                             {user?.name ? user.name.charAt(0).toUpperCase() : 'N/A'}
                                         </span>
@@ -321,18 +321,18 @@ const Index = ({ user, countries }) => {
                         </div>
 
                         {/* Decorative Elements */}
-                        <div className="absolute right-0 top-0 h-64 w-64 rounded-full bg-white/5 blur-3xl"></div>
-                        <div className="absolute bottom-0 left-0 h-96 w-96 rounded-full bg-white/5 blur-3xl"></div>
+                        <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-white/5 blur-3xl"></div>
+                        <div className="absolute bottom-0 left-0 rounded-full h-96 w-96 bg-white/5 blur-3xl"></div>
                     </div>
 
                     {/* Main Content Grid */}
                     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                         {/* Personal Information Card */}
-                        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-deepcharcoal lg:col-span-2">
-                            <div className="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-deepcharcoal dark:from-gray-700">
+                        <div className="overflow-hidden bg-white border border-gray-200 shadow-lg rounded-2xl dark:border-gray-700 dark:bg-deepcharcoal lg:col-span-2">
+                            <div className="px-6 py-4 bg-white border-b border-gray-200 dark:border-gray-700 dark:bg-deepcharcoal dark:from-gray-700">
                                 <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-700 dark:text-white/80">
                                     <svg
-                                        className="h-5 w-5"
+                                        className="w-5 h-5"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -347,12 +347,12 @@ const Index = ({ user, countries }) => {
                                     Personal Information
                                 </h2>
                             </div>
-                            <div className="space-y-4 p-6">
+                            <div className="p-6 space-y-4">
                                 {/* Email */}
-                                <div className="flex items-start gap-4 rounded-xl border border-gray-200 bg-white p-4 transition-colors dark:border-gray-700 dark:bg-deepcharcoal">
-                                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
+                                <div className="flex items-start gap-4 p-4 transition-colors bg-white border border-gray-200 rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
+                                    <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 bg-indigo-100 rounded-lg dark:bg-indigo-900/30">
                                         <svg
-                                            className="h-5 w-5 text-indigo-600 dark:text-indigo-400"
+                                            className="w-5 h-5 text-indigo-600 dark:text-indigo-400"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -365,21 +365,21 @@ const Index = ({ user, countries }) => {
                                             />
                                         </svg>
                                     </div>
-                                    <div className="min-w-0 flex-1">
+                                    <div className="flex-1 min-w-0">
                                         <div className="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">
                                             Email Address
                                         </div>
-                                        <div className="truncate text-sm font-medium text-gray-700 dark:text-white/80">
+                                        <div className="text-sm font-medium text-gray-700 truncate dark:text-white/80">
                                             {user?.email || 'N/A'}
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Phone */}
-                                <div className="flex items-start gap-4 rounded-xl border border-gray-200 bg-white p-4 transition-colors dark:border-gray-700 dark:bg-deepcharcoal">
-                                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                                <div className="flex items-start gap-4 p-4 transition-colors bg-white border border-gray-200 rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
+                                    <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 bg-purple-100 rounded-lg dark:bg-purple-900/30">
                                         <svg
-                                            className="h-5 w-5 text-purple-600 dark:text-purple-400"
+                                            className="w-5 h-5 text-purple-600 dark:text-purple-400"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -392,7 +392,7 @@ const Index = ({ user, countries }) => {
                                             />
                                         </svg>
                                     </div>
-                                    <div className="min-w-0 flex-1">
+                                    <div className="flex-1 min-w-0">
                                         <div className="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">
                                             Phone Number
                                         </div>
@@ -405,11 +405,11 @@ const Index = ({ user, countries }) => {
                         </div>
 
                         {/* Quick Actions Card */}
-                        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-deepcharcoal">
-                            <div className="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-deepcharcoal">
+                        <div className="overflow-hidden bg-white border border-gray-200 shadow-lg rounded-2xl dark:border-gray-700 dark:bg-deepcharcoal">
+                            <div className="px-6 py-4 bg-white border-b border-gray-200 dark:border-gray-700 dark:bg-deepcharcoal">
                                 <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-700 dark:text-white/80">
                                     <svg
-                                        className="h-5 w-5"
+                                        className="w-5 h-5"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -424,13 +424,13 @@ const Index = ({ user, countries }) => {
                                     Quick Actions
                                 </h2>
                             </div>
-                            <div className="space-y-3 p-6">
+                            <div className="p-6 space-y-3">
                                 <button
                                     onClick={() => setIsEditProfileOpen(true)}
-                                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 font-medium text-white shadow-md transition-all hover:bg-indigo-500 hover:shadow-lg"
+                                    className="flex items-center justify-center w-full gap-2 px-4 py-3 font-medium text-white transition-all bg-indigo-600 shadow-md rounded-xl hover:bg-indigo-500 hover:shadow-lg"
                                 >
                                     <svg
-                                        className="h-5 w-5"
+                                        className="w-5 h-5"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -447,10 +447,10 @@ const Index = ({ user, countries }) => {
 
                                 <button
                                     onClick={() => setIsChangePasswordOpen(true)}
-                                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-gray-100 px-4 py-3 font-medium text-gray-700 transition-all hover:bg-gray-200 dark:bg-gray-800 dark:text-white/80 dark:hover:bg-gray-700"
+                                    className="flex items-center justify-center w-full gap-2 px-4 py-3 font-medium text-gray-700 transition-all bg-gray-100 rounded-xl hover:bg-gray-200 dark:bg-gray-800 dark:text-white/80 dark:hover:bg-gray-700"
                                 >
                                     <svg
-                                        className="h-5 w-5"
+                                        className="w-5 h-5"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -467,10 +467,10 @@ const Index = ({ user, countries }) => {
 
                                 <Link
                                     href={route('website.orders.index')}
-                                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-gray-100 px-4 py-3 font-medium text-gray-700 transition-all hover:bg-gray-200 dark:bg-gray-800 dark:text-white/80 dark:hover:bg-gray-700"
+                                    className="flex items-center justify-center w-full gap-2 px-4 py-3 font-medium text-gray-700 transition-all bg-gray-100 rounded-xl hover:bg-gray-200 dark:bg-gray-800 dark:text-white/80 dark:hover:bg-gray-700"
                                 >
                                     <svg
-                                        className="h-5 w-5"
+                                        className="w-5 h-5"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -488,11 +488,11 @@ const Index = ({ user, countries }) => {
                         </div>
 
                         {/* Address Information Card */}
-                        <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-deepcharcoal lg:col-span-3">
-                            <div className="border-b border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-deepcharcoal">
+                        <div className="overflow-hidden bg-white border border-gray-200 shadow-lg rounded-2xl dark:border-gray-700 dark:bg-deepcharcoal lg:col-span-3">
+                            <div className="p-4 bg-white border-b border-gray-200 dark:border-gray-700 dark:bg-deepcharcoal">
                                 <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-700 dark:text-white/80">
                                     <svg
-                                        className="h-5 w-5"
+                                        className="w-5 h-5"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -516,38 +516,38 @@ const Index = ({ user, countries }) => {
                             <div className="p-6">
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                     {/* Address Line 1 */}
-                                    <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-deepcharcoal">
-                                        <div className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                                    <div className="p-4 bg-white border border-gray-200 rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
+                                        <div className="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
                                             Address Line 1
                                         </div>
-                                        <div className="break-words text-sm font-medium text-gray-700 dark:text-white/80">
+                                        <div className="text-sm font-medium text-gray-700 break-words dark:text-white/80">
                                             {user?.customer?.address_line1 || 'N/A'}
                                         </div>
                                     </div>
 
                                     {/* Address Line 2 */}
-                                    <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-deepcharcoal">
-                                        <div className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                                    <div className="p-4 bg-white border border-gray-200 rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
+                                        <div className="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
                                             Address Line 2
                                         </div>
-                                        <div className="break-words text-sm font-medium text-gray-700 dark:text-white/80">
+                                        <div className="text-sm font-medium text-gray-700 break-words dark:text-white/80">
                                             {user?.customer?.address_line2 || 'N/A'}
                                         </div>
                                     </div>
 
                                     {/* City */}
-                                    <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-deepcharcoal">
-                                        <div className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                                    <div className="p-4 bg-white border border-gray-200 rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
+                                        <div className="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
                                             City
                                         </div>
-                                        <div className="break-words text-sm font-medium text-gray-700 dark:text-white/80">
+                                        <div className="text-sm font-medium text-gray-700 break-words dark:text-white/80">
                                             {user?.customer?.city || 'N/A'}
                                         </div>
                                     </div>
 
                                     {/* State */}
-                                    <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-deepcharcoal">
-                                        <div className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                                    <div className="p-4 bg-white border border-gray-200 rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
+                                        <div className="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
                                             State
                                         </div>
                                         <div className="text-sm font-medium text-gray-700 dark:text-white/80">
@@ -556,21 +556,21 @@ const Index = ({ user, countries }) => {
                                     </div>
 
                                     {/* Postal Code */}
-                                    <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-deepcharcoal">
-                                        <div className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                                    <div className="p-4 bg-white border border-gray-200 rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
+                                        <div className="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
                                             Postal Code
                                         </div>
-                                        <div className="break-words text-sm font-medium text-gray-700 dark:text-white/80">
+                                        <div className="text-sm font-medium text-gray-700 break-words dark:text-white/80">
                                             {user?.customer?.postal_code || 'N/A'}
                                         </div>
                                     </div>
 
                                     {/* Country */}
-                                    <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-deepcharcoal">
-                                        <div className="mb-2 text-xs font-medium uppercase tracking-wide text-indigo-600 dark:text-indigo-400">
+                                    <div className="p-4 bg-white border border-gray-200 rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
+                                        <div className="mb-2 text-xs font-medium tracking-wide text-indigo-600 uppercase dark:text-indigo-400">
                                             Country
                                         </div>
-                                        <div className="flex items-center gap-2 break-words text-sm font-semibold text-gray-700 dark:text-white/80">
+                                        <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 break-words dark:text-white/80">
                                             <span className="text-lg">
                                                 {user?.customer?.country?.iso_code || 'N/A'}
                                             </span>
@@ -581,11 +581,11 @@ const Index = ({ user, countries }) => {
 
                                 {/* Full Address Display */}
                                 {hasCompleteAddress && (
-                                    <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-deepcharcoal">
+                                    <div className="p-6 mt-6 bg-white border border-gray-200 rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
                                         <div className="flex items-start gap-3">
-                                            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-indigo-600">
+                                            <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 bg-indigo-600 rounded-lg">
                                                 <svg
-                                                    className="h-5 w-5 text-white"
+                                                    className="w-5 h-5 text-white"
                                                     fill="none"
                                                     stroke="currentColor"
                                                     viewBox="0 0 24 24"
@@ -599,10 +599,10 @@ const Index = ({ user, countries }) => {
                                                 </svg>
                                             </div>
                                             <div>
-                                                <div className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                                                <div className="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
                                                     Complete Address
                                                 </div>
-                                                <div className="overflow-hidden whitespace-pre-wrap break-words break-all text-sm leading-relaxed text-gray-700 dark:text-white/80">
+                                                <div className="overflow-hidden text-sm leading-relaxed text-gray-700 break-words break-all whitespace-pre-wrap dark:text-white/80">
                                                     {user?.customer?.address_line1},{' '}
                                                     {user?.customer?.address_line2}
                                                     <br />
@@ -630,17 +630,41 @@ const Index = ({ user, countries }) => {
                             <div className="fixed inset-0 z-50 flex items-center justify-center">
                                 {/* Backdrop */}
                                 <div
-                                    className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+                                    className="fixed inset-0 transition-opacity duration-300 bg-black/60 backdrop-blur-sm"
                                     onClick={() => setIsEditProfileOpen(false)}
                                 />
 
                                 {/* Modal Card */}
-                                <div className="relative z-10 w-full max-w-2xl rounded-2xl bg-white/95 p-8 shadow-2xl dark:bg-deepcharcoal dark:text-white/80">
+                                <div className="relative z-10 w-full max-w-2xl p-8 shadow-2xl rounded-2xl bg-white/95 dark:bg-deepcharcoal dark:text-white/80">
                                     {/* Header */}
-                                    <div className="flex items-center justify-between border-b border-gray-200 pb-4 dark:border-gray-700">
+                                    <div className="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
                                         <h2 className="text-xl font-semibold tracking-tight text-gray-700 dark:text-white/80">
                                             Edit Profile
                                         </h2>
+
+
+                                        <button
+                                            onClick={() => {
+                                                setIsEditProfileOpen(false)
+                                            }}
+                                            className="absolute z-50 p-2 text-gray-600 transition-colors rounded-full top-6 right-4 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-zinc-800"
+                                            aria-label="Close modal"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={2}
+                                                stroke="currentColor"
+                                                className="w-6 h-6"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M6 18L18 6M6 6l12 12"
+                                                />
+                                            </svg>
+                                        </button>
                                     </div>
 
                                     {/* Content */}
@@ -848,14 +872,35 @@ const Index = ({ user, countries }) => {
                                 {/* Fullscreen slide-over */}
                                 <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-white text-black dark:bg-deepcharcoal dark:text-white/80">
                                     {/* Top Bar */}
-                                    <div className="relative flex items-center border-b border-gray-200 px-4 py-3 dark:border-gray-800">
-                                        <h2 className="mx-auto text-lg font-semibold tracking-tight text-gray-800 dark:text-white/80">
+                                    <div className="flex items-center justify-center px-4 py-3 border-b border-gray-200 dark:border-gray-800">
+                                        <button
+                                            onClick={() => setIsEditProfileOpen(false)}
+                                            className="absolute p-1 rounded-full left-4 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.5}
+                                                stroke="currentColor"
+                                                className="size-6"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+                                                />
+                                            </svg>
+                                        </button>
+
+                                        <h2 className="mx-10 text-xl font-semibold tracking-tight text-gray-800 dark:text-gray-100">
                                             Edit Profile
                                         </h2>
                                     </div>
 
+
                                     {/* Content */}
-                                    <div className="flex-1 space-y-6 p-4">
+                                    <div className="flex-1 p-4 space-y-6">
                                         <form
                                             onSubmit={handleEditProfileSubmit}
                                             className="mb-24 space-y-5"
@@ -1065,17 +1110,42 @@ const Index = ({ user, countries }) => {
                             <div className="fixed inset-0 z-50 flex items-center justify-center">
                                 {/* Backdrop */}
                                 <div
-                                    className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+                                    className="fixed inset-0 transition-opacity duration-300 bg-black/60 backdrop-blur-sm"
                                     onClick={() => setIsChangePasswordOpen(false)}
                                 />
 
                                 {/* Modal Card */}
-                                <div className="relative z-10 w-full max-w-2xl rounded-2xl bg-white/95 p-8 shadow-2xl dark:bg-deepcharcoal dark:text-white/80">
+                                <div className="relative z-10 w-full max-w-2xl p-8 shadow-2xl rounded-2xl bg-white/95 dark:bg-deepcharcoal dark:text-white/80">
                                     {/* Header */}
-                                    <div className="flex items-center justify-between border-b border-gray-200 pb-4 dark:border-gray-700">
+                                    <div className="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
                                         <h2 className="text-xl font-semibold tracking-tight text-gray-700 dark:text-white/80">
                                             Change Password
                                         </h2>
+
+
+
+                                        <button
+                                            onClick={() => {
+                                                setIsChangePasswordOpen(false)
+                                            }}
+                                            className="absolute z-50 p-2 text-gray-600 transition-colors rounded-full top-6 right-4 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-zinc-800"
+                                            aria-label="Close modal"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={2}
+                                                stroke="currentColor"
+                                                className="w-6 h-6"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M6 18L18 6M6 6l12 12"
+                                                />
+                                            </svg>
+                                        </button>
                                     </div>
 
                                     {/* Content */}
@@ -1187,14 +1257,35 @@ const Index = ({ user, countries }) => {
                                 {/* Fullscreen slide-over */}
                                 <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-white text-black dark:bg-deepcharcoal dark:text-white/80">
                                     {/* Top Bar */}
-                                    <div className="relative flex items-center border-b border-gray-200 px-4 py-3 dark:border-gray-800">
-                                        <h2 className="mx-auto text-lg font-semibold tracking-tight text-gray-800 dark:text-white/80">
+                                    <div className="flex items-center justify-center px-4 py-3 border-b border-gray-200 dark:border-gray-800">
+                                        <button
+                                            onClick={() => setIsChangePasswordOpen(false)}
+                                            className="absolute p-1 rounded-full left-4 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.5}
+                                                stroke="currentColor"
+                                                className="size-6"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+                                                />
+                                            </svg>
+                                        </button>
+
+                                        <h2 className="mx-10 text-xl font-semibold tracking-tight text-gray-800 dark:text-gray-100">
                                             Change Password
                                         </h2>
                                     </div>
 
+
                                     {/* Content */}
-                                    <div className="flex-1 space-y-6 p-4">
+                                    <div className="flex-1 p-4 space-y-6">
                                         <form
                                             onSubmit={handleChangePasswordSubmit}
                                             className="mb-24 space-y-5"

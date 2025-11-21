@@ -1342,6 +1342,8 @@ const index = ({ google_map_api_key, search_history }) => {
                                 <PostDesktopModal
                                     setShowQrCode={setShowQrCode}
                                     post={feedGallery}
+                                    setFeedOpen={setFeedOpen}
+                                    setFeedGallery={setFeedGallery}
                                     search_history={search_history}
                                     setShowErrorMessage={setShowErrorMessage}
                                     setLinkCopied={setLinkCopied}
@@ -1360,6 +1362,8 @@ const index = ({ google_map_api_key, search_history }) => {
                                 <SmartphoneDesktopModal
                                     searchHistory={search_history}
                                     smartphone={feedGallery}
+                                    setFeedOpen={setFeedOpen}
+                                    setFeedGallery={setFeedGallery}
                                     setSmartphone={setFeedGallery}
                                     smartphoneDesktopModal={feedOpen}
                                     setSmartphoneDesktopModal={setFeedOpen}

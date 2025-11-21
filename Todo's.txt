@@ -573,6 +573,10 @@ Additional Work:
         75: Video Players Are Optimzied And Updated To New Layout and new Instagram like player added for Mobile Feed ✅
         76: Mobile Feed Header Changed To Overlay On The Feed Media ✅
         77: Mobile Feed Smartphone Feed Gallery Layout Updated And Now Its Just Like mobile Post Feed  Gallery ✅
+        78: Search Results List Each item Now it self a Redirect Link to that specific result and New Tab Icon Removed✅
+        79: Desktop Post/Product Viewer Media Display Alignment Adjusted  ✅
+        80: Website Desktop Modals Close Button Added On All websites modals ✅
+        81: Dashboard Desktop Modal Close Button Adding remeaning
 
     ) Redesigned Whole Website 4th Time Completed According To The LAYOUT Design Reference Provided ✅
 

@@ -19,6 +19,7 @@ const GlobalSearch = ({
     defaultPostFilters = {},
     defaultFiltersCleared = false,
     search_history = [],
+    recentSearchdropdownAutoShow,
 }) => {
     const windowSize = useWindowSize();
     const [searchApplying, setSearchApplying] = useState(false);
@@ -613,7 +614,7 @@ const GlobalSearch = ({
                         </div>
 
                         {/* Search History Dropdown */}
-                        {searchHistoryOpen && searchHistory.length > 0 && (
+                        {(searchHistoryOpen || recentSearchdropdownAutoShow) && searchHistory.length > 0 && (
                             <div className="absolute left-0 right-0 z-50 mt-2 bg-white border border-gray-300 rounded-md shadow-lg top-full dark:border-gray-700 dark:bg-deepcharcoal sm:left-2 sm:right-2">
                                 {/* Title */}
                                 <div className="flex gap-2 px-4 py-3 text-sm font-semibold text-gray-700 border-b border-gray-200 dark:border-gray-700 dark:text-gray-300">
@@ -633,7 +634,7 @@ const GlobalSearch = ({
                                     </svg>
                                     Your Recent Searches
                                 </div>
-                                <ul className="overflow-y-auto max-h-60">
+                                <ul className={`overflow-y-auto max-h-60`}>
                                     {searchHistoryLoading ? (
                                         <li className="flex items-center justify-center px-4 py-4">
                                             <div className="w-5 h-5 border-2 border-indigo-500 rounded-full animate-spin border-t-transparent"></div>
@@ -878,6 +879,29 @@ const GlobalSearch = ({
                                         </h2>
 
                                     </div>
+
+                                    <button
+                                        onClick={() => {
+                                            setIsSpatiotemporalFilters(false);
+                                        }}
+                                        className="absolute z-50 p-2 text-gray-600 transition-colors rounded-full top-7 right-4 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-zinc-800"
+                                        aria-label="Close modal"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            strokeWidth={2}
+                                            stroke="currentColor"
+                                            className="w-6 h-6"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                d="M6 18L18 6M6 6l12 12"
+                                            />
+                                        </svg>
+                                    </button>
 
                                     {/* Content */}
                                     <div className="mt-6 max-h-[100vh] space-y-8 overflow-y-auto pr-1">

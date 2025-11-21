@@ -18,7 +18,9 @@ const PostDesktopModal = ({
     auth,
     generateURL,
     navigateToHashtag,
-    Placeholder
+    Placeholder,
+    setFeedGallery,
+    setFeedOpen,
 }) => {
     const isDarkMode = useDarkMode();
     const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
@@ -67,6 +69,30 @@ const PostDesktopModal = ({
                     />
                 </div>
 
+                <button
+                    onClick={() => {
+                        setFeedGallery(null);
+                        setFeedOpen(false);
+                        window.history.replaceState({}, '', window.location.pathname);
+                    }}
+                    className="absolute z-50 p-2 text-gray-600 transition-colors rounded-full top-4 right-4 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-zinc-800"
+                    aria-label="Close modal"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}
+                        stroke="currentColor"
+                        className="w-6 h-6"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M6 18L18 6M6 6l12 12"
+                        />
+                    </svg>
+                </button>
                 <div className="relative h-[calc(100vh-60px)] overflow-y-auto pb-24 scrollbar-none">
                     <div className="flex flex-col min-h-full lg:flex-row">
                         {post && (
@@ -102,6 +128,7 @@ const PostDesktopModal = ({
                                         !post?.post_image_urls?.length) ||
                                         windowSize.width > 1024) && (
                                             <div className="w-full p-4 mx-auto space-y-4 md:px-10 lg:pl-6 lg:pr-10">
+
                                                 <div className="flex items-center justify-between">
                                                     <span className="font-medium text-md dark:text-white/80">
                                                         <div>

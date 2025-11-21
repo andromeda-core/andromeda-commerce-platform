@@ -264,6 +264,7 @@ const index = ({
                 search_history={search_history}
                 defaultQuery={query}
                 searchPage={true}
+                recentSearchdropdownAutoShow={!hasSearched}
             />
 
 
@@ -407,7 +408,20 @@ const index = ({
                             {/* Result List */}
                             <div className="divide-y divide-gray-200 dark:divide-slate-700">
                                 {tabResults.map((item) => (
-                                    <div
+                                    <Link
+                                        href={
+                                            item.type === 'posts' ?
+                                                route('home') + generateURL(item)
+                                                : route('home') + '?m-slug=' + item.slug
+
+                                        }
+                                        onClick={() => {
+                                            window.history.replaceState(
+                                                {},
+                                                '',
+                                                route('home'),
+                                            )
+                                        }}
                                         key={item?.slug}
                                         className="flex items-center gap-4 px-6 py-4 transition-colors cursor-pointer group hover:bg-gray-50 dark:hover:bg-gray-800/80"
                                     >
@@ -462,7 +476,9 @@ const index = ({
                                             <button
                                                 title="Copy Link"
                                                 className="flex items-center justify-center w-8 h-8 p-2 text-gray-500 rounded-full hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
-                                                onClick={() => {
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
                                                     setLinkCopied(true);
                                                     item.type === 'posts'
                                                         ? navigator.clipboard.writeText(
@@ -489,47 +505,9 @@ const index = ({
                                                 </svg>
                                             </button>
 
-                                            <Link
-                                                title="Open"
-                                                href={
-                                                    item.type === 'posts'
-                                                        ? route('home') + generateURL(item)
-                                                        : route('home') + '?m-slug=' + item.slug
-                                                }
-                                                onClick={() => {
-                                                    item.type === 'posts'
-                                                        ? window.history.replaceState(
-                                                            {},
-                                                            '',
-                                                            route('home'),
-                                                        )
-                                                        : window.history.replaceState(
-                                                            {},
-                                                            '',
-                                                            route('home'),
-                                                        );
-                                                }}
 
-                                                className="flex items-center justify-center w-full h-8 gap-2 p-2 text-gray-500 rounded-full hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
-                                            >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    strokeWidth={1.5}
-                                                    stroke="currentColor"
-                                                    className="size-4"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
-                                                    />
-                                                </svg>
-                                                <span className="text-xs">New Tab</span>
-                                            </Link>
                                         </div>
-                                    </div>
+                                    </Link>
                                 ))}
 
                             </div>

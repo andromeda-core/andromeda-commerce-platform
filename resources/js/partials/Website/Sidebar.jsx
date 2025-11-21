@@ -203,7 +203,7 @@ const Sidebar = ({
                             {moreDropdown &&
                                 createPortal(
                                     <div
-                                        className={`absolute top-[20rem] z-[9999] w-56 rounded-lg bg-white py-2 shadow-lg transition-transform duration-300 ease-in-out dark:bg-deepcharcoal`}
+                                        className={`absolute top-[14rem] z-[9999] w-56 rounded-lg bg-white py-2 shadow-lg transition-transform duration-300 ease-in-out dark:bg-deepcharcoal`}
                                         style={{
                                             position: 'fixed',
                                             transform: isCollapsed
@@ -211,7 +211,7 @@ const Sidebar = ({
                                                 : 'translateX(260px)',
                                         }}
                                     >
-                                        <ul className="flex flex-col overflow-auto overscroll-contain lg:max-h-[200px] xl:max-h-[300px]">
+                                        <ul className="flex flex-col overflow-auto overscroll-contain lg:max-h-[200px] xl:max-h-[400px]">
                                             {user && (
                                                 <>
                                                     {user?.role === 'Admin' && (
