@@ -8,7 +8,6 @@ import useDarkMode from '@/Hooks/useDarkMode';
 
 const PostDesktopModal = ({
     post,
-    search_history,
     setShowQrCode,
     setShowErrorMessage,
     setLinkCopied,
@@ -62,9 +61,8 @@ const PostDesktopModal = ({
     return createPortal(
         <>
             <div className="fixed inset-0 left-0 z-50 bg-white overscroll-contain dark:bg-zinc-950 lg:left-20">
-                <div className="w-full mx-auto lg:w-1/2">
+                <div className="w-1/2 px-20 m-auto mb-3">
                     <GlobalSearch
-                        search_history={search_history}
                         additional_filters={false}
                     />
                 </div>
@@ -130,7 +128,7 @@ const PostDesktopModal = ({
                                             <div className="w-full p-4 mx-auto space-y-4 md:px-10 lg:pl-6 lg:pr-10">
 
                                                 <div className="flex items-center justify-between">
-                                                    <span className="font-medium text-md dark:text-white/80">
+                                                    <span className="font-medium text-md text-[#0090FF]">
                                                         <div>
                                                             {post?.tag && (
                                                                 <button
@@ -164,7 +162,7 @@ const PostDesktopModal = ({
                                                         {showPostDesktopActionsDropdown && (
                                                             <div
                                                                 data-post-actions-dropdown
-                                                                className="absolute right-0 z-50 w-48 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg top-full dark:border-zinc-800 dark:bg-deepcharcoal"
+                                                                className="absolute right-0 z-50 w-48 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg top-full dark:border-gray-700 dark:bg-deepcharcoal"
                                                             >
                                                                 <div className="py-1">
                                                                     <button

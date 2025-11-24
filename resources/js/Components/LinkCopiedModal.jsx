@@ -21,7 +21,7 @@ const LinkCopiedModal = ({ linkCopied, setLinkCopied }) => {
             />
 
             <div
-                className="flex flex-col items-center z-[100] justify-center px-6 py-4 bg-white border shadow-lg pointer-events-auto animate-fade-in-up rounded-xl dark:bg-deepcharcoal border-black/5 dark:border-gray-900"
+                className="flex flex-col items-center z-[100] justify-center px-6 py-4 bg-white border shadow-lg pointer-events-auto animate-fade-in-up rounded-xl dark:bg-deepcharcoal border-black/5 dark:border-gray-700"
                 style={{
                     minWidth: "200px",
                 }}

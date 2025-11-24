@@ -30,12 +30,26 @@ class GlobalSearchController extends Controller
     {
         $floors = $this->floor->getFloorsForSearch();
         $google_map_api_key = $this->globalSearch->getGoogleMapApiKey();
-        $search_history = $this->searchHistory->getHistory($request);
-        $filters = [];
+        $search_histories_response = $this->searchHistory->getHistory($request);
+
+        $search_histories = $search_histories_response['results'];
+        $search_history_next_page_url = $search_histories_response['next_page_url'];
+        $all_search_histories = [];
+        $filters = [
+
+            'date_range' => null,
+            'from_floor_id' => null,
+            'to_floor_id' => null,
+            'address' => [
+                'lat' => null,
+                'lng' => null,
+            ],
+            'radius' => null,
+        ];
         $results = [];
         $pagination = ['next_page_url' => null];
         $query = null;
-        $has_searched = false;
+
         if ($request->has('search')) {
             $response = $this->results($request);
 
@@ -43,13 +57,20 @@ class GlobalSearchController extends Controller
             $results = $response['results'];
             $pagination = $response['pagination'];
             $query = $response['query'];
-            $has_searched = true;
 
-            return Inertia::render('Website/Search/index', compact('floors', 'has_searched', 'google_map_api_key', 'search_history', 'filters', 'results', 'pagination', 'query'));
+            $new_search_history = $response['new_search_history'];
+
+            $all_search_histories = collect($search_histories);
+
+            if (! empty($new_search_history)) {
+                $all_search_histories->prepend($new_search_history)->unique('id')->values();
+            }
+
+            return Inertia::render('Website/Search/index', compact('floors', 'google_map_api_key', 'search_history_next_page_url', 'all_search_histories', 'search_histories', 'filters', 'results', 'pagination', 'query'));
 
         }
 
-        return Inertia::render('Website/Search/index', compact('floors', 'google_map_api_key', 'has_searched', 'search_history', 'filters', 'results', 'pagination', 'query'));
+        return Inertia::render('Website/Search/index', compact('floors', 'google_map_api_key', 'all_search_histories', 'search_histories', 'filters', 'results', 'search_history_next_page_url', 'pagination', 'query'));
     }
 
     public function autoCompletion(Request $request)
@@ -99,6 +120,7 @@ class GlobalSearchController extends Controller
             'pagination' => $data['pagination'],
             'query' => $query,
             'filters' => $filters,
+            'new_search_history' => $data['new_search_history'],
         ];
     }
 
@@ -148,5 +170,57 @@ class GlobalSearchController extends Controller
         $response = $this->searchHistory->destroyHistory($request, $request->input('id'));
 
         return response()->json($response);
+    }
+
+    public function getSearchHistoryResults(Request $request)
+    {
+        if (! $request->isXmlHttpRequest()) {
+            return to_route('website.global-search.index');
+        }
+
+        $response = $this->globalSearch->getSearchHistoryResults($request);
+
+        return response()->json([
+            'status' => true,
+            ...$response,
+        ]);
+    }
+
+    public function getSearchHistoryResultsGetMore(Request $request)
+    {
+
+        if (! $request->isXmlHttpRequest()) {
+            return to_route('website.global-search.index');
+        }
+
+        $response = $this->searchHistory->getHistory($request);
+
+        return response()->json([
+            'status' => true,
+            ...$response,
+        ]);
+    }
+
+    public function getSingleHistoryResults(Request $request)
+    {
+
+        if (! $request->isXmlHttpRequest()) {
+            return to_route('website.global-search.index');
+        }
+
+        $response = $this->searchHistory->getSingleHistory($request);
+
+        if ($response['status'] === false) {
+            return response()->json([
+                'status' => false,
+                ...$response,
+            ]);
+        }
+
+        return response()->json([
+            'status' => true,
+            ...$response,
+        ]);
+
     }
 }

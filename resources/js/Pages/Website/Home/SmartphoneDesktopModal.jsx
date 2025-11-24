@@ -15,9 +15,7 @@ const SmartphoneDesktopModal = ({
     setSmartphoneDesktopModal,
     smartphone,
     setSmartphone,
-    searchHistory,
     setShowQrCode,
-    showQrCode,
     auth,
     currency,
     cart_items,
@@ -377,9 +375,9 @@ const SmartphoneDesktopModal = ({
             {createPortal(
                 <>
                     <div className="fixed inset-0 left-0 z-50 bg-white dark:bg-zinc-950 lg:left-20">
-                        <div className="w-full mx-auto lg:w-1/2">
+                        <div className="w-1/2 px-20 m-auto mb-3">
                             <GlobalSearch
-                                search_history={searchHistory}
+
                                 additional_filters={false}
                             />
                         </div>
@@ -432,7 +430,7 @@ const SmartphoneDesktopModal = ({
                                             windowSize.width > 1024) && (
                                                 <div className="w-full p-4 mx-auto space-y-4 md:px-10 lg:pl-6 lg:pr-10">
                                                     <div className="flex items-center justify-between">
-                                                        <span className="text-lg font-medium dark:text-white/80">
+                                                        <span className="text-lg font-medium text-[#0090FF]">
                                                             <div>
                                                                 {smartphone?.tag && (
                                                                     <button
@@ -473,7 +471,7 @@ const SmartphoneDesktopModal = ({
                                                             {showSmartphoneDesktopActionsDropdown && (
                                                                 <div
                                                                     data-smartphone-actions-dropdown
-                                                                    className="absolute right-0 z-50 w-48 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg top-full dark:border-zinc-800 dark:bg-deepcharcoal"
+                                                                    className="absolute right-0 z-50 w-48 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg top-full dark:border-gray-700 dark:bg-deepcharcoal"
                                                                 >
                                                                     <div className="py-1">
                                                                         <button
@@ -861,46 +859,7 @@ const SmartphoneDesktopModal = ({
                 document.getElementById('modal-root') || document.body,
             )}
 
-            {showQrCode &&
-                createPortal(
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center">
-                        {/* Overlay */}
-                        <div
-                            className="fixed inset-0 bg-black/40 backdrop-blur-sm"
-                            onClick={() => setShowQrCode(false)}
-                        ></div>
 
-                        {/* Modal */}
-                        <div
-                            role="dialog"
-                            aria-modal="true"
-                            aria-labelledby="qrCodeTitle"
-                            className={`relative z-[101] w-full max-w-[200px] rounded-2xl bg-white pt-3 text-gray-900 shadow-xl dark:bg-deepcharcoal lg:max-w-sm lg:p-6`}
-                        >
-                            <div className="text-center">
-                                <div className="flex justify-center">
-                                    <QRCode
-                                        className={`${windowSize.width > 1024 ? 'size-30' : 'size-28'} border-2`}
-                                        value={route('home') + '/?m-slug=' + smartphone?.slug}
-                                        viewBox="0 0 256 256"
-                                        level="H"
-                                        includemargin="true"
-                                        bgColor="#ffffff"
-                                        fgColor="#000000"
-                                    />
-                                </div>
-
-                                <h2
-                                    id="qrCodeTitle"
-                                    className="my-3 text-base font-semibold dark:text-white/80"
-                                >
-                                    Scan QR Code
-                                </h2>
-                            </div>
-                        </div>
-                    </div>,
-                    document.body,
-                )}
 
             {linkCopied && (
                 <LinkCopiedModal linkCopied={linkCopied} setLinkCopied={setLinkCopied} />

@@ -40,7 +40,7 @@ const BookmarkStatusChangedModal = ({
                     px-6 py-4
                     flex flex-col items-center justify-center
                     border border-black/5
-                    dark:border-gray-900
+                   dark:border-gray-700
                 "
                 style={{ minWidth: "190px" }}
             >

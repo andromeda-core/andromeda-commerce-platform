@@ -9,4 +9,6 @@ interface ISearchHistoryRepository
     public function getHistory(Request $request);
 
     public function destroyHistory(Request $request, string $id);
+
+    public function getSingleHistory(Request $request);
 }

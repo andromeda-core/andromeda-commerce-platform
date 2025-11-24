@@ -168,7 +168,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                             </button>
 
                             {actionDropdownOpen && (
-                                <div className="absolute right-0 z-20 w-48 bg-white border border-gray-200 rounded-lg shadow-lg top-8 dark:border-white/10 dark:bg-deepcharcoal">
+                                <div className="absolute right-0 z-20 w-48 bg-white border border-gray-200 rounded-lg shadow-lg top-8 dark:border-gray-700 dark:bg-deepcharcoal">
                                     <div className="py-1">
                                         <button
                                             onClick={() => {

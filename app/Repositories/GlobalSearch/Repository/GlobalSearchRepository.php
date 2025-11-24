@@ -267,7 +267,9 @@ class GlobalSearchRepository implements IGlobalSearchRepository
 
             $query = trim($request->input('query'));
 
-            if (isset($post_preferences['show_posts']) && $post_preferences['show_posts'] == true) {
+            $new_search_history = null;
+
+            if (isset($post_preferences['show_posts']) && $post_preferences['show_posts'] == true && (! empty($query) || (isset($post_filters['address']) && ! empty($post_filters['address']['lat']) && ! empty($post_filters['address']['lng']) && ! empty($post_filters['radius'])))) {
                 $posts = $this->post::query();
 
                 if (isset($post_filters['address']) && ! empty($post_filters['address']['lat']) && ! empty($post_filters['address']['lng']) && ! empty($post_filters['radius'])) {
@@ -397,7 +399,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
 
             }
 
-            if (isset($post_preferences['show_products']) && $post_preferences['show_products'] == true) {
+            if (isset($post_preferences['show_products']) && $post_preferences['show_products'] == true && ! empty($query)) {
                 if (isset($post_filters['address']) && blank($post_filters['address']['lat']) && blank($post_filters['address']['lng'])) {
                     $smartphones = $this->smartphone::query();
 
@@ -484,35 +486,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
 
                 if (empty($previous_search) && $results->isNotEmpty()) {
 
-                    $results_for_history = [];
-                    $post = $results->where('type', 'posts')->first();
-                    $smartphone = $results->where('type', 'smartphones')->first();
-
-                    if (! empty($post)) {
-                        $results_for_history[] = [
-                            'type' => 'post',
-                            'id' => $post['id'] ?? null,
-                            'title' => $post['title'] ?? null,
-                            'tag' => $post['tag'] ?? null,
-                            'image' => ! empty($post['image']) ? $post['image'] : null,
-                            'location_name' => $post['location_name'] ?? null,
-                            'added_at' => $post['created_at'] ?? null,
-
-                        ];
-                    } elseif (! empty($smartphone)) {
-                        $results_for_history[] = [
-                            'type' => 'smartphone',
-                            'id' => $smartphone['id'] ?? null,
-                            'name' => $smartphone['name'] ?? null,
-                            'capacity' => $smartphone['capacity'] ?? null,
-                            'image' => ! empty($smartphone['image']) ? $smartphone['image'] : null,
-                            'added_at' => $smartphone['created_at'] ?? null,
-                        ];
-                    } else {
-                        $results_for_history = null;
-                    }
-
-                    $this->searchHistory->create([
+                    $new_search_history = $this->searchHistory->create([
                         'user_id' => $request->user()->id,
                         'query' => $query ?: null,
                         'filters' => $normalizedFilters,
@@ -520,11 +494,29 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                         'filter_summary' => ! empty($post_filters['address']['lat'])
                             ? "Advanced Filter You Applied: {$post_filters['address']['lat']}, {$post_filters['address']['lng']}"
                             : null,
-                        'results' => json_encode($results_for_history),
+                        'results' => json_encode($results),
                         'results_count' => $results->count(),
                     ]);
                 }
             }
+
+            // $this->searchHistory->refresh();
+            // $histories = $this->searchHistory->where('user_id', $request->user()?->id)
+            //     ->latest('created_at')
+            //     ->limit(10)
+            //     ->get()
+            //     ->map(function ($history) {
+
+            //         if (! empty($history->filters)) {
+            //             $history->filters = json_decode($history->filters);
+            //         }
+
+            //         if (! empty($history->results)) {
+            //             $history->results = json_decode($history->results);
+            //         }
+
+            //         return $history;
+            //     });
 
             $hasMore = ($results->where('type', 'posts')->count() === $perPage) || ($results->where('type', 'smartphones')->count() === $perPage);
             $queryParams = [
@@ -543,6 +535,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
             return [
                 'status' => true,
                 'data' => $results,
+                'new_search_history' => $new_search_history,
                 'pagination' => [
                     'current_page' => (int) $page,
                     'per_page' => (int) $perPage,
@@ -579,5 +572,66 @@ class GlobalSearchRepository implements IGlobalSearchRepository
         $normalizedJson = json_encode($filters, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         return md5($normalizedJson);
+    }
+
+    public function getSearchHistoryResults(Request $request)
+    {
+        $id = $request->input('id');
+        $search_history_results = $this->searchHistory
+            ->when(! empty($id), function ($query) use ($id) {
+                return $query->where('id', $id);
+            })
+            ->where('user_id', $request->user()?->id)
+            ->latest('created_at')
+            ->paginate(10);
+
+        $allResults = $search_history_results->getCollection()
+            ->flatMap(function ($history) {
+                if (empty($history->results)) {
+                    return [];
+                }
+
+                $results = json_decode($history->results);
+
+                if (is_array($results)) {
+                    return collect($results)->map(function ($result) {
+
+                        return (object) [
+                            'id' => $result->id ?? null,
+                            'type' => $result->type ?? null,
+                            'slug' => $result->slug ?? null,
+                            'title' => $result->title ?? null,
+                            'name' => $result->name ?? null,
+                            'image' => $result->image ?? null,
+                            'location_name' => $result->location_name ?? null,
+                            'capacity' => $result->capacity ?? null,
+                            'tag' => $result->tag ?? null,
+                            'created_at' => $result->created_at ?? null,
+                            'matchType' => $result->matchType ?? null,
+                            'latitude' => $result->latitude ?? null,
+                            'longitude' => $result->longitude ?? null,
+                            'floor' => $result->floor ?? null,
+                            'timestamp' => $result->timestamp ?? null,
+                        ];
+                    });
+                }
+
+                return [];
+            })
+            ->filter(function ($result) {
+
+                return ! is_null($result->id) && ! is_null($result->type);
+            })
+            ->unique(function ($result) {
+
+                return $result->type.'-'.$result->id;
+            })
+            ->values();
+
+        return [
+            'results' => $allResults->all(),
+            'next_page_url' => $search_history_results->nextPageUrl(),
+            'total' => $allResults->count(),
+        ];
     }
 }

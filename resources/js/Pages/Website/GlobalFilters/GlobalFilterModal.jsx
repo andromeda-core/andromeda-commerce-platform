@@ -427,7 +427,7 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
                     className="fixed inset-0 bg-black/30 backdrop-blur-sm"
                     onClick={() => setFilterModal(false)}
                 />
-                <div className="relative w-full max-w-2xl bg-white shadow-2xl rounded-2xl dark:bg-deepcharcoal">
+                <div className="relative w-full max-w-2xl bg-white border shadow-2xl rounded-2xl dark:bg-deepcharcoal border-black/5 dark:border-gray-700">
 
 
                     <div className="py-8 ">

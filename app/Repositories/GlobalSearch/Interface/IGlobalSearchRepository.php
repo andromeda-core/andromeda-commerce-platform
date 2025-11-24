@@ -9,4 +9,6 @@ interface IGlobalSearchRepository
     public function search(Request $request);
 
     public function getGoogleMapApiKey();
+
+    public function getSearchHistoryResults(Request $request);
 }

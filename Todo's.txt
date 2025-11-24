@@ -576,7 +576,13 @@ Additional Work:
         78: Search Results List Each item Now it self a Redirect Link to that specific result and New Tab Icon Removed✅
         79: Desktop Post/Product Viewer Media Display Alignment Adjusted  ✅
         80: Website Desktop Modals Close Button Added On All websites modals ✅
-        81: Dashboard Desktop Modal Close Button Adding remeaning
+        81: PC POST / PRODUCT VIEWER MODAL GLOBAL SEARCH ADJUSTED ✅
+        82: add a button or function that allows the user to download the QR image at an appropriate location on the screen. ✅ .
+        83: Borders Adjustments On Link Copied Modal, Bookmark Modal, Global Filter Modal, Post/Product Dropdown,  Dark Theme Borders Either make the border color brighter or make it thicker — choose whichever you think is better.  ✅ ,
+        84: Return and Exchange policy page and Implementation On Mobile with some Initial Text On Mobile with accordination and On PC Desktop it will simply redirect
+        85: Hashtag Color  To text-[#0090FF] Changed On PC Desktop Posts/ Smartphones Viewer ✅
+        86: Whole Search Page Logic Re-Written According to What i disscussed with joseph ✅
+
 
     ) Redesigned Whole Website 4th Time Completed According To The LAYOUT Design Reference Provided ✅
 

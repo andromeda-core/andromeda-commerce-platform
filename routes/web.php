@@ -68,6 +68,9 @@ Route::group(['as' => 'website.'], function () {
         Route::get('/global-search-getmoreresults', 'getMoreResults')->name('getmoreresults');
         // Route::delete('/global-search-search-session-destroy', 'searchSessionDestroy')->name('search-session-destroy');
         Route::delete('global-search-destroy-history', 'destroyHistory')->name('search-history-destroy');
+        Route::get('/global-search-history-results', 'getSearchHistoryResults')->name('history-results');
+        Route::get('/global-search-history-results-getmore', 'getSearchHistoryResultsGetMore')->name('history-results-getmore');
+        Route::get('/global-search-get-history-result', 'getSingleHistoryResults')->name('get-history-result');
     });
 
     // Global Filters

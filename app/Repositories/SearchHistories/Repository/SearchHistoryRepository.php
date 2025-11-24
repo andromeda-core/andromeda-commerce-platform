@@ -16,25 +16,34 @@ class SearchHistoryRepository implements ISearchHistoryRepository
     public function getHistory(Request $request)
     {
         if (! $request->user()) {
-            return [];
+            return [
+                'results' => [],
+                'next_page_url' => null,
+            ];
         }
 
-        return $this->searchHistory->where('user_id', $request->user()?->id)
+        $histories = $this->searchHistory->where('user_id', $request->user()?->id)
             ->latest('created_at')
-            ->limit(10)
-            ->get()
-            ->map(function ($history) {
+            ->paginate(10)
+            ->withPath(route('website.global-search.history-results-getmore'));
 
-                if (! empty($history->filters)) {
-                    $history->filters = json_decode($history->filters);
-                }
+        $histories->getCollection()->transform(function ($history) {
+            $results = collect();
 
-                if (! empty($history->results)) {
-                    $history->results = json_decode($history->results);
-                }
+            if (! empty($history->results)) {
+                $results = json_decode($history->results);
+            }
 
-                return $history;
-            });
+            $history->results = $results;
+
+            return $history;
+        });
+
+        return [
+            'results' => $histories->items(),
+            'next_page_url' => $histories->nextPageUrl(),
+        ];
+
     }
 
     public function destroyHistory(Request $request, string $id)
@@ -62,5 +71,36 @@ class SearchHistoryRepository implements ISearchHistoryRepository
                 'message' => $e->getMessage(),
             ];
         }
+    }
+
+    public function getSingleHistory(Request $request)
+    {
+
+        $query = $request->input('query');
+
+        $history = $this->searchHistory->where('user_id', $request->user()?->id)
+            ->where('query', $query)
+            ->latest('created_at')
+            ->first();
+
+        $results = [];
+
+        if (empty($history)) {
+            return [
+                'status' => false,
+                'history' => null,
+                'history_results' => null,
+            ];
+        }
+
+        if (! empty($history?->results)) {
+            $results = json_decode($history->results);
+        }
+
+        return [
+            'status' => true,
+            'history' => $history,
+            'history_results' => $results,
+        ];
     }
 }

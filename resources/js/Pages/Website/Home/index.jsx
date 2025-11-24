@@ -16,9 +16,10 @@ import VideoThumbnail from '@/Components/VideoThumbnail';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 import PostDesktopModal from './PostDesktopModal';
 import MobileFeed from './MobileFeed';
+import Spinner from '@/Components/Spinner';
 
 
-const index = ({ google_map_api_key, search_history }) => {
+const index = ({ google_map_api_key }) => {
     const { currency, auth, cart_items } = usePage().props;
 
     const [ErrorMessage, setErrorMessage] = useState(null);
@@ -650,7 +651,107 @@ const index = ({ google_map_api_key, search_history }) => {
         }
     };
 
+    // QR CODE DOWNLOAD STATE AND DOWNLOAD METHOD
+    const [isQrDownloading, setIsQrDownloading] = useState(false);
+    const handleDownloadQRCode = () => {
+        setIsQrDownloading(true);
+        setTimeout(() => {
+            const svg = document.querySelector('#qr-code-canvas');
 
+            if (!svg) {
+                console.error('SVG element not found');
+                setIsQrDownloading(false);
+                return;
+            }
+
+            try {
+                const viewBox = svg.getAttribute('viewBox') || '0 0 256 256';
+                const [, , vbWidth, vbHeight] = viewBox.split(' ').map(Number);
+
+
+                const svgClone = svg.cloneNode(true);
+                svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
+
+                const svgData = new XMLSerializer().serializeToString(svgClone);
+
+
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+
+                const padding = 40;
+                const qrSize = 800;
+                const totalSize = qrSize + (padding * 2);
+
+                canvas.width = totalSize;
+                canvas.height = totalSize;
+
+                const img = new Image();
+                const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+                const url = URL.createObjectURL(svgBlob);
+
+                img.onload = () => {
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, totalSize, totalSize);
+
+
+                    ctx.drawImage(img, padding, padding, qrSize, qrSize);
+
+
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(padding - 1, padding - 1, qrSize + 2, qrSize + 2);
+
+
+                    canvas.toBlob((blob) => {
+                        if (!blob) {
+                            console.error('Failed to create blob');
+                            URL.revokeObjectURL(url);
+                            setIsQrDownloading(false);
+                            return;
+                        }
+
+                        const downloadUrl = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+
+
+                        const filename = feedGallery.type === 'posts'
+                            ? `qr-code-post-${feedGallery.id || 'download'}.png`
+                            : `qr-code-${feedGallery.slug || 'download'}.png`;
+
+                        link.href = downloadUrl;
+                        link.download = filename;
+
+
+                        document.body.appendChild(link);
+                        link.click();
+
+                        // Cleanup
+                        setTimeout(() => {
+                            document.body.removeChild(link);
+                            URL.revokeObjectURL(downloadUrl);
+                            URL.revokeObjectURL(url);
+                            setIsQrDownloading(false);
+                        }, 100);
+                    }, 'image/png', 1.0);
+                };
+
+                img.onerror = () => {
+                    console.error('Failed to load SVG image');
+                    URL.revokeObjectURL(url);
+                    setIsQrDownloading(false);
+                };
+
+                img.src = url;
+
+            } catch (error) {
+                console.error('Error downloading QR code:', error);
+                setIsQrDownloading(false);
+            }
+        }, 100);
+    };
 
 
 
@@ -869,6 +970,8 @@ const index = ({ google_map_api_key, search_history }) => {
 
 
 
+
+
     return (
         <MainLayout>
             <Head title="Home" />
@@ -926,7 +1029,7 @@ const index = ({ google_map_api_key, search_history }) => {
                             <GlobalSearch
                                 additional_filters={false}
                                 google_map_api_key={google_map_api_key}
-                                search_history={search_history}
+
                             />
                         </div>
                     )}
@@ -1344,7 +1447,7 @@ const index = ({ google_map_api_key, search_history }) => {
                                     post={feedGallery}
                                     setFeedOpen={setFeedOpen}
                                     setFeedGallery={setFeedGallery}
-                                    search_history={search_history}
+
                                     setShowErrorMessage={setShowErrorMessage}
                                     setLinkCopied={setLinkCopied}
                                     setBookmarkStatusChanged={setBookmarkStatusChanged}
@@ -1360,7 +1463,7 @@ const index = ({ google_map_api_key, search_history }) => {
 
                             {feedGallery?.type === 'smartphones' && (
                                 <SmartphoneDesktopModal
-                                    searchHistory={search_history}
+
                                     smartphone={feedGallery}
                                     setFeedOpen={setFeedOpen}
                                     setFeedGallery={setFeedGallery}
@@ -1432,6 +1535,7 @@ const index = ({ google_map_api_key, search_history }) => {
                                     <div className="text-center">
                                         <div className="flex justify-center">
                                             <QRCode
+                                                id="qr-code-canvas"
                                                 className={`${windowSize.width > 1024 ? 'size-52' : 'size-48'} border-2`}
                                                 {...(feedGallery.type === 'posts' && {
                                                     value: route('home') + generateURL(feedGallery),
@@ -1456,6 +1560,39 @@ const index = ({ google_map_api_key, search_history }) => {
                                         >
                                             Scan QR Code
                                         </h2>
+
+                                        {/* Download Button */}
+                                        <button
+                                            onClick={handleDownloadQRCode}
+                                            className={` ${isQrDownloading && 'pointer-events-none opacity-50'} inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-gray-900 transition-colors bg-white rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-white  focus:ring-offset-2 focus:ring-offset-gray-900`}
+                                            aria-label="Download QR Code"
+                                            disabled={isQrDownloading}
+
+                                        >
+
+                                            Download QR Code
+
+
+                                            {isQrDownloading ? (
+
+                                                <Spinner />
+                                            ) : (
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="w-4 h-4"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                                    />
+                                                </svg>
+                                            )}
+                                        </button>
                                     </div>
                                 </div>
                             </div>,
