@@ -499,7 +499,7 @@ export default function CustomizedVideoPlayer({
                 {/* Timeline Bar */}
                 {showControls && (
                     <div className="absolute bottom-0 left-0 right-0 z-50 w-full pointer-events-none pb-safe">
-                        <div className="absolute inset-0 bg-white dark:bg-black/50 backdrop-blur-md" />
+                        <div className="absolute inset-0 bg-white dark:bg-black/50 " />
 
                         <div className="relative flex items-center gap-3 px-3 py-2 pointer-events-auto">
                             {/* Current Time */}

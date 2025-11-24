@@ -9,12 +9,13 @@ import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 // Memoized result item component
 const ResultItem = memo(({ item, onCopyLink, generateURL }) => {
     return (
-        <Link
+        <a
             href={
                 item.type === 'posts'
                     ? route('home') + generateURL(item)
                     : route('home') + '?m-slug=' + item.slug
             }
+            target='_blank'
             onClick={() => window.history.replaceState({}, '', route('home'))}
             className="flex items-center gap-4 px-6 py-4 transition-colors cursor-pointer group hover:bg-gray-50 dark:hover:bg-gray-800/80"
         >
@@ -93,7 +94,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL }) => {
                     </svg>
                 </button>
             </div>
-        </Link>
+        </a>
     );
 });
 
@@ -741,7 +742,7 @@ const Index = ({
             <div className="pb-20 sm:px-6 sm:pb-20 lg:px-8">
                 <div className="px-3 text-gray-900 bg-gray-50 rounded-xl dark:bg-deepcharcoal dark:text-gray-100 sm:px-6 lg:px-8">
                     {/* Header with Tabs */}
-                    <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700">
+                    <div className="px-0 py-4 border-b border-gray-200 dark:border-slate-700">
                         <div className="relative flex items-center gap-2">
                             {/* Left Arrow - Only needs will-change on hover/interaction */}
                             {state.canScrollLeft && (
@@ -771,13 +772,13 @@ const Index = ({
                             {/* Scrollable Container - GPU acceleration for smooth scrolling */}
                             <div
                                 ref={scrollContainerRef}
-                                className="flex items-center flex-1 gap-6 px-10 overflow-x-auto scrollbar-none"
+                                className="flex items-center flex-1 gap-3 px-1 overflow-x-auto scrollbar-none"
                                 style={{
                                     transform: 'translateZ(0)', // ✅ Only on the scrolling container
                                     WebkitOverflowScrolling: 'touch'
                                 }}
                             >
-                                {/* Main Filter Tabs - No GPU acceleration needed on children */}
+
                                 {tabs.map((tab) => (
                                     <button
                                         key={tab.key}
@@ -942,7 +943,7 @@ const Index = ({
 
                     {/* Match Types Row */}
                     {matchTypes.length > 0 && (
-                        <div className="px-6 py-2 border-b border-gray-200 dark:border-slate-700 flex items-center gap-3">
+                        <div className="px-0 py-2 border-b border-gray-200 dark:border-slate-700 flex items-center gap-3">
                             {/* Active Filters Display */}
                             {state.activeTab !== 'all' && (() => {
                                 const { address, radius, from_floor_id, to_floor_id, date_range } =

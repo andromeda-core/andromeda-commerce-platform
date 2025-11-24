@@ -582,7 +582,9 @@ Additional Work:
         84: Return and Exchange policy page and Implementation On Mobile with some Initial Text On Mobile with accordination and On PC Desktop it will simply redirect
         85: Hashtag Color  To text-[#0090FF] Changed On PC Desktop Posts/ Smartphones Viewer ✅
         86: Whole Search Page Logic Re-Written According to What i disscussed with joseph ✅
-
+        87: Alignment Of Tabs In Search Page ✅
+        88: Added Opening new Window When clicking Search Result ✅
+        89: Customized Video Player From Desktop Video Player Bottom Shadow Removed ✅
 
     ) Redesigned Whole Website 4th Time Completed According To The LAYOUT Design Reference Provided ✅
 
