@@ -10,6 +10,7 @@ class PackageRecording extends Model
     protected $fillable = [
         'order_id',
         'package_video',
+        'thumbnail_url',
         'is_opened',
         'opened_at',
     ];

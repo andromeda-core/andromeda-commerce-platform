@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function getContrastingColor(hex) {
     hex = hex.replace('#', '');
     let r = parseInt(hex.substring(0, 2), 16);

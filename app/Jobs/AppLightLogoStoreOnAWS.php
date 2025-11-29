@@ -19,7 +19,7 @@ class AppLightLogoStoreOnAWS implements ShouldQueue
     public $timeout = 300;
 
     public function __construct(
-        private string $file,
+        private ?string $file,
         private GeneralSetting $general_setting,
         private $general_setting_dir = 'GeneralSetting/Logos/',
     ) {}
@@ -33,7 +33,10 @@ class AppLightLogoStoreOnAWS implements ShouldQueue
         $fullLocalPath = Storage::disk('local')->path($this->file);
         $extension = pathinfo($this->file, PATHINFO_EXTENSION);
         $new_name = time().uniqid().'-'.Str::random(10).'.'.$extension;
-        Storage::disk('s3')->put($this->general_setting_dir.$new_name, file_get_contents($fullLocalPath));
+        Storage::disk('s3')->put($this->general_setting_dir.$new_name, file_get_contents($fullLocalPath), [
+            'CacheControl' => 'public, max-age=31536000',
+            'ContentType' => mime_content_type($fullLocalPath),
+        ]);
         Storage::disk('local')->delete($this->file);
 
         $url = Storage::disk('s3')->url($this->general_setting_dir.$new_name);

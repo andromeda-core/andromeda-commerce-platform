@@ -116,12 +116,13 @@ export default function SmartphoneMediaViewer({
             >
                 <div className="invisible w-full h-full">
                     <img
-                        src={mediaItems[selected]?.url}
+                        src={mediaItems[selected]?.url || Placeholder}
                         alt={`Smartphone ${selected}`}
                         className="h-full w-full min-w-[300px] max-w-[300px] object-contain lg:min-w-[500px]"
                         loading="lazy"
                         decoding="async"
                         fetchpriority="low"
+                        onError={(e) => e.target.src = Placeholder}
                     />
                 </div>
                 <AnimatePresence initial={false} custom={direction}>
@@ -143,7 +144,7 @@ export default function SmartphoneMediaViewer({
                                     className="absolute inset-0 flex items-center justify-center w-full h-full"
                                 >
                                     <img
-                                        src={item.url}
+                                        src={item.url || Placeholder}
                                         alt={`Smartphone ${idx}`}
                                         className="object-contain w-full h-full rounded-xl"
                                         onLoad={() => loadedCache.current.add(item.url)}
@@ -172,7 +173,7 @@ export default function SmartphoneMediaViewer({
                                 }`}
                         >
                             <img
-                                src={item.url}
+                                src={item.url || Placeholder}
                                 alt={`Smartphone ${idx}`}
                                 className="object-contain object-center w-full h-full "
                                 onError={(e) => e.target.src = Placeholder}

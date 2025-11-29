@@ -1,5 +1,4 @@
 import Card from '@/Components/Card';
-import LinkButton from '@/Components/LinkButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';

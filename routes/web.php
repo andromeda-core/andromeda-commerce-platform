@@ -568,6 +568,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 });
 
             });
+
     });
 
     // Order Invoice Routes
@@ -610,7 +611,7 @@ Route::get('/pwa-manifest', function () {
     $manifest = [
         'name' => $name,
         'short_name' => $shortName ?? $name,
-        'description' => $general_setting->app_description ?? 'Shop smarter with YesBigShop — your modern global marketplace offering trending products, secure checkout, and fast delivery, all in one simple app.',
+        'description' => $general_setting->app_description ?? 'Shop smarter with YESBIGSHOP — your modern global marketplace offering trending products, secure checkout, and fast delivery, all in one simple app.',
         'start_url' => '/',
         'display' => 'standalone',
         'theme_color' => $themeColor,

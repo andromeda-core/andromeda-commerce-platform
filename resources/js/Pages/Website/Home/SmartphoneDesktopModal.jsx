@@ -1,10 +1,9 @@
 import GlobalSearch from '@/Components/GlobalSearch';
 import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import useWindowSize from '@/Hooks/useWindowSize';
-import { router, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import QRCode from 'react-qr-code';
 import SmartphoneMediaViewer from './SmartphoneMediaViewer';
 import SelectInput from '@/Components/SelectInput';
 import Toast from '@/Components/Toast';
@@ -40,6 +39,7 @@ const SmartphoneDesktopModal = ({
                 url.searchParams.set('m-slug', smartphone.slug);
             }
         }
+        window.history.pushState({}, '', url.toString());
 
         return () => {
             if (!smartphoneDesktopModal) {
@@ -375,7 +375,7 @@ const SmartphoneDesktopModal = ({
             {createPortal(
                 <>
                     <div className="fixed inset-0 left-0 z-50 bg-white dark:bg-zinc-950 lg:left-20">
-                        <div className="w-1/2 px-20 m-auto mb-3">
+                        <div className="w-[50%] px-10 m-auto mb-3">
                             <GlobalSearch
 
                                 additional_filters={false}

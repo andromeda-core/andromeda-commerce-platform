@@ -9,7 +9,7 @@ import React from 'react';
 
 export default function edit({ role }) {
     // Create Data Form Data
-    const { data, setData, put, processing, errors, reset } = useForm({
+    const { data, setData, put, processing, errors } = useForm({
         name: role.name || '',
         description: role.description || '',
     });
@@ -35,7 +35,7 @@ export default function edit({ role }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Roles'}
                                     URL={route('dashboard.settings.roles.index')}

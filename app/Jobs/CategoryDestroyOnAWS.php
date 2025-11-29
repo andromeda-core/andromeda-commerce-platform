@@ -18,13 +18,13 @@ class CategoryDestroyOnAWS implements ShouldQueue
     public $timeout = 300;
 
     public function __construct(
-        private string $file,
+        private ?string $file,
     ) {}
 
     public function handle(): void
     {
         if (! empty($this->file)) {
-            $relative_path = Str::after($this->file, '.com/');
+            $relative_path = Str::replaceFirst(config('filesystems.disks.s3.url').'/', '', $this->file);
             if (Storage::disk('s3')->exists($relative_path)) {
                 Storage::disk('s3')->delete($relative_path);
 

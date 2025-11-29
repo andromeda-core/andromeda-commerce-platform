@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import MainLayout from '@/Layouts/Website/MainLayout';
-import Input from '@/Components/Input';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 import getContrastingColor from '@/Hooks/useColorContraster';
 import Toast from '@/Components/Toast';
@@ -237,8 +236,8 @@ export default function Checkout({ cart_items, refferalSessionData, customer }) 
                         ...(showInfoMessage
                             ? { info: infoMessage }
                             : showErrorMessage
-                              ? { error: errorMessage }
-                              : { success: successMessage }),
+                                ? { error: errorMessage }
+                                : { success: successMessage }),
                     }}
                     onClosed={(type) => {
                         if (type === 'info') {
@@ -260,9 +259,8 @@ export default function Checkout({ cart_items, refferalSessionData, customer }) 
             {showConfetti &&
                 createPortal(
                     <div
-                        className={`pointer-events-none fixed inset-0 z-[99999] transition-opacity duration-1000 ${
-                            confettiFading ? 'opacity-0' : 'opacity-100'
-                        }`}
+                        className={`pointer-events-none fixed inset-0 z-[99999] transition-opacity duration-1000 ${confettiFading ? 'opacity-0' : 'opacity-100'
+                            }`}
                         style={{
                             position: 'fixed',
                             top: 0,
@@ -289,7 +287,7 @@ export default function Checkout({ cart_items, refferalSessionData, customer }) 
                 >
                     <Link
                         href={route('website.carts.index')}
-                        className="my-4 inline-flex items-center gap-2 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                        className="inline-flex items-center gap-2 my-4 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -297,7 +295,7 @@ export default function Checkout({ cart_items, refferalSessionData, customer }) 
                             viewBox="0 0 24 24"
                             strokeWidth={2}
                             stroke="currentColor"
-                            className="h-4 w-4"
+                            className="w-4 h-4"
                         >
                             <path
                                 strokeLinecap="round"
@@ -309,7 +307,7 @@ export default function Checkout({ cart_items, refferalSessionData, customer }) 
                     </Link>
 
                     {/* Header */}
-                    <div className="mb-6 px-4 sm:px-0">
+                    <div className="px-4 mb-6 sm:px-0">
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
                             Checkout
                         </h1>
@@ -341,7 +339,7 @@ export default function Checkout({ cart_items, refferalSessionData, customer }) 
 
                         {/* Right Section: Order Summary */}
                         <div className="lg:col-span-1">
-                            <div className="sticky top-8 space-y-4">
+                            <div className="sticky space-y-4 top-8">
                                 {/* Order Items (Desktop Only) */}
                                 {windowSize.width >= 1024 && (
                                     <OrderItemsSummary
@@ -379,16 +377,16 @@ export default function Checkout({ cart_items, refferalSessionData, customer }) 
 // Shipping Form Component
 function ShippingForm({ shippingInfo, handleInputChange }) {
     return (
-        <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-white/10 dark:bg-deepcharcoal">
+        <div className="p-6 bg-white border border-gray-200 rounded-xl dark:border-white/10 dark:bg-deepcharcoal">
             <div className="flex items-center justify-between">
-                <h2 className="mb-6 flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white">
+                <h2 className="flex items-center gap-2 mb-6 text-xl font-bold text-gray-900 dark:text-white">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
                         strokeWidth={1.5}
                         stroke="currentColor"
-                        className="h-5 w-5"
+                        className="w-5 h-5"
                     >
                         <path
                             strokeLinecap="round"
@@ -406,7 +404,7 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
 
                 <Link
                     href={route('website.profile.index')}
-                    className="text-md font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+                    className="font-medium text-indigo-600 text-md hover:underline dark:text-indigo-400"
                 >
                     Edit Information
                 </Link>
@@ -415,7 +413,7 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
             <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white/80">
+                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-white/80">
                             Full Name <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -425,12 +423,12 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
                             // onChange={handleInputChange}
                             disabled
                             placeholder="John Doe"
-                            className="pointer-events-none w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 opacity-50 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
+                            className="w-full px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors bg-white border border-gray-300 rounded-lg opacity-50 pointer-events-none focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
                         />
                     </div>
 
                     <div>
-                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white/80">
+                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-white/80">
                             Email Address <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -440,13 +438,13 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
                             // onChange={handleInputChange}
                             disabled
                             placeholder="john@example.com"
-                            className="pointer-events-none w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 opacity-50 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
+                            className="w-full px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors bg-white border border-gray-300 rounded-lg opacity-50 pointer-events-none focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
                         />
                     </div>
                 </div>
 
                 <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white/80">
+                    <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-white/80">
                         Phone Number <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -456,12 +454,12 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
                         // onChange={handleInputChange}
                         disabled
                         placeholder="+1 (555) 000-0000"
-                        className="pointer-events-none w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 opacity-50 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
+                        className="w-full px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors bg-white border border-gray-300 rounded-lg opacity-50 pointer-events-none focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
                     />
                 </div>
 
                 <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white/80">
+                    <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-white/80">
                         Street Address <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -471,13 +469,13 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
                         // onChange={handleInputChange}
                         disabled
                         placeholder="123 Main Street, Apt 4B"
-                        className="pointer-events-none w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 opacity-50 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
+                        className="w-full px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors bg-white border border-gray-300 rounded-lg opacity-50 pointer-events-none focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
                     />
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div>
-                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white/80">
+                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-white/80">
                             City <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -487,12 +485,12 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
                             // onChange={handleInputChange}
                             disabled
                             placeholder="New York"
-                            className="pointer-events-none w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 opacity-50 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
+                            className="w-full px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors bg-white border border-gray-300 rounded-lg opacity-50 pointer-events-none focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
                         />
                     </div>
 
                     <div>
-                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white/80">
+                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-white/80">
                             Postal Code <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -502,12 +500,12 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
                             // onChange={handleInputChange}
                             disabled
                             placeholder="10001"
-                            className="pointer-events-none w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 opacity-50 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
+                            className="w-full px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors bg-white border border-gray-300 rounded-lg opacity-50 pointer-events-none focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
                         />
                     </div>
 
                     <div>
-                        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-white/80">
+                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-white/80">
                             Country <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -517,7 +515,7 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
                             // onChange={handleInputChange}
                             disabled
                             placeholder="United States"
-                            className="pointer-events-none w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 opacity-50 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
+                            className="w-full px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors bg-white border border-gray-300 rounded-lg opacity-50 pointer-events-none focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
                         />
                     </div>
                 </div>
@@ -529,15 +527,15 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
 // Payment Method Component
 function PaymentMethod({ paymentMethod, setPaymentMethod }) {
     return (
-        <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-white/10 dark:bg-deepcharcoal">
-            <h2 className="mb-6 flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white">
+        <div className="p-6 bg-white border border-gray-200 rounded-xl dark:border-white/10 dark:bg-deepcharcoal">
+            <h2 className="flex items-center gap-2 mb-6 text-xl font-bold text-gray-900 dark:text-white">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
                     stroke="currentColor"
-                    className="h-5 w-5"
+                    className="w-5 h-5"
                 >
                     <path
                         strokeLinecap="round"
@@ -551,11 +549,10 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
             <div className="space-y-3">
                 {/* Bank Transfer Option */}
                 <label
-                    className={`flex cursor-pointer items-center gap-4 rounded-lg border-2 p-4 transition-all ${
-                        paymentMethod === 'bank_transfer'
+                    className={`flex cursor-pointer items-center gap-4 rounded-lg border-2 p-4 transition-all ${paymentMethod === 'bank_transfer'
                             ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
                             : 'border-gray-200 bg-gray-50 hover:border-gray-300 dark:border-white/10 dark:bg-gray-900/20 dark:hover:border-white/20'
-                    }`}
+                        }`}
                 >
                     <input
                         type="radio"
@@ -563,18 +560,18 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
                         value="bank_transfer"
                         checked={paymentMethod === 'bank_transfer'}
                         onChange={(e) => setPaymentMethod(e.target.value)}
-                        className="h-5 w-5 text-indigo-600 focus:ring-2 focus:ring-indigo-500"
+                        className="w-5 h-5 text-indigo-600 focus:ring-2 focus:ring-indigo-500"
                     />
-                    <div className="flex flex-1 items-center justify-between">
+                    <div className="flex items-center justify-between flex-1">
                         <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700">
+                            <div className="flex items-center justify-center w-10 h-10 bg-gray-200 rounded-full dark:bg-gray-700">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
                                     stroke="currentColor"
-                                    className="h-5 w-5 text-gray-700 dark:text-white"
+                                    className="w-5 h-5 text-gray-700 dark:text-white"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -597,11 +594,10 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
 
                 {/* Crypto Option */}
                 <label
-                    className={`flex cursor-pointer items-center gap-4 rounded-lg border-2 p-4 transition-all ${
-                        paymentMethod === 'crypto'
+                    className={`flex cursor-pointer items-center gap-4 rounded-lg border-2 p-4 transition-all ${paymentMethod === 'crypto'
                             ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
                             : 'border-gray-200 bg-gray-50 hover:border-gray-300 dark:border-white/10 dark:bg-gray-900/20 dark:hover:border-white/20'
-                    }`}
+                        }`}
                 >
                     <input
                         type="radio"
@@ -609,13 +605,13 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
                         value="crypto"
                         checked={paymentMethod === 'crypto'}
                         onChange={(e) => setPaymentMethod(e.target.value)}
-                        className="h-5 w-5 text-indigo-600 focus:ring-2 focus:ring-indigo-500"
+                        className="w-5 h-5 text-indigo-600 focus:ring-2 focus:ring-indigo-500"
                     />
-                    <div className="flex flex-1 items-center justify-between">
+                    <div className="flex items-center justify-between flex-1">
                         <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500">
+                            <div className="flex items-center justify-center w-10 h-10 bg-orange-500 rounded-full">
                                 <svg
-                                    className="h-6 w-6"
+                                    className="w-6 h-6"
                                     viewBox="0.004 0 64 64"
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
@@ -640,11 +636,10 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
 
                 {/* Points option */}
                 <label
-                    className={`flex cursor-pointer items-center gap-4 rounded-lg border-2 p-4 transition-all ${
-                        paymentMethod === 'points'
+                    className={`flex cursor-pointer items-center gap-4 rounded-lg border-2 p-4 transition-all ${paymentMethod === 'points'
                             ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
                             : 'border-gray-200 bg-gray-50 hover:border-gray-300 dark:border-white/10 dark:bg-gray-900/20 dark:hover:border-white/20'
-                    }`}
+                        }`}
                 >
                     <input
                         type="radio"
@@ -652,18 +647,18 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
                         value="points"
                         checked={paymentMethod === 'points'}
                         onChange={(e) => setPaymentMethod(e.target.value)}
-                        className="h-5 w-5 text-indigo-600 focus:ring-2 focus:ring-indigo-500"
+                        className="w-5 h-5 text-indigo-600 focus:ring-2 focus:ring-indigo-500"
                     />
-                    <div className="flex flex-1 items-center justify-between">
+                    <div className="flex items-center justify-between flex-1">
                         <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-500">
+                            <div className="flex items-center justify-center w-10 h-10 bg-indigo-500 rounded-full">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
                                     stroke="currentColor"
-                                    className="h-5 w-5 text-white"
+                                    className="w-5 h-5 text-white"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -691,15 +686,15 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
 // Order Items Summary Component
 function OrderItemsSummary({ cart_items, currency }) {
     return (
-        <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-white/10 dark:bg-deepcharcoal">
-            <h2 className="mb-4 flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white">
+        <div className="p-6 bg-white border border-gray-200 rounded-xl dark:border-white/10 dark:bg-deepcharcoal">
+            <h2 className="flex items-center gap-2 mb-4 text-xl font-bold text-gray-900 dark:text-white">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
                     stroke="currentColor"
-                    className="h-5 w-5"
+                    className="w-5 h-5"
                 >
                     <path
                         strokeLinecap="round"
@@ -710,17 +705,17 @@ function OrderItemsSummary({ cart_items, currency }) {
                 Order Items ({cart_items.length})
             </h2>
 
-            <div className="max-h-96 space-y-4 overflow-y-auto pr-2">
+            <div className="pr-2 space-y-4 overflow-y-auto max-h-96">
                 {cart_items.map((item) => (
                     <div
                         key={item.id}
-                        className="flex gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-white/10 dark:bg-gray-900/20"
+                        className="flex gap-3 p-3 border border-gray-200 rounded-lg bg-gray-50 dark:border-white/10 dark:bg-gray-900/20"
                     >
-                        <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white dark:bg-deepcharcoal">
+                        <div className="flex items-center justify-center flex-shrink-0 w-20 h-20 overflow-hidden bg-white rounded-lg dark:bg-deepcharcoal">
                             <img
                                 src={item?.smartphone?.smartphone_image_urls?.[0] || Placeholder}
                                 alt={item?.smartphone?.model_name?.name || 'Product'}
-                                className="max-h-full max-w-full object-contain"
+                                className="object-contain max-w-full max-h-full"
                                 loading="lazy"
                                 onError={(e) => (e.target.src = Placeholder)}
                             />
@@ -740,7 +735,7 @@ function OrderItemsSummary({ cart_items, currency }) {
                                     {item.color?.name}
                                 </span>
                             )}
-                            <div className="mt-2 flex items-center justify-between">
+                            <div className="flex items-center justify-between mt-2">
                                 <span className="text-xs text-gray-600 dark:text-white/60">
                                     Qty: {item.quantity}
                                 </span>
@@ -777,15 +772,15 @@ function OrderSummaryCard({
     processingOrder,
 }) {
     return (
-        <div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-white/10 dark:bg-deepcharcoal">
-            <h2 className="mb-6 flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white">
+        <div className="p-6 bg-white border border-gray-200 rounded-xl dark:border-white/10 dark:bg-deepcharcoal">
+            <h2 className="flex items-center gap-2 mb-6 text-xl font-bold text-gray-900 dark:text-white">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
                     stroke="currentColor"
-                    className="h-5 w-5"
+                    className="w-5 h-5"
                 >
                     <path
                         strokeLinecap="round"
@@ -814,7 +809,7 @@ function OrderSummaryCard({
                                 viewBox="0 0 24 24"
                                 strokeWidth={1.5}
                                 stroke="currentColor"
-                                className="h-4 w-4"
+                                className="w-4 h-4"
                             >
                                 <path
                                     strokeLinecap="round"
@@ -840,7 +835,7 @@ function OrderSummaryCard({
                                         viewBox="0 0 24 24"
                                         strokeWidth={1.5}
                                         stroke="currentColor"
-                                        className="h-4 w-4"
+                                        className="w-4 h-4"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -859,7 +854,7 @@ function OrderSummaryCard({
                     </div>
                 )}
 
-                <div className="border-t border-gray-200 pt-4 dark:border-white/10">
+                <div className="pt-4 border-t border-gray-200 dark:border-white/10">
                     <div className="flex items-center justify-between">
                         <span className="text-base font-semibold text-gray-900 dark:text-white">
                             Total
@@ -878,7 +873,7 @@ function OrderSummaryCard({
                     {!showReferalInput ? (
                         <button
                             onClick={() => setShowReferalInput(true)}
-                            className="flex w-full items-center justify-center gap-2 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                            className="flex items-center justify-center w-full gap-2 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -886,7 +881,7 @@ function OrderSummaryCard({
                                 viewBox="0 0 24 24"
                                 strokeWidth={1.5}
                                 stroke="currentColor"
-                                className="h-4 w-4"
+                                className="w-4 h-4"
                             >
                                 <path
                                     strokeLinecap="round"
@@ -910,11 +905,10 @@ function OrderSummaryCard({
                                         value={referalCode}
                                         onChange={(e) => setReferalCode(e.target.value)}
                                         placeholder="Enter Referal Code To Earn Points"
-                                        className={`w-full rounded-lg border ${
-                                            error
+                                        className={`w-full rounded-lg border ${error
                                                 ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
                                                 : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500/20'
-                                        } bg-white px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors focus:outline-none focus:ring-2 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40`}
+                                            } bg-white px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors focus:outline-none focus:ring-2 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40`}
                                     />
                                     {error && (
                                         <p className="mt-1 text-xs text-red-500 dark:text-red-400">
@@ -925,7 +919,7 @@ function OrderSummaryCard({
                                 <button
                                     onClick={handleApplyReferal}
                                     disabled={applyingReferalProcessing}
-                                    className="flex h-12 items-center justify-center rounded-lg bg-indigo-600 px-6 text-sm font-medium text-white transition-colors hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="flex items-center justify-center h-12 px-6 text-sm font-medium text-white transition-colors bg-indigo-600 rounded-lg hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     {applyingReferalProcessing ? <Spinner /> : 'Apply'}
                                 </button>
@@ -953,7 +947,7 @@ function OrderSummaryCard({
                             viewBox="0 0 24 24"
                             strokeWidth={1.5}
                             stroke="currentColor"
-                            className="h-5 w-5"
+                            className="w-5 h-5"
                         >
                             <path
                                 strokeLinecap="round"
@@ -974,7 +968,7 @@ function OrderSummaryCard({
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
                     stroke="currentColor"
-                    className="h-5 w-5 text-green-500"
+                    className="w-5 h-5 text-green-500"
                 >
                     <path
                         strokeLinecap="round"

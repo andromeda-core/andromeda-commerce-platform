@@ -1,15 +1,15 @@
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, Link } from '@inertiajs/react';
 import React, { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
 
 const index = () => {
     const [activeSection, setActiveSection] = useState('collect');
 
     useEffect(() => {
         const handleScroll = () => {
-            const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-            const progress = (window.scrollY / totalHeight) * 100;
+            // Not Needed RN
+            // const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+            // const progress = (window.scrollY / totalHeight) * 100;
 
             const sections = document.querySelectorAll('[data-section]');
             sections.forEach((section) => {
@@ -37,7 +37,7 @@ const index = () => {
             title: 'Information We Collect',
             icon: (
                 <svg
-                    className="h-5 w-5"
+                    className="w-5 h-5"
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
@@ -56,7 +56,7 @@ const index = () => {
             title: 'How We Use Information',
             icon: (
                 <svg
-                    className="h-5 w-5"
+                    className="w-5 h-5"
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
@@ -80,7 +80,7 @@ const index = () => {
             title: 'Legal Basis',
             icon: (
                 <svg
-                    className="h-5 w-5"
+                    className="w-5 h-5"
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
@@ -99,7 +99,7 @@ const index = () => {
             title: 'Data Retention',
             icon: (
                 <svg
-                    className="h-5 w-5"
+                    className="w-5 h-5"
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
@@ -118,7 +118,7 @@ const index = () => {
             title: 'Data Sharing',
             icon: (
                 <svg
-                    className="h-5 w-5"
+                    className="w-5 h-5"
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
@@ -137,7 +137,7 @@ const index = () => {
             title: 'User Rights',
             icon: (
                 <svg
-                    className="h-5 w-5"
+                    className="w-5 h-5"
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
@@ -161,7 +161,7 @@ const index = () => {
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
                     stroke="currentColor"
-                    className="h-5 w-5"
+                    className="w-5 h-5"
                 >
                     <path
                         strokeLinecap="round"
@@ -181,7 +181,7 @@ const index = () => {
             title: 'Data Deletion',
             icon: (
                 <svg
-                    className="h-5 w-5"
+                    className="w-5 h-5"
                     fill="none"
                     viewBox="0 0 24 24"
                     strokeWidth={1.5}
@@ -203,17 +203,17 @@ const index = () => {
             <div className="sm:px-6 sm:pb-20 lg:px-8">
                 <div className="min-h-screen">
                     {/* Hero Section */}
-                    <div className="relative overflow-hidden border-b border-gray-800 bg-gradient-to-br from-gray-900 via-black to-gray-950 text-white">
+                    <div className="relative overflow-hidden text-white border-b border-gray-800 bg-gradient-to-br from-gray-900 via-black to-gray-950">
                         {/* Background Accents */}
                         <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-blue-500/5 to-purple-500/10" />
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(99,102,241,0.2),transparent_60%)]" />
 
-                        <div className="relative mx-auto max-w-4xl px-6 py-16 lg:py-24">
+                        <div className="relative max-w-4xl px-6 py-16 mx-auto lg:py-24">
                             {/* Icon & Label */}
-                            <div className="mb-6 flex items-center gap-3">
-                                <div className="rounded-2xl bg-gradient-to-br from-indigo-600 to-blue-700 p-3 shadow-lg shadow-indigo-500/30">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="p-3 shadow-lg rounded-2xl bg-gradient-to-br from-indigo-600 to-blue-700 shadow-indigo-500/30">
                                     <svg
-                                        className="h-7 w-7 text-white"
+                                        className="text-white h-7 w-7"
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         strokeWidth={1.5}
@@ -226,18 +226,18 @@ const index = () => {
                                         />
                                     </svg>
                                 </div>
-                                <span className="text-sm font-semibold uppercase tracking-wider text-indigo-400">
+                                <span className="text-sm font-semibold tracking-wider text-indigo-400 uppercase">
                                     Legal Documents
                                 </span>
                             </div>
 
                             {/* Title */}
-                            <h1 className="mb-6 bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-5xl font-bold text-transparent lg:text-6xl">
+                            <h1 className="mb-6 text-5xl font-bold text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text lg:text-6xl">
                                 Privacy Policy
                             </h1>
 
                             {/* Subtitle */}
-                            <p className="mb-8 max-w-3xl text-xl text-gray-400">
+                            <p className="max-w-3xl mb-8 text-xl text-gray-400">
                                 Your privacy matters to us. Learn how W IN DOUBLE SPACE CORP. LTD
                                 protects and manages your personal information.
                             </p>
@@ -245,14 +245,14 @@ const index = () => {
                             {/* Tags */}
                             <div className="flex flex-wrap gap-4 text-sm">
                                 <div className="flex items-center gap-2 rounded-lg border border-green-500/20 bg-green-500/10 px-3 py-1.5">
-                                    <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
+                                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                                     <span className="font-medium text-green-400">
                                         Last Updated: October 22, 2025
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/10 px-3 py-1.5">
                                     <svg
-                                        className="h-4 w-4 text-blue-400"
+                                        className="w-4 h-4 text-blue-400"
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         strokeWidth={1.5}
@@ -271,12 +271,12 @@ const index = () => {
                     </div>
 
                     {/* Main Content */}
-                    <div className="mx-auto max-w-5xl px-6 py-12 lg:flex lg:gap-8">
+                    <div className="max-w-5xl px-6 py-12 mx-auto lg:flex lg:gap-8">
                         {/* Sticky Table of Contents */}
                         <aside className="hidden shrink-0 lg:block lg:w-80">
                             <div className="sticky top-24">
-                                <div className="rounded-2xl bg-white p-6 shadow-lg dark:bg-deepcharcoal dark:backdrop-blur-xl">
-                                    <h3 className="mb-4 text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                <div className="p-6 bg-white shadow-lg rounded-2xl dark:bg-deepcharcoal dark:backdrop-blur-xl">
+                                    <h3 className="mb-4 text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
                                         Contents
                                     </h3>
                                     <nav className="space-y-1">
@@ -284,18 +284,16 @@ const index = () => {
                                             <button
                                                 key={section.id}
                                                 onClick={() => scrollToSection(section.id)}
-                                                className={`group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition-all ${
-                                                    activeSection === section.id
-                                                        ? 'menu-item-active'
-                                                        : 'menu-item-inactive'
-                                                }`}
+                                                className={`group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition-all ${activeSection === section.id
+                                                    ? 'menu-item-active'
+                                                    : 'menu-item-inactive'
+                                                    }`}
                                             >
                                                 <span
-                                                    className={`flex h-6 w-6 items-center justify-center rounded-lg transition-colors ${
-                                                        activeSection === section.id
-                                                            ? 'text-indigo-600 dark:text-indigo-300'
-                                                            : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'
-                                                    }`}
+                                                    className={`flex h-6 w-6 items-center justify-center rounded-lg transition-colors ${activeSection === section.id
+                                                        ? 'text-indigo-600 dark:text-indigo-300'
+                                                        : 'text-gray-500 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'
+                                                        }`}
                                                 >
                                                     {section.icon}
                                                 </span>
@@ -323,7 +321,7 @@ const index = () => {
                         {/* Content */}
                         <main className="flex-1 space-y-6">
                             {/* Company Info */}
-                            <section className="rounded-2xl bg-white p-8 shadow-lg dark:bg-deepcharcoal dark:backdrop-blur-xl">
+                            <section className="p-8 bg-white shadow-lg rounded-2xl dark:bg-deepcharcoal dark:backdrop-blur-xl">
                                 <p className="leading-relaxed text-gray-700 dark:text-gray-300">
                                     This Privacy Policy explains how W IN DOUBLE SPACE CORP. LTD
                                     collects, uses, and protects your personal information when you
@@ -337,12 +335,12 @@ const index = () => {
                             <section
                                 id="collect"
                                 data-section="collect"
-                                className="rounded-2xl bg-white p-8 shadow-lg dark:bg-deepcharcoal dark:backdrop-blur-xl"
+                                className="p-8 bg-white shadow-lg rounded-2xl dark:bg-deepcharcoal dark:backdrop-blur-xl"
                             >
-                                <div className="mb-6 flex items-center gap-4">
-                                    <div className="rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 p-3 shadow-lg dark:shadow-blue-500/20">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="p-3 shadow-lg rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 dark:shadow-blue-500/20">
                                         <svg
-                                            className="h-6 w-6 text-white"
+                                            className="w-6 h-6 text-white"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             strokeWidth={1.5}
@@ -361,7 +359,7 @@ const index = () => {
                                 </div>
 
                                 <div className="space-y-4">
-                                    <div className="group rounded-xl border border-gray-200 bg-white p-6 transition-all hover:shadow-md dark:border-gray-700/50 dark:bg-deepcharcoal">
+                                    <div className="p-6 transition-all bg-white border border-gray-200 group rounded-xl hover:shadow-md dark:border-gray-700/50 dark:bg-deepcharcoal">
                                         <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white/80">
                                             Information from Facebook Login
                                         </h3>
@@ -371,7 +369,7 @@ const index = () => {
                                         </p>
                                     </div>
 
-                                    <div className="group rounded-xl border border-gray-200 bg-white p-6 transition-all hover:shadow-md dark:border-gray-700/50 dark:bg-deepcharcoal">
+                                    <div className="p-6 transition-all bg-white border border-gray-200 group rounded-xl hover:shadow-md dark:border-gray-700/50 dark:bg-deepcharcoal">
                                         <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white/80">
                                             Order & Delivery Info
                                         </h3>
@@ -381,7 +379,7 @@ const index = () => {
                                         </p>
                                     </div>
 
-                                    <div className="group rounded-xl border border-gray-200 bg-white p-6 transition-all hover:shadow-md dark:border-gray-700/50 dark:bg-deepcharcoal">
+                                    <div className="p-6 transition-all bg-white border border-gray-200 group rounded-xl hover:shadow-md dark:border-gray-700/50 dark:bg-deepcharcoal">
                                         <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white/80">
                                             Technical Data
                                         </h3>
@@ -397,12 +395,12 @@ const index = () => {
                             <section
                                 id="use"
                                 data-section="use"
-                                className="rounded-2xl bg-white p-8 shadow-lg dark:bg-deepcharcoal dark:backdrop-blur-xl"
+                                className="p-8 bg-white shadow-lg rounded-2xl dark:bg-deepcharcoal dark:backdrop-blur-xl"
                             >
-                                <div className="mb-6 flex items-center gap-4">
-                                    <div className="rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 p-3 shadow-lg dark:shadow-purple-500/20">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="p-3 shadow-lg rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 dark:shadow-purple-500/20">
                                         <svg
-                                            className="h-6 w-6 text-white"
+                                            className="w-6 h-6 text-white"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             strokeWidth={1.5}
@@ -434,9 +432,9 @@ const index = () => {
                                     ].map((item, idx) => (
                                         <div
                                             key={idx}
-                                            className="flex items-start gap-4 rounded-xl border border-gray-200 bg-white p-5 transition-all dark:border-gray-700/50 dark:bg-deepcharcoal"
+                                            className="flex items-start gap-4 p-5 transition-all bg-white border border-gray-200 rounded-xl dark:border-gray-700/50 dark:bg-deepcharcoal"
                                         >
-                                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 text-sm font-medium text-white shadow-md">
+                                            <div className="flex items-center justify-center w-8 h-8 text-sm font-medium text-white rounded-lg shadow-md shrink-0 bg-gradient-to-br from-purple-500 to-pink-500">
                                                 {idx + 1}
                                             </div>
                                             <p className="flex-1 pt-1 text-gray-700 dark:text-gray-300">
@@ -451,12 +449,12 @@ const index = () => {
                             <section
                                 id="legal"
                                 data-section="legal"
-                                className="rounded-2xl bg-white p-8 shadow-lg dark:bg-deepcharcoal dark:backdrop-blur-xl"
+                                className="p-8 bg-white shadow-lg rounded-2xl dark:bg-deepcharcoal dark:backdrop-blur-xl"
                             >
-                                <div className="mb-6 flex items-center gap-4">
-                                    <div className="rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 p-3 shadow-lg dark:shadow-green-500/20">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="p-3 shadow-lg rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 dark:shadow-green-500/20">
                                         <svg
-                                            className="h-6 w-6 text-white"
+                                            className="w-6 h-6 text-white"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             strokeWidth={1.5}
@@ -483,12 +481,12 @@ const index = () => {
                             <section
                                 id="retention"
                                 data-section="retention"
-                                className="rounded-2xl bg-white p-8 shadow-lg dark:bg-deepcharcoal dark:backdrop-blur-xl"
+                                className="p-8 bg-white shadow-lg rounded-2xl dark:bg-deepcharcoal dark:backdrop-blur-xl"
                             >
-                                <div className="mb-6 flex items-center gap-4">
-                                    <div className="rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 p-3 shadow-lg dark:shadow-amber-500/20">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="p-3 shadow-lg rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 dark:shadow-amber-500/20">
                                         <svg
-                                            className="h-6 w-6 text-white"
+                                            className="w-6 h-6 text-white"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             strokeWidth={1.5}
@@ -516,12 +514,12 @@ const index = () => {
                             <section
                                 id="sharing"
                                 data-section="sharing"
-                                className="rounded-2xl bg-white p-8 shadow-lg dark:bg-deepcharcoal dark:backdrop-blur-xl"
+                                className="p-8 bg-white shadow-lg rounded-2xl dark:bg-deepcharcoal dark:backdrop-blur-xl"
                             >
-                                <div className="mb-6 flex items-center gap-4">
-                                    <div className="rounded-xl bg-gradient-to-br from-indigo-500 to-blue-500 p-3 shadow-lg dark:shadow-indigo-500/20">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="p-3 shadow-lg rounded-xl bg-gradient-to-br from-indigo-500 to-blue-500 dark:shadow-indigo-500/20">
                                         <svg
-                                            className="h-6 w-6 text-white"
+                                            className="w-6 h-6 text-white"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             strokeWidth={1.5}
@@ -560,7 +558,7 @@ const index = () => {
                                     ].map((item, idx) => (
                                         <div
                                             key={idx}
-                                            className="flex items-start gap-4 rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700/50 dark:bg-deepcharcoal"
+                                            className="flex items-start gap-4 p-5 bg-white border border-gray-200 rounded-xl dark:border-gray-700/50 dark:bg-deepcharcoal"
                                         >
                                             <span className="text-2xl">{item.icon}</span>
                                             <p className="flex-1 pt-1 text-gray-700 dark:text-gray-300">
@@ -575,12 +573,12 @@ const index = () => {
                             <section
                                 id="rights"
                                 data-section="rights"
-                                className="rounded-2xl bg-white p-8 shadow-lg dark:bg-deepcharcoal dark:backdrop-blur-xl"
+                                className="p-8 bg-white shadow-lg rounded-2xl dark:bg-deepcharcoal dark:backdrop-blur-xl"
                             >
-                                <div className="mb-6 flex items-center gap-4">
-                                    <div className="rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 p-3 shadow-lg dark:shadow-cyan-500/20">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="p-3 shadow-lg rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 dark:shadow-cyan-500/20">
                                         <svg
-                                            className="h-6 w-6 text-white"
+                                            className="w-6 h-6 text-white"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             strokeWidth={1.5}
@@ -614,17 +612,17 @@ const index = () => {
                             <section
                                 id="cookies"
                                 data-section="cookies"
-                                className="rounded-2xl bg-white p-8 shadow-lg dark:bg-deepcharcoal dark:backdrop-blur-xl"
+                                className="p-8 bg-white shadow-lg rounded-2xl dark:bg-deepcharcoal dark:backdrop-blur-xl"
                             >
-                                <div className="mb-6 flex items-center gap-4">
-                                    <div className="rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 p-3 shadow-lg dark:shadow-pink-500/20">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="p-3 shadow-lg rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 dark:shadow-pink-500/20">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             strokeWidth={1.5}
                                             stroke="currentColor"
-                                            className="h-6 w-6 text-white"
+                                            className="w-6 h-6 text-white"
                                         >
                                             <path
                                                 strokeLinecap="round"
@@ -649,16 +647,16 @@ const index = () => {
                             </section>
 
                             {/* Additional Sections */}
-                            <section className="rounded-2xl bg-white p-8 shadow-lg dark:bg-deepcharcoal dark:backdrop-blur-xl">
-                                <div className="mb-6 flex items-center gap-4">
-                                    <div className="rounded-xl bg-gradient-to-br from-deepcharcoal to-rose-500 p-3 shadow-lg dark:shadow-pink-500/20">
+                            <section className="p-8 bg-white shadow-lg rounded-2xl dark:bg-deepcharcoal dark:backdrop-blur-xl">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="p-3 shadow-lg rounded-xl bg-gradient-to-br from-deepcharcoal to-rose-500 dark:shadow-pink-500/20">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             strokeWidth={1.5}
                                             stroke="currentColor"
-                                            className="h-6 w-6 text-white"
+                                            className="w-6 h-6 text-white"
                                         >
                                             <path
                                                 strokeLinecap="round"
@@ -678,16 +676,16 @@ const index = () => {
                                 </p>
                             </section>
 
-                            <section className="rounded-2xl bg-white p-8 shadow-lg dark:bg-deepcharcoal dark:backdrop-blur-xl">
-                                <div className="mb-6 flex items-center gap-4">
-                                    <div className="rounded-xl bg-gradient-to-br from-zinc-800 to-pink-200 p-3 shadow-lg dark:shadow-pink-500/20">
+                            <section className="p-8 bg-white shadow-lg rounded-2xl dark:bg-deepcharcoal dark:backdrop-blur-xl">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="p-3 shadow-lg rounded-xl bg-gradient-to-br from-zinc-800 to-pink-200 dark:shadow-pink-500/20">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             strokeWidth={1.5}
                                             stroke="currentColor"
-                                            className="h-6 w-6 text-white"
+                                            className="w-6 h-6 text-white"
                                         >
                                             <path
                                                 strokeLinecap="round"
@@ -707,11 +705,11 @@ const index = () => {
                                 </p>
                             </section>
 
-                            <section className="rounded-2xl bg-white p-8 shadow-lg dark:bg-deepcharcoal dark:backdrop-blur-xl">
-                                <div className="mb-6 flex items-center gap-4">
-                                    <div className="rounded-xl bg-gradient-to-br from-violet-500 to-purple-500 p-3 shadow-lg dark:shadow-violet-500/20">
+                            <section className="p-8 bg-white shadow-lg rounded-2xl dark:bg-deepcharcoal dark:backdrop-blur-xl">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="p-3 shadow-lg rounded-xl bg-gradient-to-br from-violet-500 to-purple-500 dark:shadow-violet-500/20">
                                         <svg
-                                            className="h-6 w-6 text-white"
+                                            className="w-6 h-6 text-white"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             strokeWidth={1.5}
@@ -729,27 +727,27 @@ const index = () => {
                                     </h2>
                                 </div>
                                 <div className="grid gap-4 md:grid-cols-2">
-                                    <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-deepcharcoal">
-                                        <span className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                    <div className="p-4 bg-white border border-gray-200 rounded-lg dark:border-gray-700 dark:bg-deepcharcoal">
+                                        <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                                             Email
                                         </span>
                                         <a
                                             href="mailto:privacy@windoublespace.com"
-                                            className="mt-1 block font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                            className="block mt-1 font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                                         >
                                             privacy@windoublespace.com
                                         </a>
                                     </div>
-                                    <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-deepcharcoal">
-                                        <span className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                    <div className="p-4 bg-white border border-gray-200 rounded-lg dark:border-gray-700 dark:bg-deepcharcoal">
+                                        <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                                             Phone
                                         </span>
                                         <p className="mt-1 font-semibold text-gray-900 dark:text-white/80">
                                             +82-10-5788-7778
                                         </p>
                                     </div>
-                                    <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-deepcharcoal md:col-span-2">
-                                        <span className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                    <div className="p-4 bg-white border border-gray-200 rounded-lg dark:border-gray-700 dark:bg-deepcharcoal md:col-span-2">
+                                        <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                                             Address
                                         </span>
                                         <p className="mt-1 font-semibold text-gray-900 dark:text-white/80">
@@ -764,12 +762,12 @@ const index = () => {
                             <section
                                 id="deletion"
                                 data-section="deletion"
-                                className="scroll-mt-24 rounded-2xl border border-red-200 bg-gradient-to-br from-red-50 to-pink-50 p-8 shadow-lg dark:border-red-800/50 dark:from-red-900/20 dark:to-pink-900/20 dark:backdrop-blur-xl"
+                                className="p-8 border border-red-200 shadow-lg scroll-mt-24 rounded-2xl bg-gradient-to-br from-red-50 to-pink-50 dark:border-red-800/50 dark:from-red-900/20 dark:to-pink-900/20 dark:backdrop-blur-xl"
                             >
-                                <div className="mb-6 flex items-center gap-4">
-                                    <div className="rounded-xl bg-gradient-to-br from-red-500 to-pink-500 p-3 shadow-lg dark:shadow-red-500/20">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="p-3 shadow-lg rounded-xl bg-gradient-to-br from-red-500 to-pink-500 dark:shadow-red-500/20">
                                         <svg
-                                            className="h-6 w-6 text-white"
+                                            className="w-6 h-6 text-white"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             strokeWidth={1.5}
@@ -788,7 +786,7 @@ const index = () => {
                                 </div>
 
                                 <div className="space-y-4">
-                                    <div className="rounded-xl border border-red-200 bg-white p-6 dark:border-gray-700/50 dark:bg-gray-800/30">
+                                    <div className="p-6 bg-white border border-red-200 rounded-xl dark:border-gray-700/50 dark:bg-gray-800/30">
                                         <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white/80">
                                             How to Request Data Deletion
                                         </h3>
@@ -837,7 +835,7 @@ const index = () => {
                                                     Or contact us at{' '}
                                                     <a
                                                         href="mailto:privacy@windoublespace.com"
-                                                        className="break-all font-semibold text-indigo-600 underline hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                        className="font-semibold text-indigo-600 underline break-all hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                                                     >
                                                         privacy@windoublespace.com
                                                     </a>{' '}
@@ -847,7 +845,7 @@ const index = () => {
                                         </ul>
                                     </div>
 
-                                    <div className="rounded-xl border border-red-200 bg-white p-6 dark:border-gray-700/50 dark:bg-gray-800/30">
+                                    <div className="p-6 bg-white border border-red-200 rounded-xl dark:border-gray-700/50 dark:bg-gray-800/30">
                                         <h3 className="mb-3 text-lg font-semibold text-gray-900 dark:text-white/80">
                                             Data Deletion Process
                                         </h3>
@@ -859,7 +857,7 @@ const index = () => {
                                         </p>
                                     </div>
 
-                                    <div className="rounded-xl border border-red-200 bg-white p-6 dark:border-gray-700/50 dark:bg-gray-800/30">
+                                    <div className="p-6 bg-white border border-red-200 rounded-xl dark:border-gray-700/50 dark:bg-gray-800/30">
                                         <h3 className="mb-3 text-lg font-semibold text-gray-900 dark:text-white/80">
                                             Revoking Facebook Login Permissions
                                         </h3>
@@ -876,21 +874,21 @@ const index = () => {
                             </section>
 
                             {/* Footer CTA */}
-                            <section className="rounded-2xl bg-white p-8 shadow-lg backdrop-blur-xl dark:border dark:border-gray-800 dark:bg-deepcharcoal">
+                            <section className="p-8 bg-white shadow-lg rounded-2xl backdrop-blur-xl dark:border dark:border-gray-800 dark:bg-deepcharcoal">
                                 <div className="text-center">
                                     <h3 className="mb-4 text-2xl font-medium text-gray-900 dark:text-white/80">
                                         Have Questions About Your Privacy?
                                     </h3>
-                                    <p className="mx-auto mb-6 max-w-2xl text-gray-700 dark:text-gray-300">
+                                    <p className="max-w-2xl mx-auto mb-6 text-gray-700 dark:text-gray-300">
                                         We're here to help. Contact our Data Protection Officer for
                                         any privacy-related inquiries.
                                     </p>
                                     <Link
                                         href={route('website.contact.index')}
-                                        className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-8 py-4 font-semibold text-white shadow-lg transition-all hover:bg-indigo-400"
+                                        className="inline-flex items-center gap-2 px-8 py-4 font-semibold text-white transition-all bg-indigo-600 shadow-lg rounded-xl hover:bg-indigo-400"
                                     >
                                         <svg
-                                            className="h-5 w-5"
+                                            className="w-5 h-5"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             strokeWidth={1.5}

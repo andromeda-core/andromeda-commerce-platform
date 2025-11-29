@@ -5,6 +5,7 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 
+
 createInertiaApp({
     title: (title) => {
         // Get the app name from the current page props if available
@@ -32,7 +33,7 @@ createInertiaApp({
         root.render(<App {...props} />);
     },
     progress: {
-        color: '#ffffff',
+        color: "var(--primary-progress-color)",
         showSpinner: true,
     },
 });

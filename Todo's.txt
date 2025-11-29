@@ -585,6 +585,36 @@ Additional Work:
         87: Alignment Of Tabs In Search Page ✅
         88: Added Opening new Window When clicking Search Result ✅
         89: Customized Video Player From Desktop Video Player Bottom Shadow Removed ✅
+        90: FFMPEG VIDEO Compression Added In POST VIdeo UPloading  ✅
+        91: Post Strict Images Compression Added ✅
+        92: Borders Added On Advanced Search Modal, More Action Dropdown Of Sidebar and BottomBar, Search Page ✅
+        93: AWS URL COLUMN ADDED On AWS SETTING TABLE AND BACKEND ALSO Updated ✅
+        94: CloudFront Setuped ✅
+        95: Post Module Fully Optimization and Thumnail Generation From BackendAnd Storing And Handling And Updated The Website Post Thumbnails On every places
+            And Post / Product Backend Fecthing Also Updated And Syncronized With new Logic ✅
+        96: Post Media Store/Update/Delete Job Updated With new setup Of Cloudfront and Optimized ✅
+        97: All Jobs Update To New Logic Of AWS Cloudfront ✅
+        98: Package Recording Module Compression and Thumbnail Generation Logic ✅
+        99: UI Code OF Backend And Fronted Optimized And Removed Un-necessary Line Of Code And Imports ✅
+        100: Custom Confirmation Modal Added And Applied On Data Deletion Page For Confirmation ✅
+        101: Confirmation For Deletion Added on Deletion Of Search History ✅
+        102: Hashtag Page Updated And Removed New Tab Button instead The each list is now A Link to Redirect To That specific Item ✅
+        103: Browser History Issue Fixed and unlocked back Button WhenRedirecting From Results to appropriate smarpthone p/ post in PC Or Mobile   ✅
+        104: Dashboard Post View Page Updated And Added Custom Video Player and Some Ui Issues Fixed  ✅
+        105: Compression Of post And PakcagingVideo Enhanced And As well as Horizon Config Updated To Support Proper Memory and processes ✅
+        106: Post And Smartphone Slug Creation Logic Updated And Added Strict Checks For Invalid Characters ✅
+        107: Cors Issue Fix remeaning Specially Shows Only when Previewing In Filepond ✅
+        108: Mobile Feed Gallery Fully Re-Write or Fix (will be Decided In'Sha'Allah) ✅
+        109: AutoPlay Not Working Issue When Scrolling If AutoPlay is Enabled ✅
+        110: Video Chunking Setup Completed In Code And With AWS CloudFront ✅
+        111: Related Feed Search Logic Issue Needed To Be Fixed Now Only Relaying On The Tag And Not searching between title and content ✅
+        112: Initial Post And Product Fetching Logic Optimized and We-written ✅
+        114: Instagram Video Player Re-written fuly and now listening all video events and updating Ui accoridngly and also added THe zustand Hook For
+             Listening Live Updates From MobileFeed ✅
+
+        115: After PULLING These NEW Optimization Changes Must Run: (
+            Horizon Restart, Queue Restart, Previous Cache Clear,Configure Composer With FFMPEG (If Asked),
+        )
 
     ) Redesigned Whole Website 4th Time Completed According To The LAYOUT Design Reference Provided ✅
 

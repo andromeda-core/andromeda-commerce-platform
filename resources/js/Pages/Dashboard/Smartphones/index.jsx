@@ -4,7 +4,6 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import Table from '@/Components/Table';
-
 import { useEffect, useState } from 'react';
 import getContrastingColor from '@/Hooks/useColorContraster';
 import can from '@/Hooks/useCan';
@@ -43,7 +42,7 @@ export default function index({ smartphones }) {
                     return (
                         <Link
                             href={route('dashboard.smartphones.show', item?.id)}
-                            className="cursor-pointer text-blue-500 underline"
+                            className="text-blue-500 underline cursor-pointer"
                         >
                             {item.model_name.name}
                         </Link>
@@ -69,7 +68,7 @@ export default function index({ smartphones }) {
                                 return (
                                     <span
                                         key={color.id}
-                                        className="rounded-lg p-2 text-white"
+                                        className="p-2 text-white rounded-lg"
                                         style={{
                                             backgroundColor: color.code,
                                             color: getContrastingColor(color.code),
@@ -94,7 +93,7 @@ export default function index({ smartphones }) {
                 render: (item) => {
                     if (item?.selling_info) {
                         return (
-                            <span className="rounded-lg bg-blue-500 p-2 text-white">
+                            <span className="p-2 text-white bg-blue-500 rounded-lg">
                                 {currency?.symbol}
                                 {item?.selling_info?.total_price}
                             </span>
@@ -147,7 +146,7 @@ export default function index({ smartphones }) {
                     Content={
                         <>
                             {can('Smartphones Create') && (
-                                <div className="my-3 flex flex-wrap justify-end">
+                                <div className="flex flex-wrap justify-end my-3">
                                     <LinkButton
                                         Text={'Create Smart Phone'}
                                         URL={route('dashboard.smartphones.create')}

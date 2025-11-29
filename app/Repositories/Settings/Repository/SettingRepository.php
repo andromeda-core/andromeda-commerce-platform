@@ -1953,6 +1953,7 @@ class SettingRepository implements ISettingRepository
             'aws_secret_access_key' => ['required', 'string', 'max:255', 'unique:aws_settings,aws_secret_access_key'],
             'aws_region' => ['required', 'string', 'max:50'],
             'aws_bucket' => ['required', 'string', 'min:3', 'max:63', 'unique:aws_settings,aws_bucket'],
+            'aws_url' => ['nullable', 'string', 'starts_with:https://', 'url'],
         ]);
 
         try {
@@ -1987,6 +1988,7 @@ class SettingRepository implements ISettingRepository
             'aws_secret_access_key' => ['required', 'string', 'max:255', 'unique:aws_settings,aws_secret_access_key,'.$id],
             'aws_region' => ['required', 'string', 'max:50'],
             'aws_bucket' => ['required', 'string', 'min:3', 'max:63', 'unique:aws_settings,aws_bucket,'.$id],
+            'aws_url' => ['nullable', 'string', 'starts_with:https://', 'url'],
         ]);
 
         try {

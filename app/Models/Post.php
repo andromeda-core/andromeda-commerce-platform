@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
-use Laravel\Scout\Searchable;
+use Illuminate\Support\Facades\Cache;
 use Str;
 
 class Post extends Model
 {
-    // use Searchable;
-
     protected $fillable = [
         'user_id',
         'title',
@@ -69,12 +68,16 @@ class Post extends Model
     // Attributes
     public function getAddedAtAttribute()
     {
-        return ! empty($this->created_at) ? $this->created_at->format('Y-m-d') : null;
+        return $this->created_at
+            ? Carbon::parse($this->created_at)->format('Y-m-d')
+            : null;
     }
 
     public function getCreatedAtTimeAttribute()
     {
-        return $this->created_at->format('g:i A');
+        return $this->created_at
+            ? Carbon::parse($this->created_at)->format('g:i A')
+            : null;
     }
 
     public function getPostImageUrlsAttribute()
@@ -87,7 +90,10 @@ class Post extends Model
     public function getPostVideoUrlsAttribute()
     {
         return array_map(function ($video) {
-            return $video['url'];
+            return [
+                'url' => $video['url'],
+                'thumbnail_url' => $video['thumbnail_url'],
+            ];
         }, $this->videos ?? []);
     }
 
@@ -97,7 +103,7 @@ class Post extends Model
     }
 
     // Static Booting
-    public static function booted()
+    protected static function booted()
     {
         static::creating(function ($post) {
             $post->user_id = Auth::id();
@@ -105,11 +111,41 @@ class Post extends Model
 
         static::created(function ($post) {
 
-            $post->slug = preg_replace('/\s+/u', '-', trim($post->title.'-'.time().'-'.$post->id.'-'.Str::uuid()));
+            $cleanTitle = $post->title;
+
+            $cleanTitle = str_replace(['/', '\\'], '-', $cleanTitle);
+            $cleanTitle = preg_replace('/[^A-Za-z0-9\- ]/', '', $cleanTitle);
+
+            $cleanTitle = preg_replace('/\s+/u', '-', trim($cleanTitle));
+
+            $post->slug = strtolower(
+                $cleanTitle.'-'.time().'-'.$post->id.'-'.Str::uuid()
+            );
+
             $post->save();
+
+            Cache::tags(['feed'])->flush();
+        });
+
+        static::updated(function ($post) {
+            Cache::tags(['feed'])->flush();
+        });
+
+        static::deleted(function ($post) {
+            Cache::tags(['feed'])->flush();
         });
 
     }
+
+    // Scout Searching method
+    // public function toSearchableArray()
+    // {
+    //     return [
+    //         'title' => $this->title,
+    //         'content' => $this->content,
+    //         'tag' => $this->tag,
+    //     ];
+    // }
 
     // Casting
     protected $casts = [

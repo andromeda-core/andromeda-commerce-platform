@@ -10,7 +10,7 @@ import SelectInput from '@/Components/SelectInput';
 
 export default function edit({ capacity }) {
     // Create Data Form Data
-    const { data, setData, put, processing, errors, reset } = useForm({
+    const { data, setData, put, processing, errors } = useForm({
         name: capacity.name || '',
         is_active: capacity.is_active ?? 1,
     });
@@ -36,7 +36,7 @@ export default function edit({ capacity }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Capacities'}
                                     URL={route('dashboard.settings.capacities.index')}

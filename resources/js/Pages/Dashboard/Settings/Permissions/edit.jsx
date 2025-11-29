@@ -9,7 +9,7 @@ import React from 'react';
 
 export default function edit({ permission }) {
     // Edit Data Form Data
-    const { data, setData, put, processing, errors, reset } = useForm({
+    const { data, setData, put, processing, errors } = useForm({
         name: permission.name || '',
         icon: permission.icon || '',
         parent_name: permission.parent_name || '',
@@ -36,7 +36,7 @@ export default function edit({ permission }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Permissions'}
                                     URL={route('dashboard.settings.permissions.index')}

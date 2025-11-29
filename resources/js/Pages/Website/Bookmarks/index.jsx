@@ -5,11 +5,9 @@ import { createPortal } from 'react-dom';
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import LinkCopiedModal from '@/Components/LinkCopiedModal';
-import useWindowSize from '@/Hooks/useWindowSize';
 import Toast from '@/Components/Toast';
 import getCookie from '@/Hooks/useGetCookie';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
-import VideoThumbnail from '@/Components/VideoThumbnail';
 
 export default function index() {
     const [bookmarkedPosts, setBookmarkedPosts] = useState([]);
@@ -243,15 +241,15 @@ export default function index() {
                                         ) : !item?.images && item?.videos ? (
                                             <>
                                                 <div className="relative">
-                                                    <VideoThumbnail
-                                                        key={`${index}-${item?.post_video_urls[0]}`}
-                                                        videoUrl={
-                                                            item?.post_video_urls[0]
-                                                        }
+                                                    <img
+                                                        src={item?.videos[0]?.thumbnail_url || Placeholder}
                                                         alt={item?.title}
+                                                        loading="lazy"
+                                                        onError={(e) =>
+                                                            (e.target.src = Placeholder)
+                                                        }
                                                         className="w-full object-cover text-[10px] text-gray-700 transition-all duration-500 group-hover:scale-105 dark:text-white/80 dark:opacity-80"
                                                     />
-
                                                     {/* Title */}
                                                     <div className="absolute left-3 top-3">
                                                         <span className="text-[8px] text-white drop-shadow-md sm:text-[9px] md:text-[10px] lg:text-[17px]">

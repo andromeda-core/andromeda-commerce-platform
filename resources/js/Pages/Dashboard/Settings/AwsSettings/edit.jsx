@@ -6,15 +6,15 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, useForm } from '@inertiajs/react';
 import React from 'react';
-import SelectInput from '@/Components/SelectInput';
 
 export default function edit({ aws_setting }) {
     // Edit Data Form Data
-    const { data, setData, put, processing, errors, reset } = useForm({
+    const { data, setData, put, processing, errors } = useForm({
         aws_access_key_id: aws_setting?.aws_access_key_id || '',
         aws_secret_access_key: aws_setting?.aws_secret_access_key || '',
         aws_region: aws_setting?.aws_region || '',
         aws_bucket: aws_setting?.aws_bucket || '',
+        aws_url: aws_setting?.aws_url || '',
     });
 
     // Edit Data Form Request
@@ -38,7 +38,7 @@ export default function edit({ aws_setting }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To AWS Settings'}
                                     URL={route('dashboard.settings.aws-settings.index')}
@@ -123,6 +123,21 @@ export default function edit({ aws_setting }) {
                                                     Name={'aws_bucket'}
                                                     Type={'text'}
                                                     Required={true}
+                                                />
+
+
+                                                <Input
+                                                    InputName={'AWS URL'}
+                                                    Error={errors.aws_url}
+                                                    Value={data.aws_url}
+                                                    Action={(e) =>
+                                                        setData('aws_url', e.target.value)
+                                                    }
+                                                    Placeholder={'Enter AWS URL'}
+                                                    Id={'aws_url'}
+                                                    Name={'aws_url'}
+                                                    Type={'url'}
+                                                    Required={false}
                                                 />
                                             </div>
 

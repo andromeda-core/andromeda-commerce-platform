@@ -10,7 +10,7 @@ import SelectInput from '@/Components/SelectInput';
 
 export default function edit({ country }) {
     // Edit Data Form Data
-    const { data, setData, put, processing, errors, reset } = useForm({
+    const { data, setData, put, processing, errors } = useForm({
         name: country.name || '',
         iso_code: country.iso_code || '',
         is_active: country.is_active ?? 1,
@@ -37,7 +37,7 @@ export default function edit({ country }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Countries'}
                                     URL={route('dashboard.settings.countries.index')}

@@ -36,7 +36,10 @@ class SmartphoneStoreOnAWS implements ShouldQueue
                 $extension = pathinfo($image, PATHINFO_EXTENSION);
                 $new_name = time().uniqid().'-'.Str::random(10).'.'.$extension;
 
-                Storage::disk('s3')->put($this->smartphone_images_dir.$new_name, file_get_contents($fullLocalPath));
+                Storage::disk('s3')->put($this->smartphone_images_dir.$new_name, file_get_contents($fullLocalPath), [
+                    'CacheControl' => 'public, max-age=31536000',
+                    'ContentType' => mime_content_type($fullLocalPath),
+                ]);
                 Storage::disk('local')->delete($image);
 
                 $url = Storage::disk('s3')->url($this->smartphone_images_dir.$new_name);

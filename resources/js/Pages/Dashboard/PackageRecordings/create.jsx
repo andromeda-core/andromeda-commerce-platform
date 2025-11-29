@@ -1,5 +1,4 @@
 import Card from '@/Components/Card';
-import Input from '@/Components/Input';
 import LinkButton from '@/Components/LinkButton';
 import PrimaryButton from '@/Components/PrimaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -7,7 +6,6 @@ import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, useForm } from '@inertiajs/react';
 import React, { useEffect, useRef, useState } from 'react';
 import SelectInput from '@/Components/SelectInput';
-import FileUploaderInput from '@/Components/FileUploaderInput';
 import Swal from 'sweetalert2';
 
 export default function create({ orders }) {
@@ -315,7 +313,7 @@ export default function create({ orders }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Package Recordings'}
                                     URL={route('dashboard.package-recordings.index')}
@@ -386,7 +384,7 @@ export default function create({ orders }) {
                                                     <div className="grid grid-cols-1 gap-4">
                                                         <div
                                                             key={data.package_video}
-                                                            className="flex max-w-lg items-center justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal"
+                                                            className="flex items-center justify-between max-w-lg p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-deepcharcoal"
                                                         >
                                                             {/* Left side - Video icon */}
                                                             <div className="flex items-center gap-3">
@@ -412,7 +410,7 @@ export default function create({ orders }) {
 
                                                             {/* Right side - X icon */}
                                                             <div
-                                                                className="flex cursor-pointer items-center"
+                                                                className="flex items-center cursor-pointer"
                                                                 onClick={() =>
                                                                     setData('package_video', '')
                                                                 }
@@ -501,22 +499,22 @@ export default function create({ orders }) {
 
                 {/* Recording Save Loading Modal */}
                 {openRecorder && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                         <div className="fixed inset-0 bg-black/50" onClick={handleClose} />
 
-                        <div className="relative z-10 max-h-screen w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 text-gray-900 shadow-xl dark:bg-deepcharcoal dark:text-white/80 sm:p-8">
+                        <div className="relative z-10 w-full max-w-3xl max-h-screen p-6 overflow-y-auto text-gray-900 bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal dark:text-white/80 sm:p-8">
                             {/* Header */}
-                            <div className="mb-4 flex items-center justify-between border-b pb-4">
+                            <div className="flex items-center justify-between pb-4 mb-4 border-b">
                                 <h3 className="text-lg font-semibold">Video Recorder</h3>
                             </div>
 
                             {/* Error display */}
                             {error && (
-                                <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3">
+                                <div className="p-3 mb-4 border border-red-200 rounded-md bg-red-50">
                                     <div className="mb-2 text-sm text-red-800">{error}</div>
                                     <button
                                         onClick={startCameraWithFallback}
-                                        className="rounded bg-red-100 px-3 py-1 text-sm text-red-800 hover:bg-red-200"
+                                        className="px-3 py-1 text-sm text-red-800 bg-red-100 rounded hover:bg-red-200"
                                     >
                                         Retry Camera
                                     </button>
@@ -533,7 +531,7 @@ export default function create({ orders }) {
 
                             {/* Video display */}
                             <div
-                                className="relative mb-4 overflow-hidden rounded-lg bg-black"
+                                className="relative mb-4 overflow-hidden bg-black rounded-lg"
                                 style={{ aspectRatio: '16/9' }}
                             >
                                 {!recordedVideoUrl ? (
@@ -542,27 +540,27 @@ export default function create({ orders }) {
                                         autoPlay
                                         muted
                                         playsInline
-                                        className="h-full w-full object-cover"
+                                        className="object-cover w-full h-full"
                                     />
                                 ) : (
                                     <video
                                         key={recordedVideoUrl}
                                         src={recordedVideoUrl}
                                         controls
-                                        className="h-full w-full object-cover"
+                                        className="object-cover w-full h-full"
                                         onLoadedMetadata={(e) => {
                                             // ensure it actually starts
                                             try {
                                                 e.currentTarget.play();
-                                            } catch {}
+                                            } catch { }
                                         }}
                                     />
                                 )}
 
                                 {/* Recording indicator */}
                                 {isRecording && (
-                                    <div className="absolute left-4 top-4 flex items-center space-x-2 rounded-full bg-red-600 px-3 py-1 text-white">
-                                        <div className="h-3 w-3 animate-pulse rounded-full bg-white"></div>
+                                    <div className="absolute flex items-center px-3 py-1 space-x-2 text-white bg-red-600 rounded-full left-4 top-4">
+                                        <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
                                         <span className="text-sm font-medium">Recording</span>
                                     </div>
                                 )}
@@ -570,7 +568,7 @@ export default function create({ orders }) {
                                 {!isRecording && !recordedVideoUrl && (
                                     <div
                                         onClick={() => setUseFrontCamera(!useFrontCamera)}
-                                        className="absolute right-4 top-4 flex cursor-pointer items-center space-x-2 rounded-full bg-blue-600 px-3 py-1 text-white"
+                                        className="absolute flex items-center px-3 py-1 space-x-2 text-white bg-blue-600 rounded-full cursor-pointer right-4 top-4"
                                     >
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
@@ -611,7 +609,7 @@ export default function create({ orders }) {
                                         <button
                                             onClick={handleStartRecording}
                                             disabled={!stream || isRecording}
-                                            className="rounded-lg bg-green-600 px-6 py-2 text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                            className="px-6 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                                         >
                                             {isRecording ? 'Recording...' : 'Start Recording'}
                                         </button>
@@ -619,7 +617,7 @@ export default function create({ orders }) {
                                         <button
                                             onClick={handleStopRecording}
                                             disabled={!isRecording}
-                                            className="rounded-lg bg-red-600 px-6 py-2 text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                            className="px-6 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
                                         >
                                             Stop Recording
                                         </button>
@@ -629,14 +627,14 @@ export default function create({ orders }) {
                                         <button
                                             onClick={handleSave}
                                             disabled={recordingSaving}
-                                            className="rounded-lg bg-blue-600 px-6 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
+                                            className="px-6 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
                                         >
                                             {recordingSaving ? 'Saving...' : 'Save Video'}
                                         </button>
 
                                         <button
                                             onClick={handleRetake}
-                                            className="rounded-lg bg-amber-500 px-6 py-2 text-white hover:bg-amber-600"
+                                            className="px-6 py-2 text-white rounded-lg bg-amber-500 hover:bg-amber-600"
                                         >
                                             Retake
                                         </button>
@@ -645,7 +643,7 @@ export default function create({ orders }) {
 
                                 <button
                                     onClick={handleClose}
-                                    className="rounded-lg bg-gray-500 px-6 py-2 text-white hover:bg-gray-600"
+                                    className="px-6 py-2 text-white bg-gray-500 rounded-lg hover:bg-gray-600"
                                 >
                                     Close
                                 </button>

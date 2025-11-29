@@ -4,7 +4,7 @@ import Input from '@/Components/Input';
 import LinkButton from '@/Components/LinkButton';
 import PrimaryButton from '@/Components/PrimaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import React from 'react';
 
 export default function index({ reward_point_setting }) {
@@ -31,7 +31,7 @@ export default function index({ reward_point_setting }) {
             <Card
                 Content={
                     <>
-                        <div className="my-3 flex flex-wrap justify-end gap-4">
+                        <div className="flex flex-wrap justify-end gap-4 my-3">
                             <LinkButton
                                 Text={'Back To Settings'}
                                 URL={route('dashboard.settings.index')}

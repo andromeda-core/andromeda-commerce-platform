@@ -1,3 +1,4 @@
+import InstagramStyledVideoPlayer from '@/Components/InstagramStyledVideoPlayer';
 import VideoWithThumbnail from '@/Components/VideoWithThumbnail';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -83,6 +84,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
             post?.videos?.map((vid) => ({
                 type: 'video',
                 url: vid.url,
+                thumbnail_url: vid?.thumbnail_url
             })) || [];
 
         return [...images, ...videos];
@@ -255,7 +257,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                         >
                                             {item.type === 'image' ? (
                                                 <img
-                                                    src={item.url}
+                                                    src={item.url || placeholderImage}
                                                     alt={`Media ${index}`}
                                                     className="object-cover w-full h-full max-w-full max-h-full"
                                                     loading="eager"
@@ -265,11 +267,13 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                                 />
                                             ) : (
                                                 <div className="flex items-center justify-center w-full h-full">
-                                                    <VideoWithThumbnail
-                                                        type='instagram'
+                                                    <InstagramStyledVideoPlayer
+                                                        thumbnail={item?.thumbnail_url || placeholderImage}
                                                         className="object-cover w-full h-full"
                                                         videoUrl={item.url}
-                                                        Preload='auto'
+                                                        Preload='metadata'
+                                                        slug={item?.slug}
+
                                                     />
                                                 </div>
                                             )}

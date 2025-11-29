@@ -266,14 +266,14 @@ export default function OrderView({ order }) {
                             <div className="px-4 py-3 sm:px-6 lg:px-8">
                                 <div className="flex flex-col items-center justify-between gap-3 sm:flex-row sm:gap-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-red-500">
+                                        <div className="flex items-center justify-center flex-shrink-0 w-8 h-8 bg-red-500 rounded-full">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={2}
                                                 stroke="currentColor"
-                                                className="h-5 w-5 text-white"
+                                                className="w-5 h-5 text-white"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -296,7 +296,7 @@ export default function OrderView({ order }) {
                                     <div className="flex flex-wrap gap-2">
                                         <button
                                             onClick={() => setViewBankDetails(true)}
-                                            className="flex-shrink-0 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-red-700"
+                                            className="flex-shrink-0 px-4 py-2 text-sm font-semibold text-white transition-all bg-red-600 rounded-lg hover:bg-red-700"
                                         >
                                             View Bank Details
                                         </button>
@@ -314,7 +314,7 @@ export default function OrderView({ order }) {
                                                     });
                                                 }
                                             }}
-                                            className="flex-shrink-0 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-red-700"
+                                            className="flex-shrink-0 px-4 py-2 text-sm font-semibold text-white transition-all bg-red-600 rounded-lg hover:bg-red-700"
                                         >
                                             Upload Now
                                         </button>
@@ -332,14 +332,14 @@ export default function OrderView({ order }) {
                             <div className="px-4 py-3 sm:px-6 lg:px-8">
                                 <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
                                     <div className="flex items-start gap-3">
-                                        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-amber-500">
+                                        <div className="flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-full bg-amber-500">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={2}
                                                 stroke="currentColor"
-                                                className="h-5 w-5 text-white"
+                                                className="w-5 h-5 text-white"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -362,7 +362,7 @@ export default function OrderView({ order }) {
                                     </div>
                                     <Link
                                         href={route('website.contact.index')}
-                                        className="flex-shrink-0 whitespace-nowrap rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-amber-700"
+                                        className="flex-shrink-0 px-4 py-2 text-sm font-semibold text-white transition-all rounded-lg whitespace-nowrap bg-amber-600 hover:bg-amber-700"
                                     >
                                         Contact Support
                                     </Link>
@@ -378,7 +378,7 @@ export default function OrderView({ order }) {
                     <div className="mb-8">
                         <Link
                             href={route('website.orders.index')}
-                            className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                            className="inline-flex items-center gap-2 mb-4 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -386,7 +386,7 @@ export default function OrderView({ order }) {
                                 viewBox="0 0 24 24"
                                 strokeWidth={2}
                                 stroke="currentColor"
-                                className="h-4 w-4"
+                                className="w-4 h-4"
                             >
                                 <path
                                     strokeLinecap="round"
@@ -418,16 +418,16 @@ export default function OrderView({ order }) {
                         {/* Main Content */}
                         <div className="space-y-6 lg:col-span-2">
                             {/* Order Items */}
-                            <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-white/10 dark:bg-deepcharcoal">
-                                <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white/80">
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-900/30">
+                            <div className="p-6 bg-white border border-gray-200 rounded-2xl dark:border-white/10 dark:bg-deepcharcoal">
+                                <h2 className="flex items-center gap-2 mb-4 text-lg font-bold text-gray-900 dark:text-white/80">
+                                    <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-xl dark:bg-indigo-900/30">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             strokeWidth={1.5}
                                             stroke="currentColor"
-                                            className="h-5 w-5 text-indigo-600 dark:text-indigo-400"
+                                            className="w-5 h-5 text-indigo-600 dark:text-indigo-400"
                                         >
                                             <path
                                                 strokeLinecap="round"
@@ -442,9 +442,9 @@ export default function OrderView({ order }) {
                                     {order.order_items?.map((item) => (
                                         <div
                                             key={item.id}
-                                            className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-gray-900/50 sm:flex-row sm:items-center"
+                                            className="flex flex-col gap-4 p-4 border border-gray-200 rounded-xl bg-gray-50 dark:border-white/10 dark:bg-gray-900/50 sm:flex-row sm:items-center"
                                         >
-                                            <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white dark:bg-deepcharcoal">
+                                            <div className="flex items-center justify-center flex-shrink-0 w-24 h-24 overflow-hidden bg-white rounded-lg dark:bg-deepcharcoal">
                                                 <img
                                                     src={
                                                         item?.smartphone
@@ -452,7 +452,7 @@ export default function OrderView({ order }) {
                                                         Placeholder
                                                     }
                                                     alt={item?.smartphone?.model_name?.name}
-                                                    className="h-full w-full object-cover"
+                                                    className="object-cover w-full h-full"
                                                     loading="lazy"
                                                     onError={(e) => (e.target.src = Placeholder)}
                                                 />
@@ -500,18 +500,18 @@ export default function OrderView({ order }) {
                             {order.payment_method === 'bank_transfer' && (
                                 <div
                                     id="payment-proof-section"
-                                    className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-white/10 dark:bg-deepcharcoal"
+                                    className="p-6 bg-white border border-gray-200 rounded-2xl dark:border-white/10 dark:bg-deepcharcoal"
                                 >
-                                    <div className="mb-4 flex items-center justify-between">
+                                    <div className="flex items-center justify-between mb-4">
                                         <h2 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white/80">
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-900/30">
+                                            <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-xl dark:bg-indigo-900/30">
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     fill="none"
                                                     viewBox="0 0 24 24"
                                                     strokeWidth={1.5}
                                                     stroke="currentColor"
-                                                    className="h-5 w-5 text-indigo-600 dark:text-indigo-400"
+                                                    className="w-5 h-5 text-indigo-600 dark:text-indigo-400"
                                                 >
                                                     <path
                                                         strokeLinecap="round"
@@ -523,14 +523,14 @@ export default function OrderView({ order }) {
                                             Payment Proof
                                         </h2>
                                         {order.payment_proof && order.status === 'pending' && (
-                                            <span className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+                                            <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     fill="none"
                                                     viewBox="0 0 24 24"
                                                     strokeWidth={2}
                                                     stroke="currentColor"
-                                                    className="h-4 w-4"
+                                                    className="w-4 h-4"
                                                 >
                                                     <path
                                                         strokeLinecap="round"
@@ -547,17 +547,17 @@ export default function OrderView({ order }) {
                                         <div>
                                             <div
                                                 onClick={() => handleImageView(order.payment_proof)}
-                                                className="group cursor-pointer overflow-hidden rounded-xl border-2 border-gray-600 bg-deepcharcoal transition-all dark:border-white/10"
+                                                className="overflow-hidden transition-all border-2 border-gray-600 cursor-pointer group rounded-xl bg-deepcharcoal dark:border-white/10"
                                             >
                                                 <img
                                                     src={order.payment_proof}
                                                     alt="Payment Proof"
-                                                    className="h-64 w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                                                    className="object-contain w-full h-64 transition-transform duration-300 group-hover:scale-105"
                                                 />
                                             </div>
 
                                             {order.status === 'pending' && (
-                                                <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/30 dark:bg-amber-900/10">
+                                                <div className="p-4 mt-4 border rounded-lg border-amber-200 bg-amber-50 dark:border-amber-900/30 dark:bg-amber-900/10">
                                                     <div className="flex gap-3">
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
@@ -565,7 +565,7 @@ export default function OrderView({ order }) {
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={2}
                                                             stroke="currentColor"
-                                                            className="h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-400"
+                                                            className="flex-shrink-0 w-5 h-5 text-amber-600 dark:text-amber-400"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -607,12 +607,12 @@ export default function OrderView({ order }) {
                                                 <button
                                                     onClick={handleUploadPaymentProof}
                                                     disabled={isUploading}
-                                                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                                    className="flex items-center justify-center w-full gap-2 px-6 py-3 text-sm font-semibold text-white transition-all bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                                                 >
                                                     {isUploading ? (
                                                         <>
                                                             <svg
-                                                                className="h-5 w-5 animate-spin"
+                                                                className="w-5 h-5 animate-spin"
                                                                 xmlns="http://www.w3.org/2000/svg"
                                                                 fill="none"
                                                                 viewBox="0 0 24 24"
@@ -641,7 +641,7 @@ export default function OrderView({ order }) {
                                                                 viewBox="0 0 24 24"
                                                                 strokeWidth={2}
                                                                 stroke="currentColor"
-                                                                className="h-5 w-5"
+                                                                className="w-5 h-5"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -661,16 +661,16 @@ export default function OrderView({ order }) {
 
                             {/* Packaging Videos */}
                             {order.order_package_recordings?.length > 0 && (
-                                <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-white/10 dark:bg-deepcharcoal">
-                                    <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white/80">
-                                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-900/30">
+                                <div className="p-6 bg-white border border-gray-200 rounded-2xl dark:border-white/10 dark:bg-deepcharcoal">
+                                    <h2 className="flex items-center gap-2 mb-4 text-lg font-bold text-gray-900 dark:text-white/80">
+                                        <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-xl dark:bg-indigo-900/30">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={1.5}
                                                 stroke="currentColor"
-                                                className="h-5 w-5 text-indigo-600 dark:text-indigo-400"
+                                                className="w-5 h-5 text-indigo-600 dark:text-indigo-400"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -689,24 +689,25 @@ export default function OrderView({ order }) {
                                                     handleVideoView(recording.package_video);
                                                     setSelectedPackageVideoID(recording.id);
                                                 }}
-                                                className="group relative cursor-pointer overflow-hidden rounded-xl border-2 border-gray-600 bg-deepcharcoal transition-all dark:border-white/10"
+                                                className="relative overflow-hidden transition-all border-2 border-gray-600 cursor-pointer group rounded-xl bg-deepcharcoal dark:border-white/10"
                                             >
-                                                <div className="flex aspect-video items-center justify-center bg-deepcharcoal">
+                                                <div className="flex items-center justify-center aspect-video bg-deepcharcoal">
                                                     <VideoWithThumbnail
                                                         videoUrl={recording.package_video}
+                                                        thumbnail={recording.thumbnail_url}
                                                         autoPlay={false}
                                                         controls={false}
                                                         muted
                                                     />
 
-                                                    <div className="absolute inset-0 flex items-center justify-center bg-black/30 transition group-hover:bg-black/40">
+                                                    <div className="absolute inset-0 flex items-center justify-center transition bg-black/30 group-hover:bg-black/40">
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
                                                             fill="none"
                                                             viewBox="0 0 24 24"
                                                             strokeWidth="1.5"
                                                             stroke="currentColor"
-                                                            className="h-12 w-12 text-indigo-400"
+                                                            className="w-12 h-12 text-indigo-400"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -728,16 +729,16 @@ export default function OrderView({ order }) {
                             )}
 
                             {/* Shipping Address */}
-                            <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-white/10 dark:bg-deepcharcoal">
-                                <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white/80">
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-900/30">
+                            <div className="p-6 bg-white border border-gray-200 rounded-2xl dark:border-white/10 dark:bg-deepcharcoal">
+                                <h2 className="flex items-center gap-2 mb-4 text-lg font-bold text-gray-900 dark:text-white/80">
+                                    <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-xl dark:bg-indigo-900/30">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             strokeWidth={2}
                                             stroke="currentColor"
-                                            className="h-5 w-5 text-indigo-600 dark:text-indigo-400"
+                                            className="w-5 h-5 text-indigo-600 dark:text-indigo-400"
                                         >
                                             <path
                                                 strokeLinecap="round"
@@ -753,7 +754,7 @@ export default function OrderView({ order }) {
                                     </div>
                                     Shipping Address
                                 </h2>
-                                <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-900/50">
+                                <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-900/50">
                                     <address className="text-sm not-italic text-gray-600 dark:text-white/80">
                                         <p className="font-semibold text-gray-900 dark:text-white/80">
                                             {order.customer?.user?.name}
@@ -770,14 +771,14 @@ export default function OrderView({ order }) {
                                         </p>
                                         <p>{order.customer?.country?.name}</p>
                                         {order.customer?.user?.phone && (
-                                            <p className="mt-2 flex items-center gap-2">
+                                            <p className="flex items-center gap-2 mt-2">
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     fill="none"
                                                     viewBox="0 0 24 24"
                                                     strokeWidth={2}
                                                     stroke="currentColor"
-                                                    className="h-4 w-4"
+                                                    className="w-4 h-4"
                                                 >
                                                     <path
                                                         strokeLinecap="round"
@@ -794,16 +795,16 @@ export default function OrderView({ order }) {
 
                             {/* Courier Details */}
                             {order?.status != 'paid' && order?.status != 'pending' && (
-                                <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-white/10 dark:bg-deepcharcoal">
-                                    <h2 className="mb-6 flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white/80">
-                                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-900/30">
+                                <div className="p-6 bg-white border border-gray-200 rounded-2xl dark:border-white/10 dark:bg-deepcharcoal">
+                                    <h2 className="flex items-center gap-2 mb-6 text-lg font-bold text-gray-900 dark:text-white/80">
+                                        <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-xl dark:bg-indigo-900/30">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={2}
                                                 stroke="currentColor"
-                                                className="h-5 w-5 text-indigo-600 dark:text-indigo-400"
+                                                className="w-5 h-5 text-indigo-600 dark:text-indigo-400"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -817,16 +818,16 @@ export default function OrderView({ order }) {
 
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                                         {/* Courier Company */}
-                                        <div className="group rounded-xl border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100/50 p-4 transition-all hover:border-indigo-200 hover:shadow-md dark:border-white/10 dark:from-gray-900/50 dark:to-gray-900/30 dark:hover:border-indigo-800">
-                                            <div className="mb-2 flex items-center gap-2">
-                                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white dark:bg-deepcharcoal">
+                                        <div className="p-4 transition-all border border-gray-200 group rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/50 hover:border-indigo-200 hover:shadow-md dark:border-white/10 dark:from-gray-900/50 dark:to-gray-900/30 dark:hover:border-indigo-800">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <div className="flex items-center justify-center w-8 h-8 bg-white rounded-lg dark:bg-deepcharcoal">
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         fill="none"
                                                         viewBox="0 0 24 24"
                                                         strokeWidth={2}
                                                         stroke="currentColor"
-                                                        className="h-4 w-4 text-indigo-600 dark:text-indigo-400"
+                                                        className="w-4 h-4 text-indigo-600 dark:text-indigo-400"
                                                     >
                                                         <path
                                                             strokeLinecap="round"
@@ -835,26 +836,26 @@ export default function OrderView({ order }) {
                                                         />
                                                     </svg>
                                                 </div>
-                                                <span className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-white/60">
+                                                <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-white/60">
                                                     Courier Company
                                                 </span>
                                             </div>
-                                            <p className="break-words text-base font-bold text-gray-900 dark:text-white/80">
+                                            <p className="text-base font-bold text-gray-900 break-words dark:text-white/80">
                                                 {order.courier_company || 'Not Assigned'}
                                             </p>
                                         </div>
 
                                         {/* Tracking Number */}
-                                        <div className="group rounded-xl border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100/50 p-4 transition-all hover:border-indigo-200 hover:shadow-md dark:border-white/10 dark:from-gray-900/50 dark:to-gray-900/30 dark:hover:border-indigo-800">
-                                            <div className="mb-2 flex items-center gap-2">
-                                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white dark:bg-deepcharcoal">
+                                        <div className="p-4 transition-all border border-gray-200 group rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/50 hover:border-indigo-200 hover:shadow-md dark:border-white/10 dark:from-gray-900/50 dark:to-gray-900/30 dark:hover:border-indigo-800">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <div className="flex items-center justify-center w-8 h-8 bg-white rounded-lg dark:bg-deepcharcoal">
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         fill="none"
                                                         viewBox="0 0 24 24"
                                                         strokeWidth={2}
                                                         stroke="currentColor"
-                                                        className="h-4 w-4 text-indigo-600 dark:text-indigo-400"
+                                                        className="w-4 h-4 text-indigo-600 dark:text-indigo-400"
                                                     >
                                                         <path
                                                             strokeLinecap="round"
@@ -863,26 +864,26 @@ export default function OrderView({ order }) {
                                                         />
                                                     </svg>
                                                 </div>
-                                                <span className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-white/60">
+                                                <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-white/60">
                                                     Tracking Number
                                                 </span>
                                             </div>
-                                            <p className="break-words font-mono text-base font-bold text-gray-900 dark:text-white/80">
+                                            <p className="font-mono text-base font-bold text-gray-900 break-words dark:text-white/80">
                                                 {order.tracking_no || 'N/A'}
                                             </p>
                                         </div>
 
                                         {/* Shipping Date */}
-                                        <div className="group rounded-xl border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100/50 p-4 transition-all hover:border-indigo-200 hover:shadow-md dark:border-white/10 dark:from-gray-900/50 dark:to-gray-900/30 dark:hover:border-indigo-800">
-                                            <div className="mb-2 flex items-center gap-2">
-                                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white dark:bg-deepcharcoal">
+                                        <div className="p-4 transition-all border border-gray-200 group rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/50 hover:border-indigo-200 hover:shadow-md dark:border-white/10 dark:from-gray-900/50 dark:to-gray-900/30 dark:hover:border-indigo-800">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <div className="flex items-center justify-center w-8 h-8 bg-white rounded-lg dark:bg-deepcharcoal">
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         fill="none"
                                                         viewBox="0 0 24 24"
                                                         strokeWidth={2}
                                                         stroke="currentColor"
-                                                        className="h-4 w-4 text-indigo-600 dark:text-indigo-400"
+                                                        className="w-4 h-4 text-indigo-600 dark:text-indigo-400"
                                                     >
                                                         <path
                                                             strokeLinecap="round"
@@ -891,11 +892,11 @@ export default function OrderView({ order }) {
                                                         />
                                                     </svg>
                                                 </div>
-                                                <span className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-white/60">
+                                                <span className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-white/60">
                                                     Shipping Date
                                                 </span>
                                             </div>
-                                            <p className="break-words text-base font-bold text-gray-900 dark:text-white/80">
+                                            <p className="text-base font-bold text-gray-900 break-words dark:text-white/80">
                                                 {order?.shipping_date || 'Pending'}
                                             </p>
                                         </div>
@@ -907,16 +908,16 @@ export default function OrderView({ order }) {
                         {/* Sidebar */}
                         <div className="space-y-6">
                             {/* Order Summary */}
-                            <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-white/10 dark:bg-deepcharcoal">
-                                <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white/80">
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-900/30">
+                            <div className="p-6 bg-white border border-gray-200 rounded-2xl dark:border-white/10 dark:bg-deepcharcoal">
+                                <h2 className="flex items-center gap-2 mb-4 text-lg font-bold text-gray-900 dark:text-white/80">
+                                    <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-xl dark:bg-indigo-900/30">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             strokeWidth={2}
                                             stroke="currentColor"
-                                            className="h-5 w-5 text-indigo-600 dark:text-indigo-400"
+                                            className="w-5 h-5 text-indigo-600 dark:text-indigo-400"
                                         >
                                             <path
                                                 strokeLinecap="round"
@@ -953,7 +954,7 @@ export default function OrderView({ order }) {
                                         </div>
                                     )}
 
-                                    <div className="border-t border-gray-200 pt-3 dark:border-white/10">
+                                    <div className="pt-3 border-t border-gray-200 dark:border-white/10">
                                         <div className="flex items-center justify-between">
                                             <span className="text-base font-bold text-gray-900 dark:text-white/80">
                                                 Total
@@ -970,16 +971,16 @@ export default function OrderView({ order }) {
                             </div>
 
                             {/* Payment Method */}
-                            <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-white/10 dark:bg-deepcharcoal">
-                                <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white/80">
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-900/30">
+                            <div className="p-6 bg-white border border-gray-200 rounded-2xl dark:border-white/10 dark:bg-deepcharcoal">
+                                <h2 className="flex items-center gap-2 mb-4 text-lg font-bold text-gray-900 dark:text-white/80">
+                                    <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-xl dark:bg-indigo-900/30">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             strokeWidth={2}
                                             stroke="currentColor"
-                                            className="h-5 w-5 text-indigo-600 dark:text-indigo-400"
+                                            className="w-5 h-5 text-indigo-600 dark:text-indigo-400"
                                         >
                                             <path
                                                 strokeLinecap="round"
@@ -990,12 +991,12 @@ export default function OrderView({ order }) {
                                     </div>
                                     Payment Method
                                 </h2>
-                                <div className="flex items-center gap-3 rounded-lg p-2">
+                                <div className="flex items-center gap-3 p-2 rounded-lg">
                                     {order.payment_method === 'crypto' ? (
                                         <>
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500">
+                                            <div className="flex items-center justify-center w-10 h-10 bg-orange-500 rounded-full">
                                                 <svg
-                                                    className="h-6 w-6"
+                                                    className="w-6 h-6"
                                                     viewBox="0.004 0 64 64"
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     fill="none"
@@ -1018,7 +1019,7 @@ export default function OrderView({ order }) {
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={2}
                                                 stroke="currentColor"
-                                                className="h-6 w-6 text-gray-700 dark:text-white/80"
+                                                className="w-6 h-6 text-gray-700 dark:text-white/80"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -1038,7 +1039,7 @@ export default function OrderView({ order }) {
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={2}
                                                 stroke="currentColor"
-                                                className="h-6 w-6 text-gray-700 dark:text-white/80"
+                                                className="w-6 h-6 text-gray-700 dark:text-white/80"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -1055,7 +1056,7 @@ export default function OrderView({ order }) {
                             </div>
 
                             {/* Help Section */}
-                            <div className="rounded-2xl border border-gray-200 bg-gradient-to-br from-indigo-50 to-purple-50 p-6 dark:border-white/10 dark:from-indigo-900/20 dark:to-purple-900/20">
+                            <div className="p-6 border border-gray-200 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:border-white/10 dark:from-indigo-900/20 dark:to-purple-900/20">
                                 <h2 className="mb-2 text-lg font-bold text-gray-900 dark:text-white/80">
                                     Need Help?
                                 </h2>
@@ -1065,7 +1066,7 @@ export default function OrderView({ order }) {
                                 </p>
                                 <Link
                                     href={route('website.contact.index')}
-                                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-indigo-500"
+                                    className="inline-flex items-center justify-center w-full gap-2 px-4 py-3 text-sm font-semibold text-white transition-all bg-indigo-600 rounded-xl hover:bg-indigo-500"
                                 >
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -1073,7 +1074,7 @@ export default function OrderView({ order }) {
                                         viewBox="0 0 24 24"
                                         strokeWidth={2}
                                         stroke="currentColor"
-                                        className="h-4 w-4"
+                                        className="w-4 h-4"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -1094,7 +1095,7 @@ export default function OrderView({ order }) {
                 createPortal(
                     <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto p-4">
                         <div
-                            className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
+                            className="fixed inset-0 transition-opacity duration-300 bg-black/40 backdrop-blur-sm"
                             onClick={() => {
                                 setShowVideoModal(false);
                                 setSelectedVideo(null);
@@ -1123,7 +1124,7 @@ export default function OrderView({ order }) {
                 createPortal(
                     <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto p-4">
                         <div
-                            className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
+                            className="fixed inset-0 transition-opacity duration-300 bg-black/40 backdrop-blur-sm"
                             onClick={() => {
                                 setShowImageModal(false);
                                 setSelectedImage(null);
@@ -1156,14 +1157,14 @@ export default function OrderView({ order }) {
                             <div className="fixed inset-0 z-50 flex items-center justify-center">
                                 {/* Backdrop */}
                                 <div
-                                    className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
+                                    className="fixed inset-0 transition-opacity duration-300 bg-black/60 backdrop-blur-sm"
                                     onClick={() => setViewBankDetails(false)}
                                 />
 
                                 {/* Modal Card */}
-                                <div className="relative z-10 w-full max-w-2xl rounded-2xl bg-white/95 p-8 shadow-2xl dark:bg-deepcharcoal dark:text-white/80">
+                                <div className="relative z-10 w-full max-w-2xl p-8 shadow-2xl rounded-2xl bg-white/95 dark:bg-deepcharcoal dark:text-white/80">
                                     {/* Header */}
-                                    <div className="flex items-center justify-between border-b border-gray-200 pb-4 dark:border-gray-700">
+                                    <div className="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
                                         <h2 className="text-xl font-semibold tracking-tight text-gray-600 dark:text-white/80">
                                             Bank Details
                                         </h2>
@@ -1192,17 +1193,17 @@ export default function OrderView({ order }) {
                                     <div className="mt-6 max-h-[70vh] space-y-6 overflow-y-auto pr-1">
                                         <div className="space-y-6">
                                             {/* Bank Name */}
-                                            <div className="group rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
+                                            <div className="p-4 transition-all border border-gray-200 group rounded-xl bg-gray-50 hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
                                                 <div className="flex items-start justify-between">
                                                     <div className="flex-1">
-                                                        <label className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-white/60">
+                                                        <label className="flex items-center gap-2 mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-white/60">
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
                                                                 fill="none"
                                                                 viewBox="0 0 24 24"
                                                                 strokeWidth={2}
                                                                 stroke="currentColor"
-                                                                className="h-4 w-4"
+                                                                className="w-4 h-4"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -1227,7 +1228,7 @@ export default function OrderView({ order }) {
                                                                 'bank_name',
                                                             )
                                                         }
-                                                        className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-white text-gray-600 transition-all hover:bg-indigo-100 hover:text-indigo-600 dark:bg-deepcharcoal dark:text-white/60 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
+                                                        className="relative flex items-center justify-center text-gray-600 transition-all bg-white rounded-lg h-9 w-9 hover:bg-indigo-100 hover:text-indigo-600 dark:bg-deepcharcoal dark:text-white/60 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
                                                     >
                                                         {copiedField === 'bank_name' ? (
                                                             <>
@@ -1237,7 +1238,7 @@ export default function OrderView({ order }) {
                                                                     viewBox="0 0 24 24"
                                                                     strokeWidth={2}
                                                                     stroke="currentColor"
-                                                                    className="h-5 w-5 text-indigo-600 dark:text-indigo-400"
+                                                                    className="w-5 h-5 text-indigo-600 dark:text-indigo-400"
                                                                 >
                                                                     <path
                                                                         strokeLinecap="round"
@@ -1245,7 +1246,7 @@ export default function OrderView({ order }) {
                                                                         d="M4.5 12.75l6 6 9-13.5"
                                                                     />
                                                                 </svg>
-                                                                <span className="absolute top-8 whitespace-nowrap rounded-md bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-lg dark:bg-indigo-500">
+                                                                <span className="absolute px-2 py-1 text-xs font-semibold text-white bg-indigo-600 rounded-md shadow-lg top-8 whitespace-nowrap dark:bg-indigo-500">
                                                                     Copied!
                                                                 </span>
                                                             </>
@@ -1256,7 +1257,7 @@ export default function OrderView({ order }) {
                                                                 viewBox="0 0 24 24"
                                                                 strokeWidth={2}
                                                                 stroke="currentColor"
-                                                                className="h-5 w-5"
+                                                                className="w-5 h-5"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -1270,17 +1271,17 @@ export default function OrderView({ order }) {
                                             </div>
 
                                             {/* Account Name */}
-                                            <div className="group rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
+                                            <div className="p-4 transition-all border border-gray-200 group rounded-xl bg-gray-50 hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
                                                 <div className="flex items-start justify-between">
                                                     <div className="flex-1">
-                                                        <label className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-white/60">
+                                                        <label className="flex items-center gap-2 mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-white/60">
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
                                                                 fill="none"
                                                                 viewBox="0 0 24 24"
                                                                 strokeWidth={2}
                                                                 stroke="currentColor"
-                                                                className="h-4 w-4"
+                                                                className="w-4 h-4"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -1305,7 +1306,7 @@ export default function OrderView({ order }) {
                                                                 'account_name',
                                                             )
                                                         }
-                                                        className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-white text-gray-600 transition-all hover:bg-indigo-100 hover:text-indigo-600 dark:bg-deepcharcoal dark:text-white/60 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
+                                                        className="relative flex items-center justify-center text-gray-600 transition-all bg-white rounded-lg h-9 w-9 hover:bg-indigo-100 hover:text-indigo-600 dark:bg-deepcharcoal dark:text-white/60 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
                                                     >
                                                         {copiedField === 'account_name' ? (
                                                             <>
@@ -1315,7 +1316,7 @@ export default function OrderView({ order }) {
                                                                     viewBox="0 0 24 24"
                                                                     strokeWidth={2}
                                                                     stroke="currentColor"
-                                                                    className="h-5 w-5 text-indigo-600 dark:text-indigo-400"
+                                                                    className="w-5 h-5 text-indigo-600 dark:text-indigo-400"
                                                                 >
                                                                     <path
                                                                         strokeLinecap="round"
@@ -1323,7 +1324,7 @@ export default function OrderView({ order }) {
                                                                         d="M4.5 12.75l6 6 9-13.5"
                                                                     />
                                                                 </svg>
-                                                                <span className="absolute left-1/2 top-8 -translate-x-1/2 whitespace-nowrap rounded-md bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-lg dark:bg-indigo-500">
+                                                                <span className="absolute px-2 py-1 text-xs font-semibold text-white -translate-x-1/2 bg-indigo-600 rounded-md shadow-lg left-1/2 top-8 whitespace-nowrap dark:bg-indigo-500">
                                                                     Copied!
                                                                 </span>
                                                             </>
@@ -1334,7 +1335,7 @@ export default function OrderView({ order }) {
                                                                 viewBox="0 0 24 24"
                                                                 strokeWidth={2}
                                                                 stroke="currentColor"
-                                                                className="h-5 w-5"
+                                                                className="w-5 h-5"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -1348,17 +1349,17 @@ export default function OrderView({ order }) {
                                             </div>
 
                                             {/* Account Number */}
-                                            <div className="group rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
+                                            <div className="p-4 transition-all border border-gray-200 group rounded-xl bg-gray-50 hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
                                                 <div className="flex items-start justify-between">
                                                     <div className="flex-1">
-                                                        <label className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-white/60">
+                                                        <label className="flex items-center gap-2 mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-white/60">
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
                                                                 fill="none"
                                                                 viewBox="0 0 24 24"
                                                                 strokeWidth={2}
                                                                 stroke="currentColor"
-                                                                className="h-4 w-4"
+                                                                className="w-4 h-4"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -1383,7 +1384,7 @@ export default function OrderView({ order }) {
                                                                 'account_number',
                                                             )
                                                         }
-                                                        className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-white text-gray-600 transition-all hover:bg-indigo-100 hover:text-indigo-600 dark:bg-deepcharcoal dark:text-white/60 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
+                                                        className="relative flex items-center justify-center text-gray-600 transition-all bg-white rounded-lg h-9 w-9 hover:bg-indigo-100 hover:text-indigo-600 dark:bg-deepcharcoal dark:text-white/60 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
                                                     >
                                                         {copiedField === 'account_number' ? (
                                                             <>
@@ -1393,7 +1394,7 @@ export default function OrderView({ order }) {
                                                                     viewBox="0 0 24 24"
                                                                     strokeWidth={2}
                                                                     stroke="currentColor"
-                                                                    className="h-5 w-5 text-indigo-600 dark:text-indigo-400"
+                                                                    className="w-5 h-5 text-indigo-600 dark:text-indigo-400"
                                                                 >
                                                                     <path
                                                                         strokeLinecap="round"
@@ -1401,7 +1402,7 @@ export default function OrderView({ order }) {
                                                                         d="M4.5 12.75l6 6 9-13.5"
                                                                     />
                                                                 </svg>
-                                                                <span className="absolute left-1/2 top-8 -translate-x-1/2 whitespace-nowrap rounded-md bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-lg dark:bg-indigo-500">
+                                                                <span className="absolute px-2 py-1 text-xs font-semibold text-white -translate-x-1/2 bg-indigo-600 rounded-md shadow-lg left-1/2 top-8 whitespace-nowrap dark:bg-indigo-500">
                                                                     Copied!
                                                                 </span>
                                                             </>
@@ -1412,7 +1413,7 @@ export default function OrderView({ order }) {
                                                                 viewBox="0 0 24 24"
                                                                 strokeWidth={2}
                                                                 stroke="currentColor"
-                                                                className="h-5 w-5"
+                                                                className="w-5 h-5"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -1426,17 +1427,17 @@ export default function OrderView({ order }) {
                                             </div>
 
                                             {/* IBAN */}
-                                            <div className="group rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
+                                            <div className="p-4 transition-all border border-gray-200 group rounded-xl bg-gray-50 hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
                                                 <div className="flex items-start justify-between">
                                                     <div className="flex-1">
-                                                        <label className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-white/60">
+                                                        <label className="flex items-center gap-2 mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-white/60">
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
                                                                 fill="none"
                                                                 viewBox="0 0 24 24"
                                                                 strokeWidth={2}
                                                                 stroke="currentColor"
-                                                                className="h-4 w-4"
+                                                                className="w-4 h-4"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -1457,11 +1458,11 @@ export default function OrderView({ order }) {
                                                             handleCopy(
                                                                 order?.order_items[0]?.smartphone
                                                                     ?.category?.distributor?.iban ||
-                                                                    'N/A',
+                                                                'N/A',
                                                                 'iban',
                                                             )
                                                         }
-                                                        className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-white text-gray-600 transition-all hover:bg-indigo-100 hover:text-indigo-600 dark:bg-deepcharcoal dark:text-white/60 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
+                                                        className="relative flex items-center justify-center text-gray-600 transition-all bg-white rounded-lg h-9 w-9 hover:bg-indigo-100 hover:text-indigo-600 dark:bg-deepcharcoal dark:text-white/60 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
                                                     >
                                                         {copiedField === 'iban' ? (
                                                             <>
@@ -1471,7 +1472,7 @@ export default function OrderView({ order }) {
                                                                     viewBox="0 0 24 24"
                                                                     strokeWidth={2}
                                                                     stroke="currentColor"
-                                                                    className="h-5 w-5 text-indigo-600 dark:text-indigo-400"
+                                                                    className="w-5 h-5 text-indigo-600 dark:text-indigo-400"
                                                                 >
                                                                     <path
                                                                         strokeLinecap="round"
@@ -1479,7 +1480,7 @@ export default function OrderView({ order }) {
                                                                         d="M4.5 12.75l6 6 9-13.5"
                                                                     />
                                                                 </svg>
-                                                                <span className="absolute left-1/2 top-8 -translate-x-1/2 whitespace-nowrap rounded-md bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-lg dark:bg-indigo-500">
+                                                                <span className="absolute px-2 py-1 text-xs font-semibold text-white -translate-x-1/2 bg-indigo-600 rounded-md shadow-lg left-1/2 top-8 whitespace-nowrap dark:bg-indigo-500">
                                                                     Copied!
                                                                 </span>
                                                             </>
@@ -1490,7 +1491,7 @@ export default function OrderView({ order }) {
                                                                 viewBox="0 0 24 24"
                                                                 strokeWidth={2}
                                                                 stroke="currentColor"
-                                                                className="h-5 w-5"
+                                                                className="w-5 h-5"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -1504,17 +1505,17 @@ export default function OrderView({ order }) {
                                             </div>
 
                                             {/* SWIFT Code */}
-                                            <div className="group rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
+                                            <div className="p-4 transition-all border border-gray-200 group rounded-xl bg-gray-50 hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
                                                 <div className="flex items-start justify-between">
                                                     <div className="flex-1">
-                                                        <label className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-white/60">
+                                                        <label className="flex items-center gap-2 mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-white/60">
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
                                                                 fill="none"
                                                                 viewBox="0 0 24 24"
                                                                 strokeWidth={2}
                                                                 stroke="currentColor"
-                                                                className="h-4 w-4"
+                                                                className="w-4 h-4"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -1544,7 +1545,7 @@ export default function OrderView({ order }) {
                                                                 'swift_code',
                                                             )
                                                         }
-                                                        className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-white text-gray-600 transition-all hover:bg-indigo-100 hover:text-indigo-600 dark:bg-deepcharcoal dark:text-white/60 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
+                                                        className="relative flex items-center justify-center text-gray-600 transition-all bg-white rounded-lg h-9 w-9 hover:bg-indigo-100 hover:text-indigo-600 dark:bg-deepcharcoal dark:text-white/60 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
                                                     >
                                                         {copiedField === 'swift_code' ? (
                                                             <>
@@ -1554,7 +1555,7 @@ export default function OrderView({ order }) {
                                                                     viewBox="0 0 24 24"
                                                                     strokeWidth={2}
                                                                     stroke="currentColor"
-                                                                    className="h-5 w-5 text-indigo-600 dark:text-indigo-400"
+                                                                    className="w-5 h-5 text-indigo-600 dark:text-indigo-400"
                                                                 >
                                                                     <path
                                                                         strokeLinecap="round"
@@ -1562,7 +1563,7 @@ export default function OrderView({ order }) {
                                                                         d="M4.5 12.75l6 6 9-13.5"
                                                                     />
                                                                 </svg>
-                                                                <span className="absolute left-1/2 top-8 -translate-x-1/2 whitespace-nowrap rounded-md bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-lg dark:bg-indigo-500">
+                                                                <span className="absolute px-2 py-1 text-xs font-semibold text-white -translate-x-1/2 bg-indigo-600 rounded-md shadow-lg left-1/2 top-8 whitespace-nowrap dark:bg-indigo-500">
                                                                     Copied!
                                                                 </span>
                                                             </>
@@ -1573,7 +1574,7 @@ export default function OrderView({ order }) {
                                                                 viewBox="0 0 24 24"
                                                                 strokeWidth={2}
                                                                 stroke="currentColor"
-                                                                className="h-5 w-5"
+                                                                className="w-5 h-5"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -1587,7 +1588,7 @@ export default function OrderView({ order }) {
                                             </div>
 
                                             {/* Important Notice */}
-                                            <div className="mt-6 rounded-xl border-l-4 border-amber-500 bg-amber-50 p-4 dark:bg-amber-900/10">
+                                            <div className="p-4 mt-6 border-l-4 rounded-xl border-amber-500 bg-amber-50 dark:bg-amber-900/10">
                                                 <div className="flex gap-3">
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -1595,7 +1596,7 @@ export default function OrderView({ order }) {
                                                         viewBox="0 0 24 24"
                                                         strokeWidth={2}
                                                         stroke="currentColor"
-                                                        className="h-6 w-6 flex-shrink-0 text-amber-600 dark:text-amber-400"
+                                                        className="flex-shrink-0 w-6 h-6 text-amber-600 dark:text-amber-400"
                                                     >
                                                         <path
                                                             strokeLinecap="round"
@@ -1652,10 +1653,10 @@ export default function OrderView({ order }) {
                                 {/* Fullscreen slide-over */}
                                 <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-white text-black dark:bg-deepcharcoal dark:text-white/80 sm:pb-20">
                                     {/* Top Bar */}
-                                    <div className="relative flex items-center border-b border-gray-200 px-4 py-3 dark:border-gray-800">
+                                    <div className="relative flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800">
                                         <button
                                             onClick={() => setViewBankDetails(false)}
-                                            className="absolute left-4 rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                            className="absolute p-1 rounded-full left-4 hover:bg-gray-100 dark:hover:bg-gray-800"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -1679,19 +1680,19 @@ export default function OrderView({ order }) {
                                     </div>
 
                                     {/* Content */}
-                                    <div className="my-4 flex-1 space-y-6 p-4">
+                                    <div className="flex-1 p-4 my-4 space-y-6">
                                         {/* Bank Name */}
-                                        <div className="group rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
+                                        <div className="p-4 transition-all border border-gray-200 group rounded-xl bg-gray-50 hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
                                             <div className="flex items-start justify-between">
                                                 <div className="flex-1">
-                                                    <label className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-white/60">
+                                                    <label className="flex items-center gap-2 mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-white/60">
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
                                                             fill="none"
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={2}
                                                             stroke="currentColor"
-                                                            className="h-4 w-4"
+                                                            className="w-4 h-4"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -1715,7 +1716,7 @@ export default function OrderView({ order }) {
                                                             'bank_name',
                                                         )
                                                     }
-                                                    className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-white text-gray-600 transition-all hover:bg-indigo-100 hover:text-indigo-600 dark:bg-deepcharcoal dark:text-white/60 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
+                                                    className="relative flex items-center justify-center text-gray-600 transition-all bg-white rounded-lg h-9 w-9 hover:bg-indigo-100 hover:text-indigo-600 dark:bg-deepcharcoal dark:text-white/60 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
                                                 >
                                                     {copiedField === 'bank_name' ? (
                                                         <>
@@ -1725,7 +1726,7 @@ export default function OrderView({ order }) {
                                                                 viewBox="0 0 24 24"
                                                                 strokeWidth={2}
                                                                 stroke="currentColor"
-                                                                className="h-5 w-5 text-indigo-600 dark:text-indigo-400"
+                                                                className="w-5 h-5 text-indigo-600 dark:text-indigo-400"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -1733,7 +1734,7 @@ export default function OrderView({ order }) {
                                                                     d="M4.5 12.75l6 6 9-13.5"
                                                                 />
                                                             </svg>
-                                                            <span className="absolute left-1/2 top-8 -translate-x-1/2 whitespace-nowrap rounded-md bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-lg dark:bg-indigo-500">
+                                                            <span className="absolute px-2 py-1 text-xs font-semibold text-white -translate-x-1/2 bg-indigo-600 rounded-md shadow-lg left-1/2 top-8 whitespace-nowrap dark:bg-indigo-500">
                                                                 Copied!
                                                             </span>
                                                         </>
@@ -1744,7 +1745,7 @@ export default function OrderView({ order }) {
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={2}
                                                             stroke="currentColor"
-                                                            className="h-5 w-5"
+                                                            className="w-5 h-5"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -1758,17 +1759,17 @@ export default function OrderView({ order }) {
                                         </div>
 
                                         {/* Account Name */}
-                                        <div className="group rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
+                                        <div className="p-4 transition-all border border-gray-200 group rounded-xl bg-gray-50 hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
                                             <div className="flex items-start justify-between">
                                                 <div className="flex-1">
-                                                    <label className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-white/60">
+                                                    <label className="flex items-center gap-2 mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-white/60">
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
                                                             fill="none"
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={2}
                                                             stroke="currentColor"
-                                                            className="h-4 w-4"
+                                                            className="w-4 h-4"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -1793,7 +1794,7 @@ export default function OrderView({ order }) {
                                                             'account_name',
                                                         )
                                                     }
-                                                    className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-white text-gray-600 transition-all hover:bg-indigo-100 hover:text-indigo-600 dark:bg-deepcharcoal dark:text-white/60 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
+                                                    className="relative flex items-center justify-center text-gray-600 transition-all bg-white rounded-lg h-9 w-9 hover:bg-indigo-100 hover:text-indigo-600 dark:bg-deepcharcoal dark:text-white/60 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
                                                 >
                                                     {copiedField === 'account_name' ? (
                                                         <>
@@ -1803,7 +1804,7 @@ export default function OrderView({ order }) {
                                                                 viewBox="0 0 24 24"
                                                                 strokeWidth={2}
                                                                 stroke="currentColor"
-                                                                className="h-5 w-5 text-indigo-600 dark:text-indigo-400"
+                                                                className="w-5 h-5 text-indigo-600 dark:text-indigo-400"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -1811,7 +1812,7 @@ export default function OrderView({ order }) {
                                                                     d="M4.5 12.75l6 6 9-13.5"
                                                                 />
                                                             </svg>
-                                                            <span className="absolute left-1/2 top-8 -translate-x-1/2 whitespace-nowrap rounded-md bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-lg dark:bg-indigo-500">
+                                                            <span className="absolute px-2 py-1 text-xs font-semibold text-white -translate-x-1/2 bg-indigo-600 rounded-md shadow-lg left-1/2 top-8 whitespace-nowrap dark:bg-indigo-500">
                                                                 Copied!
                                                             </span>
                                                         </>
@@ -1822,7 +1823,7 @@ export default function OrderView({ order }) {
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={2}
                                                             stroke="currentColor"
-                                                            className="h-5 w-5"
+                                                            className="w-5 h-5"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -1836,17 +1837,17 @@ export default function OrderView({ order }) {
                                         </div>
 
                                         {/* Account Number */}
-                                        <div className="group rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
+                                        <div className="p-4 transition-all border border-gray-200 group rounded-xl bg-gray-50 hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
                                             <div className="flex items-start justify-between">
                                                 <div className="flex-1">
-                                                    <label className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-white/60">
+                                                    <label className="flex items-center gap-2 mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-white/60">
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
                                                             fill="none"
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={2}
                                                             stroke="currentColor"
-                                                            className="h-4 w-4"
+                                                            className="w-4 h-4"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -1870,7 +1871,7 @@ export default function OrderView({ order }) {
                                                             'account_number',
                                                         )
                                                     }
-                                                    className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-white text-gray-600 transition-all hover:bg-indigo-100 hover:text-indigo-600 dark:bg-deepcharcoal dark:text-white/60 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
+                                                    className="relative flex items-center justify-center text-gray-600 transition-all bg-white rounded-lg h-9 w-9 hover:bg-indigo-100 hover:text-indigo-600 dark:bg-deepcharcoal dark:text-white/60 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
                                                 >
                                                     {copiedField === 'account_number' ? (
                                                         <>
@@ -1880,7 +1881,7 @@ export default function OrderView({ order }) {
                                                                 viewBox="0 0 24 24"
                                                                 strokeWidth={2}
                                                                 stroke="currentColor"
-                                                                className="h-5 w-5 text-indigo-600 dark:text-indigo-400"
+                                                                className="w-5 h-5 text-indigo-600 dark:text-indigo-400"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -1888,7 +1889,7 @@ export default function OrderView({ order }) {
                                                                     d="M4.5 12.75l6 6 9-13.5"
                                                                 />
                                                             </svg>
-                                                            <span className="absolute left-1/2 top-8 -translate-x-1/2 whitespace-nowrap rounded-md bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-lg dark:bg-indigo-500">
+                                                            <span className="absolute px-2 py-1 text-xs font-semibold text-white -translate-x-1/2 bg-indigo-600 rounded-md shadow-lg left-1/2 top-8 whitespace-nowrap dark:bg-indigo-500">
                                                                 Copied!
                                                             </span>
                                                         </>
@@ -1899,7 +1900,7 @@ export default function OrderView({ order }) {
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={2}
                                                             stroke="currentColor"
-                                                            className="h-5 w-5"
+                                                            className="w-5 h-5"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -1913,17 +1914,17 @@ export default function OrderView({ order }) {
                                         </div>
 
                                         {/* IBAN */}
-                                        <div className="group rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
+                                        <div className="p-4 transition-all border border-gray-200 group rounded-xl bg-gray-50 hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
                                             <div className="flex items-start justify-between">
                                                 <div className="flex-1">
-                                                    <label className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-white/60">
+                                                    <label className="flex items-center gap-2 mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-white/60">
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
                                                             fill="none"
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={2}
                                                             stroke="currentColor"
-                                                            className="h-4 w-4"
+                                                            className="w-4 h-4"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -1943,11 +1944,11 @@ export default function OrderView({ order }) {
                                                         handleCopy(
                                                             order?.order_items[0]?.smartphone
                                                                 ?.category?.distributor?.iban ||
-                                                                'N/A',
+                                                            'N/A',
                                                             'iban',
                                                         )
                                                     }
-                                                    className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-white text-gray-600 transition-all hover:bg-indigo-100 hover:text-indigo-600 dark:bg-deepcharcoal dark:text-white/60 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
+                                                    className="relative flex items-center justify-center text-gray-600 transition-all bg-white rounded-lg h-9 w-9 hover:bg-indigo-100 hover:text-indigo-600 dark:bg-deepcharcoal dark:text-white/60 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
                                                 >
                                                     {copiedField === 'iban' ? (
                                                         <>
@@ -1957,7 +1958,7 @@ export default function OrderView({ order }) {
                                                                 viewBox="0 0 24 24"
                                                                 strokeWidth={2}
                                                                 stroke="currentColor"
-                                                                className="h-5 w-5 text-indigo-600 dark:text-indigo-400"
+                                                                className="w-5 h-5 text-indigo-600 dark:text-indigo-400"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -1965,7 +1966,7 @@ export default function OrderView({ order }) {
                                                                     d="M4.5 12.75l6 6 9-13.5"
                                                                 />
                                                             </svg>
-                                                            <span className="absolute left-1/2 top-8 -translate-x-1/2 whitespace-nowrap rounded-md bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-lg dark:bg-indigo-500">
+                                                            <span className="absolute px-2 py-1 text-xs font-semibold text-white -translate-x-1/2 bg-indigo-600 rounded-md shadow-lg left-1/2 top-8 whitespace-nowrap dark:bg-indigo-500">
                                                                 Copied!
                                                             </span>
                                                         </>
@@ -1976,7 +1977,7 @@ export default function OrderView({ order }) {
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={2}
                                                             stroke="currentColor"
-                                                            className="h-5 w-5"
+                                                            className="w-5 h-5"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -1990,17 +1991,17 @@ export default function OrderView({ order }) {
                                         </div>
 
                                         {/* SWIFT Code */}
-                                        <div className="group rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
+                                        <div className="p-4 transition-all border border-gray-200 group rounded-xl bg-gray-50 hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
                                             <div className="flex items-start justify-between">
                                                 <div className="flex-1">
-                                                    <label className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-white/60">
+                                                    <label className="flex items-center gap-2 mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-white/60">
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
                                                             fill="none"
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={2}
                                                             stroke="currentColor"
-                                                            className="h-4 w-4"
+                                                            className="w-4 h-4"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -2029,7 +2030,7 @@ export default function OrderView({ order }) {
                                                             'swift_code',
                                                         )
                                                     }
-                                                    className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-white text-gray-600 transition-all hover:bg-indigo-100 hover:text-indigo-600 dark:bg-deepcharcoal dark:text-white/60 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
+                                                    className="relative flex items-center justify-center text-gray-600 transition-all bg-white rounded-lg h-9 w-9 hover:bg-indigo-100 hover:text-indigo-600 dark:bg-deepcharcoal dark:text-white/60 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400"
                                                 >
                                                     {copiedField === 'swift_code' ? (
                                                         <>
@@ -2039,7 +2040,7 @@ export default function OrderView({ order }) {
                                                                 viewBox="0 0 24 24"
                                                                 strokeWidth={2}
                                                                 stroke="currentColor"
-                                                                className="h-5 w-5 text-indigo-600 dark:text-indigo-400"
+                                                                className="w-5 h-5 text-indigo-600 dark:text-indigo-400"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -2047,7 +2048,7 @@ export default function OrderView({ order }) {
                                                                     d="M4.5 12.75l6 6 9-13.5"
                                                                 />
                                                             </svg>
-                                                            <span className="absolute left-1/2 top-8 -translate-x-1/2 whitespace-nowrap rounded-md bg-indigo-600 px-2 py-1 text-xs font-semibold text-white shadow-lg dark:bg-indigo-500">
+                                                            <span className="absolute px-2 py-1 text-xs font-semibold text-white -translate-x-1/2 bg-indigo-600 rounded-md shadow-lg left-1/2 top-8 whitespace-nowrap dark:bg-indigo-500">
                                                                 Copied!
                                                             </span>
                                                         </>
@@ -2058,7 +2059,7 @@ export default function OrderView({ order }) {
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={2}
                                                             stroke="currentColor"
-                                                            className="h-5 w-5"
+                                                            className="w-5 h-5"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -2072,7 +2073,7 @@ export default function OrderView({ order }) {
                                         </div>
 
                                         {/* Important Notice */}
-                                        <div className="mt-6 rounded-xl border-l-4 border-amber-500 bg-amber-50 p-4 dark:bg-amber-900/10">
+                                        <div className="p-4 mt-6 border-l-4 rounded-xl border-amber-500 bg-amber-50 dark:bg-amber-900/10">
                                             <div className="flex gap-3">
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -2080,7 +2081,7 @@ export default function OrderView({ order }) {
                                                     viewBox="0 0 24 24"
                                                     strokeWidth={2}
                                                     stroke="currentColor"
-                                                    className="h-6 w-6 flex-shrink-0 text-amber-600 dark:text-amber-400"
+                                                    className="flex-shrink-0 w-6 h-6 text-amber-600 dark:text-amber-400"
                                                 >
                                                     <path
                                                         strokeLinecap="round"

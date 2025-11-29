@@ -4,7 +4,6 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import Table from '@/Components/Table';
-
 import { useEffect, useState } from 'react';
 import can from '@/Hooks/useCan';
 
@@ -40,7 +39,7 @@ export default function index({ users }) {
                     return (
                         <Link
                             href={route('dashboard.users.show', item?.id)}
-                            className="cursor-pointer text-blue-500 underline"
+                            className="text-blue-500 underline cursor-pointer"
                         >
                             {item.name}
                         </Link>
@@ -53,7 +52,7 @@ export default function index({ users }) {
                 label: 'User Role',
                 render: (item) => {
                     return (
-                        <span className="rounded-lg bg-blue-500 p-2 text-white">
+                        <span className="p-2 text-white bg-blue-500 rounded-lg">
                             {item?.roles[0]?.name ?? 'No Role'}
                         </span>
                     );
@@ -64,11 +63,11 @@ export default function index({ users }) {
                 render: (item) => {
                     if (item.is_active != 1) {
                         return (
-                            <span className="rounded-lg bg-red-500 p-2 text-white">In-Active</span>
+                            <span className="p-2 text-white bg-red-500 rounded-lg">In-Active</span>
                         );
                     }
 
-                    return <span className="rounded-lg bg-green-500 p-2 text-white">Active</span>;
+                    return <span className="p-2 text-white bg-green-500 rounded-lg">Active</span>;
                 },
             },
             { key: 'added_at', label: 'Added At' },
@@ -103,7 +102,7 @@ export default function index({ users }) {
                     Content={
                         <>
                             {can('Users Create') && (
-                                <div className="my-3 flex flex-wrap justify-end">
+                                <div className="flex flex-wrap justify-end my-3">
                                     <LinkButton
                                         Text={'Create User'}
                                         URL={route('dashboard.users.create')}

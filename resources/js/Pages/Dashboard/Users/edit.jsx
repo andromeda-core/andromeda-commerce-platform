@@ -10,7 +10,7 @@ import SelectInput from '@/Components/SelectInput';
 
 export default function edit({ user, roles }) {
     // Edit Data Form Data
-    const { data, setData, put, processing, errors, reset } = useForm({
+    const { data, setData, put, processing, errors } = useForm({
         name: user.name || '',
         email: user.email || '',
         phone: user.phone || '',
@@ -80,7 +80,7 @@ export default function edit({ user, roles }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Users'}
                                     URL={route('dashboard.users.index')}
@@ -329,7 +329,7 @@ export default function edit({ user, roles }) {
                                                 {data.role_id === 5 && (
                                                     <>
                                                         <div>
-                                                            <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
+                                                            <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
                                                                 Address{' '}
                                                                 <span className="text-red-500 dark:text-white">
                                                                     *
@@ -441,7 +441,7 @@ export default function edit({ user, roles }) {
                                                 )}
 
                                                 <div>
-                                                    <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
+                                                    <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
                                                         Address{' '}
                                                         <span className="text-red-500 dark:text-white">
                                                             *
@@ -514,7 +514,7 @@ export default function edit({ user, roles }) {
                                                     (data.password.trim() !== '' &&
                                                         data.password_confirmation.trim() !== '' &&
                                                         data.password.trim() !==
-                                                            data.password_confirmation.trim())
+                                                        data.password_confirmation.trim())
                                                 }
                                                 Spinner={processing}
                                                 Icon={

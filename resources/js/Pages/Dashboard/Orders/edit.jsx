@@ -5,7 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, useForm } from '@inertiajs/react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import SelectInput from '@/Components/SelectInput';
 import FileUploaderInput from '@/Components/FileUploaderInput';
 import flatpickr from 'flatpickr';
@@ -19,11 +19,11 @@ export default function edit({ order, smartphones, customers }) {
         ...(order.status === 'pending' ? { payment_proof: '' } : {}),
         ...(order.status === 'paid'
             ? {
-                  courier_company: '',
-                  shipping_date: '',
-                  tracking_no: '',
-                  courier_invoice: '',
-              }
+                courier_company: '',
+                shipping_date: '',
+                tracking_no: '',
+                courier_invoice: '',
+            }
             : {}),
 
         ...(order.status !== 'pending' ? { is_cash_collected: order.is_cash_collected ?? '' } : {}),
@@ -71,7 +71,7 @@ export default function edit({ order, smartphones, customers }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Orders'}
                                     URL={route('dashboard.orders.index')}
@@ -302,7 +302,7 @@ export default function edit({ order, smartphones, customers }) {
                                             </div>
 
                                             {order.status === 'paid' && (
-                                                <div className="col-span-1 my-4 grid">
+                                                <div className="grid col-span-1 my-4">
                                                     <FileUploaderInput
                                                         InputName={'Courier Invoice'}
                                                         Id={'courier_invoice'}

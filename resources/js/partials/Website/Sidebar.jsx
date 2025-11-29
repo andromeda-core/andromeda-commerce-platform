@@ -203,7 +203,7 @@ const Sidebar = ({
                             {moreDropdown &&
                                 createPortal(
                                     <div
-                                        className={`absolute top-[14rem] z-[9999] w-56 rounded-lg bg-white py-2 shadow-lg transition-transform duration-300 ease-in-out dark:bg-deepcharcoal`}
+                                        className={`absolute top-[14rem] z-[9999] w-56 rounded-lg bg-white py-2 border border-gray-200 dark:border-gray-700 shadow-lg transition-transform duration-300 ease-in-out dark:bg-deepcharcoal`}
                                         style={{
                                             position: 'fixed',
                                             transform: isCollapsed

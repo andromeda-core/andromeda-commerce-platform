@@ -26,8 +26,8 @@ interface IPostRepository
 
     public function toggleBookmark(Request $request);
 
-    // Fetching Posts For Website
-    public function getPostsForWebsite(Request $request);
+    // Fetching Posts AND PRODUCTS For Website
+    public function getPostsAndProductsForWebsite(Request $request);
 
     // public function getInfinityScrollablePostsForWebsite(Request $request);
 

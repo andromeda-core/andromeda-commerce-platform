@@ -32,7 +32,7 @@ class DestroyBatchInvoiceonAWS implements ShouldQueue
         if (isset($this->files['invoices'])) {
             foreach ($this->files['invoices'] as $invoice) {
 
-                $relative_path = Str::after($invoice, '.com/');
+                $relative_path = Str::replaceFirst(config('filesystems.disks.s3.url').'/', '', $invoice);
 
                 if (Storage::disk('s3')->exists($relative_path)) {
                     Storage::disk('s3')->delete($relative_path);

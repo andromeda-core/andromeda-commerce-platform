@@ -9,7 +9,7 @@ import React from 'react';
 import SelectInput from '@/Components/SelectInput';
 export default function edit({ model_name }) {
     // Edit Data Form Data
-    const { data, setData, put, processing, errors, reset } = useForm({
+    const { data, setData, put, processing, errors } = useForm({
         name: model_name.name || '',
         is_active: model_name.is_active ?? 1,
     });
@@ -35,7 +35,7 @@ export default function edit({ model_name }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Model Names'}
                                     URL={route('dashboard.settings.model_names.index')}

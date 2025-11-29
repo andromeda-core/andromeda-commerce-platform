@@ -10,7 +10,7 @@ import SelectInput from '@/Components/SelectInput';
 
 export default function edit({ commission_setting }) {
     // Create Data Form Data
-    const { data, setData, put, processing, errors, reset } = useForm({
+    const { data, setData, put, processing, errors } = useForm({
         type: commission_setting.type || '',
         commission_rate: commission_setting.commission_rate || '',
     });
@@ -36,7 +36,7 @@ export default function edit({ commission_setting }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Commission Settings'}
                                     URL={route('dashboard.settings.commission-settings.index')}

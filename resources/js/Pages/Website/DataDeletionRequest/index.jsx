@@ -1,11 +1,15 @@
+
 import Input from '@/Components/Input';
 import Textarea from '@/Components/Textarea';
+import { useConfirm } from '@/Hooks/useConfirm';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, useForm } from '@inertiajs/react';
 import React, { useEffect, useState } from 'react';
-import Swal from 'sweetalert2';
+
 
 const DataDeletion = () => {
+
+    const { confirm, ConfirmDialog } = useConfirm();
     const { data, setData, post, processing, errors } = useForm({
         password: '',
         reason: '',
@@ -18,47 +22,51 @@ const DataDeletion = () => {
         setIsDisabled(data.password === '' || data.reason === '' || data.consent === false);
     }, [data]);
 
-    const submit = (e) => {
+    const submit = async (e) => {
         e.preventDefault();
 
         if (isDisabled) {
             return;
         }
 
-        Swal.fire({
+
+        const result = await confirm({
             title: 'Are You Sure You Want To Delete Your Data?',
             text: "You Won't Be Able To Revert This!",
-            icon: 'warning',
+            icon: 'danger',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
             confirmButtonText: 'Yes, Delete it!',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                post(route('website.data-deletion.store'), {
-                    preserveScroll: true,
-                    preserveState: true,
-                });
-            }
+            cancelButtonText: 'Cancel'
         });
+
+        if (result.isConfirmed) {
+            post(route('website.data-deletion.store'), {
+                preserveScroll: true,
+                preserveState: true,
+            });
+        }
+
+
     };
 
     return (
         <MainLayout>
             <Head title="Data Deletion" />
+            <ConfirmDialog />
+
 
             <div className="sm:px-6 sm:pb-20 lg:px-8">
                 <div className="min-h-screen">
                     {/* Hero Section */}
-                    <div className="relative overflow-hidden border-b border-gray-800 bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
+                    <div className="relative overflow-hidden text-white border-b border-gray-800 bg-gradient-to-br from-gray-900 via-black to-gray-900">
                         <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 via-pink-500/10 to-purple-500/10" />
                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(239,68,68,0.2),transparent_60%)]" />
 
-                        <div className="relative mx-auto max-w-4xl px-6 py-16 lg:py-24">
-                            <div className="mb-6 flex items-center gap-3">
-                                <div className="rounded-2xl bg-gradient-to-br from-red-500 to-pink-600 p-3 shadow-xl shadow-red-500/40">
+                        <div className="relative max-w-4xl px-6 py-16 mx-auto lg:py-24">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="p-3 shadow-xl rounded-2xl bg-gradient-to-br from-red-500 to-pink-600 shadow-red-500/40">
                                     <svg
-                                        className="h-7 w-7 text-white"
+                                        className="text-white h-7 w-7"
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         strokeWidth={1.5}
@@ -71,16 +79,16 @@ const DataDeletion = () => {
                                         />
                                     </svg>
                                 </div>
-                                <span className="text-sm font-semibold uppercase tracking-wider text-red-400">
+                                <span className="text-sm font-semibold tracking-wider text-red-400 uppercase">
                                     Account Deletion
                                 </span>
                             </div>
 
-                            <h1 className="mb-6 bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-5xl font-bold text-transparent lg:text-6xl">
+                            <h1 className="mb-6 text-5xl font-bold text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text lg:text-6xl">
                                 Data Deletion
                             </h1>
 
-                            <p className="mb-8 max-w-3xl text-xl text-gray-400">
+                            <p className="max-w-3xl mb-8 text-xl text-gray-400">
                                 We respect your right to privacy. Submit a request to permanently
                                 delete your account and all associated data.
                             </p>
@@ -88,7 +96,7 @@ const DataDeletion = () => {
                             <div className="flex flex-wrap gap-4">
                                 <div className="flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-1.5">
                                     <svg
-                                        className="h-4 w-4 text-red-400"
+                                        className="w-4 h-4 text-red-400"
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         strokeWidth={1.5}
@@ -111,7 +119,7 @@ const DataDeletion = () => {
                                         viewBox="0 0 24 24"
                                         strokeWidth={1.5}
                                         stroke="currentColor"
-                                        className="h-4 w-4 text-green-400"
+                                        className="w-4 h-4 text-green-400"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -128,11 +136,11 @@ const DataDeletion = () => {
                     </div>
 
                     {/* Main Content */}
-                    <div className="mx-auto max-w-4xl px-6 py-12">
+                    <div className="max-w-4xl px-6 py-12 mx-auto">
                         <div className="grid gap-8 lg:grid-cols-3">
                             {/* Info Sidebar */}
                             <div className="space-y-6 lg:col-span-1">
-                                <div className="dark:bg-deepCharcoal rounded-2xl border border-gray-200 bg-white p-6 text-gray-900 shadow-lg dark:border-gray-800 dark:bg-deepcharcoal dark:text-white/80">
+                                <div className="p-6 text-gray-900 bg-white border border-gray-200 shadow-lg dark:bg-deepCharcoal rounded-2xl dark:border-gray-800 dark:bg-deepcharcoal dark:text-white/80">
                                     <h3 className="mb-4 text-lg font-bold">What Gets Deleted?</h3>
                                     <ul className="space-y-3 text-sm text-gray-700 dark:text-white/80">
                                         <li className="flex items-start gap-2">
@@ -218,10 +226,10 @@ const DataDeletion = () => {
                                     </ul>
                                 </div>
 
-                                <div className="rounded-2xl border border-blue-200 bg-blue-50 p-6 dark:border-blue-500/30 dark:bg-blue-500/10">
-                                    <div className="mb-3 flex items-center gap-2">
+                                <div className="p-6 border border-blue-200 rounded-2xl bg-blue-50 dark:border-blue-500/30 dark:bg-blue-500/10">
+                                    <div className="flex items-center gap-2 mb-3">
                                         <svg
-                                            className="h-5 w-5 text-blue-600 dark:text-blue-400"
+                                            className="w-5 h-5 text-blue-600 dark:text-blue-400"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             strokeWidth={1.5}
@@ -254,7 +262,7 @@ const DataDeletion = () => {
                             <div className="lg:col-span-2">
                                 <form
                                     onSubmit={submit}
-                                    className="dark:bg-deepCharcoal rounded-2xl border border-gray-200 bg-white p-8 shadow-lg dark:border-gray-800 dark:bg-deepcharcoal"
+                                    className="p-8 bg-white border border-gray-200 shadow-lg dark:bg-deepCharcoal rounded-2xl dark:border-gray-800 dark:bg-deepcharcoal"
                                 >
                                     <h2 className="mb-6 text-2xl font-bold text-gray-900 dark:text-white">
                                         Submit Deletion
@@ -293,7 +301,7 @@ const DataDeletion = () => {
                                         </div>
 
                                         {/* Confirmation Checkbox */}
-                                        <div className="rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-500/30 dark:bg-red-500/10">
+                                        <div className="p-4 border border-red-200 rounded-xl bg-red-50 dark:border-red-500/30 dark:bg-red-500/10">
                                             <label className="flex items-start gap-3">
                                                 <input
                                                     type="checkbox"
@@ -301,7 +309,7 @@ const DataDeletion = () => {
                                                     onChange={(e) =>
                                                         setData('consent', e.target.checked)
                                                     }
-                                                    className="mt-1 h-4 w-4 shrink-0 rounded border-gray-300 text-red-600 focus:ring-2 focus:ring-red-500/20 dark:border-gray-600"
+                                                    className="w-4 h-4 mt-1 text-red-600 border-gray-300 rounded shrink-0 focus:ring-2 focus:ring-red-500/20 dark:border-gray-600"
                                                 />
                                                 <span className="text-sm text-gray-700 dark:text-white/80">
                                                     I understand that this action is{' '}

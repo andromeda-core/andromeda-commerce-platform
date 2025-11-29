@@ -402,7 +402,7 @@ export default function show({ order }) {
                     <Card
                         Content={
                             <div className="p-6">
-                                <div className="mb-6 flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                                <div className="flex flex-col mb-6 lg:flex-row lg:items-center lg:justify-between">
                                     <div className="mb-4 lg:mb-0">
                                         <h1 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white/90">
                                             Order: {order.order_no}
@@ -513,7 +513,7 @@ export default function show({ order }) {
                                                 order.order_items.map((item) => (
                                                     <div
                                                         key={item.id}
-                                                        className="flex flex-col gap-4 rounded-lg border bg-gray-50 p-4 dark:bg-deepcharcoal sm:flex-row sm:items-center sm:justify-between"
+                                                        className="flex flex-col gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-deepcharcoal sm:flex-row sm:items-center sm:justify-between"
                                                     >
                                                         {/* Left side: image + details */}
                                                         <div className="flex items-center gap-4">
@@ -529,7 +529,7 @@ export default function show({ order }) {
                                                                 className="h-[100px] w-[100px] rounded-lg object-cover"
                                                             />
                                                             <div className="min-w-0">
-                                                                <h3 className="truncate text-sm font-medium text-gray-900 dark:text-white/90">
+                                                                <h3 className="text-sm font-medium text-gray-900 truncate dark:text-white/90">
                                                                     {item?.smartphone?.model_name
                                                                         ?.name || 'N/A'}
                                                                 </h3>
@@ -554,7 +554,7 @@ export default function show({ order }) {
                                                         </div>
 
                                                         {/* Right side: price info */}
-                                                        <div className="flex w-full justify-between text-right sm:w-auto sm:justify-end sm:gap-8">
+                                                        <div className="flex justify-between w-full text-right sm:w-auto sm:justify-end sm:gap-8">
                                                             <div>
                                                                 <p className="text-sm font-medium text-gray-900 dark:text-white/90">
                                                                     {currency?.symbol}
@@ -575,9 +575,9 @@ export default function show({ order }) {
                                                 ))
                                             ) : (
                                                 <div className="py-8 text-center">
-                                                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                                                    <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full">
                                                         <svg
-                                                            className="h-8 w-8 text-gray-400"
+                                                            className="w-8 h-8 text-gray-400"
                                                             fill="none"
                                                             stroke="currentColor"
                                                             viewBox="0 0 24 24"
@@ -604,7 +604,7 @@ export default function show({ order }) {
                             />
 
                             {/* Payment Proof And Courier Invoice */}
-                            {/* Payment Proof And Courier Invoice */}
+
 
                             <Card
                                 Content={
@@ -617,16 +617,16 @@ export default function show({ order }) {
                                             {/* Payment Proof */}
                                             <div className="space-y-3">
                                                 <h3 className="flex items-center text-sm font-medium text-gray-700 dark:text-white/80">
-                                                    <div className="mr-2 h-2 w-2 rounded-full bg-green-500"></div>
+                                                    <div className="w-2 h-2 mr-2 bg-green-500 rounded-full"></div>
                                                     Payment Proof
                                                 </h3>
 
                                                 {order.payment_proof ? (
-                                                    <div className="group relative rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-gray-700 dark:bg-deepcharcoal">
+                                                    <div className="relative p-4 transition-all bg-white border border-gray-200 shadow-sm group rounded-xl hover:shadow-md dark:border-gray-700 dark:bg-deepcharcoal">
                                                         {/* File Icon */}
-                                                        <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20">
+                                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-3 rounded-lg bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20">
                                                             <svg
-                                                                className="h-8 w-8 text-green-600 dark:text-green-400"
+                                                                className="w-8 h-8 text-green-600 dark:text-green-400"
                                                                 fill="none"
                                                                 stroke="currentColor"
                                                                 viewBox="0 0 24 24"
@@ -642,22 +642,20 @@ export default function show({ order }) {
 
                                                         {/* File Info */}
                                                         <div className="mb-4 text-center">
-                                                            <p className="truncate text-sm font-medium text-gray-900 dark:text-white/90">
+                                                            <p className="text-sm font-medium text-gray-900 truncate dark:text-white/90">
                                                                 Payment Screenshot
                                                             </p>
                                                         </div>
 
                                                         {/* Action Buttons */}
                                                         <div className="flex justify-center space-x-2">
-                                                            <button
-                                                                onClick={() =>
-                                                                    (window.location.href =
-                                                                        order.payment_proof)
-                                                                }
-                                                                className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-600 transition-colors hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
+                                                            <a
+                                                                href={order.payment_proof}
+                                                                target='_blank'
+                                                                className="flex items-center justify-center text-blue-600 transition-colors rounded-full h-9 w-9 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
                                                             >
                                                                 <svg
-                                                                    className="h-4 w-4"
+                                                                    className="w-4 h-4"
                                                                     fill="none"
                                                                     stroke="currentColor"
                                                                     viewBox="0 0 24 24"
@@ -675,7 +673,7 @@ export default function show({ order }) {
                                                                         d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                                                                     />
                                                                 </svg>
-                                                            </button>
+                                                            </a>
                                                             <button
                                                                 onClick={() =>
                                                                     handleFileDownload(
@@ -683,10 +681,10 @@ export default function show({ order }) {
                                                                         order.payment_proof,
                                                                     )
                                                                 }
-                                                                className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-50 text-gray-600 transition-colors hover:bg-gray-100 dark:bg-zinc-900/80 dark:text-gray-400 dark:hover:bg-zinc-900/50"
+                                                                className="flex items-center justify-center text-gray-600 transition-colors rounded-full h-9 w-9 bg-gray-50 hover:bg-gray-100 dark:bg-zinc-900/80 dark:text-gray-400 dark:hover:bg-zinc-900/50"
                                                             >
                                                                 <svg
-                                                                    className="h-4 w-4"
+                                                                    className="w-4 h-4"
                                                                     fill="none"
                                                                     stroke="currentColor"
                                                                     viewBox="0 0 24 24"
@@ -702,10 +700,10 @@ export default function show({ order }) {
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div className="rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50 p-6 text-center dark:border-gray-700 dark:bg-deepcharcoal">
-                                                        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-deepcharcoal">
+                                                    <div className="p-6 text-center border-2 border-gray-200 border-dashed rounded-xl bg-gray-50/50 dark:border-gray-700 dark:bg-deepcharcoal">
+                                                        <div className="flex items-center justify-center w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-lg dark:bg-deepcharcoal">
                                                             <svg
-                                                                className="h-6 w-6 text-gray-400"
+                                                                className="w-6 h-6 text-gray-400"
                                                                 fill="none"
                                                                 stroke="currentColor"
                                                                 viewBox="0 0 24 24"
@@ -731,16 +729,16 @@ export default function show({ order }) {
                                             {/* Courier Invoice */}
                                             <div className="space-y-3">
                                                 <h3 className="flex items-center text-sm font-medium text-gray-700 dark:text-white/80">
-                                                    <div className="mr-2 h-2 w-2 rounded-full bg-blue-500"></div>
+                                                    <div className="w-2 h-2 mr-2 bg-blue-500 rounded-full"></div>
                                                     Courier Invoice
                                                 </h3>
 
                                                 {order.courier_invoice ? (
-                                                    <div className="group relative rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-gray-700 dark:bg-deepcharcoal">
+                                                    <div className="relative p-4 transition-all bg-white border border-gray-200 shadow-sm group rounded-xl hover:shadow-md dark:border-gray-700 dark:bg-deepcharcoal">
                                                         {/* PDF Icon */}
-                                                        <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20">
+                                                        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-3 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20">
                                                             <svg
-                                                                className="h-8 w-8 text-blue-600 dark:text-blue-400"
+                                                                className="w-8 h-8 text-blue-600 dark:text-blue-400"
                                                                 fill="none"
                                                                 stroke="currentColor"
                                                                 viewBox="0 0 24 24"
@@ -768,22 +766,20 @@ export default function show({ order }) {
 
                                                         {/* File Info */}
                                                         <div className="mb-4 text-center">
-                                                            <p className="truncate text-sm font-medium text-gray-900 dark:text-white/90">
+                                                            <p className="text-sm font-medium text-gray-900 truncate dark:text-white/90">
                                                                 Courier Invoice
                                                             </p>
                                                         </div>
 
                                                         {/* Action Buttons */}
                                                         <div className="flex justify-center space-x-2">
-                                                            <button
-                                                                onClick={() =>
-                                                                    (window.location.href =
-                                                                        order.courier_invoice)
-                                                                }
-                                                                className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-600 transition-colors hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
+                                                            <a
+                                                                href={order.courier_invoice}
+                                                                target='_blank'
+                                                                className="flex items-center justify-center text-blue-600 transition-colors rounded-full h-9 w-9 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
                                                             >
                                                                 <svg
-                                                                    className="h-4 w-4"
+                                                                    className="w-4 h-4"
                                                                     fill="none"
                                                                     stroke="currentColor"
                                                                     viewBox="0 0 24 24"
@@ -801,7 +797,7 @@ export default function show({ order }) {
                                                                         d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                                                                     />
                                                                 </svg>
-                                                            </button>
+                                                            </a>
                                                             <button
                                                                 onClick={() =>
                                                                     handleFileDownload(
@@ -809,10 +805,10 @@ export default function show({ order }) {
                                                                         order.courier_invoice,
                                                                     )
                                                                 }
-                                                                className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-50 text-gray-600 transition-colors hover:bg-gray-100 dark:bg-zinc-900/80 dark:text-gray-400 dark:hover:bg-zinc-900/50"
+                                                                className="flex items-center justify-center text-gray-600 transition-colors rounded-full h-9 w-9 bg-gray-50 hover:bg-gray-100 dark:bg-zinc-900/80 dark:text-gray-400 dark:hover:bg-zinc-900/50"
                                                             >
                                                                 <svg
-                                                                    className="h-4 w-4"
+                                                                    className="w-4 h-4"
                                                                     fill="none"
                                                                     stroke="currentColor"
                                                                     viewBox="0 0 24 24"
@@ -828,10 +824,10 @@ export default function show({ order }) {
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div className="rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50 p-6 text-center dark:border-gray-700 dark:bg-deepcharcoal">
-                                                        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-deepcharcoal">
+                                                    <div className="p-6 text-center border-2 border-gray-200 border-dashed rounded-xl bg-gray-50/50 dark:border-gray-700 dark:bg-deepcharcoal">
+                                                        <div className="flex items-center justify-center w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-lg dark:bg-deepcharcoal">
                                                             <svg
-                                                                className="h-6 w-6 text-gray-400"
+                                                                className="w-6 h-6 text-gray-400"
                                                                 fill="none"
                                                                 stroke="currentColor"
                                                                 viewBox="0 0 24 24"
@@ -877,7 +873,7 @@ export default function show({ order }) {
                                             <div className="space-y-3">
                                                 <div className="flex flex-wrap items-center justify-between text-sm font-medium text-gray-700 dark:text-white/80">
                                                     <div className="flex items-center">
-                                                        <div className="mr-2 h-2 w-2 rounded-full bg-red-500"></div>
+                                                        <div className="w-2 h-2 mr-2 bg-red-500 rounded-full"></div>
                                                         <h3>Packaging Videos</h3>
                                                     </div>
 
@@ -953,17 +949,17 @@ export default function show({ order }) {
                                                             return (
                                                                 <div
                                                                     key={index}
-                                                                    className="group relative rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-gray-700 dark:bg-deepcharcoal"
+                                                                    className="relative p-4 transition-all bg-white border border-gray-200 shadow-sm group rounded-xl hover:shadow-md dark:border-gray-700 dark:bg-deepcharcoal"
                                                                 >
                                                                     {/* File Icon */}
-                                                                    <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-lg bg-gradient-to-br from-red-50 to-red-100 dark:from-green-900/20 dark:to-red-800/20">
+                                                                    <div className="flex items-center justify-center w-16 h-16 mx-auto mb-3 rounded-lg bg-gradient-to-br from-red-50 to-red-100 dark:from-green-900/20 dark:to-red-800/20">
                                                                         <svg
                                                                             xmlns="http://www.w3.org/2000/svg"
                                                                             fill="none"
                                                                             viewBox="0 0 24 24"
                                                                             strokeWidth={1.5}
                                                                             stroke="currentColor"
-                                                                            className="h-8 w-8 text-red-600 dark:text-red-400"
+                                                                            className="w-8 h-8 text-red-600 dark:text-red-400"
                                                                         >
                                                                             <path
                                                                                 strokeLinecap="round"
@@ -975,7 +971,7 @@ export default function show({ order }) {
 
                                                                     {/* File Info */}
                                                                     <div className="mb-4 text-center">
-                                                                        <p className="truncate text-sm font-medium text-gray-900 dark:text-white/90">
+                                                                        <p className="text-sm font-medium text-gray-900 truncate dark:text-white/90">
                                                                             Packaging Video{' '}
                                                                             {index + 1}
                                                                         </p>
@@ -983,23 +979,23 @@ export default function show({ order }) {
 
                                                                     {/* Action Buttons */}
                                                                     <div className="flex justify-center space-x-2">
-                                                                        <button
-                                                                            onClick={() => {
+                                                                        <a
+                                                                            onClick={(e) => {
                                                                                 if (
-                                                                                    !item.package_video
+                                                                                    !item?.package_video
                                                                                 ) {
+                                                                                    e.preventDefault();
                                                                                     setVideoIsntBeignUploadedYetOnAWS(
                                                                                         true,
                                                                                     );
-                                                                                } else {
-                                                                                    window.location.href =
-                                                                                        item.package_video;
                                                                                 }
                                                                             }}
-                                                                            className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-600 transition-colors hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
+                                                                            href={item?.package_video}
+                                                                            target='_blank'
+                                                                            className="flex items-center justify-center text-blue-600 transition-colors rounded-full h-9 w-9 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
                                                                         >
                                                                             <svg
-                                                                                className="h-4 w-4"
+                                                                                className="w-4 h-4"
                                                                                 fill="none"
                                                                                 stroke="currentColor"
                                                                                 viewBox="0 0 24 24"
@@ -1017,7 +1013,7 @@ export default function show({ order }) {
                                                                                     d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                                                                                 />
                                                                             </svg>
-                                                                        </button>
+                                                                        </a>
                                                                         <button
                                                                             onClick={() =>
                                                                                 handleFileDownload(
@@ -1025,10 +1021,10 @@ export default function show({ order }) {
                                                                                     item.package_video,
                                                                                 )
                                                                             }
-                                                                            className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-50 text-gray-600 transition-colors hover:bg-gray-100 dark:bg-zinc-900/80 dark:text-gray-400 dark:hover:bg-zinc-900/50"
+                                                                            className="flex items-center justify-center text-gray-600 transition-colors rounded-full h-9 w-9 bg-gray-50 hover:bg-gray-100 dark:bg-zinc-900/80 dark:text-gray-400 dark:hover:bg-zinc-900/50"
                                                                         >
                                                                             <svg
-                                                                                className="h-4 w-4"
+                                                                                className="w-4 h-4"
                                                                                 fill="none"
                                                                                 stroke="currentColor"
                                                                                 viewBox="0 0 24 24"
@@ -1047,15 +1043,15 @@ export default function show({ order }) {
                                                         },
                                                     )
                                                 ) : (
-                                                    <div className="rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50 p-6 text-center dark:border-gray-700 dark:bg-deepcharcoal">
-                                                        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-deepcharcoal">
+                                                    <div className="p-6 text-center border-2 border-gray-200 border-dashed rounded-xl bg-gray-50/50 dark:border-gray-700 dark:bg-deepcharcoal">
+                                                        <div className="flex items-center justify-center w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-lg dark:bg-deepcharcoal">
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
                                                                 fill="none"
                                                                 viewBox="0 0 24 24"
                                                                 strokeWidth={1.5}
                                                                 stroke="currentColor"
-                                                                className="size-6 text-gray-400"
+                                                                className="text-gray-400 size-6"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -1086,21 +1082,21 @@ export default function show({ order }) {
                                             Customer Information
                                         </h2>
                                         <div className="flex items-start space-x-4">
-                                            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-indigo-500 text-white">
+                                            <div className="flex items-center justify-center w-20 h-20 text-white bg-indigo-500 rounded-full">
                                                 <span className="text-3xl">
                                                     {order?.customer?.user?.avatar ?? 'N/A'}
                                                 </span>
                                             </div>
 
                                             <div className="flex-1">
-                                                <p className="flex items-center whitespace-normal break-words text-sm text-gray-600 dark:text-white/90">
+                                                <p className="flex items-center text-sm text-gray-600 break-words whitespace-normal dark:text-white/90">
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         fill="none"
                                                         viewBox="0 0 24 24"
                                                         strokeWidth={1.5}
                                                         stroke="currentColor"
-                                                        className="mr-2 h-4 w-4"
+                                                        className="w-4 h-4 mr-2"
                                                     >
                                                         <path
                                                             strokeLinecap="round"
@@ -1109,14 +1105,14 @@ export default function show({ order }) {
                                                         />
                                                     </svg>
 
-                                                    <span className="min-w-0 whitespace-normal break-all">
+                                                    <span className="min-w-0 break-all whitespace-normal">
                                                         {order.customer?.user?.name || 'N/A'}
                                                     </span>
                                                 </p>
                                                 <div className="mt-1 space-y-1">
-                                                    <p className="flex items-center whitespace-normal break-words text-sm text-gray-600 dark:text-white/90">
+                                                    <p className="flex items-center text-sm text-gray-600 break-words whitespace-normal dark:text-white/90">
                                                         <svg
-                                                            className="mr-2 h-4 w-4"
+                                                            className="w-4 h-4 mr-2"
                                                             fill="none"
                                                             stroke="currentColor"
                                                             viewBox="0 0 24 24"
@@ -1128,14 +1124,14 @@ export default function show({ order }) {
                                                                 d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                                                             />
                                                         </svg>
-                                                        <span className="min-w-0 whitespace-normal break-all">
+                                                        <span className="min-w-0 break-all whitespace-normal">
                                                             {order.customer?.user?.email || 'N/A'}
                                                         </span>
                                                     </p>
                                                     {order.customer?.user?.phone && (
                                                         <p className="flex items-center text-sm text-gray-600 dark:text-white/90">
                                                             <svg
-                                                                className="mr-2 h-4 w-4"
+                                                                className="w-4 h-4 mr-2"
                                                                 fill="none"
                                                                 stroke="currentColor"
                                                                 viewBox="0 0 24 24"
@@ -1162,9 +1158,9 @@ export default function show({ order }) {
                                 <Card
                                     Content={
                                         <div className="p-6">
-                                            <h3 className="text-md mb-3 flex items-center font-semibold text-gray-900 dark:text-white/90">
+                                            <h3 className="flex items-center mb-3 font-semibold text-gray-900 text-md dark:text-white/90">
                                                 <svg
-                                                    className="mr-2 h-5 w-5"
+                                                    className="w-5 h-5 mr-2"
                                                     fill="none"
                                                     stroke="currentColor"
                                                     viewBox="0 0 24 24"
@@ -1178,7 +1174,7 @@ export default function show({ order }) {
                                                 </svg>
                                                 Shipping Address 1
                                             </h3>
-                                            <address className="whitespace-normal break-all text-sm not-italic text-gray-600 dark:text-white/90">
+                                            <address className="text-sm not-italic text-gray-600 break-all whitespace-normal dark:text-white/90">
                                                 {order?.customer?.state || 'N/A'},{' '}
                                                 {order?.customer?.city || 'N/A'}
                                                 <br />
@@ -1195,9 +1191,9 @@ export default function show({ order }) {
                                     <Card
                                         Content={
                                             <div className="p-6">
-                                                <h3 className="text-md mb-3 flex items-center font-semibold text-gray-900 dark:text-white/90">
+                                                <h3 className="flex items-center mb-3 font-semibold text-gray-900 text-md dark:text-white/90">
                                                     <svg
-                                                        className="mr-2 h-5 w-5"
+                                                        className="w-5 h-5 mr-2"
                                                         fill="none"
                                                         stroke="currentColor"
                                                         viewBox="0 0 24 24"
@@ -1211,7 +1207,7 @@ export default function show({ order }) {
                                                     </svg>
                                                     Shipping Address 2
                                                 </h3>
-                                                <address className="whitespace-normal break-all text-sm not-italic text-gray-600 dark:text-white/90">
+                                                <address className="text-sm not-italic text-gray-600 break-all whitespace-normal dark:text-white/90">
                                                     {order?.customer?.state || 'N/A'},{' '}
                                                     {order?.customer?.city || 'N/A'}
                                                     <br />
@@ -1267,7 +1263,7 @@ export default function show({ order }) {
 
                                         {/* Summary */}
                                         <div className="space-y-3">
-                                            <div className="border-t pt-3">
+                                            <div className="pt-3 border-t">
                                                 <div className="flex justify-between">
                                                     <span className="text-base font-semibold text-gray-900 dark:text-white/90">
                                                         Total
@@ -1293,9 +1289,9 @@ export default function show({ order }) {
 
                                         {/* Distributor Information */}
                                         <div className="mb-6">
-                                            <h4 className="mb-3 flex items-center text-sm font-medium text-gray-900 dark:text-white/90">
+                                            <h4 className="flex items-center mb-3 text-sm font-medium text-gray-900 dark:text-white/90">
                                                 <svg
-                                                    className="mr-2 h-4 w-4 text-gray-600 dark:text-white/90"
+                                                    className="w-4 h-4 mr-2 text-gray-600 dark:text-white/90"
                                                     fill="none"
                                                     stroke="currentColor"
                                                     viewBox="0 0 24 24"
@@ -1310,14 +1306,14 @@ export default function show({ order }) {
                                                 Distributor
                                             </h4>
                                             <div className="space-y-2">
-                                                <p className="flex items-center whitespace-normal break-words text-sm text-gray-600 dark:text-white/90">
+                                                <p className="flex items-center text-sm text-gray-600 break-words whitespace-normal dark:text-white/90">
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         fill="none"
                                                         viewBox="0 0 24 24"
                                                         strokeWidth={1.5}
                                                         stroke="currentColor"
-                                                        className="mr-2 h-4 w-4"
+                                                        className="w-4 h-4 mr-2"
                                                     >
                                                         <path
                                                             strokeLinecap="round"
@@ -1325,14 +1321,14 @@ export default function show({ order }) {
                                                             d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
                                                         />
                                                     </svg>
-                                                    <span className="min-w-0 whitespace-normal break-all">
+                                                    <span className="min-w-0 break-all whitespace-normal">
                                                         {order?.order_items[0]?.smartphone?.category
                                                             ?.distributor?.user?.name || 'N/A'}
                                                     </span>
                                                 </p>
-                                                <p className="flex items-center whitespace-normal break-words text-sm text-gray-600 dark:text-white/90">
+                                                <p className="flex items-center text-sm text-gray-600 break-words whitespace-normal dark:text-white/90">
                                                     <svg
-                                                        className="mr-2 h-4 w-4 flex-shrink-0"
+                                                        className="flex-shrink-0 w-4 h-4 mr-2"
                                                         fill="none"
                                                         stroke="currentColor"
                                                         viewBox="0 0 24 24"
@@ -1345,7 +1341,7 @@ export default function show({ order }) {
                                                         />
                                                     </svg>
                                                     {
-                                                        <span className="min-w-0 whitespace-normal break-all">
+                                                        <span className="min-w-0 break-all whitespace-normal">
                                                             {order?.order_items[0]?.smartphone
                                                                 ?.category?.distributor?.user
                                                                 ?.email || 'N/A'}
@@ -1353,9 +1349,9 @@ export default function show({ order }) {
                                                     }
                                                 </p>
 
-                                                <p className="flex items-center whitespace-normal break-words text-sm text-gray-600 dark:text-white/90">
+                                                <p className="flex items-center text-sm text-gray-600 break-words whitespace-normal dark:text-white/90">
                                                     <svg
-                                                        className="mr-2 h-4 w-4"
+                                                        className="w-4 h-4 mr-2"
                                                         fill="none"
                                                         stroke="currentColor"
                                                         viewBox="0 0 24 24"
@@ -1368,7 +1364,7 @@ export default function show({ order }) {
                                                         />
                                                     </svg>
 
-                                                    <span className="min-w-0 whitespace-normal break-all">
+                                                    <span className="min-w-0 break-all whitespace-normal">
                                                         {order?.order_items[0]?.smartphone?.category
                                                             ?.distributor?.user?.phone || 'N/A'}
                                                     </span>
@@ -1377,10 +1373,10 @@ export default function show({ order }) {
                                         </div>
 
                                         {/* Bank Account Information */}
-                                        <div className="mb-6 rounded-lg border bg-gray-50 p-4 dark:bg-deepcharcoal">
-                                            <h4 className="mb-3 flex items-center text-sm font-medium text-gray-900 dark:text-white/90">
+                                        <div className="p-4 mb-6 border rounded-lg bg-gray-50 dark:bg-deepcharcoal">
+                                            <h4 className="flex items-center mb-3 text-sm font-medium text-gray-900 dark:text-white/90">
                                                 <svg
-                                                    className="mr-2 h-4 w-4 text-gray-600 dark:text-white/90"
+                                                    className="w-4 h-4 mr-2 text-gray-600 dark:text-white/90"
                                                     fill="none"
                                                     stroke="currentColor"
                                                     viewBox="0 0 24 24"
@@ -1399,7 +1395,7 @@ export default function show({ order }) {
                                                     <span className="mx-3 text-gray-600 dark:text-white/90">
                                                         Bank Name:
                                                     </span>
-                                                    <span className="min-w-0 whitespace-normal break-all font-medium text-gray-900 dark:text-white/90">
+                                                    <span className="min-w-0 font-medium text-gray-900 break-all whitespace-normal dark:text-white/90">
                                                         {order?.order_items[0]?.smartphone?.category
                                                             ?.distributor?.bank_name || 'N/A'}
                                                     </span>
@@ -1409,7 +1405,7 @@ export default function show({ order }) {
                                                     <span className="mx-3 text-gray-600 dark:text-white/90">
                                                         Bank Account Name :
                                                     </span>
-                                                    <span className="min-w-0 whitespace-normal break-all font-medium text-gray-900 dark:text-white/90">
+                                                    <span className="min-w-0 font-medium text-gray-900 break-all whitespace-normal dark:text-white/90">
                                                         {order?.order_items[0]?.smartphone?.category
                                                             ?.distributor?.bank_account_name ||
                                                             'N/A'}
@@ -1420,7 +1416,7 @@ export default function show({ order }) {
                                                     <span className="mx-3 text-gray-600 dark:text-white/90">
                                                         Bank Account No:
                                                     </span>
-                                                    <span className="min-w-0 whitespace-normal break-all font-medium text-gray-900 dark:text-white/90">
+                                                    <span className="min-w-0 font-medium text-gray-900 break-all whitespace-normal dark:text-white/90">
                                                         {order?.order_items[0]?.smartphone?.category
                                                             ?.distributor?.bank_account_no || 'N/A'}
                                                     </span>
@@ -1430,7 +1426,7 @@ export default function show({ order }) {
                                                     <span className="mx-3 text-gray-600 dark:text-white/90">
                                                         IBAN:
                                                     </span>
-                                                    <span className="min-w-0 whitespace-normal break-all font-medium text-gray-900 dark:text-white/90">
+                                                    <span className="min-w-0 font-medium text-gray-900 break-all whitespace-normal dark:text-white/90">
                                                         {order?.order_items[0]?.smartphone?.category
                                                             ?.distributor?.iban || 'N/A'}
                                                     </span>
@@ -1440,7 +1436,7 @@ export default function show({ order }) {
                                                     <span className="mx-3 text-gray-600 dark:text-white/90">
                                                         SWIFT CODE:
                                                     </span>
-                                                    <span className="min-w-0 whitespace-normal break-all font-medium text-gray-900 dark:text-white/90">
+                                                    <span className="min-w-0 font-medium text-gray-900 break-all whitespace-normal dark:text-white/90">
                                                         {order?.order_items[0]?.smartphone?.category
                                                             ?.distributor?.swift_code || 'N/A'}
                                                     </span>
@@ -1449,7 +1445,7 @@ export default function show({ order }) {
                                         </div>
 
                                         {/* Payment Method */}
-                                        <div className="my-4 flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-deepcharcoal">
+                                        <div className="flex items-center justify-between p-4 my-4 border border-gray-200 rounded-lg bg-gray-50 dark:border-gray-700 dark:bg-deepcharcoal">
                                             <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
                                                 Payment Method
                                             </span>
@@ -1458,7 +1454,7 @@ export default function show({ order }) {
                                                 {order.payment_method === 'bank_transfer' && (
                                                     <>
                                                         <svg
-                                                            className="h-5 w-5 text-blue-600 dark:text-blue-400"
+                                                            className="w-5 h-5 text-blue-600 dark:text-blue-400"
                                                             fill="none"
                                                             stroke="currentColor"
                                                             viewBox="0 0 24 24"
@@ -1479,7 +1475,7 @@ export default function show({ order }) {
                                                 {order.payment_method === 'crypto' && (
                                                     <>
                                                         <svg
-                                                            className="h-5 w-5 text-orange-600 dark:text-orange-400"
+                                                            className="w-5 h-5 text-orange-600 dark:text-orange-400"
                                                             fill="none"
                                                             stroke="currentColor"
                                                             viewBox="0 0 24 24"
@@ -1500,7 +1496,7 @@ export default function show({ order }) {
                                                 {order.payment_method === 'points' && (
                                                     <>
                                                         <svg
-                                                            className="h-5 w-5 text-green-600 dark:text-green-400"
+                                                            className="w-5 h-5 text-green-600 dark:text-green-400"
                                                             fill="none"
                                                             stroke="currentColor"
                                                             viewBox="0 0 24 24"
@@ -1521,19 +1517,19 @@ export default function show({ order }) {
                                                 {!['bank_transfer', 'crypto', 'points'].includes(
                                                     order.payment_method,
                                                 ) && (
-                                                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                                        N/A
-                                                    </span>
-                                                )}
+                                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                            N/A
+                                                        </span>
+                                                    )}
                                             </div>
                                         </div>
 
                                         {/* Cash Collected Status */}
                                         {order.is_cash_collected == 1 && (
-                                            <div className="my-3 flex items-center space-x-3">
-                                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
+                                            <div className="flex items-center my-3 space-x-3">
+                                                <div className="flex items-center justify-center w-8 h-8 bg-green-100 rounded-full">
                                                     <svg
-                                                        className="h-4 w-4 text-green-600"
+                                                        className="w-4 h-4 text-green-600"
                                                         fill="none"
                                                         stroke="currentColor"
                                                         viewBox="0 0 24 24"
@@ -1563,21 +1559,21 @@ export default function show({ order }) {
 
                 {/* Downloading Modal */}
                 {downloading && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                         <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                         {/* Modal content */}
-                        <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
+                        <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
                             <div className="text-center">
                                 <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                     Please Wait While We Are Dowloading File For You
                                 </h2>
 
-                                <div className="mt-5 flex items-center justify-center">
+                                <div className="flex items-center justify-center mt-5">
                                     <div role="status">
                                         <svg
                                             aria-hidden="true"
-                                            className="h-8 w-8 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"
+                                            className="w-8 h-8 text-gray-200 animate-spin fill-blue-600 dark:text-gray-600"
                                             viewBox="0 0 100 101"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
@@ -1601,21 +1597,21 @@ export default function show({ order }) {
 
                 {/* Package Recording Uploading Modal */}
                 {packageVideoProcessing && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                         <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                         {/* Modal content */}
-                        <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
+                        <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
                             <div className="text-center">
                                 <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                     Please Wait While We Are Uploading Package Video
                                 </h2>
 
-                                <div className="mt-5 flex items-center justify-center">
+                                <div className="flex items-center justify-center mt-5">
                                     <div role="status">
                                         <svg
                                             aria-hidden="true"
-                                            className="h-8 w-8 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"
+                                            className="w-8 h-8 text-gray-200 animate-spin fill-blue-600 dark:text-gray-600"
                                             viewBox="0 0 100 101"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
@@ -1638,25 +1634,25 @@ export default function show({ order }) {
                 )}
 
                 {videoIsntBeignUploadedYetOnAWS && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                         <div
                             className="fixed inset-0 backdrop-blur-[32px]"
                             onClick={() => setVideoIsntBeignUploadedYetOnAWS(false)}
                         ></div>
 
                         {/* Modal content */}
-                        <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
+                        <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
                             <div className="text-center">
                                 <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                     Please Wait The Package Recording Is Processing In Backend
                                     Please Refresh Page After 2 to 3 minutes
                                 </h2>
 
-                                <div className="mt-5 flex items-center justify-center">
+                                <div className="flex items-center justify-center mt-5">
                                     <div role="status">
                                         <svg
                                             aria-hidden="true"
-                                            className="h-8 w-8 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"
+                                            className="w-8 h-8 text-gray-200 animate-spin fill-blue-600 dark:text-gray-600"
                                             viewBox="0 0 100 101"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
@@ -1680,22 +1676,22 @@ export default function show({ order }) {
 
                 {/* Recording Save Loading Modal */}
                 {openRecorder && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                         <div className="fixed inset-0 bg-black/50" onClick={handleClose} />
 
-                        <div className="relative z-10 max-h-screen w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 text-gray-900 shadow-xl dark:bg-deepcharcoal dark:text-white/80 sm:p-8">
+                        <div className="relative z-10 w-full max-w-3xl max-h-screen p-6 overflow-y-auto text-gray-900 bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal dark:text-white/80 sm:p-8">
                             {/* Header */}
-                            <div className="mb-4 flex items-center justify-between border-b pb-4">
+                            <div className="flex items-center justify-between pb-4 mb-4 border-b">
                                 <h3 className="text-lg font-semibold">Video Recorder</h3>
                             </div>
 
                             {/* Error display */}
                             {error && (
-                                <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3">
+                                <div className="p-3 mb-4 border border-red-200 rounded-md bg-red-50">
                                     <div className="mb-2 text-sm text-red-800">{error}</div>
                                     <button
                                         onClick={startCameraWithFallback}
-                                        className="rounded bg-red-100 px-3 py-1 text-sm text-red-800 hover:bg-red-200"
+                                        className="px-3 py-1 text-sm text-red-800 bg-red-100 rounded hover:bg-red-200"
                                     >
                                         Retry Camera
                                     </button>
@@ -1712,7 +1708,7 @@ export default function show({ order }) {
 
                             {/* Video display */}
                             <div
-                                className="relative mb-4 overflow-hidden rounded-lg bg-black"
+                                className="relative mb-4 overflow-hidden bg-black rounded-lg"
                                 style={{ aspectRatio: '16/9' }}
                             >
                                 {!recordedVideoUrl ? (
@@ -1721,27 +1717,27 @@ export default function show({ order }) {
                                         autoPlay
                                         muted
                                         playsInline
-                                        className="h-full w-full object-cover"
+                                        className="object-cover w-full h-full"
                                     />
                                 ) : (
                                     <video
                                         key={recordedVideoUrl}
                                         src={recordedVideoUrl}
                                         controls
-                                        className="h-full w-full object-cover"
+                                        className="object-cover w-full h-full"
                                         onLoadedMetadata={(e) => {
                                             // ensure it actually starts
                                             try {
                                                 e.currentTarget.play();
-                                            } catch {}
+                                            } catch { }
                                         }}
                                     />
                                 )}
 
                                 {/* Recording indicator */}
                                 {isRecording && (
-                                    <div className="absolute left-4 top-4 flex items-center space-x-2 rounded-full bg-red-600 px-3 py-1 text-white">
-                                        <div className="h-3 w-3 animate-pulse rounded-full bg-white"></div>
+                                    <div className="absolute flex items-center px-3 py-1 space-x-2 text-white bg-red-600 rounded-full left-4 top-4">
+                                        <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
                                         <span className="text-sm font-medium">Recording</span>
                                     </div>
                                 )}
@@ -1749,7 +1745,7 @@ export default function show({ order }) {
                                 {!isRecording && !recordedVideoUrl && (
                                     <div
                                         onClick={() => setUseFrontCamera(!useFrontCamera)}
-                                        className="absolute right-4 top-4 flex cursor-pointer items-center space-x-2 rounded-full bg-blue-600 px-3 py-1 text-white"
+                                        className="absolute flex items-center px-3 py-1 space-x-2 text-white bg-blue-600 rounded-full cursor-pointer right-4 top-4"
                                     >
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
@@ -1790,7 +1786,7 @@ export default function show({ order }) {
                                         <button
                                             onClick={handleStartRecording}
                                             disabled={!stream || isRecording}
-                                            className="rounded-lg bg-green-600 px-6 py-2 text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                            className="px-6 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                                         >
                                             {isRecording ? 'Recording...' : 'Start Recording'}
                                         </button>
@@ -1798,7 +1794,7 @@ export default function show({ order }) {
                                         <button
                                             onClick={handleStopRecording}
                                             disabled={!isRecording}
-                                            className="rounded-lg bg-red-600 px-6 py-2 text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                            className="px-6 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
                                         >
                                             Stop Recording
                                         </button>
@@ -1808,14 +1804,14 @@ export default function show({ order }) {
                                         <button
                                             onClick={handleSave}
                                             disabled={recordingSaving}
-                                            className="rounded-lg bg-blue-600 px-6 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
+                                            className="px-6 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
                                         >
                                             {recordingSaving ? 'Saving...' : 'Upload Video'}
                                         </button>
 
                                         <button
                                             onClick={handleRetake}
-                                            className="rounded-lg bg-amber-500 px-6 py-2 text-white hover:bg-amber-600"
+                                            className="px-6 py-2 text-white rounded-lg bg-amber-500 hover:bg-amber-600"
                                         >
                                             Retake
                                         </button>
@@ -1824,7 +1820,7 @@ export default function show({ order }) {
 
                                 <button
                                     onClick={handleClose}
-                                    className="rounded-lg bg-gray-500 px-6 py-2 text-white hover:bg-gray-600"
+                                    className="px-6 py-2 text-white bg-gray-500 rounded-lg hover:bg-gray-600"
                                 >
                                     Close
                                 </button>

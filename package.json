@@ -69,7 +69,6 @@
         "babel-plugin-prismjs": "^2.1.0",
         "concurrently": "^9.0.1",
         "css-loader": "^7.1.2",
-        "depcheck": "^1.4.7",
         "file-loader": "^6.2.0",
         "glob": "^11.0.0",
         "html-loader": "^5.0.0",

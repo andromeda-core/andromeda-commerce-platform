@@ -9,10 +9,11 @@ import React from 'react';
 import Swal from 'sweetalert2';
 import LinkButton from '@/Components/LinkButton';
 import Textarea from '@/Components/Textarea';
+import { useConfirm } from '@/Hooks/useConfirm';
 
 export default function index({ general_setting }) {
     // Update General Setting Form Data
-    const { data, setData, post, processing, errors, progress, reset } = useForm({
+    const { data, setData, post, processing, errors, reset } = useForm({
         _method: 'PUT',
         app_name: general_setting?.app_name || '',
         contact_email: general_setting?.contact_email || '',
@@ -31,6 +32,7 @@ export default function index({ general_setting }) {
     //     // console.log(progress);
     // }, [progress]);
 
+    const { confirm, ConfirmDialog } = useConfirm();
     // Update General Setting Form Request
     const submit = (e) => {
         e.preventDefault();
@@ -38,21 +40,22 @@ export default function index({ general_setting }) {
             forceFormData: true,
             preserveScroll: true,
 
-            onSuccess: () => {
+            onSuccess: async () => {
                 reset('app_favicon', 'app_main_logo_dark', 'app_main_logo_light');
-                Swal.fire({
-                    icon: 'success',
+
+                const result = await confirm({
                     title: 'Settings Updated',
-                    text: 'Your changes were saved successfully. Would you like to reload the page to see them in effect?',
-                    showConfirmButton: true,
+                    text: "Your changes were saved successfully. Would you like to reload the page to see them in effect?",
+                    icon: 'success',
                     showCancelButton: true,
+
                     confirmButtonText: 'Yes, Reload Now',
-                    cancelButtonText: 'Later',
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location.reload();
-                    }
+                    cancelButtonText: 'Later'
                 });
+
+                if (result.isConfirmed) {
+                    window.location.reload();
+                }
             },
         });
     };
@@ -61,6 +64,8 @@ export default function index({ general_setting }) {
         <>
             <AuthenticatedLayout>
                 <Head title="Settings - General Setting" />
+
+                <ConfirmDialog />
 
                 <BreadCrumb
                     header={'Settings - General Setting'}

@@ -12,7 +12,7 @@ import Swal from 'sweetalert2';
 import BarcodeScannerComponent from 'react-qr-barcode-scanner';
 export default function create({ smartphones, additional_fee_lists }) {
     // Create Data Form Data
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         smartphone_id: '',
         selling_price: '',
         additional_fee: [],
@@ -80,7 +80,7 @@ export default function create({ smartphones, additional_fee_lists }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Smartphone For Sales'}
                                     URL={route('dashboard.smartphone-for-sales.index')}
@@ -182,7 +182,7 @@ export default function create({ smartphones, additional_fee_lists }) {
                                                 </div>
                                             </div>
 
-                                            <div className="flex w-full items-center justify-end">
+                                            <div className="flex items-center justify-end w-full">
                                                 <PrimaryButton
                                                     Text={'Add Additional Fee'}
                                                     Type={'button'}
@@ -210,19 +210,19 @@ export default function create({ smartphones, additional_fee_lists }) {
 
                                             {additionalFees.length > 0 && (
                                                 <div
-                                                    className="col-span-1 grid grid-cols-1 gap-5 overflow-x-auto scrollbar-thin dark:scrollbar-track-slate-900 dark:scrollbar-thumb-slate-700"
+                                                    className="grid grid-cols-1 col-span-1 gap-5 overflow-x-auto scrollbar-thin dark:scrollbar-track-slate-900 dark:scrollbar-thumb-slate-700"
                                                     style={{ overflow: 'visible' }}
                                                 >
                                                     <table className="w-full border-collapse">
                                                         <thead>
                                                             <tr>
-                                                                <th className="border p-2 text-left text-gray-700 dark:border-gray-700 dark:text-gray-400">
+                                                                <th className="p-2 text-left text-gray-700 border dark:border-gray-700 dark:text-gray-400">
                                                                     Type
                                                                 </th>
-                                                                <th className="border p-2 text-left text-gray-700 dark:border-gray-700 dark:text-gray-400">
+                                                                <th className="p-2 text-left text-gray-700 border dark:border-gray-700 dark:text-gray-400">
                                                                     Amount
                                                                 </th>
-                                                                <th className="border p-2 text-center text-gray-700 dark:border-gray-700 dark:text-gray-400">
+                                                                <th className="p-2 text-center text-gray-700 border dark:border-gray-700 dark:text-gray-400">
                                                                     Action
                                                                 </th>
                                                             </tr>
@@ -230,7 +230,7 @@ export default function create({ smartphones, additional_fee_lists }) {
                                                         <tbody>
                                                             {additionalFees.map((item, idx) => (
                                                                 <tr key={idx}>
-                                                                    <td className="w-1/2 border p-2 dark:border-gray-700">
+                                                                    <td className="w-1/2 p-2 border dark:border-gray-700">
                                                                         <SelectInput
                                                                             InputName={
                                                                                 'Select Type'
@@ -252,19 +252,19 @@ export default function create({ smartphones, additional_fee_lists }) {
                                                                             }
                                                                             Error={
                                                                                 errors[
-                                                                                    `additional_fee.${idx}.type`
+                                                                                `additional_fee.${idx}.type`
                                                                                 ]
                                                                             }
                                                                         />
                                                                     </td>
-                                                                    <td className="w-1/2 border p-2 dark:border-gray-700">
+                                                                    <td className="w-1/2 p-2 border dark:border-gray-700">
                                                                         <Input
                                                                             InputName={'Amount'}
                                                                             Id={'amount'}
                                                                             Name={'amount'}
                                                                             Error={
                                                                                 errors[
-                                                                                    `additional_fee.${idx}.amount`
+                                                                                `additional_fee.${idx}.amount`
                                                                                 ]
                                                                             }
                                                                             Value={item.amount}
@@ -283,7 +283,7 @@ export default function create({ smartphones, additional_fee_lists }) {
                                                                         />
                                                                     </td>
 
-                                                                    <td className="border p-2 dark:border-gray-700">
+                                                                    <td className="p-2 border dark:border-gray-700">
                                                                         <div className="flex items-center justify-center">
                                                                             <PrimaryButton
                                                                                 Type={'button'}
@@ -372,11 +372,11 @@ export default function create({ smartphones, additional_fee_lists }) {
 
                 {smartphoneScannerOpen && (
                     <>
-                        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                             <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                             {/* Modal content */}
-                            <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
+                            <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
                                 <div className="text-center">
                                     <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                         Place The Camera On The Barcode

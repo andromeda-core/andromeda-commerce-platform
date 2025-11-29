@@ -5,12 +5,12 @@ const MobileFeedGallery = ({ feedGallery, setShowQrCode, setLinkCopied, auth, cu
 
 
     // Force Pause Videos If Not Already
-    useEffect(() => {
-        const videos = document.querySelectorAll('video');
-        videos.forEach((video, index) => {
-            video.pause();
-        });
-    }, []);
+    // useEffect(() => {
+    //     const videos = document.querySelectorAll('video');
+    //     videos.forEach((video, index) => {
+    //         video.pause();
+    //     });
+    // }, []);
 
     return (
         <>

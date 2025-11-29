@@ -12,8 +12,11 @@ use App\Repositories\Batches\Interface\IBatchRepository;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Intervention\Image\Encoders\WebpEncoder;
+use Intervention\Image\ImageManager;
 use Str;
 
 class BatchRepository implements IBatchRepository
@@ -81,7 +84,7 @@ class BatchRepository implements IBatchRepository
             'inventory_items.*.imei2' => ['nullable', 'string', 'max:255', 'unique:inventories,imei2'],
             'inventory_items.*.eid' => ['nullable', 'string', 'max:255', 'unique:inventories,eid'],
             'inventory_items.*.serial_no' => ['nullable', 'string', 'max:255', 'unique:inventories,serial_no'],
-            'invoices.*' => ['nullable', 'mimes:jpg,jpeg,png,pdf', 'max:5048'],
+            'invoices.*' => ['nullable', 'mimes:jpg,jpeg,png,pdf,webp', 'max:5048'],
 
         ], [
             'extra_costs.*.cost_type.required' => 'Cost type is required',
@@ -110,7 +113,7 @@ class BatchRepository implements IBatchRepository
             'inventory_items.*.imei2.unique' => 'IMEI 2 Already Exists',
             'inventory_items.*.eid.unique' => 'EID Already Exists',
 
-            'invoices.*.mimes' => 'Only jpg, jpeg, png, pdf files are allowed',
+            'invoices.*.mimes' => 'Only JPG, JPEG, PNG, PDF, WEBP files are allowed',
             'invoices.*.max' => 'File size should not exceed 5MB',
 
         ]);
@@ -198,9 +201,28 @@ class BatchRepository implements IBatchRepository
             if ($request->hasFile('invoices')) {
                 $paths = [];
                 foreach ($validated_req['invoices'] as $invoice) {
-                    $new_name = time().uniqid().Str::random(10).'.'.$invoice->getClientOriginalExtension();
-                    $tempPath = $invoice->storeAs('temp/uploads', $new_name, 'local');
+                    $ext = strtolower($invoice->getClientOriginalExtension());
+
+                    if ($ext === 'pdf') {
+                        $newName = time().uniqid().Str::random(10).'.pdf';
+                        $tempPath = $invoice->storeAs('temp/uploads', $newName, 'local');
+                        $paths[] = $tempPath;
+
+                        continue;
+                    }
+
+                    $newName = time().uniqid().'-'.Str::random(10).'.webp';
+                    $tempPath = 'temp/uploads/'.$newName;
+
+                    $resizedImage = ImageManager::imagick()
+                        ->read($invoice)
+                        ->scaleDown(1800)
+                        ->encode(new WebpEncoder(quality: 70));
+
+                    Storage::disk('local')->put($tempPath, (string) $resizedImage);
+
                     $paths[] = $tempPath;
+
                 }
 
                 dispatch(new StoreBatchInvoicesOnAWS(['invoices' => $paths], $batch));
@@ -462,9 +484,25 @@ class BatchRepository implements IBatchRepository
                 $paths = [];
 
                 foreach ($request->file('new_invoices') as $invoice) {
-                    $new_name = time().uniqid().'-'.Str::random(10).'.'.$invoice->getClientOriginalExtension();
+                    $ext = strtolower($invoice->getClientOriginalExtension());
 
-                    $tempPath = $invoice->storeAs('temp/uploads', $new_name, 'local');
+                    if ($ext === 'pdf') {
+                        $newName = time().uniqid().Str::random(10).'.pdf';
+                        $tempPath = $invoice->storeAs('temp/uploads', $newName, 'local');
+                        $paths[] = $tempPath;
+
+                        continue;
+                    }
+
+                    $newName = time().uniqid().'-'.Str::random(10).'.webp';
+                    $tempPath = 'temp/uploads/'.$newName;
+
+                    $resizedImage = ImageManager::imagick()
+                        ->read($invoice)
+                        ->scaleDown(1800)
+                        ->encode(new WebpEncoder(quality: 70));
+
+                    Storage::disk('local')->put($tempPath, (string) $resizedImage);
 
                     $paths[] = $tempPath;
                 }

@@ -378,7 +378,7 @@ export default function CustomizedVideoPlayer({
             onTouchStart={(e) => handleContainerInteraction(e)}
         >
             {/* Video Container */}
-            <div className="relative flex items-center justify-center w-full h-full">
+            <div className="relative flex items-center justify-center w-full h-full pb-10 ">
                 {/* Video with click handler */}
                 <video
 
@@ -406,7 +406,7 @@ export default function CustomizedVideoPlayer({
                 {/* BUFFERING  */}
                 {isBuffering && isPlaying && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-black/20 backdrop-blur-sm">
+                        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-black/20 ">
                             <SunSpinner color='#fff' />
                         </div>
                     </div>
@@ -420,7 +420,7 @@ export default function CustomizedVideoPlayer({
                         }`}
                 >
                     {/* When video is NOT playing or has ended, show only play button */}
-                    {((!isPlaying || hasEnded) && loaded) && (
+                    {((!isPlaying || hasEnded)) && (
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -496,127 +496,128 @@ export default function CustomizedVideoPlayer({
                     )}
                 </div>
 
-                {/* Timeline Bar */}
-                {showControls && (
-                    <div className="absolute bottom-0 left-0 right-0 z-50 w-full pointer-events-none pb-safe">
-                        <div className="absolute inset-0 bg-white dark:bg-black/50 " />
 
-                        <div className="relative flex items-center gap-3 px-3 py-2 pointer-events-auto">
-                            {/* Current Time */}
-                            <span className="text-[10px] text-gray-900 dark:text-white font-semibold min-w-[26px] text-right">
-                                {formatTime(currentTime)}
-                            </span>
+            </div>
+            {/* Timeline Bar */}
+            {(!isPlaying || showControls) && (
+                <div className="absolute bottom-0 left-0 right-0 z-50 w-full pointer-events-none">
+                    <div className="absolute inset-0 bg-white dark:bg-black/50 " />
 
-                            {/* Progress Bar */}
+                    <div className="relative flex items-center gap-3 px-3 py-2 pointer-events-auto">
+                        {/* Current Time */}
+                        <span className="text-[10px] text-gray-900 dark:text-white font-semibold min-w-[26px] text-right">
+                            {formatTime(currentTime)}
+                        </span>
+
+                        {/* Progress Bar */}
+                        <div
+                            ref={progressBarRef}
+                            className="relative flex-1 h-2 overflow-hidden rounded-full cursor-pointer bg-gray-400/40 dark:bg-white/30"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleProgressBarClick(e);
+                            }}
+                            onMouseDown={(e) => {
+                                e.stopPropagation();
+                                handleProgressBarMouseDown(e);
+                            }}
+                            onTouchStart={(e) => {
+                                e.stopPropagation();
+                                handleProgressBarTouchStart(e);
+                            }}
+                        >
+                            {/* Filled portion */}
                             <div
-                                ref={progressBarRef}
-                                className="relative flex-1 h-2 overflow-hidden rounded-full cursor-pointer bg-gray-400/40 dark:bg-white/30"
+                                className="h-full transition-none bg-gray-900 pointer-events-none dark:bg-white"
+                                style={{ width: `${progress}%` }}
+                            />
+
+                            {/* Thumb */}
+                            <div
+                                className="absolute w-4 h-4 transition-none -translate-y-1/2 bg-gray-900 rounded-full pointer-events-none top-1/2 dark:bg-white"
+                                style={{ left: `calc(${progress}% - 8px)` }}
+                            />
+                        </div>
+
+                        {/* Remaining Time */}
+                        <span className="text-[10px] text-gray-900 dark:text-white font-semibold min-w-[26px]">
+                            -{formatTime(duration - currentTime)}
+                        </span>
+
+                        {/* Options */}
+                        <div className="relative">
+                            <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleProgressBarClick(e);
+                                    setShowActions(!showActions);
                                 }}
-                                onMouseDown={(e) => {
-                                    e.stopPropagation();
-                                    handleProgressBarMouseDown(e);
-                                }}
-                                onTouchStart={(e) => {
-                                    e.stopPropagation();
-                                    handleProgressBarTouchStart(e);
-                                }}
+                                className="flex items-center justify-center w-6 h-6 transition-colors rounded-full ellipsis-button hover:bg-gray-900/10 dark:hover:bg-white/10"
                             >
-                                {/* Filled portion */}
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-900 dark:text-white">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                </svg>
+                            </button>
+
+                            {/* Dropdown Menu */}
+                            {showActions && (
                                 <div
-                                    className="h-full transition-none bg-gray-900 pointer-events-none dark:bg-white"
-                                    style={{ width: `${progress}%` }}
-                                />
-
-                                {/* Thumb */}
-                                <div
-                                    className="absolute w-4 h-4 transition-none -translate-y-1/2 bg-gray-900 rounded-full pointer-events-none top-1/2 dark:bg-white"
-                                    style={{ left: `calc(${progress}% - 8px)` }}
-                                />
-                            </div>
-
-                            {/* Remaining Time */}
-                            <span className="text-[10px] text-gray-900 dark:text-white font-semibold min-w-[26px]">
-                                -{formatTime(duration - currentTime)}
-                            </span>
-
-                            {/* Options */}
-                            <div className="relative">
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setShowActions(!showActions);
-                                    }}
-                                    className="flex items-center justify-center w-6 h-6 transition-colors rounded-full ellipsis-button hover:bg-gray-900/10 dark:hover:bg-white/10"
+                                    className="absolute right-0 w-48 mb-2 overflow-hidden bg-white border border-gray-200 rounded-lg shadow-lg actions-dropdown bottom-full dark:bg-deepcharcoal dark:border-white/10"
+                                    onClick={(e) => e.stopPropagation()}
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-900 dark:text-white">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                    </svg>
-                                </button>
-
-                                {/* Dropdown Menu */}
-                                {showActions && (
+                                    {/* Volume Control */}
                                     <div
-                                        className="absolute right-0 w-48 mb-2 overflow-hidden bg-white border border-gray-200 rounded-lg shadow-lg actions-dropdown bottom-full dark:bg-deepcharcoal dark:border-white/10"
-                                        onClick={(e) => e.stopPropagation()}
+                                        className="relative"
+                                        onMouseEnter={() => setShowVolumeSlider(true)}
+                                        onMouseLeave={() => setShowVolumeSlider(false)}
                                     >
-                                        {/* Volume Control */}
-                                        <div
-                                            className="relative"
-                                            onMouseEnter={() => setShowVolumeSlider(true)}
-                                            onMouseLeave={() => setShowVolumeSlider(false)}
-                                        >
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    toggleMute();
-                                                }}
-                                                className="flex items-center w-full gap-3 px-4 py-3 text-sm text-gray-700 transition-colors dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800"
-                                            >
-                                                {isMuted ? (
-                                                    <>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 9.75 19.5 12m0 0 2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6 4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
-                                                        </svg>
-                                                        <span>Unmute</span>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
-                                                        </svg>
-                                                        <span>Mute</span>
-                                                    </>
-                                                )}
-                                            </button>
-                                        </div>
-
-                                        {/* Fullscreen Button */}
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                toggleFullscreen();
-                                                setShowActions(false);
+                                                toggleMute();
                                             }}
                                             className="flex items-center w-full gap-3 px-4 py-3 text-sm text-gray-700 transition-colors dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
-                                            </svg>
-                                            <span>Fullscreen</span>
+                                            {isMuted ? (
+                                                <>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 9.75 19.5 12m0 0 2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6 4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
+                                                    </svg>
+                                                    <span>Unmute</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
+                                                    </svg>
+                                                    <span>Mute</span>
+                                                </>
+                                            )}
                                         </button>
-
-
-
                                     </div>
-                                )}
-                            </div>
+
+                                    {/* Fullscreen Button */}
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleFullscreen();
+                                            setShowActions(false);
+                                        }}
+                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm text-gray-700 transition-colors dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                                        </svg>
+                                        <span>Fullscreen</span>
+                                    </button>
+
+
+
+                                </div>
+                            )}
                         </div>
                     </div>
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 }

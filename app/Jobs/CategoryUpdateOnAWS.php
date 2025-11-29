@@ -19,7 +19,7 @@ class CategoryUpdateOnAWS implements ShouldQueue
     public $timeout = 300;
 
     public function __construct(
-        private string $file,
+        private ?string $file,
         private Category $category,
         private $categories_dir = 'Categories/Thumbnails/',
     ) {}
@@ -33,7 +33,10 @@ class CategoryUpdateOnAWS implements ShouldQueue
             $extension = pathinfo($this->file, PATHINFO_EXTENSION);
             $new_name = time().uniqid().'-'.Str::random(10).'.'.$extension;
 
-            Storage::disk('s3')->put($this->categories_dir.$new_name, file_get_contents($fullLocalPath));
+            Storage::disk('s3')->put($this->categories_dir.$new_name, file_get_contents($fullLocalPath), [
+                'CacheControl' => 'public, max-age=31536000',
+                'ContentType' => mime_content_type($fullLocalPath),
+            ]);
             Storage::disk('local')->delete($this->file);
 
             $url = Storage::disk('s3')->url($this->categories_dir.$new_name);

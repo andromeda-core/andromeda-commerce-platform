@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Intervention\Image\Encoders\WebpEncoder;
 use Intervention\Image\ImageManager;
 use Str;
 
@@ -88,12 +89,12 @@ class SmartphoneRepository implements ISmartphoneRepository
 
         $validator = Validator::make($request->allFiles(), [
             'images.*' => [
-                'mimes:jpg,jpeg,png',
+                'mimes:jpg,jpeg,png,webp',
                 'max:5048',
             ],
 
         ], [
-            'images.*.mimes' => 'Only JPG, JPEG, PNG, images are allowed.',
+            'images.*.mimes' => 'Only JPG, JPEG, PNG, WEBP images are allowed.',
             'images.*.max' => 'Each image must not exceed 5MB.',
 
         ], [
@@ -120,8 +121,11 @@ class SmartphoneRepository implements ISmartphoneRepository
             $model_name = $this->model_name->find($validated_req['model_name_id'])?->name ?? 'Smartphone';
             $capacity = $this->capacity->find($validated_req['capacity_id'])?->name ?? '';
 
-            $raw_slug = "{$model_name}-{$capacity}-{$validated_req['upc']}-".Str::uuid();
-            $validated_req['slug'] = preg_replace('/\s+/u', '-', trim($raw_slug));
+            $rawSlug = "{$model_name}-{$capacity}-{$validated_req['upc']}-".Str::uuid();
+            $cleanSlug = str_replace(['/', '\\'], '-', $rawSlug);
+            $cleanSlug = preg_replace('/[^A-Za-z0-9\- ]/', '', $cleanSlug);
+            $cleanSlug = preg_replace('/\s+/u', '-', trim($cleanSlug));
+            $validated_req['slug'] = strtolower($cleanSlug);
 
             $smartphone = $this->smartphone->create($validated_req);
             if (empty($smartphone)) {
@@ -132,11 +136,12 @@ class SmartphoneRepository implements ISmartphoneRepository
                 $paths = [];
 
                 foreach ($request->file('images') as $image) {
-                    $new_name = time().uniqid().Str::random(10).'.'.$image->getClientOriginalExtension();
+                    $new_name = time().uniqid().'-'.Str::random(10).'.webp';
 
                     $resizedImage = ImageManager::imagick()
                         ->read($image)
-                        ->encodeByExtension('jpg', quality: 70);
+                        ->scaleDown(1800)
+                        ->encode(new WebpEncoder(quality: 70));
 
                     $tempPath = 'temp/uploads/'.$new_name;
                     Storage::disk('local')->put($tempPath, (string) $resizedImage);
@@ -189,12 +194,12 @@ class SmartphoneRepository implements ISmartphoneRepository
 
         $validator = Validator::make($request->allFiles(), [
             'new_images.*' => [
-                'mimes:jpg,jpeg,png',
+                'mimes:jpg,jpeg,png,webp',
                 'max:10240',
             ],
 
         ], [
-            'new_images.*.mimes' => 'Only JPG, JPEG, PNG, images are allowed.',
+            'new_images.*.mimes' => 'Only JPG, JPEG, PNG, WEBP images are allowed.',
             'new_images.*.max' => 'Each image must not exceed 10MB.',
 
         ], [
@@ -221,14 +226,15 @@ class SmartphoneRepository implements ISmartphoneRepository
 
             $smartphone = $this->smartphone->find($id);
 
-            if (empty($smartphone->slug)) {
-                $model_name = $this->model_name->find($validated_req['model_name_id'])?->name ?? 'Smartphone';
-                $capacity = $this->capacity->find($validated_req['capacity_id'])?->name ?? '';
-                $raw_slug = "{$model_name}-{$capacity}-{$validated_req['upc']}-".Str::uuid();
+            // Not Needed Becasue Its Un-Necessary
+            // if (empty($smartphone->slug)) {
+            //     $model_name = $this->model_name->find($validated_req['model_name_id'])?->name ?? 'Smartphone';
+            //     $capacity = $this->capacity->find($validated_req['capacity_id'])?->name ?? '';
+            //     $raw_slug = "{$model_name}-{$capacity}-{$validated_req['upc']}-".Str::uuid();
 
-                $validated_req['slug'] = preg_replace('/\s+/u', '-', trim($raw_slug));
+            //     $validated_req['slug'] = preg_replace('/\s+/u', '-', trim($raw_slug));
 
-            }
+            // }
 
             if ($request->filled('deleted_images')) {
                 $deleted = $request->array('deleted_images');
@@ -262,11 +268,12 @@ class SmartphoneRepository implements ISmartphoneRepository
                 $paths = [];
 
                 foreach ($request->file('new_images') as $image) {
-                    $new_name = time().uniqid().Str::random(10).'.'.$image->getClientOriginalExtension();
+                    $new_name = time().uniqid().'-'.Str::random(10).'.webp';
 
                     $resizedImage = ImageManager::imagick()
                         ->read($image)
-                        ->encodeByExtension('jpg', quality: 70);
+                        ->scaleDown(1800)
+                        ->encode(new WebpEncoder(quality: 70));
 
                     $tempPath = 'temp/uploads/'.$new_name;
                     Storage::disk('local')->put($tempPath, (string) $resizedImage);

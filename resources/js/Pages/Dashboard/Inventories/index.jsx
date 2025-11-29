@@ -1,5 +1,4 @@
 import Card from '@/Components/Card';
-import LinkButton from '@/Components/LinkButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, useForm, usePage } from '@inertiajs/react';
@@ -75,7 +74,7 @@ export default function index({ inventories, batches, storage_locations, smartph
                 label: 'Unit Price',
                 render: (item) => {
                     return (
-                        <span className="rounded-lg bg-blue-500 p-2 text-white">
+                        <span className="p-2 text-white bg-blue-500 rounded-lg">
                             {currency?.symbol}
                             {item.batch.final_unit_price}
                         </span>

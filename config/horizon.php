@@ -166,7 +166,7 @@ return [
     |
     */
 
-    'memory_limit' => 1024,
+    'memory_limit' => 4096,
 
     /*
     |--------------------------------------------------------------------------
@@ -188,19 +188,49 @@ return [
             'maxProcesses' => 10,
             'maxTime' => 0,
             'maxJobs' => 0,
-            'memory' => 1024,
-            'tries' => 1,
-            'timeout' => 1200,
+            'memory' => 2048,
+            'tries' => 2,
+            'timeout' => 14400,
             'nice' => 0,
+        ],
+
+        'supervisor-video' => [
+            'connection' => 'redis',
+            'queue' => ['video'],
+            'balance' => 'simple',
+            'processes' => 1,
+            'tries' => 1,
+            'timeout' => 14400,
+            'memory' => 4096,
+            'nice' => 5,
+
         ],
     ],
 
     'environments' => [
         'production' => [
             'supervisor-1' => [
+                'connection' => 'redis',
+                'queue' => ['default'],
                 'maxProcesses' => 10,
+                'balance' => 'auto',
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
+                'timeout' => 14400,
+                'memory' => 2048,
+                'tries' => 2,
+            ],
+
+            'supervisor-video' => [
+                'connection' => 'redis',
+                'queue' => ['video'],
+                'balance' => 'simple',
+                'processes' => 1,
+                'timeout' => 14400,
+                'memory' => 4096,
+                'tries' => 1,
+                'nice' => 5,
+
             ],
         ],
 

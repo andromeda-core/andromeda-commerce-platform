@@ -4,7 +4,7 @@ import Toast from '@/Components/Toast';
 import getCookie from '@/Hooks/useGetCookie';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import axios from 'axios';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 import React, { useEffect, useRef, useState } from 'react';
@@ -18,7 +18,6 @@ const hashtagPosts = ({ hashtag, google_map_api_key, search_history }) => {
 
     const [linkCopied, setLinkCopied] = useState(false);
 
-    const windowSize = useWindowSize();
     const loaderRef = useRef(null);
 
     const generateURL = (post) => {
@@ -192,7 +191,7 @@ const hashtagPosts = ({ hashtag, google_map_api_key, search_history }) => {
             />
 
             <div className="pb-20 sm:px-6 sm:pb-20 lg:px-8">
-                <div className="px-3 text-gray-900 bg-white rounded-xl dark:bg-deepcharcoal dark:text-gray-100 sm:px-6 lg:px-8">
+                <div className="px-3 text-gray-900 bg-white border border-gray-200 rounded-xl dark:bg-deepcharcoal dark:text-gray-100 sm:px-6 lg:px-8 dark:border-gray-700">
                     {/* Header */}
                     <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-slate-700">
                         <div className="relative flex items-center gap-6">
@@ -257,18 +256,36 @@ const hashtagPosts = ({ hashtag, google_map_api_key, search_history }) => {
                             </>
                         ) : (
                             allResults.map((item) => (
-                                <div
+                                <a
+                                    href={
+                                        item.type === 'posts'
+                                            ? route('home') + generateURL(item)
+                                            : route('home') + '?m-slug=' + item.slug
+                                    }
+                                    target='_blank'
+                                    onClick={() => window.history.replaceState({}, '', route('home'))}
+
                                     key={item.id}
                                     className="flex items-center gap-4 px-6 py-4 transition-colors cursor-pointer group hover:bg-gray-50 dark:hover:bg-gray-800/80"
                                 >
                                     {/* Thumbnail */}
+
                                     <div className="flex-shrink-0 w-12 h-12 overflow-hidden rounded-lg ">
                                         {item.image ? (
                                             <img
-                                                src={item.image}
+                                                src={item.image || Placeholder}
                                                 alt={item.title || item.name}
                                                 className="object-cover w-full h-full"
                                                 onError={(e) => e.target.src = Placeholder}
+                                            />
+                                        ) : !item?.image && item?.video_thumbnail && item?.type === 'posts' ? (
+                                            <img
+                                                src={item?.video_thumbnail || Placeholder}
+                                                alt={item?.title}
+                                                loading="lazy"
+                                                decoding="async"
+                                                onError={(e) => (e.target.src = Placeholder)}
+                                                className="w-full object-cover text-[10px] text-gray-700 transition-all duration-500 group-hover:scale-105 dark:text-white/80 dark:opacity-80"
                                             />
                                         ) : (
                                             <div className="flex items-center justify-center h-full text-sm text-white/80">
@@ -314,7 +331,9 @@ const hashtagPosts = ({ hashtag, google_map_api_key, search_history }) => {
                                         <button
                                             title="Copy Link"
                                             className="flex items-center justify-center w-8 h-8 p-2 text-gray-500 rounded-full hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
-                                            onClick={() => {
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
                                                 setLinkCopied(true);
                                                 item.type === 'posts'
                                                     ? navigator.clipboard.writeText(
@@ -341,47 +360,9 @@ const hashtagPosts = ({ hashtag, google_map_api_key, search_history }) => {
                                             </svg>
                                         </button>
 
-                                        <Link
-                                            title="Open"
-                                            href={
-                                                item.type === 'posts'
-                                                    ? route('home') + generateURL(item)
-                                                    : route('home') + '?m-slug=' + item.slug
-                                            }
-                                            onClick={() => {
-                                                item.type === 'posts'
-                                                    ? window.history.replaceState(
-                                                        {},
-                                                        '',
-                                                        route('home'),
-                                                    )
-                                                    : window.history.replaceState(
-                                                        {},
-                                                        '',
-                                                        route('home'),
-                                                    );
-                                            }}
 
-                                            className="flex items-center justify-center w-full h-8 gap-2 p-2 text-gray-500 rounded-full hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
-                                                stroke="currentColor"
-                                                className="size-4"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
-                                                />
-                                            </svg>
-                                            <span className="text-xs">New Tab</span>
-                                        </Link>
                                     </div>
-                                </div>
+                                </a>
                             ))
                         )}
                     </div>

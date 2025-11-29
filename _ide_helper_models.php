@@ -38,6 +38,7 @@ namespace App\Models{
  * @property string $aws_secret_access_key
  * @property string $aws_region
  * @property string $aws_bucket
+ * @property string|null $aws_url
  * @property int $is_active
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -49,6 +50,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AwsSetting whereAwsBucket($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AwsSetting whereAwsRegion($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AwsSetting whereAwsSecretAccessKey($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AwsSetting whereAwsUrl($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AwsSetting whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AwsSetting whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AwsSetting whereIsActive($value)
@@ -628,8 +630,8 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read mixed $added_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Smartphone> $smartphone
- * @property-read int|null $smartphone_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Smartphone> $smartphones
+ * @property-read int|null $smartphones_count
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ModelName newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ModelName newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ModelName query()
@@ -754,6 +756,7 @@ namespace App\Models{
  * @property int $id
  * @property int $order_id
  * @property string|null $package_video
+ * @property string|null $thumbnail_url
  * @property int $is_opened
  * @property \Illuminate\Support\Carbon|null $opened_at
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -769,6 +772,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageRecording whereOpenedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageRecording whereOrderId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageRecording wherePackageVideo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageRecording whereThumbnailUrl($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageRecording whereUpdatedAt($value)
  */
 	class PackageRecording extends \Eloquent {}
@@ -963,6 +967,7 @@ namespace App\Models{
  * @property int $id
  * @property array<array-key, mixed> $color_ids
  * @property int|null $model_name_id
+ * @property string|null $model_searchable_name
  * @property int|null $capacity_id
  * @property int|null $category_id
  * @property string $upc
@@ -996,6 +1001,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereImages($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereModelNameId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereModelSearchableName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereTag($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereUpc($value)

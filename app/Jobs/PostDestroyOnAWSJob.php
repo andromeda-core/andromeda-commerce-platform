@@ -30,7 +30,7 @@ class PostDestroyOnAWSJob implements ShouldQueue
         if (isset($this->files['images'])) {
             foreach ($this->files['images'] as $image) {
 
-                $relative_path = Str::after($image, '.com/');
+                $relative_path = Str::replaceFirst(config('filesystems.disks.s3.url').'/', '', $image);
 
                 if (Storage::disk('s3')->exists($relative_path)) {
                     Storage::disk('s3')->delete($relative_path);
@@ -39,12 +39,21 @@ class PostDestroyOnAWSJob implements ShouldQueue
         }
 
         if (isset($this->files['videos'])) {
-            foreach ($this->files['videos'] as $video) {
-
-                $relative_path = Str::after($video, '.com/');
+            foreach ($this->files['videos'] as $result) {
+                $video = $result['url'];
+                $relative_path = Str::replaceFirst(config('filesystems.disks.s3.url').'/', '', $video);
 
                 if (Storage::disk('s3')->exists($relative_path)) {
                     Storage::disk('s3')->delete($relative_path);
+                }
+
+                // Isset Logic is Because This is new logic so It wont fail when Old Post Deletes
+                if (isset($result['thumbnail_url'])) {
+                    $thumbnail = $result['thumbnail_url'];
+                    $relative_thumb_path = Str::replaceFirst(config('filesystems.disks.s3.url').'/', '', $thumbnail);
+                    if (Storage::disk('s3')->exists($relative_thumb_path)) {
+                        Storage::disk('s3')->delete($relative_thumb_path);
+                    }
                 }
             }
         }

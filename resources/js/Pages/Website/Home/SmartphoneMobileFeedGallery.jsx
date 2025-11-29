@@ -458,7 +458,7 @@ const SmartphoneMobileGalleryModal = (
                                         >
 
                                             <img
-                                                src={image}
+                                                src={image || placeholderImage}
                                                 alt={`${smartphone.name} ${index + 1}`}
                                                 className="object-cover w-full h-full max-w-full max-h-full"
                                                 loading={"eager"}

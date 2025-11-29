@@ -23,11 +23,9 @@ class PostStoreOnAWSJob implements ShouldQueue
         private Post $post,
         private $post_images_dir = 'Posts/Images/',
         private $post_videos_dir = 'Posts/Videos/',
+        private $post_videos_thumbnails_dir = 'Posts/Videos/Thumbnails/',
     ) {}
 
-    /**
-     * Execute the job.
-     */
     public function handle(): void
     {
 
@@ -42,7 +40,11 @@ class PostStoreOnAWSJob implements ShouldQueue
                 $extension = pathinfo($image, PATHINFO_EXTENSION);
                 $new_name = time().uniqid().'-'.Str::random(10).'.'.$extension;
 
-                Storage::disk('s3')->put($this->post_images_dir.$new_name, file_get_contents($fullLocalPath));
+                Storage::disk('s3')->put($this->post_images_dir.$new_name, file_get_contents($fullLocalPath), [
+                    'CacheControl' => 'public, max-age=31536000',
+                    'ContentType' => mime_content_type($fullLocalPath),
+                ]);
+
                 Storage::disk('local')->delete($image);
 
                 $url = Storage::disk('s3')->url($this->post_images_dir.$new_name);
@@ -58,19 +60,43 @@ class PostStoreOnAWSJob implements ShouldQueue
         }
 
         if (isset($this->files['videos'])) {
-            foreach ($this->files['videos'] as $video) {
+            foreach ($this->files['videos'] as $result) {
+
+                // VIDEO
+                $video = $result['video'];
+
                 $fullLocalPath = Storage::disk('local')->path($video);
 
                 $extension = pathinfo($video, PATHINFO_EXTENSION);
                 $new_name = time().uniqid().'-'.Str::random(10).'.'.$extension;
 
-                Storage::disk('s3')->put($this->post_videos_dir.$new_name, file_get_contents($fullLocalPath));
+                Storage::disk('s3')->put($this->post_videos_dir.$new_name, file_get_contents($fullLocalPath), [
+                    'CacheControl' => 'public, max-age=31536000',
+                    'ContentType' => mime_content_type($fullLocalPath),
+                ]);
                 Storage::disk('local')->delete($video);
 
                 $url = Storage::disk('s3')->url($this->post_videos_dir.$new_name);
+
+                // Thumbnmail
+                $thumbnail = $result['thumbnail'];
+
+                $fullThumbLocalPath = Storage::disk('local')->path($thumbnail);
+                $thumb_ext = pathinfo($thumbnail, PATHINFO_EXTENSION);
+                $new_thumb_name = time().uniqid().'-'.Str::random(10).'.'.$thumb_ext;
+
+                Storage::disk('s3')->put($this->post_videos_thumbnails_dir.$new_thumb_name, file_get_contents($fullThumbLocalPath), [
+                    'CacheControl' => 'public, max-age=31536000',
+                    'ContentType' => mime_content_type($fullThumbLocalPath),
+                ]);
+                Storage::disk('local')->delete($thumbnail);
+
+                $thumb_url = Storage::disk('s3')->url($this->post_videos_thumbnails_dir.$new_thumb_name);
+
                 $videos[] = [
                     'name' => $new_name,
                     'url' => $url,
+                    'thumbnail_url' => $thumb_url,
                 ];
 
             }

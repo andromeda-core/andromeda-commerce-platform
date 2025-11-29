@@ -9,7 +9,7 @@ import React from 'react';
 
 export default function create() {
     // Create Data Form Data
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         name: '',
         symbol: '',
     });
@@ -35,7 +35,7 @@ export default function create() {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Currencies'}
                                     URL={route('dashboard.settings.currencies.index')}

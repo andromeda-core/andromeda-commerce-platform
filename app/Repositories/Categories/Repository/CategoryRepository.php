@@ -11,6 +11,7 @@ use App\Repositories\Categories\Interface\ICategoryRepository;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Encoders\WebpEncoder;
 use Intervention\Image\ImageManager;
 use Str;
 
@@ -54,7 +55,7 @@ class CategoryRepository implements ICategoryRepository
         $validated_req = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:categories,name'],
             'short_description' => ['required', 'string', 'max:255'],
-            'thumbnail' => ['required', 'mimes:jpg,jpeg,png', 'max:5048'],
+            'thumbnail' => ['required', 'mimes:jpg,jpeg,png,webp', 'max:5048'],
             'distributor_id' => ['required', 'exists:distributors,id'],
             'is_active' => ['required', 'boolean'],
         ], [
@@ -98,12 +99,12 @@ class CategoryRepository implements ICategoryRepository
 
                 $image = $request->file('thumbnail');
 
-                $new_name = time().'_'.uniqid().'.'.$image->getClientOriginalExtension();
+                $new_name = time().uniqid().'-'.Str::random(10).'.webp';
+
                 $resizedImage = ImageManager::imagick()
                     ->read($image)
-                    ->resize(1920, 1080)
-                    ->cover(1920, 1080)
-                    ->encodeByExtension($image->getClientOriginalExtension(), quality: 80);
+                    ->scaleDown(1800)
+                    ->encode(new WebpEncoder(quality: 70));
 
                 $tempPath = 'temp/uploads/'.$new_name;
                 Storage::disk('local')->put($tempPath, (string) $resizedImage);
@@ -129,7 +130,7 @@ class CategoryRepository implements ICategoryRepository
         $validated_req = $request->validate([
             'name' => ['required', 'string', 'max:255', 'unique:categories,name,'.$id],
             'short_description' => ['required', 'string', 'max:255'],
-            'thumbnail' => ['required', ...($request->file('thumbnail') instanceof \Illuminate\Http\UploadedFile && $request->hasFile('thumbnail') ? ['mimes:jpg,jpeg,png', 'max:5048'] : [])],
+            'thumbnail' => ['required', ...($request->file('thumbnail') instanceof \Illuminate\Http\UploadedFile && $request->hasFile('thumbnail') ? ['mimes:jpg,jpeg,png,webp', 'max:5048'] : [])],
             'distributor_id' => ['required', 'exists:distributors,id'],
             'is_active' => ['required', 'boolean'],
         ], [
@@ -167,12 +168,12 @@ class CategoryRepository implements ICategoryRepository
 
                 $image = $request->file('thumbnail');
 
-                $new_name = time().'_'.uniqid().'.'.$image->getClientOriginalExtension();
+                $new_name = time().uniqid().'-'.Str::random(10).'.webp';
+
                 $resizedImage = ImageManager::imagick()
                     ->read($image)
-                    ->resize(1920, 1080)
-                    ->cover(1920, 1080)
-                    ->encodeByExtension($image->getClientOriginalExtension(), quality: 80);
+                    ->scaleDown(1800)
+                    ->encode(new WebpEncoder(quality: 70));
 
                 $tempPath = 'temp/uploads/'.$new_name;
                 Storage::disk('local')->put($tempPath, (string) $resizedImage);

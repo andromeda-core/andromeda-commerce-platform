@@ -26,7 +26,7 @@ class SmartphoneDestroyOnAWS implements ShouldQueue
         if (isset($this->files['images'])) {
             foreach ($this->files['images'] as $image) {
 
-                $relative_path = Str::after($image, '.com/');
+                $relative_path = Str::replaceFirst(config('filesystems.disks.s3.url').'/', '', $image);
 
                 if (Storage::disk('s3')->exists($relative_path)) {
                     Storage::disk('s3')->delete($relative_path);

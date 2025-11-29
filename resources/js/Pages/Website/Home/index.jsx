@@ -1,7 +1,7 @@
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, router, usePage } from '@inertiajs/react';
-import React, { Fragment, memo, useEffect, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import QRCode from 'react-qr-code';
 import { createPortal, flushSync } from 'react-dom';
 import axios from 'axios';
@@ -12,11 +12,11 @@ import useSidebarClick from '@/Hooks/useSidebarClick';
 import SmartphoneDesktopModal from './SmartphoneDesktopModal';
 import getCookie from '@/Hooks/useGetCookie';
 import Toast from '@/Components/Toast';
-import VideoThumbnail from '@/Components/VideoThumbnail';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 import PostDesktopModal from './PostDesktopModal';
 import MobileFeed from './MobileFeed';
 import Spinner from '@/Components/Spinner';
+import MasonryFeedItem from './MasonryFeedItem';
 
 
 const index = ({ google_map_api_key }) => {
@@ -47,7 +47,6 @@ const index = ({ google_map_api_key }) => {
     const [bookmarkStatusChanged, setBookmarkStatusChanged] = useState(false);
     const [linkCopied, setLinkCopied] = useState(false);
     const [nextPageUrl, setNextPageUrl] = useState(null);
-    const [hasMoreSmartphones, setHasMoreSmartphones] = useState(false);
 
     const nextPageUrlRef = useRef(null);
     // Initialize with first load
@@ -145,7 +144,6 @@ const index = ({ google_map_api_key }) => {
                 });
 
                 setNextPageUrl(res.data.next_page_url);
-                setHasMoreSmartphones(res.data.has_more_smartphones);
                 setIsFeedLoaded(true);
             });
         } catch (error) {
@@ -371,6 +369,7 @@ const index = ({ google_map_api_key }) => {
             } else {
                 setShowInfoMessage(true);
                 setInfoMessage('Post Not Found');
+                window.history.replaceState({}, '', window.location.pathname);
             }
         } catch (err) {
             setShowErrorMessage(true);
@@ -477,6 +476,7 @@ const index = ({ google_map_api_key }) => {
             } else {
                 setShowInfoMessage(true);
                 setInfoMessage('Smartphone Not Found');
+                window.history.replaceState({}, '', window.location.pathname);
             }
         } catch (err) {
             setShowErrorMessage(true);
@@ -665,9 +665,6 @@ const index = ({ google_map_api_key }) => {
             }
 
             try {
-                const viewBox = svg.getAttribute('viewBox') || '0 0 256 256';
-                const [, , vbWidth, vbHeight] = viewBox.split(' ').map(Number);
-
 
                 const svgClone = svg.cloneNode(true);
                 svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
@@ -968,6 +965,42 @@ const index = ({ google_map_api_key }) => {
 
 
 
+    // Opening Feed Item
+    const handleItemClick = useCallback((item, index) => {
+        feedOpenCountRef.current++;
+        setIsFeedOpeningDirectly(true);
+        setFeedGallery(item);
+        setFeedIndex(index);
+        setFeedOpen(true);
+
+
+        if (item.type === 'posts') {
+            const url = generateURL(item);
+            if (feedOpenCountRef.current === 1) {
+                window.history.replaceState({}, '', url);
+                window.history.pushState({}, '', url);
+            } else {
+                window.history.pushState({}, '', url);
+            }
+        } else {
+            const url = new URL(window.location.href);
+            url.searchParams.set('m-slug', item.slug);
+            if (feedOpenCountRef.current === 1) {
+                window.history.replaceState({}, '', url.toString());
+                window.history.pushState({}, '', url.toString());
+            } else {
+                window.history.pushState({}, '', url.toString());
+            }
+        }
+
+        previousUrlRef.current = window.location.href;
+    }, [generateURL]);
+
+
+
+
+
+
 
 
 
@@ -1037,227 +1070,18 @@ const index = ({ google_map_api_key }) => {
                     {/* Masonry Layout */}
                     <div className="pb-20 sm:pb-20">
                         <div className="mx-auto max-w-8xl sm:px-6 lg:px-8">
-                            {/* Compact Masonry */}
-                            <div className="lg:columns:2 columns-1 gap-1  [column-fill:_balance] min-[300px]:columns-2 md:columns-2 lg:gap-2 xl:columns-4">
-                                {feed.map((item, index) => {
-                                    return (
-                                        <Fragment key={item.id}>
-                                            {item?.type === 'posts' && (
-                                                <article
-                                                    key={item?.id}
-                                                    className="relative mb-1 overflow-hidden transition-all duration-300 rounded-none shadow-md cursor-pointer will-change-transform masonry-item no-touch-hover group break-inside-avoid hover:-translate-y-1 hover:shadow-xl lg:mb-2"
-                                                    style={{ "--i": index, contentVisibility: "auto" }}
-                                                    onClick={() => {
-                                                        feedOpenCountRef.current++;
 
-                                                        // here its stop To Re-runs The Gsap Ticker The because When First opened it
-                                                        setIsFeedOpeningDirectly(true);
-                                                        setFeedGallery(item);
-                                                        setFeedIndex(index);
-                                                        setFeedOpen(true);
-                                                        const url = generateURL(item);
-                                                        if (feedOpenCountRef.current === 1) {
-                                                            window.history.replaceState({}, '', url);
-                                                            window.history.pushState({}, '', url);
-                                                        } else {
-                                                            window.history.pushState({}, '', url);
-                                                        }
-
-                                                        previousUrlRef.current = window.location.href;
-                                                    }}
-                                                >
-                                                    {item?.images ? (
-                                                        <div className="relative">
-                                                            <img
-                                                                src={item?.images[0]?.url}
-                                                                alt={item?.title}
-                                                                loading="lazy"
-                                                                decoding="async"
-                                                                fetchpriority="low"
-                                                                onError={(e) =>
-                                                                    (e.target.src = Placeholder)
-                                                                }
-                                                                className="w-full object-cover text-[10px] text-gray-700 transition-all duration-500 group-hover:scale-105 dark:text-white/80 dark:opacity-80"
-                                                            />
-
-                                                            {/* Title */}
-                                                            <div className="absolute left-3 top-3">
-                                                                <span className="text-[8px] text-white drop-shadow-md sm:text-[9px] md:text-[10px] lg:text-[17px]">
-                                                                    {item?.tag}
-                                                                </span>
-                                                            </div>
-
-                                                            {/* Title + Meta */}
-                                                            <div className="absolute inset-x-0 bottom-0 p-4">
-                                                                <div className="mt-1 flex items-center justify-between text-[8px] font-bold text-gray-200 drop-shadow-sm sm:text-[9px] md:text-[10px] lg:text-[17px]">
-                                                                    <span className="text-white drop-shadow-md">
-                                                                        {item?.title.length > 25
-                                                                            ? item?.title.slice(
-                                                                                0,
-                                                                                25,
-                                                                            ) + '...'
-                                                                            : item?.title}
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    ) : !item?.images && item?.videos ? (
-                                                        <>
-                                                            <div className="relative">
-                                                                <VideoThumbnail
-                                                                    key={`${index}-${item?.post_video_urls[0]}`}
-                                                                    videoUrl={
-                                                                        item?.post_video_urls[0]
-                                                                    }
-                                                                    alt={item?.title}
-                                                                    className="w-full object-cover text-[10px] text-gray-700 transition-all duration-500 group-hover:scale-105 dark:text-white/80 dark:opacity-80"
-                                                                />
-
-                                                                {/* Title */}
-                                                                <div className="absolute left-3 top-3">
-                                                                    <span className="text-[8px] text-white drop-shadow-md sm:text-[9px] md:text-[10px] lg:text-[17px]">
-                                                                        {item?.tag}
-                                                                    </span>
-                                                                </div>
-
-                                                                {/* Title + Meta */}
-                                                                <div className="absolute inset-x-0 bottom-0 p-4">
-                                                                    <div className="mt-1 flex items-center justify-between text-[8px] font-bold text-gray-200 drop-shadow-sm sm:text-[9px] md:text-[10px] lg:text-[17px]">
-                                                                        <span className="text-white drop-shadow-md">
-                                                                            {item?.title.length > 25
-                                                                                ? item?.title.slice(
-                                                                                    0,
-                                                                                    25,
-                                                                                ) + '...'
-                                                                                : item?.title}
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            {/* /* Text-only */}
-                                                            <div className="relative flex flex-col justify-between bg-[#F2F2F2] p-5 text-gray-700 dark:bg-[#485260] dark:text-white/80">
-                                                                <div className="flex items-center justify-between">
-                                                                    <span className="mb-3 text-[8px] drop-shadow-md sm:text-[9px] md:text-[10px] lg:text-[17px]">
-                                                                        {item?.tag}
-                                                                    </span>
-                                                                </div>
-
-                                                                <div>
-                                                                    <p className="line-clamp-5 text-[8px] opacity-90 sm:text-[9px] md:text-[10px] lg:text-[17px]">
-                                                                        {item.content.length >
-                                                                            400 ? (
-                                                                            <span
-                                                                                dangerouslySetInnerHTML={{
-                                                                                    __html:
-                                                                                        item?.content.substring(
-                                                                                            0,
-                                                                                            400,
-                                                                                        ) + '...',
-                                                                                }}
-                                                                            ></span>
-                                                                        ) : (
-                                                                            <span
-                                                                                dangerouslySetInnerHTML={{
-                                                                                    __html: item?.content,
-                                                                                }}
-                                                                            ></span>
-                                                                        )}
-                                                                    </p>
-                                                                </div>
-                                                                <div className="mt-1 flex items-center justify-between text-[8px] font-medium drop-shadow-sm sm:text-[9px] md:text-[10px] lg:text-[17px]">
-                                                                    <span>
-                                                                        {item?.title.length > 20
-                                                                            ? item?.title.slice(
-                                                                                0,
-                                                                                20,
-                                                                            ) + '...'
-                                                                            : item?.title}
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                        </>
-                                                    )}
-                                                </article>
-                                            )}
-
-                                            {item?.type === 'smartphones' && (
-                                                <article
-                                                    key={item?.id}
-                                                    className="relative mb-1 overflow-hidden transition-all duration-300 rounded-none shadow-md cursor-pointer will-change-transform no-touch-hover group break-inside-avoid hover:-translate-y-1 hover:shadow-xl"
-                                                    style={{ "--i": index, contentVisibility: "auto" }}
-                                                    onClick={() => {
-                                                        feedOpenCountRef.current++;
-                                                        // here its stop To Re-runs The Gsap Ticker The because When First opened it
-                                                        setIsFeedOpeningDirectly(true);
-                                                        setFeedGallery(item);
-                                                        setFeedIndex(index);
-                                                        setFeedOpen(true);
-                                                        const url = new URL(window.location.href);
-                                                        url.searchParams.set('m-slug', item.slug);
-                                                        if (feedOpenCountRef.current === 1) {
-                                                            window.history.replaceState({}, '', url.toString());
-                                                            window.history.pushState({}, '', url.toString());
-                                                        } else {
-                                                            window.history.pushState({}, '', url.toString());
-                                                        }
-
-
-                                                        previousUrlRef.current = url;
-                                                    }}
-                                                >
-                                                    <div className="relative">
-                                                        <img
-                                                            src={item.images?.[0]}
-                                                            alt={item.name}
-                                                            loading="lazy"
-                                                            decoding="async"
-                                                            fetchpriority="low"
-                                                            onError={(e) =>
-                                                                (e.target.src = Placeholder)
-                                                            }
-                                                            className="object-cover w-full transition-all duration-500 group-hover:scale-105 dark:opacity-80"
-                                                        />
-
-                                                        <div className="absolute left-3 top-3">
-                                                            <span className="text-[8px] text-white drop-shadow-md sm:text-[9px] md:text-[10px] lg:text-[17px]">
-                                                                {item?.tag}
-                                                            </span>
-                                                        </div>
-
-                                                        {/* Overlay */}
-                                                        <div className="absolute inset-x-0 bottom-0 p-3 bg-transparent">
-                                                            <div className="mt-2 flex items-center justify-between text-[8px] font-bold text-gray-200 drop-shadow-sm sm:text-[9px] md:text-[10px] lg:text-[17px]">
-                                                                <span className="text-white">
-                                                                    {item.name.length > 20
-                                                                        ? item.name.slice(0, 20) +
-                                                                        '...'
-                                                                        : item.name}{' '}
-                                                                    (
-                                                                    {item.capacity.length > 10
-                                                                        ? item.capacity.slice(
-                                                                            0,
-                                                                            10,
-                                                                        ) + '...'
-                                                                        : item.capacity}
-                                                                    )
-                                                                </span>
-
-                                                                <span>
-                                                                    {item.selling_info?.total_price
-                                                                        ? `${currency?.symbol} ${item.selling_info.total_price}`
-                                                                        : ''}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </article>
-                                            )}
-                                        </Fragment>
-                                    );
-                                })}
+                            <div className="lg:columns-2 columns-1 gap-1 [column-fill:_balance] min-[300px]:columns-2 md:columns-2 lg:gap-2 xl:columns-4">
+                                {feed.map((item, index) => (
+                                    <MasonryFeedItem
+                                        key={`${item.type}-${item.id}`}
+                                        item={item}
+                                        index={index}
+                                        onClick={() => handleItemClick(item, index)}
+                                        Placeholder={Placeholder}
+                                        currency={currency}
+                                    />
+                                ))}
                             </div>
 
                             {isFeedLoaded && feed.length === 0 && (
@@ -1437,6 +1261,8 @@ const index = ({ google_map_api_key }) => {
                             )}
                         </div>
                     </div>
+
+
 
                     {/* PC Feed  */}
                     {windowSize.width > 1024 && feedOpen && feedGallery !== null && (

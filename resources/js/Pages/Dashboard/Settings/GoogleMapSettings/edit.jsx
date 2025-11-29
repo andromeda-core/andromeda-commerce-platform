@@ -9,7 +9,7 @@ import React from 'react';
 
 export default function edit({ google_map_setting }) {
     // Edit Data Form Data
-    const { data, setData, put, processing, errors, reset } = useForm({
+    const { data, setData, put, processing, errors } = useForm({
         google_map_api_key: google_map_setting?.google_map_api_key || '',
         google_map_id: google_map_setting?.google_map_id || '',
     });
@@ -35,7 +35,7 @@ export default function edit({ google_map_setting }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Google Map Settings'}
                                     URL={route('dashboard.settings.google-map-settings.index')}

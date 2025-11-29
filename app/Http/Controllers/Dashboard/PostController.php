@@ -38,6 +38,8 @@ class PostController extends Controller implements HasMiddleware
 
         $posts = $this->post->getAllPosts($request);
 
+        // return $posts;
+
         return Inertia::render('Dashboard/Posts/index', compact('posts'));
     }
 
@@ -63,6 +65,7 @@ class PostController extends Controller implements HasMiddleware
 
     public function show(Request $request, ?string $slug = null)
     {
+
         if (empty($slug)) {
             return to_route('dashboard.posts.index')->with('error', 'Post Slug Not Found');
         }
@@ -172,7 +175,7 @@ class PostController extends Controller implements HasMiddleware
             return back()->with('error', $toggled['message']);
         }
 
-        return back()->with('success', $toggled['message']);
+        return back();
 
     }
 }

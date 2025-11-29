@@ -19,7 +19,7 @@ class PayemntProofStoreOnAWS implements ShouldQueue
     public $timeout = 300;
 
     public function __construct(
-        private string $image,
+        private ?string $image,
         private Order $order,
         private $payment_proof_dir = 'Orders/PaymentProofs/',
     ) {}

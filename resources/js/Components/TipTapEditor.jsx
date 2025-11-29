@@ -12,20 +12,20 @@ import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
 import Strike from '@tiptap/extension-strike';
 
-const FontSizeTextStyle = TextStyle.extend({
-    addAttributes() {
-        return {
-            fontSize: {
-                default: null,
-                parseHTML: (element) => element.style.fontSize,
-                renderHTML: (attributes) => {
-                    if (!attributes.fontSize) return {};
-                    return { style: `font-size: ${attributes.fontSize}` };
-                },
-            },
-        };
-    },
-});
+// const FontSizeTextStyle = TextStyle.extend({
+//     addAttributes() {
+//         return {
+//             fontSize: {
+//                 default: null,
+//                 parseHTML: (element) => element.style.fontSize,
+//                 renderHTML: (attributes) => {
+//                     if (!attributes.fontSize) return {};
+//                     return { style: `font-size: ${attributes.fontSize}` };
+//                 },
+//             },
+//         };
+//     },
+// });
 
 const CustomBold = Bold.extend({
     renderHTML({ HTMLAttributes }) {
@@ -81,8 +81,7 @@ export default function TipTapEditor({ Label, Id, Action, Value, Required = fals
     if (!editor) return null;
 
     const buttonClass = (isActive) =>
-        `w-10 rounded-md border px-2 py-1 dark:border-gray-600 dark:bg-deepcharcoal dark:text-black ${
-            isActive ? 'bg-indigo-100 dark:bg-white  font-bold' : 'bg-white dark:text-white'
+        `w-10 rounded-md border px-2 py-1 dark:border-gray-600 dark:bg-deepcharcoal dark:text-black ${isActive ? 'bg-indigo-100 dark:bg-white  font-bold' : 'bg-white dark:text-white'
         }`;
 
     return (
@@ -90,16 +89,16 @@ export default function TipTapEditor({ Label, Id, Action, Value, Required = fals
             {Label && (
                 <label
                     htmlFor={Id}
-                    className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
                     {Label}{' '}
                     {Required ? <span className="text-red-500 dark:text-white"> *</span> : ''}
                 </label>
             )}
 
-            <div className="rounded-lg p-2 shadow-2xl dark:bg-deepcharcoal">
+            <div className="p-2 rounded-lg shadow-2xl dark:bg-deepcharcoal">
                 {/* Toolbar */}
-                <div className="m-1 flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 m-1">
                     <button
                         type="button"
                         onClick={() => editor.chain().focus().toggleBold().run()}

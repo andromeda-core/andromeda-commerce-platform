@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback, memo } from 'react';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import GlobalSearch from '@/Components/GlobalSearch';
 import Toast from '@/Components/Toast';
 import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
+import { useConfirm } from '@/Hooks/useConfirm';
 
 // Memoized result item component
 const ResultItem = memo(({ item, onCopyLink, generateURL }) => {
@@ -16,7 +17,9 @@ const ResultItem = memo(({ item, onCopyLink, generateURL }) => {
                     : route('home') + '?m-slug=' + item.slug
             }
             target='_blank'
-            onClick={() => window.history.replaceState({}, '', route('home'))}
+            onClick={() =>
+                window.history.replaceState({}, '', route('home')
+                )}
             className="flex items-center gap-4 px-6 py-4 transition-colors cursor-pointer group hover:bg-gray-50 dark:hover:bg-gray-800/80"
         >
             {/* Thumbnail */}
@@ -26,18 +29,26 @@ const ResultItem = memo(({ item, onCopyLink, generateURL }) => {
                         src={item.image}
                         alt={item.title || item.name}
                         className="object-cover w-full h-full"
-                        onError={(e) => (e.target.src = Placeholder)}
+                        onError={(e) => e.target.src = Placeholder}
+                    />
+                ) : !item?.image && item?.video_thumbnail && item?.type === 'posts' ? (
+                    <img
+                        src={item?.video_thumbnail}
+                        alt={item?.title}
                         loading="lazy"
+                        decoding="async"
+                        onError={(e) => (e.target.src = Placeholder)}
+                        className="w-full object-cover text-[10px] text-gray-700 transition-all duration-500 group-hover:scale-105 dark:text-white/80 dark:opacity-80"
                     />
                 ) : (
-                    <div className="flex items-center justify-center h-full text-gray-400">
+                    <div className="flex items-center justify-center h-full text-sm text-white/80">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
                             strokeWidth={1.5}
                             stroke="currentColor"
-                            className="w-6 h-6"
+                            className="size-6"
                         >
                             <path
                                 strokeLinecap="round"
@@ -393,38 +404,55 @@ const Index = ({
     }, [state.activeTab, state.historyNextPageUrl, state.historyResultsCache, state.isFetchingMore]);
 
     // Delete search history
+    const { confirm, ConfirmDialog } = useConfirm();
     const deleteSearchHistory = useCallback(async (id) => {
-        updateState({ searchHistoryLoading: true });
+
 
         try {
-            const res = await axios.delete(
-                route('website.global-search.search-history-destroy', { id })
-            );
+            const result = await confirm({
+                title: 'Are You Sure You Want To Delete Your Search History?',
+                text: "You Won't Be Able To Revert This!",
+                icon: 'danger',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Delete it!',
+                cancelButtonText: 'Cancel'
+            });
 
-            if (res.data.status) {
-                setState(prev => {
-                    const updatedHistories = prev.searchHistories.filter(h => h.id !== id);
-                    const newCache = { ...prev.historyResultsCache };
-                    delete newCache[id];
+            if (result.isConfirmed) {
+                updateState({ searchHistoryLoading: true });
+                const res = await axios.delete(
+                    route('website.global-search.search-history-destroy', { id })
+                );
 
-                    const updates = {
-                        searchHistories: updatedHistories,
-                        historyResultsCache: newCache,
-                        searchHistoryLoading: false
-                    };
+                if (res.data.status) {
+                    setState(prev => {
+                        const updatedHistories = prev.searchHistories.filter(h => h.id !== id);
+                        const newCache = { ...prev.historyResultsCache };
+                        delete newCache[id];
 
-                    if (prev.activeTab === id) {
-                        updates.activeTab = 'all';
-                        scrollContainerRef.current?.scrollTo(0, 0);
+                        const updates = {
+                            searchHistories: updatedHistories,
+                            historyResultsCache: newCache,
+                            searchHistoryLoading: false
+                        };
+
+                        if (prev.activeTab === id) {
+                            updates.activeTab = 'all';
+                            scrollContainerRef.current?.scrollTo(0, 0);
+                        }
+
+                        return { ...prev, ...updates };
+                    });
+
+                    if (state.activeTab === id && state.historyResults.length === 0) {
+                        fetchHistoryResults();
                     }
-
-                    return { ...prev, ...updates };
-                });
-
-                if (state.activeTab === id && state.historyResults.length === 0) {
-                    fetchHistoryResults();
                 }
             }
+
+            return;
+
+
         } catch (e) {
             updateUiState({
                 errorMessage: e.message || 'Something went wrong',
@@ -715,6 +743,8 @@ const Index = ({
         <MainLayout>
             <Head title="Search" />
 
+            <ConfirmDialog />
+
             {(uiState.showErrorMessage || uiState.showInfoMessage) && (
                 <Toast
                     flash={{
@@ -740,7 +770,7 @@ const Index = ({
             />
 
             <div className="pb-20 sm:px-6 sm:pb-20 lg:px-8">
-                <div className="px-3 text-gray-900 bg-gray-50 rounded-xl dark:bg-deepcharcoal dark:text-gray-100 sm:px-6 lg:px-8">
+                <div className="px-3 text-gray-900 border border-gray-200 bg-gray-50 rounded-xl dark:bg-deepcharcoal dark:border-gray-700 dark:text-gray-100 sm:px-6 lg:px-8">
                     {/* Header with Tabs */}
                     <div className="px-0 py-4 border-b border-gray-200 dark:border-slate-700">
                         <div className="relative flex items-center gap-2">
@@ -774,7 +804,7 @@ const Index = ({
                                 ref={scrollContainerRef}
                                 className="flex items-center flex-1 gap-3 px-1 overflow-x-auto scrollbar-none"
                                 style={{
-                                    transform: 'translateZ(0)', // ✅ Only on the scrolling container
+                                    transform: 'translateZ(0)',
                                     WebkitOverflowScrolling: 'touch'
                                 }}
                             >
@@ -943,7 +973,7 @@ const Index = ({
 
                     {/* Match Types Row */}
                     {matchTypes.length > 0 && (
-                        <div className="px-0 py-2 border-b border-gray-200 dark:border-slate-700 flex items-center gap-3">
+                        <div className="flex items-center gap-3 px-0 py-2 border-b border-gray-200 dark:border-slate-700">
                             {/* Active Filters Display */}
                             {state.activeTab !== 'all' && (() => {
                                 const { address, radius, from_floor_id, to_floor_id, date_range } =
@@ -1027,7 +1057,7 @@ const Index = ({
                             {state.activeMatchType && (
                                 <button
                                     onClick={() => updateState({ activeMatchType: null })}
-                                    className="ml-3 text-xs px-3 py-1 rounded-full bg-red-500 text-white transition-colors"
+                                    className="px-3 py-1 ml-3 text-xs text-white transition-colors bg-red-500 rounded-full"
                                     aria-label="Clear match type filter"
                                 >
                                     Clear

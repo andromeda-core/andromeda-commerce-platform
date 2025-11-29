@@ -21,7 +21,7 @@ const VideoThumbnail = ({ videoUrl, alt, className, Loading = 'lazy', FetchPrior
             canvas.height = video.videoHeight;
 
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const imageData = canvas.toDataURL('image/jpeg');
+            const imageData = canvas.toDataURL('image/webp');
             setThumbnail(imageData);
         };
 

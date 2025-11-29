@@ -12,6 +12,7 @@ class AwsSetting extends Model
         'aws_secret_access_key',
         'aws_region',
         'aws_bucket',
+        'aws_url',
         'is_active',
     ];
 

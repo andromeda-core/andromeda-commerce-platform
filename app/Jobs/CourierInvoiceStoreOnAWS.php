@@ -32,7 +32,10 @@ class CourierInvoiceStoreOnAWS implements ShouldQueue
         $fullLocalPath = Storage::disk('local')->path($this->file);
         $extension = pathinfo($this->file, PATHINFO_EXTENSION);
         $new_name = time().uniqid().'-'.Str::random(10).'.'.$extension;
-        Storage::disk('s3')->put($this->courier_invoice_dir.$new_name, file_get_contents($fullLocalPath));
+        Storage::disk('s3')->put($this->courier_invoice_dir.$new_name, file_get_contents($fullLocalPath), [
+            'CacheControl' => 'public, max-age=31536000',
+            'ContentType' => mime_content_type($fullLocalPath),
+        ]);
         Storage::disk('local')->delete($this->file);
 
         $url = Storage::disk('s3')->url($this->courier_invoice_dir.$new_name);

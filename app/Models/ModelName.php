@@ -18,8 +18,21 @@ class ModelName extends Model
     }
 
     // RelationShips
-    public function smartphone(): HasMany
+    public function smartphones(): HasMany
     {
         return $this->hasMany(Smartphone::class, 'model_name_id', 'id');
+    }
+
+    // Static Booting
+    protected static function booted()
+    {
+        static::updated(function ($model) {
+            if ($model->isDirty('name')) {
+                $model->smartphones()->update([
+                    'model_searchable_name' => $model->name,
+                ]);
+            }
+
+        });
     }
 }

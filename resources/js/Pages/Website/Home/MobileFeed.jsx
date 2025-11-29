@@ -1,14 +1,14 @@
-import VideoWithThumbnail from '@/Components/VideoWithThumbnail';
-import getCookie from '@/Hooks/useGetCookie';
 import { router } from '@inertiajs/react';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal, flushSync } from 'react-dom';
 import gsap from 'gsap';
 import MobileFeedGallery from './MobileFeedGallery';
 import useDarkMode from '@/Hooks/useDarkMode';
 import Spinner from '@/Components/Spinner';
 import { useFilterStore } from '@/Hooks/useFilterStore';
+import { useVideoStore } from '@/Hooks/useVideoStore';
 import { useHomeNavStore } from '@/Hooks/useHomeNavStore';
+import InstagramStyledVideoPlayer from '@/Components/InstagramStyledVideoPlayer';
 
 
 const MobileFeed = ({
@@ -39,6 +39,12 @@ const MobileFeed = ({
 }) => {
 
 
+    useEffect(() => {
+        const url = new URL(window.location);
+        window.history.pushState({}, '', url.toString());
+    }, []);
+
+
     // Local feed state for seamless looping
     const [localFeed, setLocalFeed] = useState([]);
 
@@ -59,7 +65,7 @@ const MobileFeed = ({
     const scrollContainerRef = useRef(null);
     const actionDropdownRef = useRef(null);
     const [actionDropdownOpen, setActionDropdownOpen] = useState(null);
-    const [videoAutoplay, setVideoAutoplay] = useState(false);
+
 
     // SCROLLING TRACKING REFS
     const hasInitializedScroll = useRef(false);
@@ -74,6 +80,12 @@ const MobileFeed = ({
     const lastHorizontalUpdateRef = useRef({});
     const hasInitializedHorizontalRef = useRef(false);
     const isXLoopingRef = useRef(false);
+
+    // Preserving X axis Scroll State Ref
+    const preserveXAxisScrollRef = useRef({});
+
+    // Restricting X Axis Ticker to run if Scroll Restoring
+    const isXAxisRestoringRef = useRef(false);
 
     // X Axis Scroll INDEX STORING REF
     const initializedXAxisRef = useRef(new Set());
@@ -103,79 +115,13 @@ const MobileFeed = ({
 
     const isDarkMode = useDarkMode();
 
-    const videoRefs = useRef({});
+    // Video Player Control Zustand Hook Methods
+    const setActiveVideo = useVideoStore(state => state.setActiveVideo);
+    const pauseAll = useVideoStore(state => state.pauseAll);
+    const videoAutoplay = useVideoStore(state => state.autoplay);
+    const setAutoplay = useVideoStore(state => state.setAutoplay);
+    const initAutoplay = useVideoStore(state => state.initAutoplay);
 
-    // Pause all videos except the one in the current viewport
-    const pauseAllVideosExceptCurrent = (currentIndex) => {
-        const container = scrollContainerRef.current;
-        if (!container) return;
-
-        // Get all feed items
-        const feedItems = container.querySelectorAll('.snap-start');
-
-        feedItems.forEach((feedItem, index) => {
-            const videos = feedItem.querySelectorAll('video');
-
-            videos.forEach((video) => {
-                // Pause videos that are not in the current feed item
-                if (index !== currentIndex) {
-                    video.pause();
-                }
-            });
-        });
-    };
-
-
-    // Parent Function To Pause Video
-    const pauseVideoAtSlug = (slug) => {
-
-        const videoRef = videoRefs.current[slug];
-
-        if (videoRef?.current) {
-            videoRef.current.pause();
-            return;
-        }
-        // console.warn(`⚠️ Ref not found, trying DOM query for: ${slug}`);
-        // const container = scrollContainerRef.current;
-        // if (container) {
-        //     const videos = container.querySelectorAll('video');
-        //     videos.forEach(video => {
-        //         const videoContainer = video.closest('.feed-page');
-        //         if (videoContainer) {
-        //             if (!video.paused) {
-        //                 video.pause();
-        //             }
-        //         }
-        //     });
-        // }
-    };
-
-    // const pauseAllVideos = () => {
-    //     Object.keys(videoRefs.current).forEach(index => {
-    //         pauseVideoAtIndex(parseInt(index));
-    //     });
-    // };
-
-    // Function to pause current video (for gallery open)
-    const pauseCurrentVideo = (slug) => {
-
-        pauseVideoAtSlug(slug);
-    };
-
-
-
-    // Function Add Video Refs From render Feed
-    const handleVideoRef = useCallback((itemKey) => {
-        return (videoElement) => {
-
-            if (!videoRefs.current[itemKey]) {
-                videoRefs.current[itemKey] = { current: null };
-            }
-            videoRefs.current[itemKey].current = videoElement;
-
-
-        };
-    }, []);
 
 
     // Helper Function to Get Related Feed Count
@@ -294,10 +240,10 @@ const MobileFeed = ({
             if (!items || items.length === 0 || !parentFeedSlugRef.current) return items;
 
             const slug = parentFeedSlugRef.current;
-            const relatedCount = getRelatedCount(slug);
+            // const relatedCount = getRelatedCount(slug);
 
             // No related items, return as-is
-            if (relatedCount < 1) return items;
+            // if (relatedCount < 1) return items;
 
             // Has related items, add dummies
             return [
@@ -313,12 +259,27 @@ const MobileFeed = ({
     // Helper function to render a single feed item (used for both main and related items)
     const renderFeedItem = useCallback((item, isRelated = false, index) => {
 
-        const relatedCount = getRelatedCount(parentFeedSlugRef.current);
+        // const relatedCount = getRelatedCount(parentFeedSlugRef.current);
 
         const headerHeight = 0.;
 
 
-        if (relatedCount < 1 && item?.__dummy) {
+        // if (relatedCount < 1 && item?.__dummy) {
+        //     return (
+        //         <div
+        //             key={index}
+        //             className="min-w-full snap-start"
+        //             style={{
+        //                 height: "100%",
+        //                 opacity: 0,
+        //                 pointerEvents: "none",
+        //                 userSelect: "none",
+        //             }}
+        //             aria-hidden="true"
+        //         />
+        //     );
+        // }
+        if (item?.__dummy) {
             return (
                 <div
                     key={index}
@@ -335,6 +296,7 @@ const MobileFeed = ({
         }
 
 
+
         const plain = item?.content ? item.content.replace(/<[^>]+>/g, '') : null;
 
         const charsPerLine = 80;
@@ -348,9 +310,28 @@ const MobileFeed = ({
 
 
 
-        const isLoaded = isTextPost || loadedItems.has(item?.slug);
 
         const isCurrent = item?.slug === manualFeedGalleryItem?.slug;
+
+
+        const currentIndex = localFeed.findIndex(f => f.slug === manualFeedGalleryItem?.slug);
+        const thisItemIndex = localFeed.findIndex(f => f.slug === item?.slug);
+        const isAdjacent = Math.abs(currentIndex - thisItemIndex) <= 1;
+
+
+
+
+        const shouldEagerLoad = isCurrent || isAdjacent;
+
+
+
+        const hasVideo = item.type === 'posts' && item.post_video_urls?.length > 0;
+        const hasPoster = hasVideo && item.post_video_urls[0]?.thumbnail_url;
+
+
+        const isLoaded = isTextPost ||
+            loadedItems.has(item?.slug) ||
+            hasPoster;
 
         const handleOnLoad = () => {
             if (item?.slug) {
@@ -567,9 +548,7 @@ const MobileFeed = ({
                                                 className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-zinc-800"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    setVideoAutoplay(
-                                                        (prev) => !prev,
-                                                    );
+                                                    setAutoplay(!videoAutoplay);
 
 
                                                 }}
@@ -668,11 +647,11 @@ const MobileFeed = ({
                                 {item?.images?.length > 0 && (
                                     <img
                                         key={item.id}
-                                        src={item.images[0]}
+                                        src={item.images[0] || placeholderImage}
                                         alt={item.name}
                                         className="object-cover object-center w-full h-full rounded-none will-change-transform"
-                                        loading={isCurrent ? "eager" : "lazy"}
-                                        fetchpriority={isCurrent ? "high" : "low"}
+                                        loading={shouldEagerLoad ? "eager" : "lazy"}
+                                        fetchpriority={shouldEagerLoad ? "high" : "low"}
                                         decoding="async"
                                         onLoad={handleOnLoad}
                                         onError={(e) => {
@@ -691,11 +670,11 @@ const MobileFeed = ({
                                 {item?.post_image_urls?.length > 0 ? (
                                     <img
                                         key={item.id}
-                                        src={item.post_image_urls[0]}
+                                        src={item.post_image_urls[0] || placeholderImage}
                                         alt={item.title}
                                         className="object-cover object-center w-full h-full rounded-none"
-                                        loading={isCurrent ? "eager" : "lazy"}
-                                        fetchpriority={isCurrent ? "high" : "low"}
+                                        loading={shouldEagerLoad ? "eager" : "lazy"}
+                                        fetchpriority={shouldEagerLoad ? "high" : "low"}
                                         decoding="async"
                                         onLoad={handleOnLoad}
                                         onError={(e) => {
@@ -706,20 +685,18 @@ const MobileFeed = ({
                                         }}
                                     />
                                 ) : item.post_video_urls.length > 0 ? (
-                                    <VideoWithThumbnail
-                                        type='instagram'
-                                        videoUrl={item.post_video_urls[0]}
-                                        className="object-cover object-center w-full h-full rounded-none"
-                                        autoPlay={videoAutoplay}
-                                        controls={true}
+                                    <InstagramStyledVideoPlayer
+                                        slug={item.slug}
+                                        videoUrl={item.post_video_urls[0].url}
+                                        thumbnail={item.post_video_urls[0]?.thumbnail_url}
+                                        className="object-cover object-center w-full h-full"
                                         OnLoadedMetaData={() => {
-                                            if (item?.slug) {
-                                                setLoadedItems(prev => new Set(prev).add(item.slug));
-                                            }
+                                            if (item.slug) setLoadedItems(prev => new Set(prev).add(item.slug));
                                         }}
-                                        videoElementRef={handleVideoRef(item.slug)}
-                                        Preload={isCurrent ? 'auto' : 'metadata'}
+                                        Preload={shouldEagerLoad ? "metadata" : "none"}
                                     />
+
+
                                 ) : (
                                     item.post_image_urls.length === 0 &&
                                     item.post_video_urls.length === 0 && (
@@ -839,7 +816,6 @@ const MobileFeed = ({
                                         setMobileFeedGalleryOpening(true);
 
                                         setTimeout(() => {
-                                            pauseCurrentVideo(item?.slug);
                                             setMobileFeedGalleryOpen(true);
                                             setMobileFeedGalleryOpening(false);
                                         }, 500);
@@ -858,7 +834,7 @@ const MobileFeed = ({
 
             </div>
         );
-    }, [videoAutoplay, mobileFeedGalleryOpening, actionDropdownOpen, isDarkMode, loadedItems]);
+    }, [videoAutoplay, mobileFeedGalleryOpening, actionDropdownOpen, isDarkMode, loadedItems, localFeed]);
 
 
     // Tracking GLobal Filter Open Or Not
@@ -870,8 +846,6 @@ const MobileFeed = ({
             isFilterOpenRef.current = state.isOpen;
         });
     }, []);
-
-
 
 
 
@@ -904,7 +878,6 @@ const MobileFeed = ({
     }, [localFeed]);
 
 
-
     // SETTING THE PARENT SLUG ON MOUNT
     useEffect(() => {
         if (!feedGallery) return;
@@ -918,15 +891,12 @@ const MobileFeed = ({
         setLocalFeed(feed);
     }, [feed]);
 
-
     // SETTING ACTUAl RELATED FEED IN THIS JUST TO APPEND OR PREPEND FEED WHEN LOOPING So IT WONT DISTRUB ACTUAL FEED
-
     useEffect(() => {
         localRelatedFeedRef.current = relatedFeed;
     }, [relatedFeed]);
 
-
-
+    // DROPDOWN Auto Closing LOGIC
     useEffect(() => {
         if (!scrollContainerRef.current) return;
 
@@ -966,20 +936,6 @@ const MobileFeed = ({
         return () => container.removeEventListener("mousedown", handleClick);
     }, [actionDropdownOpen]);
 
-
-    // VIDEO AUTO PLAY COOKIE  FETCHING
-    useEffect(() => {
-        const saved = getCookie('video_autoplay');
-        if (saved !== null) setVideoAutoplay(saved === 'true');
-    }, []);
-
-    // VIDEO AUTO PLAY COOKIE STORING AND SETTING
-    useEffect(() => {
-        const expires = new Date(Date.now() + 365 * 864e5).toUTCString();
-        document.cookie = `${'video_autoplay'}=${encodeURIComponent(videoAutoplay)}; expires=${expires}; path=/`;
-        window.dispatchEvent(new Event('videoAutoplayChanged'));
-    }, [videoAutoplay]);
-
     // Scroll to the currently selected feed item on mount or index change In Y Axis
     useEffect(() => {
 
@@ -1015,34 +971,57 @@ const MobileFeed = ({
         });
     }, []);
 
-
-    // Fallback X-axis alignment + looping flag management
+    // MODIFIED: Fallback X-axis alignment - only run for NEW rows
     useEffect(() => {
-
         if (!isScrollCompleted) return;
-
 
         const currentItem = localFeed[feedIndex];
         if (!currentItem) return;
 
         const relatedCount = getRelatedCount(currentItem.slug);
-        if (relatedCount < 1) {
-            // No related items, but still enable looping for future items
-            hasInitializedHorizontalRef.current = true;
-            return;
-        }
 
-        // If already initialized, just ensure looping is enabled
+        // If already initialized, restore position
         if (initializedXAxisRef.current.has(currentItem.id)) {
             hasInitializedHorizontalRef.current = true;
+
+            const row = horizontalRefs.current[feedIndex];
+            if (row && preserveXAxisScrollRef.current[feedIndex] !== undefined) {
+
+                // Block ticker during restoration
+                isXAxisRestoringRef.current = true;
+
+                requestAnimationFrame(() => {
+                    row.style.scrollBehavior = "auto";
+
+                    const storedPosition = preserveXAxisScrollRef.current[feedIndex];
+                    const itemWidth = row.offsetWidth;
+                    const relatedItems = getRelatedItems(currentItem);
+                    const totalItems = relatedItems.length;
+
+                    // Safe zone for ALL feeds (now they all have dummies)
+                    const minSafe = itemWidth * 1.2;
+                    const maxSafe = itemWidth * (totalItems - 0.2);
+
+                    const safePosition = Math.max(minSafe, Math.min(maxSafe, storedPosition));
+
+                    row.scrollLeft = safePosition;
+
+                    requestAnimationFrame(() => {
+                        row.style.scrollBehavior = "smooth";
+
+                        setTimeout(() => {
+                            isXAxisRestoringRef.current = false;
+                        }, 150);
+                    });
+                });
+            }
             return;
         }
 
-
+        // Initialize ALL feeds the same way
         const row = horizontalRefs.current[feedIndex];
         if (!row) return;
 
-        // Wait for children to be ready
         const checkAndAlign = () => {
             if (row.children.length < 2) {
                 requestAnimationFrame(checkAndAlign);
@@ -1062,7 +1041,10 @@ const MobileFeed = ({
             }
 
             row.style.scrollBehavior = "auto";
-            row.scrollLeft = width;
+            row.scrollLeft = width; // ALL feeds start at index 1 now
+
+            preserveXAxisScrollRef.current[feedIndex] = width;
+
             initializedXAxisRef.current.add(currentItem.id);
             hasInitializedHorizontalRef.current = true;
         };
@@ -1070,15 +1052,6 @@ const MobileFeed = ({
         checkAndAlign();
 
     }, [feedIndex, isScrollCompleted, localFeed]);
-
-
-
-
-    // PAUSE Previous Videos WHEN FEEDINDEX CHANGES
-    useEffect(() => {
-        pauseAllVideosExceptCurrent(feedIndex);
-    }, [feedIndex]);
-
 
     // Y-Axis scroll tracking with GSAP ticker
     useEffect(() => {
@@ -1089,6 +1062,7 @@ const MobileFeed = ({
         let lastScrollTop = container.scrollTop;
         let scrollTimeout = null;
         let isFirstCheck = true;
+        let initialScrollTop = 0;
 
 
         const scrollTick = () => {
@@ -1319,6 +1293,7 @@ const MobileFeed = ({
 
 
 
+
                 // Fetch more Y-axis (unchanged)
                 const total = feedRef.current.length;
                 const remaining = total - globalIndex - 1;
@@ -1344,7 +1319,6 @@ const MobileFeed = ({
         };
     }, []);
 
-
     // X-Axis scroll tracking with GSAP ticker
     useEffect(() => {
         if (!horizontalRefs.current || horizontalRefs.current.length === 0) return;
@@ -1359,21 +1333,22 @@ const MobileFeed = ({
             let scrollTimeout = null;
             let lastLoopTime = 0;
 
+
             const scrollTick = () => {
-                // Blocking ticker if:
-                // 1. Feed opened directly from URL/refresh AND
-                // 2. User hasn't scrolled Y-axis yet
-                if (isMobileFeedGalleryOpenRef.current) {
+
+                if (isXAxisRestoringRef.current) {
                     return;
                 }
 
+                if (isMobileFeedGalleryOpenRef.current) {
+                    return;
+                }
 
                 if (isFilterOpenRef.current) {
                     return;
                 }
 
                 if (useHomeNavStore.getState().navigatingHome) {
-
                     return;
                 }
 
@@ -1386,15 +1361,13 @@ const MobileFeed = ({
 
                 const children = rowContainer.children;
                 if (!children || children.length < 2) return;
+
                 const firstReal = children[1];
 
                 if (firstReal) {
                     itemWidth = itemWidthRef.current[rowIndex]
                         || (itemWidthRef.current[rowIndex] = rowContainer.offsetWidth);
                 }
-
-
-
 
                 if (!itemWidth) return;
 
@@ -1415,39 +1388,29 @@ const MobileFeed = ({
                 }
 
                 const relatedItems = getRelatedItems(parentFeedItem);
-
                 const totalItems = relatedItems.length;
-                const relatedOnlyCount = totalItems - 1;
+                const relatedOnlyCount = totalItems - 1; // Parent + related items
 
-                if (relatedOnlyCount < 1) {
-                    lastScrollLeft = currentScrollLeft;
-                    return;
-                }
-
-                // FIXED index logic with tolerance
+                // ALL feeds now have dummies, so loop logic applies to all
                 const rawIndex = currentScrollLeft / itemWidth;
-
-                // Prevent false loop triggers by absorbing jitter
                 const currentIndex =
                     Math.abs(rawIndex - Math.round(rawIndex)) < 0.08
                         ? Math.round(rawIndex)
                         : Math.floor(rawIndex + 0.0001);
 
-
                 const FIRST_REAL = 1;
                 const LAST_REAL = totalItems;
 
-
-
                 const SL = currentScrollLeft;
 
-                const leftLimit = itemWidth * 0.3;
-                const rightLimit = itemWidth * (totalItems + 0.7);
+                // For single-item feeds (relatedOnlyCount === 0), loop immediately
+                const leftLimit = relatedOnlyCount === 0 ? itemWidth * 0.5 : itemWidth * 0.3;
+                const rightLimit = relatedOnlyCount === 0 ? itemWidth * 1.5 : itemWidth * (totalItems + 0.7);
 
                 const now = Date.now();
                 if (now - lastLoopTime < 300) return;
 
-                // RIGHT LOOP
+                // RIGHT LOOP (same for all feeds now)
                 if (SL >= rightLimit) {
                     lastLoopTime = now;
                     isXLoopingRef.current = true;
@@ -1462,6 +1425,8 @@ const MobileFeed = ({
                         const target = itemWidth;
                         rowContainer.scrollLeft = target;
                         lastScrollLeft = target;
+
+                        preserveXAxisScrollRef.current[rowIndex] = target;
 
                         const firstItem = relatedItems[0];
                         lastHorizontalUpdateRef.current[rowIndex] = { id: firstItem.id, index: 0 };
@@ -1485,7 +1450,6 @@ const MobileFeed = ({
                             rowContainer.style.pointerEvents = "";
                         }, 50);
 
-
                         isXLoopingRef.current = false;
                         setTimeout(() => {
                             setIsXAxisLooping(false)
@@ -1495,7 +1459,7 @@ const MobileFeed = ({
                     return;
                 }
 
-                //  LEFT LOOP
+                // LEFT LOOP (same for all feeds now)
                 if (SL <= leftLimit) {
                     lastLoopTime = now;
                     isXLoopingRef.current = true;
@@ -1510,6 +1474,8 @@ const MobileFeed = ({
                         const target = itemWidth * totalItems;
                         rowContainer.scrollLeft = target;
                         lastScrollLeft = target;
+
+                        preserveXAxisScrollRef.current[rowIndex] = target;
 
                         const lastItem = relatedItems[relatedItems.length - 1];
                         lastHorizontalUpdateRef.current[rowIndex] = {
@@ -1546,7 +1512,7 @@ const MobileFeed = ({
                     return;
                 }
 
-
+                // Rest of ticker logic stays the same...
                 lastScrollLeft = currentScrollLeft;
 
                 if (scrollTimeout) clearTimeout(scrollTimeout);
@@ -1589,7 +1555,7 @@ const MobileFeed = ({
                     };
 
 
-
+                    preserveXAxisScrollRef.current[rowIndex] = currentScrollLeft;
 
 
                     if (newItem.type === "smartphones") {
@@ -1638,6 +1604,44 @@ const MobileFeed = ({
             tickers.forEach(t => gsap.ticker.remove(t));
         };
     }, [isScrollCompleted, localFeed]);
+
+
+
+    // INITIALIZING AUTOPLAY FROM COOKIE (ON MOUNT)
+    useEffect(() => {
+        initAutoplay();
+    }, [initAutoplay]);
+
+    // MAIN VIDEO CONTROL  SET ACTIVE VIDEO
+    // This runs whenever feedGallery changes (Y-axis OR X-axis scroll)
+
+    useEffect(() => {
+        // only trigger after feedGallery is stable
+        const timeoutId = setTimeout(() => {
+            if (!feedGallery) {
+                setActiveVideo(null);
+                return;
+            }
+
+            // Only set active if current item is a video post
+            if (feedGallery.type === 'posts' && feedGallery.post_video_urls?.length > 0) {
+                setActiveVideo(feedGallery.slug);
+            } else {
+                setActiveVideo(null);
+            }
+        }, 200);
+
+        // Cleanup timeout if feedGallery changes again quickly
+        return () => clearTimeout(timeoutId);
+    }, [feedGallery, setActiveVideo]);
+
+    // PAUSE ALL WHEN GALLERY OPENS
+    useEffect(() => {
+        if (MobileFeedGalleryOpen) {
+            pauseAll();
+        }
+    }, [MobileFeedGalleryOpen, pauseAll]);
+
 
     return (
         <>
@@ -1798,4 +1802,4 @@ const MobileFeed = ({
     );
 };
 
-export default MobileFeed;
+export default memo(MobileFeed);

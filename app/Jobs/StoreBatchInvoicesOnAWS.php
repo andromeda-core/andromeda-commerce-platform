@@ -37,7 +37,10 @@ class StoreBatchInvoicesOnAWS implements ShouldQueue
                 $extension = pathinfo($invoice, PATHINFO_EXTENSION);
                 $new_name = time().uniqid().'-'.Str::random(10).'.'.$extension;
 
-                Storage::disk('s3')->put($this->batch_invoices_dir.$new_name, file_get_contents($fullLocalPath));
+                Storage::disk('s3')->put($this->batch_invoices_dir.$new_name, file_get_contents($fullLocalPath), [
+                    'CacheControl' => 'public, max-age=31536000',
+                    'ContentType' => mime_content_type($fullLocalPath),
+                ]);
                 Storage::disk('local')->delete($invoice);
 
                 $url = Storage::disk('s3')->url($this->batch_invoices_dir.$new_name);

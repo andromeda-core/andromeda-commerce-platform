@@ -9,7 +9,7 @@ import React from 'react';
 
 export default function create() {
     // Create Data Form Data
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         now_payment_api_key: '',
         now_payment_public_key: '',
         now_payment_baseurl: '',
@@ -36,7 +36,7 @@ export default function create() {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Now Payment Settings'}
                                     URL={route('dashboard.settings.now-payment-settings.index')}

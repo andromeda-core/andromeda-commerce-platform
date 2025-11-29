@@ -10,7 +10,7 @@ import SelectInput from '@/Components/SelectInput';
 
 export default function edit({ additional_fee_list }) {
     // Create Data Form Data
-    const { data, setData, put, processing, errors, reset } = useForm({
+    const { data, setData, put, processing, errors } = useForm({
         name: additional_fee_list.name || '',
         is_active: additional_fee_list.is_active ?? 1,
     });
@@ -36,7 +36,7 @@ export default function edit({ additional_fee_list }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Additional Fee Lists'}
                                     URL={route('dashboard.settings.additional_fee_lists.index')}

@@ -1,12 +1,9 @@
 import Card from '@/Components/Card';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import Table from '@/Components/Table';
-
 import { useEffect, useState } from 'react';
-import SelectInput from '@/Components/SelectInput';
-
 export default function index({ data_deletion_requests }) {
     const { props } = usePage();
     const [columns, setColumns] = useState([]);

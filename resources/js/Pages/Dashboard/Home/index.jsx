@@ -3,7 +3,6 @@ import Card from '@/Components/Card';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
 import { Head, router, usePage } from '@inertiajs/react';
-import { useRef } from 'react';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -329,8 +328,8 @@ export default function Dashboard({
                                 ? label.slice(0, 12) + '…'
                                 : label
                             : label.length > 20
-                              ? label.slice(0, 20) + '…'
-                              : label;
+                                ? label.slice(0, 20) + '…'
+                                : label;
                     },
                 },
                 grid: { color: isDark ? '#374151' : '#e5e7eb' },
@@ -437,8 +436,8 @@ export default function Dashboard({
                                 ? label.slice(0, 12) + '…'
                                 : label
                             : label.length > 20
-                              ? label.slice(0, 20) + '…'
-                              : label;
+                                ? label.slice(0, 20) + '…'
+                                : label;
                     },
                 },
                 grid: { color: isDark ? '#374151' : '#e5e7eb' },
@@ -545,8 +544,8 @@ export default function Dashboard({
                                 ? label.slice(0, 12) + '…'
                                 : label
                             : label.length > 20
-                              ? label.slice(0, 20) + '…'
-                              : label;
+                                ? label.slice(0, 20) + '…'
+                                : label;
                     },
                 },
                 grid: { color: isDark ? '#374151' : '#e5e7eb' },
@@ -560,10 +559,10 @@ export default function Dashboard({
             <Card
                 Content={
                     <>
-                        <div className="my-6 flex justify-center">
+                        <div className="flex justify-center my-6">
                             <h3 className="text-3xl font-bold text-gray-900 dark:text-white/80">
                                 Welcome back,
-                                <span className="ml-2 bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent">
+                                <span className="ml-2 text-transparent bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text">
                                     {auth.user.name}
                                 </span>{' '}
                                 👋
@@ -572,17 +571,17 @@ export default function Dashboard({
 
                         {auth.user.role === 'Admin' && (
                             <>
-                                <div className="my-10 grid grid-cols-1 gap-5 md:grid-cols-3">
-                                    <div className="relative flex flex-col items-center justify-center space-y-5 rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
+                                <div className="grid grid-cols-1 gap-5 my-10 md:grid-cols-3">
+                                    <div className="relative flex flex-col items-center justify-center p-6 space-y-5 text-center transition-transform duration-200 bg-white shadow-md rounded-xl hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
                                         {/* Icon */}
-                                        <div className="rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 p-4 shadow-lg">
+                                        <div className="p-4 rounded-full shadow-lg bg-gradient-to-tr from-blue-500 to-indigo-500">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={1.5}
                                                 stroke="currentColor"
-                                                className="h-9 w-9 text-white"
+                                                className="text-white h-9 w-9"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -602,16 +601,16 @@ export default function Dashboard({
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="relative flex flex-col items-center justify-center space-y-5 rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
+                                    <div className="relative flex flex-col items-center justify-center p-6 space-y-5 text-center transition-transform duration-200 bg-white shadow-md rounded-xl hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
                                         {/* Icon */}
-                                        <div className="rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 p-4 shadow-lg">
+                                        <div className="p-4 rounded-full shadow-lg bg-gradient-to-tr from-blue-500 to-indigo-500">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={1.5}
                                                 stroke="currentColor"
-                                                className="h-9 w-9 text-white"
+                                                className="text-white h-9 w-9"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -632,16 +631,16 @@ export default function Dashboard({
                                         </div>
                                     </div>
 
-                                    <div className="relative flex flex-col items-center justify-center space-y-5 rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
+                                    <div className="relative flex flex-col items-center justify-center p-6 space-y-5 text-center transition-transform duration-200 bg-white shadow-md rounded-xl hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
                                         {/* Icon */}
-                                        <div className="rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 p-4 shadow-lg">
+                                        <div className="p-4 rounded-full shadow-lg bg-gradient-to-tr from-blue-500 to-indigo-500">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={1.5}
                                                 stroke="currentColor"
-                                                className="size-9 text-white"
+                                                className="text-white size-9"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -662,16 +661,16 @@ export default function Dashboard({
                                         </div>
                                     </div>
 
-                                    <div className="relative flex flex-col items-center justify-center space-y-5 rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
+                                    <div className="relative flex flex-col items-center justify-center p-6 space-y-5 text-center transition-transform duration-200 bg-white shadow-md rounded-xl hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
                                         {/* Icon */}
-                                        <div className="rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 p-4 shadow-lg">
+                                        <div className="p-4 rounded-full shadow-lg bg-gradient-to-tr from-blue-500 to-indigo-500">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
                                                 strokeWidth="1.5"
                                                 stroke="currentColor"
-                                                className="size-9 text-white"
+                                                className="text-white size-9"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -692,16 +691,16 @@ export default function Dashboard({
                                         </div>
                                     </div>
 
-                                    <div className="relative flex flex-col items-center justify-center space-y-5 rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
+                                    <div className="relative flex flex-col items-center justify-center p-6 space-y-5 text-center transition-transform duration-200 bg-white shadow-md rounded-xl hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
                                         {/* Icon */}
-                                        <div className="rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 p-4 shadow-lg">
+                                        <div className="p-4 rounded-full shadow-lg bg-gradient-to-tr from-blue-500 to-indigo-500">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
                                                 strokeWidth="1.5"
                                                 stroke="currentColor"
-                                                className="size-9 text-white"
+                                                className="text-white size-9"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -722,16 +721,16 @@ export default function Dashboard({
                                         </div>
                                     </div>
 
-                                    <div className="relative flex flex-col items-center justify-center space-y-5 rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
+                                    <div className="relative flex flex-col items-center justify-center p-6 space-y-5 text-center transition-transform duration-200 bg-white shadow-md rounded-xl hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
                                         {/* Icon */}
-                                        <div className="rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 p-4 shadow-lg">
+                                        <div className="p-4 rounded-full shadow-lg bg-gradient-to-tr from-blue-500 to-indigo-500">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={1.5}
                                                 stroke="currentColor"
-                                                className="size-9 text-white"
+                                                className="text-white size-9"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -754,7 +753,7 @@ export default function Dashboard({
                                 </div>
 
                                 {/* Doughnut Charts */}
-                                <div className="mx-5 my-10 grid grid-cols-1 place-items-center gap-5 sm:grid-cols-2 lg:grid-cols-2">
+                                <div className="grid grid-cols-1 gap-5 mx-5 my-10 place-items-center sm:grid-cols-2 lg:grid-cols-2">
                                     <div className="relative h-[400px] w-full max-w-sm rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
                                         <Doughnut
                                             data={purchasing_customers_type_data}
@@ -772,7 +771,7 @@ export default function Dashboard({
 
                                 {/* Orders + Sales Line Chart */}
 
-                                <div className="mb-1 flex w-full justify-end">
+                                <div className="flex justify-end w-full mb-1">
                                     <select
                                         onChange={(e) => {
                                             router.reload({
@@ -783,7 +782,7 @@ export default function Dashboard({
                                                 preserveUrl: true,
                                             });
                                         }}
-                                        className="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                                        className="px-3 py-1 text-sm bg-white border border-gray-300 rounded-md shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
                                     >
                                         <option value="12">Last 12 Months</option>
                                         <option value="6">Last 6 Months</option>
@@ -792,7 +791,7 @@ export default function Dashboard({
                                     </select>
                                 </div>
 
-                                <div className="my-2 grid grid-cols-1 gap-5">
+                                <div className="grid grid-cols-1 gap-5 my-2">
                                     <div className="relative h-[500px] w-full rounded-xl bg-white p-6 shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
                                         <Line
                                             data={orders_chart_data}
@@ -802,7 +801,7 @@ export default function Dashboard({
                                 </div>
 
                                 {/* Collaborator Performance Bar Chart */}
-                                <div className="my-10 grid grid-cols-1 gap-5">
+                                <div className="grid grid-cols-1 gap-5 my-10">
                                     <div className="relative h-[400px] w-full rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
                                         <Bar
                                             data={collaborators_performance_data}
@@ -812,7 +811,7 @@ export default function Dashboard({
                                 </div>
 
                                 {/* Distributor Performance Bar Chart */}
-                                <div className="my-10 grid grid-cols-1 gap-5">
+                                <div className="grid grid-cols-1 gap-5 my-10">
                                     <div className="relative h-[400px] w-full rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
                                         <Bar
                                             data={distributors_performance_data}
@@ -822,7 +821,7 @@ export default function Dashboard({
                                 </div>
 
                                 {/* Suppliers Performance Bar Chart */}
-                                <div className="my-10 grid grid-cols-1 gap-5">
+                                <div className="grid grid-cols-1 gap-5 my-10">
                                     <div className="relative h-[400px] w-full rounded-xl bg-white p-6 text-center shadow-md transition-transform duration-200 hover:-translate-y-1 hover:shadow-xl dark:bg-zinc-900/50">
                                         <Bar
                                             data={suppliers_performance_data}

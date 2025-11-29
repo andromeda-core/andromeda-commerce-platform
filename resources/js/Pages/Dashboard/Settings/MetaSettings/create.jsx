@@ -9,7 +9,7 @@ import React from 'react';
 
 export default function create() {
     // Create Data Form Data
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         meta_app_id: '',
         meta_app_secret: '',
     });

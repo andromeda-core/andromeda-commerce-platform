@@ -27,7 +27,7 @@ class CourierInvoiceDestroyOnAWS implements ShouldQueue
             return;
         }
 
-        $relative_path = Str::after($this->file, '.com/');
+        $relative_path = Str::replaceFirst(config('filesystems.disks.s3.url').'/', '', $this->file);
 
         if (Storage::disk('s3')->exists($relative_path)) {
             Storage::disk('s3')->delete($relative_path);

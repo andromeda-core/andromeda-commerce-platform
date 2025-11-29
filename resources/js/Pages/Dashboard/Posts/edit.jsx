@@ -106,6 +106,7 @@ export default function edit({ post, floors }) {
             setFileError(errors.file_error);
         }
     }, [errors]);
+    const video_urls = post?.post_video_urls?.map(video => video.url) || [];
 
     return (
         <>
@@ -220,7 +221,7 @@ export default function edit({ post, floors }) {
                                                     }}
                                                     MaxFiles={5}
                                                     Multiple={true}
-                                                    DefaultFile={post.post_video_urls}
+                                                    DefaultFile={video_urls}
                                                 />
 
                                                 <Input

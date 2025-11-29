@@ -3,7 +3,6 @@ import { useSwipeable } from 'react-swipeable';
 import useWindowSize from '@/Hooks/useWindowSize';
 import { motion, AnimatePresence } from 'framer-motion';
 import VideoWithThumbnail from '@/Components/VideoWithThumbnail';
-import VideoThumbnail from '@/Components/VideoThumbnail';
 
 export default function PostMediaViewer({
     viewablePost,
@@ -11,6 +10,7 @@ export default function PostMediaViewer({
     onSelectMediaIndex,
     setMediaItems,
     mediaThumbRefs,
+    Placeholder
 }) {
     const selected = selectedMediaIndex ?? 0;
 
@@ -33,10 +33,13 @@ export default function PostMediaViewer({
             viewablePost?.videos?.map((vid) => ({
                 type: 'video',
                 url: vid.url,
+                thumbnail_url: vid.thumbnail_url
             })) || [];
 
         return [...images, ...videos];
     }, [viewablePost]);
+
+
 
     // Mouse wheel navigation
     useEffect(() => {
@@ -159,7 +162,7 @@ export default function PostMediaViewer({
                     <div className="invisible w-full h-full">
                         {mediaItems[selected]?.type === 'image' ? (
                             <img
-                                src={mediaItems[selected]?.url}
+                                src={mediaItems[selected]?.url || Placeholder}
                                 alt={`Media ${selected}`}
                                 className="h-full w-full min-w-[300px] max-w-[300px] object-cover object-center lg:min-w-[500px]"
                                 loading={"high"}
@@ -173,7 +176,9 @@ export default function PostMediaViewer({
                                 className={
                                     'h-full w-full min-w-[300px] max-w-[300px] rounded-xl object-cover object-center lg:min-w-[500px]'
                                 }
+                                thumbnail={mediaItems[selected]?.thumbnail_url || Placeholder}
                                 videoUrl={mediaItems[selected]?.url}
+
                             />
                         )}
                     </div>
@@ -196,20 +201,22 @@ export default function PostMediaViewer({
                                     >
                                         {item.type === "image" ? (
                                             <img
-                                                src={item.url}
+                                                src={item.url || Placeholder}
                                                 alt={`Media ${idx}`}
                                                 className="object-contain w-full h-full rounded-xl"
                                                 loading={isCurrent ? "eager" : "lazy"}
                                                 decoding="async"
                                                 fetchpriority={isCurrent ? "high" : "low"}
                                                 onLoad={() => loadedCache.current.add(item.url)}
+                                                onError={(e) => e.target.src = Placeholder}
                                             />
                                         ) : (
                                             <VideoWithThumbnail
                                                 type='customized'
                                                 className="object-cover object-center w-full h-full rounded-md"
                                                 videoUrl={item.url}
-                                                Preload={isCurrent ? "auto" : "metadata"}
+                                               Preload='metadata'
+                                                thumbnail={item?.thumbnail_url || Placeholder}
                                                 OnLoadedMetaData={() => loadedCache.current.add(item.url)}
                                             />
                                         )}
@@ -236,23 +243,25 @@ export default function PostMediaViewer({
                             >
                                 {item.type === 'image' ? (
                                     <img
-                                        src={item.url}
+                                        src={item.url || Placeholder}
                                         alt={`Image ${idx}`}
                                         className="object-contain w-full h-full "
                                         loading={selectedMediaIndex === idx ? "eager" : "lazy"}
                                         decoding="async"
                                         fetchpriority={selectedMediaIndex === idx ? "high" : "low"}
+                                        onError={(e) => e.target.src = Placeholder}
                                     />
                                 ) : (
 
 
-                                    <VideoThumbnail
-                                        className={'h-full w-full object-cover object-center opacity-80'}
-                                        videoUrl={item.url}
-                                        alt={`Video ${idx}`}
-                                        FetchPriority={selectedMediaIndex === idx ? "high" : "low"}
-                                        Loading={selectedMediaIndex === idx ? "eager" : "lazy"}
-                                        Decoding={"async"}
+                                    <img
+                                        src={item?.thumbnail_url || Placeholder}
+                                        alt={`Image ${idx}`}
+                                        className="object-contain w-full h-full "
+                                        loading={selectedMediaIndex === idx ? "eager" : "lazy"}
+                                        decoding="async"
+                                        fetchpriority={selectedMediaIndex === idx ? "high" : "low"}
+                                        onError={(e) => e.target.src = Placeholder}
                                     />
                                 )}
                             </button>

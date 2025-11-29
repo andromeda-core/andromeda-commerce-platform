@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import MainLayout from '@/Layouts/Website/MainLayout';
-import Input from '@/Components/Input';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 import getContrastingColor from '@/Hooks/useColorContraster';
 import Toast from '@/Components/Toast';
@@ -218,8 +217,8 @@ export default function index({ cart_items, refferalSessionData }) {
                         ...(showInfoMessage
                             ? { info: infoMessage }
                             : showErrorMessage
-                              ? { error: errorMessage }
-                              : { success: successMessage }),
+                                ? { error: errorMessage }
+                                : { success: successMessage }),
                     }}
                     onClosed={(type) => {
                         if (type === 'info') {
@@ -241,9 +240,8 @@ export default function index({ cart_items, refferalSessionData }) {
             {showConfetti &&
                 createPortal(
                     <div
-                        className={`pointer-events-none fixed inset-0 z-[99999] transition-opacity duration-1000 ${
-                            confettiFading ? 'opacity-0' : 'opacity-100'
-                        }`}
+                        className={`pointer-events-none fixed inset-0 z-[99999] transition-opacity duration-1000 ${confettiFading ? 'opacity-0' : 'opacity-100'
+                            }`}
                         style={{
                             position: 'fixed',
                             top: 0,
@@ -313,22 +311,22 @@ export default function index({ cart_items, refferalSessionData }) {
 // Cart Item Component
 function CartItem({ item, quantity, onUpdateQuantity, onRemove, currency, removing }) {
     return (
-        <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all hover:shadow-md dark:border-white/10 dark:bg-deepcharcoal sm:p-6">
+        <div className="p-4 transition-all border border-gray-200 rounded-xl bg-gray-50 hover:shadow-md dark:border-white/10 dark:bg-deepcharcoal sm:p-6">
             <div className="flex gap-4">
                 {/* Product Image */}
                 <div className="flex-shrink-0">
-                    <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-lg">
+                    <div className="flex items-center justify-center w-32 h-32 overflow-hidden rounded-lg">
                         <img
                             src={item?.smartphone?.smartphone_image_urls?.[0] || Placeholder}
                             alt={item?.smartphone?.model_name?.name || 'N/A'}
-                            className="max-h-full max-w-full object-contain"
+                            className="object-contain max-w-full max-h-full"
                             loading="lazy"
                             onError={(e) => (e.target.src = Placeholder)}
                         />
                     </div>
                 </div>
                 {/* Product Details */}
-                <div className="min-w-0 flex-1">
+                <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
                             <h3 className="mb-1 text-base font-semibold text-gray-900 dark:text-white sm:text-lg">
@@ -340,7 +338,7 @@ function CartItem({ item, quantity, onUpdateQuantity, onRemove, currency, removi
                             ></p>
 
                             {item?.smartphone?.capacity && (
-                                <div className="mb-3 flex flex-wrap gap-2">
+                                <div className="flex flex-wrap gap-2 mb-3">
                                     <span
                                         className={`inline-flex items-center rounded-md bg-gray-200 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-900 dark:text-white/80`}
                                     >
@@ -351,7 +349,7 @@ function CartItem({ item, quantity, onUpdateQuantity, onRemove, currency, removi
 
                             {/* Variants/Options */}
                             {item?.color && (
-                                <div className="mb-3 flex flex-wrap gap-2">
+                                <div className="flex flex-wrap gap-2 mb-3">
                                     <span
                                         className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-medium`}
                                         style={{
@@ -395,7 +393,7 @@ function CartItem({ item, quantity, onUpdateQuantity, onRemove, currency, removi
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
                                     stroke="currentColor"
-                                    className="h-5 w-5"
+                                    className="w-5 h-5"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -408,8 +406,8 @@ function CartItem({ item, quantity, onUpdateQuantity, onRemove, currency, removi
                     </div>
 
                     {/* Quantity Controls */}
-                    <div className="mt-4 flex flex-wrap items-center gap-4">
-                        <div className="flex items-center overflow-hidden rounded-lg border border-gray-300 dark:border-white/20">
+                    <div className="flex flex-wrap items-center gap-4 mt-4">
+                        <div className="flex items-center overflow-hidden border border-gray-300 rounded-lg dark:border-white/20">
                             <button
                                 onClick={() => onUpdateQuantity(item.id, quantity - 1)}
                                 className="p-2 text-gray-700 transition-colors hover:bg-gray-100 disabled:opacity-50 dark:text-white/70 dark:hover:bg-gray-700"
@@ -421,7 +419,7 @@ function CartItem({ item, quantity, onUpdateQuantity, onRemove, currency, removi
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
                                     stroke="currentColor"
-                                    className="h-4 w-4"
+                                    className="w-4 h-4"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -443,7 +441,7 @@ function CartItem({ item, quantity, onUpdateQuantity, onRemove, currency, removi
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
                                     stroke="currentColor"
-                                    className="h-4 w-4"
+                                    className="w-4 h-4"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -477,7 +475,7 @@ function CartItem({ item, quantity, onUpdateQuantity, onRemove, currency, removi
                                         xmlns="http://www.w3.org/2000/svg"
                                         viewBox="0 0 20 20"
                                         fill="currentColor"
-                                        className="h-4 w-4"
+                                        className="w-4 h-4"
                                     >
                                         <path
                                             fillRule="evenodd"
@@ -493,7 +491,7 @@ function CartItem({ item, quantity, onUpdateQuantity, onRemove, currency, removi
                                         xmlns="http://www.w3.org/2000/svg"
                                         viewBox="0 0 20 20"
                                         fill="currentColor"
-                                        className="h-4 w-4"
+                                        className="w-4 h-4"
                                     >
                                         <path
                                             fillRule="evenodd"
@@ -509,7 +507,7 @@ function CartItem({ item, quantity, onUpdateQuantity, onRemove, currency, removi
                                         xmlns="http://www.w3.org/2000/svg"
                                         viewBox="0 0 20 20"
                                         fill="currentColor"
-                                        className="h-4 w-4"
+                                        className="w-4 h-4"
                                     >
                                         <path
                                             fillRule="evenodd"
@@ -572,17 +570,17 @@ function OrderSummary({
     };
 
     return (
-        <div className="sticky top-8 space-y-3">
+        <div className="sticky space-y-3 top-8">
             {/* Summary Card */}
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-6 dark:border-white/10 dark:bg-deepcharcoal">
-                <h2 className="mb-6 flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white">
+            <div className="p-6 border border-gray-200 rounded-xl bg-gray-50 dark:border-white/10 dark:bg-deepcharcoal">
+                <h2 className="flex items-center gap-2 mb-6 text-xl font-bold text-gray-900 dark:text-white">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
                         strokeWidth={1.5}
                         stroke="currentColor"
-                        className="h-5 w-5"
+                        className="w-5 h-5"
                     >
                         <path
                             strokeLinecap="round"
@@ -656,7 +654,7 @@ function OrderSummary({
                         </div>
                     )}
 
-                    <div className="border-t border-gray-200 pt-4 dark:border-white/10">
+                    <div className="pt-4 border-t border-gray-200 dark:border-white/10">
                         <div className="flex items-center justify-between">
                             <span className="text-base font-semibold text-gray-900 dark:text-white">
                                 Total
@@ -674,7 +672,7 @@ function OrderSummary({
                         {!showReferal ? (
                             <button
                                 onClick={() => setShowReferal(true)}
-                                className="flex w-full items-center justify-center gap-2 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                className="flex items-center justify-center w-full gap-2 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -682,7 +680,7 @@ function OrderSummary({
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
                                     stroke="currentColor"
-                                    className="h-4 w-4"
+                                    className="w-4 h-4"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -706,11 +704,10 @@ function OrderSummary({
                                             value={referalCode}
                                             onChange={(e) => setReferalCode(e.target.value)}
                                             placeholder="Enter Referal Code To Earn Points"
-                                            className={`w-full rounded-lg border ${
-                                                error
+                                            className={`w-full rounded-lg border ${error
                                                     ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
                                                     : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500/20'
-                                            } bg-white px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors focus:outline-none focus:ring-2 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40`}
+                                                } bg-white px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors focus:outline-none focus:ring-2 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40`}
                                         />
                                         {error && (
                                             <p className="mt-1 text-xs text-red-500 dark:text-red-400">
@@ -721,7 +718,7 @@ function OrderSummary({
 
                                     <button
                                         onClick={handleApplyReferal}
-                                        className="flex h-12 items-center justify-center rounded-lg bg-indigo-600 px-6 text-sm font-medium text-white transition-colors hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
+                                        className="flex items-center justify-center h-12 px-6 text-sm font-medium text-white transition-colors bg-indigo-600 rounded-lg hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                         {applyingReferal ? <Spinner /> : 'Apply'}
                                     </button>
@@ -741,7 +738,7 @@ function OrderSummary({
             </div>
 
             {/* Secure Checkout Badge */}
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-deepcharcoal">
+            <div className="p-4 border border-gray-200 rounded-xl bg-gray-50 dark:border-white/10 dark:bg-deepcharcoal">
                 <div className="flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-white/60">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -749,7 +746,7 @@ function OrderSummary({
                         viewBox="0 0 24 24"
                         strokeWidth={1.5}
                         stroke="currentColor"
-                        className="h-5 w-5 text-green-500"
+                        className="w-5 h-5 text-green-500"
                     >
                         <path
                             strokeLinecap="round"
@@ -762,12 +759,12 @@ function OrderSummary({
             </div>
 
             {/* Accepted Payments */}
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-white/10 dark:bg-deepcharcoal">
-                <p className="mb-3 text-center text-xs text-gray-500 dark:text-white/50">
+            <div className="p-4 border border-gray-200 rounded-xl bg-gray-50 dark:border-white/10 dark:bg-deepcharcoal">
+                <p className="mb-3 text-xs text-center text-gray-500 dark:text-white/50">
                     We accept
                 </p>
                 <div className="flex items-center justify-center gap-4">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 text-xs font-bold text-white">
+                    <div className="flex items-center justify-center w-8 h-8 text-xs font-bold text-white bg-orange-500 rounded-full">
                         <svg
                             className="size-10"
                             viewBox="0.004 0 64 64"
@@ -792,7 +789,7 @@ function OrderSummary({
                             </g>
                         </svg>
                     </div>
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500 text-xs font-bold text-white">
+                    <div className="flex items-center justify-center w-8 h-8 text-xs font-bold text-white bg-orange-500 rounded-full">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
@@ -817,17 +814,17 @@ function OrderSummary({
 // Empty Cart Component
 function EmptyCart() {
     return (
-        <div className="flex items-center justify-center rounded-xl border border-gray-200 bg-white px-6 py-8 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal">
+        <div className="flex items-center justify-center px-6 py-8 bg-white border border-gray-200 shadow-sm rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
             <div className="flex flex-col items-center gap-3">
                 {/* Icon */}
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+                <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-full dark:bg-gray-700">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
                         strokeWidth={1.5}
                         stroke="currentColor"
-                        className="h-6 w-6 text-gray-500 dark:text-gray-400"
+                        className="w-6 h-6 text-gray-500 dark:text-gray-400"
                     >
                         <path
                             strokeLinecap="round"
@@ -842,13 +839,13 @@ function EmptyCart() {
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                         Your cart is empty
                     </h3>
-                    <p className="mb-5 mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    <p className="mt-1 mb-5 text-sm text-gray-500 dark:text-gray-400">
                         Looks like you haven't added anything to your cart yet
                     </p>
 
                     <Link
                         href={route('home')}
-                        className="rounded-xl bg-indigo-600 px-4 py-3 font-medium text-white shadow-md transition-all hover:bg-indigo-500 hover:shadow-lg"
+                        className="px-4 py-3 font-medium text-white transition-all bg-indigo-600 shadow-md rounded-xl hover:bg-indigo-500 hover:shadow-lg"
                     >
                         Let's Go
                     </Link>

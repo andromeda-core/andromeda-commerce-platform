@@ -1,5 +1,4 @@
 import Card from '@/Components/Card';
-import Input from '@/Components/Input';
 import LinkButton from '@/Components/LinkButton';
 import PrimaryButton from '@/Components/PrimaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -10,7 +9,7 @@ import SelectInput from '@/Components/SelectInput';
 
 export default function create({ countries }) {
     // Create Data Form Data
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         country_id: '',
     });
 
@@ -35,7 +34,7 @@ export default function create({ countries }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Special Countries'}
                                     URL={route('dashboard.settings.special-countries.index')}

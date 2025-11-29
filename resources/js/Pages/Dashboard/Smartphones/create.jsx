@@ -14,7 +14,7 @@ import TipTapEditor from '@/Components/TipTapEditor';
 
 export default function create({ colors, model_names, capacities, categories }) {
     // Create Data Form Data
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         model_name_id: '',
         capacity_id: '',
         color_ids: [],
@@ -62,7 +62,7 @@ export default function create({ colors, model_names, capacities, categories }) 
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Smart Phones'}
                                     URL={route('dashboard.smartphones.index')}
@@ -209,7 +209,7 @@ export default function create({ colors, model_names, capacities, categories }) 
                                                 />
                                             </div>
 
-                                            <div className="col-span-2 grid grid-cols-1 gap-4 md:grid-cols-1">
+                                            <div className="grid grid-cols-1 col-span-2 gap-4 md:grid-cols-1">
                                                 <FileUploaderInput
                                                     InputName={'Smart Phone Images'}
                                                     Id={'images'}
@@ -291,11 +291,11 @@ export default function create({ colors, model_names, capacities, categories }) 
                             {/* Cam */}
                             {scannerOpen && (
                                 <>
-                                    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                                         <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                                         {/* Modal content */}
-                                        <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
+                                        <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
                                             <div className="text-center">
                                                 <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                                     Place The Camera On The UPC Barcode

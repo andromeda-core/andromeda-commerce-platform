@@ -3,7 +3,7 @@ import Input from '@/Components/Input';
 import PrimaryButton from '@/Components/PrimaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 
 import React, { useState } from 'react';
 
@@ -117,15 +117,15 @@ export default function index({ user }) {
                             Content={
                                 <>
                                     <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-                                        <div className="flex w-full flex-col items-center gap-6 xl:flex-row">
-                                            <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-gray-200 text-2xl dark:border-white dark:text-white">
+                                        <div className="flex flex-col items-center w-full gap-6 xl:flex-row">
+                                            <div className="flex items-center justify-center w-20 h-20 overflow-hidden text-2xl border border-gray-200 rounded-full dark:border-white dark:text-white">
                                                 {user.avatar}
                                             </div>
                                             <div className="order-3 xl:order-2">
-                                                <h4 className="mb-2 text-center text-lg font-semibold text-gray-800 dark:text-white/90 xl:text-left">
+                                                <h4 className="mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left">
                                                     {user.name}
                                                 </h4>
-                                                <p className="text-center text-sm text-gray-600 dark:text-gray-400 xl:text-left">
+                                                <p className="text-sm text-center text-gray-600 dark:text-gray-400 xl:text-left">
                                                     {user.email}
                                                 </p>
                                             </div>
@@ -145,7 +145,7 @@ export default function index({ user }) {
                                     </h4>
 
                                     <form onSubmit={updateProfileMethod}>
-                                        <div className="mb-4 w-full px-4 sm:px-6">
+                                        <div className="w-full px-4 mb-4 sm:px-6">
                                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                                 <Input
                                                     InputName={'Name'}
@@ -258,7 +258,7 @@ export default function index({ user }) {
                                     </h4>
 
                                     <form onSubmit={updatePasswordMethod}>
-                                        <div className="mb-4 w-full px-4 sm:px-6">
+                                        <div className="w-full px-4 mb-4 sm:px-6">
                                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                                 <Input
                                                     InputName={'Current Password'}
@@ -349,9 +349,9 @@ export default function index({ user }) {
                                                 updatePasswordData.current_password.trim() === '' ||
                                                 updatePasswordData.password.trim() === '' ||
                                                 updatePasswordData.password_confirmation.trim() ===
-                                                    '' ||
+                                                '' ||
                                                 updatePasswordData.password.trim() !=
-                                                    updatePasswordData.password_confirmation.trim()
+                                                updatePasswordData.password_confirmation.trim()
                                             }
                                             Spinner={UpdatePasswordProcessing}
                                         />

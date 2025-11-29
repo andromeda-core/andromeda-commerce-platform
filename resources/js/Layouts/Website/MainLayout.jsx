@@ -5,7 +5,6 @@ import Toast from '@/Components/Toast';
 import useWindowSize from '@/Hooks/useWindowSize';
 import GlobalFilterModal from '@/Pages/Website/GlobalFilters/GlobalFilterModal';
 import BottomBar from '@/partials/Website/BottomBar';
-
 import Sidebar from '@/partials/Website/Sidebar';
 import { usePage } from '@inertiajs/react';
 import axios from 'axios';
@@ -37,24 +36,24 @@ export default function MainLayout({ children }) {
         }
     }, []);
 
-    // Managing SidebarToggle State
-    const [sidebarToggle, setSidebarToggle] = useState(() => {
-        const saved = localStorage.getItem('sidebarToggle');
-        if (saved === null) {
-            return false;
-        }
-        try {
-            const parsed = JSON.parse(saved);
-            if (typeof parsed === 'boolean') {
-                return parsed;
-            }
-            localStorage.removeItem('sidebarToggle');
-            return false;
-        } catch (error) {
-            localStorage.removeItem('sidebarToggle');
-            return false;
-        }
-    });
+    // Managing SidebarToggle State (Not Using RN)
+    // const [sidebarToggle, setSidebarToggle] = useState(() => {
+    //     const saved = localStorage.getItem('sidebarToggle');
+    //     if (saved === null) {
+    //         return false;
+    //     }
+    //     try {
+    //         const parsed = JSON.parse(saved);
+    //         if (typeof parsed === 'boolean') {
+    //             return parsed;
+    //         }
+    //         localStorage.removeItem('sidebarToggle');
+    //         return false;
+    //     } catch (error) {
+    //         localStorage.removeItem('sidebarToggle');
+    //         return false;
+    //     }
+    // });
 
     // Managing Loader State
     const [loaded, setLoaded] = useState(true);

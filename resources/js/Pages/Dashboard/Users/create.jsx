@@ -10,7 +10,7 @@ import SelectInput from '@/Components/SelectInput';
 
 export default function create({ roles }) {
     // Create Data Form Data
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         name: '',
         email: '',
         phone: '',
@@ -52,7 +52,7 @@ export default function create({ roles }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Users'}
                                     URL={route('dashboard.users.index')}
@@ -216,7 +216,7 @@ export default function create({ roles }) {
                                                         />
 
                                                         <div>
-                                                            <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
+                                                            <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
                                                                 Address{' '}
                                                                 <span className="text-red-500 dark:text-white">
                                                                     *
@@ -330,7 +330,7 @@ export default function create({ roles }) {
                                                 {data.role_id === 5 && (
                                                     <>
                                                         <div>
-                                                            <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
+                                                            <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
                                                                 Address{' '}
                                                                 <span className="text-red-500 dark:text-white">
                                                                     *
@@ -478,7 +478,7 @@ export default function create({ roles }) {
                                                     data.role_id === '' ||
                                                     data.is_active === '' ||
                                                     data.password.trim() !==
-                                                        data.password_confirmation.trim() ||
+                                                    data.password_confirmation.trim() ||
                                                     (data.role_id === 4 &&
                                                         data.company_name.trim() === '') ||
                                                     (data.role_id === 3 &&

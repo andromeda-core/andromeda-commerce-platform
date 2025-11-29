@@ -19,7 +19,7 @@ class AppDarkLogoStoreOnAWS implements ShouldQueue
     public $timeout = 300;
 
     public function __construct(
-        private string $file,
+        private ?string $file,
         private GeneralSetting $general_setting,
         private $general_setting_dir = 'GeneralSetting/Logos/',
     ) {}
@@ -37,7 +37,10 @@ class AppDarkLogoStoreOnAWS implements ShouldQueue
         $mime_type = mime_content_type($fullLocalPath);
 
         Storage::disk('s3')
-            ->put($this->general_setting_dir.$new_name, file_get_contents($fullLocalPath));
+            ->put($this->general_setting_dir.$new_name, file_get_contents($fullLocalPath), [
+                'CacheControl' => 'public, max-age=31536000',
+                'ContentType' => mime_content_type($fullLocalPath),
+            ]);
 
         //  Storage::disk('s3')
         //     ->put($this->general_setting_dir.$new_name, file_get_contents($fullLocalPath), [

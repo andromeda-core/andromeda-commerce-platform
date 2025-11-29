@@ -3,7 +3,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import Textarea from '@/Components/Textarea';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, useForm } from '@inertiajs/react';
-import React, { useState } from 'react';
+import React from 'react';
 
 const Index = () => {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -14,7 +14,6 @@ const Index = () => {
         message: '',
     });
 
-    const [submitted, setSubmitted] = useState(false);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -22,9 +21,7 @@ const Index = () => {
             preserveScroll: true,
             preserveState: true,
             onSuccess: () => {
-                setSubmitted(true);
                 reset();
-                setTimeout(() => setSubmitted(false), 5000);
             },
         });
     };
@@ -34,18 +31,18 @@ const Index = () => {
             <Head title="Contact Us" />
 
             {/* Hero Section */}
-            <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-16 dark:from-gray-900 dark:via-deepcharcoal dark:to-gray-900">
-                <div className="container mx-auto px-4">
-                    <div className="mx-auto max-w-3xl text-center">
-                        <div className="mb-6 flex justify-center">
-                            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-indigo-600 shadow-lg dark:bg-indigo-500">
+            <div className="py-16 bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-deepcharcoal dark:to-gray-900">
+                <div className="container px-4 mx-auto">
+                    <div className="max-w-3xl mx-auto text-center">
+                        <div className="flex justify-center mb-6">
+                            <div className="flex items-center justify-center w-20 h-20 bg-indigo-600 shadow-lg rounded-2xl dark:bg-indigo-500">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     strokeWidth={2}
                                     stroke="currentColor"
-                                    className="h-10 w-10 text-white"
+                                    className="w-10 h-10 text-white"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -67,21 +64,21 @@ const Index = () => {
             </div>
 
             {/* Contact Form Section */}
-            <div className="container mx-auto px-4 py-16">
-                <div className="mx-auto max-w-4xl">
+            <div className="container px-4 py-16 mx-auto">
+                <div className="max-w-4xl mx-auto">
                     <div className="grid gap-8 lg:grid-cols-3">
                         {/* Contact Info Cards */}
                         <div className="space-y-6 lg:col-span-1">
                             {/* Email Card */}
-                            <div className="group rounded-2xl border border-gray-200 bg-white p-6 transition-all dark:border-white/10 dark:bg-deepcharcoal">
-                                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30">
+                            <div className="p-6 transition-all bg-white border border-gray-200 group rounded-2xl dark:border-white/10 dark:bg-deepcharcoal">
+                                <div className="flex items-center justify-center w-12 h-12 mb-4 bg-blue-100 rounded-xl dark:bg-blue-900/30">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         strokeWidth={2}
                                         stroke="currentColor"
-                                        className="h-6 w-6 text-blue-600 dark:text-blue-400"
+                                        className="w-6 h-6 text-blue-600 dark:text-blue-400"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -99,15 +96,15 @@ const Index = () => {
                             </div>
 
                             {/* Phone Card */}
-                            <div className="group rounded-2xl border border-gray-200 bg-white p-6 transition-all dark:border-white/10 dark:bg-deepcharcoal">
-                                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 dark:bg-green-900/30">
+                            <div className="p-6 transition-all bg-white border border-gray-200 group rounded-2xl dark:border-white/10 dark:bg-deepcharcoal">
+                                <div className="flex items-center justify-center w-12 h-12 mb-4 bg-green-100 rounded-xl dark:bg-green-900/30">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         strokeWidth={2}
                                         stroke="currentColor"
-                                        className="h-6 w-6 text-green-600 dark:text-green-400"
+                                        className="w-6 h-6 text-green-600 dark:text-green-400"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -125,15 +122,15 @@ const Index = () => {
                             </div>
 
                             {/* Location Card */}
-                            <div className="group rounded-2xl border border-gray-200 bg-white p-6 transition-all dark:border-white/10 dark:bg-deepcharcoal">
-                                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100 dark:bg-purple-900/30">
+                            <div className="p-6 transition-all bg-white border border-gray-200 group rounded-2xl dark:border-white/10 dark:bg-deepcharcoal">
+                                <div className="flex items-center justify-center w-12 h-12 mb-4 bg-purple-100 rounded-xl dark:bg-purple-900/30">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         strokeWidth={2}
                                         stroke="currentColor"
-                                        className="h-6 w-6 text-purple-600 dark:text-purple-400"
+                                        className="w-6 h-6 text-purple-600 dark:text-purple-400"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -158,7 +155,7 @@ const Index = () => {
 
                         {/* Contact Form */}
                         <div className="lg:col-span-2">
-                            <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-lg dark:border-white/10 dark:bg-deepcharcoal">
+                            <div className="p-8 bg-white border border-gray-200 shadow-lg rounded-2xl dark:border-white/10 dark:bg-deepcharcoal">
                                 <h2 className="mb-6 text-2xl font-bold text-gray-900 dark:text-white">
                                     Send us a Message
                                 </h2>
@@ -286,7 +283,7 @@ const Index = () => {
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={2}
                                                 stroke="currentColor"
-                                                className="h-5 w-5"
+                                                className="w-5 h-5"
                                             >
                                                 <path
                                                     strokeLinecap="round"

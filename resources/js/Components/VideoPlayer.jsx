@@ -6,7 +6,6 @@ export default function VideoPlayer({
     className,
     controls,
     autoPlay,
-
     videoElementRef,
     Preload,
 }) {

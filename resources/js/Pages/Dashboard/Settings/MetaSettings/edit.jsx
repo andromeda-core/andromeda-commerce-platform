@@ -9,7 +9,7 @@ import React from 'react';
 
 export default function edit({ meta_setting }) {
     // Edit Data Form Data
-    const { data, setData, put, processing, errors, reset } = useForm({
+    const { data, setData, put, processing, errors } = useForm({
         meta_app_id: meta_setting?.meta_app_id || '',
         meta_app_secret: meta_setting?.meta_app_secret || '',
     });
@@ -35,7 +35,7 @@ export default function edit({ meta_setting }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Meta Settings'}
                                     URL={route('dashboard.settings.meta-settings.index')}

@@ -2,8 +2,8 @@
 
 namespace App\Repositories\PackageRecordings\Repository;
 
+use App\Jobs\CompressPackageRecordingWithFFMPEG;
 use App\Jobs\PackageVideoDestroyOnAWS;
-use App\Jobs\PackageVideoStoreOnAWS;
 use App\Jobs\PackageVideoUpdateOnAWS;
 use App\Models\Order;
 use App\Models\PackageRecording;
@@ -79,7 +79,7 @@ class PackageRecordingsRepository implements IPackageRecordingsRepository
 
             Storage::disk('local')->put($tempPath, file_get_contents($video->getRealPath()));
 
-            dispatch(new PackageVideoStoreOnAWS($tempPath, $created));
+            dispatch(new CompressPackageRecordingWithFFMPEG($tempPath, $created))->onQueue('video');
 
             return [
                 'status' => true,
@@ -154,7 +154,7 @@ class PackageRecordingsRepository implements IPackageRecordingsRepository
             }
 
             if (! empty($package_recording->package_video)) {
-                dispatch(new PackageVideoDestroyOnAWS($package_recording->package_video));
+                dispatch(new PackageVideoDestroyOnAWS($package_recording->package_video, $package_recording->thumbnail_url));
             }
 
             $deleted = $package_recording->delete();

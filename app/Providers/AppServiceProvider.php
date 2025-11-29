@@ -91,6 +91,7 @@ class AppServiceProvider extends ServiceProvider
                         'filesystems.disks.s3.secret' => $aws_setting?->aws_secret_access_key,
                         'filesystems.disks.s3.region' => $aws_setting?->aws_region,
                         'filesystems.disks.s3.bucket' => $aws_setting?->aws_bucket,
+                        'filesystems.disks.s3.url' => $aws_setting?->aws_url,
                         'services.ses.key' => $aws_setting?->aws_access_key_id,
                         'services.ses.secret' => $aws_setting?->aws_secret_access_key,
                         'services.ses.region' => $aws_setting?->aws_region,

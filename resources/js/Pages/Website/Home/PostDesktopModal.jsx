@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PostMediaViewer from './PostMediaViewer';
-import { router, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import GlobalSearch from '@/Components/GlobalSearch';
 import useWindowSize from '@/Hooks/useWindowSize';
 import useDarkMode from '@/Hooks/useDarkMode';
@@ -61,7 +61,7 @@ const PostDesktopModal = ({
     return createPortal(
         <>
             <div className="fixed inset-0 left-0 z-50 bg-white overscroll-contain dark:bg-zinc-950 lg:left-20">
-                <div className="w-1/2 px-20 m-auto mb-3">
+                <div className="w-[50%] px-10 m-auto mb-3">
                     <GlobalSearch
                         additional_filters={false}
                     />

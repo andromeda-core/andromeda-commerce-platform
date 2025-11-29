@@ -11,7 +11,7 @@ import { HexColorPicker } from 'react-colorful';
 
 export default function edit({ color }) {
     // Create Data Form Data
-    const { data, setData, put, processing, errors, reset } = useForm({
+    const { data, setData, put, processing, errors } = useForm({
         name: color.name || '',
         code: color.code || '',
         is_active: color.is_active ?? 1,

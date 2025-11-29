@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FilePond, registerPlugin } from 'react-filepond';
 
 import 'filepond/dist/filepond.min.css';
@@ -8,7 +8,6 @@ import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 import FilePondPluginImageExifOrientation from 'filepond-plugin-image-exif-orientation';
 import FilePondPluginFileValidateSize from 'filepond-plugin-file-validate-size';
-import { usePage } from '@inertiajs/react';
 
 registerPlugin(
     FilePondPluginImagePreview,
@@ -40,6 +39,20 @@ export default function FileUploaderInput({
 
         return Multiple ? preloaded : preloaded.slice(0, 1);
     });
+
+
+
+
+    // CLeanup
+    useEffect(() => {
+        return () => {
+            setFiles([]);
+
+            document.querySelectorAll('.filepond--root').forEach(p => {
+                if (p._pond) p._pond.destroy();
+            });
+        }
+    }, []);
 
     return (
         <>

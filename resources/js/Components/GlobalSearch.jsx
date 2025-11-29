@@ -646,7 +646,7 @@ const GlobalSearch = ({
                                 />
 
                                 {/* Modal Card */}
-                                <div className="relative z-10 w-full max-w-2xl p-8 shadow-2xl rounded-2xl bg-white/95 dark:bg-deepcharcoal dark:text-white/80">
+                                <div className="relative z-10 w-full max-w-2xl p-8 shadow-2xl rounded-2xl bg-white/95 border border-gray-200 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white/80">
                                     {/* Header */}
                                     <div className="flex items-center justify-center pb-4 border-b border-gray-200 dark:border-gray-700">
                                         <h2 className="text-2xl font-semibold tracking-tight text-gray-600 dark:text-white/80">

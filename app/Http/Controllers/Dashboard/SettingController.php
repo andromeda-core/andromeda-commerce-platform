@@ -39,7 +39,7 @@ class SettingController extends Controller
 
         Artisan::call('queue:restart');
 
-        return back()->with('success', $updated['message']);
+        return back();
     }
 
     // Smtp Setting

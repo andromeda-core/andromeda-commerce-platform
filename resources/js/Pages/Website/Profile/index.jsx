@@ -1,13 +1,12 @@
 import Input from '@/Components/Input';
-import PrimaryButton from '@/Components/PrimaryButton';
 import SelectInput from '@/Components/SelectInput';
 import Spinner from '@/Components/Spinner';
 import Textarea from '@/Components/Textarea';
 import Toast from '@/Components/Toast';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
-import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import React, { memo, useEffect, useState } from 'react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 const Index = ({ user, countries }) => {

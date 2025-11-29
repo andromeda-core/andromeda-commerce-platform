@@ -10,7 +10,7 @@ import SelectInput from '@/Components/SelectInput';
 
 export default function edit({ supplier }) {
     // Create Data Form Data
-    const { data, setData, put, processing, errors, reset } = useForm({
+    const { data, setData, put, processing, errors } = useForm({
         name: supplier?.user?.name || '',
         email: supplier?.user?.email || '',
         phone: supplier?.user?.phone || '',
@@ -44,7 +44,7 @@ export default function edit({ supplier }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Suppliers'}
                                     URL={route('dashboard.suppliers.index')}
@@ -206,7 +206,7 @@ export default function edit({ supplier }) {
                                                     (data.password.trim() !== '' &&
                                                         data.password_confirmation.trim() !== '' &&
                                                         data.password.trim() !==
-                                                            data.password_confirmation.trim())
+                                                        data.password_confirmation.trim())
                                                 }
                                                 Spinner={processing}
                                                 Icon={

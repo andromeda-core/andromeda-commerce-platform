@@ -207,7 +207,7 @@ const BottomBar = ({
                     {moreDropdown &&
                         createPortal(
                             <div
-                                className={`absolute bottom-[155px] right-9 z-[9999] max-h-[200px] w-56 overflow-y-auto overscroll-contain rounded-lg bg-white py-2 shadow-lg transition-transform duration-300 ease-in-out dark:bg-deepcharcoal`}
+                                className={`absolute bottom-[155px] right-9 z-[9999] border border-gray-200 dark:border-gray-700 max-h-[200px] w-56 overflow-y-auto overscroll-contain rounded-lg bg-white py-2 shadow-lg transition-transform duration-300 ease-in-out dark:bg-deepcharcoal`}
                                 style={{
                                     position: 'fixed',
                                     transform: 'translateY(83px)',

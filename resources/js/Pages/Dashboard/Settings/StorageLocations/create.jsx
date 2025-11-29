@@ -10,7 +10,7 @@ import SelectInput from '@/Components/SelectInput';
 
 export default function create() {
     // Create Data Form Data
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         name: '',
         address: '',
         is_active: 1,
@@ -37,7 +37,7 @@ export default function create() {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Storage Locations'}
                                     URL={route('dashboard.settings.storage_locations.index')}
