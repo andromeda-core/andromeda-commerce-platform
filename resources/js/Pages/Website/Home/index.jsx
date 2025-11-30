@@ -220,7 +220,7 @@ const index = ({ google_map_api_key }) => {
 
 
 
-    // Checking Slug In URL If Found Than Auto Opening PC FEED Modal
+    // Checking Slug In URL If Found Than Auto Opening  FEED AND PC Modal
     const hasOpenedSlugRef = useRef(false);
 
     useEffect(() => {
@@ -231,8 +231,13 @@ const index = ({ google_map_api_key }) => {
         const smartphone_slug = params.get('m-slug');
 
         if (!post_slug && !smartphone_slug) return;
+
+
         setIsFeedOpeningDirectly(true);
         let feedItem = null;
+
+
+
         if (post_slug) {
             feedItem = feed.find((item) => item.type === 'posts' && item.slug === post_slug);
         } else if (smartphone_slug) {

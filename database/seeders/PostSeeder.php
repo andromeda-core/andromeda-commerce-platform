@@ -10,7 +10,8 @@ class PostSeeder extends Seeder
     public function run(): void
     {
         $posts = collect();
-        for ($i = 0; $i < 3000; $i++) {
+
+        for ($i = 0; $i < 5000; $i++) {
 
             $posts->push([
                 'title' => 'adssdadsasdajkhgasdhgdsaksadgh',

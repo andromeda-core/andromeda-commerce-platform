@@ -15,7 +15,7 @@ export default function OrderView({ order }) {
     const windowSize = useWindowSize();
 
     const [showVideoModal, setShowVideoModal] = useState(false);
-    const [selectedVideo, setSelectedVideo] = useState(null);
+    const [selectedVideo, setSelectedVideo] = useState({});
     const [showImageModal, setShowImageModal] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
     const [viewBankDetails, setViewBankDetails] = useState(false);
@@ -27,6 +27,8 @@ export default function OrderView({ order }) {
         const clean = new URL(window.location.href);
         clean.searchParams.delete('modal');
         clean.searchParams.delete('url');
+        clean.searchParams.delete('thumbnail_url');
+
         return clean.toString();
     })();
 
@@ -59,8 +61,11 @@ export default function OrderView({ order }) {
         }
     };
 
-    const handleVideoView = (videoUrl) => {
-        setSelectedVideo(videoUrl);
+    const handleVideoView = (recording) => {
+        setSelectedVideo({
+            url: recording.package_video,
+            thumbnail_url: recording.thumbnail_url,
+        });
         setShowVideoModal(true);
     };
 
@@ -137,9 +142,13 @@ export default function OrderView({ order }) {
         const url = new URL(window.location.href);
         const modal = url.searchParams.get('modal');
         const mediaUrl = url.searchParams.get('url');
+        const mediaThumbnail = url.searchParams.get('thumbnail_url');
 
         if (modal === 'packaging-recordings') {
-            setSelectedVideo(mediaUrl || null);
+            setSelectedVideo({
+                url: mediaUrl,
+                thumbnail_url: mediaThumbnail,
+            });
             setShowVideoModal(true);
         } else if (modal === 'payment-proof') {
             setSelectedImage(mediaUrl || null);
@@ -172,7 +181,8 @@ export default function OrderView({ order }) {
             window.history.pushState({}, '', window.location.pathname);
 
             url.searchParams.set('modal', 'packaging-recordings');
-            url.searchParams.set('url', selectedVideo);
+            url.searchParams.set('url', selectedVideo?.url);
+            url.searchParams.set('thumbnail_url', selectedVideo?.thumbnail_url);
 
             window.history.replaceState({}, '', url.toString());
         } else if (showImageModal) {
@@ -189,6 +199,7 @@ export default function OrderView({ order }) {
         } else {
             url.searchParams.delete('modal');
             url.searchParams.delete('url');
+            url.searchParams?.delete('thumbnail_url');
             window.history.replaceState({}, '', baseUrlRef.current);
         }
     }, [showVideoModal, showImageModal, selectedVideo, selectedImage, viewBankDetails]);
@@ -198,7 +209,7 @@ export default function OrderView({ order }) {
         const handlePopState = () => {
             if (showVideoModal) {
                 setShowVideoModal(false);
-                setSelectedVideo(null);
+                setSelectedVideo({});
                 setSelectedPackageVideoID(null);
                 return;
             }
@@ -686,18 +697,16 @@ export default function OrderView({ order }) {
                                             <div
                                                 key={index}
                                                 onClick={() => {
-                                                    handleVideoView(recording.package_video);
+                                                    handleVideoView(recording);
                                                     setSelectedPackageVideoID(recording.id);
                                                 }}
                                                 className="relative overflow-hidden transition-all border-2 border-gray-600 cursor-pointer group rounded-xl bg-deepcharcoal dark:border-white/10"
                                             >
                                                 <div className="flex items-center justify-center aspect-video bg-deepcharcoal">
-                                                    <VideoWithThumbnail
-                                                        videoUrl={recording.package_video}
-                                                        thumbnail={recording.thumbnail_url}
-                                                        autoPlay={false}
-                                                        controls={false}
-                                                        muted
+                                                    <img
+                                                        src={recording.thumbnail_url || Placeholder}
+                                                        alt={"Thumbnail " + index}
+                                                        onError={(e) => e.target.src = Placeholder}
                                                     />
 
                                                     <div className="absolute inset-0 flex items-center justify-center transition bg-black/30 group-hover:bg-black/40">
@@ -1091,14 +1100,14 @@ export default function OrderView({ order }) {
             </div>
             {/* Video Modal */}
             {showVideoModal &&
-                selectedVideo &&
+                Object.values(selectedVideo).length > 0 &&
                 createPortal(
                     <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto p-4">
                         <div
                             className="fixed inset-0 transition-opacity duration-300 bg-black/40 backdrop-blur-sm"
                             onClick={() => {
                                 setShowVideoModal(false);
-                                setSelectedVideo(null);
+                                setSelectedVideo({});
                             }}
                         ></div>
 
@@ -1108,11 +1117,12 @@ export default function OrderView({ order }) {
                             className="relative z-[101] my-auto w-[500px] animate-scale-in overflow-hidden rounded-2xl"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <video
-                                src={selectedVideo}
-                                controls
-                                autoPlay
+                            <VideoWithThumbnail
+                                thumbnail={selectedVideo?.thumbnail_url || Placeholder}
+                                videoUrl={selectedVideo?.url}
                                 className="h-auto max-h-[80vh] w-full object-cover"
+                                controls={true}
+                                type='customized'
                             />
                         </div>
                     </div>,

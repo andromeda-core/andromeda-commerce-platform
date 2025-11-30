@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import SmartphoneMobileFeedGallery from "./SmartphoneMobileFeedGallery";
 import PostMobileFeedGallery from './PostMobileFeedGallery';
 const MobileFeedGallery = ({ feedGallery, setShowQrCode, setLinkCopied, auth, currency, cart_items, navigateToHashtag, placeholderImage, generateURL }) => {

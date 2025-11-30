@@ -2,7 +2,6 @@ import GlobalSearch from '@/Components/GlobalSearch';
 import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import Toast from '@/Components/Toast';
 import getCookie from '@/Hooks/useGetCookie';
-import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head } from '@inertiajs/react';
 import axios from 'axios';

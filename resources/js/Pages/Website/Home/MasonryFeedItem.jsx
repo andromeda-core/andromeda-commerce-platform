@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 
 
 
-const MasonryFeedItem = memo(({ item, index, onClick, Placeholder, currency }) => {
+const MasonryFeedItem = memo(({ item, onClick, Placeholder, currency }) => {
     if (item.type === 'posts') {
         return (
             <article

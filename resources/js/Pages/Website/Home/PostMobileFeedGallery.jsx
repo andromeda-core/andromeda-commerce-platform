@@ -1,5 +1,4 @@
 import InstagramStyledVideoPlayer from '@/Components/InstagramStyledVideoPlayer';
-import VideoWithThumbnail from '@/Components/VideoWithThumbnail';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 

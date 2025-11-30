@@ -9,8 +9,8 @@ import Sidebar from '@/partials/Website/Sidebar';
 import { usePage } from '@inertiajs/react';
 import axios from 'axios';
 import React, { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { useFilterStore } from '@/Hooks/useFilterStore';
+import ActivateNavigationPrompt from '@/Components/ActivateNavigationPrompt';
 
 
 export default function MainLayout({ children }) {
@@ -194,20 +194,11 @@ export default function MainLayout({ children }) {
                 >
                     {/* Main Content */}
                     <main className="flex-1 min-h-screen px-3 pt-2 mx-0 bg-white dark:bg-zinc-950/70 lg:px-20 xl:px-36">
+
+                        {/* Activation Navigation Prompt Modal */}
                         {needsActivation &&
-                            createPortal(
-                                <div
-                                    className="fixed inset-0 z-[99999] flex cursor-pointer flex-col items-center justify-center bg-black/70 text-white"
-                                    onClick={() => {
-                                        setNeedsActivation(false);
-                                    }}
-                                >
-                                    <p className="mb-3 text-sm text-center opacity-80">
-                                        Tap anywhere to activate navigation
-                                    </p>
-                                </div>,
-                                document.body,
-                            )}
+                            <ActivateNavigationPrompt setNeedsActivation={setNeedsActivation} />
+                        }
 
                         {children ? (
                             children

@@ -12,7 +12,8 @@ export default function index({ orders, next_page_url }) {
     const windowSize = useWindowSize();
 
     const [allOrders, setAllOrders] = useState(orders || []);
-    const [nextPageUrl, setNextPageUrl] = useState(next_page_url || null);
+    const nextPageUrlRef = useRef(next_page_url || null);
+
 
     const [infoMessage, setInfoMessage] = useState(null);
     const [showInfoMessage, setShowInfoMessage] = useState(false);
@@ -29,24 +30,24 @@ export default function index({ orders, next_page_url }) {
     const isfetchingMorePosts = useRef(false);
 
     const fetchMoreOrders = () => {
-        if (!nextPageUrl) return;
+        if (!nextPageUrlRef.current) return;
+
         isfetchingMorePosts.current = true;
         axios
-            .get(nextPageUrl, {
+            .get(nextPageUrlRef.current, {
                 headers: {
                     Accept: 'application/json',
                 },
             })
             .then((response) => {
                 const data = response.data;
-
                 setAllOrders((prev) => {
                     const ids = new Set(prev.map((p) => p.id));
                     const newOnes = data.orders.filter((p) => !ids.has(p.id));
                     return [...prev, ...newOnes];
                 });
 
-                setNextPageUrl(data.next_page_url);
+                nextPageUrlRef.current = data.next_page_url;
             })
             .catch((error) => {
                 setErrorMessage(error.response.data.message || error.message);
@@ -59,7 +60,7 @@ export default function index({ orders, next_page_url }) {
 
     useEffect(() => {
         const interval = setInterval(() => {
-            if (loaderRef.current && nextPageUrl) {
+            if (loaderRef.current && nextPageUrlRef.current) {
                 const observer = new IntersectionObserver(
                     (entries) => {
                         if (entries[0].isIntersecting && !isfetchingMorePosts.current) {
@@ -79,7 +80,7 @@ export default function index({ orders, next_page_url }) {
         }, 200);
 
         return () => clearInterval(interval);
-    }, [nextPageUrl]);
+    }, []);
 
     const filterOrdersByStatus = (status) => {
         if (status === 'all') return allOrders;
@@ -201,7 +202,7 @@ export default function index({ orders, next_page_url }) {
             </div>
 
             {/* Loader */}
-            {nextPageUrl && (
+            {nextPageUrlRef.current && (
                 <div
                     ref={loaderRef}
                     className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80"
@@ -240,16 +241,16 @@ function TabButton({ label, count, active, onClick }) {
         <button
             onClick={onClick}
             className={`flex items-center gap-2 whitespace-nowrap border-b-2 px-5 py-3.5 text-sm font-semibold transition-all ${active
-                    ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
-                    : 'border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-700 dark:text-white/80 dark:hover:border-white/20 dark:hover:text-white'
+                ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
+                : 'border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-700 dark:text-white/80 dark:hover:border-white/20 dark:hover:text-white'
                 }`}
         >
             <span>{label}</span>
             {count > 0 && (
                 <span
                     className={`flex h-6 min-w-[24px] items-center justify-center rounded-full px-2 text-xs font-bold ${active
-                            ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400'
-                            : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-white/80'
+                        ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400'
+                        : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-white/80'
                         }`}
                 >
                     {count}
