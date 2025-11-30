@@ -95,18 +95,10 @@ class Smartphone extends Model
     // Static Booting
     protected static function booted()
     {
-        static::created(function ($smartphone) {
+        static::saving(function ($smartphone) {
             Cache::tags(['feed'])->flush();
 
-            $smartphone->model_searchable_name = $smartphone?->model_name?->name;
-            $smartphone->save();
-        });
-
-        static::updated(function ($smartphone) {
-            Cache::tags(['feed'])->flush();
-
-            $smartphone->model_searchable_name = $smartphone?->model_name?->name;
-            $smartphone->save();
+            $smartphone->model_searchable_name = $smartphone->model_name?->name;
         });
 
         static::deleted(function ($smartphone) {
