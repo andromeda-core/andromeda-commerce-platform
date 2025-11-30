@@ -917,6 +917,16 @@ class OrderRepository implements IOrderRepository
                 'message' => 'Please Login First',
             ];
         }
+
+        if (! $user->hasRole('Customer')) {
+            return [
+                'status' => true,
+                'orders' => [],
+                'next_page_url' => null,
+
+            ];
+        }
+
         $customer = $user->customer;
 
         $orders = $this->order
