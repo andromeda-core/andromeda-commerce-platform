@@ -97,10 +97,16 @@ class Smartphone extends Model
     {
         static::created(function ($smartphone) {
             Cache::tags(['feed'])->flush();
+
+            $smartphone->model_searchable_name = $smartphone?->model_name?->name;
+            $smartphone->save();
         });
 
         static::updated(function ($smartphone) {
             Cache::tags(['feed'])->flush();
+
+            $smartphone->model_searchable_name = $smartphone?->model_name?->name;
+            $smartphone->save();
         });
 
         static::deleted(function ($smartphone) {
