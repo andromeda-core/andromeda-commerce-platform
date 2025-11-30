@@ -615,6 +615,8 @@ Additional Work:
         116: Orders Single View Page Video Part Updated And now showign backend geenrated Thumbnail on videos and Video Player Modal Updated with new structure
             And URL appending and deleteing logic also updated ✅
 
+        117: Navihation Activation Modal Enhanced And Organized With the New Component and Used in Main Layout
+
         116: After PULLING These NEW Optimization Changes Must Run: (
             Horizon Restart, Queue Restart, Previous Cache Clear,Configure Composer With FFMPEG (If Asked),
         )
