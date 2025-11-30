@@ -375,10 +375,10 @@ const SmartphoneDesktopModal = ({
             {createPortal(
                 <>
                     <div className="fixed inset-0 left-0 z-50 bg-white dark:bg-zinc-950 lg:left-20">
-                        <div className="w-[50%] px-10 m-auto mb-3">
+                        <div className="w-[46%]  pr-10 m-auto mt-2 mb-3">
                             <GlobalSearch
-
                                 additional_filters={false}
+
                             />
                         </div>
 

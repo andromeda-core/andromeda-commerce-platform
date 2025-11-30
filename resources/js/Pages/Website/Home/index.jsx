@@ -19,7 +19,7 @@ import Spinner from '@/Components/Spinner';
 import MasonryFeedItem from './MasonryFeedItem';
 
 
-const index = ({ google_map_api_key }) => {
+const index = () => {
     const { currency, auth, cart_items } = usePage().props;
 
     const [ErrorMessage, setErrorMessage] = useState(null);
@@ -955,7 +955,7 @@ const index = ({ google_map_api_key }) => {
             const url = new URL(window.location.href);
             url.searchParams.set('mobile-feed-gallery', true);
 
-            // ✅ ALWAYS use pushState for mobile gallery
+            //  ALWAYS use pushState for mobile gallery
             // Mobile gallery is a new navigation state that user should be able to go back from
             window.history.pushState({}, '', url.toString());
 
@@ -1066,7 +1066,6 @@ const index = ({ google_map_api_key }) => {
                         <div className="w-1/2 m-auto mb-3">
                             <GlobalSearch
                                 additional_filters={false}
-                                google_map_api_key={google_map_api_key}
 
                             />
                         </div>
