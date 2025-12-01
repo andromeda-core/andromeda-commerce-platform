@@ -838,6 +838,7 @@ const index = () => {
     }, []);
 
 
+
     // POP STATE HANDLING
     useEffect(() => {
         const handlePopState = (e) => {
