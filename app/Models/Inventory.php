@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Cache;
 
 class Inventory extends Model
 {
@@ -42,6 +43,14 @@ class Inventory extends Model
     public function storage_location(): BelongsTo
     {
         return $this->belongsTo(StorageLocation::class, 'storage_location_id', 'id');
+    }
+
+    // Static Booting
+    protected static function booted()
+    {
+        static::saving(function () {
+            Cache::tags(['feed'])->flush();
+        });
     }
 
     // Casting

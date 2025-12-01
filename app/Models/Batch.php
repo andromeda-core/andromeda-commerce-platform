@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 class Batch extends Model
 {
@@ -44,6 +45,14 @@ class Batch extends Model
         return array_map(function ($invoices) {
             return $invoices['url'];
         }, $this->invoices ?? []);
+    }
+
+    // Static Booting
+    protected static function booted()
+    {
+        static::saving(function () {
+            Cache::tags(['feed'])->flush();
+        });
     }
 
     // Casting
