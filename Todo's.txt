@@ -620,7 +620,9 @@ Additional Work:
         119: AWS Account Migration to new account and setting up s3 Bucket + CloudFront  ✅
         120: Main Page Post Title removed and showed the content first line and bookmark page same applies✅
         121: Navigation Activation Propmt Commented And Not Using Rn✅
-
+        122: Server Migrated TO Singapore Region and All configs  Setup Completed ✅
+        123: Dashboard Sidebar Backdrop Issue FIxed, And On Mobile When Sidebar opens appending its History to Browser and syncing closing with back button on mobile  ✅
+        124: Auto Closing The Bottom Bar More Dropdown when pop state triggers or clicks anywhere ✅
 
 
     ) Redesigned Whole Website 4th Time Completed According To The LAYOUT Design Reference Provided ✅

@@ -1,6 +1,6 @@
 import { useHomeNavStore } from '@/Hooks/useHomeNavStore';
 import { Link, router, usePage } from '@inertiajs/react';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 const BottomBar = ({
@@ -15,8 +15,8 @@ const BottomBar = ({
     filterModal,
 }) => {
     const { user } = usePage().props.auth;
-
-    // Toggle Mode Dark + Light
+    const dropdownRef = useRef(null);
+    //  Mode Dark + Light Storing
     useEffect(() => {
         const saved = localStorage.getItem('darkMode');
         if (saved !== null) {
@@ -31,6 +31,39 @@ const BottomBar = ({
         }
     }, []);
 
+
+    useEffect(() => {
+        if (!moreDropdown) return;
+        const handleClickOutside = (event) => {
+            if (!moreDropdown) return;
+            const dropdownEl = dropdownRef.current;
+            const buttonEl = document.getElementById("bottom-more-btn");
+
+            if (dropdownEl.contains(event.target)) return;
+
+            if (buttonEl?.contains(event.target)) return;
+
+            setMoreDropdown(false);
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+
+        const handlePopState = () => {
+            if (moreDropdown) {
+                setMoreDropdown(false);
+            }
+        };
+
+        window.addEventListener("popstate", handlePopState);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            window.removeEventListener("popstate", handlePopState);
+        };
+    }, [moreDropdown]);
+
+
+    // Toggeling Theme Mode On Mobile
     useEffect(() => {
         if (darkMode) {
             document.documentElement.classList.add('dark');
@@ -182,6 +215,7 @@ const BottomBar = ({
                     </button>
 
                     <button
+                        id='bottom-more-btn'
                         className={`flex cursor-pointer items-center rounded-lg p-2 text-white/80 ${moreDropdown ? 'menu-item-active' : 'menu-item-inactive'}`}
                         ref={moreDropdownRef}
                         onClick={() => {
@@ -207,6 +241,7 @@ const BottomBar = ({
                     {moreDropdown &&
                         createPortal(
                             <div
+                                ref={dropdownRef}
                                 className={`absolute bottom-[155px] right-9 z-[9999] border border-gray-200 dark:border-gray-700 max-h-[200px] w-56 overflow-y-auto overscroll-contain rounded-lg bg-white py-2 shadow-lg transition-transform duration-300 ease-in-out dark:bg-deepcharcoal`}
                                 style={{
                                     position: 'fixed',

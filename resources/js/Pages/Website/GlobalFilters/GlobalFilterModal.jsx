@@ -218,7 +218,6 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
         };
 
         const preventInertiaNavigation = (event) => {
-            const pathname = event.detail?.visit?.url?.pathname || '';
             const url = event.detail?.visit?.url?.href || '';
 
             // Allow specific routes (intentional navigation)

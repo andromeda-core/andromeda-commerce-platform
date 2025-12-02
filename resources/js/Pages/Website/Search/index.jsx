@@ -6,9 +6,11 @@ import Toast from '@/Components/Toast';
 import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 import { useConfirm } from '@/Hooks/useConfirm';
+import useWindowSize from '@/Hooks/useWindowSize';
 
 // Memoized result item component
 const ResultItem = memo(({ item, onCopyLink, generateURL }) => {
+    const { width } = useWindowSize();
     return (
         <a
             href={
@@ -16,7 +18,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL }) => {
                     ? route('home') + generateURL(item)
                     : route('home') + '?m-slug=' + item.slug
             }
-            target='_blank'
+            target={width > 1024 ? '_blank' : undefined}
             onClick={() =>
                 window.history.replaceState({}, '', route('home')
                 )}

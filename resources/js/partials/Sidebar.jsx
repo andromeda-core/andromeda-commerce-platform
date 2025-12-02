@@ -1,7 +1,8 @@
 import can from '@/Hooks/useCan';
 import useWindowSize from '@/Hooks/useWindowSize';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 export default function Sidebar({
     sidebarToggle,
@@ -11,11 +12,10 @@ export default function Sidebar({
 }) {
     // For Managing Sidebar Navlinks Selection State
     const [selected, setSelected] = useState(null);
-    const [accountSetupSelected, setAccountSetupSelected] = useState(null);
 
     const { width } = useWindowSize();
 
-    const isLargeScreen = width >= 1025;
+    const isLargeScreen = width > 1024;
     const prevIsLargeScreenRef = useRef(isLargeScreen);
 
     useEffect(() => {
@@ -42,12 +42,79 @@ export default function Sidebar({
             localStorage.setItem('sidebarToggle', JSON.stringify(sidebarToggle));
         }
     }, [sidebarToggle, isLargeScreen]);
+
+
+    // Adding Browser History When Sidebar Toggles
+    useEffect(() => {
+        if (sidebarToggle && width < 1024) {
+            const url = new URL(window.location.href);
+            url.searchParams.set("modal", "sidebar");
+            window.history.replaceState({}, "", url.toString());
+            window.history.pushState({}, "", url.toString());
+        }
+
+        if (!sidebarToggle) {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("modal");
+            window.history.replaceState({}, "", url.toString());
+        }
+    }, [sidebarToggle, width]);
+
+    // POP STATE HANDLING
+    useEffect(() => {
+        const handlePopState = (e) => {
+            const params = new URLSearchParams(window.location.search);
+            const modal = params.get("modal");
+
+
+            if (modal === "sidebar") {
+                e.preventDefault();
+                setSidebarToggle(false);
+
+                window.history.replaceState({}, "", window.location.pathname);
+                return;
+            }
+        };
+
+        const inertiaBefore = router.on("before", (event) => {
+            const params = new URLSearchParams(window.location.search);
+            const modal = params.get("modal");
+            if (modal === "sidebar") {
+
+                event.preventDefault();
+                setSidebarToggle(false);
+                window.history.replaceState({}, "", window.location.pathname);
+                return false;
+            }
+        });
+
+        window.addEventListener("popstate", handlePopState);
+
+        return () => {
+            window.removeEventListener("popstate", handlePopState);
+            inertiaBefore();
+        };
+    }, []);
+
     return (
         <>
             <aside
-                className={`${sidebarToggle ? 'translate-x-0 lg:w-[90px]' : '-translate-x-full'
-                    } sidebar fixed left-0 top-0 z-[12] flex h-screen w-[290px] flex-col overflow-y-hidden border-r border-gray-200 bg-white px-5 dark:border-gray-800 dark:bg-deepcharcoal lg:static lg:translate-x-0`}
+                className={`${sidebarToggle ? 'translate-x-0 lg:w-[90px]' : '-translate-x-full'}
+                sidebar fixed left-0 top-0 z-[10002] flex h-screen w-[290px] flex-col
+                overflow-y-hidden border-r border-gray-200 bg-white px-5
+                dark:border-gray-800 dark:bg-deepcharcoal lg:static lg:translate-x-0`}
             >
+
+                {width < 1024 && sidebarToggle && (
+                    createPortal(
+                        <div
+                            className="fixed inset-0 bg-black/30 backdrop-blur-lg z-[10001]"
+                            onClick={() => setSidebarToggle(false)}
+                        ></div>,
+                        document.getElementById('modal-root') || document.body
+                    )
+                )}
+
                 <div
                     className={`flex items-center ${sidebarToggle ? 'justify-center' : 'justify-between'} sidebar-header gap-2 pb-7 pt-8`}
                 >
@@ -89,7 +156,7 @@ export default function Sidebar({
                     </button>
                 </div>
 
-                <div className="no-scrollbar flex flex-1 flex-col overflow-y-auto duration-300 ease-linear">
+                <div className="flex flex-col flex-1 overflow-y-auto duration-300 ease-linear no-scrollbar">
                     <nav>
                         <div>
                             <h3 className="mb-4 text-xs uppercase leading-[20px] text-gray-400">
@@ -110,7 +177,7 @@ export default function Sidebar({
                                 </svg>
                             </h3>
 
-                            <ul className="mb-6 flex flex-col gap-4">
+                            <ul className="flex flex-col gap-4 mb-6">
                                 <li>
                                     <Link
                                         href={route('dashboard')}
