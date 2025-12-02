@@ -7,6 +7,7 @@ import { Head } from '@inertiajs/react';
 import axios from 'axios';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 import React, { useEffect, useRef, useState } from 'react';
+import useWindowSize from '@/Hooks/useWindowSize';
 
 
 const hashtagPosts = ({ hashtag, google_map_api_key, search_history }) => {
@@ -28,7 +29,8 @@ const hashtagPosts = ({ hashtag, google_map_api_key, search_history }) => {
             `${post?.floor != null ? '&floor=' + encodeURIComponent(post?.floor) : ''}`
         );
     };
-
+    const { width } = useWindowSize();
+    const Tag = width > 1024 ? 'a' : Link;
     const [isLoaded, setIsLoaded] = useState(false);
     const [isFetchingMore, setIsFetchingMore] = useState(false);
     const [ErrorMessage, setErrorMessage] = useState('');
@@ -255,13 +257,13 @@ const hashtagPosts = ({ hashtag, google_map_api_key, search_history }) => {
                             </>
                         ) : (
                             allResults.map((item) => (
-                                <a
+                                <Tag
                                     href={
                                         item.type === 'posts'
                                             ? route('home') + generateURL(item)
                                             : route('home') + '?m-slug=' + item.slug
                                     }
-                                    target='_blank'
+                                    target={width > 1024 ? '_blank' : undefined}
                                     onClick={() => window.history.replaceState({}, '', route('home'))}
 
                                     key={item.id}
@@ -361,7 +363,7 @@ const hashtagPosts = ({ hashtag, google_map_api_key, search_history }) => {
 
 
                                     </div>
-                                </a>
+                                </Tag>
                             ))
                         )}
                     </div>

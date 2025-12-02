@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback, memo } from 'react';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import GlobalSearch from '@/Components/GlobalSearch';
 import Toast from '@/Components/Toast';
@@ -11,8 +11,10 @@ import useWindowSize from '@/Hooks/useWindowSize';
 // Memoized result item component
 const ResultItem = memo(({ item, onCopyLink, generateURL }) => {
     const { width } = useWindowSize();
+    const Tag = width > 1024 ? 'a' : Link;
     return (
-        <a
+
+        <Tag
             href={
                 item.type === 'posts'
                     ? route('home') + generateURL(item)
@@ -107,7 +109,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL }) => {
                     </svg>
                 </button>
             </div>
-        </a>
+        </Tag>
     );
 });
 

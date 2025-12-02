@@ -623,7 +623,7 @@ Additional Work:
         122: Server Migrated TO Singapore Region and All configs  Setup Completed ✅
         123: Dashboard Sidebar Backdrop Issue FIxed, And On Mobile When Sidebar opens appending its History to Browser and syncing closing with back button on mobile  ✅
         124: Auto Closing The Bottom Bar More Dropdown when pop state triggers or clicks anywhere ✅
-
+        125: Conditional Inertia Link and  html anchor tag added anchor tag is for desktop and link is for mobile and hashtag Results Backend Issue FIXED  ✅
 
     ) Redesigned Whole Website 4th Time Completed According To The LAYOUT Design Reference Provided ✅
 

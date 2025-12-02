@@ -1287,7 +1287,7 @@ class PostRepository implements IPostRepository
             if ($show_products) {
                 $smartphones = $this->smartphone
                     ->where('tag', $hashtag)
-                    ->with(['capacity:id,name', 'selling_info:id,smartphone_id,total_price,'])
+                    ->with(['capacity:id,name', 'selling_info:id,smartphone_id,total_price'])
                     ->withCount([
                         'inventory_items' => function ($query) {
                             $query->where('status', 'in_stock');
