@@ -93,29 +93,29 @@ export default function MainLayout({ children }) {
         };
     }, [windowSize.width]);
 
-    const [CurrentUrl, setCurrentUrl] = useState(window.location.href);
-    const [needsActivation, setNeedsActivation] = useState(false);
+    // const [CurrentUrl, setCurrentUrl] = useState(window.location.href);
+    // const [needsActivation, setNeedsActivation] = useState(false);
 
-    useEffect(() => {
-        const nav = performance.getEntriesByType('navigation')[0];
+    // useEffect(() => {
+    //     const nav = performance.getEntriesByType('navigation')[0];
 
-        const wasReload = nav?.type === 'reload';
-        const wasNavigated = nav?.type === 'navigate';
-        const cameExternally =
-            document.referrer && !document.referrer.startsWith(window.location.origin);
+    //     const wasReload = nav?.type === 'reload';
+    //     const wasNavigated = nav?.type === 'navigate';
+    //     const cameExternally =
+    //         document.referrer && !document.referrer.startsWith(window.location.origin);
 
-        if (wasReload || cameExternally || wasNavigated) {
-            const url = new URL(CurrentUrl);
+    //     if (wasReload || cameExternally || wasNavigated) {
+    //         const url = new URL(CurrentUrl);
 
-            if (
-                url.searchParams.get('slug') ||
-                url.searchParams.get('m-slug') ||
-                url.searchParams.get('modal')
-            ) {
-                setNeedsActivation(true);
-            }
-        }
-    }, []);
+    //         if (
+    //             url.searchParams.get('slug') ||
+    //             url.searchParams.get('m-slug') ||
+    //             url.searchParams.get('modal')
+    //         ) {
+    //             setNeedsActivation(true);
+    //         }
+    //     }
+    // }, []);
 
     // This logic Not Needed For Now
     // const [isStandalone, setIsStandalone] = useState(false);
@@ -196,9 +196,9 @@ export default function MainLayout({ children }) {
                     <main className="flex-1 min-h-screen px-3 pt-2 mx-0 bg-white dark:bg-zinc-950/70 lg:px-20 xl:px-36">
 
                         {/* Activation Navigation Prompt Modal */}
-                        {needsActivation &&
+                        {/* {needsActivation &&
                             <ActivateNavigationPrompt setNeedsActivation={setNeedsActivation} />
-                        }
+                        } */}
 
                         {children ? (
                             children

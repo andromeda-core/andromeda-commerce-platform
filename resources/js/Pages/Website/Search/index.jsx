@@ -109,8 +109,6 @@ const ResultItem = memo(({ item, onCopyLink, generateURL }) => {
     );
 });
 
-ResultItem.displayName = 'ResultItem';
-
 const Index = ({
     floors,
     google_map_api_key,

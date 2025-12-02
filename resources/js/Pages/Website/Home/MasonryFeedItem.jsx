@@ -21,18 +21,31 @@ const MasonryFeedItem = memo(({ item, onClick, Placeholder, currency }) => {
                         />
 
                         <div className="absolute left-3 top-3">
-                            <span className="text-[8px] text-white drop-shadow-md sm:text-[9px] md:text-[10px] lg:text-[17px]">
+                            <span className="text-[8px] text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] sm:text-[9px] md:text-[10px] lg:text-[17px]">
                                 {item?.tag}
                             </span>
                         </div>
 
                         <div className="absolute inset-x-0 bottom-0 p-4">
                             <div className="mt-1 flex items-center justify-between text-[8px] font-bold text-gray-200 drop-shadow-sm sm:text-[9px] md:text-[10px] lg:text-[17px]">
-                                <span className="text-white drop-shadow-md">
-                                    {item?.title.length > 25
-                                        ? item?.title.slice(0, 25) + '...'
-                                        : item?.title}
-                                </span>
+                                <p className="text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] overflow-hidden text-ellipsis whitespace-nowrap block">
+                                    {item?.content && item.content.length > 30 ? (
+                                        <span
+                                            dangerouslySetInnerHTML={{
+                                                __html:
+                                                    item.content.substring(0, 30) +
+                                                    '...',
+                                            }}
+                                        />
+                                    ) : (
+                                        <span
+                                            dangerouslySetInnerHTML={{
+                                                __html: item?.content,
+                                            }}
+                                        />
+                                    )}
+                                </p>
+
                             </div>
                         </div>
                     </div>
@@ -48,18 +61,32 @@ const MasonryFeedItem = memo(({ item, onClick, Placeholder, currency }) => {
                         />
 
                         <div className="absolute left-3 top-3">
-                            <span className="text-[8px] text-white drop-shadow-md sm:text-[9px] md:text-[10px] lg:text-[17px]">
+                            <span className="text-[8px] text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] sm:text-[9px] md:text-[10px] lg:text-[17px]">
                                 {item?.tag}
                             </span>
                         </div>
 
                         <div className="absolute inset-x-0 bottom-0 p-4">
                             <div className="mt-1 flex items-center justify-between text-[8px] font-bold text-gray-200 drop-shadow-sm sm:text-[9px] md:text-[10px] lg:text-[17px]">
-                                <span className="text-white drop-shadow-md">
-                                    {item?.title.length > 25
-                                        ? item?.title.slice(0, 25) + '...'
-                                        : item?.title}
-                                </span>
+                                <p className="text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] overflow-hidden text-ellipsis whitespace-nowrap block">
+                                    {item?.content && item.content.length > 30 ? (
+                                        <span
+                                            dangerouslySetInnerHTML={{
+                                                __html:
+                                                    item.content.substring(0, 30) +
+                                                    '...',
+                                            }}
+                                        />
+                                    ) : (
+                                        <span
+                                            dangerouslySetInnerHTML={{
+                                                __html: item?.content,
+                                            }}
+                                        />
+                                    )}
+                                </p>
+
+
                             </div>
                         </div>
                     </div>
@@ -118,27 +145,27 @@ const MasonryFeedItem = memo(({ item, onClick, Placeholder, currency }) => {
                 />
 
                 <div className="absolute left-3 top-3">
-                    <span className="text-[8px] text-white drop-shadow-md sm:text-[9px] md:text-[10px] lg:text-[17px]">
+                    <span className="text-[8px] text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] sm:text-[9px] md:text-[10px] lg:text-[17px]">
                         {item?.tag}
                     </span>
                 </div>
 
                 <div className="absolute inset-x-0 bottom-0 p-3 bg-transparent">
                     <div className="mt-2 flex items-center justify-between text-[8px] font-bold text-gray-200 drop-shadow-sm sm:text-[9px] md:text-[10px] lg:text-[17px]">
-                        <span className="text-white">
+                        <p className="text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] overflow-hidden text-ellipsis whitespace-nowrap block">
                             {item.name.length > 20 ? item.name.slice(0, 20) + '...' : item.name}{' '}
                             (
                             {item.capacity.length > 10
                                 ? item.capacity.slice(0, 10) + '...'
                                 : item.capacity}
                             )
-                        </span>
+                        </p>
 
-                        <span>
+                        <p className="text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] overflow-hidden text-ellipsis whitespace-nowrap block">
                             {item.selling_info?.total_price
                                 ? `${currency?.symbol} ${item.selling_info.total_price}`
                                 : ''}
-                        </span>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -152,6 +179,5 @@ const MasonryFeedItem = memo(({ item, onClick, Placeholder, currency }) => {
     );
 });
 
-MasonryFeedItem.displayName = 'MasonryFeedItem';
 
 export default MasonryFeedItem;

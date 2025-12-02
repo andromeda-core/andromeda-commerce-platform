@@ -325,7 +325,7 @@ const index = () => {
                                 <p className="leading-relaxed text-gray-700 dark:text-gray-300">
                                     This Privacy Policy explains how W IN DOUBLE SPACE CORP. LTD
                                     collects, uses, and protects your personal information when you
-                                    use yesbigshop.com and its features, including Facebook Login
+                                    use andromeda.blue and its features, including Facebook Login
                                     and delivery notifications via Messenger, Instagram Direct
                                     Messages, and Threads Direct Messages.
                                 </p>
@@ -641,7 +641,7 @@ const index = () => {
                                     </h2>
                                 </div>
                                 <p className="leading-relaxed text-gray-700 dark:text-gray-300">
-                                    yesbigshop.com uses cookies for personalization. Disabling
+                                    andromeda.blue uses cookies for personalization. Disabling
                                     cookies may limit certain features.
                                 </p>
                             </section>
@@ -867,7 +867,7 @@ const index = () => {
                                             <em className="font-semibold text-indigo-600 dark:text-indigo-400">
                                                 Settings → Business Integrations
                                             </em>{' '}
-                                            to disconnect yesbigshop.com.
+                                            to disconnect andromeda.blue.
                                         </p>
                                     </div>
                                 </div>

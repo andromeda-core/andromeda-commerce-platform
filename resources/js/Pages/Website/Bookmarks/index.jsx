@@ -219,7 +219,7 @@ export default function index() {
 
                                                 {/* Title */}
                                                 <div className="absolute left-3 top-3">
-                                                    <span className="text-[8px] text-white drop-shadow-md sm:text-[9px] md:text-[10px] lg:text-[17px]">
+                                                    <span className="text-[8px] text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] sm:text-[9px] md:text-[10px] lg:text-[17px]">
                                                         {item?.tag}
                                                     </span>
                                                 </div>
@@ -227,14 +227,24 @@ export default function index() {
                                                 {/* Title + Meta */}
                                                 <div className="absolute inset-x-0 bottom-0 p-4">
                                                     <div className="mt-1 flex items-center justify-between text-[8px] font-bold text-gray-200 drop-shadow-sm sm:text-[9px] md:text-[10px] lg:text-[17px]">
-                                                        <span className="text-white drop-shadow-md">
-                                                            {item?.title.length > 25
-                                                                ? item?.title.slice(
-                                                                    0,
-                                                                    25,
-                                                                ) + '...'
-                                                                : item?.title}
-                                                        </span>
+                                                        <p className="text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] overflow-hidden text-ellipsis whitespace-nowrap block">
+                                                            {item?.content && item.content.length > 30 ? (
+                                                                <span
+                                                                    dangerouslySetInnerHTML={{
+                                                                        __html:
+                                                                            item.content.substring(0, 30) +
+                                                                            '...',
+                                                                    }}
+                                                                />
+                                                            ) : (
+                                                                <span
+                                                                    dangerouslySetInnerHTML={{
+                                                                        __html: item?.content,
+                                                                    }}
+                                                                />
+                                                            )}
+                                                        </p>
+
                                                     </div>
                                                 </div>
                                             </div>
@@ -252,7 +262,7 @@ export default function index() {
                                                     />
                                                     {/* Title */}
                                                     <div className="absolute left-3 top-3">
-                                                        <span className="text-[8px] text-white drop-shadow-md sm:text-[9px] md:text-[10px] lg:text-[17px]">
+                                                        <span className="text-[8px] text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] sm:text-[9px] md:text-[10px] lg:text-[17px]">
                                                             {item?.tag}
                                                         </span>
                                                     </div>
@@ -260,14 +270,24 @@ export default function index() {
                                                     {/* Title + Meta */}
                                                     <div className="absolute inset-x-0 bottom-0 p-4">
                                                         <div className="mt-1 flex items-center justify-between text-[8px] font-bold text-gray-200 drop-shadow-sm sm:text-[9px] md:text-[10px] lg:text-[17px]">
-                                                            <span className="text-white drop-shadow-md">
-                                                                {item?.title.length > 25
-                                                                    ? item?.title.slice(
-                                                                        0,
-                                                                        25,
-                                                                    ) + '...'
-                                                                    : item?.title}
-                                                            </span>
+                                                            <p className="text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] overflow-hidden text-ellipsis whitespace-nowrap block">
+                                                                {item?.content && item.content.length > 30 ? (
+                                                                    <span
+                                                                        dangerouslySetInnerHTML={{
+                                                                            __html:
+                                                                                item.content.substring(0, 30) +
+                                                                                '...',
+                                                                        }}
+                                                                    />
+                                                                ) : (
+                                                                    <span
+                                                                        dangerouslySetInnerHTML={{
+                                                                            __html: item?.content,
+                                                                        }}
+                                                                    />
+                                                                )}
+                                                            </p>
+
                                                         </div>
                                                     </div>
                                                 </div>

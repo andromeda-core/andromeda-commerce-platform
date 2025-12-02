@@ -616,6 +616,10 @@ Additional Work:
             And URL appending and deleteing logic also updated ✅
 
         117: Navihation Activation Modal Enhanced And Organized With the New Component and Used in Main Layout ✅
+        118: Migration From YesbigShop to Andromeda And CloudFront  + s3 + Server Configuration✅
+        119: AWS Account Migration to new account and setting up s3 Bucket + CloudFront  ✅
+        120: Main Page Post Title removed and showed the content first line and bookmark page same applies✅
+        121: Navigation Activation Propmt Commented And Not Using Rn✅
 
 
 
