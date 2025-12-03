@@ -1379,7 +1379,7 @@ export default function OrderView({ order }) {
                                                             </svg>
                                                             Account Number
                                                         </label>
-                                                        <p className="font-mono text-lg font-bold text-gray-900 dark:text-white/80">
+                                                        <p className="font-mono text-lg font-bold text-gray-900 break-all dark:text-white/80">
                                                             {order?.order_items[0]?.smartphone
                                                                 ?.category?.distributor
                                                                 ?.bank_account_no || 'N/A'}
@@ -1661,7 +1661,7 @@ export default function OrderView({ order }) {
                                 <div className="absolute inset-0 bg-black/70"></div>
 
                                 {/* Fullscreen slide-over */}
-                                <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-white text-black dark:bg-deepcharcoal dark:text-white/80 sm:pb-20">
+                                <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-white text-black dark:bg-deepcharcoal dark:text-white/80 pb-24">
                                     {/* Top Bar */}
                                     <div className="relative flex items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800">
                                         <button
@@ -1694,7 +1694,7 @@ export default function OrderView({ order }) {
                                         {/* Bank Name */}
                                         <div className="p-4 transition-all border border-gray-200 group rounded-xl bg-gray-50 hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
                                             <div className="flex items-start justify-between">
-                                                <div className="flex-1">
+                                                <div className="flex-1 min-w-0">
                                                     <label className="flex items-center gap-2 mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-white/60">
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
@@ -1771,7 +1771,7 @@ export default function OrderView({ order }) {
                                         {/* Account Name */}
                                         <div className="p-4 transition-all border border-gray-200 group rounded-xl bg-gray-50 hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
                                             <div className="flex items-start justify-between">
-                                                <div className="flex-1">
+                                                <div className="flex-1 min-w-0">
                                                     <label className="flex items-center gap-2 mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-white/60">
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
@@ -1849,7 +1849,7 @@ export default function OrderView({ order }) {
                                         {/* Account Number */}
                                         <div className="p-4 transition-all border border-gray-200 group rounded-xl bg-gray-50 hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
                                             <div className="flex items-start justify-between">
-                                                <div className="flex-1">
+                                                <div className="flex-1 min-w-0">
                                                     <label className="flex items-center gap-2 mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-white/60">
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
@@ -1867,7 +1867,7 @@ export default function OrderView({ order }) {
                                                         </svg>
                                                         Account Number
                                                     </label>
-                                                    <p className="font-mono text-lg font-bold text-gray-900 dark:text-white/80">
+                                                    <p className="font-mono text-lg font-bold text-gray-900 break-all dark:text-white/80">
                                                         {order?.order_items[0]?.smartphone?.category
                                                             ?.distributor?.bank_account_no || 'N/A'}
                                                     </p>
@@ -1926,7 +1926,7 @@ export default function OrderView({ order }) {
                                         {/* IBAN */}
                                         <div className="p-4 transition-all border border-gray-200 group rounded-xl bg-gray-50 hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
                                             <div className="flex items-start justify-between">
-                                                <div className="flex-1">
+                                                <div className="flex-1 min-w-0">
                                                     <label className="flex items-center gap-2 mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-white/60">
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
@@ -2003,7 +2003,7 @@ export default function OrderView({ order }) {
                                         {/* SWIFT Code */}
                                         <div className="p-4 transition-all border border-gray-200 group rounded-xl bg-gray-50 hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-800 dark:hover:bg-indigo-900/10">
                                             <div className="flex items-start justify-between">
-                                                <div className="flex-1">
+                                                <div className="flex-1 min-w-0">
                                                     <label className="flex items-center gap-2 mb-1 text-xs font-semibold tracking-wide text-gray-600 uppercase dark:text-white/60">
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"

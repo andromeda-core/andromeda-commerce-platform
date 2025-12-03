@@ -723,7 +723,7 @@ const SmartphoneDesktopModal = ({
                             </div>
                         </div>
 
-                        <div className="fixed bottom-0 left-0 right-0 z-50 p-20 py-4 mx-auto text-white bg-black max-w-7xl">
+                        <div className="fixed bottom-0 left-0 right-0 z-50 p-32 pb-3 mx-auto text-white bg-black pt-7 max-w-7xl">
                             <div className="flex items-center justify-between">
                                 <div className="flex flex-col">
                                     <div className="text-xl font-bold lg:text-2xl">

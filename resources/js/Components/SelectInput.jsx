@@ -25,7 +25,7 @@ export default function SelectInput({
             ...base,
             backgroundColor: '#0D0E12',
             color: '#ffffff',
-            borderColor: state.isFocused ? '#3b82f6' : '#4b5563',
+            border: state.isFocused ? '1px solid #3b82f6' : '1px solid #4b5563',
             boxShadow: 'none',
             '&:hover': {
                 borderColor: 'none',
@@ -40,6 +40,7 @@ export default function SelectInput({
         option: (base, state) => ({
             ...base,
             backgroundColor: '#0D0E12',
+            border: '1px solid #374151',
             color: '#fff',
             '&:active': {
                 backgroundColor: '#4b5563',
@@ -135,10 +136,10 @@ export default function SelectInput({
                         value={
                             Multiple
                                 ? options.filter((opt) =>
-                                      (Array.isArray(Value) ? Value : [])
-                                          .map(String)
-                                          .includes(String(opt.value)),
-                                  )
+                                    (Array.isArray(Value) ? Value : [])
+                                        .map(String)
+                                        .includes(String(opt.value)),
+                                )
                                 : options.find((opt) => String(opt.value) === String(Value)) || null
                         }
                         onChange={(selectedOption) => {
@@ -154,18 +155,18 @@ export default function SelectInput({
                         required={Required}
                         {...(!customPlaceHolder
                             ? {
-                                  placeholder: `Select ${InputName}`,
-                              }
+                                placeholder: `Select ${InputName}`,
+                            }
                             : {
-                                  placeholder: Placeholder,
-                              })}
+                                placeholder: Placeholder,
+                            })}
                         styles={isDarkMode ? darkStyles : lightStyles}
                         className={`react-select-container ${isDisabled && 'opacity-30'}`}
                         classNamePrefix="react-select"
                     />
                 </div>
 
-                <div className="mt-2 h-5">
+                <div className="h-5 mt-2">
                     {Error && <p className="text-sm text-red-500">{Error}</p>}
                 </div>
             </div>

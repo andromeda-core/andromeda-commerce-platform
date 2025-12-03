@@ -265,7 +265,7 @@ export default function index({ cart_items, refferalSessionData }) {
             <div className="min-h-screen transition-colors duration-200">
                 {/* Main Content */}
                 <div
-                    className={`max-w-8xl mx-auto sm:px-6 lg:px-8 ${windowSize.width < 1024 && 'mb-20'}`}
+                    className={`max-w-8xl mx-auto sm:px-6 pt-10 lg:px-8 ${windowSize.width < 1024 && 'mb-20'}`}
                 >
                     {cart_items.length === 0 ? (
                         <EmptyCart />
@@ -705,8 +705,8 @@ function OrderSummary({
                                             onChange={(e) => setReferalCode(e.target.value)}
                                             placeholder="Enter Referal Code To Earn Points"
                                             className={`w-full rounded-lg border ${error
-                                                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                                                    : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500/20'
+                                                ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                                                : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500/20'
                                                 } bg-white px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors focus:outline-none focus:ring-2 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40`}
                                         />
                                         {error && (

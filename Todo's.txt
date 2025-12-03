@@ -629,6 +629,7 @@ Additional Work:
         128: Dashboard Layout Theme And Guest Layout Dark + Light Theme Toggle Issue Fixed (issue Were Classes werent adding properly)  ✅
         129: Profile Dropdown Items wasnt clicking so that also fixed ✅
         130: Logo Of Dashboard Header and Sidebar Now Redirects To Website Home ✅
+        131: Some Ui Enhancements  ✅
     ) Redesigned Whole Website 4th Time Completed According To The LAYOUT Design Reference Provided ✅
 
 

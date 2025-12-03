@@ -192,7 +192,7 @@ export default function index() {
             {/* Masonry Layout */}
             {isLoaded && (
                 <div className="pb-20 sm:pb-20">
-                    <div className="mx-auto max-w-8xl sm:px-6 lg:px-8">
+                    <div className="pt-10 mx-auto max-w-8xl sm:px-6 lg:px-8">
                         {/* Compact Masonry */}
                         <div className="columns-1 gap-1 [column-fill:_balance] min-[300px]:columns-2 lg:columns-4">
                             {bookmarkedPosts.map((item, index) => {
