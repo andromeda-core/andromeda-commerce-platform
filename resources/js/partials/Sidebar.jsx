@@ -61,15 +61,33 @@ export default function Sidebar({
     }, [sidebarToggle, width]);
 
     // POP STATE HANDLING
+    const sidebarClickRef = useRef(false);
     useEffect(() => {
+
+
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) {
+            sidebar.addEventListener('click', () => {
+                sidebarClickRef.current = true;
+            });
+        }
         const handlePopState = (e) => {
             const params = new URLSearchParams(window.location.search);
             const modal = params.get("modal");
 
 
             if (modal === "sidebar") {
+
+                if (sidebarClickRef.current) {
+                    sidebarClickRef.current = false;
+                    return;
+                }
+
+
+
                 e.preventDefault();
                 setSidebarToggle(false);
+                sidebarClickRef.current = false;
 
                 window.history.replaceState({}, "", window.location.pathname);
                 return;
@@ -81,8 +99,18 @@ export default function Sidebar({
             const modal = params.get("modal");
             if (modal === "sidebar") {
 
+                if (sidebarClickRef.current) {
+                    sidebarClickRef.current = false;
+                    return;
+                }
+
+
                 event.preventDefault();
                 setSidebarToggle(false);
+
+
+
+
                 window.history.replaceState({}, "", window.location.pathname);
                 return false;
             }

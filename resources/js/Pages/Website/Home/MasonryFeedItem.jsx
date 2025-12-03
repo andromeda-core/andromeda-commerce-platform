@@ -6,7 +6,7 @@ const MasonryFeedItem = memo(({ item, onClick, Placeholder, currency }) => {
     if (item.type === 'posts') {
         return (
             <article
-                className="relative mb-1 overflow-hidden transition-all duration-300 rounded-none shadow-md cursor-pointer will-change-transform masonry-item no-touch-hover group break-inside-avoid hover:-translate-y-1 hover:shadow-xl lg:mb-2"
+                className="[-webkit-column-break-inside:avoid] relative mb-1 overflow-hidden transition-all duration-300 rounded-none shadow-md cursor-pointer will-change-transform masonry-item no-touch-hover group break-inside-avoid  hover:-translate-y-1 hover:shadow-xl lg:mb-2"
                 onClick={onClick}
             >
                 {item?.images ? (
@@ -17,6 +17,7 @@ const MasonryFeedItem = memo(({ item, onClick, Placeholder, currency }) => {
                             loading="lazy"
                             decoding="async"
                             onError={(e) => (e.target.src = Placeholder)}
+                            onLoad={() => window.dispatchEvent(new Event('resize'))}
                             className="w-full object-cover text-[10px] text-gray-700 transition-all duration-500 group-hover:scale-105 dark:text-white/80 dark:opacity-80"
                         />
 
@@ -56,6 +57,7 @@ const MasonryFeedItem = memo(({ item, onClick, Placeholder, currency }) => {
                             alt={item?.title}
                             loading="lazy"
                             decoding="async"
+                            onLoad={() => window.dispatchEvent(new Event('resize'))}
                             onError={(e) => (e.target.src = Placeholder)}
                             className="w-full object-cover text-[10px] text-gray-700 transition-all duration-500 group-hover:scale-105 dark:text-white/80 dark:opacity-80"
                         />
@@ -131,7 +133,7 @@ const MasonryFeedItem = memo(({ item, onClick, Placeholder, currency }) => {
     // Smartphones
     return (
         <article
-            className="relative mb-1 overflow-hidden transition-all duration-300 rounded-none shadow-md cursor-pointer will-change-transform no-touch-hover group break-inside-avoid hover:-translate-y-1 hover:shadow-xl"
+            className="[-webkit-column-break-inside:avoid] relative mb-1 overflow-hidden transition-all  duration-300 rounded-none shadow-md cursor-pointer will-change-transform no-touch-hover group break-inside-avoid hover:-translate-y-1 hover:shadow-xl"
             onClick={onClick}
         >
             <div className="relative">
@@ -141,6 +143,7 @@ const MasonryFeedItem = memo(({ item, onClick, Placeholder, currency }) => {
                     loading="lazy"
                     decoding="async"
                     onError={(e) => (e.target.src = Placeholder)}
+                    onLoad={() => window.dispatchEvent(new Event('resize'))}
                     className="object-cover w-full transition-all duration-500 group-hover:scale-105 dark:opacity-80"
                 />
 
