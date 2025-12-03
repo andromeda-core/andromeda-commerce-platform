@@ -1,8 +1,24 @@
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
 
 
 
 const MasonryFeedItem = memo(({ item, onClick, Placeholder, currency }) => {
+
+    useEffect(() => {
+        function fixSafari() {
+            window.dispatchEvent(new Event("resize"));
+        }
+
+        document.addEventListener("webkitfullscreenchange", fixSafari);
+        document.addEventListener("fullscreenchange", fixSafari);
+
+        return () => {
+            document.removeEventListener("webkitfullscreenchange", fixSafari);
+            document.removeEventListener("fullscreenchange", fixSafari);
+        };
+    }, []);
+
+
     if (item.type === 'posts') {
         return (
             <article
@@ -17,7 +33,6 @@ const MasonryFeedItem = memo(({ item, onClick, Placeholder, currency }) => {
                             loading="lazy"
                             decoding="async"
                             onError={(e) => (e.target.src = Placeholder)}
-                            onLoad={() => window.dispatchEvent(new Event('resize'))}
                             className="w-full object-cover text-[10px] text-gray-700 transition-all duration-500 group-hover:scale-105 dark:text-white/80 dark:opacity-80"
                         />
 
@@ -57,7 +72,7 @@ const MasonryFeedItem = memo(({ item, onClick, Placeholder, currency }) => {
                             alt={item?.title}
                             loading="lazy"
                             decoding="async"
-                            onLoad={() => window.dispatchEvent(new Event('resize'))}
+
                             onError={(e) => (e.target.src = Placeholder)}
                             className="w-full object-cover text-[10px] text-gray-700 transition-all duration-500 group-hover:scale-105 dark:text-white/80 dark:opacity-80"
                         />
@@ -143,7 +158,7 @@ const MasonryFeedItem = memo(({ item, onClick, Placeholder, currency }) => {
                     loading="lazy"
                     decoding="async"
                     onError={(e) => (e.target.src = Placeholder)}
-                    onLoad={() => window.dispatchEvent(new Event('resize'))}
+
                     className="object-cover w-full transition-all duration-500 group-hover:scale-105 dark:opacity-80"
                 />
 
