@@ -32,18 +32,35 @@ export default function GuestLayout({ children }) {
         }
     }, []);
 
-    // Checking DarkMode Sesion And Toggle Mode
+
+    // Toggle Mode Dark + Light
     useEffect(() => {
-        const storedDarkMode = localStorage.getItem('darkMode');
-        if (storedDarkMode) {
-            setDarkMode(JSON.parse(storedDarkMode));
+        const saved = localStorage.getItem('darkMode');
+        if (saved !== null) {
+            try {
+                const parsed = JSON.parse(saved);
+                if (typeof parsed === 'boolean') {
+                    setDarkMode(parsed);
+                }
+            } catch (e) {
+                localStorage.setItem('darkMode', false);
+            }
         }
+    }, []);
+
+    useEffect(() => {
         if (darkMode) {
-            document.body.classList.add('dark', 'bg-gray-900');
+            document.documentElement.classList.add('dark');
+            document.body.classList.add('dark');
         } else {
-            document.body.className = '';
+            document.documentElement.classList.remove('dark');
+            document.body.classList.remove('dark');
         }
+
+        // Save to localStorage
+        localStorage.setItem('darkMode', JSON.stringify(darkMode));
     }, [darkMode]);
+
 
     return (
         <>

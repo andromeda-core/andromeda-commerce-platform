@@ -626,7 +626,9 @@ Additional Work:
         125: Conditional Inertia Link and  html anchor tag added anchor tag is for desktop and link is for mobile and hashtag Results Backend Issue FIXED  ✅
         126: Sidebar Click Item Navigation wasnt Wokring After Changing THe back button so now its fixed  ✅
         127: Safari Mosnary Layout Row Height Mis calculation issue Resolved ✅
-
+        128: Dashboard Layout Theme And Guest Layout Dark + Light Theme Toggle Issue Fixed (issue Were Classes werent adding properly)  ✅
+        129: Profile Dropdown Items wasnt clicking so that also fixed ✅
+        130: Logo Of Dashboard Header and Sidebar Now Redirects To Website Home ✅
     ) Redesigned Whole Website 4th Time Completed According To The LAYOUT Design Reference Provided ✅
 
 

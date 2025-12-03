@@ -214,7 +214,7 @@ const Sidebar = ({
                                         <ul className="flex flex-col overflow-auto overscroll-contain lg:max-h-[200px] xl:max-h-[400px]">
                                             {user && (
                                                 <>
-                                                    {user?.role === 'Admin' && (
+                                                    {user?.role !== 'Customer' && (
                                                         <li>
                                                             <Link
                                                                 data-sidebar-link="true"

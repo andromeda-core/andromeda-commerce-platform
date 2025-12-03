@@ -146,7 +146,7 @@ export default function Sidebar({
                 <div
                     className={`flex items-center ${sidebarToggle ? 'justify-center' : 'justify-between'} sidebar-header gap-2 pb-7 pt-8`}
                 >
-                    <Link href={route('dashboard')}>
+                    <Link href={route('home')}>
                         <span className={`logo ${sidebarToggle ? 'hidden' : ''}`}>
                             <img
                                 className="h-[80px] w-auto object-contain dark:hidden"

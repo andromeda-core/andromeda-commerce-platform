@@ -31,35 +31,44 @@ export default function Header({
     // const dropdownRef = useRef(null);
     const profileDropdownRef = useRef(null);
 
+
     // Toggle Mode Dark + Light
     useEffect(() => {
         const saved = localStorage.getItem('darkMode');
-        if (saved === null) {
-            return;
-        }
-
-        try {
-            const parsed = JSON.parse(saved);
-            if (typeof parsed === 'boolean') {
-                setDarkMode(parsed);
-
-                if (darkMode) {
-                    document.body.classList.add('dark', 'bg-deepcharcoal');
-                } else {
-                    document.body.classList = '';
+        if (saved !== null) {
+            try {
+                const parsed = JSON.parse(saved);
+                if (typeof parsed === 'boolean') {
+                    setDarkMode(parsed);
                 }
-            } else {
+            } catch (e) {
                 localStorage.setItem('darkMode', false);
             }
-        } catch (e) {
-            localStorage.setItem('darkMode', false);
         }
+    }, []);
+
+    useEffect(() => {
+        if (darkMode) {
+            document.documentElement.classList.add('dark');
+            document.body.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+            document.body.classList.remove('dark');
+        }
+
+        // Save to localStorage
+        localStorage.setItem('darkMode', JSON.stringify(darkMode));
     }, [darkMode]);
 
     // Handle Click Outside From  Header Dropdowns
     useEffect(() => {
         function handleClickOutside(event) {
-            if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+            const profileDropdown = document.getElementById('profile-dropdown');
+            if (
+                profileDropdownRef.current &&
+                !profileDropdownRef.current.contains(event.target) &&
+                (!profileDropdown || !profileDropdown.contains(event.target))
+            ) {
                 setProfileDropdown(false);
             }
         }
@@ -110,7 +119,7 @@ export default function Header({
                             </svg>
                         </button>
 
-                        <Link href={route('dashboard')} className="lg:hidden">
+                        <Link href={route('home')} className="lg:hidden">
                             <img
                                 className="h-[80px] w-auto object-contain dark:hidden"
                                 src={ApplicationLogoLight}
@@ -149,26 +158,7 @@ export default function Header({
                         className={`${menuToggle ? 'flex' : 'hidden'} shadow-theme-md w-full items-center justify-between gap-4 px-5 py-4 lg:flex lg:justify-end lg:px-0 lg:shadow-none`}
                     >
                         <div className="flex items-center gap-2 2xl:sm:gap-3">
-                            <Link
-                                href={route('home')}
-                                className="relative flex items-center justify-center text-gray-500 transition-colors bg-white border border-gray-200 rounded-full hover:text-dark-900 h-11 w-11 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-zinc-900/80 dark:text-gray-400 dark:hover:bg-zinc-900/50 dark:hover:text-white"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth={1.5}
-                                    stroke="currentColor"
-                                    width="20"
-                                    height="20"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
-                                    />
-                                </svg>
-                            </Link>
+
 
                             <button
                                 className="relative flex items-center justify-center text-gray-500 transition-colors bg-white border border-gray-200 rounded-full hover:text-dark-900 h-11 w-11 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-zinc-900/80 dark:text-gray-400 dark:hover:bg-zinc-900/50 dark:hover:text-white"
@@ -245,7 +235,7 @@ export default function Header({
                             {createPortal(
                                 <>
                                     {profileDropdown && (
-                                        <div className="fixed top-[70px] right-[20px] z-[99999] w-auto min-w-[300px] rounded-2xl border border-gray-200 bg-white p-3 shadow-2xl dark:border-gray-800 dark:bg-deepcharcoal">
+                                        <div id='profile-dropdown' className="fixed top-[70px] right-[20px] z-[99999] w-auto min-w-[300px] rounded-2xl border border-gray-200 bg-white p-3 shadow-2xl dark:border-gray-800 dark:bg-deepcharcoal">
                                             <div>
                                                 <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
                                                     {user.name.length > 20
@@ -311,7 +301,7 @@ export default function Header({
                                                     </li>
                                                 )}
                                             </ul>
-                                            <button
+                                            <li
                                                 onClick={() => {
                                                     logout(route('logout'), {
                                                         onFinish: () => {
@@ -331,7 +321,7 @@ export default function Header({
                                                         },
                                                     });
                                                 }}
-                                                className="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg text-theme-sm group hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+                                                className="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg cursor-pointer text-theme-sm group hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
                                             >
                                                 {logoutProcessing ? (
                                                     <Spinner />
@@ -353,7 +343,7 @@ export default function Header({
                                                     </svg>
                                                 )}
                                                 Log out
-                                            </button>
+                                            </li>
                                         </div>
                                     )}
                                 </>
