@@ -16,6 +16,7 @@
     $default_logo = asset('assets/images/Logo/256b.png');
     $app_logo = $general_setting->app_main_logo_light ?? $default_logo;
 
+    $aws_url = config('filesystems.disks.s3.url');
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -26,6 +27,9 @@
     <meta name="theme-color" content="#f1f5f9">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="preconnect" href="{{ $aws_url }}" />
+    <link rel="dns-prefetch" href="{{ $aws_url }}" />
 
     <title inertia>{{ $app_name }}</title>
     <link rel="shortcut icon"

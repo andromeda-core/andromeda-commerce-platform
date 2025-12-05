@@ -1691,7 +1691,7 @@ const MobileFeed = ({
                                     }}
                                 >
                                     <div
-                                        className="flex w-full overflow-x-auto snap-x snap-mandatory scrollbar-none"
+                                        className="flex w-full overflow-x-auto snap-x snap-mandatory"
 
                                         ref={(el) => {
                                             horizontalRefs.current[index] = el;
@@ -1703,10 +1703,7 @@ const MobileFeed = ({
                                             // Skip if no related items or already initialized
                                             if (initializedXAxisRef.current.has(item.id)) return;
 
-                                            if (relatedCount < 1) {
-                                                hasInitializedHorizontalRef.current = true;
-                                                return;
-                                            }
+
                                             // Try immediate alignment
                                             const tryAlign = () => {
 
