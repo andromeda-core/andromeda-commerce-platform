@@ -9,14 +9,13 @@ import GlobalSearch from '@/Components/GlobalSearch';
 import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import BookmarkStatusChangedModal from '@/Components/BookmarkStatusChangedModal';
 import useSidebarClick from '@/Hooks/useSidebarClick';
-import SmartphoneDesktopModal from './SmartphoneDesktopModal';
 import getCookie from '@/Hooks/useGetCookie';
 import Toast from '@/Components/Toast';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
-import PostDesktopModal from './PostDesktopModal';
 import MobileFeed from './MobileFeed';
 import Spinner from '@/Components/Spinner';
 import MasonryFeedItem from './MasonryFeedItem';
+import DesktopFeed from './DesktopFeed';
 
 
 const index = () => {
@@ -24,6 +23,10 @@ const index = () => {
 
     const [ErrorMessage, setErrorMessage] = useState(null);
     const [showErrorMessage, setShowErrorMessage] = useState(false);
+
+
+    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+    const [successMessage, setSuccessMessage] = useState(null);
 
     const [InfoMessage, setInfoMessage] = useState(null);
     const [showInfoMessage, setShowInfoMessage] = useState(false);
@@ -39,9 +42,6 @@ const index = () => {
 
     // This State is For Tracking If The FEED ITEM Is Opening After refresh or FROM URL DIRECTLY
     const [isFeedOpeningDirectly, setIsFeedOpeningDirectly] = useState(false);
-
-
-
 
 
     const [bookmarkStatusChanged, setBookmarkStatusChanged] = useState(false);
@@ -156,6 +156,7 @@ const index = () => {
 
     useEffect(() => {
         fetchPostsAndProducts();
+        window.history.pushState({}, '', window.location.href);
     }, []);
 
 
@@ -218,8 +219,6 @@ const index = () => {
     }, [feedOpen]);
 
 
-
-
     // Checking Slug In URL If Found Than Auto Opening  FEED AND PC Modal
     const hasOpenedSlugRef = useRef(false);
 
@@ -246,6 +245,8 @@ const index = () => {
             );
         }
 
+
+
         if (feedItem) {
             hasOpenedSlugRef.current = true;
             const index = feed.findIndex(i => i.slug === feedItem.slug);
@@ -254,6 +255,7 @@ const index = () => {
                 setFeedOpen(true);
                 setFeedIndex(index);
             }
+
             window.history.replaceState({}, '', window.location.href);
 
         } else {
@@ -263,7 +265,6 @@ const index = () => {
             else if (smartphone_slug) fetchSingleSmartphone(smartphone_slug);
 
             window.history.replaceState({}, '', window.location.href);
-            window.history.pushState({}, '', window.location.href);
         }
 
 
@@ -979,7 +980,6 @@ const index = () => {
         setFeedIndex(index);
         setFeedOpen(true);
 
-
         if (item.type === 'posts') {
             const url = generateURL(item);
             if (feedOpenCountRef.current === 1) {
@@ -1028,6 +1028,10 @@ const index = () => {
                         if (type === 'error') {
                             setErrorMessage(null);
                             setShowErrorMessage(false);
+                        }
+                        if (type === 'success') {
+                            setSuccessMessage(null);
+                            setShowSuccessMessage(false);
                         }
                     }}
                 />
@@ -1272,42 +1276,37 @@ const index = () => {
                     {/* PC Feed  */}
                     {windowSize.width > 1024 && feedOpen && feedGallery !== null && (
                         <>
-                            {feedGallery?.type === 'posts' && (
-                                <PostDesktopModal
+                            {feedGallery && (
+                                <DesktopFeed
                                     setShowQrCode={setShowQrCode}
-                                    post={feedGallery}
+                                    feedGallery={feedGallery}
                                     setFeedOpen={setFeedOpen}
                                     setFeedGallery={setFeedGallery}
-
+                                    setErrorMessage={setErrorMessage}
                                     setShowErrorMessage={setShowErrorMessage}
                                     setLinkCopied={setLinkCopied}
                                     setBookmarkStatusChanged={setBookmarkStatusChanged}
-                                    setErrorMessage={setErrorMessage}
                                     setMediaItems={setMediaItems}
                                     mediaItems={mediaItems}
                                     auth={auth}
                                     generateURL={generateURL}
                                     navigateToHashtag={navigateToHashtag}
                                     Placeholder={Placeholder}
-                                />
-                            )}
-
-                            {feedGallery?.type === 'smartphones' && (
-                                <SmartphoneDesktopModal
-
-                                    smartphone={feedGallery}
-                                    setFeedOpen={setFeedOpen}
-                                    setFeedGallery={setFeedGallery}
-                                    setSmartphone={setFeedGallery}
-                                    smartphoneDesktopModal={feedOpen}
-                                    setSmartphoneDesktopModal={setFeedOpen}
-                                    setShowQrCode={setShowQrCode}
                                     showQrCode={showQrCode}
-                                    auth={auth}
                                     cart_items={cart_items}
                                     currency={currency}
-                                    navigateToHashtag={navigateToHashtag}
-                                    Placeholder={Placeholder}
+                                    setInfoMessage={setInfoMessage}
+                                    setShowInfoMessage={setShowInfoMessage}
+                                    setSuccessMessage={setSuccessMessage}
+                                    setShowSuccessMessage={setShowSuccessMessage}
+                                    windowSize={windowSize}
+                                    feedIndex={feedIndex}
+                                    relatedFeed={relatedFeed}
+                                    relatedFeedNextUrlsRef={relatedFeedNextUrlsRef}
+                                    feed={feed}
+                                    fetchMoreYAxis={fetchMorePostsAndProducts}
+                                    nextPageUrl={nextPageUrlRef.current}
+                                    fetchRelatedFeed={fetchRelatedFeed}
                                 />
                             )}
                         </>
@@ -1340,6 +1339,7 @@ const index = () => {
                             Placeholder={Placeholder}
                             isfetchingMoreYAxisFeed={isfetchingMoreYAxisFeed.current}
                             isFeedOpeningDirectly={isFeedOpeningDirectly}
+
 
 
 

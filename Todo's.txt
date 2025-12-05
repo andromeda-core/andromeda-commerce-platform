@@ -630,6 +630,8 @@ Additional Work:
         129: Profile Dropdown Items wasnt clicking so that also fixed ✅
         130: Logo Of Dashboard Header and Sidebar Now Redirects To Website Home ✅
         131: Some Ui Enhancements  ✅
+        132: Backend Logic Of Related Posts and products are changed to matching Now Only Hashtags Strictly As per Requirement  ✅
+        133: On Desktop POST, PRODUCT, Modal Combined And Added Top Bottom, Left,Right Feed Navigation ✅
     ) Redesigned Whole Website 4th Time Completed According To The LAYOUT Design Reference Provided ✅
 
 

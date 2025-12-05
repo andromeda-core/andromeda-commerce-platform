@@ -639,6 +639,379 @@ class PostRepository implements IPostRepository
         }
     }
 
+    // Fetching Feed For Website (Perfect And Working, Just Requiremnt came to change the related mathicng logic to only macthing tag,  so preserving this one)
+    // public function getPostsAndProductsForWebsite(Request $request)
+    // {
+
+    //     $images = $request->boolean('images', true);
+    //     $text = $request->boolean('text', true);
+    //     $videos = $request->boolean('videos', true);
+    //     $show_products = $request->boolean('show_products', true);
+    //     $show_posts = $request->boolean('show_posts', true);
+
+    //     $page = $request->input('page', 1);
+    //     $perPage = 6;
+
+    //     $cacheTags = [
+    //         'images:'.(int) $images,
+    //         'text:'.(int) $text,
+    //         'videos:'.(int) $videos,
+    //         'products:'.(int) $show_products,
+    //         'posts:'.(int) $show_posts,
+    //         "page:{$page}",
+    //     ];
+
+    //     $cacheKey = implode(':', $cacheTags);
+
+    //     return Cache::tags(['feed'])->rememberForever($cacheKey, function () use ($images, $text, $videos, $show_products, $show_posts, $page, $perPage) {
+
+    //         $results = collect();
+    //         $hasMore = false;
+    //         $posts = [];
+    //         $smartphones = [];
+
+    //         if ($show_posts) {
+    //             $posts = $this->post
+    //                 ->where('status', true)
+    //                 ->where(function ($q) use ($text, $images, $videos) {
+    //                     if ($text) {
+
+    //                         $q->orWhere(function ($sub) {
+    //                             $sub->whereNull('images')
+    //                                 ->whereNull('videos');
+    //                         });
+    //                     }
+
+    //                     if ($images) {
+
+    //                         $q->orWhere(function ($sub) {
+    //                             $sub->whereNotNull('images')
+    //                                 ->whereNull('videos');
+    //                         });
+    //                     }
+
+    //                     if ($videos) {
+
+    //                         $q->orWhere(function ($sub) {
+    //                             $sub->whereNotNull('videos');
+    //                         });
+    //                     }
+    //                 })
+    //                 ->with([
+    //                     'floor:id,name',
+    //                     'user:id,name',
+    //                 ])
+    //                 ->latest()
+    //                 ->forPage($page, $perPage)
+    //                 ->get();
+
+    //             $allKeywords = [];
+
+    //             foreach ($posts as $post) {
+    //                 $post->keywords = $this->extractKeywords(
+    //                     implode(' ', [
+    //                         $post->title,
+    //                         $post->content,
+    //                         $post->tag,
+    //                     ])
+    //                 );
+
+    //                 $allKeywords = array_merge($allKeywords, $post->keywords);
+    //             }
+
+    //             $allKeywords = array_unique($allKeywords);
+
+    //             $relatedPosts = $this->post->whereIn('status', [true])
+    //                 ->where(function ($q) use ($allKeywords) {
+    //                     $this->applyKeywordMatch($q, $allKeywords, ['title', 'content', 'tag']);
+    //                 })
+    //                 ->where(function ($q) use ($text, $images, $videos) {
+    //                     if ($text) {
+
+    //                         $q->orWhere(function ($sub) {
+    //                             $sub->whereNull('images')
+    //                                 ->whereNull('videos');
+    //                         });
+    //                     }
+
+    //                     if ($images) {
+
+    //                         $q->orWhere(function ($sub) {
+    //                             $sub->whereNotNull('images')
+    //                                 ->whereNull('videos');
+    //                         });
+    //                     }
+
+    //                     if ($videos) {
+
+    //                         $q->orWhere(function ($sub) {
+    //                             $sub->whereNotNull('videos');
+    //                         });
+    //                     }
+    //                 })
+    //                 ->with(['floor:id,name', 'user:id,name'])
+    //                 ->limit(50)
+    //                 ->get()
+    //                 ->map(function ($post) {
+
+    //                     $post->type = 'posts';
+
+    //                     return $post;
+    //                 });
+
+    //             $relatedSmartphones = collect();
+
+    //             if ($show_products) {
+    //                 $relatedSmartphones = $this->smartphone
+    //                     ->whereNotNull('slug')
+    //                     ->whereHas('selling_info')
+    //                     ->where(function ($q) use ($allKeywords) {
+    //                         $this->applyKeywordMatch($q, $allKeywords, ['model_searchable_name', 'content', 'tag']);
+    //                     })
+    //                     ->with(['capacity:id,name', 'selling_info:id,smartphone_id,total_price'])
+    //                     ->withCount(['inventory_items' => fn ($q) => $q->where('status', 'in_stock')])
+    //                     ->limit(50)
+    //                     ->get()
+    //                     ->map(function ($smartphone) {
+
+    //                         return (object) [
+    //                             '_key' => 'sp_'.$smartphone->id,
+    //                             'id' => $smartphone->id,
+    //                             'name' => $smartphone->model_searchable_name,
+    //                             'capacity' => $smartphone->capacity->name,
+    //                             'images' => $smartphone->smartphone_image_urls,
+    //                             'colors' => $smartphone->colors,
+    //                             'upc' => $smartphone->upc,
+    //                             'selling_info' => $smartphone->selling_info,
+    //                             'inventory_items_count' => $smartphone->inventory_items_count,
+    //                             'slug' => $smartphone->slug,
+    //                             'tag' => $smartphone->tag,
+    //                             'content' => $smartphone->content,
+    //                             'type' => 'smartphones',
+    //                         ];
+
+    //                     });
+    //             }
+
+    //             foreach ($posts as $post) {
+    //                 $keywords = $post->keywords;
+
+    //                 $postRelatedPosts = $relatedPosts
+    //                     ->filter(fn ($rp) => $rp->id !== $post->id &&
+    //                         $this->itemMatches($rp, $keywords)
+    //                     )
+    //                     ->take(5)
+    //                     ->values();
+
+    //                 $postRelatedSmartphones = $relatedSmartphones
+    //                     ->filter(fn ($sp) => $this->itemMatches($sp, $keywords)
+    //                     )
+    //                     ->take(5)
+    //                     ->values();
+
+    //                 $post->related = collect()
+    //                     ->merge($postRelatedPosts->values())
+    //                     ->merge($postRelatedSmartphones->values())
+    //                     ->shuffle()
+    //                     ->values();
+
+    //                 $post->type = 'posts';
+    //             }
+
+    //             $hasMore = $hasMore || ($posts->count() === $perPage);
+
+    //         }
+
+    //         if ($show_products) {
+    //             $smartphones = $this->smartphone
+    //                 ->with([
+    //                     'model_name:id,name',
+    //                     'capacity:id,name',
+    //                     'selling_info:id,smartphone_id,total_price',
+    //                 ])
+    //                 ->withCount([
+    //                     'inventory_items' => function ($query) {
+    //                         $query->where('status', 'in_stock');
+    //                     },
+    //                 ])
+    //                 ->whereHas('selling_info')
+    //                 ->whereNotNull('slug')
+    //                 ->latest()
+    //                 ->forPage($page, $perPage)
+    //                 ->get();
+
+    //             $allKeywords = [];
+
+    //             foreach ($smartphones as $sp) {
+    //                 $sp->keywords = $this->extractKeywords(
+    //                     implode(' ', [
+    //                         $sp->model_searchable_name,
+    //                         $sp->content,
+    //                         $sp->tag,
+    //                     ])
+    //                 );
+
+    //                 $allKeywords = array_merge($allKeywords, $sp->keywords);
+    //             }
+
+    //             $allKeywords = array_unique($allKeywords);
+
+    //             $relatedSmartphones = $this->smartphone
+    //                 ->whereNotNull('slug')
+    //                 ->whereHas('selling_info')
+    //                 ->where(function ($q) use ($allKeywords) {
+    //                     $this->applyKeywordMatch($q, $allKeywords, [
+    //                         'model_searchable_name',
+    //                         'content',
+    //                         'tag',
+    //                     ]);
+    //                 })
+    //                 ->with(['capacity:id,name', 'selling_info:id,smartphone_id,total_price'])
+    //                 ->withCount(['inventory_items' => fn ($q) => $q->where('status', 'in_stock')])
+    //                 ->limit(50)
+    //                 ->get()
+    //                 ->map(function ($smartphone) {
+    //                     return (object) [
+    //                         '_key' => 'sp_'.$smartphone->id,
+    //                         'id' => $smartphone->id,
+    //                         'name' => $smartphone->model_searchable_name,
+    //                         'capacity' => $smartphone->capacity->name,
+    //                         'images' => $smartphone->smartphone_image_urls,
+    //                         'colors' => $smartphone->colors,
+    //                         'upc' => $smartphone->upc,
+    //                         'selling_info' => $smartphone->selling_info,
+    //                         'inventory_items_count' => $smartphone->inventory_items_count,
+    //                         'slug' => $smartphone->slug,
+    //                         'tag' => $smartphone->tag,
+    //                         'content' => $smartphone->content,
+    //                         'type' => 'smartphones',
+    //                     ];
+    //                 });
+
+    //             $relatedPosts = collect();
+
+    //             if ($show_posts) {
+    //                 $relatedPosts = $this->post
+    //                     ->where('status', true)
+    //                     ->where(function ($q) use ($allKeywords) {
+    //                         $this->applyKeywordMatch($q, $allKeywords, ['title', 'content', 'tag']);
+    //                     })
+    //                     ->where(function ($q) use ($text, $images, $videos) {
+    //                         if ($text) {
+
+    //                             $q->orWhere(function ($sub) {
+    //                                 $sub->whereNull('images')
+    //                                     ->whereNull('videos');
+    //                             });
+    //                         }
+
+    //                         if ($images) {
+
+    //                             $q->orWhere(function ($sub) {
+    //                                 $sub->whereNotNull('images')
+    //                                     ->whereNull('videos');
+    //                             });
+    //                         }
+
+    //                         if ($videos) {
+
+    //                             $q->orWhere(function ($sub) {
+    //                                 $sub->whereNotNull('videos');
+    //                             });
+    //                         }
+    //                     })
+    //                     ->with(['floor:id,name', 'user:id,name'])
+    //                     ->limit(50)
+    //                     ->get()
+    //                     ->map(function ($post) {
+    //                         $post->type = 'posts';
+
+    //                         return $post;
+    //                     });
+    //             }
+
+    //             foreach ($smartphones as $sp) {
+
+    //                 $keywords = $sp->keywords;
+
+    //                 $spRelatedSmartphones = $relatedSmartphones
+    //                     ->filter(fn ($rs) => $rs->id !== $sp->id &&
+    //                         $this->itemMatches($rs, $keywords)
+    //                     )
+    //                     ->take(5)
+    //                     ->values();
+
+    //                 $spRelatedPosts = $relatedPosts
+    //                     ->filter(fn ($rp) => $this->itemMatches($rp, $keywords))
+    //                     ->take(5)
+    //                     ->values();
+
+    //                 $sp->structured = [
+    //                     '_key' => 'sp_'.$sp->id,
+    //                     'id' => $sp->id,
+    //                     'name' => $sp->model_searchable_name,
+    //                     'capacity' => $sp->capacity->name,
+    //                     'images' => $sp->smartphone_image_urls,
+    //                     'colors' => $sp->colors,
+    //                     'upc' => $sp->upc,
+    //                     'selling_info' => $sp->selling_info,
+    //                     'inventory_items_count' => $sp->inventory_items_count,
+    //                     'slug' => $sp->slug,
+    //                     'tag' => $sp->tag,
+    //                     'content' => $sp->content,
+    //                     'type' => 'smartphones',
+    //                     'related' => collect()
+    //                         ->merge($spRelatedPosts->values())
+    //                         ->merge($spRelatedSmartphones->values())
+    //                         ->shuffle()
+    //                         ->values(),
+    //                 ];
+    //             }
+    //             $smartphones = $smartphones->map(fn ($sp) => $sp->structured);
+    //             $hasMore = $hasMore || ($smartphones->count() === $perPage);
+
+    //         }
+
+    //         $results = $results->merge([
+    //             'posts' => $posts,
+    //             'products' => [
+    //                 'smartphones' => $smartphones,
+    //             ],
+    //         ]);
+
+    //         $queryParams = [
+    //             'page' => $page + 1,
+    //             'images' => $images,
+    //             'text' => $text,
+    //             'videos' => $videos,
+    //             'show_products' => $show_products,
+    //             'show_posts' => $show_posts,
+    //         ];
+
+    //         $nextParams = $queryParams;
+    //         $nextParams['page'] = $page + 1;
+
+    //         $prevParams = $queryParams;
+    //         $prevParams['page'] = max(1, $page - 1);
+
+    //         return [
+    //             'status' => true,
+    //             'data' => $results,
+    //             'pagination' => [
+    //                 'current_page' => (int) $page,
+    //                 'per_page' => (int) $perPage,
+    //                 'has_more_pages' => $hasMore,
+    //                 'next_page' => $hasMore ? $page + 1 : null,
+    //                 'total' => (count($results['posts']) ?? 0) + (count($results['products']['smartphones']) ?? 0),
+    //                 'next_page_url' => $hasMore ? route('website.posts.index').'?'.http_build_query($nextParams) : null,
+    //                 'prev_page_url' => $page > 1 ? route('website.posts.index').'?'.http_build_query($prevParams) : null,
+    //             ],
+
+    //         ];
+    //     });
+
+    // }
+
     // Fetching Feed For Website
     public function getPostsAndProductsForWebsite(Request $request)
     {
@@ -705,69 +1078,61 @@ class PostRepository implements IPostRepository
                     ->forPage($page, $perPage)
                     ->get();
 
-                $allKeywords = [];
-
+                $allHashtags = [];
                 foreach ($posts as $post) {
-                    $post->keywords = $this->extractKeywords(
-                        implode(' ', [
-                            $post->title,
-                            $post->content,
-                            $post->tag,
-                        ])
-                    );
-
-                    $allKeywords = array_merge($allKeywords, $post->keywords);
+                    if (! empty($post->tag)) {
+                        $allHashtags[] = $post->tag;
+                        $post->hashtag = $post->tag;
+                    }
                 }
+                $allHashtags = array_unique($allHashtags);
+                $relatedPosts = collect();
 
-                $allKeywords = array_unique($allKeywords);
+                if (! blank($allHashtags)) {
+                    $relatedPosts = $this->post->where('status', true)
+                        ->whereIn('tag', $allHashtags)
+                        ->where(function ($q) use ($text, $images, $videos) {
+                            if ($text) {
 
-                $relatedPosts = $this->post->whereIn('status', [true])
-                    ->where(function ($q) use ($allKeywords) {
-                        $this->applyKeywordMatch($q, $allKeywords, ['title', 'content', 'tag']);
-                    })
-                    ->where(function ($q) use ($text, $images, $videos) {
-                        if ($text) {
+                                $q->orWhere(function ($sub) {
+                                    $sub->whereNull('images')
+                                        ->whereNull('videos');
+                                });
+                            }
 
-                            $q->orWhere(function ($sub) {
-                                $sub->whereNull('images')
-                                    ->whereNull('videos');
-                            });
-                        }
+                            if ($images) {
 
-                        if ($images) {
+                                $q->orWhere(function ($sub) {
+                                    $sub->whereNotNull('images')
+                                        ->whereNull('videos');
+                                });
+                            }
 
-                            $q->orWhere(function ($sub) {
-                                $sub->whereNotNull('images')
-                                    ->whereNull('videos');
-                            });
-                        }
+                            if ($videos) {
 
-                        if ($videos) {
+                                $q->orWhere(function ($sub) {
+                                    $sub->whereNotNull('videos');
+                                });
+                            }
+                        })
+                        ->with(['floor:id,name', 'user:id,name'])
+                        ->limit(50)
+                        ->get()
+                        ->map(function ($post) {
 
-                            $q->orWhere(function ($sub) {
-                                $sub->whereNotNull('videos');
-                            });
-                        }
-                    })
-                    ->with(['floor:id,name', 'user:id,name'])
-                    ->limit(50)
-                    ->get()
-                    ->map(function ($post) {
+                            $post->type = 'posts';
 
-                        $post->type = 'posts';
-
-                        return $post;
-                    });
+                            return $post;
+                        });
+                }
 
                 $relatedSmartphones = collect();
 
-                if ($show_products) {
+                if ($show_products && ! blank($allHashtags)) {
                     $relatedSmartphones = $this->smartphone
                         ->whereNotNull('slug')
                         ->whereHas('selling_info')
-                        ->where(function ($q) use ($allKeywords) {
-                            $this->applyKeywordMatch($q, $allKeywords, ['model_searchable_name', 'content', 'tag']);
-                        })
+                        ->whereIn('tag', $allHashtags)
                         ->with(['capacity:id,name', 'selling_info:id,smartphone_id,total_price'])
                         ->withCount(['inventory_items' => fn ($q) => $q->where('status', 'in_stock')])
                         ->limit(50)
@@ -794,17 +1159,19 @@ class PostRepository implements IPostRepository
                 }
 
                 foreach ($posts as $post) {
-                    $keywords = $post->keywords;
+                    $postHashtag = $post->tag;
 
                     $postRelatedPosts = $relatedPosts
                         ->filter(fn ($rp) => $rp->id !== $post->id &&
-                            $this->itemMatches($rp, $keywords)
+                        ! empty($rp->tag) &&
+                        $rp->tag === $postHashtag
                         )
                         ->take(5)
                         ->values();
 
                     $postRelatedSmartphones = $relatedSmartphones
-                        ->filter(fn ($sp) => $this->itemMatches($sp, $keywords)
+                        ->filter(fn ($sp) => ! empty($sp->tag) &&
+                            $sp->tag === $postHashtag
                         )
                         ->take(5)
                         ->values();
@@ -840,62 +1207,51 @@ class PostRepository implements IPostRepository
                     ->forPage($page, $perPage)
                     ->get();
 
-                $allKeywords = [];
-
+                $allHashtags = [];
                 foreach ($smartphones as $sp) {
-                    $sp->keywords = $this->extractKeywords(
-                        implode(' ', [
-                            $sp->model_searchable_name,
-                            $sp->content,
-                            $sp->tag,
-                        ])
-                    );
-
-                    $allKeywords = array_merge($allKeywords, $sp->keywords);
+                    if (! empty($sp->tag)) {
+                        $allHashtags[] = $sp->tag;
+                        $sp->hashtag = $sp->tag;
+                    }
                 }
+                $allHashtags = array_unique($allHashtags);
 
-                $allKeywords = array_unique($allKeywords);
+                $relatedSmartphones = collect();
 
-                $relatedSmartphones = $this->smartphone
-                    ->whereNotNull('slug')
-                    ->whereHas('selling_info')
-                    ->where(function ($q) use ($allKeywords) {
-                        $this->applyKeywordMatch($q, $allKeywords, [
-                            'model_searchable_name',
-                            'content',
-                            'tag',
-                        ]);
-                    })
-                    ->with(['capacity:id,name', 'selling_info:id,smartphone_id,total_price'])
-                    ->withCount(['inventory_items' => fn ($q) => $q->where('status', 'in_stock')])
-                    ->limit(50)
-                    ->get()
-                    ->map(function ($smartphone) {
-                        return (object) [
-                            '_key' => 'sp_'.$smartphone->id,
-                            'id' => $smartphone->id,
-                            'name' => $smartphone->model_searchable_name,
-                            'capacity' => $smartphone->capacity->name,
-                            'images' => $smartphone->smartphone_image_urls,
-                            'colors' => $smartphone->colors,
-                            'upc' => $smartphone->upc,
-                            'selling_info' => $smartphone->selling_info,
-                            'inventory_items_count' => $smartphone->inventory_items_count,
-                            'slug' => $smartphone->slug,
-                            'tag' => $smartphone->tag,
-                            'content' => $smartphone->content,
-                            'type' => 'smartphones',
-                        ];
-                    });
+                if (! blank($allHashtags)) {
+                    $relatedSmartphones = $this->smartphone
+                        ->whereNotNull('slug')
+                        ->whereHas('selling_info')
+                        ->whereIn('tag', $allHashtags)
+                        ->with(['capacity:id,name', 'selling_info:id,smartphone_id,total_price'])
+                        ->withCount(['inventory_items' => fn ($q) => $q->where('status', 'in_stock')])
+                        ->limit(50)
+                        ->get()
+                        ->map(function ($smartphone) {
+                            return (object) [
+                                '_key' => 'sp_'.$smartphone->id,
+                                'id' => $smartphone->id,
+                                'name' => $smartphone->model_searchable_name,
+                                'capacity' => $smartphone->capacity->name,
+                                'images' => $smartphone->smartphone_image_urls,
+                                'colors' => $smartphone->colors,
+                                'upc' => $smartphone->upc,
+                                'selling_info' => $smartphone->selling_info,
+                                'inventory_items_count' => $smartphone->inventory_items_count,
+                                'slug' => $smartphone->slug,
+                                'tag' => $smartphone->tag,
+                                'content' => $smartphone->content,
+                                'type' => 'smartphones',
+                            ];
+                        });
+                }
 
                 $relatedPosts = collect();
 
-                if ($show_posts) {
+                if ($show_posts && ! blank($allHashtags)) {
                     $relatedPosts = $this->post
                         ->where('status', true)
-                        ->where(function ($q) use ($allKeywords) {
-                            $this->applyKeywordMatch($q, $allKeywords, ['title', 'content', 'tag']);
-                        })
+                        ->whereIn('tag', $allHashtags)
                         ->where(function ($q) use ($text, $images, $videos) {
                             if ($text) {
 
@@ -932,17 +1288,21 @@ class PostRepository implements IPostRepository
 
                 foreach ($smartphones as $sp) {
 
-                    $keywords = $sp->keywords;
+                    $spHashtag = $sp->tag;
 
                     $spRelatedSmartphones = $relatedSmartphones
                         ->filter(fn ($rs) => $rs->id !== $sp->id &&
-                            $this->itemMatches($rs, $keywords)
+                            ! empty($rs->tag) &&
+                            $rs->tag === $spHashtag
                         )
                         ->take(5)
                         ->values();
 
+                    // Filter related posts with same hashtag
                     $spRelatedPosts = $relatedPosts
-                        ->filter(fn ($rp) => $this->itemMatches($rp, $keywords))
+                        ->filter(fn ($rp) => ! empty($rp->tag) &&
+                            $rp->tag === $spHashtag
+                        )
                         ->take(5)
                         ->values();
 
@@ -1021,7 +1381,7 @@ class PostRepository implements IPostRepository
     {
 
         try {
-            $words = null;
+            $hashtag = null;
 
             $existing_slugs = $request->input('excluded_slugs');
 
@@ -1032,13 +1392,7 @@ class PostRepository implements IPostRepository
             $perPage = 10;
 
             if (! empty($post)) {
-                $words = $this->extractKeywords(
-                    implode(' ', [
-                        $post?->title,
-                        $post?->content,
-                        $post?->tag,
-                    ])
-                );
+                $hashtag = $post->tag;
             } else {
                 $smartphone = $this->smartphone
                     ->where('slug', $slug)
@@ -1061,11 +1415,7 @@ class PostRepository implements IPostRepository
                     ];
                 }
 
-                $words = $this->extractKeywords(implode(' ', [
-                    $smartphone?->model_searchable_name,
-                    $smartphone?->content,
-                    $smartphone?->tag,
-                ]));
+                $hashtag = $smartphone->tag;
             }
 
             $images = $request->boolean('images', true);
@@ -1078,7 +1428,7 @@ class PostRepository implements IPostRepository
             $related_posts = [];
             $related_smartphones = [];
 
-            if ($show_posts) {
+            if ($show_posts && ! empty($hashtag)) {
                 $related_posts = $this->post
                     ->when(! empty($post), function ($subQuery) use ($post) {
                         $subQuery->where('id', '!=', $post->id);
@@ -1110,9 +1460,7 @@ class PostRepository implements IPostRepository
                             });
                         }
                     })
-                    ->where(function ($q) use ($words) {
-                        $this->applyKeywordMatch($q, $words, ['title', 'content', 'tag']);
-                    })
+                    ->where('tag', $hashtag)
                     ->where('status', true)
                     ->with(['floor', 'user'])
                     ->forPage($page, $perPage)
@@ -1127,7 +1475,7 @@ class PostRepository implements IPostRepository
                 $hasMore = $hasMore || ($related_posts->count() === $perPage);
             }
 
-            if ($show_products) {
+            if ($show_products && ! empty($hashtag)) {
                 $related_smartphones = $this->smartphone
                     ->when(! empty($smartphone), function ($subQuery) use ($smartphone) {
                         $subQuery->where('id', '!=', $smartphone->id);
@@ -1143,9 +1491,7 @@ class PostRepository implements IPostRepository
                             $query->where('status', 'in_stock');
                         },
                     ])
-                    ->where(function ($q) use ($words) {
-                        $this->applyKeywordMatch($q, $words, ['model_searchable_name', 'content', 'tag']);
-                    })
+                    ->where('tag', $hashtag)
                     ->forPage($page, $perPage)
                     ->latest()
                     ->get()
@@ -1402,44 +1748,44 @@ class PostRepository implements IPostRepository
     }
 
     // Combining The Item That macthes For Posts And products  For WEbsite
-    private function itemMatches($item, array $keywords)
-    {
-        if (is_array($item)) {
-            $item = (object) $item;
-        }
+    // private function itemMatches($item, array $keywords)
+    // {
+    //     if (is_array($item)) {
+    //         $item = (object) $item;
+    //     }
 
-        $fields = [];
+    //     $fields = [];
 
-        if (($item->type ?? null) === 'posts') {
-            $fields = [
-                $item->title ?? '',
-                $item->content ?? '',
-                $item->tag ?? '',
-            ];
-        } elseif (($item->type ?? null) === 'smartphones') {
-            $fields = [
-                $item->name ?? '',
-                $item->content ?? '',
-                $item->tag ?? '',
-            ];
-        } else {
+    //     if (($item->type ?? null) === 'posts') {
+    //         $fields = [
+    //             $item->title ?? '',
+    //             $item->content ?? '',
+    //             $item->tag ?? '',
+    //         ];
+    //     } elseif (($item->type ?? null) === 'smartphones') {
+    //         $fields = [
+    //             $item->name ?? '',
+    //             $item->content ?? '',
+    //             $item->tag ?? '',
+    //         ];
+    //     } else {
 
-            $fields = [
-                $item->title ?? '',
-                $item->name ?? '',
-                $item->content ?? '',
-                $item->tag ?? '',
-            ];
-        }
+    //         $fields = [
+    //             $item->title ?? '',
+    //             $item->name ?? '',
+    //             $item->content ?? '',
+    //             $item->tag ?? '',
+    //         ];
+    //     }
 
-        $haystack = strtolower(implode(' ', $fields));
+    //     $haystack = strtolower(implode(' ', $fields));
 
-        foreach ($keywords as $keyword) {
-            if (stripos($haystack, strtolower($keyword)) !== false) {
-                return true;
-            }
-        }
+    //     foreach ($keywords as $keyword) {
+    //         if (stripos($haystack, strtolower($keyword)) !== false) {
+    //             return true;
+    //         }
+    //     }
 
-        return false;
-    }
+    //     return false;
+    // }
 }
