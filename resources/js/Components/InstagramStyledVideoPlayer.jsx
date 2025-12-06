@@ -7,7 +7,8 @@ const InstagramStyledVideoPlayer = ({
     className = '',
     OnLoadedMetaData = () => { },
     Preload = 'metadata',
-    slug
+    slug,
+    timelinePadding = 12,
 }) => {
 
     //  CREATE UNIQUE INSTANCE ID
@@ -285,12 +286,23 @@ const InstagramStyledVideoPlayer = ({
     const progressPercentage = duration ? (currentTime / duration) * 100 : 0;
 
     return (
-        <div className="relative w-full h-full overflow-hidden bg-black">
+        <div className="relative w-full h-full bg-black"
+            style={{
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+            }}
+        >
             <video
                 ref={videoRef}
                 src={videoUrl}
                 poster={thumbnail}
                 className={`${className} w-full h-full`}
+                style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                }}
                 playsInline
                 preload={Preload}
                 onClick={handleVideoClick}
@@ -345,8 +357,11 @@ const InstagramStyledVideoPlayer = ({
                 onMouseDown={handleTimelineDragStart}
                 onTouchStart={handleTimelineDragStart}
                 onClick={handleTimelineClick}
-                className="absolute bottom-0 left-0 right-0 z-50 cursor-pointer touch-none"
-                style={{ padding: "12px 0" }}
+                className="absolute left-0 right-0 z-50 cursor-pointer touch-none"
+                style={{
+                    bottom: `max(${timelinePadding}px, env(safe-area-inset-bottom))`,
+                    padding: "12px 0",
+                }}
             >
                 <div className="relative w-full px-2">
                     <div className={`w-full bg-white/30 rounded-full ${showTimeline ? "h-1" : "h-0.5"}`}>

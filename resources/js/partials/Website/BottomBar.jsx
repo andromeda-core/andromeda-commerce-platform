@@ -2,7 +2,8 @@ import { useHomeNavStore } from '@/Hooks/useHomeNavStore';
 import { Link, router, usePage } from '@inertiajs/react';
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-
+import { useBottomBarStore } from '@/Hooks/useBottomBarStore';
+import gsap from 'gsap';
 const BottomBar = ({
     darkMode,
     setDarkMode,
@@ -16,6 +17,54 @@ const BottomBar = ({
 }) => {
     const { user } = usePage().props.auth;
     const dropdownRef = useRef(null);
+
+
+
+    const bottomBarRef = useRef(null);
+    const { isVisible, setBarHeight } = useBottomBarStore();
+
+
+    // Measure height
+    useEffect(() => {
+        const measureHeight = () => {
+            if (bottomBarRef.current) {
+                const height = bottomBarRef.current.offsetHeight;
+                setBarHeight(height);
+            }
+        };
+
+        measureHeight();
+        window.addEventListener('resize', measureHeight);
+        window.addEventListener('orientationchange', measureHeight);
+
+        return () => {
+            window.removeEventListener('resize', measureHeight);
+            window.removeEventListener('orientationchange', measureHeight);
+        };
+    }, [setBarHeight]);
+
+    // Animate visibility
+    useEffect(() => {
+        if (!bottomBarRef.current) return;
+
+        if (isVisible) {
+            gsap.to(bottomBarRef.current, {
+                y: 0,
+                duration: 0.4,
+                ease: 'power2.out',
+            });
+        } else {
+            const height = bottomBarRef.current.offsetHeight;
+            gsap.to(bottomBarRef.current, {
+                y: height,
+                duration: 0.4,
+                ease: 'power2.in',
+            });
+        }
+    }, [isVisible]);
+
+
+
     //  Mode Dark + Light Storing
     useEffect(() => {
         const saved = localStorage.getItem('darkMode');
@@ -77,8 +126,12 @@ const BottomBar = ({
         localStorage.setItem('darkMode', JSON.stringify(darkMode));
     }, [darkMode]);
 
+
+
+
+
     return (
-        <div id="bottom-bar" className="fixed bottom-0 left-0 right-0 z-[60] lg:hidden ">
+        <div id="bottom-bar" ref={bottomBarRef} className="fixed bottom-0 left-0 right-0 z-[60] lg:hidden ">
             {/* Navigation bar */}
             <nav className="bg-white border-b border-gray-200 rounded-sm shadow-md backdrop-blur-lg dark:border-t dark:border-gray-800 dark:bg-deepcharcoal">
                 <div className="flex items-center justify-around px-4 py-2">

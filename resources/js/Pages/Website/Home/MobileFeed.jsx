@@ -9,7 +9,8 @@ import { useFilterStore } from '@/Hooks/useFilterStore';
 import { useVideoStore } from '@/Hooks/useVideoStore';
 import { useHomeNavStore } from '@/Hooks/useHomeNavStore';
 import InstagramStyledVideoPlayer from '@/Components/InstagramStyledVideoPlayer';
-
+import { useBottomBarStore } from '@/Hooks/useBottomBarStore';
+import BottomBarToggle from '@/Components/BottomBarToggle';
 
 const MobileFeed = ({
     feed,
@@ -44,6 +45,10 @@ const MobileFeed = ({
         window.history.pushState({}, '', url.toString());
     }, []);
 
+    //  Get Zustand methods
+    const setBottomBarVisible = useBottomBarStore(state => state.setVisible);
+
+    const { isVisible } = useBottomBarStore();
 
     // Local feed state for seamless looping
     const [localFeed, setLocalFeed] = useState([]);
@@ -216,19 +221,55 @@ const MobileFeed = ({
     // State And Effect For Tracking The height Of Feed Item To Adjust Window
     const [feedItemHeight, setFeedItemHeight] = useState(window.innerHeight);
     useEffect(() => {
-        const bottomBar = document.getElementById("bottom-bar");
-        const barHeight = bottomBar ? bottomBar.offsetHeight : 0;
+        const container = scrollContainerRef.current;
 
-        setFeedItemHeight(window.innerHeight - barHeight);
+        const updateHeight = () => {
+            if (!container) return;
 
-        const resizeHandler = () => {
-            const barHeight = bottomBar ? bottomBar.offsetHeight : 0;
-            setFeedItemHeight(window.innerHeight - barHeight);
+            //  Store current scroll position BEFORE resize
+            const oldHeight = feedItemHeight;
+            const currentScrollTop = container.scrollTop;
+
+            // Calculate which item we're currently viewing
+            const currentItemIndex = Math.round(currentScrollTop / oldHeight);
+
+            // Update to new height
+            const newHeight = window.innerHeight;
+            setFeedItemHeight(newHeight);
+
+            // Restore scroll position after height updates
+            requestAnimationFrame(() => {
+                if (container && hasInitializedScroll.current) {
+                    // Account for dummy item at top (index 0)
+                    const targetScroll = (currentItemIndex) * newHeight;
+
+                    container.style.scrollBehavior = "auto";
+                    container.scrollTop = targetScroll;
+
+                    // Re-enable smooth scrolling
+                    requestAnimationFrame(() => {
+                        container.style.scrollBehavior = "smooth";
+                    });
+                }
+            });
         };
 
-        window.addEventListener("resize", resizeHandler);
-        return () => window.removeEventListener("resize", resizeHandler);
-    }, []);
+        // Debounce resize to avoid excessive updates
+        let resizeTimeout;
+        const handleResize = () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(updateHeight, 150);
+        };
+
+        window.addEventListener("resize", handleResize);
+        window.addEventListener("orientationchange", handleResize);
+
+        return () => {
+            clearTimeout(resizeTimeout);
+            window.removeEventListener("resize", handleResize);
+            window.removeEventListener("orientationchange", handleResize);
+        };
+    }, [feedItemHeight]);
 
 
 
@@ -694,6 +735,7 @@ const MobileFeed = ({
                                             if (item.slug) setLoadedItems(prev => new Set(prev).add(item.slug));
                                         }}
                                         Preload={shouldEagerLoad ? "metadata" : "none"}
+                                        timelinePadding={!isVisible ? 18 : 60}
                                     />
 
 
@@ -726,8 +768,8 @@ const MobileFeed = ({
 
                 {/* Bottom */}
                 {item.type === 'smartphones' && (
-                    <div className="absolute left-0 right-0 z-20 px-4 pt-6 text-white bottom-24 ">
-                        <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className={`absolute left-0 right-0 z-20 px-4 pt-6 text-white ${isVisible ? 'bottom-24' : 'bottom-8'}`}>
+                        <div className="flex items-center justify-between gap-3 truncate">
                             <p className="flex-1 text-sm leading-relaxed break-words text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
                                 {item?.content && item.content.length > 30 ? (
                                     <span
@@ -766,8 +808,8 @@ const MobileFeed = ({
                 )}
 
                 {item.type === 'posts' && (
-                    <div className="absolute left-0 right-0 z-20 px-4 pt-6 text-white bottom-24 ">
-                        <div className={`flex items-center justify-between gap-3 flex-wrap `}>
+                    <div className={`absolute left-0 right-0 z-20 px-4 pt-6 text-white ${isVisible ? 'bottom-24' : 'bottom-8'}`}>
+                        <div className={`flex items-center justify-between gap-3 truncate `}>
                             {/* CHECKING IF MEDIA IS EMPTY THAN ITS TEXT ONLY POST SO THIS WONT SHOW BECAUSE WE ALREADY SHOWED In CONTENT */}
                             {item?.post_image_urls?.length === 0 &&
                                 item?.post_video_urls?.length === 0 ? (
@@ -834,7 +876,7 @@ const MobileFeed = ({
 
             </div>
         );
-    }, [videoAutoplay, mobileFeedGalleryOpening, actionDropdownOpen, isDarkMode, loadedItems, localFeed]);
+    }, [videoAutoplay, mobileFeedGalleryOpening, actionDropdownOpen, isDarkMode, loadedItems, localFeed, isVisible]);
 
 
     // Tracking GLobal Filter Open Or Not
@@ -847,6 +889,17 @@ const MobileFeed = ({
         });
     }, []);
 
+
+    //  Hide bottom bar when MobileFeed mounts, show when unmounts
+    useEffect(() => {
+
+        setBottomBarVisible(false);
+
+
+        return () => {
+            setBottomBarVisible(true);
+        };
+    }, [setBottomBarVisible]);
 
 
     // Syncing FeedGallery With Manual FeedGallery State
@@ -1775,6 +1828,9 @@ const MobileFeed = ({
                         )}
 
                     </div>
+
+                    {/*  TOGGLE BUTTON - Only visible in MobileFeed */}
+                    <BottomBarToggle />
                 </div >,
                 document.getElementById('modal-root') || document.body,
             )}

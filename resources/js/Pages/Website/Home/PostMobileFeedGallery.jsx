@@ -272,6 +272,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                                         videoUrl={item.url}
                                                         Preload='metadata'
                                                         slug={item?.slug}
+                                                        timelinePadding={2}
 
                                                     />
                                                 </div>
