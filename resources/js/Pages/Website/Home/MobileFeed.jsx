@@ -679,106 +679,96 @@ const MobileFeed = ({
 
                 {!isLoaded && <RenderFeedItemContentSkeleton />}
 
-                <div style={{
-                    display: isLoaded ? 'flex' : 'none',
-                    flexDirection: 'column',
-                    flex: 1,
-                    minHeight: 0,
-                    overflow: 'hidden'
-                }}>
+                {/* Image + Videos - Takes remaining space */}
+                <div className="relative w-full overflow-hidden"
+                    style={{ height: feedItemHeight - headerHeight, lineHeight: 0, display: 'block', }}>
+                    {item.type === 'smartphones' && (
+                        <>
+                            {item?.images?.length > 0 && (
+                                <img
+                                    key={item.id}
+                                    src={item.images[0] || placeholderImage}
+                                    alt={item.name}
+                                    className="object-cover object-center w-full h-full rounded-none will-change-transform"
+                                    loading={shouldEagerLoad ? "eager" : "lazy"}
+                                    fetchpriority={shouldEagerLoad ? "high" : "low"}
+                                    decoding="async"
+                                    style={{
+                                        display: 'block',
+                                        verticalAlign: 'top',
+                                    }}
+                                    onLoad={handleOnLoad}
+                                    onError={(e) => {
+                                        handleOnLoad();
+                                        if (e.target.src !== placeholderImage) {
+                                            e.target.src = placeholderImage;
+                                        }
+                                    }}
+                                />
+                            )}
+                        </>
+                    )}
 
-                    {/* Image + Videos - Takes remaining space */}
-                    <div className="relative w-full overflow-hidden"
-                        style={{ height: feedItemHeight - headerHeight, lineHeight: 0, display: 'block', }}>
-                        {item.type === 'smartphones' && (
-                            <>
-                                {item?.images?.length > 0 && (
-                                    <img
-                                        key={item.id}
-                                        src={item.images[0] || placeholderImage}
-                                        alt={item.name}
-                                        className="object-cover object-center w-full h-full rounded-none will-change-transform"
-                                        loading={shouldEagerLoad ? "eager" : "lazy"}
-                                        fetchpriority={shouldEagerLoad ? "high" : "low"}
-                                        decoding="async"
+                    {item.type === 'posts' && (
+                        <>
+                            {item?.post_image_urls?.length > 0 ? (
+                                <img
+                                    key={item.id}
+                                    src={item.post_image_urls[0] || placeholderImage}
+                                    alt={item.title}
+                                    className="object-cover object-center w-full h-full rounded-none"
+                                    loading={shouldEagerLoad ? "eager" : "lazy"}
+                                    fetchpriority={shouldEagerLoad ? "high" : "low"}
+                                    decoding="async"
+                                    style={{
+                                        display: 'block',
+                                        verticalAlign: 'top',
+                                    }}
+                                    onLoad={handleOnLoad}
+                                    onError={(e) => {
+                                        handleOnLoad();
+                                        if (e.target.src !== placeholderImage) {
+                                            e.target.src = placeholderImage;
+                                        }
+                                    }}
+                                />
+                            ) : item.post_video_urls.length > 0 ? (
+                                <InstagramStyledVideoPlayer
+                                    slug={item.slug}
+                                    videoUrl={item.post_video_urls[0].url}
+                                    thumbnail={item.post_video_urls[0]?.thumbnail_url}
+                                    className="object-cover object-center w-full h-full"
+                                    OnLoadedMetaData={() => {
+                                        if (item.slug) setLoadedItems(prev => new Set(prev).add(item.slug));
+                                    }}
+                                    Preload={shouldEagerLoad ? "metadata" : "none"}
+                                    timelinePadding={!isVisible ? 35 : 70}
+                                />
+
+
+                            ) : (
+                                item.post_image_urls.length === 0 &&
+                                item.post_video_urls.length === 0 && (
+                                    <div className="px-4 pt-3 pb-2 overflow-y-auto text-gray-700 mt-14"
                                         style={{
-                                            display: 'block',
-                                            verticalAlign: 'top',
+                                            contain: 'layout style paint',
                                         }}
-                                        onLoad={handleOnLoad}
-                                        onError={(e) => {
-                                            handleOnLoad();
-                                            if (e.target.src !== placeholderImage) {
-                                                e.target.src = placeholderImage;
-                                            }
-                                        }}
-                                    />
-                                )}
-                            </>
-                        )}
-
-                        {item.type === 'posts' && (
-                            <>
-                                {item?.post_image_urls?.length > 0 ? (
-                                    <img
-                                        key={item.id}
-                                        src={item.post_image_urls[0] || placeholderImage}
-                                        alt={item.title}
-                                        className="object-cover object-center w-full h-full rounded-none"
-                                        loading={shouldEagerLoad ? "eager" : "lazy"}
-                                        fetchpriority={shouldEagerLoad ? "high" : "low"}
-                                        decoding="async"
-                                        style={{
-                                            display: 'block',
-                                            verticalAlign: 'top',
-                                        }}
-                                        onLoad={handleOnLoad}
-                                        onError={(e) => {
-                                            handleOnLoad();
-                                            if (e.target.src !== placeholderImage) {
-                                                e.target.src = placeholderImage;
-                                            }
-                                        }}
-                                    />
-                                ) : item.post_video_urls.length > 0 ? (
-                                    <InstagramStyledVideoPlayer
-                                        slug={item.slug}
-                                        videoUrl={item.post_video_urls[0].url}
-                                        thumbnail={item.post_video_urls[0]?.thumbnail_url}
-                                        className="object-cover object-center w-full h-full"
-                                        OnLoadedMetaData={() => {
-                                            if (item.slug) setLoadedItems(prev => new Set(prev).add(item.slug));
-                                        }}
-                                        Preload={shouldEagerLoad ? "metadata" : "none"}
-                                        timelinePadding={!isVisible ? 35 : 70}
-                                    />
-
-
-                                ) : (
-                                    item.post_image_urls.length === 0 &&
-                                    item.post_video_urls.length === 0 && (
-                                        <div className="px-4 pt-3 pb-2 overflow-y-auto text-gray-700 mt-14"
+                                    >
+                                        <div
+                                            className="line-clamp-[18] text-sm leading-relaxed text-gray-700 dark:text-white/80"
                                             style={{
-                                                contain: 'layout style paint',
+
+                                                minHeight: '200px',
                                             }}
-                                        >
-                                            <div
-                                                className="line-clamp-[18] text-sm leading-relaxed text-gray-700 dark:text-white/80"
-                                                style={{
-
-                                                    minHeight: '200px',
-                                                }}
-                                                dangerouslySetInnerHTML={{
-                                                    __html: item.content,
-                                                }}
-                                            />
-                                        </div>
-                                    )
-                                )}
-                            </>
-                        )}
-                    </div>
-
+                                            dangerouslySetInnerHTML={{
+                                                __html: item.content,
+                                            }}
+                                        />
+                                    </div>
+                                )
+                            )}
+                        </>
+                    )}
                 </div>
 
                 {/* Bottom */}
