@@ -735,7 +735,7 @@ const MobileFeed = ({
                                             if (item.slug) setLoadedItems(prev => new Set(prev).add(item.slug));
                                         }}
                                         Preload={shouldEagerLoad ? "metadata" : "none"}
-                                        timelinePadding={!isVisible ? 35 : 100}
+                                        timelinePadding={!isVisible ? 35 : 110}
                                     />
 
 
