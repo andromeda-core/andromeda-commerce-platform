@@ -10,7 +10,7 @@ import { useVideoStore } from '@/Hooks/useVideoStore';
 import { useHomeNavStore } from '@/Hooks/useHomeNavStore';
 import InstagramStyledVideoPlayer from '@/Components/InstagramStyledVideoPlayer';
 import { useBottomBarStore } from '@/Hooks/useBottomBarStore';
-import BottomBarToggle from '@/Components/BottomBarToggle';
+// import BottomBarToggle from '@/Components/BottomBarToggle';
 
 const MobileFeed = ({
     feed,
@@ -45,9 +45,9 @@ const MobileFeed = ({
         window.history.pushState({}, '', url.toString());
     }, []);
 
+    // Not Needed RN He Said To Remove It
     //  Get Zustand methods
-    const setBottomBarVisible = useBottomBarStore(state => state.setVisible);
-
+    // const setBottomBarVisible = useBottomBarStore(state => state.setVisible);
     const { isVisible } = useBottomBarStore();
 
     // Local feed state for seamless looping
@@ -735,7 +735,7 @@ const MobileFeed = ({
                                             if (item.slug) setLoadedItems(prev => new Set(prev).add(item.slug));
                                         }}
                                         Preload={shouldEagerLoad ? "metadata" : "none"}
-                                        timelinePadding={!isVisible ? 35 : 110}
+                                        timelinePadding={!isVisible ? 35 : 70}
                                     />
 
 
@@ -768,7 +768,7 @@ const MobileFeed = ({
 
                 {/* Bottom */}
                 {item.type === 'smartphones' && (
-                    <div className={`absolute left-0 right-0 z-20 px-4 pt-6 text-white ${isVisible ? 'bottom-32' : 'bottom-14'}`}>
+                    <div className={`absolute left-0 right-0 z-20 px-4 pt-6 text-white ${isVisible ? 'bottom-28' : 'bottom-14'}`}>
                         <div className="flex items-center justify-between gap-3 truncate">
                             <p className="flex-1 text-sm leading-relaxed break-words text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
                                 {item?.content && item.content.length > 30 ? (
@@ -808,7 +808,7 @@ const MobileFeed = ({
                 )}
 
                 {item.type === 'posts' && (
-                    <div className={`absolute left-0 right-0 z-20 px-4 pt-6 text-white ${isVisible ? 'bottom-32' : 'bottom-14'}`}>
+                    <div className={`absolute left-0 right-0 z-20 px-4 pt-6 text-white ${isVisible ? 'bottom-28' : 'bottom-14'}`}>
                         <div className={`flex items-center justify-between gap-3 truncate `}>
                             {/* CHECKING IF MEDIA IS EMPTY THAN ITS TEXT ONLY POST SO THIS WONT SHOW BECAUSE WE ALREADY SHOWED In CONTENT */}
                             {item?.post_image_urls?.length === 0 &&
@@ -890,16 +890,17 @@ const MobileFeed = ({
     }, []);
 
 
+    // Not Needed RN He Said To Remove It
     //  Hide bottom bar when MobileFeed mounts, show when unmounts
-    useEffect(() => {
+    // useEffect(() => {
 
-        setBottomBarVisible(false);
+    //     setBottomBarVisible(false);
 
 
-        return () => {
-            setBottomBarVisible(true);
-        };
-    }, [setBottomBarVisible]);
+    //     return () => {
+    //         setBottomBarVisible(true);
+    //     };
+    // }, [setBottomBarVisible]);
 
 
     // Syncing FeedGallery With Manual FeedGallery State
@@ -1830,7 +1831,7 @@ const MobileFeed = ({
                     </div>
 
                     {/*  TOGGLE BUTTON - Only visible in MobileFeed */}
-                    <BottomBarToggle />
+                    {/* <BottomBarToggle /> */}
                 </div >,
                 document.getElementById('modal-root') || document.body,
             )}

@@ -634,6 +634,7 @@ Additional Work:
         133: On Desktop POST, PRODUCT, Modal Combined And Added Top Bottom, Left,Right Feed Navigation ✅
         134: Mobile Feed Scroll Container Issue FIXED  ✅
         135: Mobile Feed Container Blank White Spaces Removed And Added Toggle On Bottom bar To show or Hide With Arrow and Now Feed Show's On Whole Screen  ✅
+        136: Bottom Bar Presisted and removed the Bottom Bar Hide Logic As Joseph Said✅
     ) Redesigned Whole Website 4th Time Completed According To The LAYOUT Design Reference Provided ✅
 
 
