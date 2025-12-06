@@ -13,7 +13,7 @@ const BottomBarToggle = () => {
     return (
         <button
             onClick={toggleVisibility}
-            className={`fixed left-1/2 -translate-x-1/2 z-[70]  p-2 transition-all duration-300 bg-zinc-800/60 backdrop-blur-sm  rounded-full shadow-lg  dark:bg-zinc-800/20  hover:scale-110 active:scale-95 ${showPulse && !isVisible ? 'animate-pulse' : ''
+            className={`fixed left-1/2 -translate-x-1/2 z-[70]  p-2 mb-2 transition-all duration-300 bg-zinc-800/60 backdrop-blur-sm  rounded-full shadow-lg  dark:bg-zinc-800/20  hover:scale-110 active:scale-95 ${showPulse && !isVisible ? 'animate-pulse' : ''
                 }`}
             style={{
                 bottom: isVisible ? `${barHeight + 10}px` : '0px',
@@ -29,7 +29,7 @@ const BottomBarToggle = () => {
                     viewBox="0 0 24 24"
                     strokeWidth={2.5}
                     stroke="currentColor"
-                    className="w-3 h-3 text-white"
+                    className="w-5 h-5 text-white"
                 >
                     <path
                         strokeLinecap="round"
@@ -45,7 +45,7 @@ const BottomBarToggle = () => {
                     viewBox="0 0 24 24"
                     strokeWidth={2.5}
                     stroke="currentColor"
-                    className="w-3 h-3 text-white"
+                    className="w-5 h-5 text-white"
                 >
                     <path
                         strokeLinecap="round"

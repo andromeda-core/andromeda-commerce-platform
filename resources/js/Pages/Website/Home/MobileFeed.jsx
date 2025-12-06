@@ -735,7 +735,7 @@ const MobileFeed = ({
                                             if (item.slug) setLoadedItems(prev => new Set(prev).add(item.slug));
                                         }}
                                         Preload={shouldEagerLoad ? "metadata" : "none"}
-                                        timelinePadding={!isVisible ? 18 : 60}
+                                        timelinePadding={!isVisible ? 35 : 100}
                                     />
 
 
@@ -768,7 +768,7 @@ const MobileFeed = ({
 
                 {/* Bottom */}
                 {item.type === 'smartphones' && (
-                    <div className={`absolute left-0 right-0 z-20 px-4 pt-6 text-white ${isVisible ? 'bottom-24' : 'bottom-8'}`}>
+                    <div className={`absolute left-0 right-0 z-20 px-4 pt-6 text-white ${isVisible ? 'bottom-32' : 'bottom-14'}`}>
                         <div className="flex items-center justify-between gap-3 truncate">
                             <p className="flex-1 text-sm leading-relaxed break-words text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
                                 {item?.content && item.content.length > 30 ? (
@@ -808,7 +808,7 @@ const MobileFeed = ({
                 )}
 
                 {item.type === 'posts' && (
-                    <div className={`absolute left-0 right-0 z-20 px-4 pt-6 text-white ${isVisible ? 'bottom-24' : 'bottom-8'}`}>
+                    <div className={`absolute left-0 right-0 z-20 px-4 pt-6 text-white ${isVisible ? 'bottom-32' : 'bottom-14'}`}>
                         <div className={`flex items-center justify-between gap-3 truncate `}>
                             {/* CHECKING IF MEDIA IS EMPTY THAN ITS TEXT ONLY POST SO THIS WONT SHOW BECAUSE WE ALREADY SHOWED In CONTENT */}
                             {item?.post_image_urls?.length === 0 &&
