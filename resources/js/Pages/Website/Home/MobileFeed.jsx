@@ -301,7 +301,6 @@ const MobileFeed = ({
     const renderFeedItem = useCallback((item, isRelated = false, index) => {
 
         // const relatedCount = getRelatedCount(parentFeedSlugRef.current);
-
         const headerHeight = 0.;
 
 
@@ -681,7 +680,7 @@ const MobileFeed = ({
 
                 {/* Image + Videos - Takes remaining space */}
                 <div className="relative w-full overflow-hidden"
-                    style={{ height: feedItemHeight - headerHeight, lineHeight: 0, display: 'block', }}>
+                    style={{ height: feedItemHeight - headerHeight + 20, lineHeight: 0, display: 'block', }}>
                     {item.type === 'smartphones' && (
                         <>
                             {item?.images?.length > 0 && (
