@@ -6,7 +6,7 @@
     font-style: normal;
     font-weight: 300;
     font-display: swap;
-    src: url('https://cdn.andromeda.blue/fonts//OpenSans-Light.ttf') format('truetype');
+    src: url('https://cdn.andromeda.blue/fonts/OpenSans-Light.ttf') format('truetype');
 }
 
 /* Open Sans Regular */
@@ -15,7 +15,7 @@
     font-style: normal;
     font-weight: 400;
     font-display: swap;
-    src: url('https://cdn.andromeda.blue/fonts//OpenSans-Regular.ttf') format('truetype');
+    src: url('https://cdn.andromeda.blue/fonts/OpenSans-Regular.ttf') format('truetype');
 }
 
 /* Open Sans Medium */
@@ -24,7 +24,7 @@
     font-style: normal;
     font-weight: 500;
     font-display: swap;
-    src: url('https://cdn.andromeda.blue/fonts//OpenSans-Medium.ttf') format('truetype');
+    src: url('https://cdn.andromeda.blue/fonts/OpenSans-Medium.ttf') format('truetype');
 }
 
 /* Open Sans SemiBold */
@@ -33,7 +33,7 @@
     font-style: normal;
     font-weight: 600;
     font-display: swap;
-    src: url('https://cdn.andromeda.blue/fonts//OpenSans-SemiBold.ttf') format('truetype');
+    src: url('https://cdn.andromeda.blue/fonts/OpenSans-SemiBold.ttf') format('truetype');
 }
 
 /* Open Sans Bold */
@@ -42,7 +42,7 @@
     font-style: normal;
     font-weight: 700;
     font-display: swap;
-    src: url('https://cdn.andromeda.blue/fonts//OpenSans-Bold.ttf') format('truetype');
+    src: url('https://cdn.andromeda.blue/fonts/OpenSans-Bold.ttf') format('truetype');
 }
 
 /* Open Sans ExtraBold */
@@ -51,7 +51,7 @@
     font-style: normal;
     font-weight: 800;
     font-display: swap;
-    src: url('https://cdn.andromeda.blue/fonts//OpenSans-ExtraBold.ttf') format('truetype');
+    src: url('https://cdn.andromeda.blue/fonts/OpenSans-ExtraBold.ttf') format('truetype');
 }
 
 /* global.css */
