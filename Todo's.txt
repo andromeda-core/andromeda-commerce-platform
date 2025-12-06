@@ -635,6 +635,7 @@ Additional Work:
         134: Mobile Feed Scroll Container Issue FIXED  ✅
         135: Mobile Feed Container Blank White Spaces Removed And Added Toggle On Bottom bar To show or Hide With Arrow and Now Feed Show's On Whole Screen  ✅
         136: Bottom Bar Presisted and removed the Bottom Bar Hide Logic As Joseph Said✅
+        137: Strictly Logic To Remove Even Little Bit WhiteSpace From Mobile Feed  ✅
     ) Redesigned Whole Website 4th Time Completed According To The LAYOUT Design Reference Provided ✅
 
 

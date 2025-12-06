@@ -390,6 +390,13 @@ const MobileFeed = ({
                     scrollSnapStop: 'always',
                     contain: 'layout style paint',
                     willChange: 'transform',
+                    margin: 0,
+                    padding: 0,
+                    border: 'none',
+                    display: 'block',
+                    boxSizing: 'border-box',
+                    overflow: 'hidden',
+                    lineHeight: 0,
                 }}
             >
 
@@ -682,7 +689,7 @@ const MobileFeed = ({
 
                     {/* Image + Videos - Takes remaining space */}
                     <div className="relative w-full overflow-hidden"
-                        style={{ height: feedItemHeight - headerHeight }}>
+                        style={{ height: feedItemHeight - headerHeight, lineHeight: 0, display: 'block', }}>
                         {item.type === 'smartphones' && (
                             <>
                                 {item?.images?.length > 0 && (
@@ -694,6 +701,10 @@ const MobileFeed = ({
                                         loading={shouldEagerLoad ? "eager" : "lazy"}
                                         fetchpriority={shouldEagerLoad ? "high" : "low"}
                                         decoding="async"
+                                        style={{
+                                            display: 'block',
+                                            verticalAlign: 'top',
+                                        }}
                                         onLoad={handleOnLoad}
                                         onError={(e) => {
                                             handleOnLoad();
@@ -717,6 +728,10 @@ const MobileFeed = ({
                                         loading={shouldEagerLoad ? "eager" : "lazy"}
                                         fetchpriority={shouldEagerLoad ? "high" : "low"}
                                         decoding="async"
+                                        style={{
+                                            display: 'block',
+                                            verticalAlign: 'top',
+                                        }}
                                         onLoad={handleOnLoad}
                                         onError={(e) => {
                                             handleOnLoad();
@@ -1032,7 +1047,6 @@ const MobileFeed = ({
         const currentItem = localFeed[feedIndex];
         if (!currentItem) return;
 
-        const relatedCount = getRelatedCount(currentItem.slug);
 
         // If already initialized, restore position
         if (initializedXAxisRef.current.has(currentItem.id)) {
@@ -1715,6 +1729,9 @@ const MobileFeed = ({
                             willChange: 'transform',
                             transform: 'translate3d(0, 0, 0)',
                             overflowX: 'hidden',
+                            margin: 0,
+                            padding: 0,
+                            display: 'block',
                         }}
                     >
 
@@ -1752,7 +1769,7 @@ const MobileFeed = ({
 
                                             if (!el) return;
 
-                                            const relatedCount = getRelatedCount(item.slug);
+
 
                                             // Skip if no related items or already initialized
                                             if (initializedXAxisRef.current.has(item.id)) return;
