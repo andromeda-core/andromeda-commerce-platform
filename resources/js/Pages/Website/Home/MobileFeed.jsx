@@ -679,8 +679,12 @@ const MobileFeed = ({
                 {!isLoaded && <RenderFeedItemContentSkeleton />}
 
                 {/* Image + Videos - Takes remaining space */}
-                <div className="relative w-full overflow-hidden"
-                    style={{ height: feedItemHeight - headerHeight + 20, lineHeight: 0, display: 'block', }}>
+                <div className="absolute inset-0 w-full h-full"
+                    style={{
+                        lineHeight: 0,
+                        display: 'block',
+                        overflow: 'hidden',
+                    }}>
                     {item.type === 'smartphones' && (
                         <>
                             {item?.images?.length > 0 && (
