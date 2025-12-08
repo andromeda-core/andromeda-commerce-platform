@@ -42,7 +42,7 @@
     font-style: normal;
     font-weight: 700;
     font-display: swap;
-    src: url('https://cdn.andromeda.blue/fonts/Dev/OpenSans-Bold.ttf') format('truetype');
+    src: url('https://cdn.andromeda.blue/fonts/OpenSans-Bold.ttf') format('truetype');
 }
 
 /* Open Sans ExtraBold */
@@ -80,6 +80,7 @@
     :root {
         --bottom-bar-height: 60px;
         --primary-progress-color: #000;
+        --vh: 1vh;
     }
 
     .dark {
@@ -384,15 +385,22 @@ video.feed-video::-webkit-media-controls {
 }
 
 .feed-page {
-    height: 100dvh !important;
-    min-height: 100dvh !important;
-    max-height: 100dvh !important;
+    height: calc(var(--vh) * 100) !important;
+    min-height: calc(var(--vh) * 100) !important;
+    max-height: calc(var(--vh) * 100) !important;
     overflow: hidden !important;
     display: flex;
     flex-direction: column;
     scroll-snap-align: start;
     scroll-snap-stop: always;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    margin-bottom: -2px !important;
+    border-bottom: 2px solid transparent !important;
+    position: relative;
+    will-change: transform;
 }
+
 .masonry-item {
     animation-delay: calc(var(--i) * 100ms);
 }
