@@ -243,9 +243,7 @@ const MobileFeed = ({
             const currentItemIndex = Math.round(currentScrollTop / oldHeight);
 
             // Update to new height
-            const newHeight = isSafari
-                ? document.documentElement.clientHeight
-                : window.innerHeight;
+            const newHeight = window.visualViewport?.height;
             setFeedItemHeight(newHeight);
 
             // Restore scroll position after height updates

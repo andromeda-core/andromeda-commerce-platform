@@ -42,7 +42,7 @@
     font-style: normal;
     font-weight: 700;
     font-display: swap;
-    src: url('https://cdn.andromeda.blue/fonts/OpenSans-Bold.ttf') format('truetype');
+    src: url('https://cdn.andromeda.blue/fonts/Dev/OpenSans-Bold.ttf') format('truetype');
 }
 
 /* Open Sans ExtraBold */
@@ -384,9 +384,9 @@ video.feed-video::-webkit-media-controls {
 }
 
 .feed-page {
-    height: 100vh;
-    min-height: 100vh;
-    max-height: 100vh;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
     overflow: hidden !important;
     display: flex;
     flex-direction: column;
