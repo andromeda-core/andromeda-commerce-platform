@@ -427,3 +427,16 @@ video.feed-video::-webkit-media-controls {
 .animate-float {
     animation: float 2s ease-in-out infinite;
 }
+
+/* Safari Specific Css */
+@supports (-webkit-touch-callout: none) {
+    .feed-page {
+        height: -webkit-fill-available !important;
+    }
+
+    img,
+    video {
+        max-height: 100% !important;
+        object-fit: cover !important;
+    }
+}

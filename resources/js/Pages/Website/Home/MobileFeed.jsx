@@ -130,11 +130,11 @@ const MobileFeed = ({
 
 
     // Helper Function to Get Related Feed Count
-    const getRelatedCount = (slug) => {
-        if (!slug || !localRelatedFeedRef.current) return 0;
-        const arr = localRelatedFeedRef.current[slug];
-        return arr ? arr.length : 0;
-    };
+    // const getRelatedCount = (slug) => {
+    //     if (!slug || !localRelatedFeedRef.current) return 0;
+    //     const arr = localRelatedFeedRef.current[slug];
+    //     return arr ? arr.length : 0;
+    // };
 
     // Helper function to get related items for a feed item
     const relatedItemsCache = useRef(new Map());
@@ -218,8 +218,17 @@ const MobileFeed = ({
     };
 
 
+
+
     // State And Effect For Tracking The height Of Feed Item To Adjust Window
     const [feedItemHeight, setFeedItemHeight] = useState(window.innerHeight);
+
+    // Checking Is User Viewing Site On Safari Browser
+    const isSafari = useMemo(() => {
+        return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    }, []);
+
+
     useEffect(() => {
         const container = scrollContainerRef.current;
 
@@ -234,7 +243,9 @@ const MobileFeed = ({
             const currentItemIndex = Math.round(currentScrollTop / oldHeight);
 
             // Update to new height
-            const newHeight = window.innerHeight;
+            const newHeight = isSafari
+                ? document.documentElement.clientHeight
+                : window.innerHeight;
             setFeedItemHeight(newHeight);
 
             // Restore scroll position after height updates
@@ -387,7 +398,7 @@ const MobileFeed = ({
                     height: feedItemHeight,
                     scrollSnapAlign: 'start',
                     scrollSnapStop: 'always',
-                    contain: 'layout style paint',
+                    contain: 'layout',
                     willChange: 'transform',
                     margin: 0,
                     padding: 0,
@@ -754,7 +765,7 @@ const MobileFeed = ({
                                 item.post_video_urls.length === 0 && (
                                     <div className="px-4 pt-3 pb-2 overflow-y-auto text-gray-700 mt-14"
                                         style={{
-                                            contain: 'layout style paint',
+                                            contain: 'layout',
                                         }}
                                     >
                                         <div
@@ -1720,7 +1731,6 @@ const MobileFeed = ({
                             overscrollBehavior: 'contain',
                             WebkitOverflowScrolling: 'touch',
                             willChange: 'transform',
-                            transform: 'translate3d(0, 0, 0)',
                             overflowX: 'hidden',
                             margin: 0,
                             padding: 0,
@@ -1806,8 +1816,7 @@ const MobileFeed = ({
                                             display: "flex",
                                             flexDirection: 'row',
                                             willChange: 'transform',
-                                            transform: 'translate3d(0, 0, 0)',
-                                            contain: 'layout style paint',
+                                            contain: 'layout',
                                         }}
                                     >
 
