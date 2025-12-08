@@ -282,6 +282,62 @@ const MobileFeed = ({
 
 
 
+    // Hiding Mobile Browser Address Bar
+    // Force hide mobile browser address bar on mount - ENHANCED
+    useEffect(() => {
+        const hideAddressBar = () => {
+            // Ensure we're on mobile
+            if (!/Mobile|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                return;
+            }
+
+            // Multiple strategies for different browsers
+            const strategies = [
+                // Strategy 1: Window scroll
+                () => {
+                    window.scrollTo(0, 1);
+                    setTimeout(() => window.scrollTo(0, 0), 0);
+                },
+
+                // Strategy 2: Container scroll (your main container)
+                () => {
+                    const container = scrollContainerRef.current;
+                    if (container && container.scrollTop === 0) {
+                        // If at top, scroll down slightly then back
+                        container.scrollTop = 10;
+                        requestAnimationFrame(() => {
+                            container.scrollTop = 0;
+                        });
+                    }
+                },
+
+                // Strategy 3: Body scroll
+                () => {
+                    document.body.scrollTop = 1;
+                    document.documentElement.scrollTop = 1;
+                }
+            ];
+
+            // Execute strategies with timing
+            strategies.forEach((strategy, index) => {
+                setTimeout(strategy, index * 50);
+            });
+
+            // Final scroll to ensure position
+            setTimeout(() => {
+                if (scrollContainerRef.current) {
+                    scrollContainerRef.current.scrollTop =
+                        scrollContainerRef.current.scrollTop || 0;
+                }
+            }, 200);
+        };
+
+        // Execute after a brief delay to ensure DOM is ready
+        const timer = setTimeout(hideAddressBar, 150);
+
+        return () => clearTimeout(timer);
+    }, []);
+
 
     // Helper Function To Render Dummy items WithActual Related Feed To Perform Looping
 
