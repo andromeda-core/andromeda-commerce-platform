@@ -223,6 +223,11 @@ const MobileFeed = ({
     // State And Effect For Tracking The height Of Feed Item To Adjust Window
     const [feedItemHeight, setFeedItemHeight] = useState(window.innerHeight);
 
+    // Checking Is User Viewing Site On Safari Browser
+    const isSafari = useMemo(() => {
+        return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    }, []);
+
 
     useEffect(() => {
         const container = scrollContainerRef.current;
@@ -238,11 +243,7 @@ const MobileFeed = ({
             const currentItemIndex = Math.round(currentScrollTop / oldHeight);
 
             // Update to new height
-            const rawHeight = window.visualViewport?.height
-                || document.documentElement.clientHeight
-                || window.innerHeight;
-
-            const newHeight = Math.round(rawHeight);
+            const newHeight = window.visualViewport?.height;
             setFeedItemHeight(newHeight);
 
             // Restore scroll position after height updates
@@ -277,7 +278,7 @@ const MobileFeed = ({
             window.removeEventListener("resize", handleResize);
             window.removeEventListener("orientationchange", handleResize);
         };
-    }, []);
+    }, [feedItemHeight]);
 
 
 
@@ -309,6 +310,9 @@ const MobileFeed = ({
     const renderFeedItem = useCallback((item, isRelated = false, index) => {
 
         // const relatedCount = getRelatedCount(parentFeedSlugRef.current);
+        const headerHeight = 0.;
+
+
         // if (relatedCount < 1 && item?.__dummy) {
         //     return (
         //         <div
@@ -392,6 +396,8 @@ const MobileFeed = ({
                     height: feedItemHeight,
                     scrollSnapAlign: 'start',
                     scrollSnapStop: 'always',
+                    contain: 'layout',
+                    willChange: 'transform',
                     margin: 0,
                     padding: 0,
                     border: 'none',
@@ -682,7 +688,7 @@ const MobileFeed = ({
                 {!isLoaded && <RenderFeedItemContentSkeleton />}
 
                 {/* Image + Videos - Takes remaining space */}
-                <div className="relative w-full h-full"
+                <div className="absolute inset-0 w-full h-full"
                     style={{
                         lineHeight: 0,
                         display: 'block',
@@ -695,7 +701,7 @@ const MobileFeed = ({
                                     key={item.id}
                                     src={item.images[0] || placeholderImage}
                                     alt={item.name}
-                                    className="object-cover object-center w-full h-full rounded-none"
+                                    className="object-cover object-center w-full h-full rounded-none will-change-transform"
                                     loading={shouldEagerLoad ? "eager" : "lazy"}
                                     fetchpriority={shouldEagerLoad ? "high" : "low"}
                                     decoding="async"
@@ -756,6 +762,9 @@ const MobileFeed = ({
                                 item.post_image_urls.length === 0 &&
                                 item.post_video_urls.length === 0 && (
                                     <div className="px-4 pt-3 pb-2 overflow-y-auto text-gray-700 mt-14"
+                                        style={{
+                                            contain: 'layout',
+                                        }}
                                     >
                                         <div
                                             className="line-clamp-[18] text-sm leading-relaxed text-gray-700 dark:text-white/80"
@@ -1719,7 +1728,7 @@ const MobileFeed = ({
                             scrollSnapType: 'y mandatory',
                             overscrollBehavior: 'contain',
                             WebkitOverflowScrolling: 'touch',
-                            transform: 'translateZ(0)',
+                            willChange: 'transform',
                             overflowX: 'hidden',
                             margin: 0,
                             padding: 0,
@@ -1748,13 +1757,9 @@ const MobileFeed = ({
                                     className="min-w-full feed-page snap-start"
                                     style={{
                                         height: feedItemHeight,
-                                        margin: 0,
-                                        padding: 0,
-                                        border: 'none',
-                                        display: 'block',
-                                        overflow: 'hidden',
-                                        lineHeight: 0,
-                                        boxSizing: 'border-box',
+                                        contentVisibility: "auto",
+                                        contain: 'layout',
+                                        willChange: 'scroll-position',
                                     }}
                                 >
                                     <div
@@ -1808,10 +1813,8 @@ const MobileFeed = ({
                                             WebkitOverflowScrolling: "touch",
                                             display: "flex",
                                             flexDirection: 'row',
-                                            margin: 0,
-                                            padding: 0,
-                                            border: "none",
-                                            boxSizing: "border-box",
+                                            willChange: 'transform',
+                                            contain: 'layout',
                                         }}
                                     >
 

@@ -395,6 +395,11 @@ video.feed-video::-webkit-media-controls {
     scroll-snap-stop: always;
     transform: translateZ(0);
     backface-visibility: hidden;
+
+    margin-bottom: -1px !important;
+    border-bottom: 1px solid transparent !important;
+    position: relative;
+    will-change: transform;
 }
 
 .masonry-item {
