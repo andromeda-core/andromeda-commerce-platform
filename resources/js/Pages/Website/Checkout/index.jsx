@@ -10,7 +10,7 @@ import useWindowSize from '@/Hooks/useWindowSize';
 import Confetti from 'react-confetti';
 import { createPortal } from 'react-dom';
 
-export default function Checkout({ cart_items, refferalSessionData, customer }) {
+export default function Checkout({ cart_items, refferalSessionData, customer, meta_usernames, is_eligible_for_social_message }) {
     const { currency, auth } = usePage().props;
     const windowSize = useWindowSize();
 
@@ -365,6 +365,14 @@ export default function Checkout({ cart_items, refferalSessionData, customer }) 
                                     handlePlaceOrder={handlePlaceOrder}
                                     processingOrder={processingOrder}
                                 />
+
+
+                                {/* Social Message Buttons */}
+                                {is_eligible_for_social_message && (
+                                    <SocialMessageButtons user={auth?.user} meta_usernames={meta_usernames} />
+
+                                )}
+
                             </div>
                         </div>
                     </div>
@@ -550,8 +558,8 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
                 {/* Bank Transfer Option */}
                 <label
                     className={`flex cursor-pointer items-center gap-4 rounded-lg border-2 p-4 transition-all ${paymentMethod === 'bank_transfer'
-                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
-                            : 'border-gray-200 bg-gray-50 hover:border-gray-300 dark:border-white/10 dark:bg-gray-900/20 dark:hover:border-white/20'
+                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
+                        : 'border-gray-200 bg-gray-50 hover:border-gray-300 dark:border-white/10 dark:bg-gray-900/20 dark:hover:border-white/20'
                         }`}
                 >
                     <input
@@ -595,8 +603,8 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
                 {/* Crypto Option */}
                 <label
                     className={`flex cursor-pointer items-center gap-4 rounded-lg border-2 p-4 transition-all ${paymentMethod === 'crypto'
-                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
-                            : 'border-gray-200 bg-gray-50 hover:border-gray-300 dark:border-white/10 dark:bg-gray-900/20 dark:hover:border-white/20'
+                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
+                        : 'border-gray-200 bg-gray-50 hover:border-gray-300 dark:border-white/10 dark:bg-gray-900/20 dark:hover:border-white/20'
                         }`}
                 >
                     <input
@@ -637,8 +645,8 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
                 {/* Points option */}
                 <label
                     className={`flex cursor-pointer items-center gap-4 rounded-lg border-2 p-4 transition-all ${paymentMethod === 'points'
-                            ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
-                            : 'border-gray-200 bg-gray-50 hover:border-gray-300 dark:border-white/10 dark:bg-gray-900/20 dark:hover:border-white/20'
+                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
+                        : 'border-gray-200 bg-gray-50 hover:border-gray-300 dark:border-white/10 dark:bg-gray-900/20 dark:hover:border-white/20'
                         }`}
                 >
                     <input
@@ -906,8 +914,8 @@ function OrderSummaryCard({
                                         onChange={(e) => setReferalCode(e.target.value)}
                                         placeholder="Enter Referal Code To Earn Points"
                                         className={`w-full rounded-lg border ${error
-                                                ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                                                : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500/20'
+                                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                                            : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500/20'
                                             } bg-white px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors focus:outline-none focus:ring-2 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40`}
                                     />
                                     {error && (
@@ -977,6 +985,65 @@ function OrderSummaryCard({
                     />
                 </svg>
                 <span className="font-medium">Secure Checkout</span>
+            </div>
+        </div>
+    );
+}
+
+// Social Message Buttons
+function SocialMessageButtons({ user, meta_usernames }) {
+    return (
+        <div className="p-4 bg-white border border-gray-200 rounded-xl dark:border-white/10 dark:bg-deepcharcoal">
+            <div className="flex flex-col w-full gap-3">
+                {/* Instagram Button */}
+                <a
+                    href={`https://ig.me/m/${meta_usernames?.ig_username}?ref=user_id=${user?.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group relative flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-pink-500/30 hover:scale-[1.02] active:scale-[0.98] min-h-[44px]"
+                >
+                    {/* Animated background overlay */}
+                    <div className="absolute inset-0 transition-opacity duration-300 opacity-0 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 group-hover:opacity-100"></div>
+
+                    {/* Icon */}
+                    <svg
+                        className="relative flex-shrink-0 w-4 h-4"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                    >
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                    </svg>
+
+                    {/* Text - Responsive */}
+                    <span className="relative text-xs sm:text-sm">
+                        Message us on Instagram
+                    </span>
+                </a>
+
+                {/* Facebook Button */}
+                <a
+                    href={`https://m.me/${meta_usernames?.fb_page_username}?ref=user_id=${user?.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group relative flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.98] min-h-[44px]"
+                >
+                    {/* Animated background overlay */}
+                    <div className="absolute inset-0 transition-opacity duration-300 bg-blue-700 opacity-0 group-hover:opacity-100"></div>
+
+                    {/* Icon */}
+                    <svg
+                        className="relative flex-shrink-0 w-4 h-4"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                    >
+                        <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047v-2.66c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.971h-1.513c-1.491 0-1.956.93-1.956 1.886v2.264h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z" />
+                    </svg>
+
+                    {/* Text - Responsive */}
+                    <span className="relative text-xs sm:text-sm">
+                        Message us on Facebook
+                    </span>
+                </a>
             </div>
         </div>
     );

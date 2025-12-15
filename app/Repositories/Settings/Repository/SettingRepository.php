@@ -2311,8 +2311,17 @@ class SettingRepository implements ISettingRepository
     public function storeMetaSetting(Request $request)
     {
         $validated_req = $request->validate([
-            'meta_app_id' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_app_id'],
-            'meta_app_secret' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_app_secret'],
+            'meta_fb_app_name' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_fb_app_name'],
+            'meta_fb_app_id' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_fb_app_id'],
+            'meta_fb_app_secret' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_fb_app_secret'],
+            'meta_fb_page_access_token' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_fb_page_access_token'],
+            'meta_verify_token' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_verify_token'],
+            'meta_fb_page_username' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_fb_page_username'],
+            'meta_ig_app_name' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_ig_app_name'],
+            'meta_ig_app_id' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_ig_app_id'],
+            'meta_ig_app_secret' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_ig_app_secret'],
+            'meta_ig_username' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_ig_username'],
+            'meta_ig_access_token' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_ig_access_token'],
         ]);
 
         try {
@@ -2342,8 +2351,17 @@ class SettingRepository implements ISettingRepository
     public function updateMetaSetting(Request $request, string $id)
     {
         $validated_req = $request->validate([
-            'meta_app_id' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_app_id,'.$id],
-            'meta_app_secret' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_app_secret,'.$id],
+            'meta_fb_app_name' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_fb_app_name,'.$id],
+            'meta_fb_app_id' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_fb_app_id,'.$id],
+            'meta_fb_app_secret' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_fb_app_secret,'.$id],
+            'meta_fb_page_access_token' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_fb_page_access_token,'.$id],
+            'meta_verify_token' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_verify_token,'.$id],
+            'meta_fb_page_username' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_fb_page_username,'.$id],
+            'meta_ig_app_name' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_ig_app_name,'.$id],
+            'meta_ig_app_id' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_ig_app_id,'.$id],
+            'meta_ig_app_secret' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_ig_app_secret,'.$id],
+            'meta_ig_username' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_ig_username,'.$id],
+            'meta_ig_access_token' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_ig_access_token,'.$id],
         ]);
 
         try {

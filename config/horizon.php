@@ -205,6 +205,18 @@ return [
             'nice' => 5,
 
         ],
+
+        'supervisor-meta' => [
+            'connection' => 'redis',
+            'queue' => ['meta'],
+            'balance' => 'simple',
+            'processes' => 1,
+            'tries' => 1,
+            'timeout' => 14400,
+            'memory' => 2048,
+            'nice' => 5,
+
+        ],
     ],
 
     'environments' => [
@@ -229,6 +241,18 @@ return [
                 'timeout' => 14400,
                 'memory' => 4096,
                 'tries' => 1,
+                'nice' => 5,
+
+            ],
+
+            'supervisor-meta' => [
+                'connection' => 'redis',
+                'queue' => ['meta'],
+                'balance' => 'simple',
+                'processes' => 1,
+                'tries' => 1,
+                'timeout' => 14400,
+                'memory' => 2048,
                 'nice' => 5,
 
             ],

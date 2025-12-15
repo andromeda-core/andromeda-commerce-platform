@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Console\Commands\CheckRewardPointExpiry;
 use App\Console\Commands\ClearPreviousOrderPackageRecordings;
+use App\Console\Commands\MetaPageTokenRefresh;
 use App\Console\Commands\NOWPaymentAutoMarkingOrderFailedIfNotPaid;
 use App\Console\Commands\NOWPaymentInvoiceStatusCheck;
 use Illuminate\Console\Scheduling\Schedule;
@@ -28,5 +29,6 @@ class SchedularServiceProvider extends ServiceProvider
         $schedule->command(ClearPreviousOrderPackageRecordings::class)->daily();
         $schedule->command(NOWPaymentInvoiceStatusCheck::class)->everyMinute();
         $schedule->command(NOWPaymentAutoMarkingOrderFailedIfNotPaid::class)->everyMinute();
+        $schedule->command(MetaPageTokenRefresh::class)->everyMinute();
     }
 }

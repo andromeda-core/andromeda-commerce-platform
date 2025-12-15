@@ -14,7 +14,7 @@ export default function InfoToastModal({ showInfo, setShowInfo, message }) {
     if (!showInfo) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[10002] flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
                 className="fixed inset-0 bg-black/30 backdrop-blur-sm"
@@ -22,12 +22,12 @@ export default function InfoToastModal({ showInfo, setShowInfo, message }) {
             />
 
             {/* Modal */}
-            <div className="relative z-10 w-full max-w-sm animate-scale-in rounded-2xl bg-white px-8 py-6 shadow-2xl dark:bg-deepcharcoal">
+            <div className="relative z-10 w-full max-w-sm px-8 py-6 bg-white shadow-2xl animate-scale-in rounded-2xl dark:bg-deepcharcoal">
                 <div className="flex flex-col items-center text-center">
                     {/* Info Icon */}
-                    <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/20">
+                    <div className="flex items-center justify-center w-16 h-16 mb-6 bg-blue-100 rounded-full dark:bg-blue-900/20">
                         <svg
-                            className="h-8 w-8 text-blue-600 dark:text-blue-400"
+                            className="w-8 h-8 text-blue-600 dark:text-blue-400"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"

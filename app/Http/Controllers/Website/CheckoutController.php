@@ -7,6 +7,7 @@ use App\Repositories\Cart\Interface\ICartRepository;
 use App\Repositories\Orders\Interface\IOrderRepository;
 use App\Repositories\Users\Interface\IUserRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class CheckoutController extends Controller
@@ -26,6 +27,15 @@ class CheckoutController extends Controller
         if (empty($cart_items)) {
             return to_route('home');
         }
+        $meta_usernames = [];
+        $meta_setting = Cache::get('meta_setting');
+
+        if (! empty($meta_setting)) {
+            $meta_usernames = [
+                'fb_page_username' => $meta_setting->meta_fb_page_username,
+                'ig_username' => $meta_setting->meta_ig_username,
+            ];
+        }
 
         $refferalSessionData = session()->get('referal_data');
 
@@ -43,7 +53,9 @@ class CheckoutController extends Controller
 
         ];
 
-        return Inertia::render('Website/Checkout/index', compact('cart_items', 'refferalSessionData', 'customer'));
+        $is_eligible_for_social_message = $this->user->isCustomerEligableForSocialMessageSendOrReceive($request->user()->id);
+
+        return Inertia::render('Website/Checkout/index', compact('cart_items', 'refferalSessionData', 'customer', 'meta_usernames', 'is_eligible_for_social_message'));
     }
 
     public function store(Request $request)

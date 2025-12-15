@@ -41,7 +41,7 @@ class NotifyCustomerHisPaymentProofhasbeenUploadedNotification extends Notificat
             ->line('Our team will now review and verify your payment. This process usually takes **2 to 3 business days**.')
             ->line('Once your payment is approved, you’ll receive another email confirming your order status update.')
             ->line('If you haven’t heard back from us after 3 business days, please don’t hesitate to reach out to our support team for assistance.')
-            ->action('View Your Order', url('/orders/order-view/'.$this->order->order_no))
+            ->action('View Your Order', route('website.orders.order-view', $this->order->order_no))
             ->line('Thank you for your patience and for choosing ');
     }
 

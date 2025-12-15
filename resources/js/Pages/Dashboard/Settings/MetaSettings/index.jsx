@@ -37,8 +37,20 @@ export default function index({ meta_settings }) {
     const [columns, setColumns] = useState([]);
     useEffect(() => {
         const columns = [
-            { key: 'meta_app_id', label: 'Meta APP ID' },
-            { key: 'meta_app_secret', label: 'Meta APP Secret' },
+
+            { key: 'meta_fb_app_name', label: 'Meta FB APP NAME' },
+            { key: 'meta_ig_app_name', label: 'Meta IG APP NAME' },
+
+            { key: 'meta_fb_app_id', label: 'Meta FB APP ID' },
+            { key: 'meta_fb_app_secret', label: 'Meta FB APP Secret' },
+
+
+            { key: 'meta_ig_app_id', label: 'Meta IG APP ID' },
+            { key: 'meta_ig_app_secret', label: 'Meta IG APP Secret' },
+
+
+            { key: 'meta_fb_token_expires_at', label: 'Meta FB Token Expiry' },
+            { key: 'meta_ig_token_expires_at', label: 'Meta IG Token Expiry' },
 
             {
                 label: 'Meta Setting Status',
@@ -46,16 +58,16 @@ export default function index({ meta_settings }) {
                     if (item.is_active === 1) {
                         return (
                             <>
-                                <label className="inline-flex cursor-pointer items-center">
+                                <label className="inline-flex items-center cursor-pointer">
                                     <input
                                         type="checkbox"
                                         value={item.is_active}
                                         onChange={() => toggleStatus(item.id)}
                                         checked={item.is_active === 1}
-                                        className="peer sr-only"
+                                        className="sr-only peer"
                                     />
                                     <div className="peer relative h-6 w-11 rounded-full bg-gray-200 after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-green-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 dark:border-gray-600 dark:bg-gray-700 dark:peer-checked:bg-green-500 dark:peer-focus:ring-green-800 rtl:peer-checked:after:-translate-x-full"></div>
-                                    <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                    <span className="text-sm font-medium text-gray-900 ms-3 dark:text-gray-300">
                                         Active
                                     </span>
                                 </label>
@@ -64,16 +76,16 @@ export default function index({ meta_settings }) {
                     } else {
                         return (
                             <>
-                                <label className="inline-flex cursor-pointer items-center">
+                                <label className="inline-flex items-center cursor-pointer">
                                     <input
                                         type="checkbox"
                                         value={item.is_active}
                                         onChange={() => toggleStatus(item.id)}
                                         checked={false}
-                                        className="peer sr-only"
+                                        className="sr-only peer"
                                     />
                                     <div className="peer relative h-6 w-11 rounded-full bg-red-500 after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-red-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 dark:border-gray-600 dark:bg-red-500 dark:peer-checked:bg-red-500 dark:peer-focus:ring-red-800 rtl:peer-checked:after:-translate-x-full"></div>
-                                    <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                    <span className="text-sm font-medium text-gray-900 ms-3 dark:text-gray-300">
                                         In-Active
                                     </span>
                                 </label>
@@ -103,7 +115,7 @@ export default function index({ meta_settings }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end gap-4">
+                            <div className="flex flex-wrap justify-end gap-4 my-3">
                                 <LinkButton
                                     Text={'Create Meta Setting'}
                                     URL={route('dashboard.settings.meta-settings.create')}

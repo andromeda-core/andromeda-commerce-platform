@@ -29,4 +29,6 @@ interface IUserRepository
     public function getSingleCustomer(string $user_id);
 
     public function profileCompletionCheck(Request $request);
+
+    public function isCustomerEligableForSocialMessageSendOrReceive(string $user_id);
 }

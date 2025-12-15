@@ -1209,6 +1209,10 @@ class SettingController extends Controller
 
         $meta_setting = $this->setting->getSingleMetaSetting($id);
 
+        if (empty($meta_setting)) {
+            return to_route('dashboard.settings.meta-settings.index')->with('error', 'Meta Setting Not Found');
+        }
+
         return Inertia::render('Dashboard/Settings/MetaSettings/edit', compact('meta_setting'));
     }
 

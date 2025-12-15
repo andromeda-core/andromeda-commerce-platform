@@ -1,16 +1,16 @@
 @php
     $general_setting = Illuminate\Support\Facades\Cache::get('general_config');
 
-    $default_favicon = asset('assets/images/Logo/512512.png');
+    $default_favicon = asset('assets/images/Logo/Favicon.png');
 
     $app_description =
         $general_setting->app_description ??
-        'Shop smarter with YesBigShop — your modern global marketplace offering trending products, secure checkout, and fast delivery, all in one simple app.';
+        'Shop smarter with Andromeda  your modern global marketplace offering trending products, secure checkout, and fast delivery, all in one simple app.';
 
     $app_keywords =
-        'YesBigShop, yesbigshop, yes big shop, online shopping, buy smartphones, buy laptops, buy iPads, electronics store, tech store, gadgets online, modern marketplace, global marketplace, e-commerce platform, online store, product feed, social shopping, shopping app, buy electronics online, trending products, secure checkout, fast delivery, smartphone deals, laptop deals, iPad deals, tech marketplace, electronics marketplace, shop online, online retail, digital store, tech products, consumer electronics, mobile phones, tablets, computers, gaming laptops, MacBook, iPhone, Samsung, Android phones, product reviews, shopping feed, explore products, filter products, location-based shopping, product discovery, social commerce, shopping community, modern shopping experience, secure online shopping, trusted marketplace, best deals online, electronic gadgets, tech accessories, buy tech online, shop smartphones, shop laptops, shop tablets';
+        'Andromeda, andromeda, andro me da, online shopping, buy smartphones, buy laptops, buy iPads, electronics store, tech store, gadgets online, modern marketplace, global marketplace, e-commerce platform, online store, product feed, social shopping, shopping app, buy electronics online, trending products, secure checkout, fast delivery, smartphone deals, laptop deals, iPad deals, tech marketplace, electronics marketplace, shop online, online retail, digital store, tech products, consumer electronics, mobile phones, tablets, computers, gaming laptops, MacBook, iPhone, Samsung, Android phones, product reviews, shopping feed, explore products, filter products, location-based shopping, product discovery, social commerce, shopping community, modern shopping experience, secure online shopping, trusted marketplace, best deals online, electronic gadgets, tech accessories, buy tech online, shop smartphones, shop laptops, shop tablets';
 
-    $app_name = config('app.name', 'YesBigShop');
+    $app_name = config('app.name', 'Andromeda');
     $app_url = url()->current();
 
     $default_logo = asset('assets/images/Logo/256b.png');

@@ -137,4 +137,9 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(CollaboratorCommission::class, 'user_id', 'id');
     }
+
+    public function metaContacts(): HasMany
+    {
+        return $this->hasMany(MetaContact::class, 'user_id', 'id');
+    }
 }

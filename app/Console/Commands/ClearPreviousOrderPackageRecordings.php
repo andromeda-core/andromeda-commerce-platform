@@ -31,7 +31,7 @@ class ClearPreviousOrderPackageRecordings extends Command
             foreach ($recordings as $recording) {
 
                 if (! empty($recording->package_video)) {
-                    dispatch(new PackageVideoDestroyOnAWS($recording->package_video));
+                    dispatch(new PackageVideoDestroyOnAWS($recording->package_video, $recording->thumbnail_url));
                 }
 
                 $recording->delete();

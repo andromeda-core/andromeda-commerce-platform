@@ -286,24 +286,24 @@ Milestone 7: Customer Website (Frontend + PWA + Posts + Orders + Meta OAuth)
 - UI & UX for the website -> Partially Completed ✅
 - Header Footer And Appbar For Mobile Preview  with Fully Responsiveness ✅
 - PWA frontend integration for a mobile-friendly experience ✅
-- Product listing and product detail pages
-- Cart Logic For Customers
-- Restricting Customer From Adding Items In Cart Who Belongs To Different Distributor
-- Customer checkout functionality
-- On checkout: FB/Instagram connect (Meta OAuth) to store the user’s Meta user ID
-- After checkout: the user will see the associated bank details along with an upload receipt
+- Product listing and product detail pages  ✅
+- Cart Logic For Customers  ✅
+- Restricting Customer From Adding Items In Cart Who Belongs To Different Distributor  ✅
+- Customer checkout functionality  ✅
+- On checkout: FB/Instagram connect  to store the user’s Meta user ID  ✅
+- After checkout: the user will see the associated bank details along with an upload receipt  
   input. After transferring the payment, the user uploads proof of payment. Once the admin confirms the payment, the order status is updated from “Pending” to “Paid,” and the user is
-  notified.
+  notified. ✅
 - The user can then view their updated order status. When the admin changes the status to “Shipped” and adds courier details, the user will be able to see those details, along with any
-  packaging videos uploaded by the admin.
-- My Orders page: View order details, watch packaging videos, and download customer order invoice receipts
+  packaging videos uploaded by the admin.  ✅
+- My Orders page: View order details, watch packaging videos, and download customer order invoice receipts  ✅
 - Posts module: Display all posts/blogs to users ✅
-- Message Us FB/Instagram links shown on both the Checkout page and main Website
-- Country-based enabling of Meta OAuth through entries stored in Special Countries (e.g., Mongolia only)
+- Message Us FB/Instagram links shown on both the Checkout page and main Website  ✅
+- Country-based enabling of Meta Messaeging through entries stored in Special Countries (e.g., Mongolia only)  ✅
 - (1) Privacy Policy and (2) Data Deletion Policy as separate pages on yesbigshop.com. ✅
 	- https://docs.google.com/document/d/1d_0t4RXtx1Xrdj4U4KgTXFGfLaGZJ9Ykl5dyARDsBQU/edit?usp=sharing yesbigshop privacy policy and data deletion (korean)
 	- https://docs.google.com/document/d/1c7F1ohFgv_-ndouw3_GKkP0G5B1noJp4AG-pHp0Al3M/edit?usp=sharing yesbigshop privacy policy and data deletion (english)
-- Implementation of cryptocurrency payment (e.g., Bitcoin) for product purchases -> (new)
+- Implementation of cryptocurrency payment (e.g., Bitcoin) for product purchases -> (new)  ✅
 - Customer Cannot Visit Dashboard Logic ✅
 - Logic To Restrict Customer From Visiting Dashboard ✅
 - Overall Application Performance Enhancing -> Till The Current Work Its Done ✅
@@ -638,6 +638,36 @@ Additional Work:
         137: Strictly Logic To Remove Even Little Bit WhiteSpace From Mobile Feed  ✅
     ) Redesigned Whole Website 4th Time Completed According To The LAYOUT Design Reference Provided ✅
 
+
+
+    META Integration (
+        1: App Created And Page Setup ✅
+        2: backend Meta Credentials Storing / Updating Logic Updated and add 4 more columns: ✅ {
+            1: meta_page_access_token
+            2: meta_verify_token
+            3: meta_token_expiry_at
+            4: token_type -> (1) short_lived (2) long_lived
+        }
+        3:  Token Exchange Logic Added From Short to Long Lived token ✅
+        4:  Token Refresh Command And Logic Added When Expiry Nears and Meta Did Change the Token ✅
+        5:  Token Exchanging Job Added For Firing Job Asyncronusly When Meta Setting Activates ✅
+        6:  Webhook Setup -> checking Remeaning of POST METHOD Logic ✅
+        7:  Instagram Token Gneeration and-> Refreshing and Verifying Logic Done  ✅
+        8:  Migration Updated Huge New Columns Added For Meta Settings  ✅
+        9:  Notifications Setup For Meta To Directlky Send In User DM ✅
+        10: Meta User info Storing in database Logic added as well as new table named meta_contacts Added and Setuped ✅
+        11: MAIN FB Page ID and Instagram Account ID Storation in Meta_settings Along with other configs basically 2 new columns were added ✅
+        12: Instagram Message Send And Webhook Testing Remeaning Just ✅
+        13: Fixed The Meta Service Webhook Event Issue: before it wasnt Extracting Correct Platform Data between Both FB and Instagram Now It Does ✅
+        14: Fixed The Order Model Job Dispatch Issue Of Notifying Admin In Created Event And Added job Dispathing After DB Transaction Finishes  ON Those Specific Jobs✅
+        15: NEEDED instagram_manage_messages Permission In Advanced Access To Send Messages From System To User -> Remeaning
+        16: New Column Added Instagram Bussiness Account ID ✅
+        17: Changed Sending Message Props Internal ID and Token And Using FB Page ID and FB PAGE ACCESS TOKEN To send messages On Both Platforms (FB,IG)✅
+        18: FallBack Custom Email Verification Of Customer To Add In Our System Logic Added Little Chat Bot At The Start Of THe
+            Conversation if Not Found That user In Our System ✅
+
+
+    )
 
 
 

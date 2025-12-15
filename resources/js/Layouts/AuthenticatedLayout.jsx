@@ -18,10 +18,10 @@ export default function AuthenticatedLayout({ children }) {
 
     // Application Logo Sate With Default Images
     const [ApplicationLogoLight, setApplicationLogoLight] = useState(
-        asset + 'assets/images/Logo/256b.png',
+        asset + 'assets/images/Logo/LightLogo.png',
     );
     const [ApplicationLogoDark, setApplicationLogoDark] = useState(
-        asset + 'assets/images/Logo/256w.png',
+        asset + 'assets/images/Logo/DarkLogo.png',
     );
 
     // For Updating Application Logo

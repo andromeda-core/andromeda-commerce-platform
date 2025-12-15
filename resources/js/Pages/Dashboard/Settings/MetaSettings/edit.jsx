@@ -6,12 +6,23 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, useForm } from '@inertiajs/react';
 import React from 'react';
+import Textarea from '@/Components/Textarea';
 
 export default function edit({ meta_setting }) {
     // Edit Data Form Data
     const { data, setData, put, processing, errors } = useForm({
-        meta_app_id: meta_setting?.meta_app_id || '',
-        meta_app_secret: meta_setting?.meta_app_secret || '',
+        meta_fb_app_name: meta_setting?.meta_fb_app_name || '',
+        meta_fb_app_id: meta_setting?.meta_fb_app_id || '',
+        meta_fb_app_secret: meta_setting?.meta_fb_app_secret || '',
+        meta_fb_page_access_token: meta_setting?.meta_fb_page_access_token || '',
+        meta_verify_token: meta_setting?.meta_verify_token || '',
+        meta_fb_page_username: meta_setting?.meta_fb_page_username || '',
+        meta_ig_app_name: meta_setting?.meta_ig_app_name || '',
+        meta_ig_app_id: meta_setting?.meta_ig_app_id || '',
+        meta_ig_app_secret: meta_setting?.meta_ig_app_secret || '',
+        meta_ig_username: meta_setting?.meta_ig_username || '',
+        meta_ig_access_token: meta_setting?.meta_ig_access_token || '',
+
     });
 
     // Edit Data Form Request
@@ -63,30 +74,168 @@ export default function edit({ meta_setting }) {
                                     Content={
                                         <>
                                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+
                                                 <Input
-                                                    InputName={'Meta APP ID'}
-                                                    Error={errors.meta_app_id}
-                                                    Value={data.meta_app_id}
+                                                    InputName={'Meta FB APP Name'}
+                                                    Error={errors.meta_fb_app_name}
+                                                    Value={data.meta_fb_app_name}
                                                     Action={(e) =>
-                                                        setData('meta_app_id', e.target.value)
+                                                        setData('meta_fb_app_name', e.target.value)
                                                     }
-                                                    Placeholder={'Enter Meta APP ID'}
-                                                    Id={'meta_app_id'}
-                                                    Name={'meta_app_id'}
+                                                    Placeholder={'Enter Meta FB APP NAME'}
+                                                    Id={'meta_fb_app_name'}
+                                                    Name={'meta_fb_app_name'}
                                                     Type={'text'}
                                                     Required={true}
                                                 />
 
                                                 <Input
-                                                    InputName={'Meta APP Secret'}
-                                                    Error={errors.meta_app_secret}
-                                                    Value={data.meta_app_secret}
+                                                    InputName={'Meta FB APP ID'}
+                                                    Error={errors.meta_fb_app_id}
+                                                    Value={data.meta_fb_app_id}
                                                     Action={(e) =>
-                                                        setData('meta_app_secret', e.target.value)
+                                                        setData('meta_fb_app_id', e.target.value)
                                                     }
-                                                    Placeholder={'Enter Meta APP Secret'}
-                                                    Id={'meta_app_secret'}
-                                                    Name={'meta_app_secret'}
+                                                    Placeholder={'Enter Meta FB APP ID'}
+                                                    Id={'meta_fb_app_id'}
+                                                    Name={'meta_fb_app_id'}
+                                                    Type={'text'}
+                                                    Required={true}
+                                                />
+
+                                                <Input
+                                                    InputName={'Meta FB APP Secret'}
+                                                    Error={errors.meta_fb_app_secret}
+                                                    Value={data.meta_fb_app_secret}
+                                                    Action={(e) =>
+                                                        setData('meta_fb_app_secret', e.target.value)
+                                                    }
+                                                    Placeholder={'Enter Meta FB APP Secret'}
+                                                    Id={'meta_fb_app_secret'}
+                                                    Name={'meta_fb_app_secret'}
+                                                    Type={'text'}
+                                                    Required={true}
+                                                />
+
+
+                                                <Input
+                                                    InputName={'Meta FB Page Username'}
+                                                    Error={errors.meta_fb_page_username}
+                                                    Value={data.meta_fb_page_username}
+                                                    Action={(e) =>
+                                                        setData('meta_fb_page_username', e.target.value)
+                                                    }
+                                                    Placeholder={'Enter Meta FB Page Username'}
+                                                    Id={'meta_fb_page_username'}
+                                                    Name={'meta_fb_page_username'}
+                                                    Type={'text'}
+                                                    Required={true}
+                                                />
+
+
+                                                <Textarea
+                                                    InputName={'Meta FB Page Access Token'}
+                                                    Error={errors.meta_fb_page_access_token}
+                                                    Value={data.meta_fb_page_access_token}
+                                                    Action={(e) =>
+                                                        setData('meta_fb_page_access_token', e.target.value)
+                                                    }
+                                                    Placeholder={'Enter Meta FB Page Access Token'}
+                                                    Id={'meta_fb_page_access_token'}
+                                                    Name={'meta_fb_page_access_token'}
+
+                                                    Required={true}
+                                                />
+
+
+
+
+                                                <Input
+                                                    InputName={'Meta IG APP Name'}
+                                                    Error={errors.meta_ig_app_name}
+                                                    Value={data.meta_ig_app_name}
+                                                    Action={(e) =>
+                                                        setData('meta_ig_app_name', e.target.value)
+                                                    }
+                                                    Placeholder={'Enter Meta IG APP NAME'}
+                                                    Id={'meta_ig_app_name'}
+                                                    Name={'meta_ig_app_name'}
+                                                    Type={'text'}
+                                                    Required={true}
+                                                />
+
+
+                                                <Input
+                                                    InputName={'Meta IG APP ID'}
+                                                    Error={errors.meta_ig_app_id}
+                                                    Value={data.meta_ig_app_id}
+                                                    Action={(e) =>
+                                                        setData('meta_ig_app_id', e.target.value)
+                                                    }
+                                                    Placeholder={'Enter Meta IG APP ID'}
+                                                    Id={'meta_ig_app_id'}
+                                                    Name={'meta_ig_app_id'}
+                                                    Type={'text'}
+                                                    Required={true}
+                                                />
+
+                                                <Input
+                                                    InputName={'Meta IG APP Secret'}
+                                                    Error={errors.meta_ig_app_secret}
+                                                    Value={data.meta_ig_app_secret}
+                                                    Action={(e) =>
+                                                        setData('meta_ig_app_secret', e.target.value)
+                                                    }
+                                                    Placeholder={'Enter Meta IG APP Secret'}
+                                                    Id={'meta_ig_app_secret'}
+                                                    Name={'meta_ig_app_secret'}
+                                                    Type={'text'}
+                                                    Required={true}
+                                                />
+
+
+
+
+                                                <Input
+                                                    InputName={'Meta IG Username'}
+                                                    Error={errors.meta_ig_username}
+                                                    Value={data.meta_ig_username}
+                                                    Action={(e) =>
+                                                        setData('meta_ig_username', e.target.value)
+                                                    }
+                                                    Placeholder={'Enter Meta IG Username'}
+                                                    Id={'meta_ig_username'}
+                                                    Name={'meta_ig_username'}
+                                                    Type={'text'}
+                                                    Required={true}
+                                                />
+
+
+                                                <Textarea
+                                                    InputName={'Meta IG Access Token'}
+                                                    Error={errors.meta_ig_access_token}
+                                                    Value={data.meta_ig_access_token}
+                                                    Action={(e) =>
+                                                        setData('meta_ig_access_token', e.target.value)
+                                                    }
+                                                    Placeholder={'Enter Meta IG Access Token'}
+                                                    Id={'meta_ig_access_token'}
+                                                    Name={'meta_ig_access_token'}
+
+                                                    Required={true}
+                                                />
+
+
+                                                <Input
+                                                    InputName={'Meta Verify Token'}
+                                                    Error={errors.meta_verify_token}
+                                                    Value={data.meta_verify_token}
+                                                    Action={(e) =>
+                                                        setData('meta_verify_token', e.target.value)
+                                                    }
+                                                    Placeholder={'Enter Meta Verify Token'}
+                                                    Id={'meta_verify_token'}
+                                                    Name={'meta_verify_token'}
                                                     Type={'text'}
                                                     Required={true}
                                                 />
@@ -98,8 +247,17 @@ export default function edit({ meta_setting }) {
                                                 CustomClass={'w-[250px] '}
                                                 Disabled={
                                                     processing ||
-                                                    data.meta_app_id == '' ||
-                                                    data.meta_app_secret == ''
+                                                    data.meta_fb_app_name == '' ||
+                                                    data.meta_fb_app_id == '' ||
+                                                    data.meta_fb_app_secret == '' ||
+                                                    data.meta_fb_page_access_token == '' ||
+                                                    data.meta_verify_token == '' ||
+                                                    data.meta_ig_username == '' ||
+                                                    data.meta_fb_page_username == '' ||
+                                                    data.meta_ig_access_token == '' ||
+                                                    data.meta_ig_app_id == '' ||
+                                                    data.meta_ig_app_secret == '' ||
+                                                    data.meta_ig_app_name == ''
                                                 }
                                                 Spinner={processing}
                                                 Icon={

@@ -603,8 +603,48 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
- * @property string $meta_app_id
- * @property string $meta_app_secret
+ * @property string $platform_user_id
+ * @property int $user_id
+ * @property string $platform
+ * @property array<array-key, mixed> $raw_summary
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User $user
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaContact newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaContact newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaContact query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaContact whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaContact whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaContact wherePlatform($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaContact wherePlatformUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaContact whereRawSummary($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaContact whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaContact whereUserId($value)
+ */
+	class MetaContact extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property string $meta_fb_app_id
+ * @property string $meta_fb_app_secret
+ * @property string|null $meta_fb_app_name
+ * @property string|null $meta_fb_page_access_token
+ * @property string|null $meta_fb_page_username
+ * @property string|null $meta_fb_page_id
+ * @property string $meta_fb_token_type
+ * @property string|null $meta_verify_token
+ * @property string|null $meta_ig_app_id
+ * @property string|null $meta_ig_app_secret
+ * @property string|null $meta_ig_app_name
+ * @property string|null $meta_ig_access_token
+ * @property string|null $meta_ig_username
+ * @property string|null $meta_ig_account_id
+ * @property string|null $meta_ig_bussiness_account_id
+ * @property string $meta_ig_token_type
+ * @property string|null $meta_ig_token_expires_at
+ * @property string|null $meta_fb_token_expires_at
  * @property int $is_active
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -615,8 +655,24 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereIsActive($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereMetaAppId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereMetaAppSecret($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereMetaFbAppId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereMetaFbAppName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereMetaFbAppSecret($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereMetaFbPageAccessToken($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereMetaFbPageId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereMetaFbPageUsername($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereMetaFbTokenExpiresAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereMetaFbTokenType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereMetaIgAccessToken($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereMetaIgAccountId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereMetaIgAppId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereMetaIgAppName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereMetaIgAppSecret($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereMetaIgBussinessAccountId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereMetaIgTokenExpiresAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereMetaIgTokenType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereMetaIgUsername($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereMetaVerifyToken($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|MetaSetting whereUpdatedAt($value)
  */
 	class MetaSetting extends \Eloquent {}
@@ -1182,6 +1238,8 @@ namespace App\Models{
  * @property-read mixed $added_at
  * @property-read mixed $avatar
  * @property-read mixed $points
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\MetaContact> $metaContacts
+ * @property-read int|null $meta_contacts_count
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
  * @property-read int|null $notifications_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Permission\Models\Permission> $permissions

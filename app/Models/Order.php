@@ -4,6 +4,11 @@ namespace App\Models;
 
 use App\Jobs\CollaboratorCommissionSet;
 use App\Jobs\DistributorCommissionSet;
+use App\Jobs\Meta\OrderStatusArrivedLocallyNotificationJob;
+use App\Jobs\Meta\OrderStatusDeliveredNotificationJob;
+use App\Jobs\Meta\OrderStatusPaidNotificationJob;
+use App\Jobs\Meta\OrderStatusPendingNotificationJob;
+use App\Jobs\Meta\OrderStatusShippedNotificationJob;
 use App\Jobs\NotifyAdminAboutOrderPlaced;
 use App\Jobs\SupplierCommissionSet;
 use App\Notifications\OrderStatusArrivedLocallyNotification;
@@ -116,16 +121,26 @@ class Order extends Model
                 }
             }
 
+            if (Cache::has('meta_setting')) {
+                $is_eligible = SpecialCountry::where('country_id', $order->customer->country_id)->exists();
+                $user_meta_contacts = $order->customer->user->metaContacts;
+                if ($order->status === 'pending' && $is_eligible && $user_meta_contacts->isNotEmpty()) {
+                    $meta_setting = Cache::get('meta_setting');
+                    $user = $order->customer->user;
+                    dispatch(new OrderStatusPendingNotificationJob($user_meta_contacts, $order, $currency, $meta_setting, $user))->onQueue('meta');
+                }
+            }
+
             // Distributor Commission Set Event
-            dispatch(new DistributorCommissionSet($order));
+            dispatch(new DistributorCommissionSet($order))->afterCommit();
 
             // Supplier Commission Set Event
-            dispatch(new SupplierCommissionSet($order));
+            dispatch(new SupplierCommissionSet($order))->afterCommit();
 
             $order->save();
 
             // Notify Admin About Order
-            dispatch(new NotifyAdminAboutOrderPlaced($order));
+            dispatch(new NotifyAdminAboutOrderPlaced($order))->afterCommit();
         });
 
         static::updated(function ($order) {
@@ -140,8 +155,17 @@ class Order extends Model
 
             $currency = Cache::get('currency');
 
+            $meta_setting = Cache::get('meta_setting');
+            $user_meta_contacts = $order->customer->user->metaContacts;
+            $user = $order->customer->user;
+            $is_eligible = SpecialCountry::where('country_id', $order->customer->country_id)->exists();
+
             if ($order->status === 'paid' && empty($order->np_id)) {
-                $order->customer->user->notify(new OrderStatusPaidNotification($order, $currency));
+                $user->notify(new OrderStatusPaidNotification($order, $currency));
+
+                if ($is_eligible && $user_meta_contacts->isNotEmpty() && ! empty($meta_setting)) {
+                    dispatch(new OrderStatusPaidNotificationJob($user_meta_contacts, $order, $currency, $meta_setting, $user))->onQueue('meta');
+                }
 
                 $reward_rate = null;
                 $total_points = null;
@@ -174,11 +198,25 @@ class Order extends Model
                 }
 
             } elseif ($order->status === 'shipped') {
-                $order->customer->user->notify(new OrderStatusShippedNotification($order));
+
+                $user->notify(new OrderStatusShippedNotification($order));
+
+                if ($is_eligible && $user_meta_contacts->isNotEmpty() && ! empty($meta_setting)) {
+                    dispatch(new OrderStatusShippedNotificationJob($user_meta_contacts, $order, $meta_setting, $user))->onQueue('meta');
+                }
             } elseif ($order->status === 'arrived_locally') {
-                $order->customer->user->notify(new OrderStatusArrivedLocallyNotification($order));
+                $user->notify(new OrderStatusArrivedLocallyNotification($order));
+
+                if ($is_eligible && $user_meta_contacts->isNotEmpty() && ! empty($meta_setting)) {
+                    dispatch(new OrderStatusArrivedLocallyNotificationJob($user_meta_contacts, $order, $meta_setting, $user))->onQueue('meta');
+                }
+
             } elseif ($order->status === 'delivered') {
-                $order->customer->user->notify(new OrderStatusDeliveredNotification($order));
+                $user->notify(new OrderStatusDeliveredNotification($order));
+
+                if ($is_eligible && $user_meta_contacts->isNotEmpty() && ! empty($meta_setting)) {
+                    dispatch(new OrderStatusDeliveredNotificationJob($user_meta_contacts, $order, $meta_setting, $user))->onQueue('meta');
+                }
             }
 
         });

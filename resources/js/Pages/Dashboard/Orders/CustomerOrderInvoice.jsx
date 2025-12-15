@@ -38,7 +38,7 @@ export default function CustomerOrderInvoice({ order }) {
         <>
             <Head title="Order - Customer Invoice" />
 
-            <div className="mx-auto flex w-auto items-center justify-center gap-4 lg:w-[600px] print:hidden">
+            <div className="mx-auto flex lg:flex-nowrap flex-wrap w-auto items-center justify-center gap-4 lg:w-[600px] print:hidden">
                 <PrimaryButton
                     Text={'Print'}
                     Action={() => window.print()}
@@ -82,10 +82,61 @@ export default function CustomerOrderInvoice({ order }) {
                     }
                 />
 
-                {auth.user.role === 'Admin' && (
+
+                {auth?.user ? (
+                    <>
+                        {auth?.user?.role === 'Admin' ? (
+                            <LinkButton
+                                Text={'Back'}
+                                URL={route('dashboard.orders.show', order.id)}
+                                Icon={
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth={1.5}
+                                        stroke="currentColor"
+                                        className="size-6"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
+                                        />
+                                    </svg>
+                                }
+                            />
+                        ) : (
+                            <LinkButton
+                                Text={'Back'}
+                                URL={route('home')}
+                                Icon={
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth={1.5}
+                                        stroke="currentColor"
+                                        className="size-6"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
+                                        />
+                                    </svg>
+                                }
+                            />
+                        )}
+
+
+
+
+                    </>
+                ) : (
                     <LinkButton
                         Text={'Back'}
-                        URL={route('dashboard.orders.show', order.id)}
+                        URL={route('home')}
                         Icon={
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -93,7 +144,7 @@ export default function CustomerOrderInvoice({ order }) {
                                 viewBox="0 0 24 24"
                                 strokeWidth={1.5}
                                 stroke="currentColor"
-                                className="size-4"
+                                className="size-6"
                             >
                                 <path
                                     strokeLinecap="round"
@@ -104,13 +155,16 @@ export default function CustomerOrderInvoice({ order }) {
                         }
                     />
                 )}
+
+
+
             </div>
             <div id="invoice" className="mx-auto min-h-screen max-w-[1100px] bg-white shadow-lg">
                 {/* Header */}
-                <div className="bg-gray-800 p-4 text-white sm:p-6 lg:p-8">
+                <div className="p-4 text-white bg-gray-800 sm:p-6 lg:p-8">
                     <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-4">
                         <div className="flex-1">
-                            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg sm:h-14 sm:w-14">
+                            <div className="flex items-center justify-center w-12 h-12 mb-4 rounded-lg sm:h-14 sm:w-14">
                                 <img
                                     crossOrigin="anonymous"
                                     src={
@@ -125,14 +179,14 @@ export default function CustomerOrderInvoice({ order }) {
                                     style={{ display: 'block' }}
                                 />
                             </div>
-                            <h1 className="break-words text-xl font-bold sm:text-2xl">
+                            <h1 className="text-xl font-bold break-words sm:text-2xl">
                                 {generalSetting.app_name}
                             </h1>
                             <div className="mt-2 space-y-1">
-                                <p className="break-all text-sm text-white sm:text-base">
+                                <p className="text-sm text-white break-all sm:text-base">
                                     {generalSetting.contact_email}
                                 </p>
-                                <p className="break-words text-sm text-white sm:text-base">
+                                <p className="text-sm text-white break-words sm:text-base">
                                     {generalSetting.contact_number}
                                 </p>
                             </div>
@@ -140,7 +194,7 @@ export default function CustomerOrderInvoice({ order }) {
                         <div className="text-left lg:flex-shrink-0 lg:text-right">
                             <h2 className="text-2xl font-bold sm:text-3xl">INVOICE</h2>
                             <div className="text-left lg:flex-shrink-0 lg:text-right">
-                                <div className="mt-4 rounded-lg text-white">
+                                <div className="mt-4 text-white rounded-lg">
                                     <p className="text-sm">Invoice No:</p>
                                     <p className="text-lg font-bold">#{order.order_no}</p>
                                     <p className="mt-2 text-sm">Date: {order.added_at}</p>
@@ -154,28 +208,28 @@ export default function CustomerOrderInvoice({ order }) {
                 </div>
 
                 {/* Customer Info */}
-                <div className="border-b border-gray-200 p-4 sm:p-6 lg:p-8">
+                <div className="p-4 border-b border-gray-200 sm:p-6 lg:p-8">
                     <h3 className="mb-4 text-lg font-semibold text-gray-700">Customer Details:</h3>
-                    <div className="rounded-lg bg-gray-50 p-4 sm:p-5">
+                    <div className="p-4 rounded-lg bg-gray-50 sm:p-5">
                         <div className="space-y-1">
-                            <p className="break-words text-sm font-semibold text-gray-900 sm:text-base">
+                            <p className="text-sm font-semibold text-gray-900 break-words sm:text-base">
                                 {order?.customer?.user?.name}
                             </p>
 
-                            <p className="break-words text-sm text-gray-600 sm:text-base">
+                            <p className="text-sm text-gray-600 break-words sm:text-base">
                                 {order?.customer?.address_line1}
                                 {', '}
                                 {order?.customer?.address_line2 != null
                                     ? order?.customer?.address_line2
                                     : ''}
                             </p>
-                            <p className="break-words text-sm text-gray-600 sm:text-base">
+                            <p className="text-sm text-gray-600 break-words sm:text-base">
                                 {order?.customer?.city}
                             </p>
-                            <p className="mt-2 break-all text-sm text-gray-600 sm:text-base">
+                            <p className="mt-2 text-sm text-gray-600 break-all sm:text-base">
                                 {order?.customer?.user?.email}
                             </p>
-                            <p className="mt-2 break-all text-sm text-gray-600 sm:text-base">
+                            <p className="mt-2 text-sm text-gray-600 break-all sm:text-base">
                                 {order?.customer?.user?.phone}
                             </p>
                         </div>
@@ -188,12 +242,12 @@ export default function CustomerOrderInvoice({ order }) {
                     <div className="block space-y-4 sm:hidden">
                         <h3 className="mb-4 text-lg font-semibold text-gray-700">Order Items</h3>
                         {order?.order_items.map((item, index) => (
-                            <div key={index} className="rounded-lg border bg-gray-50 p-4">
+                            <div key={index} className="p-4 border rounded-lg bg-gray-50">
                                 <div className="space-y-2">
-                                    <h4 className="break-words font-medium text-gray-900">
+                                    <h4 className="font-medium text-gray-900 break-words">
                                         {item.smartphone?.model_name?.name}
                                     </h4>
-                                    <p className="break-words text-sm text-gray-600">
+                                    <p className="text-sm text-gray-600 break-words">
                                         {item.smartphone?.capacity?.name}
                                     </p>
                                     <div className="grid grid-cols-3 gap-2 text-sm">
@@ -226,19 +280,19 @@ export default function CustomerOrderInvoice({ order }) {
                         <table className="w-full min-w-[600px]">
                             <thead>
                                 <tr className="border-b-2 border-gray-300">
-                                    <th className="px-2 py-3 text-left text-sm font-semibold text-gray-700 lg:text-base">
+                                    <th className="px-2 py-3 text-sm font-semibold text-left text-gray-700 lg:text-base">
                                         Product
                                     </th>
-                                    <th className="px-2 py-3 text-left text-sm font-semibold text-gray-700 lg:text-base">
+                                    <th className="px-2 py-3 text-sm font-semibold text-left text-gray-700 lg:text-base">
                                         Capacity
                                     </th>
-                                    <th className="px-2 py-3 text-right text-sm font-semibold text-gray-700 lg:text-base">
+                                    <th className="px-2 py-3 text-sm font-semibold text-right text-gray-700 lg:text-base">
                                         Price
                                     </th>
-                                    <th className="px-2 py-3 text-center text-sm font-semibold text-gray-700 lg:text-base">
+                                    <th className="px-2 py-3 text-sm font-semibold text-center text-gray-700 lg:text-base">
                                         Qty
                                     </th>
-                                    <th className="px-2 py-3 text-right text-sm font-semibold text-gray-700 lg:text-base">
+                                    <th className="px-2 py-3 text-sm font-semibold text-right text-gray-700 lg:text-base">
                                         Total
                                     </th>
                                 </tr>
@@ -249,20 +303,20 @@ export default function CustomerOrderInvoice({ order }) {
                                         key={index}
                                         className="border-b border-gray-200 hover:bg-gray-50"
                                     >
-                                        <td className="break-words px-2 py-4 text-sm text-gray-900 lg:text-base">
+                                        <td className="px-2 py-4 text-sm text-gray-900 break-words lg:text-base">
                                             {item.smartphone?.model_name?.name}
                                         </td>
-                                        <td className="break-words px-2 py-4 text-sm text-gray-600 lg:text-base">
+                                        <td className="px-2 py-4 text-sm text-gray-600 break-words lg:text-base">
                                             {item.smartphone?.capacity?.name}
                                         </td>
-                                        <td className="px-2 py-4 text-right text-sm text-gray-900 lg:text-base">
+                                        <td className="px-2 py-4 text-sm text-right text-gray-900 lg:text-base">
                                             {currency?.symbol}
                                             {item.unit_price}
                                         </td>
-                                        <td className="px-2 py-4 text-center text-sm text-gray-900 lg:text-base">
+                                        <td className="px-2 py-4 text-sm text-center text-gray-900 lg:text-base">
                                             {item.quantity}
                                         </td>
-                                        <td className="px-2 py-4 text-right text-sm font-semibold text-gray-900 lg:text-base">
+                                        <td className="px-2 py-4 text-sm font-semibold text-right text-gray-900 lg:text-base">
                                             {currency?.symbol}
                                             {item.sub_total}
                                         </td>
@@ -273,15 +327,15 @@ export default function CustomerOrderInvoice({ order }) {
                     </div>
 
                     {/* Totals Section */}
-                    <div className="mt-6 flex justify-end sm:mt-8">
+                    <div className="flex justify-end mt-6 sm:mt-8">
                         <div className="w-full sm:w-80">
-                            <div className="rounded-lg p-4 sm:p-6">
+                            <div className="p-4 rounded-lg sm:p-6">
                                 <div className="space-y-2">
                                     <div className="flex justify-between py-2">
                                         <span className="text-base font-semibold text-gray-900 sm:text-lg">
                                             Total:
                                         </span>
-                                        <span className="break-words text-base font-bold text-blue-600 sm:text-lg">
+                                        <span className="text-base font-bold text-blue-600 break-words sm:text-lg">
                                             {currency?.symbol}
                                             {order.amount}
                                         </span>
@@ -293,13 +347,13 @@ export default function CustomerOrderInvoice({ order }) {
                 </div>
 
                 {/* Footer */}
-                <div className="border-t bg-gray-50 p-4 text-center page-break sm:p-6 lg:p-8">
+                <div className="p-4 text-center border-t bg-gray-50 page-break sm:p-6 lg:p-8">
                     {/* QR Code Section */}
-                    <div className="mb-6 mt-8 flex justify-center sm:mb-8 sm:mt-12">
+                    <div className="flex justify-center mt-8 mb-6 sm:mb-8 sm:mt-12">
                         <div className="text-center">
-                            <div className="mx-auto mb-3 flex h-24 w-24 items-center justify-center border-2 border-dashed border-gray-400 bg-gray-200 sm:h-32 sm:w-32">
+                            <div className="flex items-center justify-center w-24 h-24 mx-auto mb-3 bg-gray-200 border-2 border-gray-400 border-dashed sm:h-32 sm:w-32">
                                 <QRCode
-                                    className="h-auto w-full"
+                                    className="w-full h-auto"
                                     value={route('orders.customer-order-invoice', order.order_no)}
                                     viewBox="0 0 256 256"
                                 />

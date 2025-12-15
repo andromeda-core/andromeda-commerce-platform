@@ -2,7 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\Meta\NotifyCustomerAboutOrderCryptoPaymentReceivedJob;
+use App\Jobs\Meta\NotifyCustomerOrderCryptoPaymentFailedJob;
 use App\Models\Order;
+use App\Models\SpecialCountry;
 use App\Notifications\NotifyCustomerAboutOrderCryptoPaymentReceived;
 use App\Notifications\NotifyCustomerOrderCryptoPaymentFailed;
 use Illuminate\Console\Command;
@@ -20,10 +23,10 @@ class NOWPaymentInvoiceStatusCheck extends Command
         $now_payment_api_key = config('services.now_payments.api_key');
         $base_url = config('services.now_payments.base_url');
         $currency = Cache::get('currency');
-
+        $meta_setting = Cache::get('meta_setting');
         Order::where('status', 'blockchain_confirmation_pending')
-            ->with(['orderItems.smartphone.inventory_items', 'customer.user'])
-            ->chunk(100, function ($orders) use ($now_payment_api_key, $base_url, $currency) {
+            ->with(['orderItems.smartphone.inventory_items', 'customer.user', 'customer.user.metaContacts'])
+            ->chunk(100, function ($orders) use ($now_payment_api_key, $base_url, $currency, $meta_setting) {
                 foreach ($orders as $order) {
                     $user = $order->customer->user;
 
@@ -79,6 +82,12 @@ class NOWPaymentInvoiceStatusCheck extends Command
 
                             $user->notify(new NotifyCustomerAboutOrderCryptoPaymentReceived($order, $currency));
 
+                            $user_meta_contacts = $order->customer->user->metaContacts;
+                            $is_eligible = SpecialCountry::where('country_id', $order->customer->country_id)->exists();
+                            if (! empty($meta_setting) && $user_meta_contacts->isNotEmpty() && $is_eligible) {
+                                dispatch(new NotifyCustomerAboutOrderCryptoPaymentReceivedJob($user_meta_contacts, $order, $meta_setting, $user, $currency))->onQueue('meta');
+                            }
+
                             break;
 
                         case 'failed':
@@ -98,6 +107,13 @@ class NOWPaymentInvoiceStatusCheck extends Command
                             }
 
                             $user->notify(new NotifyCustomerOrderCryptoPaymentFailed($order, $currency));
+
+                            $user_meta_contacts = $order->customer->user->metaContacts;
+                            $is_eligible = SpecialCountry::where('country_id', $order->customer->country_id)->exists();
+                            if (! empty($meta_setting) && $user_meta_contacts->isNotEmpty() && $is_eligible) {
+                                dispatch(new NotifyCustomerOrderCryptoPaymentFailedJob($user_meta_contacts, $order, $meta_setting, $user, $currency))->onQueue('meta');
+                            }
+
                             break;
                     }
                 }

@@ -14,7 +14,7 @@ export default function ErrorToastModal({ showError, setShowError, message }) {
     if (!showError) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[10002] flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
                 className="fixed inset-0 bg-black/30 backdrop-blur-sm"
@@ -22,12 +22,12 @@ export default function ErrorToastModal({ showError, setShowError, message }) {
             />
 
             {/* Modal */}
-            <div className="relative z-10 w-full max-w-sm animate-scale-in rounded-2xl bg-white px-8 py-6 shadow-2xl dark:bg-deepcharcoal">
+            <div className="relative z-10 w-full max-w-sm px-8 py-6 bg-white shadow-2xl animate-scale-in rounded-2xl dark:bg-deepcharcoal">
                 <div className="flex flex-col items-center text-center">
                     {/* Error Icon */}
-                    <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
+                    <div className="flex items-center justify-center w-16 h-16 mb-6 bg-red-100 rounded-full dark:bg-red-900/20">
                         <svg
-                            className="h-8 w-8 text-red-600 dark:text-red-400"
+                            className="w-8 h-8 text-red-600 dark:text-red-400"
                             fill="currentColor"
                             viewBox="0 0 20 20"
                         >

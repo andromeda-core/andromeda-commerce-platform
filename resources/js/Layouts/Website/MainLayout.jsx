@@ -10,7 +10,7 @@ import { usePage } from '@inertiajs/react';
 import axios from 'axios';
 import React, { useEffect, useRef, useState } from 'react';
 import { useFilterStore } from '@/Hooks/useFilterStore';
-import ActivateNavigationPrompt from '@/Components/ActivateNavigationPrompt';
+// import ActivateNavigationPrompt from '@/Components/ActivateNavigationPrompt';
 
 
 export default function MainLayout({ children }) {
@@ -18,10 +18,10 @@ export default function MainLayout({ children }) {
 
     // Application Logo Sate With Default Images
     const [ApplicationLogoLight, setApplicationLogoLight] = useState(
-        asset + 'assets/images/Logo/256b.png',
+        asset + 'assets/images/Logo/LightLogo.png',
     );
     const [ApplicationLogoDark, setApplicationLogoDark] = useState(
-        asset + 'assets/images/Logo/256w.png',
+        asset + 'assets/images/Logo/DarkLogo.png',
     );
 
     // For Updating Application Logo

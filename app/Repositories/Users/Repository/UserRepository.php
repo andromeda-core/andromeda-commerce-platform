@@ -3,6 +3,7 @@
 namespace App\Repositories\Users\Repository;
 
 use App\Models\Role;
+use App\Models\SpecialCountry;
 use App\Models\User;
 use App\Repositories\Users\Interface\IUserRepository;
 use Exception;
@@ -15,7 +16,8 @@ class UserRepository implements IUserRepository
 {
     public function __construct(
         private User $user,
-        private Role $role
+        private Role $role,
+        private SpecialCountry $special_country
     ) {}
 
     public function getSingleUser(string $id)
@@ -634,5 +636,24 @@ class UserRepository implements IUserRepository
         }
 
         return true;
+    }
+
+    public function isCustomerEligableForSocialMessageSendOrReceive(string $user_id)
+    {
+        $customer = $this->user->where('id', $user_id)->first()?->customer;
+
+        if (empty($customer)) {
+            return false;
+        }
+
+        $customer_country_id = $customer->country_id;
+        $eligible_country_ids = $this->special_country->pluck('country_id')->toArray();
+
+        if (in_array($customer_country_id, $eligible_country_ids)) {
+            return true;
+        }
+
+        return false;
+
     }
 }

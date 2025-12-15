@@ -24,6 +24,7 @@ class NotifyAdminAboutOrderPlaced implements ShouldQueue
 
     public function handle(): void
     {
+
         $admins = User::whereHas('roles', function ($query) {
             $query->where('name', 'Admin');
         })->get();

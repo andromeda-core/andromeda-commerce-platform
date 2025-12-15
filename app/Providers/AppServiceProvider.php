@@ -125,14 +125,7 @@ class AppServiceProvider extends ServiceProvider
             }
 
             if (Schema::hasTable('meta_settings')) {
-                $meta_setting = Cache::rememberForever('meta_setting', fn () => MetaSetting::where('is_active', true)->first() ?? null);
-
-                // For Later META SETTING SET LOGIC
-                // if (! empty($google_map_setting)) {
-                //     Config::set([
-                //         'services.google_maps_api_key' => $google_map_setting?->google_map_api_key,
-                //     ]);
-                // }
+                Cache::rememberForever('meta_setting', fn () => MetaSetting::where('is_active', true)->first() ?? null);
 
             }
 

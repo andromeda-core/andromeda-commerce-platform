@@ -14,7 +14,7 @@ export default function SuccessToastModal({ showSuccess, setShowSuccess, message
     if (!showSuccess) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[10002] flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
                 className="fixed inset-0 bg-black/30 backdrop-blur-sm"
@@ -27,9 +27,9 @@ export default function SuccessToastModal({ showSuccess, setShowSuccess, message
             >
                 <div className="flex flex-col items-center text-center">
                     {/* Success Icon */}
-                    <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
+                    <div className="flex items-center justify-center w-16 h-16 mb-6 bg-green-100 rounded-full dark:bg-green-900/20">
                         <svg
-                            className="h-8 w-8 text-green-600 dark:text-green-400"
+                            className="w-8 h-8 text-green-600 dark:text-green-400"
                             fill="currentColor"
                             viewBox="0 0 20 20"
                         >

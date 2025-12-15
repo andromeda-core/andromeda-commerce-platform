@@ -42,6 +42,6 @@ class NotifyCustomerOrderCryptoPaymentExpired extends Notification implements Sh
             ->line('If you still wish to complete your purchase, you can simply place the order again or choose another payment method below.')
             ->action('Place a New Order', $home)
             ->line('We’ve released the reserved items back into stock so they remain available for purchase.')
-            ->line('Thank you for your understanding — we’re here if you have any questions or need assistance.');
+            ->line('Thank you for your understanding, we’re here if you have any questions or need assistance.');
     }
 }

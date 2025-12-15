@@ -23,6 +23,7 @@ use App\Http\Controllers\Dashboard\SmartphoneController;
 use App\Http\Controllers\Dashboard\SmartphoneForSaleController;
 use App\Http\Controllers\Dashboard\SupplierController;
 use App\Http\Controllers\Dashboard\UserController;
+use App\Http\Controllers\MetaController;
 use App\Http\Controllers\Website\BookmarkController as WebsiteBookmarkController;
 use App\Http\Controllers\Website\CartController;
 use App\Http\Controllers\Website\CheckoutController;
@@ -36,12 +37,16 @@ use App\Http\Controllers\Website\PostController as WebsitePostController;
 use App\Http\Controllers\Website\PrivacyPolicyController;
 use App\Http\Controllers\Website\ProductController;
 use App\Http\Controllers\Website\ProfileController as WebsiteProfileController;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 
-// Website Un Auth Routes
 // Home
 Route::get('/', [WebsiteHomeController::class, 'index'])->name('home');
 
+// Customer Order Invoice View Route
+Route::get('/orders-customer-order-invoice/{order_no?}', [OrderController::class, 'customerOrderInvoice'])->name('orders.customer-order-invoice');
+
+// Website Un Auth Routes
 Route::group(['as' => 'website.'], function () {
     // Posts
     Route::controller(WebsitePostController::class)->name('posts.')->group(function () {
@@ -142,14 +147,11 @@ Route::group(['as' => 'website.'], function () {
         Route::get('/contact', 'index')->name('index');
         Route::post('/contact-store', 'store')->name('store');
     });
-
 });
 
+// Dashboard Routes
 Route::middleware(['auth', 'verified'])->group(function () {
-
     Route::get('/dashboard', HomeController::class)->name('dashboard');
-
-    // Dashboard Routes With Prefixed /dashboard and named as dashboard. to seprate Webiste and Dashboard Logics And routes
     Route::prefix('/dashboard')->name('dashboard.')->group(function () {
 
         // Posts / Blogs Routes
@@ -571,14 +573,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     });
 
-    // Order Invoice Routes
-    Route::controller(OrderController::class)->name('orders.')->group(function () {
-        // Customer Order Invoice
-        Route::get('/orders-customer-order-invoice/{order_no?}', 'customerOrderInvoice')->name('customer-order-invoice');
-
-        // Shipping Invoice
-        Route::get('/orders-shipping-invoice/{order_no?}', 'shippingInvoice')->name('shipping-invoice');
-    });
+    // Shipping Invoice View Route
+    Route::get('/orders-shipping-invoice/{order_no?}', [OrderController::class, 'shippingInvoice'])->name('orders.shipping-invoice');
 
 });
 
@@ -634,5 +630,10 @@ Route::get('/pwa-manifest', function () {
         ->header('Content-Type', 'application/manifest+json');
 
 })->name('pwa.manifest');
+
+// Meta Routes
+Route::match(['get', 'post'], '/meta/webhook', [MetaController::class, 'webhook'])->withoutMiddleware([
+    VerifyCsrfToken::class,
+]);
 
 require __DIR__.'/auth.php';

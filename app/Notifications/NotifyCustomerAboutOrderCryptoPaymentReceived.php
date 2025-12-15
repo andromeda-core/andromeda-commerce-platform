@@ -52,8 +52,7 @@ class NotifyCustomerAboutOrderCryptoPaymentReceived extends Notification impleme
             ->line('• Payment Method: Crypto Payment')
             ->line('Our team will now begin preparing your order for dispatch. You can track your order status anytime using the button below.')
             ->action('View Your Order', $orderUrl)
-            ->line('If you have any questions or need assistance, feel free to contact our support team.')
-            ->salutation("Thank you for shopping with us!\nThe YesBigShop Team");
+            ->line('If you have any questions or need assistance, feel free to contact our support team.');
     }
 
     /**

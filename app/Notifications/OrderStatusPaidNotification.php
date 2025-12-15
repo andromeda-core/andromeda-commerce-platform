@@ -48,18 +48,23 @@ class OrderStatusPaidNotification extends Notification implements ShouldQueue
             ->line('**Order Number:** '.$this->order->order_no);
 
         if ($this->order->payment_method !== 'points') {
-            $mail->line('**Amount:** '.number_format($this->order->amount, 2).' '.$this->currency?->name ?? 'USD');
+            $mail->line('**Amount:** '.number_format($this->order->amount, 2).' '.($this->currency->name ?? 'USD'));
+
         }
 
         $mail->line('**Current Status:**  Paid')
-            ->line('**Payment Method:** '.$this->order->payment_method === 'bank' ? 'Bank Transfer' : 'Points')
+            ->line('**Payment Method:** '.(
+                $this->order->payment_method === 'bank_transfer'
+                    ? 'Bank Transfer'
+                    : 'Points'
+            ))
             ->line('Your order is now being processed and will be prepared for shipment shortly.')
             ->line('You can track the progress of your order anytime from your account’s *My Orders* page.')
             ->action('View Your Order', route('website.orders.order-view', $this->order->order_no))
             ->line('We truly appreciate your trust in us and look forward to delivering your order soon.')
             ->attachData($pdf->output(), "invoice-{$this->order->order_no}.pdf", [
-                'mime' => 'application/pdf',
-            ]);
+                            'mime' => 'application/pdf',
+                        ]);
 
         return $mail;
     }

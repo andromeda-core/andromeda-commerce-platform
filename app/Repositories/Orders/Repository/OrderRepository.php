@@ -4,6 +4,8 @@ namespace App\Repositories\Orders\Repository;
 
 use App\Jobs\CourierInvoiceDestroyOnAWS;
 use App\Jobs\CourierInvoiceStoreOnAWS;
+use App\Jobs\Meta\NotifyCustomerAboutAwaitingPaymentOrderFromCryptoJob;
+use App\Jobs\Meta\OrderPaymentProofUploadedNotificationJob;
 use App\Jobs\NotifyPaymentProofHasBeenUploaded;
 use App\Jobs\PayemntProofStoreOnAWS;
 use App\Jobs\PaymentProofDestroyOnAWS;
@@ -15,6 +17,7 @@ use App\Models\PackageRecording;
 use App\Models\RewardPoint;
 use App\Models\RewardSetting;
 use App\Models\Smartphone;
+use App\Models\SpecialCountry;
 use App\Models\User;
 use App\Notifications\NotifyCustomerAboutAwaitingPaymentOrderFromCrypto;
 use App\Repositories\Orders\Interface\IOrderRepository;
@@ -39,6 +42,7 @@ class OrderRepository implements IOrderRepository
         private RewardPoint $reward_point,
         private NOWPaymentPaymentService $now_payment_service,
         private PackageRecording $package_recording,
+        private SpecialCountry $special_country
     ) {}
 
     public function getAllOrders(Request $request)
@@ -573,13 +577,6 @@ class OrderRepository implements IOrderRepository
                 throw new Exception('Cannot View Invoice Before Payment');
             }
 
-            if ($request->user()->id !== $order->customer->user_id) {
-
-                if (! $request->user()->hasRole('Admin')) {
-                    throw new Exception('Invoice Not Found');
-                }
-            }
-
             return [
                 'status' => true,
                 'message' => 'Invoice Found',
@@ -990,7 +987,12 @@ class OrderRepository implements IOrderRepository
         $order_id = $request->input('order_id');
         $order_no = $request->input('order_no');
 
-        $order = $this->order->where('order_no', $order_no)->where('id', $order_id)->first();
+        $order = $this->order->where('order_no', $order_no)
+            ->with([
+                'customer.user',
+                'customer.user.metaContacts',
+            ])
+            ->where('id', $order_id)->first();
 
         if (empty($order)) {
             return [
@@ -1014,6 +1016,15 @@ class OrderRepository implements IOrderRepository
             dispatch_sync(new PayemntProofStoreOnAWS($temp_path, $order));
             dispatch(new NotifyPaymentProofHasBeenUploaded($order));
 
+            $meta_setting = Cache::get('meta_setting');
+
+            $user_meta_contacts = $order->customer->user->metaContacts;
+            $user = $order->customer->user;
+            $is_eligible = $this->special_country->where('country_id', $order->customer->country_id)->exists();
+            if (! empty($meta_setting) && $user_meta_contacts->isNotEmpty() && $is_eligible) {
+                dispatch(new OrderPaymentProofUploadedNotificationJob($user_meta_contacts, $order, $meta_setting, $user))->onQueue('meta');
+            }
+
             return [
                 'status' => true,
                 'message' => 'Payment Proof Uploaded Successfully',
@@ -1036,7 +1047,12 @@ class OrderRepository implements IOrderRepository
 
     public function cryptoPaymentSuccess(Request $request)
     {
-        $order = $this->order->where('order_no', $request->order_no)->first();
+        $order = $this->order->where('order_no', $request->order_no)
+            ->with([
+                'customer.user',
+                'customer.user.metaContacts',
+            ])
+            ->first();
 
         if (empty($order)) {
             return [
@@ -1056,6 +1072,14 @@ class OrderRepository implements IOrderRepository
             $user = $order->customer->user;
 
             $user->notify(new NotifyCustomerAboutAwaitingPaymentOrderFromCrypto($order, $currency));
+
+            $meta_setting = Cache::get('meta_setting');
+            $user_meta_contacts = $order->customer->user->metaContacts;
+
+            $is_eligible = $this->special_country->where('country_id', $order->customer->country_id)->exists();
+            if (! empty($meta_setting) && $user_meta_contacts->isNotEmpty() && $is_eligible) {
+                dispatch(new NotifyCustomerAboutAwaitingPaymentOrderFromCryptoJob($user_meta_contacts, $order, $meta_setting, $user))->onQueue('meta');
+            }
         }
 
         return [

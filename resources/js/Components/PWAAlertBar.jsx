@@ -66,7 +66,7 @@ const PWAAlertBar = ({ onClose }) => {
             >
                 <div className="p-4 border shadow-2xl rounded-2xl border-slate-300 bg-white/90 text-slate-800 backdrop-blur-xl dark:border-slate-700/50 dark:bg-deepcharcoal/90 dark:text-slate-100">
                     <div className="flex flex-wrap items-center gap-3">
-                        <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 rounded-xl bg-blue-500/10 dark:bg-gray-900">
+                        <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 bg-gray-900 rounded-xl">
                             {generalSetting?.app_favicon ? (
                                 <img src={generalSetting?.app_favicon} alt="Logo" />
                             ) : (

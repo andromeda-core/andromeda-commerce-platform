@@ -48,7 +48,7 @@ class NotifyCustomerAboutAwaitingPaymentOrderFromCrypto extends Notification imp
             ->greeting("Hi {$notifiable->name},")
             ->line("Thank you for placing your order with us! Your order **#{$orderNo}** has been successfully created and is currently awaiting confirmation on the blockchain.")
             ->line('Once the payment is verified by the network, your order will be automatically confirmed and processed for dispatch. No further action is required from your side at this time.')
-            ->line('**Order Details:**')
+            ->line('**📦 Order Details:**')
             ->line("• Order Number: {$orderNo}")
             ->line("• Amount: {$amount} {$currency}")
             ->line('• Payment Method: Crypto Payment')
