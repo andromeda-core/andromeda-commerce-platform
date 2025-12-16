@@ -37,7 +37,7 @@ export default function ShippingInvoice({ order }) {
         <>
             <Head title="Shipping Invoice" />
 
-            <div className="mx-auto flex w-auto items-center justify-center gap-4 lg:w-[600px] print:hidden">
+            <div className="mx-auto flex lg:flex-nowrap flex-wrap w-auto items-center justify-center gap-4 lg:w-[600px] print:hidden">
                 <PrimaryButton
                     Text={'Print'}
                     Action={() => window.print()}
@@ -105,10 +105,10 @@ export default function ShippingInvoice({ order }) {
 
             <div id="invoice" className="mx-auto min-h-screen max-w-[1100px] bg-white shadow-lg">
                 {/* Header */}
-                <div className="bg-emerald-600 p-4 text-white sm:p-6 lg:p-8">
+                <div className="p-4 text-white bg-emerald-600 sm:p-6 lg:p-8">
                     <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                         <div className="flex-1">
-                            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg sm:h-14 sm:w-14">
+                            <div className="flex items-center justify-center w-12 h-12 mb-4 rounded-lg sm:h-14 sm:w-14">
                                 <img
                                     crossOrigin="anonymous"
                                     src={
@@ -139,7 +139,7 @@ export default function ShippingInvoice({ order }) {
 
                         <div className="lg:flex-shrink-0 lg:text-right">
                             <h2 className="text-2xl font-bold sm:text-3xl">SHIPPING INVOICE</h2>
-                            <div className="mt-4 rounded-lg bg-white bg-opacity-20 p-3 text-white">
+                            <div className="p-3 mt-4 text-white bg-white rounded-lg bg-opacity-20">
                                 <p className="text-sm">Invoice No:</p>
                                 <p className="text-lg font-bold">#{order.order_no}</p>
                                 <p className="mt-2 text-sm">Date: {order.added_at}</p>
@@ -152,10 +152,10 @@ export default function ShippingInvoice({ order }) {
                 </div>
 
                 {/* Receiver Info */}
-                <div className="grid grid-cols-1 gap-6 border-b border-gray-200 p-4 sm:p-6 lg:grid-cols-1 lg:p-8">
+                <div className="grid grid-cols-1 gap-6 p-4 border-b border-gray-200 sm:p-6 lg:grid-cols-1 lg:p-8">
                     {/* Receiver */}
-                    <div className="rounded-lg border-2 border-gray-300 p-4">
-                        <h3 className="mb-4 border-b pb-2 text-lg font-bold text-gray-800">
+                    <div className="p-4 border-2 border-gray-300 rounded-lg">
+                        <h3 className="pb-2 mb-4 text-lg font-bold text-gray-800 border-b">
                             📥 RECEIVER DETAILS
                         </h3>
                         <p className="text-sm font-medium">{order.customer?.user?.name}</p>
@@ -170,61 +170,61 @@ export default function ShippingInvoice({ order }) {
                             {order.customer?.city}, {order.customer?.state}{' '}
                             {order.customer?.postal_code}
                         </p>
-                        <div className="mt-2 grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-4 mt-2">
                             <p className="text-sm">📞 {order.customer?.user?.phone}</p>
-                            <p className="break-all text-sm">📧 {order.customer?.user?.email}</p>
+                            <p className="text-sm break-all">📧 {order.customer?.user?.email}</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Shipment Info */}
-                <div className="grid grid-cols-1 items-center gap-6 border-b border-gray-200 p-4 sm:p-6 md:grid-cols-3 lg:p-8">
+                <div className="grid items-center grid-cols-1 gap-6 p-4 border-b border-gray-200 sm:p-6 md:grid-cols-3 lg:p-8">
                     {/* Tracking */}
-                    <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-center">
-                        <p className="text-xs font-semibold uppercase text-blue-600">Tracking No</p>
-                        <p className="whitespace-normal break-words text-lg font-bold text-blue-800">
+                    <div className="p-4 text-center border border-blue-200 rounded-lg bg-blue-50">
+                        <p className="text-xs font-semibold text-blue-600 uppercase">Tracking No</p>
+                        <p className="text-lg font-bold text-blue-800 break-words whitespace-normal">
                             {order?.tracking_no || 'N/A'}
                         </p>
                     </div>
 
                     {/* Ship Date */}
-                    <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-center">
-                        <p className="text-xs font-semibold uppercase text-green-600">Ship Date</p>
-                        <p className="whitespace-normal break-words text-lg font-bold text-green-800">
+                    <div className="p-4 text-center border border-green-200 rounded-lg bg-green-50">
+                        <p className="text-xs font-semibold text-green-600 uppercase">Ship Date</p>
+                        <p className="text-lg font-bold text-green-800 break-words whitespace-normal">
                             {order?.shipping_date || 'N/A'}
                         </p>
                     </div>
 
                     {/* Courier */}
-                    <div className="rounded-lg border border-purple-200 bg-purple-50 p-4 text-center">
-                        <p className="text-xs font-semibold uppercase text-purple-600">
+                    <div className="p-4 text-center border border-purple-200 rounded-lg bg-purple-50">
+                        <p className="text-xs font-semibold text-purple-600 uppercase">
                             Courier Company
                         </p>
-                        <p className="whitespace-normal break-words text-lg font-bold text-purple-800">
+                        <p className="text-lg font-bold text-purple-800 break-words whitespace-normal">
                             {order?.courier_company || 'N/A'}
                         </p>
                     </div>
                 </div>
 
                 {/* Package Contents */}
-                <div className="border-b border-gray-200 p-4 sm:p-6 lg:p-8">
+                <div className="p-4 border-b border-gray-200 sm:p-6 lg:p-8">
                     <h3 className="mb-4 text-lg font-bold text-gray-800">📦 PACKAGE CONTENTS</h3>
 
                     {/* Desktop Table */}
                     <div className="overflow-x-auto">
-                        <table className="w-full table-fixed border border-gray-300">
+                        <table className="w-full border border-gray-300 table-fixed">
                             <thead className="bg-gray-100">
                                 <tr>
-                                    <th className="border px-4 py-2 text-left text-gray-700">
+                                    <th className="px-4 py-2 text-left text-gray-700 border">
                                         Item
                                     </th>
-                                    <th className="border px-4 py-2 text-center text-gray-700">
+                                    <th className="px-4 py-2 text-center text-gray-700 border">
                                         Qty
                                     </th>
-                                    <th className="border px-4 py-2 text-right text-gray-700">
+                                    <th className="px-4 py-2 text-right text-gray-700 border">
                                         Unit Value
                                     </th>
-                                    <th className="border px-4 py-2 text-right text-gray-700">
+                                    <th className="px-4 py-2 text-right text-gray-700 border">
                                         Total
                                     </th>
                                 </tr>
@@ -232,7 +232,7 @@ export default function ShippingInvoice({ order }) {
                             <tbody>
                                 {order.order_items?.map((item, i) => (
                                     <tr key={i} className="hover:bg-gray-50">
-                                        <td className="border px-4 py-2 text-gray-900">
+                                        <td className="px-4 py-2 text-gray-900 border">
                                             <p className="font-medium">
                                                 {item.smartphone?.model_name?.name}
                                             </p>
@@ -240,14 +240,14 @@ export default function ShippingInvoice({ order }) {
                                                 {item.smartphone?.capacity?.name || 'Standard'}
                                             </p>
                                         </td>
-                                        <td className="border px-4 py-2 text-center text-gray-900">
+                                        <td className="px-4 py-2 text-center text-gray-900 border">
                                             {item.quantity}
                                         </td>
-                                        <td className="border px-4 py-2 text-right text-gray-900">
+                                        <td className="px-4 py-2 text-right text-gray-900 border">
                                             {currency?.symbol}
                                             {item.unit_price}
                                         </td>
-                                        <td className="border px-4 py-2 text-right font-semibold text-gray-900">
+                                        <td className="px-4 py-2 font-semibold text-right text-gray-900 border">
                                             {currency?.symbol}
                                             {item.sub_total}
                                         </td>
@@ -259,7 +259,7 @@ export default function ShippingInvoice({ order }) {
                 </div>
 
                 {/* Footer */}
-                <div className="border-t bg-gray-100 p-4 text-center page-break sm:p-6">
+                <div className="p-4 text-center bg-gray-100 border-t page-break sm:p-6">
                     <div className="flex flex-col items-center gap-4 lg:flex-row lg:justify-center">
                         <div className="flex flex-col items-center">
                             <QRCode
@@ -267,7 +267,7 @@ export default function ShippingInvoice({ order }) {
                                 size={130}
                                 viewBox="0 0 256 256"
                             />
-                            <p className="text-md mt-1 text-gray-500">
+                            <p className="mt-1 text-gray-500 text-md">
                                 Scan to Verify Shipping Invoice
                             </p>
                         </div>
