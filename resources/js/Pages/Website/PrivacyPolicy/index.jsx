@@ -519,12 +519,12 @@ const index = () => {
                                     <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
                                         <div className="px-4 py-3 break-words rounded-md bg-backgroundLight dark:bg-surface-2-dark">
                                             <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">Email Address</p>
-                                            <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">joseph@gmail.com</p>
+                                            <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">contact@andromeda.blue</p>
                                         </div>
 
                                         <div className="px-4 py-3 break-words rounded-md bg-backgroundLight dark:bg-surface-2-dark">
                                             <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">Phone</p>
-                                            <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">+82-10-5788-7778</p>
+                                            <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">+1 (516) 518 3469 447</p>
                                         </div>
 
                                     </div>
@@ -532,7 +532,7 @@ const index = () => {
                                     <div className="grid grid-cols-1 gap-3 mt-3">
                                         <div className="px-4 py-3 break-words rounded-md bg-backgroundLight dark:bg-surface-2-dark">
                                             <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">Address</p>
-                                            <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">Rm 1108, 320 Gangnam-daero, Gangnam-gu, Seoul, Republic of Korea</p>
+                                            <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">BROADWAY 2ND FL 2144 NEW YORK NY 10013</p>
                                         </div>
                                     </div>
                                 </div>
