@@ -234,11 +234,19 @@ const GlobalSearch = ({
                 setPlaceId('');
             }
 
-            if (autoCompletionLocationSearch != '' && autoCompletionLocationSearch?.length < 3) {
-                setInfoMessage('Please Enter More Details To Search');
-                setShowInfoMessage(true);
-            }
-            if (autoCompletionLocationSearch?.length > 2 && placeId == '') {
+            // if (autoCompletionLocationSearch != '' && autoCompletionLocationSearch?.length < 3) {
+            //     setInfoMessage('Please Enter More Details To Search');
+            //     setShowInfoMessage(true);
+            // }
+            // if (autoCompletionLocationSearch?.length > 2 && placeId == '') {
+            //     setAutoCompletionLoading(false);
+            //     setAutoCompletionDropdown(false);
+            //     setAutoCompletionResults([]);
+
+            //     autoCompletions();
+            // }
+
+            if (placeId == '') {
                 setAutoCompletionLoading(false);
                 setAutoCompletionDropdown(false);
                 setAutoCompletionResults([]);
