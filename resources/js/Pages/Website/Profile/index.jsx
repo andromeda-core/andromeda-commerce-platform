@@ -1646,7 +1646,7 @@ const Index = ({ user, countries }) => {
 
                                             <button
                                                 onClick={handleCropSaveAndUpload}
-                                                className={`flex h-[50px] w-[180px] items-center text-md font-semibold justify-center gap-2 rounded-md bg-main-text-light  text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-dark  dark:hover:bg-main-text-dark/80`}
+                                                className={`flex h-[50px] w-[180px] items-center text-md font-semibold justify-center gap-2 rounded-md bg-main-text-light  text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light  dark:hover:bg-main-text-dark/80`}
                                             >
                                                 Save & Upload
                                             </button>
