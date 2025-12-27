@@ -361,6 +361,7 @@ class CartRepository implements ICartRepository
                 'total_points' => $total_points,
                 'reward_rate' => $reward_rate,
                 'referal_code' => $collaborator->referral_code,
+                'total_price' => $cart->sum('total_price'),
                 'cart_customer_id' => $customer->id,
             ]);
 
@@ -392,5 +393,32 @@ class CartRepository implements ICartRepository
                 'message' => $e->getMessage(),
             ];
         }
+    }
+
+    public function updateCartRefferalSession(?array $session_data, $cart_items)
+    {
+
+        if (empty($session_data)) {
+            return [];
+        }
+
+        $cart_items = collect($cart_items);
+        $new_session_data = [
+            'collaborator_id' => $session_data['collaborator_id'],
+            'reward_rate' => $session_data['reward_rate'],
+            'referal_code' => $session_data['referal_code'],
+            'total_points' => $session_data['total_points'],
+            'total_price' => $session_data['total_price'],
+            'cart_customer_id' => $session_data['cart_customer_id'],
+        ];
+
+        $actual_total_price = $cart_items->sum('total_price');
+        $total_points = $actual_total_price * $new_session_data['reward_rate'] / 100;
+
+        $new_session_data['total_points'] = $total_points;
+
+        session()->put('referal_data', $new_session_data);
+
+        return $new_session_data;
     }
 }

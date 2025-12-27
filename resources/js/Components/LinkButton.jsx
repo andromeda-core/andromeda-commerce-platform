@@ -6,7 +6,7 @@ export default function LinkButton({ Disabled, Text, CustomClass = null, Icon, U
         <>
             <Link
                 href={URL}
-                className={`shadow-theme-xs my-3 flex w-full max-w-[300px] items-center justify-center rounded-xl bg-indigo-700 px-4 py-3 text-sm font-medium text-white transition hover:bg-indigo-600 ${CustomClass} ${Disabled && 'pointer-events-none cursor-not-allowed opacity-25 dark:opacity-40'} `}
+                className={`shadow-theme-xs my-3 flex w-full max-w-[300px] items-center justify-center rounded-md bg-main-text-light dark:bg-main-text-dark dark:text-main-text-light px-4 py-3 text-sm font-medium text-main-text-dark transition hover:bg-main-text-light/80 dark:hover:bg-main-text-dark/80 ${CustomClass} ${Disabled && 'pointer-events-none cursor-not-allowed opacity-25 dark:opacity-40'} `}
             >
                 {Text}
 

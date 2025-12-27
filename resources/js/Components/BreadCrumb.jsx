@@ -6,7 +6,7 @@ export default function BreadCrumb({ header, parent, parent_link, child }) {
         <>
             <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
                 <h2
-                    className="text-xl font-semibold text-gray-800 dark:text-white/90"
+                    className="text-xl font-semibold text-main-text-light dark:text-main-text-dark"
 
                 >
                     {header}
@@ -16,7 +16,8 @@ export default function BreadCrumb({ header, parent, parent_link, child }) {
                     <ol className="flex items-center gap-1.5">
                         <li>
                             <Link
-                                className="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400"
+                                className="inline-flex items-center gap-1.5 text-sm text-main-text-light
+dark:text-main-text-dark"
                                 href={parent_link}
                             >
                                 {parent}
@@ -39,7 +40,7 @@ export default function BreadCrumb({ header, parent, parent_link, child }) {
                             </Link>
                         </li>
                         <li
-                            className="text-sm text-gray-800 dark:text-white/90"
+                            className="text-sm text-sub-text-light dark:text-sub-text-dark"
 
                         >
                             {child}

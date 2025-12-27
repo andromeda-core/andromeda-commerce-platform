@@ -30,11 +30,11 @@ export default function ResetPassword({ token, email }) {
         <GuestLayout>
             <Head title="Reset Password" />
 
-            <div className="flex w-full flex-1 flex-col md:my-5 lg:w-1/2">
-                <div className="mx-auto w-full max-w-md pt-10">
+            <div className="flex flex-col flex-1 w-full md:my-5 lg:w-1/2">
+                <div className="w-full max-w-md pt-10 mx-auto">
                     <Link
                         href={route('home')}
-                        className="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-white dark:hover:text-gray-300"
+                        className="inline-flex items-center text-sm text-black transition-colors hover:text-gray-700 dark:text-main-text-dark dark:hover:text-sub-text-dark "
                     >
                         <svg
                             className="stroke-current"
@@ -55,13 +55,13 @@ export default function ResetPassword({ token, email }) {
                         Back to Website
                     </Link>
                 </div>
-                <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
+                <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
                     <div>
                         <div className="mb-5 sm:mb-8">
-                            <h1 className="sm:text-title-md mb-2 text-4xl font-bold text-gray-800 dark:text-white">
+                            <h1 className="mb-2 text-4xl font-bold text-black sm:text-title-md dark:text-main-text-dark">
                                 Reset Password
                             </h1>
-                            <p className="text-sm text-gray-500 dark:text-white">
+                            <p className="text-sm text-black dark:text-sub-text-dark">
                                 Set New Password For Your Account
                             </p>
                         </div>

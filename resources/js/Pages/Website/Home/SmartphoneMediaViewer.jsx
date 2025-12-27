@@ -167,9 +167,9 @@ export default function SmartphoneMediaViewer({
                             key={idx}
                             ref={(el) => (mediaThumbRefs.current[idx] = el)}
                             onClick={() => onSelectMediaIndex(idx)}
-                            className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-sm border transition-all duration-200 ${selectedMediaIndex === idx
-                                ? 'border-indigo-600 ring-2 ring-indigo-400'
-                                : 'border-gray-300 hover:border-gray-500'
+                            className={`relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-sm  transition-all duration-200 ${selectedMediaIndex === idx
+                                ? 'border-[3px] border-main-text-light dark:border-main-text-dark'
+                                : ''
                                 }`}
                         >
                             <img

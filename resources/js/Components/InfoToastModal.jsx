@@ -14,7 +14,7 @@ export default function InfoToastModal({ showInfo, setShowInfo, message }) {
     if (!showInfo) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[10002] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
                 className="fixed inset-0 bg-black/30 backdrop-blur-sm"
@@ -22,12 +22,12 @@ export default function InfoToastModal({ showInfo, setShowInfo, message }) {
             />
 
             {/* Modal */}
-            <div className="relative z-10 w-full max-w-sm px-8 py-6 bg-white shadow-2xl animate-scale-in rounded-2xl dark:bg-deepcharcoal">
+            <div className="relative z-10 w-full max-w-sm px-8 py-4 border rounded-md bg-backgroundLight animate-scale-in dark:bg-surface-1-dark border-surface-3-light dark:border-surface-3-dark">
                 <div className="flex flex-col items-center text-center">
                     {/* Info Icon */}
-                    <div className="flex items-center justify-center w-16 h-16 mb-6 bg-blue-100 rounded-full dark:bg-blue-900/20">
+                    <div className="flex items-center justify-center mb-3 rounded-full">
                         <svg
-                            className="w-8 h-8 text-blue-600 dark:text-blue-400"
+                            className="w-8 h-8 text-main-text-light dark:text-main-text-dark"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -41,13 +41,8 @@ export default function InfoToastModal({ showInfo, setShowInfo, message }) {
                         </svg>
                     </div>
 
-                    {/* Title */}
-                    <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
-                        Information
-                    </h3>
-
                     {/* Message */}
-                    <p className="text-sm text-gray-600 dark:text-gray-300">{message}</p>
+                    <p className="text-sm break-words text-main-text-light dark:text-main-text-dark">{message}</p>
                 </div>
             </div>
         </div>,

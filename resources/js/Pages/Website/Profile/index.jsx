@@ -1,28 +1,18 @@
-import Input from '@/Components/Input';
-import SelectInput from '@/Components/SelectInput';
+import WebInput from '@/Components/WebInput';
 import Spinner from '@/Components/Spinner';
 import Textarea from '@/Components/Textarea';
 import Toast from '@/Components/Toast';
+import WebSelectInput from '@/Components/WebSelectInput';
+import useDarkMode from '@/Hooks/useDarkMode';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import Cropper from 'react-easy-crop';
 
 const Index = ({ user, countries }) => {
-    const [hasCompleteAddress, setHasCompleteAddress] = useState(false);
-    useEffect(() => {
-        if (
-            (user?.customer?.address_line1 || user?.customer?.address_line2) &&
-            user?.customer?.city &&
-            user?.customer?.state &&
-            user?.customer?.postal_code &&
-            user?.customer?.country_id
-        ) {
-            setHasCompleteAddress(true);
-        }
-    }, [user]);
-
     const [infoMessage, setInfoMessage] = useState('');
     const [showInfoMessage, setShowInfoMessage] = useState(false);
 
@@ -38,6 +28,15 @@ const Index = ({ user, countries }) => {
     const [toggleCurrentPassword, setToggleCurrentPassword] = useState(false);
     const [togglePassword, setTogglePassword] = useState(false);
     const [togglePasswordConfirmation, setTogglePasswordConfirmation] = useState(false);
+
+    const [isProfileUploading, setIsProfileUploading] = useState(false);
+    const [profileImage, setProfileImage] = useState(null);
+    const [showCropper, setShowCropper] = useState(false);
+    const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [zoom, setZoom] = useState(1);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+    const isDarkMode = useDarkMode();
+    const fileInputRef = useRef(null);
 
     // Profile Form Data
     const {
@@ -174,12 +173,15 @@ const Index = ({ user, countries }) => {
         } else if (isChangePasswordOpen) {
             window.history.pushState({}, '', window.location.pathname);
             url.searchParams.set('modal', 'change-password');
+        } else if (showCropper) {
+            window.history.pushState({}, '', window.location.pathname);
+            url.searchParams.set('modal', 'crop-image');
         } else {
             url.searchParams.delete('modal');
         }
 
         window.history.replaceState({}, '', url);
-    }, [isEditProfileOpen, isChangePasswordOpen]);
+    }, [isEditProfileOpen, isChangePasswordOpen, showCropper]);
 
     // // Handle browser/mobile back button to close modals
     useEffect(() => {
@@ -193,6 +195,15 @@ const Index = ({ user, countries }) => {
                 setIsChangePasswordOpen(false);
                 return;
             }
+
+            if (showCropper) {
+                setShowCropper(false);
+                setProfileImage(null);
+                setCroppedAreaPixels(null);
+                setCrop({ x: 0, y: 0 });
+                setZoom(1);
+                return;
+            }
         };
 
         const preventInertiaNavigation = (event) => {
@@ -200,7 +211,8 @@ const Index = ({ user, countries }) => {
 
             if (
                 pathname === 'profile/details/update/' + user?.id ||
-                pathname === 'profile/change-password'
+                pathname === 'profile/change-password' ||
+                pathname === 'profile/upload-profile'
             ) {
                 return;
             }
@@ -216,7 +228,7 @@ const Index = ({ user, countries }) => {
             window.removeEventListener('popstate', handlePopState);
             if (removeRouterEvent) removeRouterEvent();
         };
-    }, [isEditProfileOpen, isChangePasswordOpen]);
+    }, [isEditProfileOpen, isChangePasswordOpen, showCropper]);
 
     // // Disable Profile Button State
     const [isProfileUpdateButtonDisabled, setIsProfileButtonDisabled] = useState(true);
@@ -246,6 +258,99 @@ const Index = ({ user, countries }) => {
         setIsPasswordChangeButtonDisabled(isIncomplete);
     }, [passwordData]);
 
+    function InfoBox({ label, value }) {
+        return (
+            <div className="px-4 py-3 break-words rounded-md bg-surface-1-light dark:bg-surface-1-dark">
+                <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">{label}</p>
+                <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">{value}</p>
+            </div>
+        );
+    }
+
+    // Zoom Handling For react Easy Crop
+    const handleZoomChange = (value) => {
+        const min = 1;
+        const max = 3;
+        const step = 0.1;
+
+        const clamped = Math.min(max, Math.max(min, value));
+        setZoom(Math.round(clamped / step) * step);
+    };
+
+    // Get Cropped Image
+    const getCroppedImage = async (imageSrc, cropPixels) => {
+        const image = new Image();
+        image.src = imageSrc;
+        await new Promise((resolve) => (image.onload = resolve));
+
+        const canvas = document.createElement('canvas');
+        canvas.width = cropPixels.width;
+        canvas.height = cropPixels.height;
+
+        const ctx = canvas.getContext('2d');
+
+        ctx.drawImage(
+            image,
+            cropPixels.x,
+            cropPixels.y,
+            cropPixels.width,
+            cropPixels.height,
+            0,
+            0,
+            cropPixels.width,
+            cropPixels.height,
+        );
+
+        return new Promise((resolve) => {
+            canvas.toBlob((blob) => resolve(blob), 'image/jpeg');
+        });
+    };
+
+    const handleCropSaveAndUpload = async () => {
+        const croppedBlob = await getCroppedImage(profileImage, croppedAreaPixels);
+
+        const previewUrl = URL.createObjectURL(croppedBlob);
+
+        // show preview in avatar
+        setProfileImage(previewUrl);
+        setIsProfileUploading(true);
+
+        setShowCropper(false);
+
+        setCroppedAreaPixels(null);
+        setCrop({ x: 0, y: 0 });
+        setZoom(1);
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+
+        const formData = new FormData();
+        formData.append('profile', croppedBlob);
+
+        try {
+            await axios
+                .put(route('website.profile.upload-profile-picture'), formData)
+                .then((response) => {
+                    const data = response.data;
+
+                    if (data.status === true) {
+                        setSuccessMessage(data.message);
+                        setProfileImage(data.profile);
+                        setShowSuccessMessage(true);
+                    } else {
+                        setErrorMessage(data.message);
+                        setShowErrorMessage(true);
+                    }
+                })
+                .finally(() => {
+                    setIsProfileUploading(false);
+                });
+        } catch (error) {
+            console.error('Upload error:', error);
+        }
+    };
+
     return (
         <MainLayout>
             <Head title="Profile" />
@@ -274,349 +379,157 @@ const Index = ({ user, countries }) => {
                 />
             )}
 
-            <div className={`min-h-screen ${windowSize.width < 1024 ? 'mb-20' : ''}`}>
-                <div className="pt-10 mx-auto max-w-8xl sm:px-6 lg:px-8">
-                    {/* Header Section with Points */}
-                    <div className="relative p-8 mb-8 overflow-hidden bg-white border border-gray-200 shadow-lg rounded-3xl dark:border-gray-700 dark:bg-deepcharcoal sm:p-12">
-                        <div className="relative z-10 flex flex-col items-center justify-between gap-6 sm:flex-row sm:items-start">
-                            <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
-                                {/* Avatar */}
-                                <div className="relative">
-                                    <div className="flex items-center justify-center w-24 h-24 overflow-hidden border-2 rounded-full backdrop-blur-sm dark:border-gray-700 dark:bg-deepcharcoal sm:h-32 sm:w-32">
-                                        <span className="text-4xl font-bold text-gray-700 dark:text-white/80 sm:text-5xl">
-                                            {user?.name ? user.name.charAt(0).toUpperCase() : 'N/A'}
-                                        </span>
-                                    </div>
-                                </div>
 
-                                {/* User Info */}
-                                <div className="text-center sm:text-left">
-                                    <h1 className="mb-2 text-3xl font-bold text-gray-700 dark:text-white/80 sm:text-4xl">
-                                        {user?.name || 'N/A'}
-                                    </h1>
-                                    <p className="mb-3 text-lg text-gray-700 dark:text-white/80">
-                                        Member since {user?.member_since || 'N/A'}
+            <div className="sm:px-6 lg:px-8">
+                <div className={`px-6  mx-auto ${windowSize.width > 1024 ? 'pb-0' : 'pb-24'} lg:max-w-6xl sm:max-w-3xl`}>
+
+                    <div className="my-10">
+                        <h1 className="text-2xl font-semibold text-main-text-light dark:text-main-text-dark">
+                            Account Settings
+                        </h1>
+                        <p className="mt-1 text-sm text-sub-text-light dark:sub-text-dark">
+                            Manage your profile, contact details, and security in one place.
+                        </p>
+                    </div>
+
+                    {/* Avatar */}
+                    <div className="flex items-center gap-6">
+                        <div
+                            onClick={() => fileInputRef.current?.click()}
+                            className="relative flex items-center justify-center w-20 h-20 text-center rounded-full cursor-pointer bg-surface-2-light dark:bg-surface-2-dark"
+                        >
+                            {!user?.profile && !profileImage && (
+                                <span className="text-2xl font-semibold text-main-text-light dark:text-main-text-dark">
+                                    {user?.avatar}
+                                </span>
+                            )}
+
+                            {(user?.profile || profileImage) && (
+                                <img
+                                    src={profileImage || user?.profile}
+                                    alt="Profile"
+                                    className="object-cover object-center w-full h-full rounded-full"
+                                />
+                            )}
+
+                            {/* Uploading Overlay */}
+                            {isProfileUploading && (
+                                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/80">
+                                    <Spinner />
+                                </div>
+                            )}
+
+                            {/* Hidden file input */}
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                        const imageUrl = URL.createObjectURL(file);
+                                        setProfileImage(imageUrl);
+                                        setShowCropper(true);
+                                    }
+                                }}
+                            />
+                        </div>
+                    </div>
+                    {/* Profile Row */}
+                    <div className="flex flex-wrap items-center justify-between gap-4 mb-12">
+
+                        <div className="flex flex-col items-start mt-4">
+                            <h3 className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
+                                {user?.name || 'User'}
+                            </h3>
+                            <div >
+                                <div className="flex flex-wrap items-center justify-between gap-1 mt-3 font-medium">
+                                    <p className="px-2 py-1 mt-1 text-xs rounded-full bg-surface-1-light dark:bg-surface-1-dark text-main-text-light dark:text-main-text-dark">
+
+                                        {user?.customer?.orders_count || 0} Orders
                                     </p>
-                                    <div className="flex flex-wrap justify-center gap-3 sm:justify-start">
-                                        <span className="rounded-full bg-indigo-600 px-4 py-1.5 text-sm font-bold text-white/80 backdrop-blur-sm dark:text-white/80">
-                                            {user?.customer?.orders_count ?? 0} Orders
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
 
-                            {/* Points Card */}
-                            <div className="min-w-[160px] rounded-2xl border p-6 text-center backdrop-blur-md dark:border-gray-700 dark:bg-deepcharcoal">
-                                <div className="mb-1 text-sm font-medium text-gray-700 dark:text-white/80">
-                                    Reward Points
-                                </div>
-                                <div className="mb-1 text-4xl font-bold text-gray-700 dark:text-white/80">
-                                    {user?.points ?? 0}
-                                </div>
-                                <div className="text-xs text-gray-700 dark:text-white/80">
-                                    pts available
+                                    <p className="px-2 py-1 mt-1 text-xs rounded-full bg-surface-1-light dark:bg-surface-1-dark text-main-text-light dark:text-main-text-dark">
+
+                                        {user?.points || 0} Points
+                                    </p>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Decorative Elements */}
-                        <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-white/5 blur-3xl"></div>
-                        <div className="absolute bottom-0 left-0 rounded-full h-96 w-96 bg-white/5 blur-3xl"></div>
-                    </div>
+                        {/* Actions */}
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setIsChangePasswordOpen(true)}
+                                className="px-10 py-2 font-semibold rounded-md text-md text-main-text-dark dark:text-main-text-light bg-main-text-light hover:bg-main-text-light/80 dark:bg-main-text-dark dark:hover:bg-main-text-dark/80"
+                            >
+                                Change Password
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setIsEditProfileOpen(true);
+                                    setProfileData({
+                                        name: user?.name,
+                                        email: user?.email,
+                                        phone: user?.phone,
+                                        address_line1: user?.customer?.address_line1,
+                                        address_line2: user?.customer?.address_line1,
+                                        state: user?.customer?.state,
+                                        postal_code: user?.customer?.postal_code,
+                                        city: user?.customer?.city,
+                                        country_id: user?.customer?.country?.id,
 
-                    {/* Main Content Grid */}
-                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                        {/* Personal Information Card */}
-                        <div className="overflow-hidden bg-white border border-gray-200 shadow-lg rounded-2xl dark:border-gray-700 dark:bg-deepcharcoal lg:col-span-2">
-                            <div className="px-6 py-4 bg-white border-b border-gray-200 dark:border-gray-700 dark:bg-deepcharcoal dark:from-gray-700">
-                                <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-700 dark:text-white/80">
-                                    <svg
-                                        className="w-5 h-5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                        />
-                                    </svg>
-                                    Personal Information
-                                </h2>
-                            </div>
-                            <div className="p-6 space-y-4">
-                                {/* Email */}
-                                <div className="flex items-start gap-4 p-4 transition-colors bg-white border border-gray-200 rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
-                                    <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 bg-indigo-100 rounded-lg dark:bg-indigo-900/30">
-                                        <svg
-                                            className="w-5 h-5 text-indigo-600 dark:text-indigo-400"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                                            />
-                                        </svg>
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">
-                                            Email Address
-                                        </div>
-                                        <div className="text-sm font-medium text-gray-700 truncate dark:text-white/80">
-                                            {user?.email || 'N/A'}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Phone */}
-                                <div className="flex items-start gap-4 p-4 transition-colors bg-white border border-gray-200 rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
-                                    <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 bg-purple-100 rounded-lg dark:bg-purple-900/30">
-                                        <svg
-                                            className="w-5 h-5 text-purple-600 dark:text-purple-400"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                                            />
-                                        </svg>
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">
-                                            Phone Number
-                                        </div>
-                                        <div className="text-sm font-medium text-gray-700 dark:text-white/80">
-                                            {user?.phone || 'N/A'}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Quick Actions Card */}
-                        <div className="overflow-hidden bg-white border border-gray-200 shadow-lg rounded-2xl dark:border-gray-700 dark:bg-deepcharcoal">
-                            <div className="px-6 py-4 bg-white border-b border-gray-200 dark:border-gray-700 dark:bg-deepcharcoal">
-                                <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-700 dark:text-white/80">
-                                    <svg
-                                        className="w-5 h-5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M13 10V3L4 14h7v7l9-11h-7z"
-                                        />
-                                    </svg>
-                                    Quick Actions
-                                </h2>
-                            </div>
-                            <div className="p-6 space-y-3">
-                                <button
-                                    onClick={() => setIsEditProfileOpen(true)}
-                                    className="flex items-center justify-center w-full gap-2 px-4 py-3 font-medium text-white transition-all bg-indigo-600 shadow-md rounded-xl hover:bg-indigo-500 hover:shadow-lg"
-                                >
-                                    <svg
-                                        className="w-5 h-5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                        />
-                                    </svg>
-                                    Edit Profile
-                                </button>
-
-                                <button
-                                    onClick={() => setIsChangePasswordOpen(true)}
-                                    className="flex items-center justify-center w-full gap-2 px-4 py-3 font-medium text-gray-700 transition-all bg-gray-100 rounded-xl hover:bg-gray-200 dark:bg-gray-800 dark:text-white/80 dark:hover:bg-gray-700"
-                                >
-                                    <svg
-                                        className="w-5 h-5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                                        />
-                                    </svg>
-                                    Change Password
-                                </button>
-
-                                <Link
-                                    href={route('website.orders.index')}
-                                    className="flex items-center justify-center w-full gap-2 px-4 py-3 font-medium text-gray-700 transition-all bg-gray-100 rounded-xl hover:bg-gray-200 dark:bg-gray-800 dark:text-white/80 dark:hover:bg-gray-700"
-                                >
-                                    <svg
-                                        className="w-5 h-5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                        />
-                                    </svg>
-                                    Order History
-                                </Link>
-                            </div>
-                        </div>
-
-                        {/* Address Information Card */}
-                        <div className="overflow-hidden bg-white border border-gray-200 shadow-lg rounded-2xl dark:border-gray-700 dark:bg-deepcharcoal lg:col-span-3">
-                            <div className="p-4 bg-white border-b border-gray-200 dark:border-gray-700 dark:bg-deepcharcoal">
-                                <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-700 dark:text-white/80">
-                                    <svg
-                                        className="w-5 h-5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                                        />
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                                        />
-                                    </svg>
-                                    Address Information
-                                </h2>
-                            </div>
-                            <div className="p-6">
-                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                    {/* Address Line 1 */}
-                                    <div className="p-4 bg-white border border-gray-200 rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
-                                        <div className="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
-                                            Address Line 1
-                                        </div>
-                                        <div className="text-sm font-medium text-gray-700 break-words dark:text-white/80">
-                                            {user?.customer?.address_line1 || 'N/A'}
-                                        </div>
-                                    </div>
-
-                                    {/* Address Line 2 */}
-                                    <div className="p-4 bg-white border border-gray-200 rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
-                                        <div className="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
-                                            Address Line 2
-                                        </div>
-                                        <div className="text-sm font-medium text-gray-700 break-words dark:text-white/80">
-                                            {user?.customer?.address_line2 || 'N/A'}
-                                        </div>
-                                    </div>
-
-                                    {/* City */}
-                                    <div className="p-4 bg-white border border-gray-200 rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
-                                        <div className="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
-                                            City
-                                        </div>
-                                        <div className="text-sm font-medium text-gray-700 break-words dark:text-white/80">
-                                            {user?.customer?.city || 'N/A'}
-                                        </div>
-                                    </div>
-
-                                    {/* State */}
-                                    <div className="p-4 bg-white border border-gray-200 rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
-                                        <div className="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
-                                            State
-                                        </div>
-                                        <div className="text-sm font-medium text-gray-700 dark:text-white/80">
-                                            {user?.customer?.state || 'N/A'}
-                                        </div>
-                                    </div>
-
-                                    {/* Postal Code */}
-                                    <div className="p-4 bg-white border border-gray-200 rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
-                                        <div className="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
-                                            Postal Code
-                                        </div>
-                                        <div className="text-sm font-medium text-gray-700 break-words dark:text-white/80">
-                                            {user?.customer?.postal_code || 'N/A'}
-                                        </div>
-                                    </div>
-
-                                    {/* Country */}
-                                    <div className="p-4 bg-white border border-gray-200 rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
-                                        <div className="mb-2 text-xs font-medium tracking-wide text-indigo-600 uppercase dark:text-indigo-400">
-                                            Country
-                                        </div>
-                                        <div className="flex items-center gap-2 text-sm font-semibold text-gray-700 break-words dark:text-white/80">
-                                            <span className="text-lg">
-                                                {user?.customer?.country?.iso_code || 'N/A'}
-                                            </span>
-                                            <span>{user?.customer?.country?.name || 'N/A'}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Full Address Display */}
-                                {hasCompleteAddress && (
-                                    <div className="p-6 mt-6 bg-white border border-gray-200 rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
-                                        <div className="flex items-start gap-3">
-                                            <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 bg-indigo-600 rounded-lg">
-                                                <svg
-                                                    className="w-5 h-5 text-white"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                                                    />
-                                                </svg>
-                                            </div>
-                                            <div>
-                                                <div className="mb-2 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
-                                                    Complete Address
-                                                </div>
-                                                <div className="overflow-hidden text-sm leading-relaxed text-gray-700 break-words break-all whitespace-pre-wrap dark:text-white/80">
-                                                    {user?.customer?.address_line1},{' '}
-                                                    {user?.customer?.address_line2}
-                                                    <br />
-                                                    {user?.customer.city}, {user?.customer.state}{' '}
-                                                    {user?.customer.postal_code}
-                                                    <br />
-                                                    {user?.customer.country?.name}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
+                                    });
+                                }}
+                                className="px-10 py-2 font-semibold rounded-md text-md text-main-text-dark dark:text-main-text-light bg-main-text-light hover:bg-main-text-light/80 dark:bg-main-text-dark dark:hover:bg-main-text-dark/80"
+                            >
+                                Edit Profile
+                            </button>
                         </div>
                     </div>
+
+                    {/* Personal Information */}
+                    <div className="mb-10">
+                        <h3 className="mb-4 font-semibold text-md text-main-text-light dark:text-main-text-dark">
+                            Personal Information
+                        </h3>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <InfoBox label="Email Address" value={user?.email || 'N/A'} />
+                            <InfoBox label="Phone Number" value={user?.phone || 'N/A'} />
+                        </div>
+                    </div>
+
+                    {/* Address Information */}
+                    <div>
+                        <h3 className="mb-4 text-sm font-semibold text-black dark:text-white">
+                            Address Information
+                        </h3>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <InfoBox
+                                label="Address Line 1"
+                                value={user?.customer?.address_line1 || 'N/A'}
+                            />
+                            <InfoBox
+                                label="Address Line 2"
+                                value={user?.customer?.address_line2 || 'N/A'}
+                            />
+                            <InfoBox label="State" value={user?.customer?.state || 'N/A'} />
+                            <InfoBox
+                                label="Postal Code"
+                                value={user?.customer?.postal_code || 'N/A'}
+                            />
+                            <InfoBox label="City" value={user?.customer?.city || 'N/A'} />
+                            <InfoBox
+                                label="Country"
+                                value={user?.customer?.country?.name || 'N/A'}
+                            />
+                        </div>
+                    </div>
+
+
                 </div>
             </div>
 
@@ -629,159 +542,139 @@ const Index = ({ user, countries }) => {
                             <div className="fixed inset-0 z-50 flex items-center justify-center">
                                 {/* Backdrop */}
                                 <div
-                                    className="fixed inset-0 transition-opacity duration-300 bg-black/60 backdrop-blur-sm"
+                                    className="fixed inset-0 transition-opacity duration-300 bg-black/30 backdrop-blur-sm"
                                     onClick={() => setIsEditProfileOpen(false)}
                                 />
 
                                 {/* Modal Card */}
-                                <div className="relative z-10 w-full max-w-2xl p-8 shadow-2xl rounded-2xl bg-white/95 dark:bg-deepcharcoal dark:text-white/80">
+                                <div className="relative z-10 w-full max-w-4xl p-12 pb-1 border rounded-md border-surface-1-light dark:border-surface-3-dark bg-backgroundLight dark:bg-surface-1-dark dark:text-main-text-dark text-main-text-light">
                                     {/* Header */}
-                                    <div className="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
-                                        <h2 className="text-xl font-semibold tracking-tight text-gray-700 dark:text-white/80">
+                                    <div className="flex items-center justify-between pb-4">
+                                        <h2 className="text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
                                             Edit Profile
                                         </h2>
-
-
-                                        <button
-                                            onClick={() => {
-                                                setIsEditProfileOpen(false)
-                                            }}
-                                            className="absolute z-50 p-2 text-gray-600 transition-colors rounded-full top-6 right-4 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-zinc-800"
-                                            aria-label="Close modal"
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={2}
-                                                stroke="currentColor"
-                                                className="w-6 h-6"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M6 18L18 6M6 6l12 12"
-                                                />
-                                            </svg>
-                                        </button>
                                     </div>
 
                                     {/* Content */}
-                                    <div className="mt-6 max-h-[70vh] overflow-y-auto pr-2">
+                                    <div className="mt-6 max-h-[80vh] overflow-y-auto pr-2">
                                         <form
                                             onSubmit={handleEditProfileSubmit}
                                             className="mb-10 space-y-5"
                                         >
-                                            {/* Name */}
-                                            <div>
-                                                <Input
-                                                    Id={'name'}
-                                                    InputName={'Name'}
-                                                    Error={UpdateProfileErrors.name}
-                                                    Name={'name'}
-                                                    Placeholder={'Enter Full Name'}
-                                                    Type={'text'}
-                                                    Value={profileData.name}
-                                                    Action={(e) =>
-                                                        setProfileData('name', e.target.value)
-                                                    }
-                                                    Required={true}
-                                                />
-                                            </div>
 
-                                            {/* Email */}
-                                            <div>
-                                                <Input
-                                                    Id={'email'}
-                                                    InputName={'Email'}
-                                                    Error={UpdateProfileErrors.email}
-                                                    Name={'email'}
-                                                    Placeholder={'Enter Email'}
-                                                    Type={'email'}
-                                                    Value={profileData.email}
-                                                    Action={(e) =>
-                                                        setProfileData('email', e.target.value)
-                                                    }
-                                                    Required={true}
-                                                />
-                                            </div>
+                                            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
 
-                                            {/* Phone */}
-                                            <div>
-                                                <Input
-                                                    Id={'phone'}
-                                                    InputName={'Phone'}
-                                                    Error={UpdateProfileErrors.phone}
-                                                    Name={'phone'}
-                                                    Placeholder={'Enter Phone'}
-                                                    Type={'text'}
-                                                    Value={profileData.phone}
-                                                    Action={(e) =>
-                                                        setProfileData('phone', e.target.value)
-                                                    }
-                                                    Required={true}
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <SelectInput
-                                                    InputName={'Country'}
-                                                    Id={'country_id'}
-                                                    Name={'country_id'}
-                                                    Value={profileData.country_id}
-                                                    Required={true}
-                                                    Action={(value) =>
-                                                        setProfileData('country_id', value)
-                                                    }
-                                                    items={countries}
-                                                    itemKey={'name'}
-                                                    Error={UpdateProfileErrors.country_id}
-                                                    Placeholder={'Select Country'}
-                                                />
-                                            </div>
-
-                                            {/* Address Line 1 */}
-                                            <div>
-                                                <Textarea
-                                                    InputName={'Address 1'}
-                                                    Id={'address_1'}
-                                                    Name={'address_1'}
-                                                    Error={UpdateProfileErrors.address_line1}
-                                                    Value={profileData.address_line1}
-                                                    Required={true}
-                                                    Action={(e) =>
-                                                        setProfileData(
-                                                            'address_line1',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                    Rows={3}
-                                                />
-                                            </div>
-
-                                            {/* Address Line 2 */}
-                                            <div>
-                                                <Textarea
-                                                    InputName={'Address 2'}
-                                                    Id={'address_2'}
-                                                    Name={'address_2'}
-                                                    Error={UpdateProfileErrors.address_line2}
-                                                    Value={profileData.address_line2}
-                                                    Required={false}
-                                                    Action={(e) =>
-                                                        setProfileData(
-                                                            'address_line2',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                    Rows={3}
-                                                />
-                                            </div>
-
-                                            {/* City and State */}
-                                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                                {/* Name */}
                                                 <div>
-                                                    <Input
+                                                    <WebInput
+                                                        Id={'name'}
+                                                        InputName={'Name'}
+                                                        Error={UpdateProfileErrors.name}
+                                                        Name={'name'}
+                                                        Placeholder={'Enter Full Name'}
+                                                        Type={'text'}
+                                                        Value={profileData.name}
+                                                        Action={(e) =>
+                                                            setProfileData('name', e.target.value)
+                                                        }
+                                                        Required={true}
+                                                    />
+                                                </div>
+
+                                                {/* Email */}
+                                                <div>
+                                                    <WebInput
+                                                        Id={'email'}
+                                                        InputName={'Email'}
+                                                        Error={UpdateProfileErrors.email}
+                                                        Name={'email'}
+                                                        Placeholder={'Enter Email'}
+                                                        Type={'email'}
+                                                        Value={profileData.email}
+                                                        Action={(e) =>
+                                                            setProfileData('email', e.target.value)
+                                                        }
+                                                        Required={true}
+                                                    />
+                                                </div>
+
+                                                {/* Phone */}
+                                                <div>
+                                                    <WebInput
+                                                        Id={'phone'}
+                                                        InputName={'Phone'}
+                                                        Error={UpdateProfileErrors.phone}
+                                                        Name={'phone'}
+                                                        Placeholder={'Enter Phone'}
+                                                        Type={'text'}
+                                                        Value={profileData.phone}
+                                                        Action={(e) =>
+                                                            setProfileData('phone', e.target.value)
+                                                        }
+                                                        Required={true}
+                                                    />
+                                                </div>
+                                                {/* Country */}
+                                                <div>
+                                                    <WebSelectInput
+                                                        InputName={'Country'}
+                                                        Id={'country_id'}
+                                                        Name={'country_id'}
+                                                        Value={profileData.country_id}
+                                                        Required={true}
+                                                        Action={(value) =>
+                                                            setProfileData('country_id', value)
+                                                        }
+                                                        items={countries}
+                                                        itemKey={'name'}
+                                                        Error={UpdateProfileErrors.country_id}
+                                                        Placeholder={'Select Country'}
+                                                    />
+                                                </div>
+
+                                                {/* Address Line 1 */}
+                                                <div className='col-span-2'>
+                                                    <Textarea
+                                                        InputName={'Address 1'}
+                                                        Id={'address_1'}
+                                                        Name={'address_1'}
+                                                        Error={UpdateProfileErrors.address_line1}
+                                                        Value={profileData.address_line1}
+                                                        Required={true}
+                                                        Placeholder={'Enter Address 1'}
+                                                        Action={(e) =>
+                                                            setProfileData(
+                                                                'address_line1',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        Rows={1}
+                                                    />
+                                                </div>
+
+                                                {/* Address Line 2 */}
+                                                <div className='col-span-2'>
+                                                    <Textarea
+                                                        InputName={'Address 2'}
+                                                        Id={'address_2'}
+                                                        Name={'address_2'}
+                                                        Error={UpdateProfileErrors.address_line2}
+                                                        Placeholder={'Enter Address 2'}
+                                                        Value={profileData.address_line2}
+                                                        Required={false}
+                                                        Action={(e) =>
+                                                            setProfileData(
+                                                                'address_line2',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        Rows={1}
+                                                    />
+                                                </div>
+
+                                                {/* City and State */}
+                                                <div>
+                                                    <WebInput
                                                         Id={'City'}
                                                         InputName={'City'}
                                                         Error={UpdateProfileErrors.city}
@@ -797,7 +690,7 @@ const Index = ({ user, countries }) => {
                                                 </div>
 
                                                 <div>
-                                                    <Input
+                                                    <WebInput
                                                         Id={'state'}
                                                         InputName={'State'}
                                                         Error={UpdateProfileErrors.state}
@@ -811,12 +704,10 @@ const Index = ({ user, countries }) => {
                                                         Required={true}
                                                     />
                                                 </div>
-                                            </div>
 
-                                            {/* Postal Code and Country ID */}
-                                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                                {/* Postal Code and Country ID */}
                                                 <div>
-                                                    <Input
+                                                    <WebInput
                                                         Id={'postal_code'}
                                                         InputName={'Postal Code'}
                                                         Error={UpdateProfileErrors.postal_code}
@@ -836,10 +727,12 @@ const Index = ({ user, countries }) => {
                                             </div>
 
                                             <div className="flex items-center justify-end gap-3">
+
+
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsEditProfileOpen(false)}
-                                                    className="h-[50px] w-[180px] rounded-xl bg-gray-200 font-medium text-gray-700 transition-all hover:bg-gray-200/80 dark:bg-gray-700 dark:text-white/80 dark:hover:bg-gray-600"
+                                                    className="h-[50px] w-[180px] rounded-md bg-surface-2-light  text-main-text-light transition-all hover:bg-surface-3-light dark:hover:bg-surface-3-dark/80 dark:text-sub-text-dark dark:bg-surface-3-dark"
                                                 >
                                                     Cancel
                                                 </button>
@@ -850,7 +743,7 @@ const Index = ({ user, countries }) => {
                                                         UpdateProfileProcessing ||
                                                         isProfileUpdateButtonDisabled
                                                     }
-                                                    className={`flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-xl bg-indigo-600 font-medium text-white transition-all hover:bg-indigo-500 ${(UpdateProfileProcessing || isProfileUpdateButtonDisabled) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
+                                                    className={`flex h-[50px] w-[180px] font-semibold text-md  items-center justify-center gap-2 rounded-md bg-main-text-light  text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80 ${(UpdateProfileProcessing || isProfileUpdateButtonDisabled) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
                                                 >
                                                     {UpdateProfileProcessing && (
                                                         <Spinner customSize={'size-5'} />
@@ -869,12 +762,12 @@ const Index = ({ user, countries }) => {
                                 <div className="absolute inset-0 bg-black/70"></div>
 
                                 {/* Fullscreen slide-over */}
-                                <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-white text-black dark:bg-deepcharcoal dark:text-white/80">
+                                <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-backgroundLight text-main-text-light dark:bg-surface-1-dark border border-surface-1-light dark:border-surface-3-dark  dark:text-main-text-dark">
                                     {/* Top Bar */}
-                                    <div className="flex items-center justify-center px-4 py-3 border-b border-gray-200 dark:border-gray-800">
+                                    <div className="flex items-center justify-center px-4 py-3">
                                         <button
                                             onClick={() => setIsEditProfileOpen(false)}
-                                            className="absolute p-1 rounded-full left-4 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                            className="absolute p-1 text-black rounded-full left-4 dark:text-main-text-dark"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -892,11 +785,10 @@ const Index = ({ user, countries }) => {
                                             </svg>
                                         </button>
 
-                                        <h2 className="mx-10 text-xl font-semibold tracking-tight text-gray-800 dark:text-gray-100">
+                                        <h2 className="mx-10 text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
                                             Edit Profile
                                         </h2>
                                     </div>
-
 
                                     {/* Content */}
                                     <div className="flex-1 p-4 space-y-6">
@@ -906,7 +798,7 @@ const Index = ({ user, countries }) => {
                                         >
                                             {/* Name */}
                                             <div>
-                                                <Input
+                                                <WebInput
                                                     Id={'name'}
                                                     InputName={'Name'}
                                                     Error={UpdateProfileErrors.name}
@@ -923,7 +815,7 @@ const Index = ({ user, countries }) => {
 
                                             {/* Email */}
                                             <div>
-                                                <Input
+                                                <WebInput
                                                     Id={'email'}
                                                     InputName={'Email'}
                                                     Error={UpdateProfileErrors.email}
@@ -940,7 +832,7 @@ const Index = ({ user, countries }) => {
 
                                             {/* Phone */}
                                             <div>
-                                                <Input
+                                                <WebInput
                                                     Id={'phone'}
                                                     InputName={'Phone'}
                                                     Error={UpdateProfileErrors.phone}
@@ -956,7 +848,7 @@ const Index = ({ user, countries }) => {
                                             </div>
 
                                             <div>
-                                                <SelectInput
+                                                <WebSelectInput
                                                     InputName={'Country'}
                                                     Id={'country_id'}
                                                     Name={'country_id'}
@@ -987,7 +879,7 @@ const Index = ({ user, countries }) => {
                                                             e.target.value,
                                                         )
                                                     }
-                                                    Rows={3}
+                                                    Rows={1}
                                                 />
                                             </div>
 
@@ -1006,14 +898,14 @@ const Index = ({ user, countries }) => {
                                                             e.target.value,
                                                         )
                                                     }
-                                                    Rows={3}
+                                                    Rows={1}
                                                 />
                                             </div>
 
                                             {/* City and State */}
                                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                                 <div>
-                                                    <Input
+                                                    <WebInput
                                                         Id={'City'}
                                                         InputName={'City'}
                                                         Error={UpdateProfileErrors.city}
@@ -1029,7 +921,7 @@ const Index = ({ user, countries }) => {
                                                 </div>
 
                                                 <div>
-                                                    <Input
+                                                    <WebInput
                                                         Id={'state'}
                                                         InputName={'State'}
                                                         Error={UpdateProfileErrors.state}
@@ -1048,7 +940,7 @@ const Index = ({ user, countries }) => {
                                             {/* Postal Code and Country ID */}
                                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                                 <div>
-                                                    <Input
+                                                    <WebInput
                                                         Id={'postal_code'}
                                                         InputName={'Postal Code'}
                                                         Error={UpdateProfileErrors.postal_code}
@@ -1068,10 +960,11 @@ const Index = ({ user, countries }) => {
                                             </div>
 
                                             <div className="flex items-center justify-end gap-3">
+
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsEditProfileOpen(false)}
-                                                    className="h-[50px] w-[180px] rounded-xl bg-gray-200 font-medium text-gray-700 transition-all hover:bg-gray-200/80 dark:bg-gray-700 dark:text-white/80 dark:hover:bg-gray-600"
+                                                    className="h-[50px] w-[180px] rounded-md bg-surface-2-light  text-main-text-light transition-all hover:bg-surface-3-light dark:hover:bg-surface-3-dark/80 dark:text-sub-text-dark dark:bg-surface-3-dark"
                                                 >
                                                     Cancel
                                                 </button>
@@ -1082,7 +975,7 @@ const Index = ({ user, countries }) => {
                                                         UpdateProfileProcessing ||
                                                         isProfileUpdateButtonDisabled
                                                     }
-                                                    className={`flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-xl bg-indigo-600 font-medium text-white transition-all hover:bg-indigo-500 ${(UpdateProfileProcessing || isProfileUpdateButtonDisabled) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
+                                                    className={`flex h-[50px] w-[180px] tetx-md font-semibold  items-center justify-center gap-2 rounded-md bg-black  text-white transition-all hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80 ${(UpdateProfileProcessing || isProfileUpdateButtonDisabled) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
                                                 >
                                                     {UpdateProfileProcessing && (
                                                         <Spinner customSize={'size-5'} />
@@ -1109,58 +1002,35 @@ const Index = ({ user, countries }) => {
                             <div className="fixed inset-0 z-50 flex items-center justify-center">
                                 {/* Backdrop */}
                                 <div
-                                    className="fixed inset-0 transition-opacity duration-300 bg-black/60 backdrop-blur-sm"
+                                    className="fixed inset-0 transition-opacity duration-300 bg-black/30 backdrop-blur-sm"
                                     onClick={() => setIsChangePasswordOpen(false)}
                                 />
 
                                 {/* Modal Card */}
-                                <div className="relative z-10 w-full max-w-2xl p-8 shadow-2xl rounded-2xl bg-white/95 dark:bg-deepcharcoal dark:text-white/80">
+                                <div className="relative z-10 w-full max-w-2xl p-10 py-12 border rounded-md border-surface-1-light dark:border-surface-3-dark bg-backgroundLight dark:bg-surface-1-dark dark:text-main-text-dark">
                                     {/* Header */}
-                                    <div className="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-gray-700">
-                                        <h2 className="text-xl font-semibold tracking-tight text-gray-700 dark:text-white/80">
+                                    <div className="flex items-center justify-between pb-4">
+                                        <h2 className="text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
                                             Change Password
                                         </h2>
 
 
-
-                                        <button
-                                            onClick={() => {
-                                                setIsChangePasswordOpen(false)
-                                            }}
-                                            className="absolute z-50 p-2 text-gray-600 transition-colors rounded-full top-6 right-4 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-zinc-800"
-                                            aria-label="Close modal"
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={2}
-                                                stroke="currentColor"
-                                                className="w-6 h-6"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M6 18L18 6M6 6l12 12"
-                                                />
-                                            </svg>
-                                        </button>
                                     </div>
 
                                     {/* Content */}
                                     <div className="mt-6 max-h-[70vh] overflow-y-auto pr-2">
                                         <form
                                             onSubmit={handleChangePasswordSubmit}
-                                            className="space-y-5"
+                                            className="space-y-1"
                                         >
                                             {/* Current Password */}
                                             <div>
-                                                <Input
+                                                <WebInput
                                                     Id={'current_password'}
                                                     InputName={'Current Password'}
                                                     Error={UpdatePasswordErrors.current_password}
                                                     Name={'current_password'}
-                                                    Placeholder={'Enter Current Password'}
+                                                    Placeholder={'Enter Your Current Password'}
                                                     Type={'password'}
                                                     Value={passwordData.current_password}
                                                     Action={(e) =>
@@ -1177,7 +1047,7 @@ const Index = ({ user, countries }) => {
 
                                             {/* Password */}
                                             <div>
-                                                <Input
+                                                <WebInput
                                                     Id={'password'}
                                                     InputName={'Password'}
                                                     Error={UpdatePasswordErrors.password}
@@ -1196,14 +1066,14 @@ const Index = ({ user, countries }) => {
 
                                             {/* Password Confirmation */}
                                             <div>
-                                                <Input
+                                                <WebInput
                                                     Id={'password_confirmation'}
                                                     InputName={'Password Confirmation'}
                                                     Error={
                                                         UpdatePasswordErrors.password_confirmation
                                                     }
                                                     Name={'password_confirmation'}
-                                                    Placeholder={'Enter Confirmation Password'}
+                                                    Placeholder={'Re-Enter The New Password'}
                                                     Type={'password'}
                                                     Value={passwordData.password_confirmation}
                                                     Action={(e) =>
@@ -1220,11 +1090,11 @@ const Index = ({ user, countries }) => {
                                                 />
                                             </div>
 
-                                            <div className="flex items-center justify-end gap-3">
+                                            <div className="flex items-center justify-end gap-3 pt-5">
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsChangePasswordOpen(false)}
-                                                    className="h-[50px] w-[180px] rounded-xl bg-gray-200 font-medium text-gray-700 transition-all hover:bg-gray-200/80 dark:bg-gray-700 dark:text-white/80 dark:hover:bg-gray-600"
+                                                    className="h-[50px] w-[180px] rounded-md bg-surface-2-light  text-main-text-light transition-all hover:bg-surface-3-light dark:hover:bg-surface-3-dark/80 dark:text-sub-text-dark dark:bg-surface-3-dark"
                                                 >
                                                     Cancel
                                                 </button>
@@ -1235,7 +1105,7 @@ const Index = ({ user, countries }) => {
                                                         UpdatePasswordProcessing ||
                                                         isPasswordChangeButtonDisabled
                                                     }
-                                                    className={`flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-xl bg-indigo-600 font-medium text-white transition-all hover:bg-indigo-500 ${(UpdatePasswordProcessing || isPasswordChangeButtonDisabled) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
+                                                    className={`flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md bg-main-text-light  text-white transition-all hover:bg-black/80 dark:bg-white dark:text-main-text-light  text-md font-semibold dark:hover:bg-white/80 ${(UpdatePasswordProcessing || isPasswordChangeButtonDisabled) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
                                                 >
                                                     {UpdatePasswordProcessing && (
                                                         <Spinner customSize={'size-5'} />
@@ -1254,12 +1124,12 @@ const Index = ({ user, countries }) => {
                                 <div className="absolute inset-0 bg-black/70"></div>
 
                                 {/* Fullscreen slide-over */}
-                                <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-white text-black dark:bg-deepcharcoal dark:text-white/80">
+                                <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-backgroundLight text-main-text-light dark:bg-surface-1-dark border border-surface-1-light dark:border-surface-3-dark  dark:text-main-text-dark">
                                     {/* Top Bar */}
-                                    <div className="flex items-center justify-center px-4 py-3 border-b border-gray-200 dark:border-gray-800">
+                                    <div className="flex items-center justify-center px-4 py-3 ">
                                         <button
                                             onClick={() => setIsChangePasswordOpen(false)}
-                                            className="absolute p-1 rounded-full left-4 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                            className="absolute p-1 text-black rounded-full left-4 dark:text-main-text-dark"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -1277,21 +1147,20 @@ const Index = ({ user, countries }) => {
                                             </svg>
                                         </button>
 
-                                        <h2 className="mx-10 text-xl font-semibold tracking-tight text-gray-800 dark:text-gray-100">
+                                        <h2 className="mx-10 text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
                                             Change Password
                                         </h2>
                                     </div>
-
 
                                     {/* Content */}
                                     <div className="flex-1 p-4 space-y-6">
                                         <form
                                             onSubmit={handleChangePasswordSubmit}
-                                            className="mb-24 space-y-5"
+                                            className="mb-24 space-y-1"
                                         >
                                             {/* Current Password */}
                                             <div>
-                                                <Input
+                                                <WebInput
                                                     Id={'current_password'}
                                                     InputName={'Current Password'}
                                                     Error={UpdatePasswordErrors.current_password}
@@ -1311,7 +1180,7 @@ const Index = ({ user, countries }) => {
 
                                             {/* Password */}
                                             <div>
-                                                <Input
+                                                <WebInput
                                                     Id={'password'}
                                                     InputName={'Password'}
                                                     Error={UpdatePasswordErrors.password}
@@ -1328,14 +1197,14 @@ const Index = ({ user, countries }) => {
 
                                             {/* Password Confirmation */}
                                             <div>
-                                                <Input
+                                                <WebInput
                                                     Id={'password_confirmation'}
                                                     InputName={'Password Confirmation'}
                                                     Error={
                                                         UpdatePasswordErrors.password_confirmation
                                                     }
                                                     Name={'password_confirmation'}
-                                                    Placeholder={'Enter Confirmation Password'}
+                                                    Placeholder={'Re-Enter The New Password'}
                                                     Type={'password'}
                                                     Value={passwordData.password_confirmation}
                                                     Action={(e) =>
@@ -1348,11 +1217,13 @@ const Index = ({ user, countries }) => {
                                                 />
                                             </div>
 
+
+                                            {/* Actions */}
                                             <div className="flex items-center justify-end gap-3">
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsChangePasswordOpen(false)}
-                                                    className="h-[50px] w-[180px] rounded-xl bg-gray-200 font-medium text-gray-700 transition-all hover:bg-gray-200/80 dark:bg-gray-700 dark:text-white/80 dark:hover:bg-gray-600"
+                                                    className="h-[50px] w-[180px] rounded-md bg-surface-2-light  text-main-text-light transition-all hover:bg-surface-3-light dark:hover:bg-surface-3-dark/80 dark:text-sub-text-dark dark:bg-surface-3-dark"
                                                 >
                                                     Cancel
                                                 </button>
@@ -1363,7 +1234,7 @@ const Index = ({ user, countries }) => {
                                                         UpdatePasswordProcessing ||
                                                         isPasswordChangeButtonDisabled
                                                     }
-                                                    className={`flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-xl bg-indigo-600 font-medium text-white transition-all hover:bg-indigo-500 ${(UpdatePasswordProcessing || isPasswordChangeButtonDisabled) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
+                                                    className={`flex h-[50px] w-[180px] text-md font-semibold items-center justify-center gap-2 rounded-md bg-main-text-light  text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80 ${(UpdatePasswordProcessing || isPasswordChangeButtonDisabled) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
                                                 >
                                                     {UpdatePasswordProcessing && (
                                                         <Spinner customSize={'size-5'} />
@@ -1372,6 +1243,414 @@ const Index = ({ user, countries }) => {
                                                 </button>
                                             </div>
                                         </form>
+                                    </div>
+                                </div>
+                            </div>
+                        ),
+                        document.body,
+                    )}
+                </>
+            )}
+
+            {showCropper && (
+                <>
+                    {createPortal(
+                        windowSize.width > 1024 ? (
+                            // PC VERSION
+                            <div className="fixed inset-0 z-50 flex items-center justify-center">
+                                {/* Backdrop */}
+                                <div
+                                    className="fixed inset-0 transition-opacity duration-300 bg-black/30 backdrop-blur-sm"
+                                    onClick={() => {
+                                        setShowCropper(false);
+                                        setProfileImage(null);
+                                        setCroppedAreaPixels(null);
+                                        setCrop({ x: 0, y: 0 });
+                                        setZoom(1);
+
+                                        if (fileInputRef.current) {
+                                            fileInputRef.current.value = '';
+                                        }
+                                    }}
+                                />
+                                <div className="border border-surface-1-light dark:border-surface-3-dark relative z-10 max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-md bg-backgroundLight p-8  dark:bg-surface-1-dark dark:text-main-text-dark">
+                                    {/* Header */}
+                                    <div className="flex items-center justify-between pb-4">
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="text-base font-semibold truncate text-main-text-light dark:text-main-text-dark sm:text-lg">
+                                                Crop Profile Picture
+                                            </h3>
+                                            <p className="mt-0.5 truncate text-xs text-sub-text-light dark:text-sub-text-dark sm:text-sm">
+                                                Adjust and position your image
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Content */}
+                                    <div className="mt-6">
+                                        {/* Crop Area */}
+                                        <div className="relative w-full h-64 bg-surface-1-light xs:h-72 dark:bg-deepcharcoal sm:h-80 md:h-96">
+                                            <Cropper
+                                                image={profileImage}
+                                                crop={crop}
+                                                zoom={zoom}
+                                                aspect={1}
+                                                cropShape="round"
+                                                showGrid={false}
+                                                onCropChange={setCrop}
+                                                onZoomChange={handleZoomChange}
+                                                onCropComplete={(_, areaPixels) => {
+                                                    setCroppedAreaPixels(areaPixels);
+                                                }}
+                                            />
+                                        </div>
+
+                                        {/* Controls */}
+                                        <div className="py-4 space-y-3 sm:space-y-4 sm:py-5">
+                                            {/* Zoom Control */}
+                                            <div>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <label className="text-xs font-medium text-main-text-light dark:text-main-text-dark sm:text-sm">
+                                                        Zoom Level
+                                                    </label>
+                                                    <span className="font-mono text-xs text-main-text-light tabular-nums dark:text-main-text-dark sm:text-sm">
+                                                        {Math.round(zoom * 100)}%
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex items-center gap-2 sm:gap-3">
+                                                    {/* Zoom Out Icon */}
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        strokeWidth={1.5}
+                                                        stroke="currentColor"
+                                                        className="flex-shrink-0 w-4 h-4 text-black cursor-pointer accent-black dark:text-white dark:accent-white sm:h-5 sm:w-5"
+                                                        onClick={() => {
+                                                            if (zoom > 1) {
+                                                                setZoom(zoom - 0.1);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607ZM13.5 10.5h-6"
+                                                        />
+                                                    </svg>
+
+                                                    <input
+                                                        type="range"
+                                                        min={1}
+                                                        max={3}
+                                                        step={0.1}
+                                                        value={zoom}
+                                                        onChange={(e) => {
+                                                            const value = parseFloat(
+                                                                e.target.value,
+                                                            );
+                                                            setZoom(
+                                                                Math.min(3, Math.max(1, value)),
+                                                            );
+                                                        }}
+                                                        className="flex-1 h-2 rounded-lg appearance-none cursor-pointer accent-black dark:accent-white"
+                                                        style={{
+                                                            background: isDarkMode
+                                                                ? `linear-gradient(
+                                                                        to right,
+                                                                        #ffffff 0%,
+                                                                        #ffffff ${Math.min(100, Math.max(0, ((zoom - 1) / 2) * 100))}%,
+                                                                        #404040 ${Math.min(100, Math.max(0, ((zoom - 1) / 2) * 100))}%,
+                                                                        #404040 100%
+                                                                    )`
+                                                                : `linear-gradient(
+                                                                        to right,
+                                                                        #000000 0%,
+                                                                        #000000 ${Math.min(100, Math.max(0, ((zoom - 1) / 2) * 100))}%,
+                                                                        #e1e1e1 ${Math.min(100, Math.max(0, ((zoom - 1) / 2) * 100))}%,
+                                                                        #e1e1e1 100%
+                                                                    )`,
+                                                        }}
+                                                    />
+
+                                                    {/* Zoom In Icon */}
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        strokeWidth={1.5}
+                                                        stroke="currentColor"
+                                                        className="flex-shrink-0 w-4 h-4 text-black cursor-pointer dark:text-white sm:h-5 sm:w-5"
+                                                        onClick={() => {
+                                                            if (zoom < 3) {
+                                                                setZoom(zoom + 0.1);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607ZM10.5 7.5v6m3-3h-6"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                            </div>
+
+                                            {/* Helpful Tip */}
+                                            <div className="flex items-center gap-2 rounded-md bg-surface-2-light dark:bg-surface-3-dark p-2.5 sm:p-3">
+                                                <div className="flex-shrink-0 ">
+                                                    <svg
+                                                        className="h-3.5 w-3.5 text-main-text-light dark:text-main-text-dark sm:h-4 sm:w-4"
+                                                        fill="currentColor"
+                                                        viewBox="0 0 20 20"
+                                                    >
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                                            clipRule="evenodd"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                                <p className="text-[11px] leading-relaxed text-main-text-light dark:text-main-text-dark min-[]:sm:text-xs">
+                                                    Drag to reposition, pinch or use slider to zoom
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Actions */}
+                                        <div className="flex items-center justify-end gap-3">
+                                            <button
+                                                onClick={() => {
+                                                    setShowCropper(false);
+                                                    setProfileImage(null);
+                                                    setCroppedAreaPixels(null);
+                                                    setCrop({ x: 0, y: 0 });
+                                                    setZoom(1);
+
+                                                    if (fileInputRef.current) {
+                                                        fileInputRef.current.value = '';
+                                                    }
+                                                }}
+                                                className="h-[50px] w-[180px] rounded-md bg-surface-2-light  text-main-text-light transition-all hover:bg-surface-3-light dark:hover:bg-surface-3-dark/80 dark:text-sub-text-dark dark:bg-surface-3-dark"
+                                            >
+                                                Cancel
+                                            </button>
+
+                                            <button
+                                                onClick={handleCropSaveAndUpload}
+                                                className={`flex h-[50px] w-[180px] items-center text-md font-semibold justify-center gap-2 rounded-md bg-main-text-light  text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light  dark:hover:bg-main-text-dark/80`}
+                                            >
+                                                Save & Upload
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        ) : (
+                            // MOBILE VERSION
+                            <div className="fixed inset-0 z-50 bg-black">
+                                {/* Backdrop */}
+                                <div className="absolute inset-0 bg-black/70"></div>
+
+                                {/* Fullscreen slide-over */}
+                                <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-backgroundLight text-main-text-light dark:bg-surface-1-dark border border-surface-1-light dark:border-surface-3-dark  dark:text-main-text-dark">
+                                    {/* Top Bar */}
+                                    <div className="flex items-center justify-center px-4 py-3">
+                                        <button
+                                            onClick={() => {
+                                                setShowCropper(false);
+                                                setProfileImage(null);
+                                                setCroppedAreaPixels(null);
+                                                setCrop({ x: 0, y: 0 });
+                                                setZoom(1);
+
+                                                if (fileInputRef.current) {
+                                                    fileInputRef.current.value = '';
+                                                }
+                                            }}
+                                            className="absolute p-1 rounded-full left-4"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.5}
+                                                stroke="currentColor"
+                                                className="size-6"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+                                                />
+                                            </svg>
+                                        </button>
+
+                                        <h3 className="text-base font-semibold truncate text-main-text-light dark:text-main-text-dark sm:text-lg">
+                                            Crop Profile Picture
+                                        </h3>
+                                    </div>
+
+                                    {/* Content */}
+                                    <div className="pr-2 my-6 mb-820">
+                                        {/* Crop Area */}
+                                        <div className="relative w-full h-64 bg-gray-900 xs:h-72 dark:bg-deepcharcoal sm:h-80 md:h-96">
+                                            <Cropper
+                                                image={profileImage}
+                                                crop={crop}
+                                                zoom={zoom}
+                                                aspect={1}
+                                                cropShape="round"
+                                                showGrid={false}
+                                                onCropChange={setCrop}
+                                                onZoomChange={handleZoomChange}
+                                                onCropComplete={(_, areaPixels) => {
+                                                    setCroppedAreaPixels(areaPixels);
+                                                }}
+                                            />
+                                        </div>
+
+                                        {/* Controls */}
+                                        <div className="px-2 py-4 space-y-3 sm:space-y-4 sm:px-2 sm:py-5">
+                                            {/* Zoom Control */}
+                                            <div>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <label className="text-xs font-medium text-black dark:text-white sm:text-sm">
+                                                        Zoom Level
+                                                    </label>
+                                                    <span className="font-mono text-xs text-black tabular-nums dark:text-white sm:text-sm">
+                                                        {Math.round(zoom * 100)}%
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex items-center gap-2 sm:gap-3">
+                                                    {/* Zoom Out Icon */}
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        strokeWidth={1.5}
+                                                        stroke="currentColor"
+                                                        className="flex-shrink-0 w-4 h-4 text-black cursor-pointer accent-black dark:text-white dark:accent-white sm:h-5 sm:w-5"
+                                                        onClick={() => {
+                                                            if (zoom > 1) {
+                                                                setZoom(zoom - 0.1);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607ZM13.5 10.5h-6"
+                                                        />
+                                                    </svg>
+
+                                                    <input
+                                                        type="range"
+                                                        min={1}
+                                                        max={3}
+                                                        step={0.1}
+                                                        value={zoom}
+                                                        onChange={(e) => {
+                                                            const value = parseFloat(
+                                                                e.target.value,
+                                                            );
+                                                            setZoom(
+                                                                Math.min(3, Math.max(1, value)),
+                                                            );
+                                                        }}
+                                                        className="flex-1 h-2 rounded-lg appearance-none cursor-pointer accent-black dark:accent-white"
+                                                        style={{
+                                                            background: isDarkMode
+                                                                ? `linear-gradient(
+                                                                        to right,
+                                                                        #ffffff 0%,
+                                                                        #ffffff ${Math.min(100, Math.max(0, ((zoom - 1) / 2) * 100))}%,
+                                                                        #404040 ${Math.min(100, Math.max(0, ((zoom - 1) / 2) * 100))}%,
+                                                                        #404040 100%
+                                                                    )`
+                                                                : `linear-gradient(
+                                                                        to right,
+                                                                        #000000 0%,
+                                                                        #000000 ${Math.min(100, Math.max(0, ((zoom - 1) / 2) * 100))}%,
+                                                                        #e1e1e1 ${Math.min(100, Math.max(0, ((zoom - 1) / 2) * 100))}%,
+                                                                        #e1e1e1 100%
+                                                                    )`,
+                                                        }}
+                                                    />
+
+                                                    {/* Zoom In Icon */}
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        strokeWidth={1.5}
+                                                        stroke="currentColor"
+                                                        className="flex-shrink-0 w-4 h-4 text-black cursor-pointer dark:text-white sm:h-5 sm:w-5"
+                                                        onClick={() => {
+                                                            if (zoom < 3) {
+                                                                setZoom(zoom + 0.1);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607ZM10.5 7.5v6m3-3h-6"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                            </div>
+
+                                            {/* Helpful Tip */}
+                                            <div className="flex items-center gap-2 rounded-md bg-surface-2-light dark:bg-surface-3-dark p-2.5 sm:p-3">
+                                                <div className="flex-shrink-0">
+                                                    <svg
+                                                        className="h-3.5 w-3.5 text-main-text-light dark:text-main-text-dark sm:h-4 sm:w-4"
+                                                        fill="currentColor"
+                                                        viewBox="0 0 20 20"
+                                                    >
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                                            clipRule="evenodd"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                                <p className="text-[11px] leading-relaxed text-main-text-light dark:text-main-text-dark sm:text-xs">
+                                                    Drag to reposition, pinch or use slider to zoom
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Actions*/}
+                                        <div className="flex items-center justify-end gap-3">
+                                            <button
+                                                onClick={() => {
+                                                    setShowCropper(false);
+                                                    setProfileImage(null);
+                                                    setCroppedAreaPixels(null);
+                                                    setCrop({ x: 0, y: 0 });
+                                                    setZoom(1);
+
+                                                    if (fileInputRef.current) {
+                                                        fileInputRef.current.value = '';
+                                                    }
+                                                }}
+                                                className="h-[50px] w-[180px] rounded-md bg-surface-2-light  text-main-text-light transition-all hover:bg-surface-3-light dark:hover:bg-surface-3-dark/80 dark:text-sub-text-dark dark:bg-surface-3-dark"
+                                            >
+                                                Cancel
+                                            </button>
+
+                                            <button
+                                                onClick={handleCropSaveAndUpload}
+                                                className={`flex h-[50px] w-[180px] items-center text-md font-semibold justify-center gap-2 rounded-md bg-main-text-light  text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-dark  dark:hover:bg-main-text-dark/80`}
+                                            >
+                                                Save & Upload
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

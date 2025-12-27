@@ -24,7 +24,7 @@ export default function AppStatusModal({ show, type, title, message, onConfirm }
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.9, opacity: 0 }}
-                        className="p-5 bg-white shadow-2xl w-80 rounded-xl dark:bg-deepcharcoal dark:text-white"
+                        className="p-5 rounded-md shadow-2xl bg-backgroundLight w-80 text-main-text-light dark:bg-surface-1-dark dark:text-main-text-dark"
                     >
                         <div className="flex flex-col items-center mb-4">
                             <div className={`h-12 w-12 rounded-full ${colors[type]} flex items-center justify-center text-white text-xl`}>
@@ -39,14 +39,14 @@ export default function AppStatusModal({ show, type, title, message, onConfirm }
                                 {type === "warning" && "⚡"}
                             </div>
                             <h2 className="mt-3 text-lg font-semibold text-center">{title}</h2>
-                            <p className="mt-2 text-sm text-center opacity-80">{message}</p>
+                            <p className="mt-2 text-sm text-center text-sub-text-light dark:text-sub-text-dark opacity-80">{message}</p>
                         </div>
 
                         <div className="flex gap-3 mt-4">
 
                             {onConfirm && (
                                 <button
-                                    className="flex-1 py-2 text-sm text-white bg-black rounded-lg dark:bg-white dark:text-black"
+                                    className="flex-1 py-2 text-sm rounded-md text-main-text-dark bg-main-text-light dark:bg-main-text-dark dark:text-main-text-light"
                                     onClick={onConfirm}
                                 >
                                     OK

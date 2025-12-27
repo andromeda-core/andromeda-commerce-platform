@@ -37,7 +37,8 @@ class CheckoutController extends Controller
             ];
         }
 
-        $refferalSessionData = session()->get('referal_data');
+        // Its For Strict For Checking The Referal Reward Point, If Cart item or quantity changes and  total_price changes but reward_points isnt so this method is for that purpose
+        $refferalSessionData = $this->cart->updateCartRefferalSession(session()->get('referal_data'), $cart_items);
 
         $raw_customer = $this->user->getSingleCustomer($request->user()->id);
 

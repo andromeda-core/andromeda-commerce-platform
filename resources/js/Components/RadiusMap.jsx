@@ -118,31 +118,13 @@ export default function RadiusMap({
             ></div>
 
             {/* Modal content */}
-            <div className="relative z-10 w-full max-w-4xl max-h-full p-8 overflow-y-auto shadow-2xl rounded-2xl bg-white/95 dark:bg-deepcharcoal dark:text-white/80">
+            <div className="relative z-10 w-full max-w-4xl max-h-full p-8 overflow-y-auto border border-surface-3-light dark:bg-surface-1-dark dark:border-surface-3-dark rounded-xl bg-backgroundLight dark:text-main-text-dark">
                 {/* Header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                <div className="flex items-center justify-between px-4 py-3 ">
+                    <h3 className="text-xl font-semibold text-main-text-light dark:text-main-text-dark">
                         Select Radius
                     </h3>
-                    <button
-                        onClick={() => setIsModalOpen(false)}
-                        className="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="size-6"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M6 18L18 6M6 6l12 12"
-                            />
-                        </svg>
-                    </button>
+
                 </div>
 
                 {/* Map */}
@@ -155,42 +137,42 @@ export default function RadiusMap({
                     <div
                         ref={mapRef}
                         id="radiusMap"
-                        className="h-[50vh] w-full rounded-xl border border-gray-300 dark:border-gray-700"
+                        className="h-[50vh] w-full rounded-md border border-surface-3-light dark:border-surface-3-dark"
                     />
 
                     {/* Loader Overlay */}
                     {!isLoaded && (
-                        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm rounded-xl">
+                        <div className="absolute inset-0 z-50 flex items-center justify-center bg-main-text-light/30 backdrop-blur-sm rounded-xl">
                             <Spinner customSize="size-12" />
                         </div>
                     )}
 
                     {/* Radius text */}
                     <div className="flex flex-col items-center w-full gap-3">
-                        <span className="text-sm text-gray-700 dark:text-gray-300">
+                        <span className="text-sm text-sub-text-light dark:text-sub-text-dark">
                             Radius: {(radius / 1000).toFixed(2)} km
                         </span>
                     </div>
                 </div>
 
                 {/* Footer */}
-                <div className="flex justify-center gap-3 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex justify-end gap-3 px-4 py-3">
                     <button
                         onClick={() => setIsModalOpen(false)}
-                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600"
+                        className="px-4 py-2  w-[160px] h-[46px] text-md font-medium rounded-md bg-surface-2-light  text-main-text-light transition-all hover:bg-surface-3-light dark:hover:bg-surface-3-dark/80 dark:text-sub-text-dark dark:bg-surface-3-dark"
                     >
                         Close
                     </button>
 
                     <button
                         onClick={() => radiusConfirmed()}
-                        className="px-4 py-2 text-sm font-medium bg-indigo-600 rounded-lg text-white/80 hover:bg-indigo-500"
+                        className="px-4 py-2 w-[160px] h-[46px]  text-md font-semibold justify-center gap-2 rounded-md bg-main-text-light  text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light  dark:hover:bg-main-text-dark/80"
                     >
                         Save Radius
                     </button>
                 </div>
             </div>
         </div>,
-        document.body,
+        document.getElementById('modal-root') || document.body,
     );
 }

@@ -6,7 +6,7 @@
     font-style: normal;
     font-weight: 300;
     font-display: swap;
-    src: url('https://cdn.andromeda.blue/fonts/Dev/OpenSans-Light.ttf') format('truetype');
+    src: url('https://cdn.andromeda.blue/fonts/Dev/DMSans-Light.ttf') format('truetype');
 }
 
 /* Open Sans Regular */
@@ -15,7 +15,7 @@
     font-style: normal;
     font-weight: 400;
     font-display: swap;
-    src: url('https://cdn.andromeda.blue/fonts/Dev/OpenSans-Regular.ttf') format('truetype');
+    src: url('https://cdn.andromeda.blue/fonts/Dev/DMSans-Regular.ttf') format('truetype');
 }
 
 /* Open Sans Medium */
@@ -24,7 +24,7 @@
     font-style: normal;
     font-weight: 500;
     font-display: swap;
-    src: url('https://cdn.andromeda.blue/fonts/Dev/OpenSans-Medium.ttf') format('truetype');
+    src: url('https://cdn.andromeda.blue/fonts/Dev/DMSans-Medium.ttf') format('truetype');
 }
 
 /* Open Sans SemiBold */
@@ -33,7 +33,7 @@
     font-style: normal;
     font-weight: 600;
     font-display: swap;
-    src: url('https://cdn.andromeda.blue/fonts/Dev/OpenSans-SemiBold.ttf') format('truetype');
+    src: url('https://cdn.andromeda.blue/fonts/Dev/DMSans-SemiBold.ttf') format('truetype');
 }
 
 /* Open Sans Bold */
@@ -42,7 +42,7 @@
     font-style: normal;
     font-weight: 700;
     font-display: swap;
-    src: url('https://cdn.andromeda.blue/fonts/Dev/OpenSans-Bold.ttf') format('truetype');
+    src: url('https://cdn.andromeda.blue/fonts/Dev/DMSans-Bold.ttf') format('truetype');
 }
 
 /* Open Sans ExtraBold */
@@ -51,7 +51,7 @@
     font-style: normal;
     font-weight: 800;
     font-display: swap;
-    src: url('https://cdn.andromeda.blue/fonts/Dev/OpenSans-ExtraBold.ttf') format('truetype');
+    src: url('https://cdn.andromeda.blue/fonts/Dev/DMSans-ExtraBold.ttf') format('truetype');
 }
 
 /* global.css */
@@ -98,7 +98,7 @@
 
     html,
     body {
-        @apply bg-white;
+        @apply bg-backgroundLight;
     }
 
     html.dark,
@@ -143,17 +143,26 @@
 
     /* Menu Item Utility */
     .menu-item {
-        @apply text-theme-sm relative flex items-center gap-3 rounded-lg px-3 py-2 font-medium;
+        @apply text-theme-sm relative flex items-center gap-3 rounded-lg px-3 py-2;
     }
 
     /* Menu Item Active State */
     .menu-item-active {
-        @apply bg-indigo-50 text-indigo-500 dark:bg-indigo-500/[0.12] dark:text-indigo-400;
+        @apply bg-sidebar-active-light font-medium text-black dark:bg-surface-2-dark dark:text-white;
     }
 
     /* Menu Item Inactive State */
     .menu-item-inactive {
-        @apply text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-gray-300;
+        @apply hover:bg-sidebar-hover-light font-medium text-black dark:text-white dark:hover:bg-surface-2-dark;
+    }
+
+    .menu-sub-item-active {
+        @apply bg-sidebar-active-light font-normal text-black dark:bg-surface-2-dark dark:text-white;
+    }
+
+    /* Menu Item Inactive State */
+    .menu-sub-item-inactive {
+        @apply hover:bg-sidebar-hover-light font-normal text-sub-text-light dark:text-sub-text-dark dark:hover:bg-surface-2-dark;
     }
 
     /* Menu Item Icon Active State */
@@ -173,7 +182,7 @@
 
     /* Menu Item Arrow Active State */
     .menu-item-arrow-active {
-        @apply rotate-180 stroke-indigo-500 dark:stroke-indigo-400;
+        @apply rotate-180 stroke-black dark:stroke-white;
     }
 
     /* Menu Item Arrow Inactive State */

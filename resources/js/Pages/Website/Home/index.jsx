@@ -5,7 +5,6 @@ import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import QRCode from 'react-qr-code';
 import { createPortal, flushSync } from 'react-dom';
 import axios from 'axios';
-import GlobalSearch from '@/Components/GlobalSearch';
 import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import BookmarkStatusChangedModal from '@/Components/BookmarkStatusChangedModal';
 import useSidebarClick from '@/Hooks/useSidebarClick';
@@ -17,13 +16,11 @@ import Spinner from '@/Components/Spinner';
 import MasonryFeedItem from './MasonryFeedItem';
 import DesktopFeed from './DesktopFeed';
 
-
 const index = () => {
     const { currency, auth, cart_items } = usePage().props;
 
     const [ErrorMessage, setErrorMessage] = useState(null);
     const [showErrorMessage, setShowErrorMessage] = useState(false);
-
 
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const [successMessage, setSuccessMessage] = useState(null);
@@ -43,7 +40,6 @@ const index = () => {
     // This State is For Tracking If The FEED ITEM Is Opening After refresh or FROM URL DIRECTLY
     const [isFeedOpeningDirectly, setIsFeedOpeningDirectly] = useState(false);
 
-
     const [bookmarkStatusChanged, setBookmarkStatusChanged] = useState(false);
     const [linkCopied, setLinkCopied] = useState(false);
     const [nextPageUrl, setNextPageUrl] = useState(null);
@@ -53,7 +49,6 @@ const index = () => {
     useEffect(() => {
         nextPageUrlRef.current = nextPageUrl;
     }, [nextPageUrl]);
-
 
     const fetchPostsAndProducts = async () => {
         const cookieValue = getCookie('post_preferences');
@@ -69,7 +64,7 @@ const index = () => {
         }
 
         const defaultPreferences = {
-            text: true,
+            // text: true,
             videos: true,
             images: true,
             show_posts: true,
@@ -88,8 +83,6 @@ const index = () => {
 
             const { posts, products } = res.data;
 
-
-
             flushSync(() => {
                 setFeed((prevFeed) => {
                     const existingIds = new Set(
@@ -107,7 +100,6 @@ const index = () => {
                     return [...prevFeed, ...newPosts, ...newSmartphones];
                 });
 
-
                 //  Extracting and storing all related feeds by slug
                 setRelatedFeed((prevRelated) => {
                     const updatedRelated = { ...prevRelated };
@@ -121,7 +113,6 @@ const index = () => {
                             !prevRelated[post.slug]
                         ) {
                             updatedRelated[post.slug] = post.related;
-
                         }
                     });
 
@@ -134,11 +125,8 @@ const index = () => {
                             !prevRelated[smartphone.slug]
                         ) {
                             updatedRelated[smartphone.slug] = smartphone.related;
-
                         }
                     });
-
-
 
                     return updatedRelated;
                 });
@@ -159,11 +147,8 @@ const index = () => {
         window.history.pushState({}, '', window.location.href);
     }, []);
 
-
-
     // POST UNIQUE URL GENERATION
     const generateURL = (post) => {
-
         return (
             `?slug=${encodeURIComponent(post?.slug)}&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
             `${post?.longitude != null ? '&lng=' + encodeURIComponent(post?.longitude) : ''}` +
@@ -187,8 +172,6 @@ const index = () => {
         }
     };
 
-
-
     const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
 
     const loaderRef = useRef(null);
@@ -197,7 +180,6 @@ const index = () => {
 
     // Set Media items For Media Viewer In the bottom bar
     const [mediaItems, setMediaItems] = useState([]);
-
     // All Refs
     const thumbRefs = useRef([]);
     const isfetchingMoreYAxisFeed = useRef(false);
@@ -212,12 +194,10 @@ const index = () => {
         }
     }, [feedGallery]);
 
-
     // FEED OPEN REF FOR SYNCING WITH Actual STATE
     useEffect(() => {
         feedOpenRef.current = feedOpen;
     }, [feedOpen]);
-
 
     // Checking Slug In URL If Found Than Auto Opening  FEED AND PC Modal
     const hasOpenedSlugRef = useRef(false);
@@ -231,11 +211,8 @@ const index = () => {
 
         if (!post_slug && !smartphone_slug) return;
 
-
         setIsFeedOpeningDirectly(true);
         let feedItem = null;
-
-
 
         if (post_slug) {
             feedItem = feed.find((item) => item.type === 'posts' && item.slug === post_slug);
@@ -245,11 +222,9 @@ const index = () => {
             );
         }
 
-
-
         if (feedItem) {
             hasOpenedSlugRef.current = true;
-            const index = feed.findIndex(i => i.slug === feedItem.slug);
+            const index = feed.findIndex((i) => i.slug === feedItem.slug);
             if (index !== -1) {
                 setFeedGallery(feedItem);
                 setFeedOpen(true);
@@ -257,7 +232,6 @@ const index = () => {
             }
 
             window.history.replaceState({}, '', window.location.href);
-
         } else {
             hasOpenedSlugRef.current = true;
 
@@ -266,8 +240,6 @@ const index = () => {
 
             window.history.replaceState({}, '', window.location.href);
         }
-
-
     }, [isFeedLoaded, feed]);
 
     // Fetch Single Post Method
@@ -289,7 +261,7 @@ const index = () => {
             }
 
             const defaultPreferences = {
-                text: true,
+                // text: true,
                 videos: true,
                 images: true,
                 show_posts: true,
@@ -301,19 +273,19 @@ const index = () => {
                     ? { ...defaultPreferences, ...parsed }
                     : defaultPreferences;
 
-            const res = await axios.get(route('website.posts.getsingle', encodeURIComponent(slug)), {
-                params: finalPreferences,
-            });
+            const res = await axios.get(
+                route('website.posts.getsingle', encodeURIComponent(slug)),
+                {
+                    params: finalPreferences,
+                },
+            );
 
             const data = await res.data;
 
             if (data.status) {
-
                 let newIndex = -1;
 
                 flushSync(() => {
-
-
                     //  Extracting and storing all related feeds by slug
                     setRelatedFeed((prevRelated) => {
                         const updatedRelated = { ...prevRelated };
@@ -325,19 +297,11 @@ const index = () => {
                             Array.isArray(post.related) &&
                             post.related.length > 0
                         ) {
-
-
-
                             updatedRelated[post.slug] = post.related;
                         }
 
-
-
-
                         return updatedRelated;
                     });
-
-
 
                     setFeed((prevFeed) => {
                         const exists = prevFeed.some(
@@ -351,7 +315,6 @@ const index = () => {
                             newFeed = prevFeed;
                         }
 
-
                         const idx = newFeed.findIndex(
                             (item) => item.type === 'posts' && item.id === data.post.id,
                         );
@@ -361,17 +324,13 @@ const index = () => {
                         return newFeed;
                     });
 
-
-
                     setFeedGallery(data.post);
                     setFeedOpen(true);
-
                 });
 
                 if (newIndex !== -1) {
                     setFeedIndex(newIndex);
                 }
-
             } else {
                 setShowInfoMessage(true);
                 setInfoMessage('Post Not Found');
@@ -403,7 +362,7 @@ const index = () => {
             }
 
             const defaultPreferences = {
-                text: true,
+                // text: true,
                 videos: true,
                 images: true,
                 show_posts: true,
@@ -415,23 +374,21 @@ const index = () => {
                     ? { ...defaultPreferences, ...parsed }
                     : defaultPreferences;
 
-            const res = await axios.get(route('website.products.get-single-smartphone', encodeURIComponent(slug)), {
-                params: finalPreferences,
-            });
+            const res = await axios.get(
+                route('website.products.get-single-smartphone', encodeURIComponent(slug)),
+                {
+                    params: finalPreferences,
+                },
+            );
             const data = await res.data;
 
             if (data.status) {
                 let newIndex = -1;
                 flushSync(() => {
-
-
-
                     //  Extracting and storing all related feeds by slug
                     setRelatedFeed((prevRelated) => {
                         const updatedRelated = { ...prevRelated };
                         const smartphone = data.smartphone;
-
-
 
                         // Extracting related from smartphones (only if not already stored)
                         if (
@@ -440,14 +397,10 @@ const index = () => {
                             smartphone.related.length > 0
                         ) {
                             updatedRelated[smartphone.slug] = smartphone.related;
-
-
-
                         }
 
                         return updatedRelated;
                     });
-
 
                     setFeed((prevFeed) => {
                         const exists = prevFeed.some(
@@ -473,7 +426,6 @@ const index = () => {
 
                     setFeedGallery(data.smartphone);
                     setFeedOpen(true);
-
                 });
 
                 if (newIndex !== -1) {
@@ -507,10 +459,7 @@ const index = () => {
             const res = await axios.get(url);
             const data = await res.data;
 
-
-
             const { posts, products, next_page_url } = data;
-
 
             flushSync(() => {
                 setFeed((prevFeed) => {
@@ -545,7 +494,6 @@ const index = () => {
                             !prevRelated[post.slug]
                         ) {
                             updatedRelated[post.slug] = post.related;
-
                         }
                     });
 
@@ -558,7 +506,6 @@ const index = () => {
                             !prevRelated[smartphone.slug]
                         ) {
                             updatedRelated[smartphone.slug] = smartphone.related;
-
                         }
                     });
 
@@ -568,7 +515,6 @@ const index = () => {
                 setNextPageUrl(next_page_url);
                 nextPageUrlRef.current = next_page_url;
             });
-
         } catch (err) {
             setShowErrorMessage(true);
             setErrorMessage(err.message);
@@ -576,7 +522,6 @@ const index = () => {
             isfetchingMoreYAxisFeed.current = false;
         }
     };
-
 
     // FETCH RELATED FEED
     const fetchRelatedFeed = async (slug) => {
@@ -593,7 +538,7 @@ const index = () => {
         }
 
         const defaultPreferences = {
-            text: true,
+            // text: true,
             videos: true,
             images: true,
             show_posts: true,
@@ -605,18 +550,17 @@ const index = () => {
                 ? { ...defaultPreferences, ...parsed }
                 : defaultPreferences;
 
+        const nextUrl =
+            relatedFeedNextUrlsRef.current[slug] ?? `${route('website.posts.getrelated')}`;
 
-        const nextUrl = relatedFeedNextUrlsRef.current[slug] ?? `${route('website.posts.getrelated')}`;
-
-        const existingslugs = relatedFeed[slug]?.map(item => item.slug) || [];
-
+        const existingslugs = relatedFeed[slug]?.map((item) => item.slug) || [];
 
         try {
             const res = await axios.get(nextUrl, {
                 params: {
                     slug: encodeURIComponent(slug),
                     ...finalPreferences,
-                    excluded_slugs: existingslugs
+                    excluded_slugs: existingslugs,
                 },
             });
             const data = res.data;
@@ -624,15 +568,13 @@ const index = () => {
             if (data.status) {
                 const { results, nextUrl, related_slug } = data;
 
-
-
                 if (results.length > 0) {
-                    setRelatedFeed(prev => {
+                    setRelatedFeed((prev) => {
                         const existing = prev[related_slug] || [];
 
                         // filter out duplicates by slug
-                        const newOnes = results.filter(item =>
-                            !existing.some(ex => ex.slug === item.slug)
+                        const newOnes = results.filter(
+                            (item) => !existing.some((ex) => ex.slug === item.slug),
                         );
 
                         return {
@@ -642,12 +584,9 @@ const index = () => {
                     });
                 }
 
-
                 relatedFeedNextUrlsRef.current[related_slug] = nextUrl ?? null;
-
             } else if (data.type === 'nothing_found') {
-
-                relatedFeedNextUrlsRef.current[slug] = null
+                relatedFeedNextUrlsRef.current[slug] = null;
             }
         } catch (err) {
             console.error(`[${slug}] ❌ Error fetching related FEED`, err);
@@ -657,7 +596,7 @@ const index = () => {
         }
     };
 
-    // QR CODE DOWNLOAD STATE AND DOWNLOAD METHOD
+    // QR CODE DOWNLOAD STATE AND DOWNLOAD METHOD AND STATE
     const [isQrDownloading, setIsQrDownloading] = useState(false);
     const handleDownloadQRCode = () => {
         setIsQrDownloading(true);
@@ -671,21 +610,17 @@ const index = () => {
             }
 
             try {
-
                 const svgClone = svg.cloneNode(true);
                 svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
-
                 const svgData = new XMLSerializer().serializeToString(svgClone);
-
 
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
 
-
                 const padding = 40;
                 const qrSize = 800;
-                const totalSize = qrSize + (padding * 2);
+                const totalSize = qrSize + padding * 2;
 
                 canvas.width = totalSize;
                 canvas.height = totalSize;
@@ -695,50 +630,49 @@ const index = () => {
                 const url = URL.createObjectURL(svgBlob);
 
                 img.onload = () => {
-
                     ctx.fillStyle = '#ffffff';
                     ctx.fillRect(0, 0, totalSize, totalSize);
 
-
                     ctx.drawImage(img, padding, padding, qrSize, qrSize);
-
 
                     ctx.strokeStyle = '#000000';
                     ctx.lineWidth = 2;
                     ctx.strokeRect(padding - 1, padding - 1, qrSize + 2, qrSize + 2);
 
+                    canvas.toBlob(
+                        (blob) => {
+                            if (!blob) {
+                                console.error('Failed to create blob');
+                                URL.revokeObjectURL(url);
+                                setIsQrDownloading(false);
+                                return;
+                            }
 
-                    canvas.toBlob((blob) => {
-                        if (!blob) {
-                            console.error('Failed to create blob');
-                            URL.revokeObjectURL(url);
-                            setIsQrDownloading(false);
-                            return;
-                        }
+                            const downloadUrl = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
 
-                        const downloadUrl = URL.createObjectURL(blob);
-                        const link = document.createElement('a');
+                            const filename =
+                                feedGallery.type === 'posts'
+                                    ? `qr-code-post-${feedGallery.id || 'download'}.png`
+                                    : `qr-code-${feedGallery.slug || 'download'}.png`;
 
+                            link.href = downloadUrl;
+                            link.download = filename;
 
-                        const filename = feedGallery.type === 'posts'
-                            ? `qr-code-post-${feedGallery.id || 'download'}.png`
-                            : `qr-code-${feedGallery.slug || 'download'}.png`;
+                            document.body.appendChild(link);
+                            link.click();
 
-                        link.href = downloadUrl;
-                        link.download = filename;
-
-
-                        document.body.appendChild(link);
-                        link.click();
-
-                        // Cleanup
-                        setTimeout(() => {
-                            document.body.removeChild(link);
-                            URL.revokeObjectURL(downloadUrl);
-                            URL.revokeObjectURL(url);
-                            setIsQrDownloading(false);
-                        }, 100);
-                    }, 'image/png', 1.0);
+                            // Cleanup
+                            setTimeout(() => {
+                                document.body.removeChild(link);
+                                URL.revokeObjectURL(downloadUrl);
+                                URL.revokeObjectURL(url);
+                                setIsQrDownloading(false);
+                            }, 100);
+                        },
+                        'image/png',
+                        1.0,
+                    );
                 };
 
                 img.onerror = () => {
@@ -748,15 +682,12 @@ const index = () => {
                 };
 
                 img.src = url;
-
             } catch (error) {
                 console.error('Error downloading QR code:', error);
                 setIsQrDownloading(false);
             }
         }, 100);
     };
-
-
 
     // Infinite Scroll Observer
     useEffect(() => {
@@ -768,7 +699,7 @@ const index = () => {
                     fetchMorePostsAndProducts();
                 }
             },
-            { threshold: 1 },
+            { threshold: 0.5 },
         );
 
         observer.observe(loaderRef.current);
@@ -797,7 +728,11 @@ const index = () => {
                 : [];
             const videos =
                 Array.isArray(feedGallery.post_video_urls) && feedGallery.type === 'posts'
-                    ? feedGallery.post_video_urls.map((url) => ({ type: 'video', url }))
+                    ? feedGallery.post_video_urls.map((url) => ({
+                        type: 'video',
+                        url: url.url,
+                        thumbnail_url: url.thumbnail_url,
+                    }))
                     : [];
 
             const allMedia = [...images, ...videos];
@@ -805,7 +740,6 @@ const index = () => {
             setSelectedMediaIndex(allMedia.length > 0 ? 0 : -1);
         }
     }, [feedGallery]);
-
 
     // Setting  Index After Refresh To Start Scrolling From There
     useEffect(() => {
@@ -821,7 +755,6 @@ const index = () => {
         }
     }, [feed, isFeedLoaded, feedGallery]);
 
-
     // Stopping The Inertia Navigation When Pop STATE TRIGGERS
     // Tracking Sidebar Click
     //(
@@ -830,15 +763,11 @@ const index = () => {
     const previousUrlRef = useRef('');
     const feedOpenCountRef = useRef(0);
 
-
-
     // Resetting counters on component mount
     useEffect(() => {
         previousUrlRef.current = window.location.href;
         feedOpenCountRef.current = 0;
     }, []);
-
-
 
     // POP STATE HANDLING
     useEffect(() => {
@@ -903,10 +832,9 @@ const index = () => {
             const modalValue = url.searchParams.get('modal');
 
             if (modalValue === 'global-filters') {
-                window.history.replaceState({}, '', window.location.pathname)
+                window.history.replaceState({}, '', window.location.pathname);
                 return true;
             }
-
 
             // console.log('🚦 Inertia check:', {
             //     isClosing: isClosingMobileGalleryRef.current,
@@ -914,7 +842,6 @@ const index = () => {
             //     feedOpen: feedGalleryRef.current !== null,
             //     pathname
             // });
-
 
             // Block if we just closed mobile gallery
             if (isClosingMobileGalleryRef.current && pathname === '/' && !isSidebarClickActive) {
@@ -936,7 +863,6 @@ const index = () => {
                 event.preventDefault();
                 return;
             }
-
         };
 
         window.addEventListener('popstate', handlePopState);
@@ -947,7 +873,6 @@ const index = () => {
             if (removeRouterEvent) removeRouterEvent();
         };
     }, [isSidebarClickActive]);
-
 
     // Sync MobileFeedGalleryOpen state changes
     useEffect(() => {
@@ -963,53 +888,42 @@ const index = () => {
 
             // Update previous URL ref
             previousUrlRef.current = url.toString();
-
-
         }
     }, [MobileFeedGalleryOpen]);
     //)
 
-
-
-
     // Opening Feed Item
-    const handleItemClick = useCallback((item, index) => {
-        feedOpenCountRef.current++;
-        setIsFeedOpeningDirectly(true);
-        setFeedGallery(item);
-        setFeedIndex(index);
-        setFeedOpen(true);
+    const handleItemClick = useCallback(
+        (item, index) => {
+            feedOpenCountRef.current++;
+            setIsFeedOpeningDirectly(true);
+            setFeedGallery(item);
+            setFeedIndex(index);
+            setFeedOpen(true);
 
-        if (item.type === 'posts') {
-            const url = generateURL(item);
-            if (feedOpenCountRef.current === 1) {
-                window.history.replaceState({}, '', url);
-                window.history.pushState({}, '', url);
+            if (item.type === 'posts') {
+                const url = generateURL(item);
+                if (feedOpenCountRef.current === 1) {
+                    window.history.replaceState({}, '', url);
+                    window.history.pushState({}, '', url);
+                } else {
+                    window.history.pushState({}, '', url);
+                }
             } else {
-                window.history.pushState({}, '', url);
+                const url = new URL(window.location.href);
+                url.searchParams.set('m-slug', item.slug);
+                if (feedOpenCountRef.current === 1) {
+                    window.history.replaceState({}, '', url.toString());
+                    window.history.pushState({}, '', url.toString());
+                } else {
+                    window.history.pushState({}, '', url.toString());
+                }
             }
-        } else {
-            const url = new URL(window.location.href);
-            url.searchParams.set('m-slug', item.slug);
-            if (feedOpenCountRef.current === 1) {
-                window.history.replaceState({}, '', url.toString());
-                window.history.pushState({}, '', url.toString());
-            } else {
-                window.history.pushState({}, '', url.toString());
-            }
-        }
 
-        previousUrlRef.current = window.location.href;
-    }, [generateURL]);
-
-
-
-
-
-
-
-
-
+            previousUrlRef.current = window.location.href;
+        },
+        [generateURL],
+    );
 
     return (
         <MainLayout>
@@ -1038,28 +952,8 @@ const index = () => {
             )}
 
             {!isFeedLoaded && (
-                <div className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 lg:text-[18px] text-[10px] transition-all duration-100 animate-pulse dark:text-white/80">
-                    <div className="flex items-center justify-center">
-                        <div role="status">
-                            <svg
-                                aria-hidden="true"
-                                className="w-3 h-3 text-gray-200 lg:w-5 lg:h-5 animate-spin fill-indigo-600 dark:text-white/80"
-                                viewBox="0 0 100 101"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path
-                                    d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                                    fill="currentColor"
-                                />
-                                <path
-                                    d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                                    fill="currentFill"
-                                />
-                            </svg>
-                            <span className="sr-only">Loading...</span>
-                        </div>
-                    </div>
+                <div className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-[10px] text-gray-700 transition-all duration-100 dark:text-white/80 lg:text-[18px]">
+                    <Spinner />
                     Please Wait While We Load Data...
                 </div>
             )}
@@ -1067,20 +961,21 @@ const index = () => {
             {isFeedLoaded && (
                 <>
                     {/* Search Bar */}
-                    {windowSize.width > 1024 && (
+                    {/* {windowSize.width > 1024 && (
                         <div className="w-1/2 m-auto mb-3">
                             <GlobalSearch
                                 additional_filters={false}
 
                             />
                         </div>
-                    )}
+                    )} */}
 
                     {/* Masonry Layout */}
-                    <div className="pb-20 sm:pb-20">
+                    <div
+                        className={`pb-20 pt-0 sm:pb-20 lg:pt-[75px] ${feedGallery ? 'hidden' : 'visible'}`}
+                    >
                         <div className="mx-auto max-w-8xl sm:px-6 lg:px-8">
-
-                            <div className="lg:columns-2 columns-1 gap-1 [column-fill:_balance] min-[300px]:columns-2 md:columns-2 lg:gap-2 xl:columns-4">
+                            <div className="columns-2 gap-2 [column-fill:_balance] sm:columns-2 md:columns-3 lg:columns-4 lg:gap-3 xl:columns-5">
                                 {feed.map((item, index) => (
                                     <MasonryFeedItem
                                         key={`${item.type}-${item.id}`}
@@ -1242,36 +1137,14 @@ const index = () => {
                             {nextPageUrl && (
                                 <div
                                     ref={loaderRef}
-                                    className="flex items-center justify-center gap-2 py-10 text-center lg:text-[18px] text-[10px] text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80"
+                                    className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-[10px] text-gray-700 transition-all duration-100 dark:text-white/80 lg:text-[18px]"
                                 >
-                                    <div className="flex items-center justify-center">
-                                        <div role="status">
-                                            <svg
-                                                aria-hidden="true"
-                                                className="w-3 h-3 text-gray-200 lg:w-5 lg:h-5 animate-spin fill-blue-600 dark:text-gray-600"
-                                                viewBox="0 0 100 101"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                                                    fill="currentColor"
-                                                />
-                                                <path
-                                                    d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                                                    fill="currentFill"
-                                                />
-                                            </svg>
-                                            <span className="sr-only">Loading...</span>
-                                        </div>
-                                    </div>
+                                    <Spinner />
                                     Loading more...
                                 </div>
                             )}
                         </div>
                     </div>
-
-
 
                     {/* PC Feed  */}
                     {windowSize.width > 1024 && feedOpen && feedGallery !== null && (
@@ -1313,7 +1186,7 @@ const index = () => {
                     )}
 
                     {/* MOBILE FEED */}
-                    {windowSize.width < 1024 && feedOpen && feedGallery !== null && (
+                    {windowSize.width <= 1024 && feedOpen && feedGallery !== null && (
                         <MobileFeed
                             feed={feed}
                             feedGallery={feedGallery}
@@ -1339,91 +1212,101 @@ const index = () => {
                             Placeholder={Placeholder}
                             isfetchingMoreYAxisFeed={isfetchingMoreYAxisFeed.current}
                             isFeedOpeningDirectly={isFeedOpeningDirectly}
-
-
-
-
                         />
                     )}
 
                     {/* QR CODE */}
                     {showQrCode &&
                         createPortal(
-                            <div className="fixed inset-0 z-[100] flex items-center justify-center">
+                            <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
                                 {/* Overlay */}
                                 <div
-                                    className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+                                    className="fixed inset-0 bg-black/30 backdrop-blur-sm"
                                     onClick={() => setShowQrCode(false)}
-                                ></div>
+                                />
 
                                 {/* Modal */}
                                 <div
                                     role="dialog"
                                     aria-modal="true"
-                                    aria-labelledby="qrCodeTitle"
-                                    className={`relative z-[101] w-full max-w-[200px] rounded-2xl bg-transparent  pt-3 text-gray-900   lg:max-w-[300px] lg:p-6`}
+                                    className="dark:bg-surface-1-dark dark:border-surface-3-dark bg-backgroundLight border-surface-3-light relative z-[101] w-full max-w-[280px] rounded-md border  lg:px-4 px-0 py-0 lg:py-5 sm:max-w-[340px]  lg:max-w-[500px]"
                                 >
-                                    <div className="text-center">
-                                        <div className="flex justify-center">
-                                            <QRCode
-                                                id="qr-code-canvas"
-                                                className={`${windowSize.width > 1024 ? 'size-52' : 'size-48'} border-2`}
-                                                {...(feedGallery.type === 'posts' && {
-                                                    value: route('home') + generateURL(feedGallery),
-                                                })}
-                                                {...(feedGallery.type === 'smartphones' && {
-                                                    value:
-                                                        route('home') +
-                                                        '/?m-slug=' +
-                                                        feedGallery?.slug,
-                                                })}
-                                                viewBox="0 0 256 256"
-                                                level="H"
-                                                includemargin="true"
-                                                bgColor="#ffffff"
-                                                fgColor="#000000"
-                                            />
-                                        </div>
+                                    <div className="flex flex-col items-center justify-center">
+                                        {/* QR + Copy Wrapper (KEY PART) */}
+                                        <div className="mx-auto my-5 w-fit">
+                                            {/* QR */}
+                                            <div className="p-3 rounded-md bg-main-text-dark dark:text-main-text-light dark:bg-surface-1-dark sm:p-2">
+                                                <QRCode
+                                                    id="qr-code-canvas"
+                                                    className="size-40 sm:size-44 lg:size-60"
+                                                    {...(feedGallery.type === 'posts' && {
+                                                        value:
+                                                            route('home') +
+                                                            generateURL(feedGallery),
+                                                    })}
+                                                    {...(feedGallery.type === 'smartphones' && {
+                                                        value:
+                                                            route('home') +
+                                                            '/?m-slug=' +
+                                                            feedGallery?.slug,
+                                                    })}
+                                                    level="H"
+                                                    includemargin="true"
+                                                    bgColor="#ffffff"
+                                                    fgColor="#000000"
+                                                />
+                                            </div>
 
-                                        <h2
-                                            id="qrCodeTitle"
-                                            className="my-3 text-base font-semibold text-white dark:text-white/80"
-                                        >
-                                            Scan QR Code
-                                        </h2>
+                                            {/* Copy Button */}
+                                            <button className="mt-3 w-full rounded-md bg-main-text-light dark:bg-main-text-dark py-2.5 text-lg font-medium text-main-text-dark dark:text-main-text-light transition dark:hover:bg-main-text-dark/80 hover:bg-main-text-light/80"
 
-                                        {/* Download Button */}
-                                        <button
-                                            onClick={handleDownloadQRCode}
-                                            className={` ${isQrDownloading && 'pointer-events-none opacity-50'} inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-gray-900 transition-colors bg-white rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-white  focus:ring-offset-2 focus:ring-offset-gray-900`}
-                                            aria-label="Download QR Code"
-                                            disabled={isQrDownloading}
+                                                onClick={() => {
+                                                    let url = null;
 
-                                        >
+                                                    if (feedGallery.type === 'posts') {
+                                                        url = route('home') + generateURL(feedGallery);
+                                                    } else if (feedGallery.type === 'smartphones') {
+                                                        url = route('home') + '/?m-slug=' + feedGallery?.slug;
+                                                    }
 
-                                            Download QR Code
+                                                    navigator.clipboard.writeText(url);
+                                                    setLinkCopied(true);
+                                                }}
+                                            >
+                                                Copy
+                                            </button>
 
-
-                                            {isQrDownloading ? (
-
-                                                <Spinner />
-                                            ) : (
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    className="w-4 h-4"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
+                                            {/* Download Button */}
+                                            <div className="w-full mt-4">
+                                                <button
+                                                    onClick={handleDownloadQRCode}
+                                                    disabled={isQrDownloading}
+                                                    className={`flex w-full items-center justify-center gap-2 rounded-md py-2.5 text-lg font-medium text-main-text-light dark:text-main-text-dark transition lg:text-xl`}
                                                 >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                                                    />
-                                                </svg>
-                                            )}
-                                        </button>
+                                                    {isQrDownloading ? (
+                                                        <Spinner customSize={"size-4 lg:size-6"} />
+                                                    ) : (
+                                                        <>
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                className="w-6 h-6"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                stroke="currentColor"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    strokeWidth={2}
+                                                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                                                />
+                                                            </svg>
+                                                            Download
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>,
@@ -1447,7 +1330,6 @@ const index = () => {
             )}
         </MainLayout>
     );
-}
-
+};
 
 export default memo(index);

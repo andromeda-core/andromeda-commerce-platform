@@ -140,6 +140,7 @@ Route::group(['as' => 'website.'], function () {
         Route::get('/profile', 'index')->name('index');
         Route::put('/profile/details/update/{id?}', 'update')->name('update-profile');
         Route::put('profile/change-password/{id?}', 'changePassword')->name('change-password');
+        Route::put('/profile/upload-profile', 'uploadProfilePicture')->name('upload-profile-picture');
     });
 
     // Contact Us Routes
@@ -599,7 +600,8 @@ Route::get('/pwa-manifest', function () {
     //         : strtoupper(substr($name, 0, 3));
     // }
 
-    $favicon = $general_setting->app_favicon ?? asset('assets/images/Logo/512512.png');
+    $logo = $general_setting?->app_main_logo_dark ?? asset('assets/images/Logo/DarkLogo.png');
+    $pwaLogo = $general_setting?->app_pwa_logo ?? null;
 
     $themeColor = '#FFFFFF';
     $backgroundColor = '#FFFFFF';
@@ -607,19 +609,19 @@ Route::get('/pwa-manifest', function () {
     $manifest = [
         'name' => $name,
         'short_name' => $name,
-        'description' => $general_setting->app_description ?? 'Shop smarter with Andromeda — your modern global marketplace offering trending products, secure checkout, and fast delivery, all in one simple app.',
+        'description' => $general_setting->app_description ?? 'Shop smarter with Andromeda  your modern global marketplace offering trending products, secure checkout, and fast delivery, all in one simple app.',
         'start_url' => '/',
         'display' => 'standalone',
         'theme_color' => $themeColor,
         'background_color' => $backgroundColor,
         'icons' => [
             [
-                'src' => $favicon,
+                'src' => $pwaLogo,
                 'sizes' => '192x192',
                 'type' => 'image/png',
             ],
             [
-                'src' => $favicon,
+                'src' => $pwaLogo,
                 'sizes' => '512x512',
                 'type' => 'image/png',
             ],

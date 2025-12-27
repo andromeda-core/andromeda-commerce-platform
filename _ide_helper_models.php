@@ -518,6 +518,7 @@ namespace App\Models{
  * @property string|null $app_main_logo_dark
  * @property string|null $app_main_logo_light
  * @property string|null $app_favicon
+ * @property string|null $app_pwa_logo
  * @property string|null $app_description
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -532,6 +533,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|GeneralSetting whereAppMainLogoDark($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|GeneralSetting whereAppMainLogoLight($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|GeneralSetting whereAppName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|GeneralSetting whereAppPwaLogo($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|GeneralSetting whereContactEmail($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|GeneralSetting whereContactNumber($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|GeneralSetting whereCreatedAt($value)
@@ -1224,6 +1226,7 @@ namespace App\Models{
  * @property string $phone
  * @property \Illuminate\Support\Carbon|null $email_verified_at
  * @property string $password
+ * @property string|null $profile
  * @property int $is_active
  * @property string|null $remember_token
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -1267,6 +1270,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User wherePassword($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User wherePhone($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereProfile($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereRememberToken($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutPermission($permissions)

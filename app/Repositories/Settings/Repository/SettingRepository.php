@@ -8,6 +8,8 @@ use App\Jobs\AppFaviconDestroyOnAWS;
 use App\Jobs\AppFaviconStoreOnAWS;
 use App\Jobs\AppLightLogoDestroyOnAWS;
 use App\Jobs\AppLightLogoStoreOnAWS;
+use App\Jobs\AppPWALogoDestroyOnAWS;
+use App\Jobs\AppPWALogoStoreOnAWS;
 use App\Models\AdditionalFeeList;
 use App\Models\AwsSetting;
 use App\Models\Capacity;
@@ -75,6 +77,7 @@ class SettingRepository implements ISettingRepository
             ...($request->hasFile('app_main_logo_dark') ? ['app_main_logo_dark' => 'nullable|image|max:2048'] : []),
             ...($request->hasFile('app_main_logo_light') ? ['app_main_logo_light' => 'nullable|image|max:2048'] : []),
             ...($request->hasFile('app_favicon') ? ['app_favicon' => 'nullable|image|max:2048'] : []),
+            ...($request->hasFile('app_pwa_logo') ? ['app_pwa_logo' => 'nullable|image|max:2048'] : []),
             'app_description' => ['nullable', 'min:30', 'string', 'max:1000'],
         ], [
             'contact_number.regex' => 'The Contact Number Accepted With + Country Code - Example: +8801xxxxxxxxx',
@@ -106,6 +109,13 @@ class SettingRepository implements ISettingRepository
                 }
             }
 
+            if ($request->boolean('is_removed_app_pwa_logo') && ! $request->hasFile('app_pwa_logo')) {
+                if (! empty($general_setting->app_favicon)) {
+                    dispatch(new AppPWALogoDestroyOnAWS($general_setting->app_pwa_logo));
+                    $validated_req['app_pwa_logo'] = null;
+                }
+            }
+
             if ($request->hasFile('app_favicon')) {
 
                 if (! empty($general_setting->app_favicon)) {
@@ -126,6 +136,29 @@ class SettingRepository implements ISettingRepository
                 $validated_req['app_favicon'] = null;
 
                 dispatch(new AppFaviconStoreOnAWS($tempPath, $general_setting));
+
+            }
+
+            if ($request->hasFile('app_pwa_logo')) {
+
+                if (! empty($general_setting->app_pwa_logo)) {
+                    dispatch(new AppPWALogoDestroyOnAWS($general_setting->app_pwa_logo));
+                }
+
+                $logo = $request->file('app_pwa_logo');
+                $new_logo_name = time().uniqid().'.'.$logo->getClientOriginalExtension();
+
+                $resizedImage = ImageManager::imagick()
+                    ->read($logo)
+                    ->resize(512, 512)
+                    ->contain(512, 512)
+                    ->encodeByExtension('png', quality: 80);
+
+                $tempPath = 'temp/uploads/'.$new_logo_name;
+                Storage::disk('local')->put($tempPath, (string) $resizedImage);
+                $validated_req['app_pwa_logo'] = null;
+
+                dispatch(new AppPWALogoStoreOnAWS($tempPath, $general_setting));
 
             }
 

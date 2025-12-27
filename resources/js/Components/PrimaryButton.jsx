@@ -19,7 +19,7 @@ export default function PrimaryButton({
                     type={Type}
                     id={Id}
                     onClick={Action}
-                    className={`shadow-theme-xs my-3 flex items-center justify-center rounded-xl bg-indigo-700 px-3 py-2 text-sm font-medium text-white transition hover:bg-indigo-600 sm:px-4 sm:py-3 ${CustomClass ? CustomClass : 'w-full min-w-0 max-w-full'} ${Disabled ? 'cursor-not-allowed opacity-25 dark:opacity-40' : ''} `}
+                    className={`shadow-theme-xs my-3 flex items-center justify-center rounded-md bg-main-text-light dark:bg-main-text-dark dark:text-main-text-light  px-3 py-2 text-sm font-semibold text-main-text-dark transition hover:bg-main-text-light/80 text-md  dark:hover:bg-main-text-dark/80 sm:px-4 sm:py-3 ${CustomClass ? CustomClass : 'w-full min-w-0 max-w-full'} ${Disabled ? 'cursor-not-allowed opacity-25 dark:opacity-40' : ''} `}
                 >
                     {Text}
 
@@ -27,7 +27,7 @@ export default function PrimaryButton({
                         <div role="status">
                             <svg
                                 aria-hidden="true"
-                                className="h-4 w-8 animate-spin fill-indigo-600 text-white"
+                                className="w-8 h-4 text-main-text-dark animate-spin fill-main-text-dark dark:fill-main-text-light"
                                 viewBox="0 0 100 101"
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -61,7 +61,7 @@ export default function PrimaryButton({
                         <div role="status">
                             <svg
                                 aria-hidden="true"
-                                className="h-4 w-8 animate-spin fill-indigo-600 text-gray-200 dark:text-gray-600"
+                                className="w-8 h-4 text-main-text-dark animate-spin fill-main-texttext-main-text-dark dark:fill-black"
                                 viewBox="0 0 100 101"
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"

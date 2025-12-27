@@ -9,6 +9,10 @@ import Spinner from '@/Components/Spinner';
 import useWindowSize from '@/Hooks/useWindowSize';
 import Confetti from 'react-confetti';
 import { createPortal } from 'react-dom';
+import WebInput from '@/Components/WebInput';
+import Textarea from '@/Components/Textarea';
+import PrimaryButton from '@/Components/PrimaryButton';
+
 
 export default function Checkout({ cart_items, refferalSessionData, customer, meta_usernames, is_eligible_for_social_message }) {
     const { currency, auth } = usePage().props;
@@ -151,7 +155,7 @@ export default function Checkout({ cart_items, refferalSessionData, customer, me
     const handleRemoveReferal = async () => {
         const response = await removeReferal();
         if (response) {
-            setShowReferalInput(true);
+            setShowReferalInput(false);
         }
     };
 
@@ -283,11 +287,11 @@ export default function Checkout({ cart_items, refferalSessionData, customer, me
 
             <div className="min-h-screen transition-colors duration-200">
                 <div
-                    className={`max-w-8xl mx-auto sm:px-6 lg:px-8 ${windowSize.width < 1024 && 'mb-20'}`}
+                    className={`max-w-8xl mx-auto sm:px-6 lg:px-8 ${windowSize.width <= 1024 && 'mb-20'}`}
                 >
                     <Link
                         href={route('website.carts.index')}
-                        className="inline-flex items-center gap-2 my-4 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                        className="inline-flex items-center gap-2 my-4 text-sm font-medium transition-colors text-main-text-light hover:text-sub-text-light dark:text-main-text-dark dark:hover:text-sub-text-dark"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -308,10 +312,10 @@ export default function Checkout({ cart_items, refferalSessionData, customer, me
 
                     {/* Header */}
                     <div className="px-4 mb-6 sm:px-0">
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
+                        <h1 className="text-xl font-semibold text-main-text-light dark:text-main-text-dark sm:text-3xl">
                             Checkout
                         </h1>
-                        <p className="mt-1 text-sm text-gray-600 dark:text-white/60">
+                        <p className="mt-1 text-sm text-sub-text-light dark:text-sub-text-dark">
                             Complete your order by providing your shipping information
                         </p>
                     </div>
@@ -332,7 +336,7 @@ export default function Checkout({ cart_items, refferalSessionData, customer, me
                             />
 
                             {/* Order Items Summary (Mobile Only) */}
-                            {windowSize.width < 1024 && (
+                            {windowSize.width <= 1024 && (
                                 <OrderItemsSummary cart_items={cart_items} currency={currency} />
                             )}
                         </div>
@@ -341,7 +345,7 @@ export default function Checkout({ cart_items, refferalSessionData, customer, me
                         <div className="lg:col-span-1">
                             <div className="sticky space-y-4 top-8">
                                 {/* Order Items (Desktop Only) */}
-                                {windowSize.width >= 1024 && (
+                                {windowSize.width > 1024 && (
                                     <OrderItemsSummary
                                         cart_items={cart_items}
                                         currency={currency}
@@ -385,34 +389,16 @@ export default function Checkout({ cart_items, refferalSessionData, customer, me
 // Shipping Form Component
 function ShippingForm({ shippingInfo, handleInputChange }) {
     return (
-        <div className="p-6 bg-white border border-gray-200 rounded-xl dark:border-white/10 dark:bg-deepcharcoal">
+        <div className="p-6 border rounded-md bg-main-text-dark border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
             <div className="flex items-center justify-between">
-                <h2 className="flex items-center gap-2 mb-6 text-xl font-bold text-gray-900 dark:text-white">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-5 h-5"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"
-                        />
-                    </svg>
+                <h2 className="flex items-center gap-2 mb-6 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
+
                     Shipping Information
                 </h2>
 
                 <Link
                     href={route('website.profile.index')}
-                    className="font-medium text-indigo-600 text-md hover:underline dark:text-indigo-400"
+                    className="font-medium text-main-text-light hover:text-sub-text-light text-md dark:hover:text-sub-text-dark dark:text-main-text-dark"
                 >
                     Edit Information
                 </Link>
@@ -421,109 +407,113 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
             <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-white/80">
-                            Full Name <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            name="full_name"
-                            value={shippingInfo.full_name}
-                            // onChange={handleInputChange}
-                            disabled
-                            placeholder="John Doe"
-                            className="w-full px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors bg-white border border-gray-300 rounded-lg opacity-50 pointer-events-none focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
+
+                        <WebInput
+                            InputName={"Full Name"}
+                            Id={'full_name'}
+                            Name={'full_name'}
+                            Disabled={true}
+                            Placeholder={"John Doe"}
+                            Value={shippingInfo.full_name}
+                            Required={true}
+                            Type={'text'}
+                            ClassName={"dark:bg-surface-2-dark dark:border-surface-3-dark"}
+
                         />
                     </div>
 
                     <div>
-                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-white/80">
-                            Email Address <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="email"
-                            name="email"
-                            value={shippingInfo.email}
-                            // onChange={handleInputChange}
-                            disabled
-                            placeholder="john@example.com"
-                            className="w-full px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors bg-white border border-gray-300 rounded-lg opacity-50 pointer-events-none focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
+                        <WebInput
+                            InputName={"Email Address"}
+                            Id={'email'}
+                            Name={'email'}
+                            Disabled={true}
+                            Placeholder={"John Doe"}
+                            Value={shippingInfo.email}
+                            Required={true}
+                            Type={'email'}
+                            ClassName={"dark:bg-surface-2-dark dark:border-surface-3-dark"}
+
                         />
                     </div>
                 </div>
 
+
+
+
                 <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-white/80">
-                        Phone Number <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                        type="tel"
-                        name="phone"
-                        value={shippingInfo.phone}
-                        // onChange={handleInputChange}
-                        disabled
-                        placeholder="+1 (555) 000-0000"
-                        className="w-full px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors bg-white border border-gray-300 rounded-lg opacity-50 pointer-events-none focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
+                    <WebInput
+                        InputName={" Phone Number"}
+                        Id={'phone'}
+                        Name={'phone'}
+                        Disabled={true}
+                        Placeholder={"+1 (555) 000-0000"}
+                        Type={"tel"}
+                        Value={shippingInfo.phone}
+                        Required={true}
+                        ClassName={"dark:bg-surface-2-dark dark:border-surface-3-dark"}
                     />
                 </div>
 
                 <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-white/80">
-                        Street Address <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                        type="text"
-                        name="address"
-                        value={shippingInfo.address}
-                        // onChange={handleInputChange}
-                        disabled
-                        placeholder="123 Main Street, Apt 4B"
-                        className="w-full px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors bg-white border border-gray-300 rounded-lg opacity-50 pointer-events-none focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
+
+                    <Textarea
+                        InputName={"Address"}
+                        Id={'address'}
+                        Name={'address'}
+                        Disabled={true}
+                        Placeholder={"123 Main Street, Apt 4B"}
+                        Value={shippingInfo.address}
+                        Required={true}
+                        Rows={1}
+                        ClassName={"dark:bg-surface-2-dark dark:border-surface-3-dark"}
+
                     />
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div>
-                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-white/80">
-                            City <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            name="city"
-                            value={shippingInfo.city}
-                            // onChange={handleInputChange}
-                            disabled
-                            placeholder="New York"
-                            className="w-full px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors bg-white border border-gray-300 rounded-lg opacity-50 pointer-events-none focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
+                        <WebInput
+                            InputName={"City"}
+                            Id={'city'}
+                            Name={'city'}
+                            Disabled={true}
+                            Placeholder={"New York"}
+                            Type={"text"}
+                            Value={shippingInfo.city}
+                            Required={true}
+                            ClassName={"dark:bg-surface-2-dark dark:border-surface-3-dark"}
                         />
                     </div>
 
                     <div>
-                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-white/80">
-                            Postal Code <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            name="postal_code"
-                            value={shippingInfo.postal_code}
-                            // onChange={handleInputChange}
-                            disabled
-                            placeholder="10001"
-                            className="w-full px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors bg-white border border-gray-300 rounded-lg opacity-50 pointer-events-none focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
+
+                        <WebInput
+                            InputName={"Postal Code"}
+                            Id={'postal_code'}
+                            Name={'postal_code'}
+                            Disabled={true}
+                            Placeholder={"10001"}
+                            Type={"text"}
+                            Value={shippingInfo.postal_code}
+                            Required={true}
+                            ClassName={"dark:bg-surface-2-dark dark:border-surface-3-dark"}
                         />
                     </div>
 
                     <div>
-                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-white/80">
-                            Country <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            name="country"
-                            value={shippingInfo.country}
-                            // onChange={handleInputChange}
-                            disabled
-                            placeholder="United States"
-                            className="w-full px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors bg-white border border-gray-300 rounded-lg opacity-50 pointer-events-none focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40"
+
+
+                        <WebInput
+                            InputName={"Country"}
+                            Id={'country'}
+                            Name={'country'}
+                            Disabled={true}
+                            Placeholder={"United States"}
+                            Type={"tel"}
+                            Value={shippingInfo.country}
+                            Required={true}
+                            ClassName={"dark:bg-surface-2-dark dark:border-surface-3-dark"}
                         />
                     </div>
                 </div>
@@ -535,31 +525,18 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
 // Payment Method Component
 function PaymentMethod({ paymentMethod, setPaymentMethod }) {
     return (
-        <div className="p-6 bg-white border border-gray-200 rounded-xl dark:border-white/10 dark:bg-deepcharcoal">
-            <h2 className="flex items-center gap-2 mb-6 text-xl font-bold text-gray-900 dark:text-white">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-5 h-5"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"
-                    />
-                </svg>
+        <div className="p-6 border rounded-md bg-surface-1-light border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+            <h2 className="flex items-center gap-2 mb-6 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
+
                 Payment Method
             </h2>
 
             <div className="space-y-3">
                 {/* Bank Transfer Option */}
                 <label
-                    className={`flex cursor-pointer items-center gap-4 rounded-lg border-2 p-4 transition-all ${paymentMethod === 'bank_transfer'
-                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
-                        : 'border-gray-200 bg-gray-50 hover:border-gray-300 dark:border-white/10 dark:bg-gray-900/20 dark:hover:border-white/20'
+                    className={`flex cursor-pointer items-center gap-4 rounded-md border p-4 transition-all ${paymentMethod === 'bank_transfer'
+                        ? 'border-surface-3-light dark:border-surface-3-dark bg-surface-2-light dark:bg-surface-2-dark'
+                        : 'border-surface-3-light bg-surface-1-light hover:bg-surface-2-light hover:border-surface-3-light  dark:border-surface-3-dark dark:bg-surface-1-dark dark:hover:bg-surface-2-dark dark:hover:border-surface-3-dark'
                         }`}
                 >
                     <input
@@ -568,18 +545,18 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
                         value="bank_transfer"
                         checked={paymentMethod === 'bank_transfer'}
                         onChange={(e) => setPaymentMethod(e.target.value)}
-                        className="w-5 h-5 text-indigo-600 focus:ring-2 focus:ring-indigo-500"
+                        className="w-5 h-5 text-surface-3-light dark:text-surface-3-dark focus:ring-0 focus:ring-offset-0"
                     />
                     <div className="flex items-center justify-between flex-1">
                         <div className="flex items-center gap-3">
-                            <div className="flex items-center justify-center w-10 h-10 bg-gray-200 rounded-full dark:bg-gray-700">
+                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-2-light dark:bg-surface-3-dark">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
                                     stroke="currentColor"
-                                    className="w-5 h-5 text-gray-700 dark:text-white"
+                                    className="w-5 h-5 main-text-light dark:text-main-text-dark"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -589,10 +566,10 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
                                 </svg>
                             </div>
                             <div>
-                                <p className="font-semibold text-gray-900 dark:text-white">
+                                <p className="font-semibold text-main-text-light dark:text-main-text-dark">
                                     Direct Bank Transfer
                                 </p>
-                                <p className="text-sm text-gray-600 dark:text-white/60">
+                                <p className="text-sm text-sub-text-light dark:text-sub-text-dark">
                                     Pay directly to our bank account
                                 </p>
                             </div>
@@ -602,9 +579,9 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
 
                 {/* Crypto Option */}
                 <label
-                    className={`flex cursor-pointer items-center gap-4 rounded-lg border-2 p-4 transition-all ${paymentMethod === 'crypto'
-                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
-                        : 'border-gray-200 bg-gray-50 hover:border-gray-300 dark:border-white/10 dark:bg-gray-900/20 dark:hover:border-white/20'
+                    className={`flex cursor-pointer items-center gap-4 rounded-md border p-4 transition-all ${paymentMethod === 'crypto'
+                        ? 'border-surface-3-light dark:border-surface-3-dark bg-surface-2-light dark:bg-surface-2-dark'
+                        : 'border-surface-3-light bg-surface-1-light hover:bg-surface-2-light hover:border-surface-3-light  dark:border-surface-3-dark dark:bg-surface-1-dark dark:hover:bg-surface-2-dark dark:hover:border-surface-3-dark'
                         }`}
                 >
                     <input
@@ -613,28 +590,28 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
                         value="crypto"
                         checked={paymentMethod === 'crypto'}
                         onChange={(e) => setPaymentMethod(e.target.value)}
-                        className="w-5 h-5 text-indigo-600 focus:ring-2 focus:ring-indigo-500"
+                        className="w-5 h-5 text-surface-3-light dark:text-surface-3-dark focus:ring-0 focus:ring-offset-0"
                     />
                     <div className="flex items-center justify-between flex-1">
                         <div className="flex items-center gap-3">
-                            <div className="flex items-center justify-center w-10 h-10 bg-orange-500 rounded-full">
+                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-2-light dark:bg-surface-3-dark">
                                 <svg
-                                    className="w-6 h-6"
+                                    className="fill-main-text-light w-7 h-7 dark:fill-main-text-dark"
                                     viewBox="0.004 0 64 64"
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                 >
                                     <path
                                         d="M46.11 27.441c.636-4.258-2.606-6.547-7.039-8.074l1.438-5.768-3.512-.875-1.4 5.616c-.922-.23-1.87-.447-2.812-.662l1.41-5.653-3.509-.875-1.439 5.766c-.764-.174-1.514-.346-2.242-.527l.004-.018-4.842-1.209-.934 3.75s2.605.597 2.55.634c1.422.355 1.68 1.296 1.636 2.042l-1.638 6.571c.098.025.225.061.365.117l-.37-.092-2.297 9.205c-.174.432-.615 1.08-1.609.834.035.051-2.552-.637-2.552-.637l-1.743 4.02 4.57 1.139c.85.213 1.683.436 2.502.646l-1.453 5.835 3.507.875 1.44-5.772c.957.26 1.887.5 2.797.726L27.504 50.8l3.511.875 1.453-5.823c5.987 1.133 10.49.676 12.383-4.738 1.527-4.36-.075-6.875-3.225-8.516 2.294-.531 4.022-2.04 4.483-5.157zM38.087 38.69c-1.086 4.36-8.426 2.004-10.807 1.412l1.928-7.729c2.38.594 10.011 1.77 8.88 6.317zm1.085-11.312c-.99 3.966-7.1 1.951-9.083 1.457l1.748-7.01c1.983.494 8.367 1.416 7.335 5.553z"
-                                        fill="#ffffff"
+
                                     />
                                 </svg>
                             </div>
                             <div>
-                                <p className="font-semibold text-gray-900 dark:text-white">
+                                <p className="font-semibold text-main-text-light dark:text-main-text-dark">
                                     Crypto Payment
                                 </p>
-                                <p className="text-sm text-gray-600 dark:text-white/60">
+                                <p className="text-sm text-sub-text-light dark:text-sub-text-dark">
                                     Pay with crypto currency
                                 </p>
                             </div>
@@ -644,9 +621,9 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
 
                 {/* Points option */}
                 <label
-                    className={`flex cursor-pointer items-center gap-4 rounded-lg border-2 p-4 transition-all ${paymentMethod === 'points'
-                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
-                        : 'border-gray-200 bg-gray-50 hover:border-gray-300 dark:border-white/10 dark:bg-gray-900/20 dark:hover:border-white/20'
+                    className={`flex cursor-pointer items-center gap-4 rounded-md border p-4 transition-all ${paymentMethod === 'points'
+                        ? 'border-surface-3-light dark:border-surface-3-dark bg-surface-2-light dark:bg-surface-2-dark'
+                        : 'border-surface-3-light bg-surface-1-light hover:bg-surface-2-light hover:border-surface-3-light  dark:border-surface-3-dark dark:bg-surface-1-dark dark:hover:bg-surface-2-dark dark:hover:border-surface-3-dark'
                         }`}
                 >
                     <input
@@ -655,18 +632,18 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
                         value="points"
                         checked={paymentMethod === 'points'}
                         onChange={(e) => setPaymentMethod(e.target.value)}
-                        className="w-5 h-5 text-indigo-600 focus:ring-2 focus:ring-indigo-500"
+                        className="w-5 h-5 text-surface-3-light dark:text-surface-3-dark focus:ring-0 focus:ring-offset-0"
                     />
                     <div className="flex items-center justify-between flex-1">
                         <div className="flex items-center gap-3">
-                            <div className="flex items-center justify-center w-10 h-10 bg-indigo-500 rounded-full">
+                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-2-light dark:bg-surface-3-dark">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
                                     stroke="currentColor"
-                                    className="w-5 h-5 text-white"
+                                    className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -676,10 +653,10 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
                                 </svg>
                             </div>
                             <div>
-                                <p className="font-semibold text-gray-900 dark:text-white">
+                                <p className="font-semibold text-main-text-light dark:text-main-text-dark">
                                     Points
                                 </p>
-                                <p className="text-sm text-gray-600 dark:text-white/60">
+                                <p className="text-sm text-sub-text-light dark:text-sub-text-dark">
                                     Pay directly with your points
                                 </p>
                             </div>
@@ -694,22 +671,8 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
 // Order Items Summary Component
 function OrderItemsSummary({ cart_items, currency }) {
     return (
-        <div className="p-6 bg-white border border-gray-200 rounded-xl dark:border-white/10 dark:bg-deepcharcoal">
-            <h2 className="flex items-center gap-2 mb-4 text-xl font-bold text-gray-900 dark:text-white">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-5 h-5"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
-                    />
-                </svg>
+        <div className="p-6 border rounded-md bg-surface-1-light border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+            <h2 className="flex items-center gap-2 mb-4 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
                 Order Items ({cart_items.length})
             </h2>
 
@@ -717,9 +680,9 @@ function OrderItemsSummary({ cart_items, currency }) {
                 {cart_items.map((item) => (
                     <div
                         key={item.id}
-                        className="flex gap-3 p-3 border border-gray-200 rounded-lg bg-gray-50 dark:border-white/10 dark:bg-gray-900/20"
+                        className="flex gap-3 p-3 border rounded-md border-surface-3-light bg-surface-2-light dark:border-surface-3-dark dark:bg-surface-2-dark"
                     >
-                        <div className="flex items-center justify-center flex-shrink-0 w-20 h-20 overflow-hidden bg-white rounded-lg dark:bg-deepcharcoal">
+                        <div className="flex items-center justify-center flex-shrink-0 w-20 h-20 overflow-hidden rounded-md bg-main-text-dark dark:bg-surface-2-dark">
                             <img
                                 src={item?.smartphone?.smartphone_image_urls?.[0] || Placeholder}
                                 alt={item?.smartphone?.model_name?.name || 'Product'}
@@ -729,25 +692,25 @@ function OrderItemsSummary({ cart_items, currency }) {
                             />
                         </div>
                         <div className="flex-1">
-                            <h3 className="mb-1 text-sm font-semibold text-gray-900 dark:text-white">
+                            <h3 className="mb-1 text-sm font-semibold text-main-text-light dark:text-main-text-dark">
                                 {item?.smartphone?.model_name?.name || 'N/A'}
                             </h3>
                             {item?.color && (
-                                <span
-                                    className="mb-2 inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium"
-                                    style={{
-                                        backgroundColor: item?.color?.code,
-                                        color: getContrastingColor(item?.color?.code),
-                                    }}
-                                >
-                                    {item.color?.name}
-                                </span>
+                                <div className="flex flex-wrap gap-2 mb-3">
+                                    <span
+                                        className={`inline-flex items-center rounded-md py-0.5 px-2 text-xs font-medium bg-surface-3-light text-sub-text-light dark:bg-surface-3-dark dark:text-sub-text-dark`}
+
+                                    >
+                                        {'Color: ' + item.color?.name || 'N/A'}
+                                    </span>
+                                </div>
                             )}
-                            <div className="flex items-center justify-between mt-2">
-                                <span className="text-xs text-gray-600 dark:text-white/60">
+
+                            <div className="flex items-center justify-between px-2 mt-2 gap-2n">
+                                <span className="text-xs text-sub-text-light dark:text-sub-text-dark">
                                     Qty: {item.quantity}
                                 </span>
-                                <span className="text-sm font-bold text-gray-900 dark:text-white">
+                                <span className="text-sm font-bold text-sub-text-light dark:text-sub-text-dark">
                                     {currency?.symbol}
                                     {(
                                         item.smartphone?.selling_info?.total_price * item.quantity
@@ -780,29 +743,16 @@ function OrderSummaryCard({
     processingOrder,
 }) {
     return (
-        <div className="p-6 bg-white border border-gray-200 rounded-xl dark:border-white/10 dark:bg-deepcharcoal">
-            <h2 className="flex items-center gap-2 mb-6 text-xl font-bold text-gray-900 dark:text-white">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-5 h-5"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
-                    />
-                </svg>
+        <div className="p-6 border rounded-md bg-surface-1-light border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+            <h2 className="flex items-center gap-2 mb-6 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
+
                 Order Summary
             </h2>
 
             <div className="mb-6 space-y-4">
                 <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-white/60">Subtotal</span>
-                    <span className="font-semibold text-gray-900 dark:text-white">
+                    <span className="text-main-text-light dark:text-main-text-dark">Subtotal</span>
+                    <span className="font-semibold text-sub-text-light dark:text-sub-text-dark">
                         {currency?.symbol}
                         {summary.subtotal}
                     </span>
@@ -810,7 +760,7 @@ function OrderSummaryCard({
 
                 {referalData.total_points > 0 && (
                     <div className="flex justify-between text-sm">
-                        <span className="flex items-center gap-1 text-gray-600 dark:text-white/60">
+                        <span className="flex items-center gap-1 text-sub-text-light dark:text-sub-text-dark">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
@@ -862,12 +812,12 @@ function OrderSummaryCard({
                     </div>
                 )}
 
-                <div className="pt-4 border-t border-gray-200 dark:border-white/10">
+                <div className="pt-4 border-t border-surface-3-light dark:border-surface-3-dark">
                     <div className="flex items-center justify-between">
-                        <span className="text-base font-semibold text-gray-900 dark:text-white">
+                        <span className="font-semibold text-md text-sub-text-light dark:text-sub-text-dark">
                             Total
                         </span>
-                        <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                        <span className="text-2xl font-semibold text-sub-text-light dark:text-sub-text-dark">
                             {currency?.symbol}
                             {summary.total}
                         </span>
@@ -876,12 +826,14 @@ function OrderSummaryCard({
             </div>
 
             {/* Referal Code Section */}
+
+
             {!referalData.referal_code && (
                 <div className="mb-6">
                     {!showReferalInput ? (
                         <button
                             onClick={() => setShowReferalInput(true)}
-                            className="flex items-center justify-center w-full gap-2 text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                            className="flex items-center justify-center w-full gap-2 text-sm font-medium transition-colors text-main-text-light hover:text-sub-text-light dark:text-main-text-dark dark:hover:text-sub-text-dark"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -908,68 +860,47 @@ function OrderSummaryCard({
                         <div className="space-y-2">
                             <div className="flex items-start gap-2">
                                 <div className="flex-1">
-                                    <input
-                                        type="text"
-                                        value={referalCode}
-                                        onChange={(e) => setReferalCode(e.target.value)}
-                                        placeholder="Enter Referal Code To Earn Points"
-                                        className={`w-full rounded-lg border ${error
-                                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                                            : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500/20'
-                                            } bg-white px-4 py-3 text-gray-900 placeholder-gray-400 transition-colors focus:outline-none focus:ring-2 dark:border-white/20 dark:bg-deepcharcoal dark:text-white dark:placeholder-white/40`}
+
+                                    <WebInput
+                                        Value={referalCode}
+                                        Action={(e) => setReferalCode(e.target.value)}
+                                        Placeholder={"Enter Refferal Code"}
+                                        Error={error}
                                     />
-                                    {error && (
-                                        <p className="mt-1 text-xs text-red-500 dark:text-red-400">
-                                            {error}
-                                        </p>
-                                    )}
+
+                                    <PrimaryButton
+                                        Text={"Apply"}
+                                        Spinner={applyingReferalProcessing}
+                                        Action={handleApplyReferal}
+                                        Type={'button'}
+                                    />
+
                                 </div>
-                                <button
-                                    onClick={handleApplyReferal}
-                                    disabled={applyingReferalProcessing}
-                                    className="flex items-center justify-center h-12 px-6 text-sm font-medium text-white transition-colors bg-indigo-600 rounded-lg hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                    {applyingReferalProcessing ? <Spinner /> : 'Apply'}
-                                </button>
+
+
                             </div>
                         </div>
                     )}
                 </div>
             )}
 
+
             {/* Place Order Button */}
             <button
                 onClick={handlePlaceOrder}
                 disabled={processingOrder}
-                className="mb-4 flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-3.5 text-base font-semibold text-white shadow-lg transition-all hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex w-full justify-center items-center rounded-md bg-main-text-light  px-6 py-3.5 text-center text-md font-semibold text-main-text-dark shadow-lg transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
             >
-                {processingOrder ? (
-                    <>
-                        <Spinner />
-                    </>
-                ) : (
-                    <>
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="w-5 h-5"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                        </svg>
-                    </>
+                {processingOrder && (
+
+                    <Spinner />
+
                 )}
                 <span>Place Order</span>
             </button>
 
             {/* Secure Checkout Badge */}
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-600 dark:text-white/60">
+            <div className="flex items-center justify-center gap-2 mt-10 text-sm text-sub-text-light dark:text-sub-text-dark">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -993,17 +924,27 @@ function OrderSummaryCard({
 // Social Message Buttons
 function SocialMessageButtons({ user, meta_usernames }) {
     return (
-        <div className="p-4 bg-white border border-gray-200 rounded-xl dark:border-white/10 dark:bg-deepcharcoal">
+        <div className="p-4 bg-white border border-gray-200 rounded-md dark:border-surface-3-dark dark:bg-surface-1-dark">
             <div className="flex flex-col w-full gap-3">
                 {/* Instagram Button */}
                 <a
                     href={`https://ig.me/m/${meta_usernames?.ig_username}?ref=user_id=${user?.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group relative flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-pink-500/30 hover:scale-[1.02] active:scale-[0.98] min-h-[44px]"
+                    className="group relative flex items-center justify-center gap-2
+                            px-5 py-3 min-h-[44px]
+                            text-sm font-semibold text-white
+                            rounded-md
+                            bg-gradient-to-r
+                            from-[#405DE6]
+                            via-[#C13584]
+                            to-[#F56040]
+                            transition-all duration-300
+                            hover:scale-[1.03]
+                            active:scale-[0.97]
+                            focus:outline-none"
                 >
-                    {/* Animated background overlay */}
-                    <div className="absolute inset-0 transition-opacity duration-300 opacity-0 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 group-hover:opacity-100"></div>
+
 
                     {/* Icon */}
                     <svg
@@ -1025,10 +966,8 @@ function SocialMessageButtons({ user, meta_usernames }) {
                     href={`https://m.me/${meta_usernames?.fb_page_username}?ref=user_id=${user?.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group relative flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white bg-blue-600 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.98] min-h-[44px]"
+                    className="group relative flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-white bg-blue-600 rounded-md overflow-hidden transition-all duration-300 hover:shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.98] min-h-[44px]"
                 >
-                    {/* Animated background overlay */}
-                    <div className="absolute inset-0 transition-opacity duration-300 bg-blue-700 opacity-0 group-hover:opacity-100"></div>
 
                     {/* Icon */}
                     <svg

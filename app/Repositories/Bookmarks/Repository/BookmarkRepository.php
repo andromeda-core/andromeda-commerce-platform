@@ -125,7 +125,7 @@ class BookmarkRepository implements IBookmarkRepository
         }
 
         $images = $request->boolean('images', true);
-        $text = $request->boolean('text', true);
+        $text = false; // $request->boolean('text', true);
         $videos = $request->boolean('videos', true);
         $show_posts = $request->boolean('show_posts', true);
 
@@ -165,6 +165,14 @@ class BookmarkRepository implements IBookmarkRepository
             ->with(['floor'])
             ->latest()
             ->paginate(10);
+
+        if ($bookmarks->isNotEmpty()) {
+            $bookmarks->getCollection()->transform(function ($bookmark) {
+                $bookmark->type = 'posts';
+
+                return $bookmark;
+            });
+        }
 
         return [
             'status' => true,

@@ -42,9 +42,10 @@ class PostRepository implements IPostRepository
     public function getSinglePostBySlug(string $slug, ?Request $request = null)
     {
 
+        $from_backend = ! empty($request) ? ($request->has('from_backend') ? $request->boolean('from_backend') : false) : false;
         $images = ! empty($request) ? ($request->has('images') ? $request->boolean('images') : true) : null;
         $videos = ! empty($request) ? ($request->has('videos') ? $request->boolean('videos') : true) : null;
-        $text = ! empty($request) ? ($request->has('text') ? $request->boolean('text') : true) : null;
+        // $text = false; // ! empty($request) ? ($request->has('text') ? $request->boolean('text') : true) : null;
         $show_posts = ! empty($request) ? ($request->has('show_posts') ? $request->boolean('show_posts') : true) : null;
         $show_products = ! empty($request) ? ($request->has('show_products') ? $request->boolean('show_products') : true) : null;
 
@@ -54,15 +55,21 @@ class PostRepository implements IPostRepository
                 ->when(! empty($show_posts), function ($q) {
                     $q->where('status', true);
                 })
-                ->when($request && $request->hasAny(['text', 'images', 'videos']), function ($q) use ($text, $images, $videos) {
-                    $q->where(function ($q) use ($text, $images, $videos) {
-                        if ($text) {
+                ->when(! $from_backend, function ($q) {
+                    $q->where(function ($sub) {
+                        $sub->whereRaw('JSON_LENGTH(images) > 0')
+                            ->orWhereRaw('JSON_LENGTH(videos) > 0');
+                    });
+                })
+                ->when($request && $request->hasAny(['text', 'images', 'videos']), function ($q) use ($images, $videos) {
+                    $q->where(function ($q) use ($images, $videos) {
+                        // if ($text) {
 
-                            $q->orWhere(function ($sub) {
-                                $sub->whereNull('images')
-                                    ->whereNull('videos');
-                            });
-                        }
+                        //     $q->orWhere(function ($sub) {
+                        //         $sub->whereNull('images')
+                        //             ->whereNull('videos');
+                        //     });
+                        // }
 
                         if ($images) {
 
@@ -88,14 +95,18 @@ class PostRepository implements IPostRepository
 
                 $related_posts = $this->post
                     ->where('id', '!=', $post->id)
-                    ->where(function ($q) use ($text, $images, $videos) {
-                        if ($text) {
+                    ->where(function ($sub) {
+                        $sub->whereRaw('JSON_LENGTH(images) > 0')
+                            ->orWhereRaw('JSON_LENGTH(videos) > 0');
+                    })
+                    ->where(function ($q) use ($images, $videos) {
+                        // if ($text) {
 
-                            $q->orWhere(function ($sub) {
-                                $sub->whereNull('images')
-                                    ->whereNull('videos');
-                            });
-                        }
+                        //     $q->orWhere(function ($sub) {
+                        //         $sub->whereNull('images')
+                        //             ->whereNull('videos');
+                        //     });
+                        // }
 
                         if ($images) {
 
@@ -305,7 +316,6 @@ class PostRepository implements IPostRepository
 
                 dispatch(new CompressPostVideoWithFFMPEG($tempPaths, $post, 'store'))->onQueue('video');
             }
-            info($post);
 
             return [
                 'status' => true,
@@ -1017,7 +1027,7 @@ class PostRepository implements IPostRepository
     {
 
         $images = $request->boolean('images', true);
-        $text = $request->boolean('text', true);
+        // $text = false; // $request->boolean('text', true);
         $videos = $request->boolean('videos', true);
         $show_products = $request->boolean('show_products', true);
         $show_posts = $request->boolean('show_posts', true);
@@ -1027,7 +1037,7 @@ class PostRepository implements IPostRepository
 
         $cacheTags = [
             'images:'.(int) $images,
-            'text:'.(int) $text,
+            // 'text:'.(int) $text,
             'videos:'.(int) $videos,
             'products:'.(int) $show_products,
             'posts:'.(int) $show_posts,
@@ -1036,7 +1046,7 @@ class PostRepository implements IPostRepository
 
         $cacheKey = implode(':', $cacheTags);
 
-        return Cache::tags(['feed'])->rememberForever($cacheKey, function () use ($images, $text, $videos, $show_products, $show_posts, $page, $perPage) {
+        return Cache::tags(['feed'])->rememberForever($cacheKey, function () use ($images, $videos, $show_products, $show_posts, $page, $perPage) {
 
             $results = collect();
             $hasMore = false;
@@ -1046,14 +1056,18 @@ class PostRepository implements IPostRepository
             if ($show_posts) {
                 $posts = $this->post
                     ->where('status', true)
-                    ->where(function ($q) use ($text, $images, $videos) {
-                        if ($text) {
+                    ->where(function ($sub) {
+                        $sub->whereRaw('JSON_LENGTH(images) > 0')
+                            ->orWhereRaw('JSON_LENGTH(videos) > 0');
+                    })
+                    ->where(function ($q) use ($images, $videos) {
+                        // if ($text) {
 
-                            $q->orWhere(function ($sub) {
-                                $sub->whereNull('images')
-                                    ->whereNull('videos');
-                            });
-                        }
+                        //     $q->orWhere(function ($sub) {
+                        //         $sub->whereNull('images')
+                        //             ->whereNull('videos');
+                        //     });
+                        // }
 
                         if ($images) {
 
@@ -1074,7 +1088,7 @@ class PostRepository implements IPostRepository
                         'floor:id,name',
                         'user:id,name',
                     ])
-                    ->latest()
+                    ->orderBy('id', 'desc')
                     ->forPage($page, $perPage)
                     ->get();
 
@@ -1091,14 +1105,18 @@ class PostRepository implements IPostRepository
                 if (! blank($allHashtags)) {
                     $relatedPosts = $this->post->where('status', true)
                         ->whereIn('tag', $allHashtags)
-                        ->where(function ($q) use ($text, $images, $videos) {
-                            if ($text) {
+                        ->where(function ($sub) {
+                            $sub->whereRaw('JSON_LENGTH(images) > 0')
+                                ->orWhereRaw('JSON_LENGTH(videos) > 0');
+                        })
+                        ->where(function ($q) use ($images, $videos) {
+                            // if ($text) {
 
-                                $q->orWhere(function ($sub) {
-                                    $sub->whereNull('images')
-                                        ->whereNull('videos');
-                                });
-                            }
+                            //     $q->orWhere(function ($sub) {
+                            //         $sub->whereNull('images')
+                            //             ->whereNull('videos');
+                            //     });
+                            // }
 
                             if ($images) {
 
@@ -1203,7 +1221,7 @@ class PostRepository implements IPostRepository
                     ])
                     ->whereHas('selling_info')
                     ->whereNotNull('slug')
-                    ->latest()
+                    ->orderBy('id', 'desc')
                     ->forPage($page, $perPage)
                     ->get();
 
@@ -1252,14 +1270,18 @@ class PostRepository implements IPostRepository
                     $relatedPosts = $this->post
                         ->where('status', true)
                         ->whereIn('tag', $allHashtags)
-                        ->where(function ($q) use ($text, $images, $videos) {
-                            if ($text) {
+                        ->where(function ($sub) {
+                            $sub->whereRaw('JSON_LENGTH(images) > 0')
+                                ->orWhereRaw('JSON_LENGTH(videos) > 0');
+                        })
+                        ->where(function ($q) use ($images, $videos) {
+                            // if ($text) {
 
-                                $q->orWhere(function ($sub) {
-                                    $sub->whereNull('images')
-                                        ->whereNull('videos');
-                                });
-                            }
+                            //     $q->orWhere(function ($sub) {
+                            //         $sub->whereNull('images')
+                            //             ->whereNull('videos');
+                            //     });
+                            // }
 
                             if ($images) {
 
@@ -1342,7 +1364,7 @@ class PostRepository implements IPostRepository
             $queryParams = [
                 'page' => $page + 1,
                 'images' => $images,
-                'text' => $text,
+                // 'text' => $text,
                 'videos' => $videos,
                 'show_products' => $show_products,
                 'show_posts' => $show_posts,
@@ -1419,7 +1441,7 @@ class PostRepository implements IPostRepository
             }
 
             $images = $request->boolean('images', true);
-            $text = $request->boolean('text', true);
+            // $text = false; // For now Not Using ->$request->boolean('text', false);
             $videos = $request->boolean('videos', true);
             $show_posts = $request->boolean('show_posts', true);
             $show_products = $request->boolean('show_products', true);
@@ -1436,14 +1458,18 @@ class PostRepository implements IPostRepository
                     ->when(! blank($existing_slugs), function ($subQQuery) use ($existing_slugs) {
                         $subQQuery->whereNotIn('slug', $existing_slugs);
                     })
-                    ->where(function ($subQQQuery) use ($text, $images, $videos) {
-                        if ($text) {
+                    ->where(function ($sub) {
+                        $sub->whereRaw('JSON_LENGTH(images) > 0')
+                            ->orWhereRaw('JSON_LENGTH(videos) > 0');
+                    })
+                    ->where(function ($subQQQuery) use ($images, $videos) {
+                        // if ($text) {
 
-                            $subQQQuery->orWhere(function ($sub) {
-                                $sub->whereNull('images')
-                                    ->whereNull('videos');
-                            });
-                        }
+                        //     $subQQQuery->orWhere(function ($sub) {
+                        //         $sub->whereNull('images')
+                        //             ->whereNull('videos');
+                        //     });
+                        // }
 
                         if ($images) {
 
@@ -1521,7 +1547,7 @@ class PostRepository implements IPostRepository
             $queryParams = [
                 'page' => $page + 1,
                 'images' => $images,
-                'text' => $text,
+                // 'text' => $text,
                 'videos' => $videos,
                 'show_products' => $show_products,
                 'show_posts' => $show_posts,
@@ -1560,7 +1586,7 @@ class PostRepository implements IPostRepository
     {
         try {
 
-            $text = $preferences['text'] ?? true;
+            // $text = false; // $preferences['text'] ?? true;
             $images = $preferences['images'] ?? true;
             $videos = $preferences['videos'] ?? true;
             $show_posts = $preferences['show_posts'] ?? true;
@@ -1580,14 +1606,18 @@ class PostRepository implements IPostRepository
                 $posts = $this->post
                     ->where('tag', $hashtag)
                     ->where('status', true)
-                    ->where(function ($q) use ($text, $images, $videos) {
-                        if ($text) {
+                    ->where(function ($sub) {
+                        $sub->whereRaw('JSON_LENGTH(images) > 0')
+                            ->orWhereRaw('JSON_LENGTH(videos) > 0');
+                    })
+                    ->where(function ($q) use ($images, $videos) {
+                        // if ($text) {
 
-                            $q->orWhere(function ($sub) {
-                                $sub->whereNull('images')
-                                    ->whereNull('videos');
-                            });
-                        }
+                        //     $q->orWhere(function ($sub) {
+                        //         $sub->whereNull('images')
+                        //             ->whereNull('videos');
+                        //     });
+                        // }
 
                         if ($images) {
 
@@ -1618,6 +1648,7 @@ class PostRepository implements IPostRepository
                             'longitude' => $post->longitude,
                             'image' => $post->post_image_urls && count($post->post_image_urls) > 0 ? $post->post_image_urls[0] : null,
                             'video_thumbnail' => $post->post_video_urls && count($post->post_video_urls) > 0 ? $post->post_video_urls[0]['thumbnail_url'] : null,
+                            'content' => $post->content,
                             'tag' => $post->tag,
                             'floor' => $post?->floor?->name,
                             'created_at' => $post->created_at->format('Y-m-d g:i A '),
@@ -1654,6 +1685,7 @@ class PostRepository implements IPostRepository
                             'upc' => $smartphone->upc,
                             'selling_info' => $smartphone->selling_info,
                             'inventory_items_count' => $smartphone->inventory_items_count,
+                            'content' => $smartphone->content,
                             'slug' => $smartphone->slug,
                             'tag' => $smartphone->tag,
                             'type' => 'smartphone',
@@ -1672,7 +1704,7 @@ class PostRepository implements IPostRepository
             $queryParams = [
                 'page' => $page + 1,
                 'images' => $images,
-                'text' => $text,
+                // 'text' => $text,
                 'videos' => $videos,
                 'show_products' => $show_products,
                 'show_posts' => $show_posts,
@@ -1706,46 +1738,46 @@ class PostRepository implements IPostRepository
         }
     }
 
-    private function extractKeywords($text)
-    {
-        //  Remove HTML
-        $text = strip_tags($text);
+    // private function extractKeywords($text)
+    // {
+    //     //  Remove HTML
+    //     $text = strip_tags($text);
 
-        // Keep only letters/numbers/spaces
-        $text = preg_replace('/[^A-Za-z0-9 ]/', ' ', $text);
+    //     // Keep only letters/numbers/spaces
+    //     $text = preg_replace('/[^A-Za-z0-9 ]/', ' ', $text);
 
-        //  Lowercase
-        $text = strtolower($text);
+    //     //  Lowercase
+    //     $text = strtolower($text);
 
-        // Split into words
-        $words = preg_split('/\s+/', $text);
+    //     // Split into words
+    //     $words = preg_split('/\s+/', $text);
 
-        // Filter trash
-        $words = array_filter($words, function ($w) {
-            return strlen($w) >= 3; // remove "is", "to", "on", etc.
-        });
+    //     // Filter trash
+    //     $words = array_filter($words, function ($w) {
+    //         return strlen($w) >= 3; // remove "is", "to", "on", etc.
+    //     });
 
-        // Keep unique only
-        $words = array_unique($words);
+    //     // Keep unique only
+    //     $words = array_unique($words);
 
-        // Limit max 8 words (best accuracy)
-        $words = array_slice($words, 0, 8);
+    //     // Limit max 8 words (best accuracy)
+    //     $words = array_slice($words, 0, 8);
 
-        return array_values($words);
-    }
+    //     return array_values($words);
+    // }
 
-    private function applyKeywordMatch($query, array $words, array $columns)
-    {
-        $query->where(function ($q) use ($words, $columns) {
-            foreach ($words as $word) {
-                $q->orWhere(function ($sub) use ($word, $columns) {
-                    foreach ($columns as $col) {
-                        $sub->orWhere($col, 'like', '%'.$word.'%');
-                    }
-                });
-            }
-        });
-    }
+    // private function applyKeywordMatch($query, array $words, array $columns)
+    // {
+    //     $query->where(function ($q) use ($words, $columns) {
+    //         foreach ($words as $word) {
+    //             $q->orWhere(function ($sub) use ($word, $columns) {
+    //                 foreach ($columns as $col) {
+    //                     $sub->orWhere($col, 'like', '%'.$word.'%');
+    //                 }
+    //             });
+    //         }
+    //     });
+    // }
 
     // Combining The Item That macthes For Posts And products  For WEbsite
     // private function itemMatches($item, array $keywords)

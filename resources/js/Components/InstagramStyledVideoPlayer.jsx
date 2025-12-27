@@ -9,6 +9,7 @@ const InstagramStyledVideoPlayer = ({
     Preload = 'metadata',
     slug,
     timelinePadding = 12,
+    isMainFeed = false,
 }) => {
 
     //  CREATE UNIQUE INSTANCE ID
@@ -30,6 +31,8 @@ const InstagramStyledVideoPlayer = ({
 
     const registerVideo = useVideoStore(state => state.registerVideo);
     const unregisterVideo = useVideoStore(state => state.unregisterVideo);
+
+    const [pendingSeekTime, setPendingSeekTime] = useState(null);
 
     //  STABLE REF WITH INSTANCE ID IN LOGS
     const playerMethodsRef = useRef({
@@ -196,19 +199,21 @@ const InstagramStyledVideoPlayer = ({
     const handleVideoClick = () => togglePlayPause();
 
     const calculateTimeFromPosition = (clientX) => {
-        const rect = timelineRef.current.getBoundingClientRect();
+        const rect = timelineRef.current?.getBoundingClientRect();
+        if (!rect) return 0;
+
         const offset = Math.max(0, Math.min(clientX - rect.left, rect.width));
-        return (offset / rect.width) * duration;
+        const percentage = offset / rect.width;
+
+        // If we have duration, calculate exact time, otherwise store percentage
+        if (duration && duration > 0) {
+            return percentage * duration;
+        }
+
+        // Return percentage as time (will be converted when duration is available)
+        return percentage;
     };
 
-    const handleTimelineClick = (e) => {
-        if (isDragging) return;
-        const newTime = calculateTimeFromPosition(getClientX(e));
-        const video = videoRef.current;
-
-        video.currentTime = newTime;
-        setCurrentTime(newTime);
-    };
 
     const handleTimelineDragStart = (e) => {
         setIsDragging(true);
@@ -216,8 +221,14 @@ const InstagramStyledVideoPlayer = ({
         const newTime = calculateTimeFromPosition(getClientX(e));
 
         const video = videoRef.current;
-        video.currentTime = newTime;
-        setCurrentTime(newTime);
+        if (video && duration && duration > 0) {
+            video.currentTime = newTime;
+            setCurrentTime(newTime);
+        } else {
+            // Store as pending seek if no duration yet
+            setPendingSeekTime(newTime);
+            setCurrentTime(newTime * 100);
+        }
     };
 
     const handleTimelineDrag = (e) => {
@@ -228,9 +239,31 @@ const InstagramStyledVideoPlayer = ({
             const newTime = calculateTimeFromPosition(getClientX(e));
             const video = videoRef.current;
 
+            if (video && duration && duration > 0) {
+                video.currentTime = newTime;
+                setCurrentTime(newTime);
+            } else {
+                // Store as pending seek if no duration yet
+                setPendingSeekTime(newTime);
+                setCurrentTime(newTime * 100);
+            }
+        });
+    };
+
+    const handleTimelineClick = (e) => {
+        if (isDragging) return;
+
+        const newTime = calculateTimeFromPosition(getClientX(e));
+        const video = videoRef.current;
+
+        if (video && duration && duration > 0) {
             video.currentTime = newTime;
             setCurrentTime(newTime);
-        });
+        } else {
+            // Store as pending seek
+            setPendingSeekTime(newTime);
+            setCurrentTime(newTime * 100);
+        }
     };
 
     const handleTimelineDragEnd = () => {
@@ -259,6 +292,23 @@ const InstagramStyledVideoPlayer = ({
         };
     }, [isDragging]);
 
+
+
+    // Apply pending seek time when duration becomes available
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video || !duration || duration === 0 || pendingSeekTime === null) return;
+
+        // Convert stored percentage to actual time
+        const seekTime = pendingSeekTime <= 1 ? pendingSeekTime * duration : pendingSeekTime;
+        video.currentTime = seekTime;
+        setCurrentTime(seekTime);
+        setPendingSeekTime(null);
+
+    }, [duration, pendingSeekTime]);
+
+
+
     useEffect(() => {
         if (!isPlaying) {
             clearInterval(progressIntervalRef.current);
@@ -274,6 +324,11 @@ const InstagramStyledVideoPlayer = ({
         return () => clearInterval(progressIntervalRef.current);
     }, [isPlaying, isDragging]);
 
+
+
+
+
+
     // CleanUp
     useEffect(() => {
         return () => {
@@ -283,7 +338,15 @@ const InstagramStyledVideoPlayer = ({
         };
     }, []);
 
-    const progressPercentage = duration ? (currentTime / duration) * 100 : 0;
+
+
+
+
+    const progressPercentage = duration && duration > 0
+        ? (currentTime / duration) * 100
+        : pendingSeekTime !== null
+            ? (pendingSeekTime * 100)
+            : 0;
 
     return (
         <div className="relative w-full h-full bg-black"
@@ -315,7 +378,9 @@ const InstagramStyledVideoPlayer = ({
                 ${showControls || !isPlaying ? "opacity-100" : "opacity-0"}`}
             >
                 <div className="flex flex-col items-center gap-4 pointer-events-auto">
-                    <button
+
+                    {/* Not Showing Here because Now its Moved Into the timeline */}
+                    {/* <button
                         onClick={toggleMute}
                         className="flex items-center justify-center w-12 h-12 rounded-full bg-black/50 backdrop-blur-sm"
                     >
@@ -332,7 +397,7 @@ const InstagramStyledVideoPlayer = ({
                                     d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
                             </svg>
                         )}
-                    </button>
+                    </button> */}
 
                     <button onClick={togglePlayPause}
                         className="flex items-center justify-center w-16 h-16 rounded-full bg-black/50 backdrop-blur-sm">
@@ -351,21 +416,49 @@ const InstagramStyledVideoPlayer = ({
 
             {/* Timeline */}
             <div
-                ref={timelineRef}
-                onMouseEnter={() => setShowTimeline(true)}
-                onMouseLeave={() => !isDragging && setShowTimeline(false)}
-                onMouseDown={handleTimelineDragStart}
-                onTouchStart={handleTimelineDragStart}
-                onClick={handleTimelineClick}
-                className="absolute left-0 right-0 z-50 cursor-pointer touch-none"
+                className={`absolute left-0 right-0 z-10 flex items-center gap-1 px-2 py-4 ${isMainFeed ? 'bottom-12' : '-bottom-3'}`}
                 style={{
-                    bottom: `max(${timelinePadding}px, env(safe-area-inset-bottom))`,
-                    padding: "12px 0",
+                    paddingBottom: `max(16px, env(safe-area-inset-bottom))`,
                 }}
             >
-                <div className="relative w-full px-2">
-                    <div className={`w-full bg-white/30 rounded-full ${showTimeline ? "h-1" : "h-0.5"}`}>
-                        <div className="h-full bg-white rounded-full" style={{ width: `${progressPercentage}%` }} />
+                {/* Mute Button */}
+                <button
+                    onClick={toggleMute}
+                    className="flex items-center justify-center flex-shrink-0 w-10 h-10 bg-transparent "
+                >
+                    {isMuted ? (
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                        </svg>
+                    ) : (
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                        </svg>
+                    )}
+                </button>
+
+                {/* Timeline */}
+                <div
+                    ref={timelineRef}
+                    onMouseEnter={() => setShowTimeline(true)}
+                    onMouseLeave={() => !isDragging && setShowTimeline(false)}
+                    onMouseDown={handleTimelineDragStart}
+                    onTouchStart={handleTimelineDragStart}
+                    onClick={handleTimelineClick}
+                    className="relative flex-1 cursor-pointer select-none"
+                    style={{ padding: "12px 0" }}
+                >
+                    <div className="relative w-full">
+                        <div className="w-full bg-white/30 rounded-full h-1.5">
+                            <div
+                                className="h-full transition-all bg-white rounded-full"
+                                style={{ width: `${progressPercentage}%` }}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>

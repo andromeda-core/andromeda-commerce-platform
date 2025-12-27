@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
@@ -6,6 +6,7 @@ import Toast from '@/Components/Toast';
 import axios from 'axios';
 
 import useWindowSize from '@/Hooks/useWindowSize';
+import Spinner from '@/Components/Spinner';
 
 export default function index({ orders, next_page_url }) {
     const { currency } = usePage().props;
@@ -13,7 +14,6 @@ export default function index({ orders, next_page_url }) {
 
     const [allOrders, setAllOrders] = useState(orders || []);
     const nextPageUrlRef = useRef(next_page_url || null);
-
 
     const [infoMessage, setInfoMessage] = useState(null);
     const [showInfoMessage, setShowInfoMessage] = useState(false);
@@ -25,7 +25,6 @@ export default function index({ orders, next_page_url }) {
     const [activeTab, setActiveTab] = useState('all');
 
     const loaderRef = useRef(null);
-
 
     const isfetchingMorePosts = useRef(false);
 
@@ -89,6 +88,61 @@ export default function index({ orders, next_page_url }) {
 
     const filteredOrders = filterOrdersByStatus(activeTab);
 
+
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(false);
+    const scrollContainerRef = useRef(null);
+
+
+    // Scroll handlers
+    const scrollLeft = useCallback(() => {
+        scrollContainerRef.current?.scrollBy({ left: -200, behavior: 'smooth' });
+    }, []);
+
+    const scrollRight = useCallback(() => {
+        scrollContainerRef.current?.scrollBy({ left: 200, behavior: 'smooth' });
+    }, []);
+
+
+
+
+    // Optimized scroll button update with debouncing
+    const updateScrollButtons = useCallback(() => {
+        if (scrollContainerRef.current) {
+            const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+            const newCanScrollLeft = scrollLeft > 0;
+            const newCanScrollRight = scrollLeft < scrollWidth - clientWidth - 20;
+
+            // Only update if values changed
+            if (newCanScrollLeft !== canScrollLeft || newCanScrollRight !== canScrollRight) {
+
+                setCanScrollLeft(newCanScrollLeft);
+                setCanScrollRight(newCanScrollRight);
+            }
+        }
+    }, [canScrollLeft, canScrollRight]);
+
+
+    useEffect(() => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+
+        const raf = requestAnimationFrame(() => {
+            updateScrollButtons();
+        });
+
+        container.addEventListener('scroll', updateScrollButtons);
+        window.addEventListener('resize', updateScrollButtons);
+
+        return () => {
+            cancelAnimationFrame(raf);
+            container.removeEventListener('scroll', updateScrollButtons);
+            window.removeEventListener('resize', updateScrollButtons);
+        };
+    }, [updateScrollButtons, orders.length]);
+
+
+
     return (
         <MainLayout>
             <Head title="My Orders" />
@@ -118,78 +172,129 @@ export default function index({ orders, next_page_url }) {
                     }}
                 />
             )}
+            <div className="min-h-screen pb-20 my-0 lg:my-3">
 
-            <div className="min-h-screen transition-colors duration-200">
-                <div
-                    className={`mx-auto max-w-7xl sm:px-6 lg:px-8 ${windowSize.width < 1024 && 'mb-20'}`}
-                >
-                    {/* Status Tabs */}
-                    <div className="px-4 mb-8 overflow-x-auto sm:px-0">
-                        <div className="flex gap-2 border-b border-gray-200 dark:border-white/10 sm:justify-center">
-                            <TabButton
-                                label="All"
-                                count={orders.length}
-                                active={activeTab === 'all'}
-                                onClick={() => setActiveTab('all')}
-                            />
-                            <TabButton
-                                label="Pending"
-                                count={filterOrdersByStatus('pending').length}
-                                active={activeTab === 'pending'}
-                                onClick={() => setActiveTab('pending')}
-                            />
+                <div className="w-full px-4 mx-auto overflow-x-hidden text-black max-w-7xl sm:px-8 dark:text-main-text-dark">
 
-                            <TabButton
-                                label="Awaiting Payment"
-                                count={filterOrdersByStatus('awaiting_payment').length}
-                                active={activeTab === 'awaiting_payment'}
-                                onClick={() => setActiveTab('awaiting_payment')}
-                            />
 
-                            <TabButton
-                                label="Paid"
-                                count={filterOrdersByStatus('paid').length}
-                                active={activeTab === 'paid'}
-                                onClick={() => setActiveTab('paid')}
-                            />
-                            <TabButton
-                                label="Shipped"
-                                count={filterOrdersByStatus('shipped').length}
-                                active={activeTab === 'shipped'}
-                                onClick={() => setActiveTab('shipped')}
-                            />
-                            <TabButton
-                                label="Delivered"
-                                count={filterOrdersByStatus('delivered').length}
-                                active={activeTab === 'delivered'}
-                                onClick={() => setActiveTab('delivered')}
-                            />
-                            <TabButton
-                                label="Arrived Locally"
-                                count={filterOrdersByStatus('arrived_locally').length}
-                                active={activeTab === 'arrived_locally'}
-                                onClick={() => setActiveTab('arrived_locally')}
-                            />
+                    <div className="w-full mt-6 mb-4">
+                        <div className="relative grid w-full grid-cols-1 overflow-hidden">
 
-                            <TabButton
-                                label="Failed"
-                                count={filterOrdersByStatus('failed').length}
-                                active={activeTab === 'failed'}
-                                onClick={() => setActiveTab('failed')}
-                            />
-                            <TabButton
-                                label="Expired"
-                                count={filterOrdersByStatus('expired').length}
-                                active={activeTab === 'expired'}
-                                onClick={() => setActiveTab('expired')}
-                            />
+                            <div className="relative flex items-center w-full">
+                                {/* Left Arrow */}
+                                {canScrollLeft && (
+                                    <button
+                                        onClick={scrollLeft}
+                                        className="absolute left-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-1-light hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
+                                        style={{ left: '0px' }}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="text-sub-text-light size-4 dark:text-sub-text-dark"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+                                    </button>
+                                )}
+
+
+                                <div
+                                    ref={scrollContainerRef}
+                                    className="flex items-center w-full gap-3 overflow-x-auto flex-nowrap scrollbar-none scroll-smooth"
+                                    style={{
+                                        transform: 'translateZ(0)',
+                                        WebkitOverflowScrolling: 'touch',
+                                        scrollbarWidth: 'none',
+                                        msOverflowStyle: 'none',
+                                        maxWidth: '100%',
+                                        display: 'flex'
+                                    }}
+                                >
+
+
+                                    {/* Status Tabs */}
+                                    {orders.length > 0 && (
+                                        <>
+
+                                            <TabButton
+                                                label="All"
+                                                count={orders.length}
+                                                active={activeTab === 'all'}
+                                                onClick={() => setActiveTab('all')}
+                                            />
+                                            <TabButton
+                                                label="Pending"
+                                                count={filterOrdersByStatus('pending').length}
+                                                active={activeTab === 'pending'}
+                                                onClick={() => setActiveTab('pending')}
+                                            />
+
+                                            <TabButton
+                                                label="Awaiting Payment"
+                                                count={filterOrdersByStatus('awaiting_payment').length}
+                                                active={activeTab === 'awaiting_payment'}
+                                                onClick={() => setActiveTab('awaiting_payment')}
+                                            />
+
+                                            <TabButton
+                                                label="Paid"
+                                                count={filterOrdersByStatus('paid').length}
+                                                active={activeTab === 'paid'}
+                                                onClick={() => setActiveTab('paid')}
+                                            />
+                                            <TabButton
+                                                label="Shipped"
+                                                count={filterOrdersByStatus('shipped').length}
+                                                active={activeTab === 'shipped'}
+                                                onClick={() => setActiveTab('shipped')}
+                                            />
+                                            <TabButton
+                                                label="Delivered"
+                                                count={filterOrdersByStatus('delivered').length}
+                                                active={activeTab === 'delivered'}
+                                                onClick={() => setActiveTab('delivered')}
+                                            />
+                                            <TabButton
+                                                label="Arrived Locally"
+                                                count={filterOrdersByStatus('arrived_locally').length}
+                                                active={activeTab === 'arrived_locally'}
+                                                onClick={() => setActiveTab('arrived_locally')}
+                                            />
+
+                                            <TabButton
+                                                label="Failed"
+                                                count={filterOrdersByStatus('failed').length}
+                                                active={activeTab === 'failed'}
+                                                onClick={() => setActiveTab('failed')}
+                                            />
+                                            <TabButton
+                                                label="Expired"
+                                                count={filterOrdersByStatus('expired').length}
+                                                active={activeTab === 'expired'}
+                                                onClick={() => setActiveTab('expired')}
+                                            />
+                                        </>
+
+
+                                    )}
+
+                                </div>
+
+                                {/* Right Arrow */}
+                                {canScrollRight && (
+                                    <button
+                                        onClick={scrollRight}
+                                        className="absolute right-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-1-light hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="text-sub-text-light size-4 dark:text-sub-text-dark"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+                                    </button>
+                                )}
+
+
+                            </div>
                         </div>
                     </div>
 
+
                     {/* Orders Grid */}
-                    <div className="px-4 sm:px-0">
+                    <div className="px-4 mt-10 sm:px-0">
                         {filteredOrders.length === 0 ? (
-                            <EmptyOrders status={activeTab} />
+                            <EmptyOrders />
                         ) : (
                             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                                 {filteredOrders.map((order) => (
@@ -205,29 +310,9 @@ export default function index({ orders, next_page_url }) {
             {nextPageUrlRef.current && (
                 <div
                     ref={loaderRef}
-                    className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80"
+                    className="flex items-center justify-center gap-2 py-10 text-center transition-all duration-100 text-main-text-light animate-pulse dark:text-main-text-dark"
                 >
-                    <div className="flex items-center justify-center">
-                        <div role="status">
-                            <svg
-                                aria-hidden="true"
-                                className="w-5 h-5 text-gray-200 animate-spin fill-blue-600 dark:text-gray-600"
-                                viewBox="0 0 100 101"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path
-                                    d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                                    fill="currentColor"
-                                />
-                                <path
-                                    d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                                    fill="currentFill"
-                                />
-                            </svg>
-                            <span className="sr-only">Loading...</span>
-                        </div>
-                    </div>
+                    <Spinner />
                     Loading more...
                 </div>
             )}
@@ -240,17 +325,19 @@ function TabButton({ label, count, active, onClick }) {
     return (
         <button
             onClick={onClick}
-            className={`flex items-center gap-2 whitespace-nowrap border-b-2 px-5 py-3.5 text-sm font-semibold transition-all ${active
-                ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
-                : 'border-transparent text-gray-600 hover:border-gray-300 hover:text-gray-700 dark:text-white/80 dark:hover:border-white/20 dark:hover:text-white'
+            className={`flex flex-shrink-0 items-center gap-2 whitespace-nowrap
+        border-b-2 px-5 py-3.5 text-sm font-semibold transition-all
+        ${active
+                    ? 'border-surface-3-light text-main-text-light dark:text-main-text-dark dark:border-surface-3-dark'
+                    : 'border-transparent text-main-text-light hover:border-surface-3-light dark:text-main-text-dark dark:hover:border-surface-3-dark'
                 }`}
         >
-            <span>{label}</span>
+            <span className='text-main-text-light dark:text-main-text-dark'>{label}</span>
             {count > 0 && (
                 <span
                     className={`flex h-6 min-w-[24px] items-center justify-center rounded-full px-2 text-xs font-bold ${active
-                        ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400'
-                        : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-white/80'
+                        ? 'bg-main-text-light text-main-text-dark dark:bg-main-text-dark dark:text-main-text-light'
+                        : 'bg-main-text-light/80 text-main-text-dark dark:bg-main-text-dark/80 dark:text-main-text-light'
                         }`}
                 >
                     {count}
@@ -266,27 +353,27 @@ function OrderCard({ order, currency }) {
         const statusLower = status.toLowerCase();
         switch (statusLower) {
             case 'pending':
-                return 'bg-yellow-500 text-white';
+                return 'bg-yellow-500 text-main-text-dark';
             case 'paid':
-                return 'bg-blue-500 text-white';
+                return 'bg-blue-500 text-main-text-dark';
             case 'shipped':
-                return 'bg-pink-500 text-white';
+                return 'bg-pink-500 text-main-text-dark';
             case 'delivered':
-                return 'bg-green-500 text-white';
+                return 'bg-green-500 text-main-text-dark';
             case 'arrived_locally':
-                return 'bg-stone-500 text-white';
+                return 'bg-stone-500 text-main-text-dark';
             case 'failed':
-                return 'bg-red-500 text-white';
+                return 'bg-red-500 text-main-text-dark';
             case 'expired':
-                return 'bg-gray-500 text-white';
+                return 'bg-gray-500 text-main-text-dark';
             case 'awaiting_payment':
-                return 'bg-indigo-500 text-white';
+                return 'bg-indigo-500 text-main-text-dark';
 
             case 'blockchain_confirmation_pending':
-                return 'bg-indigo-500 text-white';
+                return 'bg-indigo-500 text-main-text-dark';
 
             default:
-                return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
+                return 'bg-gray-100 text-main-text-light dark:bg-gray-900/30 dark:text-main-text-dark';
         }
     };
 
@@ -297,7 +384,7 @@ function OrderCard({ order, currency }) {
         <>
             <Link
                 href={route('website.orders.order-view', order.order_no)}
-                className="relative block overflow-hidden transition-all bg-white border border-gray-200 group rounded-2xl hover:shadow-xl dark:border-white/10 dark:bg-deepcharcoal"
+                className="relative block overflow-hidden transition-all border rounded-md border-surface-3-light bg-surface-1-light group dark:border-surface-3-dark dark:bg-surface-1-dark"
             >
                 {!order.payment_proof &&
                     order.status === 'pending' &&
@@ -361,11 +448,11 @@ function OrderCard({ order, currency }) {
                     )}
 
                 {/* Order Header */}
-                <div className="p-5 border-b border-gray-200 bg-gray-50 dark:border-white/10 dark:bg-deepcharcoal">
+                <div className="p-5 border-b border-surface-3-light bg-surface-1-light dark:border-surface-3-dark dark:bg-surface-1-dark">
                     <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
                             <div className="flex flex-wrap items-center gap-3 mb-2">
-                                <h3 className="text-lg font-bold text-gray-700 dark:text-white/80">
+                                <h3 className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
                                     #{order.order_no}
                                 </h3>
                                 <span
@@ -374,7 +461,7 @@ function OrderCard({ order, currency }) {
                                     {order.status.replace(/_/g, ' ')}
                                 </span>
                             </div>
-                            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-white/80">
+                            <div className="flex flex-wrap items-center gap-4 text-sm text-sub-text-light dark:text-sub-text-dark">
                                 <span className="flex items-center gap-1.5">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -413,8 +500,8 @@ function OrderCard({ order, currency }) {
                             </div>
                         </div>
                         <div className="text-right">
-                            <p className="text-sm text-gray-600 dark:text-white/80">Total</p>
-                            <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                            <p className="text-sm text-black dark:text-sub-text-dark">Total</p>
+                            <p className="text-xl font-semibold text-sub-text-light dark:text-sub-text-dark">
                                 {currency?.symbol}
                                 {parseFloat(order.amount).toFixed(2)}
                             </p>
@@ -428,7 +515,7 @@ function OrderCard({ order, currency }) {
                         {displayImages.map((item) => (
                             <div
                                 key={item.id}
-                                className="relative overflow-hidden transition-all bg-white border-2 border-gray-200 group/img aspect-square rounded-xl hover:border-indigo-400 hover:shadow-lg dark:border-white/10 dark:bg-gray-900/50 dark:hover:border-indigo-500"
+                                className="relative overflow-hidden transition-all border-2 rounded-md border-trasparent bg-surface-1-light group/img aspect-square dark:bg-surface-1-dark dark:hover:border-surface-3-dark"
                             >
                                 <img
                                     src={
@@ -440,7 +527,7 @@ function OrderCard({ order, currency }) {
                                     onError={(e) => (e.target.src = Placeholder)}
                                 />
                                 {item.quantity > 1 && (
-                                    <div className="absolute flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-indigo-600 rounded-full shadow-lg right-2 top-2">
+                                    <div className="absolute flex items-center justify-center w-6 h-6 text-xs font-semibold rounded-full shadow-lg text-main-text-light bg-surface-3-light dark:text-main-text-dark dark:bg-surface-3-dark right-2 top-2">
                                         {item.quantity}
                                     </div>
                                 )}
@@ -448,8 +535,8 @@ function OrderCard({ order, currency }) {
                         ))}
 
                         {remainingCount > 0 && (
-                            <div className="flex items-center justify-center border-2 border-gray-300 border-dashed aspect-square rounded-xl bg-gray-50 dark:border-white/20 dark:bg-gray-900/50">
-                                <span className="text-sm font-bold text-center text-gray-600 dark:text-white/80/70">
+                            <div className="flex items-center justify-center border-2 border-dashed rounded-md border-surface-3-light bg-surface-1-light aspect-square dark:border-surface-3-dark dark:bg-surface-1-dark">
+                                <span className="text-sm font-semibold text-center text-sub-text-light dark:text-sub-text-dark">
                                     +{remainingCount}
                                     <br />
                                     <span className="text-xs font-normal">More</span>
@@ -459,12 +546,12 @@ function OrderCard({ order, currency }) {
                     </div>
 
                     {/* Payment Method Badge */}
-                    <div className="flex items-center justify-center gap-2 py-3 mb-4 rounded-xl bg-gray-50 dark:bg-gray-900/30">
+                    <div className="flex items-center justify-center gap-2 py-3 mb-4 border rounded-md bg-surface-1-light border-surface-3-light dark:bg-surface-2-dark dark:border-surface-3-dark ">
                         {order.payment_method === 'crypto' ? (
                             <>
                                 <div className="flex items-center justify-center bg-orange-500 rounded-full h-7 w-7">
                                     <svg
-                                        className="w-6 h-6 text-gray-700 dark:text-white/80/80"
+                                        className="w-6 h-6 text-main-text-light dark:text-main-text-dark"
                                         viewBox="0.004 0 64 64"
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
@@ -475,7 +562,7 @@ function OrderCard({ order, currency }) {
                                         />
                                     </svg>
                                 </div>
-                                <span className="text-sm font-semibold text-gray-700 dark:text-white/80">
+                                <span className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
                                     Crypto Payment
                                 </span>
                             </>
@@ -488,7 +575,7 @@ function OrderCard({ order, currency }) {
                                         viewBox="0 0 24 24"
                                         strokeWidth={1.5}
                                         stroke="currentColor"
-                                        className="w-6 h-6 text-gray-700 dark:text-white/80"
+                                        className="w-6 h-6 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -497,7 +584,7 @@ function OrderCard({ order, currency }) {
                                         />
                                     </svg>
                                 </div>
-                                <span className="text-sm font-semibold text-gray-700 dark:text-white/80">
+                                <span className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
                                     Points Payment
                                 </span>
                             </>
@@ -510,7 +597,7 @@ function OrderCard({ order, currency }) {
                                         viewBox="0 0 24 24"
                                         strokeWidth={2}
                                         stroke="currentColor"
-                                        className="w-6 h-6 text-gray-700 dark:text-white/80"
+                                        className="w-6 h-6 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -519,7 +606,7 @@ function OrderCard({ order, currency }) {
                                         />
                                     </svg>
                                 </div>
-                                <span className="text-sm font-semibold text-gray-700 dark:text-white/80">
+                                <span className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
                                     Bank Transfer
                                 </span>
                             </>
@@ -527,7 +614,7 @@ function OrderCard({ order, currency }) {
                     </div>
 
                     {/* View Order Button */}
-                    <button className="flex items-center justify-center w-full gap-2 px-4 py-3 text-sm font-semibold text-white transition-all bg-indigo-600 rounded-xl hover:bg-indigo-500">
+                    <button className="flex items-center justify-center w-full gap-2 px-4 py-3 font-semibold transition-all rounded-md bg-main-text-light text-md text-main-text-dark dark:text-main-text-light dark:bg-main-text-dark hover:bg-main-text-light/80 dark:hover:bg-main-text-dark/80 ">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
@@ -556,61 +643,24 @@ function OrderCard({ order, currency }) {
 }
 
 // Empty Orders Component
-function EmptyOrders({ status }) {
-    const getMessage = () => {
-        switch (status) {
-            case 'pending':
-                return 'No pending orders';
-            case 'paid':
-                return 'No paid orders';
-            case 'shipped':
-                return 'No shipped orders';
-            case 'delivered':
-                return 'No delivered orders';
-            case 'arrived_locally':
-                return 'No arrived locally orders';
-            default:
-                return 'No orders yet';
-        }
-    };
-
+function EmptyOrders() {
     return (
-        <div className="flex items-center justify-center px-6 py-16 bg-white border border-gray-200 rounded-xl dark:border-white/10 dark:bg-deepcharcoal">
-            <div className="flex flex-col items-center gap-3">
-                <div className="flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full dark:bg-gray-800">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-8 h-8 text-gray-500 dark:text-gray-400"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
-                        />
-                    </svg>
-                </div>
-                <div className="text-center">
-                    <h3 className="text-lg font-semibold text-gray-700 dark:text-white/80">
-                        {getMessage()}
-                    </h3>
-                    <p className="mt-1 mb-5 text-sm text-gray-500 dark:text-gray-400">
-                        {status === 'all'
-                            ? 'Start shopping to see your orders here'
-                            : `You don't have any ${status.replace('_', ' ')} orders`}
-                    </p>
-                    {status === 'all' && (
-                        <Link
-                            href={route('home')}
-                            className="px-6 py-3 font-medium text-white transition-all bg-indigo-600 rounded-xl hover:bg-indigo-500"
-                        >
-                            Start Shopping
-                        </Link>
-                    )}
-                </div>
+        <div className="flex min-h-[50vh] items-center justify-center px-6">
+            <div className="text-center">
+                <h3 className="text-[22px] font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
+                    No orders yet
+                </h3>
+
+                <p className="max-w-xs mt-2 mb-8 text-sm leading-relaxed text-sub-text-light dark:text-sub-text-dark">
+                    Start shopping to see your orders here
+                </p>
+
+                <Link
+                    href={route('home')}
+                    className="inline-flex items-center justify-center rounded-md bg-main-text-light px-10 py-2.5 text-md font-semibold dark:text-main-text-light  text-main-text-dark transition-colors hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text  dark:hover:bg-main-text-dark/80"
+                >
+                    Start Shopping
+                </Link>
             </div>
         </div>
     );

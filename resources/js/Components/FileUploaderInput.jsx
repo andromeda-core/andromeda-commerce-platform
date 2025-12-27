@@ -59,7 +59,7 @@ export default function FileUploaderInput({
             <div className={CustomCss || 'w-full'}>
                 <label
                     htmlFor={Id}
-                    className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
+                    className="mb-1.5 block mx-4 text-sm font-medium text-gray-700 dark:text-gray-400"
                 >
                     {InputName}
                     {Required && <span className="text-red-500 dark:text-white"> *</span>}

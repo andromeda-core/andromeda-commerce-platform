@@ -16,7 +16,43 @@ const SmartphoneMobileGalleryModal = (
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [actionDropdownOpen, setActionDropdownOpen] = useState(null);
     const actionDropdownRef = useRef(null);
+    const thumbnailContainerRef = useRef(null);
     const scrollContainerRef = useRef(null);
+
+
+
+    // Handle Media scroll Smartphone Media
+    const handleScroll = (e) => {
+        const container = e.target;
+        const scrollLeft = container.scrollLeft;
+        const itemWidth = container.offsetWidth;
+        const newIndex = Math.round(scrollLeft / itemWidth);
+
+
+        if (newIndex !== currentImageIndex) {
+            setCurrentImageIndex(newIndex);
+
+            const activeThumb = thumbnailContainerRef.current?.children[newIndex];
+            activeThumb?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'center'
+            });
+        }
+    };
+
+
+    const handleThumbnailClick = (index) => {
+        setCurrentImageIndex(index);
+        const targetMainItem = scrollContainerRef.current?.children[index];
+        targetMainItem?.scrollIntoView({
+            behavior: 'instant',
+            block: 'nearest',
+            inline: 'start'
+        });
+    };
+
+
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -28,14 +64,6 @@ const SmartphoneMobileGalleryModal = (
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Handle image scroll for pagination dots
-    const handleImageScroll = (e) => {
-        const container = e.target;
-        const scrollLeft = container.scrollLeft;
-        const itemWidth = container.offsetWidth;
-        const index = Math.round(scrollLeft / itemWidth);
-        setCurrentImageIndex(index);
-    };
 
 
 
@@ -271,35 +299,7 @@ const SmartphoneMobileGalleryModal = (
         }
     }, [cart_items, smartphone.id, smartphone?.colors]);
 
-    // Calculate visible dots (max 5) with sliding window
-    const getVisibleDots = () => {
-        const totalImages = smartphone?.images?.length || 0;
-        if (totalImages <= 5) {
-            // Show all dots if 5 or fewer images
-            return Array.from({ length: totalImages }, (_, i) => i);
-        }
 
-        // Sliding window logic for more than 5 images
-        const maxVisible = 5;
-        let start = currentImageIndex - 2;
-        let end = currentImageIndex + 2;
-
-        // Adjust window at the beginning
-        if (start < 0) {
-            start = 0;
-            end = maxVisible - 1;
-        }
-
-        // Adjust window at the end
-        if (end >= totalImages) {
-            end = totalImages - 1;
-            start = totalImages - maxVisible;
-        }
-
-        return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-    };
-
-    const visibleDots = getVisibleDots();
 
 
     // LOCKING BODY WHEN MOUNT TO PREVENT SCROLLS BENEATH MODAL
@@ -339,19 +339,19 @@ const SmartphoneMobileGalleryModal = (
             )}
 
             {createPortal(
-                <div className="fixed inset-0 z-[70] flex flex-col bg-white dark:bg-deepcharcoal overscroll-contain">
+                <div className="fixed inset-0 z-[70] flex flex-col bg-backgroundLight dark:bg-backgroundDark overscroll-contain">
                     {/* Header - Keep intact as requested */}
                     <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
                         <button
                             onClick={() => navigateToHashtag(smartphone.tag)}
-                            className="text-sm font-semibold text-gray-900 dark:text-white"
+                            className="font-medium text-md text-main-text-light dark:text-main-text-dark"
                         >
                             {smartphone.tag}
                         </button>
                         <div className="relative" ref={actionDropdownRef}>
                             <button
                                 onClick={() => setActionDropdownOpen(!actionDropdownOpen)}
-                                className="text-gray-900 dark:text-white"
+                                className="text-main-text-light dark:text-main-text-dark"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -359,7 +359,7 @@ const SmartphoneMobileGalleryModal = (
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
                                     stroke="currentColor"
-                                    className="w-5 h-5"
+                                    className="w-7 h-7"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -370,14 +370,14 @@ const SmartphoneMobileGalleryModal = (
                             </button>
 
                             {actionDropdownOpen && (
-                                <div className="absolute right-0 z-20 w-48 bg-white border border-gray-200 rounded-lg shadow-lg top-8 dark:border-gray-700 dark:bg-deepcharcoal">
+                                <div className="absolute right-0 z-50 w-56 border rounded-md border-surface-3-light bg-backgroundLight dark:border-surface-3-dark top-full dark:bg-surface-1-dark">
                                     <div className="py-1">
                                         <button
                                             onClick={() => {
                                                 setShowQrCode(true);
                                                 setActionDropdownOpen(null);
                                             }}
-                                            className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-zinc-800"
+                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -404,12 +404,12 @@ const SmartphoneMobileGalleryModal = (
                                         <button
                                             onClick={() => {
                                                 const url =
-                                                    route('home') + '?m-slug=' + smartphone?.slug;
+                                                    route('home') + "?m-slug=" + smartphone.slug;
                                                 navigator.clipboard.writeText(url.trim());
                                                 setLinkCopied(true);
                                                 setActionDropdownOpen(null);
                                             }}
-                                            className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-zinc-800"
+                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -434,13 +434,14 @@ const SmartphoneMobileGalleryModal = (
                     </div>
 
 
-                    <div className="flex-1 overflow-y-auto scrollbar-none">
+
+                    <div className="flex-1 px-8 overflow-y-auto scrollbar-none">
                         {smartphone?.images?.length > 0 && (
                             <div className="relative mb-4 overflow-hidden ">
                                 {/* Horizontal Scroll Container - Swipeable */}
                                 <div
                                     ref={scrollContainerRef}
-                                    onScroll={handleImageScroll}
+                                    onScroll={handleScroll}
                                     className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none"
                                     style={{
                                         scrollbarWidth: 'none',
@@ -460,7 +461,7 @@ const SmartphoneMobileGalleryModal = (
                                             <img
                                                 src={image || placeholderImage}
                                                 alt={`${smartphone.name} ${index + 1}`}
-                                                className="object-cover w-full h-full max-w-full max-h-full"
+                                                className="object-cover w-full h-full max-w-full max-h-full rounded-md"
                                                 loading={"eager"}
                                                 fetchpriority={"high"}
                                                 decoding="async"
@@ -471,34 +472,76 @@ const SmartphoneMobileGalleryModal = (
                                         </div>
                                     ))}
                                 </div>
-
-                                {/* Fixed Pagination Dots - Outside scroll container, stays in place */}
-
-                                <div className="pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-sm bg-transparent shadow-lg">
-
-                                    {visibleDots.map((dotIndex) => (
-                                        <div
-                                            key={dotIndex}
-                                            className={`rounded-full transition-all duration-300 h-2 w-2 bg-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] ${dotIndex === currentImageIndex ? "scale-125" : "scale-100"} `}
-                                            style={{
-                                                transitionProperty: "all",
-                                                transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
-                                            }}
-                                        />
-                                    ))}
-                                </div>
                             </div>
                         )}
 
+
+                        {/* Thumbnail Refs */}
+                        <div className="flex items-center justify-center gap-0 py-4">
+                            {/* Thumbnails */}
+                            {((smartphone.images.length > 1)) && (
+                                <div
+                                    ref={thumbnailContainerRef}
+                                    className="flex items-center gap-3 overflow-x-auto scrollbar-none"
+                                    style={{ scrollBehavior: 'smooth' }}
+                                >
+                                    {/* Render thumbnails */}
+                                    {smartphone.images.map(
+                                        (mediaItem, index) => {
+
+                                            return (
+                                                <button
+                                                    key={index}
+                                                    onClick={() => handleThumbnailClick(index)}
+                                                    className={`aspect-square ${currentImageIndex === index ? 'border-[3px] border-main-text-light dark:border-main-text-dark' : ''} w-[clamp(70px,5vw,70px)] flex-shrink-0 overflow-hidden rounded-md  transition-all`}
+                                                >
+                                                    <img
+                                                        src={
+                                                            mediaItem ||
+                                                            placeholderImage
+                                                        }
+                                                        alt={`Thumbnail ${index + 1}`}
+                                                        className="object-cover w-full h-full"
+                                                        loading={
+                                                            currentImageIndex ===
+                                                                index
+                                                                ? 'eager'
+                                                                : 'lazy'
+                                                        }
+                                                        decoding="async"
+                                                        fetchpriority={
+                                                            currentImageIndex ===
+                                                                index
+                                                                ? 'high'
+                                                                : 'low'
+                                                        }
+                                                        onError={(
+                                                            e,
+                                                        ) =>
+                                                        (e.target.src =
+                                                            placeholderImage)
+                                                        }
+                                                    />
+                                                </button>
+                                            );
+                                        },
+                                    )}
+                                </div>
+                            )}
+
+
+                        </div>
+
+
                         {/* Full Content - Scrollable, No Truncation */}
-                        <div className="px-4 mt-14">
+                        <div className="mt-4">
                             {/* Full Content - Scrollable, No Truncation */}
                             <div className="mb-4">
                                 {smartphone?.content && (
                                     <div
                                         className="text-sm leading-relaxed prose text-gray-900 break-words dark:text-white/80"
                                         dangerouslySetInnerHTML={{
-                                            __html: smartphone.content,
+                                            __html: smartphone?.content,
                                         }}
                                     />
                                 )}

@@ -1,6 +1,7 @@
 import Input from '@/Components/Input';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SelectInput from '@/Components/SelectInput';
+import WebSelectInput from '@/Components/WebSelectInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
@@ -33,11 +34,11 @@ export default function Register({ countries }) {
         <GuestLayout>
             <Head title="Register" />
 
-            <div className="flex w-full flex-1 flex-col px-4 md:my-5 lg:w-1/2">
-                <div className="mx-auto w-full max-w-md pt-10">
+            <div className="flex flex-col flex-1 w-full px-4 md:my-5 lg:w-1/2">
+                <div className="w-full max-w-md pt-10 mx-auto">
                     <Link
                         href={route('home')}
-                        className="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-white dark:hover:text-gray-300"
+                        className="inline-flex items-center text-sm text-black transition-colors hover:text-gray-700 dark:text-main-text-dark dark:hover:text-sub-text-dark "
                     >
                         <svg
                             className="stroke-current"
@@ -58,14 +59,14 @@ export default function Register({ countries }) {
                         Back to Website
                     </Link>
                 </div>
-                <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
+                <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
                     <div>
                         <div className="mb-5 sm:mb-8">
-                            <h1 className="sm:text-title-md mb-2 text-4xl font-bold text-gray-800 dark:text-white">
+                            <h1 className="mb-2 text-4xl font-semibold text-black sm:text-title-md dark:text-main-text-dark">
                                 Register
                             </h1>
-                            <p className="text-sm text-gray-500 dark:text-white">
-                                Create Your Account To Login Into The Dashboard !
+                            <p className="text-sm text-gray-500 dark:text-sub-text-dark">
+                                Create Your Account To Login From Your Account
                             </p>
                         </div>
                         <div>
@@ -110,7 +111,7 @@ export default function Register({ countries }) {
                                     {errors?.phone && <p className="mt-2">&nbsp;</p>}
 
                                     <div className="relative bottom-3 z-[50]">
-                                        <SelectInput
+                                        <WebSelectInput
                                             InputName={'Country'}
                                             Id={'country_id'}
                                             Name={'country_id'}
@@ -190,11 +191,11 @@ export default function Register({ countries }) {
                             </form>
 
                             <div className="mt-5">
-                                <p className="text-center text-sm font-normal text-gray-700 dark:text-white sm:text-start">
+                                <p className="text-sm font-normal text-center text-black dark:text-sub-text-dark sm:text-start">
                                     Already have an account?{' '}
                                     <Link
                                         href={route('login')}
-                                        className="text-indigo-500 hover:text-indigo-600"
+                                        className="text-sm text-black dark:text-main-text-dark dark:hover:text-sub-text-dark hover:text-black/80"
                                     >
                                         {' '}
                                         {'  '}

@@ -125,9 +125,8 @@ class PostController extends Controller
             return to_route('home')->with('info', 'Hashtag Not Found');
         }
         $google_map_api_key = $this->globalSearch->getGoogleMapApiKey();
-        $search_history = $this->search_history->getHistory($request);
 
-        return Inertia::render('Website/Home/hashtagPosts', compact('hashtag', 'google_map_api_key', 'search_history'));
+        return Inertia::render('Website/Home/hashtagPosts', compact('hashtag', 'google_map_api_key'));
     }
 
     public function hashtagResults(Request $request)

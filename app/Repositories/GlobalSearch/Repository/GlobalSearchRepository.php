@@ -233,13 +233,12 @@ class GlobalSearchRepository implements IGlobalSearchRepository
 
     public function search(Request $request)
     {
-
         try {
             $request->validate([
                 'filters' => ['required', 'array'],
                 'filters' => ['required', 'array'],
 
-                'post_preferences.text' => ['required'],
+                // 'post_preferences.text' => ['required'],
                 'post_preferences.images' => ['required'],
                 'post_preferences.videos' => ['required'],
                 'query' => ['nullable', 'string'],
@@ -311,23 +310,39 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                     return $results;
                 }
 
-                $text = filter_var($post_preferences['text'], FILTER_VALIDATE_BOOLEAN);
+                // $text = false; // filter_var($post_preferences['text'], FILTER_VALIDATE_BOOLEAN);
                 $images = filter_var($post_preferences['images'], FILTER_VALIDATE_BOOLEAN);
                 $videos = filter_var($post_preferences['videos'], FILTER_VALIDATE_BOOLEAN);
 
                 if ($request->filled('query')) {
 
                     $posts = $posts->where(function ($q) use ($query) {
-
                         if (Str::startsWith($query, '#')) {
+                            // Hashtag search
                             $q->where('tag', '=', $query);
                         } elseif (Str::startsWith($query, 'http://') || Str::startsWith($query, 'https://')) {
+
                             $encodedQuery = e($query);
-                            $q->where(function ($sub) use ($query, $encodedQuery) {
+                            $urlEncodedQuery = urlencode($query);
+
+                            $q->where(function ($sub) use ($query, $encodedQuery, $urlEncodedQuery) {
+
                                 $sub->where('content', 'LIKE', '%href="'.$query.'"%')
-                                    ->orWhere('content', 'LIKE', '%href="'.$encodedQuery.'"%');
+                                    ->orWhere('content', 'LIKE', "%href='".$query."'%")
+
+                                    ->orWhere('content', 'LIKE', '%src="'.$query.'"%')
+                                    ->orWhere('content', 'LIKE', "%src='".$query."'%")
+
+                                    ->orWhere('content', 'LIKE', '%>'.$query.'<%')
+                                    ->orWhere('content', 'LIKE', '%> '.$query.' <%')
+
+                                    ->orWhere('content', 'LIKE', '%'.$encodedQuery.'%')
+                                    ->orWhere('content', 'LIKE', '%'.$urlEncodedQuery.'%')
+
+                                    ->orWhere('content', 'LIKE', '%'.$query.'%');
                             });
                         } else {
+
                             $q->where(function ($sub) use ($query) {
                                 $sub->where('title', 'LIKE', '%'.$query.'%')
                                     ->orWhere('content', 'LIKE', '%'.$query.'%');
@@ -336,14 +351,15 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                     });
                 }
 
-                $posts = $posts->where(function ($q) use ($text, $images, $videos) {
-                    if ($text) {
+                $posts = $posts->where(function ($q) use ($images, $videos) {
 
-                        $q->orWhere(function ($sub) {
-                            $sub->whereNull('images')
-                                ->whereNull('videos');
-                        });
-                    }
+                    // if ($text) {
+
+                    //     $q->orWhere(function ($sub) {
+                    //         $sub->whereNull('images')
+                    //             ->whereNull('videos');
+                    //     });
+                    // }
 
                     if ($images) {
 
@@ -361,7 +377,12 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                     }
                 });
 
+                // info(json_encode($posts->get()->toArray()));
                 $posts = $posts->with(['floor'])
+                    ->where(function ($sub) {
+                        $sub->whereRaw('JSON_LENGTH(images) > 0')
+                            ->orWhereRaw('JSON_LENGTH(videos) > 0');
+                    })
                     ->latest()
                     ->forPage($page, $perPage)
                     ->get()
@@ -385,6 +406,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                             'location_name' => $post->location_name,
                             'latitude' => $post->latitude,
                             'longitude' => $post->longitude,
+                            'content' => $post->content,
                             'image' => $post->post_image_urls && count($post->post_image_urls) > 0 ? $post->post_image_urls[0] : null,
                             'video_thumbnail' => $post->post_video_urls && count($post->post_video_urls) > 0 ? $post->post_video_urls[0]['thumbnail_url'] : null,
                             'tag' => $post->tag,
@@ -405,19 +427,21 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                     $smartphones = $this->smartphone::query();
 
                     if ($request->filled('query')) {
-                        $smartphones = $smartphones->where(function ($query) use ($request) {
-                            $query->whereHas('model_name', function ($subQ) use ($request) {
-                                $subQ->where('name', 'LIKE', '%'.$request->input('query').'%');
-                            })
-                                ->orWhereHas('capacity', function ($subQQ) use ($request) {
-                                    $subQQ->where('name', 'LIKE', '%'.$request->input('query').'%');
+
+                        $searchQuery = $request->input('query');
+
+                        $smartphones = $smartphones->where(function ($query) use ($searchQuery) {
+
+                            $query->where('model_searchable_name', 'LIKE', '%'.$searchQuery.'%')
+                                ->orWhere('content', 'LIKE', '%'.$searchQuery.'%')
+                                ->orWhereHas('capacity', function ($subQQ) use ($searchQuery) {
+                                    $subQQ->where('name', 'LIKE', '%'.$searchQuery.'%');
                                 })
-                                ->orWhere('upc', 'LIKE', '%'.$request->input('query').'%')
-                                ->orWhere('tag', '=', $request->input('query'));
+                                ->orWhere('tag', '=', $searchQuery);
                         });
                     }
 
-                    $smartphones = $smartphones->with(['model_name', 'capacity'])
+                    $smartphones = $smartphones->with(['capacity'])
                         ->whereHas('selling_info')
                         ->whereNotNull('slug')
                         ->latest()
@@ -438,11 +462,12 @@ class GlobalSearchRepository implements IGlobalSearchRepository
 
                             return [
                                 'id' => $smartphone->id,
-                                'name' => $smartphone->model_name->name,
+                                'name' => $smartphone->model_searchable_name,
                                 'capacity' => $smartphone->capacity->name,
                                 'image' => $smartphone->smartphone_image_urls && count($smartphone->smartphone_image_urls) > 0 ? $smartphone->smartphone_image_urls[0] : null,
                                 'tag' => $smartphone->tag,
                                 'type' => 'smartphones',
+                                'content' => $smartphone->content,
                                 'slug' => $smartphone->slug,
                                 'created_at' => $smartphone->created_at->format('Y-m-d g:i A'),
                                 'timestamp' => $smartphone->created_at->timestamp,
@@ -622,7 +647,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
             })
             ->filter(function ($result) {
 
-                return ! is_null($result->id) && ! is_null($result->type);
+                return ! is_null($result->id) && ! is_null($result->type) && (! empty($result->image) || ! empty($result->video_thumbnail));
             })
             ->unique(function ($result) {
 

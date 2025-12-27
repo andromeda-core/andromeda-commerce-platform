@@ -63,4 +63,16 @@ class ProfileController extends Controller
 
         return back()->with('success', $response['message']);
     }
+
+    public function uploadProfilePicture(Request $request)
+    {
+
+        $response = $this->user->uploadProfilePicture($request);
+
+        if ($response['status'] === false) {
+            return response()->json(['status' => false, 'message' => $response['message']], 400);
+        }
+
+        return response()->json(['status' => true, 'message' => $response['message'], 'profile' => $response['profile']], 200);
+    }
 }

@@ -6,13 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Repositories\Floors\Interface\IFloorRepostitory;
 use App\Repositories\GlobalSearch\Interface\IGlobalSearchRepository;
 use App\Repositories\Posts\Interface\IPostRepository;
-use App\Repositories\SearchHistories\Repository\SearchHistoryRepository;
+use App\Repositories\SearchHistories\Interface\ISearchHistoryRepository;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class GlobalSearchController extends Controller
 {
-    public function __construct(private IPostRepository $post, private IGlobalSearchRepository $globalSearch, private IFloorRepostitory $floor, private SearchHistoryRepository $searchHistory) {}
+    public function __construct(private IPostRepository $post, private IGlobalSearchRepository $globalSearch, private IFloorRepostitory $floor, private ISearchHistoryRepository $searchHistory) {}
 
     /**
      * @Perfect But Joseph Changed The Filter Logic
@@ -53,17 +53,19 @@ class GlobalSearchController extends Controller
         if ($request->has('search')) {
             $response = $this->results($request);
 
-            $filters = $response['filters'];
-            $results = $response['results'];
-            $pagination = $response['pagination'];
-            $query = $response['query'];
+            if ($response['status'] !== false) {
+                $filters = $response['filters'];
+                $results = $response['results'];
+                $pagination = $response['pagination'];
+                $query = $response['query'];
 
-            $new_search_history = $response['new_search_history'];
+                $new_search_history = $response['new_search_history'];
 
-            $all_search_histories = collect($search_histories);
+                $all_search_histories = collect($search_histories);
 
-            if (! empty($new_search_history)) {
-                $all_search_histories->prepend($new_search_history)->unique('id')->values();
+                if (! empty($new_search_history)) {
+                    $all_search_histories->prepend($new_search_history)->unique('id')->values();
+                }
             }
 
             return Inertia::render('Website/Search/index', compact('floors', 'google_map_api_key', 'search_history_next_page_url', 'all_search_histories', 'search_histories', 'filters', 'results', 'pagination', 'query'));

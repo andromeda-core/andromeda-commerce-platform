@@ -63,11 +63,11 @@ export default function ForgotPassword() {
         <GuestLayout>
             <Head title="Forgot Password" />
 
-            <div className="flex w-full flex-1 flex-col md:my-5 lg:w-1/2">
-                <div className="mx-auto w-full max-w-md pt-10">
+            <div className="flex flex-col flex-1 w-full md:my-5 lg:w-1/2">
+                <div className="w-full max-w-md pt-10 mx-auto">
                     <Link
                         href={route('login')}
-                        className="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-white dark:hover:text-gray-300"
+                        className="inline-flex items-center text-sm text-black transition-colors hover:text-gray-700 dark:text-main-text-dark dark:hover:text-sub-text-dark "
                     >
                         <svg
                             className="stroke-current"
@@ -89,13 +89,13 @@ export default function ForgotPassword() {
                     </Link>
                 </div>
 
-                <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
+                <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
                     <div>
                         <div className="mb-5 sm:mb-8">
-                            <h1 className="sm:text-title-md mb-2 text-4xl font-bold text-gray-800 dark:text-white/90">
+                            <h1 className="mb-2 text-4xl font-semibold text-black sm:text-title-md dark:text-main-text-dark">
                                 Forgot Password
                             </h1>
-                            <div className="mb-4 text-sm text-gray-600 dark:text-white">
+                            <div className="mb-4 text-sm text-black dark:text-sub-text-dark">
                                 Forgot your password? No problem. Just let us know your email
                                 address and we will email you a password reset link that will allow
                                 you to choose a new one.
@@ -142,7 +142,7 @@ export default function ForgotPassword() {
                                                     Disabled={verificationSent}
                                                 />
 
-                                                <p className="mt-3 text-gray-800 dark:text-white">
+                                                <p className="mt-3 text-black dark:text-sub-text-dark">
                                                     Retry Will Be Available after{' '}
                                                     <span className="text-green-800">{timer}</span>{' '}
                                                     seconds
@@ -178,11 +178,11 @@ export default function ForgotPassword() {
                             </form>
 
                             <div className="mt-5">
-                                <p className="text-center text-sm font-normal text-gray-700 dark:text-white sm:text-start">
+                                <p className="text-sm font-normal text-center text-black dark:text-sub-text-dark sm:text-start">
                                     Remembered Your Password?{' '}
                                     <Link
                                         href={route('login')}
-                                        className="text-indigo-500 hover:text-indigo-600"
+                                        className="text-sm text-black dark:text-main-text-dark dark:hover:text-sub-text-dark hover:text-black/80"
                                     >
                                         {' '}
                                         {'  '}

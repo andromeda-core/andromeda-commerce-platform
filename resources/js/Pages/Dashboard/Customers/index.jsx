@@ -30,6 +30,9 @@ export default function index({ customers }) {
         id: null,
     });
 
+
+
+
     const [columns, setColumns] = useState([]);
     const [actions, setActions] = useState([]);
     useEffect(() => {
@@ -40,7 +43,7 @@ export default function index({ customers }) {
                     return (
                         <Link
                             href={route('dashboard.customers.show', item?.id)}
-                            className="cursor-pointer text-blue-500 underline"
+                            className="text-blue-500 underline cursor-pointer"
                         >
                             {item.user.name}
                         </Link>
@@ -57,8 +60,8 @@ export default function index({ customers }) {
                 label: 'Reward Points',
                 render: (item) => {
                     return (
-                        <span className="rounded-lg bg-blue-500 p-2 text-white">
-                            {item?.user?.reward_points}
+                        <span className="p-2 text-white bg-blue-500 rounded-lg">
+                            {item?.user?.points || 0}
                         </span>
                     );
                 },
@@ -91,11 +94,11 @@ export default function index({ customers }) {
                 render: (item) => {
                     if (item.user.is_active != 1) {
                         return (
-                            <span className="rounded-lg bg-red-500 p-2 text-white">In-Active</span>
+                            <span className="p-2 text-white bg-red-500 rounded-lg">In-Active</span>
                         );
                     }
 
-                    return <span className="rounded-lg bg-green-500 p-2 text-white">Active</span>;
+                    return <span className="p-2 text-white bg-green-500 rounded-lg">Active</span>;
                 },
             },
             { key: 'added_at', label: 'Added At' },
@@ -129,7 +132,7 @@ export default function index({ customers }) {
                     Content={
                         <>
                             {can('Customers Create') && (
-                                <div className="my-3 flex flex-wrap justify-end">
+                                <div className="flex flex-wrap justify-end my-3">
                                     <LinkButton
                                         Text={'Create Customer'}
                                         URL={route('dashboard.customers.create')}

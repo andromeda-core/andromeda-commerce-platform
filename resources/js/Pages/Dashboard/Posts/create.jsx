@@ -356,7 +356,7 @@ export default function create({ floors, googleMapSetting }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Posts'}
                                     URL={route('dashboard.posts.index')}
@@ -567,21 +567,21 @@ export default function create({ floors, googleMapSetting }) {
                 />
 
                 {showProgressModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                         <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                         {/* Modal content */}
-                        <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
+                        <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
                             <div className="text-center">
                                 <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                     Please Wait While We Are Uploading Your Files
                                 </h2>
 
-                                <div className="mt-5 flex items-center justify-center">
+                                <div className="flex items-center justify-center mt-5">
                                     <div role="status">
                                         <svg
                                             aria-hidden="true"
-                                            className="h-8 w-8 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"
+                                            className="w-8 h-8 text-gray-200 animate-spin fill-blue-600 dark:text-gray-600"
                                             viewBox="0 0 100 101"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
@@ -604,7 +604,7 @@ export default function create({ floors, googleMapSetting }) {
                 )}
 
                 {autoCompletionLocationModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                         <div
                             className="fixed inset-0 backdrop-blur-[32px]"
                             onClick={() => setAutoCompletionLocationModalOpen(false)}
@@ -618,7 +618,7 @@ export default function create({ floors, googleMapSetting }) {
                                 </h2>
                             </div>
 
-                            <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-1">
+                            <div className="grid grid-cols-1 gap-4 mt-5 md:grid-cols-1">
                                 <div className="relative">
                                     <Input
                                         InputName={'Location'}
@@ -634,16 +634,16 @@ export default function create({ floors, googleMapSetting }) {
                                     />
 
                                     {showDropdown && (
-                                        <ul className="relative z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-deepcharcoal">
+                                        <ul className="relative z-50 w-full mt-1 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-lg max-h-60 dark:border-gray-600 dark:bg-deepcharcoal">
                                             {autoCompletionLoading ? (
                                                 <li className="flex items-center justify-center px-4 py-4">
-                                                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"></div>
+                                                    <div className="w-5 h-5 border-2 border-blue-500 rounded-full animate-spin border-t-transparent"></div>
                                                 </li>
                                             ) : (
                                                 autoCompletionResults.map((item, index) => (
                                                     <li
                                                         key={index}
-                                                        className="cursor-pointer px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-zinc-900/50"
+                                                        className="px-4 py-2 text-sm text-gray-800 cursor-pointer hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-zinc-900/50"
                                                         onClick={() => {
                                                             setSelectedPlaceId(item.place_id);
                                                             setShowDropdown(false);
@@ -665,21 +665,21 @@ export default function create({ floors, googleMapSetting }) {
                 )}
 
                 {fetchingLatlngProcessing && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                         <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                         {/* Modal content */}
-                        <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
+                        <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
                             <div className="text-center">
                                 <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                     Please Wait While We Are Setting up Location
                                 </h2>
 
-                                <div className="mt-5 flex items-center justify-center">
+                                <div className="flex items-center justify-center mt-5">
                                     <div role="status">
                                         <svg
                                             aria-hidden="true"
-                                            className="h-8 w-8 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"
+                                            className="w-8 h-8 text-gray-200 animate-spin fill-blue-600 dark:text-gray-600"
                                             viewBox="0 0 100 101"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"
@@ -702,7 +702,7 @@ export default function create({ floors, googleMapSetting }) {
                 )}
 
                 {googleMapLocatioModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                         {/* Backdrop */}
                         <div
                             className="fixed inset-0 backdrop-blur-[32px]"
@@ -726,7 +726,7 @@ export default function create({ floors, googleMapSetting }) {
                                     type="text"
                                     ref={mapSearchboxRef}
                                     placeholder="Search a location"
-                                    className="w-full rounded border px-4 py-2"
+                                    className="w-full px-4 py-2 border rounded"
                                 />
 
                                 {/* Google Map */}

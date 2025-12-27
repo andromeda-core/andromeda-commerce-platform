@@ -158,24 +158,24 @@ export default function CustomFileUploader({
             {preview ? (
                 <div className="space-y-4">
                     {/* File Preview */}
-                    <div className="relative overflow-hidden rounded-xl border-2 border-indigo-200 bg-gray-50 dark:border-indigo-800 dark:bg-gray-900/50">
+                    <div className="relative overflow-hidden border-2 rounded-md border-surface-3-light bg-surface-1-light dark:border-surface-3-dark dark:bg-surface-1-dark">
                         {accept.startsWith('image') ? (
                             <img
                                 src={preview}
                                 alt="File Preview"
-                                className="h-64 w-full object-contain"
+                                className="object-contain w-full h-64"
                             />
                         ) : accept.startsWith('video') ? (
-                            <video src={preview} controls className="h-64 w-full object-contain" />
+                            <video src={preview} controls className="object-contain w-full h-64" />
                         ) : (
-                            <div className="flex h-64 items-center justify-center">
+                            <div className="flex items-center justify-center h-64">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
                                     stroke="currentColor"
-                                    className="h-20 w-20 text-gray-400"
+                                    className="w-20 h-20 text-surface-3-light dark:text-surface-3-dark"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -189,7 +189,7 @@ export default function CustomFileUploader({
                         {!disabled && (
                             <button
                                 onClick={handleRemove}
-                                className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-red-500 text-white transition-all hover:bg-red-600"
+                                className="absolute flex items-center justify-center w-8 h-8 text-white transition-all bg-red-500 rounded-full right-2 top-2 hover:bg-red-600"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -197,7 +197,7 @@ export default function CustomFileUploader({
                                     viewBox="0 0 24 24"
                                     strokeWidth={2}
                                     stroke="currentColor"
-                                    className="h-5 w-5"
+                                    className="w-5 h-5"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -211,16 +211,16 @@ export default function CustomFileUploader({
 
                     {/* File Info */}
                     {fileName && (
-                        <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4 dark:bg-gray-900/50">
+                        <div className="flex items-center justify-between p-4 rounded-md bg-surface-2-light dark:bg-surface-2-dark">
                             <div className="flex items-center gap-3">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
+                                <div className="flex items-center justify-center w-10 h-10 rounded-md bg-surface-3-light dark:bg-surface-3-dark">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         strokeWidth={2}
                                         stroke="currentColor"
-                                        className="h-5 w-5 text-indigo-600 dark:text-indigo-400"
+                                        className="w-5 h-5 dark:text-main-text-dark text-main-text-light"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -230,10 +230,10 @@ export default function CustomFileUploader({
                                     </svg>
                                 </div>
                                 <div>
-                                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                                    <p className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
                                         {fileName}
                                     </p>
-                                    <p className="text-xs text-gray-600 dark:text-white/60">
+                                    <p className="text-xs text-sub-text-light dark:text-sub-text-dark">
                                         {formatFileSize(fileSize)}
                                     </p>
                                 </div>
@@ -250,13 +250,12 @@ export default function CustomFileUploader({
                     onDragLeave={handleDragLeave}
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
-                    className={`cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-all ${
-                        disabled
-                            ? 'cursor-not-allowed opacity-50'
-                            : isDragging
-                              ? 'border-indigo-500 bg-indigo-50 dark:border-indigo-400 dark:bg-indigo-900/20'
-                              : 'border-red-300 bg-red-50/50 hover:border-red-400 hover:bg-red-50 dark:border-red-800 dark:bg-red-900/10 dark:hover:border-red-700 dark:hover:bg-red-900/20'
-                    }`}
+                    className={`cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-all ${disabled
+                        ? 'cursor-not-allowed opacity-50'
+                        : isDragging
+                            ? 'border-indigo-500 bg-indigo-50 dark:border-indigo-400 dark:bg-indigo-900/20'
+                            : 'border-red-300 bg-red-50/50 hover:border-red-400 hover:bg-red-50 dark:border-red-800 dark:bg-red-900/10 dark:hover:border-red-700 dark:hover:bg-red-900/20'
+                        }`}
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -264,9 +263,8 @@ export default function CustomFileUploader({
                         viewBox="0 0 24 24"
                         strokeWidth={1.5}
                         stroke="currentColor"
-                        className={`mx-auto mb-4 h-16 w-16 transition-colors ${
-                            isDragging ? 'text-indigo-500 dark:text-indigo-400' : 'text-red-400'
-                        }`}
+                        className={`mx-auto mb-4 h-16 w-16 transition-colors ${isDragging ? 'text-indigo-500 dark:text-indigo-400' : 'text-red-400'
+                            }`}
                     >
                         <path
                             strokeLinecap="round"

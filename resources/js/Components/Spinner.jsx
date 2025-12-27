@@ -1,11 +1,11 @@
 import React from 'react';
 
-export default function Spinner({ customSize }) {
+export default function Spinner({ customSize, Color = null }) {
     return (
         <div role="status">
             <svg
                 aria-hidden="true"
-                className={`${customSize ?? 'h-4 w-8'} animate-spin fill-indigo-600 text-gray-200 dark:text-white/80`}
+                className={`${customSize ?? 'h-4 w-8'} animate-spin ${Color || 'fill-main-text-light dark:fill-main-text-dark text-main-text-dark dark:text-main-text-light'}`}
                 viewBox="0 0 100 101"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"

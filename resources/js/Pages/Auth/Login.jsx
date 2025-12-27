@@ -28,11 +28,11 @@ export default function Login({ canResetPassword }) {
         <GuestLayout>
             <Head title="Log in" />
 
-            <div className="flex w-full flex-1 flex-col md:my-5 lg:w-1/2">
-                <div className="mx-auto w-full max-w-md pt-10">
+            <div className="flex flex-col flex-1 w-full md:my-5 lg:w-1/2">
+                <div className="w-full max-w-md pt-10 mx-auto">
                     <Link
                         href={route('home')}
-                        className="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-white dark:hover:text-gray-300"
+                        className="inline-flex items-center text-sm text-black transition-colors hover:text-gray-700 dark:text-main-text-dark dark:hover:text-sub-text-dark "
                     >
                         <svg
                             className="stroke-current"
@@ -53,13 +53,13 @@ export default function Login({ canResetPassword }) {
                         Back to Website
                     </Link>
                 </div>
-                <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
+                <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
                     <div>
                         <div className="mb-5 sm:mb-8">
-                            <h1 className="sm:text-title-md mb-2 text-4xl font-bold text-gray-800 dark:text-white">
+                            <h1 className="mb-2 text-4xl font-semibold text-black sm:text-title-md dark:text-main-text-dark">
                                 Login
                             </h1>
-                            <p className="text-sm text-gray-500 dark:text-white">
+                            <p className="text-sm text-gray-500 dark:text-sub-text-dark">
                                 Enter your email and password to Login Into Dashboard !
                             </p>
                         </div>
@@ -96,7 +96,7 @@ export default function Login({ canResetPassword }) {
                                         <div>
                                             <label
                                                 htmlFor="remember"
-                                                className="flex cursor-pointer select-none items-center text-sm font-normal text-gray-700 dark:text-white"
+                                                className="flex items-center text-sm font-normal text-black cursor-pointer select-none dark:text-main-text-dark"
                                             >
                                                 <div className="relative">
                                                     <input
@@ -111,7 +111,7 @@ export default function Login({ canResetPassword }) {
                                                     <div
                                                         className={
                                                             data.remember === true
-                                                                ? 'mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] border-indigo-500 bg-indigo-500 dark:border-gray-700'
+                                                                ? 'mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] border-black dark:border-surafce-3-dark bg-black dark:bg-surface-1-dark dark:border-gray-700'
                                                                 : 'mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] border-gray-300 bg-transparent'
                                                         }
                                                     >
@@ -145,7 +145,7 @@ export default function Login({ canResetPassword }) {
                                         {canResetPassword && (
                                             <Link
                                                 href={route('password.request')}
-                                                className="text-sm text-indigo-500 hover:text-indigo-600"
+                                                className="text-sm text-black dark:text-main-text-dark dark:hover:text-sub-text-dark hover:text-black/80"
                                             >
                                                 Forgot password?
                                             </Link>
@@ -184,11 +184,11 @@ export default function Login({ canResetPassword }) {
                             </form>
 
                             <div className="mt-5">
-                                <p className="text-center text-sm font-normal text-gray-700 dark:text-white sm:text-start">
+                                <p className="text-sm font-normal text-center text-black dark:text-sub-text-dark sm:text-start">
                                     Don't have an account?{' '}
                                     <Link
                                         href={route('register')}
-                                        className="text-indigo-500 hover:text-indigo-600"
+                                        className="text-sm text-black dark:text-main-text-dark dark:hover:text-sub-text-dark hover:text-black/80"
                                     >
                                         {' '}
                                         {'  '}

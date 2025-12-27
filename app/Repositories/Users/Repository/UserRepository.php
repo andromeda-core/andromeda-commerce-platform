@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Users\Repository;
 
+use App\Jobs\DestroyUserProfileOnAWS;
 use App\Models\Role;
 use App\Models\SpecialCountry;
 use App\Models\User;
@@ -10,6 +11,9 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Encoders\WebpEncoder;
+use Intervention\Image\ImageManager;
 use Str;
 
 class UserRepository implements IUserRepository
@@ -534,6 +538,9 @@ class UserRepository implements IUserRepository
                 }
 
             }
+            if (! empty($user->profile)) {
+                dispatch(new DestroyUserProfileOnAWS($user->profile));
+            }
 
             $deleted = $user->delete();
 
@@ -583,6 +590,9 @@ class UserRepository implements IUserRepository
 
                 }
 
+                if (! empty($user->profile)) {
+                    dispatch(new DestroyUserProfileOnAWS($user->profile));
+                }
                 $user->delete();
             }
 
@@ -655,5 +665,83 @@ class UserRepository implements IUserRepository
 
         return false;
 
+    }
+
+    public function uploadProfilePicture(Request $request)
+    {
+        $request->validate([
+            'profile' => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
+        ]);
+
+        try {
+            $user = $request->user();
+
+            $profile = $request->file('profile');
+            $new_name = time().uniqid().'-'.Str::random(10).'.webp';
+
+            $resizedImage = ImageManager::imagick()
+                ->read($profile)
+                ->scaleDown(1200)
+                ->encode(new WebpEncoder(quality: 70));
+
+            $tempPath = 'temp/uploads/'.$new_name;
+            Storage::disk('local')->put($tempPath, (string) $resizedImage);
+
+            $dir = 'Users/Profile';
+            $url = null;
+            if (empty($user->profile)) {
+                $url = $this->storeUserProfileOnAWS($tempPath, $dir);
+
+                $user->update([
+                    'profile' => $url,
+                ]);
+
+            } else {
+                dispatch(new DestroyUserProfileOnAWS($user->profile));
+                $url = $this->storeUserProfileOnAWS($tempPath, $dir);
+
+                $user->update([
+                    'profile' => $url,
+                ]);
+            }
+
+            if (empty($url)) {
+                throw new Exception('Something Went Wrong While Uploading Profile Picture');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Profile Picture Uploaded Successfully',
+                'profile' => $url,
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    private function storeUserProfileOnAWS($path, $dir)
+    {
+        if (empty($path)) {
+            return;
+        }
+
+        $fullLocalPath = Storage::disk('local')->path($path);
+        $extension = pathinfo($path, PATHINFO_EXTENSION);
+        $new_name = time().uniqid().'-'.Str::random(10).'.'.$extension;
+
+        Storage::disk('s3')
+            ->put($dir.$new_name, file_get_contents($fullLocalPath), [
+                'CacheControl' => 'public, max-age=31536000',
+                'ContentType' => mime_content_type($fullLocalPath),
+            ]);
+
+        Storage::disk('local')->delete($path);
+
+        $url = Storage::disk('s3')->url($dir.$new_name);
+
+        return $url;
     }
 }

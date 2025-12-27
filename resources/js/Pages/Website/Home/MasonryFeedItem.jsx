@@ -22,7 +22,7 @@ const MasonryFeedItem = memo(({ item, onClick, Placeholder, currency }) => {
     if (item.type === 'posts') {
         return (
             <article
-                className="[-webkit-column-break-inside:avoid] relative mb-1 overflow-hidden transition-all duration-300 rounded-none shadow-md cursor-pointer will-change-transform masonry-item no-touch-hover group break-inside-avoid  hover:-translate-y-1 hover:shadow-xl lg:mb-2"
+                className="[-webkit-column-break-inside:avoid] rounded-md relative mb-1 overflow-hidden transition-all duration-300  shadow-md cursor-pointer will-change-transform masonry-item no-touch-hover group break-inside-avoid  hover:-translate-y-1 hover:shadow-xl lg:mb-2"
                 onClick={onClick}
             >
                 {item?.images ? (
@@ -33,7 +33,7 @@ const MasonryFeedItem = memo(({ item, onClick, Placeholder, currency }) => {
                             loading="lazy"
                             decoding="async"
                             onError={(e) => (e.target.src = Placeholder)}
-                            className="w-full object-cover text-[10px] text-gray-700 transition-all duration-500 group-hover:scale-105 dark:text-white/80 dark:opacity-80"
+                            className="w-full object-cover text-[10px] text-black transition-all duration-500 group-hover:scale-105 dark:text-white"
                         />
 
                         <div className="absolute left-3 top-3">
@@ -74,7 +74,7 @@ const MasonryFeedItem = memo(({ item, onClick, Placeholder, currency }) => {
                             decoding="async"
 
                             onError={(e) => (e.target.src = Placeholder)}
-                            className="w-full object-cover text-[10px] text-gray-700 transition-all duration-500 group-hover:scale-105 dark:text-white/80 dark:opacity-80"
+                            className="w-full object-cover  object-center text-[10px] text-black transition-all duration-500 group-hover:scale-105 dark:text-white"
                         />
 
                         <div className="absolute left-3 top-3">
@@ -108,7 +108,7 @@ const MasonryFeedItem = memo(({ item, onClick, Placeholder, currency }) => {
                         </div>
                     </div>
                 ) : (
-                    <div className="relative flex flex-col justify-between bg-[#F2F2F2] p-5 text-gray-700 dark:bg-[#485260] dark:text-white/80">
+                    <div className="relative flex flex-col justify-between bg-[#F2F2F2] p-5 text-black dark:bg-[#485260] dark:text-white">
                         <div className="flex items-center justify-between">
                             <span className="mb-3 text-[8px] drop-shadow-md sm:text-[9px] md:text-[10px] lg:text-[17px]">
                                 {item?.tag}
@@ -116,29 +116,15 @@ const MasonryFeedItem = memo(({ item, onClick, Placeholder, currency }) => {
                         </div>
 
                         <div>
-                            <p className="line-clamp-5 text-[8px] opacity-90 sm:text-[9px] md:text-[10px] lg:text-[17px]">
-                                {item.content.length > 400 ? (
-                                    <span
-                                        dangerouslySetInnerHTML={{
-                                            __html: item?.content.substring(0, 400) + '...',
-                                        }}
-                                    ></span>
-                                ) : (
-                                    <span
-                                        dangerouslySetInnerHTML={{
-                                            __html: item?.content,
-                                        }}
-                                    ></span>
-                                )}
+                            <p className="line-clamp-5 break-all whitespace-pre-line text-[8px] opacity-90 sm:text-[9px] md:text-[10px] lg:text-[17px]">
+                                <span
+                                    dangerouslySetInnerHTML={{
+                                        __html: item?.content.trim(),
+                                    }}
+                                ></span>
                             </p>
                         </div>
-                        <div className="mt-1 flex items-center justify-between text-[8px] font-medium drop-shadow-sm sm:text-[9px] md:text-[10px] lg:text-[17px]">
-                            <span>
-                                {item?.title.length > 20
-                                    ? item?.title.slice(0, 20) + '...'
-                                    : item?.title}
-                            </span>
-                        </div>
+
                     </div>
                 )}
             </article>
@@ -148,7 +134,7 @@ const MasonryFeedItem = memo(({ item, onClick, Placeholder, currency }) => {
     // Smartphones
     return (
         <article
-            className="[-webkit-column-break-inside:avoid] relative mb-1 overflow-hidden transition-all  duration-300 rounded-none shadow-md cursor-pointer will-change-transform no-touch-hover group break-inside-avoid hover:-translate-y-1 hover:shadow-xl"
+            className="[-webkit-column-break-inside:avoid] rounded-xl relative mb-1 overflow-hidden transition-all duration-300  shadow-md cursor-pointer will-change-transform masonry-item no-touch-hover group break-inside-avoid  hover:-translate-y-1 hover:shadow-xl lg:mb-2"
             onClick={onClick}
         >
             <div className="relative">
@@ -159,7 +145,7 @@ const MasonryFeedItem = memo(({ item, onClick, Placeholder, currency }) => {
                     decoding="async"
                     onError={(e) => (e.target.src = Placeholder)}
 
-                    className="object-cover w-full transition-all duration-500 group-hover:scale-105 dark:opacity-80"
+                    className="object-cover object-center w-full transition-all duration-500 group-hover:scale-105 dark:opacity-80"
                 />
 
                 <div className="absolute left-3 top-3">

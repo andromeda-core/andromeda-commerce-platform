@@ -58,25 +58,32 @@ const PWAAlertBar = ({ onClose }) => {
 
     return (
         <div
-            className={`pointer-events-none fixed left-0 right-0 z-40 flex items-end justify-center p-4 ${isVisible && windowSize.width < 1024 ? 'bottom-14' : 'bottom-0'} `}
+            className={`pointer-events-none fixed left-0 right-0 z-40 flex items-end justify-center p-4 ${isVisible && windowSize.width <= 1024 ? 'bottom-14' : 'bottom-0'} `}
         >
             <div
                 className={`pointer-events-auto w-full max-w-md transform transition-all duration-500 ease-out ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
                     }`}
             >
-                <div className="p-4 border shadow-2xl rounded-2xl border-slate-300 bg-white/90 text-slate-800 backdrop-blur-xl dark:border-slate-700/50 dark:bg-deepcharcoal/90 dark:text-slate-100">
+                <div className="p-4 border rounded-md shadow-2xl border-surface-1-light bg-backgroundLight text-main-text-light backdrop-blur-xl dark:border-surface-3-dark dark:bg-backgroundDark dark:text-main-text-dark">
                     <div className="flex flex-wrap items-center gap-3">
-                        <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 bg-gray-900 rounded-xl">
-                            {generalSetting?.app_favicon ? (
-                                <img src={generalSetting?.app_favicon} alt="Logo" />
-                            ) : (
+                        <div className="flex items-center justify-center flex-shrink-0 w-12 h-12 rounded-md ">
+                            {generalSetting?.app_main_logo_light && (
+                                <img src={generalSetting?.app_main_logo_light} alt="Logo" className='block object-cover object-center dark:hidden' />
+                            )}
+
+                            {generalSetting?.app_main_logo_dark && (
+                                <img src={generalSetting?.app_main_logo_dark} alt="Logo" className='hidden object-cover object-center dark:block' />
+                            )}
+
+
+                            {!generalSetting?.app_main_logo_dark && !generalSetting?.app_main_logo_light && (
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
                                     stroke="currentColor"
-                                    className="w-5 h-5 text-blue-500 dark:text-blue-400"
+                                    className="text-blue-500 w-7 h-7 dark:text-blue-400"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -88,10 +95,10 @@ const PWAAlertBar = ({ onClose }) => {
                         </div>
 
                         <div className="flex-wrap flex-1 min-w-0">
-                            <p className="text-sm font-medium leading-tight text-slate-900 dark:text-white">
+                            <p className="text-sm font-medium leading-tight text-main-text-light dark:text-main-text-dark">
                                 Install App
                             </p>
-                            <p className="mt-0.5 text-xs text-slate-500 line-clamp-1 dark:text-slate-400">
+                            <p className="mt-0.5 text-xs text-sub-text-light line-clamp-1 dark:text-sub-text-dark">
                                 For seamless experience
                             </p>
                         </div>
@@ -99,13 +106,13 @@ const PWAAlertBar = ({ onClose }) => {
                         <div className="flex flex-wrap items-center gap-2">
                             <button
                                 onClick={handleInstall}
-                                className="rounded-lg  bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-indigo-700"
+                                className="rounded-lg  bg-main-text-light dark:bg-main-text-dark  dark:hover:bg-main-text-dark/80 px-4 py-1.5 text-sm font-semibold text-main-text-dark dark:text-main-text-light transition-colors duration-200 hover:bg-main-text-light/80"
                             >
                                 Install
                             </button>
                             <button
                                 onClick={handleClose}
-                                className="flex items-center justify-center w-8 h-8 transition-colors duration-200 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-700/50"
+                                className="flex items-center justify-center w-8 h-8 transition-colors duration-200 rounded-md"
                                 aria-label="Close"
                             >
                                 <svg
@@ -114,7 +121,7 @@ const PWAAlertBar = ({ onClose }) => {
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
                                     stroke="currentColor"
-                                    className="w-4 h-4 text-slate-500 dark:text-slate-400"
+                                    className="w-5 h-5 text-black dark:text-white"
                                 >
                                     <path
                                         strokeLinecap="round"

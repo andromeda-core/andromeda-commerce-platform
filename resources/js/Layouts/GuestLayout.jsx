@@ -22,15 +22,26 @@ export default function GuestLayout({ children }) {
     const [loaded, setLoaded] = useState(true);
 
     // Application Logo Sate With Default Images
-    const [ApplicationLogo, setApplicationLogo] = useState(asset + 'assets/images/Logo/DarkLogo.png');
+    const [ApplicationLogoLight, setApplicationLogoLight] = useState(
+        asset + 'assets/images/Logo/LightLogo.png',
+    );
+    const [ApplicationLogoDark, setApplicationLogoDark] = useState(
+        asset + 'assets/images/Logo/DarkLogo.png',
+    );
 
     // For Updating Application Logo
     useEffect(() => {
         // Assigning Application logos
+        if (generalSetting?.app_main_logo_light) {
+            setApplicationLogoLight(generalSetting.app_main_logo_light);
+        }
+
         if (generalSetting?.app_main_logo_dark) {
-            setApplicationLogo(generalSetting.app_main_logo_dark);
+            setApplicationLogoDark(generalSetting.app_main_logo_dark);
         }
     }, []);
+
+
 
 
     // Toggle Mode Dark + Light
@@ -68,11 +79,11 @@ export default function GuestLayout({ children }) {
             <AppStatusManager />
             <Toast flash={flash} />
 
-            <div className="relative p-6 z-1 bg-slate-50 dark:bg-deepcharcoal sm:p-0">
-                <div className="relative flex flex-col justify-center w-full min-h-screen overflow-y-auto dark:bg-deepcharcoal sm:p-0 lg:flex-row">
+            <div className="relative p-6 z-1 bg-slate-50 dark:bg-backgroundDark sm:p-0">
+                <div className="relative flex flex-col justify-center w-full min-h-screen overflow-y-auto dark:bg-backgroundDark sm:p-0 lg:flex-row">
                     {children}
 
-                    <div className="relative items-center hidden w-full min-h-screen bg-indigo-950 dark:bg-white/5 lg:grid lg:w-1/2">
+                    <div className="relative items-center hidden w-full min-h-screen bg-surface-1-light dark:bg-surface-1-dark lg:grid lg:w-1/2">
                         <div className="flex items-center justify-center z-1">
                             <CommonGridShape />
                             <div className="flex flex-col items-center max-w-xs">
@@ -80,7 +91,8 @@ export default function GuestLayout({ children }) {
                                     href={route('home')}
                                     className="block mb-4 dark:none rounded-2xl"
                                 >
-                                    <img src={ApplicationLogo} alt="Logo" />
+                                    <img className='block dark:hidden' src={ApplicationLogoLight} alt="Logo" />
+                                    <img className='hidden dark:block' src={ApplicationLogoDark} alt="Logo" />
                                 </Link>
                             </div>
                         </div>
@@ -88,7 +100,7 @@ export default function GuestLayout({ children }) {
 
                     <div className="fixed z-50 hidden bottom-6 right-6 sm:block">
                         <button
-                            className="inline-flex items-center justify-center text-white transition-colors bg-indigo-600 rounded-full hover:bg-brand-600 size-14"
+                            className="inline-flex items-center justify-center text-white transition-colors bg-black rounded-full dark:text-black dark:bg-white hover:bg-brand-600 size-14"
                             onClick={() => {
                                 setDarkMode(!darkMode);
                                 localStorage.setItem(

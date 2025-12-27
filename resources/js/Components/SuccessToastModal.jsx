@@ -14,38 +14,35 @@ export default function SuccessToastModal({ showSuccess, setShowSuccess, message
     if (!showSuccess) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[10002] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
                 className="fixed inset-0 bg-black/30 backdrop-blur-sm"
                 onClick={() => setShowSuccess(false)}
             />
 
+
+
             {/* Modal */}
-            <div
-                className={`relative z-10 w-full max-w-sm animate-scale-in rounded-2xl bg-white px-8 py-6 shadow-2xl dark:bg-deepcharcoal`}
-            >
+            <div className="relative z-10 w-full max-w-sm px-8 py-4 border rounded-md bg-backgroundLight animate-scale-in dark:bg-surface-1-dark border-surface-3-light dark:border-surface-3-dark">
                 <div className="flex flex-col items-center text-center">
                     {/* Success Icon */}
-                    <div className="flex items-center justify-center w-16 h-16 mb-6 bg-green-100 rounded-full dark:bg-green-900/20">
+                    <div className="flex items-center justify-center mb-3 rounded-full">
+
                         <svg
-                            className="w-8 h-8 text-green-600 dark:text-green-400"
+                            className="w-8 h-8 text-main-text-light dark:text-main-text-dark"
                             fill="currentColor"
                             viewBox="0 0 20 20"
                         >
                             <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z" />
                         </svg>
                     </div>
-
-                    {/* Title */}
-                    <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
-                        Success!
-                    </h3>
-
                     {/* Message */}
-                    <p className="text-sm text-gray-600 dark:text-gray-300">{message}</p>
+                    <p className="text-sm break-words text-main-text-light dark:text-main-text-dark">{message}</p>
                 </div>
             </div>
+
+
         </div>,
         document.getElementById('modal-root') || document.body,
     );

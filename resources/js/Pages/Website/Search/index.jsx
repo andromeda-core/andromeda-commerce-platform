@@ -5,15 +5,109 @@ import GlobalSearch from '@/Components/GlobalSearch';
 import Toast from '@/Components/Toast';
 import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
+import TextPlaceholder from 'asset/assets/images/product/textPlaceholder.webp';
 import { useConfirm } from '@/Hooks/useConfirm';
 import useWindowSize from '@/Hooks/useWindowSize';
+import Spinner from '@/Components/Spinner';
 
 // Memoized result item component
-const ResultItem = memo(({ item, onCopyLink, generateURL }) => {
+const ResultItem = memo(({ item, onCopyLink, generateURL, activeView }) => {
     const { width } = useWindowSize();
     const Tag = width > 1024 ? 'a' : Link;
-    return (
+    // List View
+    if (activeView === 'list') {
+        return (
+            <Tag
+                href={
+                    item.type === 'posts'
+                        ? route('home') + generateURL(item)
+                        : route('home') + '?m-slug=' + item.slug
+                }
+                target={width > 1024 ? '_blank' : undefined}
+                onClick={() =>
+                    window.history.replaceState({}, '', route('home')
+                    )}
+                className="flex flex-wrap items-center gap-4 p-1 py-4 transition-colors rounded-md cursor-pointer group hover:bg-surface-2-light dark:hover:bg-surface-2-dark"
+            >
+                {/* Thumbnail */}
+                <div className="flex-shrink-0 w-12 h-12 overflow-hidden rounded-lg bg-surface-1-light dark:bg-surface-1-dark">
+                    {item?.image || item?.video_thumbnail ? (
+                        <img
+                            src={item.image || item?.video_thumbnail || Placeholder}
+                            alt={item.title || item.name}
+                            className="object-cover w-full h-full"
+                            onError={(e) => e.target.src = Placeholder}
+                        />
+                    ) : (
+                        <div className="flex items-center justify-center h-full text-sm text-main-text-light dark:text-main-text-dark ">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                className="size-6"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+                                />
+                            </svg>
+                        </div>
+                    )}
+                </div>
 
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                    <h3 className="font-medium truncate">{item.title || item.name}</h3>
+                    <p className="text-xs truncate text-main-text-light dark:text-main-text-dark">
+                        {item.type === 'posts' ? item.location_name || '' : item.capacity || ''}
+                    </p>
+                    {item.tag && (
+                        <p className="text-xs truncate text-sub-text-light dark:text-sub-text-dark ">{item.tag}</p>
+                    )}
+                    <p className="text-xs truncate text-sub-text-light dark:text-sub-text-dark">
+                        {item.created_at}
+                    </p>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center flex-shrink-0 gap-2 transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+                    <button
+                        title="Copy Link"
+                        className="p-4 rounded-full hover:bg-surface-3-light text-main-text-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const url =
+                                item.type === 'posts'
+                                    ? route('home') + generateURL(item)
+                                    : route('home') + '?m-slug=' + item.slug;
+                            onCopyLink(url);
+                        }}
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="w-4 h-4"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
+                            />
+                        </svg>
+                    </button>
+                </div>
+            </Tag>
+        )
+    }
+    // Grid View
+    return (
         <Tag
             href={
                 item.type === 'posts'
@@ -21,96 +115,70 @@ const ResultItem = memo(({ item, onCopyLink, generateURL }) => {
                     : route('home') + '?m-slug=' + item.slug
             }
             target={width > 1024 ? '_blank' : undefined}
-            onClick={() =>
-                window.history.replaceState({}, '', route('home')
-                )}
-            className="flex items-center gap-4 px-6 py-4 transition-colors cursor-pointer group hover:bg-gray-50 dark:hover:bg-gray-800/80"
+            onClick={() => window.history.replaceState({}, '', route('home'))}
+            // Removed grid-cols to allow for vertical card stacking in a parent grid
+            className="flex flex-col gap-2 transition-all cursor-pointer group"
         >
-            {/* Thumbnail */}
-            <div className="flex-shrink-0 w-12 h-12 overflow-hidden bg-gray-200 rounded-lg dark:bg-gray-700">
-                {item.image ? (
+            <div className="relative w-full overflow-hidden rounded-xl bg-white aspect-[2/3]">
+
+
+                {item?.image || item?.video_thumbnail ? (
                     <img
-                        src={item.image}
+                        src={item.image || item?.video_thumbnail || Placeholder}
                         alt={item.title || item.name}
-                        className="object-cover w-full h-full"
-                        onError={(e) => e.target.src = Placeholder}
-                    />
-                ) : !item?.image && item?.video_thumbnail && item?.type === 'posts' ? (
-                    <img
-                        src={item?.video_thumbnail}
-                        alt={item?.title}
                         loading="lazy"
                         decoding="async"
                         onError={(e) => (e.target.src = Placeholder)}
-                        className="w-full object-cover text-[10px] text-gray-700 transition-all duration-500 group-hover:scale-105 dark:text-white/80 dark:opacity-80"
+                        className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
                     />
+
                 ) : (
-                    <div className="flex items-center justify-center h-full text-sm text-white/80">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="size-6"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
-                            />
-                        </svg>
+                    <div className="relative w-full overflow-hidden rounded-xl bg-white aspect-[2/3]">
+                        <img
+                            src={TextPlaceholder}
+                            alt={item.title}
+                            loading="lazy"
+                            decoding="async"
+                            onError={(e) => (e.target.src = Placeholder)}
+                            className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+                        />
                     </div>
                 )}
+
+                <div className="absolute left-3 top-3">
+                    <span className="text-[8px] text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] sm:text-[9px] md:text-[10px] lg:text-[17px]">
+                        {item?.tag}
+                    </span>
+                </div>
+
+                <div className="absolute inset-x-0 bottom-0 p-4">
+                    <div className="mt-1 flex items-center justify-between text-[8px] font-bold text-gray-200 drop-shadow-sm sm:text-[9px] md:text-[10px] lg:text-[17px]">
+                        <p className="text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] overflow-hidden text-ellipsis whitespace-nowrap block">
+                            {item?.content && item.content.length > 25 ? (
+                                <span
+                                    dangerouslySetInnerHTML={{
+                                        __html:
+                                            item.content.substring(0, 25) +
+                                            '...',
+                                    }}
+                                />
+                            ) : (
+                                <span
+                                    dangerouslySetInnerHTML={{
+                                        __html: item?.content,
+                                    }}
+                                />
+                            )}
+                        </p>
+
+                    </div>
+                </div>
+
             </div>
 
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-                <h3 className="font-medium truncate">{item.title || item.name}</h3>
-                <p className="text-xs text-gray-500 truncate dark:text-gray-400">
-                    {item.type === 'posts' ? item.location_name || '' : item.capacity || ''}
-                </p>
-                {item.tag && (
-                    <p className="text-xs text-gray-500 truncate dark:text-gray-400">{item.tag}</p>
-                )}
-                <p className="text-xs text-gray-500 truncate dark:text-gray-400">
-                    {item.created_at}
-                </p>
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center gap-2 transition-opacity duration-200 opacity-0 group-hover:opacity-100">
-                <button
-                    title="Copy Link"
-                    className="p-2 text-gray-500 rounded-full hover:bg-gray-200 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-indigo-400"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const url =
-                            item.type === 'posts'
-                                ? route('home') + generateURL(item)
-                                : route('home') + '?m-slug=' + item.slug;
-                        onCopyLink(url);
-                    }}
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-4 h-4"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
-                        />
-                    </svg>
-                </button>
-            </div>
         </Tag>
     );
+
 });
 
 const Index = ({
@@ -154,6 +222,9 @@ const Index = ({
         linkCopied: false,
     });
 
+    // View UI State
+    const [activeView, setActiveView] = useState('list');
+
     // Refs
     const loaderRef = useRef(null);
     const scrollContainerRef = useRef(null);
@@ -195,7 +266,7 @@ const Index = ({
         if (scrollContainerRef.current) {
             const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
             const newCanScrollLeft = scrollLeft > 0;
-            const newCanScrollRight = scrollLeft < scrollWidth - clientWidth - 10;
+            const newCanScrollRight = scrollLeft < scrollWidth - clientWidth - 20;
 
             // Only update if values changed
             if (newCanScrollLeft !== state.canScrollLeft || newCanScrollRight !== state.canScrollRight) {
@@ -763,320 +834,288 @@ const Index = ({
                 />
             )}
 
-            <GlobalSearch
-                floors={floors}
-                google_map_api_key={google_map_api_key}
-                additional_filters={true}
-                defaultQuery={query}
-                searchPage={true}
-            />
 
-            <div className="pb-20 sm:px-6 sm:pb-20 lg:px-8">
-                <div className="px-3 text-gray-900 border border-gray-200 bg-gray-50 rounded-xl dark:bg-deepcharcoal dark:border-gray-700 dark:text-gray-100 sm:px-6 lg:px-8">
+
+            <div className="min-h-screen pb-20 mt-0 lg:mt-5">
+
+                <div className="w-full max-w-6xl px-4 mx-auto overflow-x-hidden text-black sm:px-8 dark:text-main-text-dark">
+
+                    <GlobalSearch
+                        floors={floors}
+                        google_map_api_key={google_map_api_key}
+                        additional_filters={true}
+                        defaultQuery={query}
+                        searchPage={true}
+                    />
+
+
                     {/* Header with Tabs */}
-                    <div className="px-0 py-4 border-b border-gray-200 dark:border-slate-700">
-                        <div className="relative flex items-center gap-2">
-                            {/* Left Arrow - Only needs will-change on hover/interaction */}
-                            {state.canScrollLeft && (
-                                <button
-                                    onClick={scrollLeft}
-                                    className="absolute left-0 z-10 flex items-center justify-center w-8 h-8 transition-colors bg-white border border-gray-200 rounded-full shadow-md dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-                                    aria-label="Scroll left"
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        strokeWidth={2}
-                                        stroke="currentColor"
-                                        className="w-5 h-5 text-gray-600 dark:text-gray-300"
-                                        aria-hidden="true"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M15.75 19.5L8.25 12l7.5-7.5"
-                                        />
-                                    </svg>
-                                </button>
-                            )}
+                    <div className="w-full mt-6 mb-4">
+                        <div className="relative grid w-full grid-cols-1 overflow-hidden">
 
-                            {/* Scrollable Container - GPU acceleration for smooth scrolling */}
-                            <div
-                                ref={scrollContainerRef}
-                                className="flex items-center flex-1 gap-3 px-1 overflow-x-auto scrollbar-none"
-                                style={{
-                                    transform: 'translateZ(0)',
-                                    WebkitOverflowScrolling: 'touch'
-                                }}
-                            >
-
-                                {tabs.map((tab) => (
+                            <div className="relative flex items-center w-full">
+                                {/* Left Arrow */}
+                                {state.canScrollLeft && (
                                     <button
-                                        key={tab.key}
-                                        onClick={() => handleTabChange(tab.key)}
-                                        className={`relative pb-2 text-sm transition-all duration-300 ease-in-out whitespace-nowrap ${state.activeTab === tab.key
-                                            ? 'scale-105 text-indigo-600 dark:text-indigo-400'
-                                            : 'text-gray-600 hover:scale-105 hover:text-gray-700 dark:text-gray-300'
-                                            }`}
-                                        aria-current={state.activeTab === tab.key ? 'page' : undefined}
+                                        onClick={scrollLeft}
+                                        className="absolute left-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-2-light hover:scale-110 dark:bg-surface-3-dark md:flex"
+                                        style={{ left: '0px' }}
                                     >
-                                        <div className="flex items-center gap-1">
-                                            {tab.icon}
-                                            <span>{tab.label}</span>
-                                            <span
-                                                className={`text-xs ${state.activeTab === tab.key
-                                                    ? 'text-indigo-600 dark:text-indigo-400'
-                                                    : 'text-gray-600 dark:text-white/80'
-                                                    }`}
-                                                aria-label={`${tab.count} results`}
-                                            >
-                                                ({tab.count})
-                                            </span>
-                                        </div>
-                                        <span
-                                            className={`absolute bottom-0 left-0 h-[2px] w-full rounded-full bg-indigo-500 transition-all duration-300 ease-in-out ${state.activeTab === tab.key
-                                                ? 'scale-x-100 opacity-100'
-                                                : 'scale-x-0 opacity-0'
-                                                }`}
-                                            aria-hidden="true"
-                                        ></span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="text-gray-600 size-4 dark:text-sub-text-dark"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
                                     </button>
-                                ))}
-
-                                {/* Divider */}
-                                {state.searchHistories.length > 0 && tabs.length > 0 && (
-                                    <div
-                                        className="h-6 border-l border-gray-300 dark:border-slate-600"
-                                        role="separator"
-                                        aria-hidden="true"
-                                    ></div>
                                 )}
 
-                                {/* Search History Tabs */}
-                                {state.searchHistoryLoading && state.activeTab === 'all' ? (
-                                    <div className="flex items-center justify-center px-4 py-2" role="status" aria-live="polite">
-                                        <div className="w-4 h-4 border-2 border-indigo-500 rounded-full animate-spin border-t-transparent"></div>
-                                        <span className="sr-only">Loading history tabs...</span>
-                                    </div>
-                                ) : (
-                                    <>
-                                        {state.searchHistories.map((history) => {
-                                            const dynamicCount = state.historyResultsCache[history.id]?.results.length || history.results_count;
 
-                                            return (
-                                                <div key={history.id} className="flex items-center gap-2">
-                                                    <button
-                                                        onClick={() => handleTabChange(history.id)}
-                                                        className={`relative pb-2 text-xs transition-all duration-300 ease-in-out whitespace-nowrap ${state.activeTab === history.id
-                                                            ? 'scale-105 text-indigo-600 dark:text-indigo-400'
-                                                            : 'text-gray-600 hover:scale-105 hover:text-gray-700 dark:text-gray-300'
-                                                            }`}
-                                                        aria-current={state.activeTab === history.id ? 'page' : undefined}
-                                                    >
-                                                        <div className="flex items-center gap-1">
-                                                            <span className="max-w-[120px] truncate">
-                                                                {history.query || 'Advanced Filter'}
-                                                            </span>
-                                                            <span
-                                                                className={`text-xs ${state.activeTab === history.id
-                                                                    ? 'text-indigo-600 dark:text-indigo-400'
-                                                                    : 'text-gray-600 dark:text-white/80'
-                                                                    }`}
-                                                                aria-label={`${dynamicCount} results`}
-                                                            >
-                                                                ({dynamicCount})
-                                                            </span>
-                                                        </div>
-                                                        <span
-                                                            className={`absolute bottom-0 left-0 h-[2px] w-full rounded-full bg-indigo-500 transition-all duration-300 ease-in-out ${state.activeTab === history.id
-                                                                ? 'scale-x-100 opacity-100'
-                                                                : 'scale-x-0 opacity-0'
-                                                                }`}
-                                                            aria-hidden="true"
-                                                        ></span>
-                                                    </button>
-
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            deleteSearchHistory(history.id);
-                                                        }}
-                                                        className="p-1 text-gray-400 transition-colors rounded-lg hover:bg-gray-200 hover:text-red-500 dark:hover:bg-gray-800 dark:hover:text-red-400"
-                                                        title="Delete search history"
-                                                        aria-label={`Delete ${history.query || 'advanced filter'} search history`}
-                                                    >
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            strokeWidth={1.5}
-                                                            stroke="currentColor"
-                                                            className="w-3 h-3"
-                                                            aria-hidden="true"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                                                            />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                            );
-                                        })}
-
-                                        {/* Loader for more histories */}
-                                        {state.isFetchingMoreHistories && (
-                                            <div className="flex items-center justify-center px-4 py-2" role="status" aria-live="polite">
-                                                <div className="w-4 h-4 border-2 border-indigo-500 rounded-full animate-spin border-t-transparent"></div>
-                                                <span className="sr-only">Loading more histories...</span>
+                                <div
+                                    ref={scrollContainerRef}
+                                    className="flex items-center w-full gap-3 overflow-x-auto flex-nowrap scrollbar-none scroll-smooth"
+                                    style={{
+                                        transform: 'translateZ(0)',
+                                        WebkitOverflowScrolling: 'touch',
+                                        scrollbarWidth: 'none',
+                                        msOverflowStyle: 'none',
+                                        maxWidth: '100%',
+                                        display: 'flex'
+                                    }}
+                                >
+                                    {/* Main Tab */}
+                                    {tabs.map((tab) => (
+                                        <button
+                                            key={tab.key}
+                                            onClick={() => handleTabChange(tab.key)}
+                                            className={`relative flex-shrink-0 px-4 py-2 text-sm transition-all rounded-full whitespace-nowrap ${state.activeTab === tab.key
+                                                ? 'bg-main-text-light text-main-text-dark dark:bg-main-text-dark dark:text-main-text-light font-semibold'
+                                                : 'bg-surface-1-light text-main-text-light dark:bg-surface-1-dark dark:text-main-text-dark'
+                                                }`}
+                                        >
+                                            <div className="flex items-center gap-1">
+                                                {tab.icon}
+                                                <span>{tab.label}</span>
+                                                <span className={`text-xs ${state.activeTab === tab.key ? 'text-main-text-dark dark:text-main-text-light' : 'text-main-text-light dark:text-main-text-dark'}`}>({tab.count})</span>
                                             </div>
-                                        )}
+                                        </button>
+                                    ))}
 
-                                        {/* Invisible element to trigger infinite scroll */}
-                                        {state.searchHistoriesNextPageUrl && (
+                                    {/* Search History Tabs */}
+                                    {state.searchHistories.map((history) => (
+                                        <button
+                                            key={history.id}
+                                            onClick={() => handleTabChange(history.id)}
+                                            className={`relative flex flex-shrink-0 items-center gap-2 px-4 py-2 text-sm rounded-full whitespace-nowrap ${state.activeTab === history.id
+                                                ? 'bg-main-text-light text-main-text-dark dark:bg-main-text-dark dark:text-main-text-light font-semibold'
+                                                : 'bg-surface-1-light text-main-text-light dark:bg-surface-1-dark dark:text-main-text-dark'
+                                                }`}
+                                        >
+                                            <span className="max-w-[120px] truncate">{history.query || 'Filter'}</span>
+                                            <span className={`text-xs ${state.activeTab === history.id ? 'text-main-text-dark dark:text-main-text-light font-semibold' : 'text-main-text-light dark:text-main-text-dark'}`}>({state.historyResultsCache[history.id]?.results.length || history.results_count})</span>
                                             <div
-                                                ref={historiesEndRef}
-                                                className="w-px h-px"
-                                                aria-hidden="true"
-                                            ></div>
-                                        )}
-                                    </>
+                                                onClick={(e) => { e.stopPropagation(); deleteSearchHistory(history.id); }}
+                                                className={`flex-shrink-0 p-0.5 hover:bg-main-text-light/10  dark:hover:bg-main-text-dark/10 rounded-full`}
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                                            </div>
+                                        </button>
+                                    ))}
+
+                                    {/* Infinity Scroll Triggers */}
+                                    {state.searchHistoriesNextPageUrl && <div ref={historiesEndRef} className="flex-shrink-0 w-4 h-4" />}
+                                </div>
+
+                                {/* Right Arrow */}
+                                {state.canScrollRight && (
+                                    <button
+                                        onClick={scrollRight}
+                                        className="absolute right-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-2-light hover:scale-110 dark:bg-surface-3-dark md:flex"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="text-black size-4 dark:text-sub-text-dark"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+                                    </button>
                                 )}
                             </div>
-
-                            {/* Right Arrow */}
-                            {state.canScrollRight && (
-                                <button
-                                    onClick={scrollRight}
-                                    className="absolute right-0 z-10 flex items-center justify-center w-8 h-8 transition-colors bg-white border border-gray-200 rounded-full shadow-md dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-                                    aria-label="Scroll right"
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        strokeWidth={2}
-                                        stroke="currentColor"
-                                        className="w-5 h-5 text-gray-600 dark:text-gray-300"
-                                        aria-hidden="true"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M8.25 4.5l7.5 7.5-7.5 7.5"
-                                        />
-                                    </svg>
-                                </button>
-                            )}
                         </div>
                     </div>
 
+
                     {/* Match Types Row */}
                     {matchTypes.length > 0 && (
-                        <div className="flex items-center gap-3 px-0 py-2 border-b border-gray-200 dark:border-slate-700">
+                        <div className="flex flex-col min-w-0 gap-3 py-2 sm:flex-row sm:items-center sm:justify-between">
                             {/* Active Filters Display */}
-                            {state.activeTab !== 'all' && (() => {
-                                const { address, radius, from_floor_id, to_floor_id, date_range } =
-                                    activeTabFilters || {};
+                            <div className='flex items-center gap-3'>
+                                {state.activeTab !== 'all' && (() => {
+                                    const { address, radius, from_floor_id, to_floor_id, date_range } =
+                                        activeTabFilters || {};
 
-                                const hasAddress = address?.lat && address?.lng;
-                                const hasRadius = radius && radius > 0;
-                                const hasFloors = from_floor_id || to_floor_id;
-                                const hasDateRange = Array.isArray(date_range) && date_range.length === 2;
+                                    const hasAddress = address?.lat && address?.lng;
+                                    const hasRadius = radius && radius > 0;
+                                    const hasFloors = from_floor_id || to_floor_id;
+                                    const hasDateRange = Array.isArray(date_range) && date_range.length === 2;
 
-                                if (!hasAddress && !hasRadius && !hasFloors && !hasDateRange) return null;
+                                    if (!hasAddress && !hasRadius && !hasFloors && !hasDateRange) return null;
 
-                                return (
-                                    <div
-                                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700"
-                                        role="status"
-                                        aria-label="Active filters"
+                                    return (
+                                        <div
+                                            className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-full bg-surface-1-light text-sub-text-light dark:bg-surface-1-dark dark:text-sub-text-dark"
+                                            role="status"
+                                            aria-label="Active filters"
+                                        >
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                {hasAddress && (
+                                                    <span className="text-main-text-light dark:text-main-text-dark">
+                                                        <span>
+                                                            Address:
+                                                        </span>{' '}
+                                                        {address.name ||
+                                                            `(${address.lat.toFixed(4)}, ${address.lng.toFixed(4)})`}
+                                                    </span>
+                                                )}
+
+                                                {hasFloors && (
+                                                    <span className="text-main-text-light dark:text-main-text-dark">
+                                                        • {from_floor_id || '?'}~{to_floor_id || '?'}f
+                                                    </span>
+                                                )}
+
+                                                {hasRadius && (
+                                                    <span className="text-main-text-light dark:text-main-text-dark">
+                                                        • 0~{(radius / 1000).toFixed(1)}km
+                                                    </span>
+                                                )}
+
+                                                {hasDateRange && (
+                                                    <span className="text-main-text-light dark:text-main-text-dark">
+                                                        •{' '}
+                                                        {new Date(date_range[0]).toLocaleDateString(undefined, {
+                                                            year: 'numeric',
+                                                            month: 'short',
+                                                            day: '2-digit',
+                                                        })}{' '}
+                                                        ~{' '}
+                                                        {new Date(date_range[1]).toLocaleDateString(undefined, {
+                                                            year: 'numeric',
+                                                            month: 'short',
+                                                            day: '2-digit',
+                                                        })}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+
+                                {matchTypes.map((mt) => (
+                                    <button
+                                        key={mt}
+                                        onClick={() =>
+                                            updateState({
+                                                activeMatchType: state.activeMatchType === mt ? null : mt,
+                                            })
+                                        }
+                                        className={`text-xs  py-1 transition-colors text-main-text-light dark:text-main-text-dark`}
+                                        aria-pressed={state.activeMatchType === mt}
                                     >
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            {hasAddress && (
-                                                <span className="text-gray-700 dark:text-gray-300">
-                                                    <span className="font-medium text-indigo-600 dark:text-indigo-400">
-                                                        Address:
-                                                    </span>{' '}
-                                                    {address.name ||
-                                                        `(${address.lat.toFixed(4)}, ${address.lng.toFixed(4)})`}
-                                                </span>
-                                            )}
+                                        <div className="flex items-center">
+                                            <span className={`${state.activeMatchType === mt ? 'font-semibold' : ''} text-sm`}>
+                                                {mt.replace(/_/g, ' ')} ({matchTypeGroups[mt].length})
+                                            </span>
 
-                                            {hasFloors && (
-                                                <span className="text-gray-700 dark:text-gray-300">
-                                                    • {from_floor_id || '?'}~{to_floor_id || '?'}f
-                                                </span>
-                                            )}
 
-                                            {hasRadius && (
-                                                <span className="text-gray-700 dark:text-gray-300">
-                                                    • 0~{(radius / 1000).toFixed(1)}km
-                                                </span>
-                                            )}
-
-                                            {hasDateRange && (
-                                                <span className="text-gray-700 dark:text-gray-300">
-                                                    •{' '}
-                                                    {new Date(date_range[0]).toLocaleDateString(undefined, {
-                                                        year: 'numeric',
-                                                        month: 'short',
-                                                        day: '2-digit',
-                                                    })}{' '}
-                                                    ~{' '}
-                                                    {new Date(date_range[1]).toLocaleDateString(undefined, {
-                                                        year: 'numeric',
-                                                        month: 'short',
-                                                        day: '2-digit',
-                                                    })}
-                                                </span>
+                                            {state.activeMatchType === mt && (
+                                                <button
+                                                    onClick={() => updateState({ activeMatchType: null })}
+                                                    className="mx-2 text-sm transition-colors text-main-text-light dark:text-main-text-dark"
+                                                    aria-label="Clear match type filter"
+                                                >
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        strokeWidth={2.5}
+                                                        stroke="currentColor"
+                                                        className="w-3.5 h-3.5"
+                                                    >
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
                                             )}
                                         </div>
-                                    </div>
-                                );
-                            })()}
 
-                            {matchTypes.map((mt) => (
-                                <button
-                                    key={mt}
-                                    onClick={() =>
-                                        updateState({
-                                            activeMatchType: state.activeMatchType === mt ? null : mt,
-                                        })
-                                    }
-                                    className={`text-xs px-3 py-1 rounded-full transition-colors ${state.activeMatchType === mt
-                                        ? 'bg-indigo-600 text-white'
-                                        : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-white/80'
-                                        }`}
-                                    aria-pressed={state.activeMatchType === mt}
-                                >
-                                    {mt} ({matchTypeGroups[mt].length})
-                                </button>
-                            ))}
+                                    </button>
+                                ))}
 
-                            {state.activeMatchType && (
+
+                            </div>
+
+                            <div className="flex items-center gap-1">
+                                {/* List View Icon */}
                                 <button
-                                    onClick={() => updateState({ activeMatchType: null })}
-                                    className="px-3 py-1 ml-3 text-xs text-white transition-colors bg-red-500 rounded-full"
-                                    aria-label="Clear match type filter"
+                                    onClick={() => setActiveView('list')}
+                                    className={`
+              p-1 rounded-lg transition-all duration-200
+              ${activeView === 'list'
+                                            ? 'bg-surface-1-light dark:bg-surface-1-dark'
+                                            : 'hover:bg-surface-1-light dark:hover:bg-surface-1-dark'
+                                        }
+            `}
+                                    aria-label="List view"
+                                    title="List view"
                                 >
-                                    Clear
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth={1}
+                                        stroke="currentColor"
+                                        className="size-7"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M3.75 5.25h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5"
+                                        />
+                                    </svg>
                                 </button>
-                            )}
+
+                                {/* Grid View Icon */}
+                                <button
+                                    onClick={() => setActiveView('grid')}
+                                    className={`
+              p-1 rounded-lg transition-all duration-200
+              ${activeView === 'grid'
+                                            ? 'bg-surface-1-light dark:bg-surface-1-dark'
+                                            : 'hover:bg-surface-1-light dark:hover:bg-surface-1-dark'
+                                        }
+            `}
+                                    aria-label="Grid view"
+                                    title="Grid view"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth={1.5}
+                                        stroke="currentColor"
+                                        className="size-7"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     )}
 
                     {/* Results List - Apply content-visibility here if list is long */}
                     <div
-                        className="divide-y divide-gray-200 dark:divide-slate-700"
                         role="feed"
                         aria-busy={state.searchHistoryLoading && typeof state.activeTab === 'number'}
+
+                        className={activeView === 'grid' ? 'grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 lg:grid-cols-4 gap-2 mt-5' : 'flex flex-col'}
                     >
                         {state.searchHistoryLoading && typeof state.activeTab === 'number' ? (
                             <div className="flex items-center justify-center py-16" role="status" aria-live="polite">
-                                <div className="w-8 h-8 border-4 border-indigo-500 rounded-full animate-spin border-t-transparent"></div>
+                                <Spinner />
                                 <span className="sr-only">Loading results...</span>
                             </div>
                         ) : (
@@ -1086,36 +1125,23 @@ const Index = ({
                                     item={item}
                                     onCopyLink={handleCopyLink}
                                     generateURL={generateURL}
+                                    activeView={activeView}
                                 />
                             ))
                         )}
                     </div>
 
+
                     {/* Loading More Indicator */}
                     {displayResults.length > 0 && nextPageUrl && (
                         <div
                             ref={loaderRef}
-                            className="flex items-center justify-center gap-2 py-10 text-gray-700 dark:text-white/80"
+                            className="flex items-center justify-center gap-2 py-10 text-sub-text-light dark:text-sub-text-dark"
                             role="status"
                             aria-live="polite"
                         >
                             <div className="flex items-center justify-center">
-                                <svg
-                                    aria-hidden="true"
-                                    className="w-5 h-5 text-gray-200 animate-spin fill-indigo-600 dark:text-gray-600"
-                                    viewBox="0 0 100 101"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                                        fill="currentColor"
-                                    />
-                                    <path
-                                        d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                                        fill="currentFill"
-                                    />
-                                </svg>
+                                <Spinner />
                             </div>
                             <span>Loading more...</span>
                         </div>
@@ -1132,7 +1158,7 @@ const Index = ({
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
                                     stroke="currentColor"
-                                    className="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600"
+                                    className="w-16 h-16 mx-auto text-main-text-light dark:text-main-text-dark"
                                     aria-hidden="true"
                                 >
                                     <path
@@ -1141,13 +1167,13 @@ const Index = ({
                                         d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
                                     />
                                 </svg>
-                                <p className="mt-4 text-lg font-medium text-gray-500 dark:text-gray-400">
+                                <p className="mt-4 text-lg font-medium text-main-text-light dark:text-main-text-dark">
                                     {getNoResultsMessage()}
                                 </p>
                                 {hasPerformedSearch() &&
                                     currentResults.length === 0 &&
                                     state.activeTab === 'all' && (
-                                        <p className="mt-2 text-sm text-gray-400 dark:text-gray-500">
+                                        <p className="mt-2 text-sm text-sub-text-light dark:text-sub-text-dark">
                                             Try adjusting your search terms or filters
                                         </p>
                                     )}
@@ -1156,13 +1182,16 @@ const Index = ({
                 </div>
             </div>
 
-            {uiState.linkCopied && (
-                <LinkCopiedModal
-                    linkCopied={uiState.linkCopied}
-                    setLinkCopied={(value) => updateUiState({ linkCopied: value })}
-                />
-            )}
-        </MainLayout>
+
+            {
+                uiState.linkCopied && (
+                    <LinkCopiedModal
+                        linkCopied={uiState.linkCopied}
+                        setLinkCopied={(value) => updateUiState({ linkCopied: value })}
+                    />
+                )
+            }
+        </MainLayout >
     );
 };
 

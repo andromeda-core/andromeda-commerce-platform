@@ -19,4 +19,6 @@ interface ICartRepository
     public function referalCode(Request $request);
 
     public function removeReferal(Request $request);
+
+    public function updateCartRefferalSession(?array $session_data, $cart_items);
 }

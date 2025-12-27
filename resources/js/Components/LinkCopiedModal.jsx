@@ -14,17 +14,15 @@ const LinkCopiedModal = ({ linkCopied, setLinkCopied }) => {
     if (!linkCopied) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none">
+        <div className="fixed inset-0 z-[100004] flex items-center justify-center pointer-events-none">
             <div
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+                className="fixed inset-0 bg-black/30 backdrop-blur-sm"
 
             />
 
             <div
-                className="flex flex-col items-center z-[100] justify-center px-6 py-4 bg-white border shadow-lg pointer-events-auto animate-fade-in-up rounded-xl dark:bg-deepcharcoal border-black/5 dark:border-gray-700"
-                style={{
-                    minWidth: "200px",
-                }}
+                className="flex flex-col items-center z-[100] min-w-[250px] lg:min-w-[300px] justify-center px-6 py-3 lg:px-8 lg:py-6 bg-main-text-dark border pointer-events-auto animate-fade-in-up rounded-md dark:bg-surface-1-dark dark:border-surface-3-dark border-surface-3-light"
+
             >
                 {/* Success icon */}
                 <div className="mb-2">
@@ -34,7 +32,7 @@ const LinkCopiedModal = ({ linkCopied, setLinkCopied }) => {
                         viewBox="0 0 24 24"
                         strokeWidth={2}
                         stroke="currentColor"
-                        className="w-6 h-6 text-black dark:text-white"
+                        className="w-6 h-6 text-main-text-light lg:w-8 lg:h-8 dark:text-main-text-dark"
                     >
                         <path
                             strokeLinecap="round"
@@ -45,7 +43,7 @@ const LinkCopiedModal = ({ linkCopied, setLinkCopied }) => {
                 </div>
 
 
-                <p className="text-sm font-medium text-black dark:text-white">
+                <p className="text-sm font-medium text-main-text-light lg:text-xl dark:text-main-text-dark">
                     Link copied!
                 </p>
             </div>

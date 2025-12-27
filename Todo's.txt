@@ -291,7 +291,7 @@ Milestone 7: Customer Website (Frontend + PWA + Posts + Orders + Meta OAuth)
 - Restricting Customer From Adding Items In Cart Who Belongs To Different Distributor  ✅
 - Customer checkout functionality  ✅
 - On checkout: FB/Instagram connect  to store the user’s Meta user ID  ✅
-- After checkout: the user will see the associated bank details along with an upload receipt  
+- After checkout: the user will see the associated bank details along with an upload receipt
   input. After transferring the payment, the user uploads proof of payment. Once the admin confirms the payment, the order status is updated from “Pending” to “Paid,” and the user is
   notified. ✅
 - The user can then view their updated order status. When the admin changes the status to “Shipped” and adds courier details, the user will be able to see those details, along with any
@@ -639,6 +639,10 @@ Additional Work:
     ) Redesigned Whole Website 4th Time Completed According To The LAYOUT Design Reference Provided ✅
 
 
+    Redesigned Whole Website 5th Time Completed According To The LAYOUT Design Reference Provided ✅
+    Only Product Single Page of Desktop Version And Mobile Redesigned Remeaning Because Client Said
+
+
 
     META Integration (
         1: App Created And Page Setup ✅
@@ -668,6 +672,8 @@ Additional Work:
 
 
     )
+
+
 
 
 

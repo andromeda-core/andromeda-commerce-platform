@@ -24,6 +24,8 @@ export default function index({ general_setting }) {
         is_removed_app_main_logo_light: false,
         app_favicon: null,
         is_removed_app_favicon: false,
+        app_pwa_logo: null,
+        is_removed_app_pwa_logo: false,
         app_description: general_setting?.app_description || '',
     });
 
@@ -208,7 +210,7 @@ export default function index({ general_setting }) {
                                     />
                                 </div>
 
-                                <div className="grid gap-4 grid-col-1">
+                                <div className="grid grid-cols-1 gap-4 mt-5 md:grid-cols-2">
                                     <FileUploaderInput
                                         Label={
                                             'Drag & Drop your favicon or <span class="filepond--label-action">Browse</span>'
@@ -232,6 +234,35 @@ export default function index({ general_setting }) {
                                         DefaultFile={
                                             general_setting?.app_favicon && [
                                                 general_setting?.app_favicon,
+                                            ]
+                                        }
+                                    />
+
+
+
+                                    <FileUploaderInput
+                                        Label={
+                                            'Drag & Drop your favicon or <span class="filepond--label-action">Browse</span>'
+                                        }
+                                        Error={errors.app_pwa_logo}
+                                        Id={'app_pwa_logo'}
+                                        InputName={'App PWA Logo'}
+                                        onUpdate={(file) => {
+                                            if (file.length > 0) {
+                                                if (file[0].isNew) {
+                                                    setData('app_pwa_logo', file[0].file);
+                                                    setData('is_removed_app_pwa_logo', false);
+                                                }
+                                            } else {
+                                                general_setting?.app_pwa_logo &&
+                                                    setData('is_removed_app_pwa_logo', true);
+                                                setData('app_pwa_logo', null);
+                                            }
+                                        }}
+                                        Multiple={false}
+                                        DefaultFile={
+                                            general_setting?.app_pwa_logo && [
+                                                general_setting?.app_pwa_logo,
                                             ]
                                         }
                                     />

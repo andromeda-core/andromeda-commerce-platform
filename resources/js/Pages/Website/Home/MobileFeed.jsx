@@ -348,9 +348,7 @@ const MobileFeed = ({
 
         const plain = item?.content ? item.content.replace(/<[^>]+>/g, '') : null;
 
-        const charsPerLine = 80;
-        const clampLimit = 18 * charsPerLine;
-        const shouldShowMore = plain?.length > clampLimit;
+        const shouldShowMore = plain?.length > 1000;
 
 
         const isTextPost = item.type === 'posts' &&
@@ -409,10 +407,10 @@ const MobileFeed = ({
             >
 
                 {/* Header: Tag + Three Dots */}
-                <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between  px-4 pt-6 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] text-white ">
+                <div className={`absolute top-0 left-0 right-0 z-20 flex items-center justify-between  px-4 pt-6 ${isTextPost ? 'text-main-text-light dark:text-main-text-dark' : 'drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] text-main-text-dark '}`}>
                     <button
                         onClick={() => navigateToHashtag(item.tag)}
-                        className="text-sm font-bold"
+                        className="font-bold text-md"
                     >
                         {item.tag}
                     </button>
@@ -444,7 +442,7 @@ const MobileFeed = ({
                                 viewBox="0 0 24 24"
                                 strokeWidth={2.5}
                                 stroke="currentColor"
-                                className="w-5 h-5"
+                                className="w-7 h-7"
 
                             >
                                 <path
@@ -459,7 +457,7 @@ const MobileFeed = ({
                             <div
                                 data-dropdown-menu="true"
                                 onClick={(e) => e.stopPropagation()}
-                                className="absolute right-0 z-20 w-48 bg-white border border-gray-200 rounded-lg shadow-lg top-8 dark:border-gray-700 dark:bg-deepcharcoal">
+                                className="absolute right-0 z-50 w-56 border rounded-md border-surface-3-light bg-backgroundLight dark:border-surface-3-dark top-full dark:bg-surface-1-dark">
                                 <div className="py-1">
                                     <button
                                         onClick={(e) => {
@@ -467,7 +465,7 @@ const MobileFeed = ({
                                             setShowQrCode(true);
                                             setActionDropdownOpen(null);
                                         }}
-                                        className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-zinc-800"
+                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                     >
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
@@ -532,7 +530,7 @@ const MobileFeed = ({
                                                             },
                                                         );
                                                     }}
-                                                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-zinc-800"
+                                                    className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                 >
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -540,14 +538,14 @@ const MobileFeed = ({
                                                             item?.is_bookmarked
                                                                 ? isDarkMode
                                                                     ? '#fff'
-                                                                    : '#0340D1'
+                                                                    : '#222'
                                                                 : 'none'
                                                         }
                                                         stroke={
                                                             item?.is_bookmarked
                                                                 ? isDarkMode
                                                                     ? '#fff'
-                                                                    : '#0340D1'
+                                                                    : '#222'
                                                                 : 'currentColor'
                                                         }
                                                         strokeWidth={1.5}
@@ -562,8 +560,8 @@ const MobileFeed = ({
                                                     </svg>
                                                     <span>
                                                         {item?.is_bookmarked
-                                                            ? 'Remove Bookmark'
-                                                            : 'Bookmark'}
+                                                            ? 'Remove Bookmarker'
+                                                            : 'Bookmarker'}
                                                     </span>
                                                 </button>
                                             )}
@@ -581,7 +579,7 @@ const MobileFeed = ({
                                                     setLinkCopied(true);
                                                     setActionDropdownOpen(null);
                                                 }}
-                                                className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-zinc-800"
+                                                className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                             >
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -601,7 +599,7 @@ const MobileFeed = ({
                                             </button>
 
                                             <button
-                                                className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-zinc-800"
+                                                className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     setAutoplay(!videoAutoplay);
@@ -660,7 +658,7 @@ const MobileFeed = ({
                                                 setLinkCopied(true);
                                                 setActionDropdownOpen(null);
                                             }}
-                                            className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-zinc-800"
+                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -755,25 +753,19 @@ const MobileFeed = ({
                                     }}
                                     Preload={shouldEagerLoad ? "metadata" : "none"}
                                     timelinePadding={!isVisible ? 35 : 70}
+                                    isMainFeed={true}
                                 />
 
 
                             ) : (
                                 item.post_image_urls.length === 0 &&
                                 item.post_video_urls.length === 0 && (
-                                    <div className="px-4 pt-3 pb-2 overflow-y-auto text-gray-700 mt-14"
-                                        style={{
-                                            contain: 'layout',
-                                        }}
-                                    >
+                                    <div className="absolute inset-0 px-4 pt-20 pb-40 overflow-hidden">
                                         <div
-                                            className="line-clamp-[18] text-sm leading-relaxed text-gray-700 dark:text-white/80"
-                                            style={{
-
-                                                minHeight: '200px',
-                                            }}
+                                            className="line-clamp-[18] text-sm leading-relaxed text-main-text-light dark:text-main-text-dark whitespace-pre-line break-words"
+                                            /* Using your space remover logic as requested */
                                             dangerouslySetInnerHTML={{
-                                                __html: item.content,
+                                                __html: item?.content?.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(),
                                             }}
                                         />
                                     </div>
@@ -785,26 +777,16 @@ const MobileFeed = ({
 
                 {/* Bottom */}
                 {item.type === 'smartphones' && (
-                    <div className={`absolute left-0 right-0 z-20 px-4 pt-6 text-white ${isVisible ? 'bottom-28' : 'bottom-14'}`}>
+                    <div className={`absolute left-0 right-0 z-20 px-4 pt-3 text-main-text-dark ${isVisible ? 'bottom-24' : 'bottom-14'}`}>
                         <div className="flex items-center justify-between gap-3 truncate">
-                            <p className="flex-1 text-sm leading-relaxed break-words text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
-                                {item?.content && item.content.length > 30 ? (
-                                    <span
-                                        dangerouslySetInnerHTML={{
-                                            __html:
-                                                item.content.substring(0, 30) +
-                                                '...',
-                                        }}
-                                    />
-                                ) : (
-                                    <span
-                                        dangerouslySetInnerHTML={{
-                                            __html: item?.content,
-                                        }}
-                                    />
-                                )}
+                            <p className="flex-1 min-w-0 text-md leading-relaxed text-main-text-dark font-semibold drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
+                                <span
+                                    className="line-clamp-1 break-all !display-['-webkit-box'] [&_*]:inline truncate "
+                                    dangerouslySetInnerHTML={{
+                                        __html: item?.content?.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(),
+                                    }}
+                                />
                             </p>
-
                             <button
                                 onClick={() => {
                                     setManualFeedGalleryItem(item);
@@ -815,7 +797,7 @@ const MobileFeed = ({
                                         setMobileFeedGalleryOpening(false);
                                     }, 500);
                                 }}
-                                className="h-[30px] w-[120px] shrink-0 rounded-lg px-6 text-xs font-bold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]  transition-colors flex gap-2 items-center justify-center  "
+                                className="h-[30px] shrink-0  px-6 text-md font-semibold text-main-text-light bg-main-text-dark rounded-full transition-colors flex gap-2 items-center justify-center"
                             >
 
                                 {mobileFeedGalleryOpening ? <Spinner customSize={"size-3"} /> : 'Shop Now'}
@@ -825,29 +807,22 @@ const MobileFeed = ({
                 )}
 
                 {item.type === 'posts' && (
-                    <div className={`absolute left-0 right-0 z-20 px-4 pt-6 text-white ${isVisible ? 'bottom-28' : 'bottom-14'}`}>
+                    <div className={`absolute left-0 right-0 z-20 px-4 pt-3 text-main-text-dark ${isVisible ? 'bottom-24' : 'bottom-14'} ${hasVideo ? 'bottom-28' : ''}`}>
                         <div className={`flex items-center justify-between gap-3 truncate `}>
                             {/* CHECKING IF MEDIA IS EMPTY THAN ITS TEXT ONLY POST SO THIS WONT SHOW BECAUSE WE ALREADY SHOWED In CONTENT */}
                             {item?.post_image_urls?.length === 0 &&
                                 item?.post_video_urls?.length === 0 ? (
                                 <p></p>
                             ) : (
-                                <p className="flex-1 text-sm leading-relaxed text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] ">
-                                    {item?.content && item.content.length > 30 ? (
-                                        <span
-                                            dangerouslySetInnerHTML={{
-                                                __html:
-                                                    item.content.substring(0, 30) +
-                                                    '...',
-                                            }}
-                                        />
-                                    ) : (
-                                        <span
-                                            dangerouslySetInnerHTML={{
-                                                __html: item?.content,
-                                            }}
-                                        />
-                                    )}
+
+
+                                <p className="flex-1 min-w-0 text-md leading-relaxed text-main-text-dark font-medium drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
+                                    <span
+                                        className="line-clamp-1 break-all !display-['-webkit-box'] [&_*]:inline truncate "
+                                        dangerouslySetInnerHTML={{
+                                            __html: item?.content?.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(),
+                                        }}
+                                    />
                                 </p>
                             )}
 
@@ -863,9 +838,9 @@ const MobileFeed = ({
                                                 setMobileFeedGalleryOpening(false);
                                             }, 500);
                                         }}
-                                        className="h-[30px] w-[90px] shrink-0 rounded-lg  px-6 text-xs font-bold text-gray-700 transition-colors flex gap-2 items-center justify-center dark:text-white/80 "
+                                        className="h-[30px] shrink-0 rounded-full px-6 text-md font-medium bg-main-text-light text-main-text-dark dark:bg-main-text-dark transition-colors flex gap-2 items-center justify-center dark:text-main-text-light"
                                     >
-                                        {mobileFeedGalleryOpening ? <Spinner customSize={"size-3"} /> : 'More'}
+                                        {mobileFeedGalleryOpening ? <Spinner customSize={"size-3"} /> : 'View More'}
                                     </button>
                                 )
                             ) : (
@@ -879,9 +854,9 @@ const MobileFeed = ({
                                             setMobileFeedGalleryOpening(false);
                                         }, 500);
                                     }}
-                                    className="h-[30px] w-[90px] shrink-0 rounded-lg  px-6 text-xs font-bold text-white transition-colors flex gap-2 items-center justify-center drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] "
+                                    className="h-[30px] shrink-0  px-6 text-md font-semibold text-main-text-light bg-main-text-dark rounded-full transition-colors flex gap-2 items-center justify-center"
                                 >
-                                    {mobileFeedGalleryOpening ? <Spinner customSize={"size-3"} /> : 'More'}
+                                    {mobileFeedGalleryOpening ? <Spinner customSize={"size-3"} /> : 'View More'}
                                 </button>
                             )}
 
@@ -1716,7 +1691,7 @@ const MobileFeed = ({
     return (
         <>
             {createPortal(
-                <div className="fixed inset-0 z-50 text-gray-700 bg-white scrollbar-none dark:bg-deepcharcoal dark:text-white/80">
+                <div className="fixed inset-0 z-50 text-main-text-light bg-backgroundLight scrollbar-none dark:bg-backgroundDark dark:text-main-text-dark">
                     {(!isScrollCompleted || isXAxisLooping) && (
                         <RenderFeedItemSkeleton index={0} />
                     )}

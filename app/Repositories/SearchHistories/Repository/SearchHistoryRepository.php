@@ -27,17 +27,37 @@ class SearchHistoryRepository implements ISearchHistoryRepository
             ->paginate(10)
             ->withPath(route('website.global-search.history-results-getmore'));
 
-        $histories->getCollection()->transform(function ($history) {
+        $filteredCollection = $histories->getCollection()->transform(function ($history) {
+
             $results = collect();
 
             if (! empty($history->results)) {
-                $results = json_decode($history->results);
+                $decoded = json_decode($history->results);
+
+                if (is_array($decoded)) {
+                    $results = collect($decoded)
+                        ->filter(function ($result) {
+                            return
+                                ! empty($result->id)
+                                && ! empty($result->type)
+                                && (
+                                    ! empty($result->image)
+                                    || ! empty($result->video_thumbnail)
+                                );
+                        })
+                        ->values();
+                }
             }
 
             $history->results = $results;
 
             return $history;
-        });
+        })->filter(function ($history) {
+            return $history->results->isNotEmpty();
+        })
+            ->values();
+
+        $histories->setCollection($filteredCollection);
 
         return [
             'results' => $histories->items(),
@@ -85,7 +105,7 @@ class SearchHistoryRepository implements ISearchHistoryRepository
 
         $results = [];
 
-        if (empty($history)) {
+        if (! $history || empty($history->results)) {
             return [
                 'status' => false,
                 'history' => null,
@@ -93,9 +113,37 @@ class SearchHistoryRepository implements ISearchHistoryRepository
             ];
         }
 
-        if (! empty($history?->results)) {
-            $results = json_decode($history->results);
+        $decoded = json_decode($history->results);
+
+        if (! is_array($decoded)) {
+            return [
+                'status' => false,
+                'history' => null,
+                'history_results' => null,
+            ];
         }
+
+        $filteredResults = collect($decoded)
+            ->filter(function ($result) {
+                return
+                    ! empty($result->id)
+                    && ! empty($result->type)
+                    && (
+                        ! empty($result->image)
+                        || ! empty($result->video_thumbnail)
+                    );
+            })
+            ->values();
+
+        if ($filteredResults->isEmpty()) {
+            return [
+                'status' => false,
+                'history' => null,
+                'history_results' => null,
+            ];
+        }
+
+        $history->results = $filteredResults;
 
         return [
             'status' => true,

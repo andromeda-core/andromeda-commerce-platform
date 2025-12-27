@@ -489,79 +489,85 @@ export default function view({ post }) {
                 {/* QR Code */}
                 {showQrCode &&
                     createPortal(
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center">
+                        <div className="fixed inset-0 z-[100003] flex items-center justify-center px-4">
                             {/* Overlay */}
                             <div
-                                className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+                                className="fixed inset-0 bg-black/30 backdrop-blur-sm"
                                 onClick={() => setShowQrCode(false)}
-                            ></div>
+                            />
 
                             {/* Modal */}
                             <div
                                 role="dialog"
                                 aria-modal="true"
-                                aria-labelledby="qrCodeTitle"
-                                className={`relative z-[101] w-full max-w-[200px] rounded-2xl bg-transparent  pt-3 text-gray-900   lg:max-w-[300px] lg:p-6`}
+                                className="dark:bg-deepcharcoal dark:border-gray-900 bg-backgroundLight border-surface-3-light relative z-[101] w-full max-w-[280px] rounded-md border  lg:px-4 px-0 py-0 lg:py-5 sm:max-w-[340px]  lg:max-w-[500px]"
                             >
-                                <div className="text-center">
-                                    <div className="flex justify-center">
-                                        <QRCode
-                                            id="qr-code-canvas"
-                                            className={'size-52 border-2'}
-                                            value={url}
+                                <div className="flex flex-col items-center justify-center">
+                                    {/* QR + Copy Wrapper (KEY PART) */}
+                                    <div className="mx-auto my-5 w-fit">
+                                        {/* QR */}
+                                        <div className="p-3 rounded-md bg-main-text-dark dark:text-main-text-light dark:bg-surface-1-dark sm:p-2">
+                                            <QRCode
+                                                id="qr-code-canvas"
+                                                className="size-40 sm:size-44 lg:size-60"
+                                                value={url}
+                                                level="H"
+                                                includemargin="true"
+                                                bgColor="#ffffff"
+                                                fgColor="#000000"
+                                            />
+                                        </div>
 
-                                            viewBox="0 0 256 256"
-                                            level="H"
-                                            includemargin="true"
-                                            bgColor="#ffffff"
-                                            fgColor="#000000"
-                                        />
-                                    </div>
+                                        {/* Copy Button */}
+                                        <button className="mt-3 w-full rounded-md bg-main-text-light dark:bg-main-text-dark py-2.5 text-lg font-medium text-main-text-dark dark:text-main-text-light transition dark:hover:bg-main-text-dark/80 hover:bg-main-text-light/80"
 
-                                    <h2
-                                        id="qrCodeTitle"
-                                        className="my-3 text-base font-semibold text-white dark:text-white/80"
-                                    >
-                                        Scan QR Code
-                                    </h2>
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(url);
+                                                setLinkCopied(true);
+                                            }}
+                                        >
+                                            Copy
+                                        </button>
 
-                                    {/* Download Button */}
-                                    <button
-                                        onClick={handleDownloadQRCode}
-                                        className={` ${isQrDownloading && 'pointer-events-none opacity-50'} inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-gray-900 transition-colors bg-white rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-white  focus:ring-offset-2 focus:ring-offset-gray-900`}
-                                        aria-label="Download QR Code"
-                                        disabled={isQrDownloading}
-
-                                    >
-
-                                        Download QR Code
-
-
-                                        {isQrDownloading ? (
-
-                                            <Spinner />
-                                        ) : (
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="w-4 h-4"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
+                                        {/* Download Button */}
+                                        <div className="w-full mt-4">
+                                            <button
+                                                onClick={handleDownloadQRCode}
+                                                disabled={isQrDownloading}
+                                                className={`flex w-full items-center justify-center gap-2 rounded-md py-2.5 text-lg font-medium text-main-text-light dark:text-main-text-dark transition lg:text-xl`}
                                             >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                                                />
-                                            </svg>
-                                        )}
-                                    </button>
+                                                {isQrDownloading ? (
+                                                    <Spinner customSize={"size-4 lg:size-6"} />
+                                                ) : (
+                                                    <>
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            className="w-6 h-6"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            stroke="currentColor"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                                            />
+                                                        </svg>
+                                                        Download
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>,
                         document.body,
                     )}
+
+
+
             </AuthenticatedLayout>
 
             {bookmarkStatusChanged && (

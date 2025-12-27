@@ -11,6 +11,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [actionDropdownOpen, setActionDropdownOpen] = useState(null);
     const actionDropdownRef = useRef(null);
+    const thumbnailContainerRef = useRef(null);
     const scrollContainerRef = useRef(null);
 
     useEffect(() => {
@@ -23,7 +24,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Handle image scroll for pagination dots
+    // Handle Media scroll Post Media
     const handleScroll = (e) => {
         const container = e.target;
         const scrollLeft = container.scrollLeft;
@@ -33,10 +34,27 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
 
         if (newIndex !== currentMediaIndex) {
             setCurrentMediaIndex(newIndex);
-
-
             handleStopNonVisibleVideos();
+
+
+            const activeThumb = thumbnailContainerRef.current?.children[newIndex];
+            activeThumb?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'center'
+            });
         }
+    };
+
+
+    const handleThumbnailClick = (index) => {
+        setCurrentMediaIndex(index);
+        const targetMainItem = scrollContainerRef.current?.children[index];
+        targetMainItem?.scrollIntoView({
+            behavior: 'instant',
+            block: 'nearest',
+            inline: 'start'
+        });
     };
 
 
@@ -71,6 +89,32 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
     };
 
 
+    // Format Date For POST AND PRODUCTS TAGS
+    function formatDate(dateInput) {
+        const date = new Date(dateInput);
+
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+
+        return `${year}. ${month}. ${day}.`;
+    }
+
+    // Format Time For POST AND PRODUCTS TAGS
+    function formatTime(dateInput) {
+        const date = new Date(dateInput);
+
+        let hours = date.getHours();
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+
+        const period = hours >= 12 ? 'PM' : 'AM';
+
+        hours = hours % 12;
+        hours = hours === 0 ? 12 : hours;
+
+        return `${period} ${hours}:${minutes}`;
+    }
+
 
     const mediaItems = useMemo(() => {
         const images =
@@ -91,35 +135,6 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
 
 
 
-    // Calculate visible dots (max 5) with sliding window
-    const getVisibleDots = () => {
-        const totalMediaItems = mediaItems?.length || 0;
-        if (totalMediaItems <= 5) {
-            // Show all dots if 5 or fewer images
-            return Array.from({ length: totalMediaItems }, (_, i) => i);
-        }
-
-        // Sliding window logic for more than 5 images
-        const maxVisible = 5;
-        let start = currentMediaIndex - 2;
-        let end = currentMediaIndex + 2;
-
-        // Adjust window at the beginning
-        if (start < 0) {
-            start = 0;
-            end = maxVisible - 1;
-        }
-
-        // Adjust window at the end
-        if (end >= totalMediaItems) {
-            end = totalMediaItems - 1;
-            start = totalMediaItems - maxVisible;
-        }
-
-        return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-    };
-    const visibleDots = getVisibleDots();
-
 
 
     // LOCKING BODY WHEN MOUNT TO PREVENT SCROLLS BENEATH MODAL
@@ -135,22 +150,24 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
         };
     }, []);
 
+
+
     return (
         <>
             {createPortal(
-                <div className="fixed inset-0 z-[70] flex flex-col bg-white dark:bg-deepcharcoal overscroll-contain">
+                <div className="fixed inset-0 z-[70] flex flex-col bg-backgroundLight dark:bg-backgroundDark overscroll-contain">
                     {/* Header - Keep intact as requested */}
                     <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
                         <button
                             onClick={() => navigateToHashtag(post.tag)}
-                            className="text-sm font-semibold text-gray-700 dark:text-white/80"
+                            className="font-medium text-md text-main-text-light dark:text-main-text-dark"
                         >
                             {post.tag}
                         </button>
                         <div className="relative" ref={actionDropdownRef}>
                             <button
                                 onClick={() => setActionDropdownOpen(!actionDropdownOpen)}
-                                className="text-gray-700 dark:text-white/80"
+                                className="text-main-text-light dark:text-main-text-dark"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -158,7 +175,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
                                     stroke="currentColor"
-                                    className="w-5 h-5"
+                                    className="w-7 h-7"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -169,14 +186,14 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                             </button>
 
                             {actionDropdownOpen && (
-                                <div className="absolute right-0 z-20 w-48 bg-white border border-gray-200 rounded-lg shadow-lg top-8 dark:border-gray-700 dark:bg-deepcharcoal">
+                                <div className="absolute right-0 z-50 w-56 border rounded-md border-surface-3-light bg-backgroundLight dark:border-surface-3-dark top-full dark:bg-surface-1-dark">
                                     <div className="py-1">
                                         <button
                                             onClick={() => {
                                                 setShowQrCode(true);
                                                 setActionDropdownOpen(null);
                                             }}
-                                            className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-zinc-800"
+                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -208,7 +225,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                                 setLinkCopied(true);
                                                 setActionDropdownOpen(null);
                                             }}
-                                            className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-zinc-800"
+                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -233,7 +250,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                     </div>
 
                     {/* Scrollable Content Area */}
-                    <div className="flex-1 overflow-y-auto scrollbar-none">
+                    <div className="flex-1 px-8 overflow-y-auto scrollbar-none">
                         {mediaItems?.length > 0 && (
                             <div className="relative">
                                 {/* Horizontal Scroll Container - Swipeable */}
@@ -258,7 +275,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                                 <img
                                                     src={item.url || placeholderImage}
                                                     alt={`Media ${index}`}
-                                                    className="object-cover w-full h-full max-w-full max-h-full"
+                                                    className="object-cover w-full h-full max-w-full max-h-full rounded-md"
                                                     loading="eager"
                                                     fetchpriority="high"
                                                     decoding="async"
@@ -281,60 +298,186 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                     ))}
                                 </div>
 
-                                {/* Fixed Pagination Dots */}
-                                <div className="pointer-events-none absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-sm bg-transparent shadow-lg">
 
-                                    {visibleDots.map((dotIndex) => (
-                                        <div
-                                            key={dotIndex}
-                                            className={`rounded-full transition-all duration-300 h-2 w-2 bg-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)] ${dotIndex === currentMediaIndex ? "scale-125" : "scale-100"} `}
-                                            style={{
-                                                transitionProperty: "all",
-                                                transitionTimingFunction: "cubic-bezier(0.4, 0, 0.2, 1)",
-                                            }}
-                                        />
-                                    ))}
-                                </div>
+
 
                             </div>
                         )}
 
+
+                        {/* Thumbnail Refs */}
+                        <div className="flex items-center justify-center gap-0 py-4">
+                            {/* Thumbnails */}
+                            {((Array.isArray(
+                                post?.post_video_urls,
+                            ) &&
+                                post.post_video_urls.length > 1) ||
+                                (Array.isArray(
+                                    post?.post_image_urls,
+                                ) &&
+                                    post.post_image_urls.length >
+                                    1)) && (
+                                    <div
+                                        ref={thumbnailContainerRef}
+                                        className="flex items-center gap-3 overflow-x-auto scrollbar-none"
+                                        style={{ scrollBehavior: 'smooth' }}
+                                    >
+                                        {/* Render thumbnails */}
+                                        {mediaItems.map(
+                                            (mediaItem, index) => {
+
+                                                return (
+                                                    <button
+                                                        key={index}
+
+                                                        onClick={() => handleThumbnailClick(index)}
+                                                        className={`aspect-square ${currentMediaIndex === index ? 'border-[3px] border-main-text-light dark:border-main-text-dark' : ''} w-[clamp(70px,5vw,70px)] flex-shrink-0 overflow-hidden rounded-md  transition-all`}
+                                                    >
+                                                        {mediaItem?.type ===
+                                                            'image' ? (
+                                                            <img
+                                                                src={
+                                                                    mediaItem?.url ||
+                                                                    placeholderImage
+                                                                }
+                                                                alt={`Thumbnail ${index + 1}`}
+                                                                className="object-cover w-full h-full"
+                                                                loading={
+                                                                    currentMediaIndex ===
+                                                                        index
+                                                                        ? 'eager'
+                                                                        : 'lazy'
+                                                                }
+                                                                decoding="async"
+                                                                fetchpriority={
+                                                                    currentMediaIndex ===
+                                                                        index
+                                                                        ? 'high'
+                                                                        : 'low'
+                                                                }
+                                                                onError={(
+                                                                    e,
+                                                                ) =>
+                                                                (e.target.src =
+                                                                    placeholderImage)
+                                                                }
+                                                            />
+                                                        ) : (
+                                                            <img
+                                                                src={
+                                                                    mediaItem?.thumbnail_url ||
+                                                                    placeholderImage
+                                                                }
+                                                                alt={`Thumbnail ${index + 1}`}
+                                                                className="object-cover w-full h-full"
+                                                                loading={
+                                                                    currentMediaIndex ===
+                                                                        index
+                                                                        ? 'eager'
+                                                                        : 'lazy'
+                                                                }
+                                                                decoding="async"
+                                                                fetchpriority={
+                                                                    currentMediaIndex ===
+                                                                        index
+                                                                        ? 'high'
+                                                                        : 'low'
+                                                                }
+                                                                onError={(
+                                                                    e,
+                                                                ) =>
+                                                                (e.target.src =
+                                                                    placeholderImage)
+                                                                }
+                                                            />
+                                                        )}
+                                                    </button>
+                                                );
+                                            },
+                                        )}
+                                    </div>
+                                )}
+
+
+                        </div>
+
+
                         {/* Full Content - Scrollable, No Truncation */}
-                        <div className="px-4 mt-14">
+                        <div className="mt-0">
                             <div className="mb-4">
                                 {post?.content && (
                                     <div
-                                        className="text-sm leading-relaxed prose text-gray-700 break-words dark:text-white/80"
+                                        className="text-sm leading-relaxed prose break-words text-main-text-light dark:text-main-text-dark"
                                         dangerouslySetInnerHTML={{
-                                            __html: post.content,
+                                            __html: post?.content,
                                         }}
                                     />
                                 )}
                             </div>
 
-                            <div className="space-y-3">
-                                <div className="flex flex-wrap gap-2 my-2 text-sm text-gray-700 dark:text-white/80">
-                                    <span className="flex items-center gap-2 p-1">
+                            <div className="py-4 shrink-0">
+                                <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
+                                    {/* User Info */}
+                                    <div className="flex gap-2 p-2 rounded-full text-sub-text-light bg-surface-1-light dark:bg-surface-2-dark dark:text-sub-text-dark">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             fill="none"
                                             viewBox="0 0 24 24"
                                             strokeWidth={1.5}
                                             stroke="currentColor"
-                                            className="size-5"
+                                            className="w-4 h-4"
                                         >
                                             <path
                                                 strokeLinecap="round"
                                                 strokeLinejoin="round"
-                                                d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                                                d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
                                             />
                                         </svg>
-                                        <span>
-                                            {post?.user?.name.length > 15
-                                                ? post?.user?.name.substring(0, 15) + '...'
-                                                : post?.user?.name || 'Unknown User'}
+                                        <span className="font-normal">
+                                            {post?.user?.name
+                                                ?.length > 10
+                                                ? post?.user?.name.substring(
+                                                    0,
+                                                    10,
+                                                ) + '...'
+                                                : post?.user?.name ||
+                                                'Unknown User'}
                                         </span>
-                                    </span>
+                                    </div>
+
+                                    {/* Location */}
+                                    {post?.location_name && (
+                                        <div className="p-2 rounded-full text-sub-text-light bg-surface-1-light dark:bg-surface-2-dark dark:text-sub-text-dark">
+                                            <span className="font-normal">
+                                                {post?.location_name
+                                                    ?.length > 15
+                                                    ? post?.location_name.substring(
+                                                        0,
+                                                        15,
+                                                    ) + '...'
+                                                    : post?.location_name ||
+                                                    'Unknown Location'}
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {/* Date */}
+                                    <div className="p-2 rounded-full text-sub-text-light bg-surface-1-light dark:bg-surface-2-dark dark:text-sub-text-dark">
+                                        <span className="font-normal">
+                                            {formatDate(
+                                                post?.created_at,
+                                            )}
+                                        </span>
+                                    </div>
+
+                                    {/* Time */}
+                                    <div className="p-2 rounded-full text-sub-text-light bg-surface-1-light dark:bg-surface-2-dark dark:text-sub-text-dark">
+                                        <span className="font-normal">
+                                            {formatTime(
+                                                post?.created_at,
+                                            )}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

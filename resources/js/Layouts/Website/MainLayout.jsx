@@ -65,84 +65,9 @@ export default function MainLayout({ children }) {
     const windowSize = useWindowSize();
 
     // Sidebar Collapse Logic
-    const [isCollapsed, setIsCollapsed] = useState(true);
+    const [isCollapsed, setIsCollapsed] = useState(false);
     const [moreDropdown, setMoreDropdown] = useState(false);
     const moreDropdownRef = useRef(null);
-    const preventDropdownCloseRef = useRef(false);
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (
-                moreDropdownRef.current &&
-                !moreDropdownRef.current.contains(event.target) &&
-                !preventDropdownCloseRef.current
-            ) {
-                setMoreDropdown(false);
-            }
-        };
-
-        // const handleResize = () => {
-        //     setIsCollapsed(windowSize.width < 1500);
-        // };
-
-        // handleResize();
-        // window.addEventListener('resize', handleResize);
-        document.addEventListener('click', handleClickOutside);
-        return () => {
-            // window.removeEventListener('resize', handleResize);
-            document.removeEventListener('click', handleClickOutside);
-        };
-    }, [windowSize.width]);
-
-    // const [CurrentUrl, setCurrentUrl] = useState(window.location.href);
-    // const [needsActivation, setNeedsActivation] = useState(false);
-
-    // useEffect(() => {
-    //     const nav = performance.getEntriesByType('navigation')[0];
-
-    //     const wasReload = nav?.type === 'reload';
-    //     const wasNavigated = nav?.type === 'navigate';
-    //     const cameExternally =
-    //         document.referrer && !document.referrer.startsWith(window.location.origin);
-
-    //     if (wasReload || cameExternally || wasNavigated) {
-    //         const url = new URL(CurrentUrl);
-
-    //         if (
-    //             url.searchParams.get('slug') ||
-    //             url.searchParams.get('m-slug') ||
-    //             url.searchParams.get('modal')
-    //         ) {
-    //             setNeedsActivation(true);
-    //         }
-    //     }
-    // }, []);
-
-    // This logic Not Needed For Now
-    // const [isStandalone, setIsStandalone] = useState(false);
-
-    // useEffect(() => {
-    //     if (windowSize.width < 1024) {
-    //         const isInStandaloneMode =
-    //             window.matchMedia('(display-mode: standalone)').matches ||
-    //             window.navigator.standalone === true;
-
-    //         if (!isInStandaloneMode) {
-    //             setIsStandalone(isInStandaloneMode);
-    //         }
-    //     }
-    // }, [windowSize.width]);
-
-    const [cartItemsCount, setCartItemsCount] = useState(0);
-    useEffect(() => {
-        if (auth?.user) {
-            axios.get(route('website.carts.get-items-count')).then((response) => {
-                const data = response.data;
-
-                setCartItemsCount(data.cart_items_count);
-            });
-        }
-    }, []);
-
 
 
 
@@ -156,7 +81,7 @@ export default function MainLayout({ children }) {
 
     return (
         <>
-            <div className="relative w-full min-h-screen bg-white dark:bg-zinc-950/70">
+            <div className="relative flex w-full min-h-screen bg-backgroundLight dark:bg-backgroundDark">
                 <Preloader loaded={loaded} setLoaded={setLoaded} />
                 <AppStatusManager />
 
@@ -166,34 +91,30 @@ export default function MainLayout({ children }) {
 
                 {/* Sidebar */}
                 {windowSize.width > 1024 && (
-                    <Sidebar
-                        light_logo={ApplicationLogoLight}
-                        dark_logo={ApplicationLogoDark}
-                        app_name={generalSetting?.app_name}
-                        darkMode={darkMode}
-                        setDarkMode={setDarkMode}
-                        isCollapsed={isCollapsed}
-                        moreDropdown={moreDropdown}
-                        setMoreDropdown={setMoreDropdown}
-                        moreDropdownRef={moreDropdownRef}
-                        cartItemsCount={cartItemsCount}
-                        preventDropdownCloseRef={preventDropdownCloseRef}
-                        setFilterModal={setFilterModal}
-                        filterModal={filterModal}
-                    />
+                    <div className={`fixed left-0 top-0 z-40 h-screen transition-all duration-300 'w-[240px]`}>
+                        <Sidebar
+                            light_logo={ApplicationLogoLight}
+                            dark_logo={ApplicationLogoDark}
+                            app_name={generalSetting?.app_name}
+                            darkMode={darkMode}
+                            setDarkMode={setDarkMode}
+                            setFilterModal={setFilterModal}
+                            filterModal={filterModal}
+                        />
+
+                    </div>
+
                 )}
 
                 {/* Main Content Area */}
                 <div
-                    className={`absolute left-0 top-0 min-h-screen w-full transition-all duration-300 ${windowSize.width > 1024
-                        ? isCollapsed
-                            ? 'pl-[30px]'
-                            : 'pl-[208px]'
-                        : 'pl-0'
+                    className={`flex-1 min-h-screen transition-all duration-300 ${windowSize.width > 1024
+                        ? 'ml-[240px]'
+                        : 'ml-0'
                         }`}
                 >
                     {/* Main Content */}
-                    <main className="flex-1 min-h-screen px-3 pt-2 mx-0 bg-white dark:bg-zinc-950/70 lg:px-20 xl:px-36">
+                    <main className="min-h-screen px-3 pt-2 bg-backgroundLight dark:bg-backgroundDark lg:px-6 xl:px-8">
 
                         {/* Activation Navigation Prompt Modal */}
                         {/* {needsActivation &&
@@ -203,27 +124,25 @@ export default function MainLayout({ children }) {
                         {children ? (
                             children
                         ) : (
-                            <div className="flex h-[80vh] items-center justify-center text-gray-400">
+                            <div className="flex h-[80vh] items-center justify-center text-sub-text-light dark:text-sub-text-dark">
                                 No content available.
                             </div>
                         )}
                     </main>
                 </div>
                 {/* Mobile Bottom Navigation */}
-                {windowSize.width < 1024 && (
-                    <>
-                        <BottomBar
-                            darkMode={darkMode}
-                            setDarkMode={setDarkMode}
-                            moreDropdown={moreDropdown}
-                            setMoreDropdown={setMoreDropdown}
-                            moreDropdownRef={moreDropdownRef}
-                            cartItemsCount={cartItemsCount}
-                            preventDropdownCloseRef={preventDropdownCloseRef}
-                            setFilterModal={setFilterModal}
-                            filterModal={filterModal}
-                        />
-                    </>
+                {windowSize.width <= 1024 && (
+                    <BottomBar
+                        darkMode={darkMode}
+                        setDarkMode={setDarkMode}
+                        moreDropdown={moreDropdown}
+                        setMoreDropdown={setMoreDropdown}
+                        moreDropdownRef={moreDropdownRef}
+                        // cartItemsCount={cartItemsCount}
+                        setFilterModal={setFilterModal}
+                        filterModal={filterModal}
+                    />
+
                 )}
 
                 <PWAAlertBar />
