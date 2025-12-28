@@ -147,6 +147,7 @@ export default function index({ general_setting }) {
                                         Required={false}
                                         Value={data.app_description}
                                         Error={errors.app_description}
+                                        Rows={1}
                                         Placeholder="Please Enter Your Appliation Description For Breif"
                                     />
                                 </div>

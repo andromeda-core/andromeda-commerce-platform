@@ -1,7 +1,6 @@
 import WebInput from '@/Components/WebInput';
-import PrimaryButton from '@/Components/PrimaryButton';
 import Spinner from '@/Components/Spinner';
-import Textarea from '@/Components/Textarea';
+import WebTextArea from '@/Components/WebTextArea';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, useForm } from '@inertiajs/react';
@@ -172,7 +171,7 @@ const Index = () => {
 
                                 {/* Message */}
                                 <div>
-                                    <Textarea
+                                    <WebTextArea
                                         InputName={'Message'}
                                         Name={'message'}
                                         Id={'message'}

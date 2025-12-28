@@ -1,6 +1,6 @@
 
 import WebInput from '@/Components/WebInput';
-import Textarea from '@/Components/Textarea';
+import WebTextArea from '@/Components/WebTextArea';
 import { useConfirm } from '@/Hooks/useConfirm';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
@@ -152,7 +152,7 @@ const DataDeletion = () => {
 
                                     {/* Reason Field */}
                                     <div>
-                                        <Textarea
+                                        <WebTextArea
                                             InputName={'Reason For Deletion'}
                                             Id={'reason'}
                                             Name={'reason'}

@@ -10,7 +10,7 @@ import useWindowSize from '@/Hooks/useWindowSize';
 import Confetti from 'react-confetti';
 import { createPortal } from 'react-dom';
 import WebInput from '@/Components/WebInput';
-import Textarea from '@/Components/Textarea';
+import WebTextArea from '@/Components/WebTextArea';
 import PrimaryButton from '@/Components/PrimaryButton';
 
 
@@ -457,7 +457,7 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
 
                 <div>
 
-                    <Textarea
+                    <WebTextArea
                         InputName={"Address"}
                         Id={'address'}
                         Name={'address'}

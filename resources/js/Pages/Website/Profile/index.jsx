@@ -1,6 +1,6 @@
 import WebInput from '@/Components/WebInput';
 import Spinner from '@/Components/Spinner';
-import Textarea from '@/Components/Textarea';
+import WebTextArea from '@/Components/WebTextArea';
 import Toast from '@/Components/Toast';
 import WebSelectInput from '@/Components/WebSelectInput';
 import useDarkMode from '@/Hooks/useDarkMode';
@@ -634,7 +634,7 @@ const Index = ({ user, countries }) => {
 
                                                 {/* Address Line 1 */}
                                                 <div className='col-span-2'>
-                                                    <Textarea
+                                                    <WebTextArea
                                                         InputName={'Address 1'}
                                                         Id={'address_1'}
                                                         Name={'address_1'}
@@ -654,7 +654,7 @@ const Index = ({ user, countries }) => {
 
                                                 {/* Address Line 2 */}
                                                 <div className='col-span-2'>
-                                                    <Textarea
+                                                    <WebTextArea
                                                         InputName={'Address 2'}
                                                         Id={'address_2'}
                                                         Name={'address_2'}
@@ -866,7 +866,7 @@ const Index = ({ user, countries }) => {
 
                                             {/* Address Line 1 */}
                                             <div>
-                                                <Textarea
+                                                <WebTextArea
                                                     InputName={'Address 1'}
                                                     Id={'address_1'}
                                                     Name={'address_1'}
@@ -885,7 +885,7 @@ const Index = ({ user, countries }) => {
 
                                             {/* Address Line 2 */}
                                             <div>
-                                                <Textarea
+                                                <WebTextArea
                                                     InputName={'Address 2'}
                                                     Id={'address_2'}
                                                     Name={'address_2'}
