@@ -588,7 +588,7 @@ const GlobalSearch = ({
 
                                 <input
                                     ref={searchInputRef}
-                                    type="search"
+                                    type="text"
                                     className="flex-1 ml-6 text-xs placeholder-gray-400 bg-transparent border-none outline-none text-main-text-light left-3 size-5 dark:text-main-text-dark focus:outline-none focus:ring-0 sm:text-base"
                                     value={searchQuery}
                                     onChange={(e) => {
@@ -696,7 +696,7 @@ const GlobalSearch = ({
                                                         <div className="relative flex items-center w-full rounded-md">
                                                             <input
                                                                 ref={modalSearchInputRef}
-                                                                type="search"
+                                                                type="text"
                                                                 id='advanced_search_input'
                                                                 placeholder='Enter Keywords'
                                                                 className="flex-1 ml-0 text-sm placeholder-gray-400 bg-transparent border-none outline-none text-main-text-light focus:ring-0 dark:text-main-text-dark"
@@ -1054,7 +1054,7 @@ const GlobalSearch = ({
                                                         <div className="relative flex items-center w-full rounded-md">
                                                             <input
                                                                 ref={modalSearchInputRef}
-                                                                type="search"
+                                                                type="text"
                                                                 id='advanced_search_input'
                                                                 placeholder='Enter Keywords'
                                                                 className="flex-1 ml-0 text-sm placeholder-gray-400 bg-transparent border-none outline-none text-main-text-light focus:ring-0 dark:text-main-text-dark"
