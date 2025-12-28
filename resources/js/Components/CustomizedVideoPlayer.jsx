@@ -501,9 +501,9 @@ export default function CustomizedVideoPlayer({
             {/* Timeline Bar */}
             {(!isPlaying || showControls) && (
                 <div className="absolute bottom-0 left-0 right-0 z-50 w-full pointer-events-none">
-                    <div className="absolute inset-0 rounded-full bg-backgroundLight dark:bg-black/50 " />
+                    <div className="absolute inset-0 rounded-full bg-backgroundLight dark:bg-backgroundDark" />
 
-                    <div className="relative flex items-center gap-3 px-3 py-2 pointer-events-auto">
+                    <div className="relative flex items-center gap-3 py-2 pointer-events-auto">
                         {/* Current Time */}
                         <span className="text-[10px] text-gray-900 dark:text-white font-semibold min-w-[26px] text-right">
                             {formatTime(currentTime)}
