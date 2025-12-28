@@ -173,7 +173,7 @@ export default function index() {
                 <div className="pb-20 sm:pb-20">
                     <div className="max-w-6xl pt-10 mx-auto sm:px-4 lg:px-6">
                         {/* Compact Masonry */}
-                        <div className="columns-1 gap-1 [column-fill:_balance] min-[300px]:columns-2 lg:columns-4">
+                        <div className="gap-2 columns-2 sm:columns-2 md:columns-2 lg:columns-3 xl:columns-3">
                             {bookmarkedPosts.map((item, index) => {
                                 return (
                                     <MasonryFeedItem
@@ -182,6 +182,7 @@ export default function index() {
                                         index={index}
                                         onClick={() => handleOpenPost(item)}
                                         Placeholder={Placeholder}
+                                        Index={index}
                                     />
                                 );
                             })}

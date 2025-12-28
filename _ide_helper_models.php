@@ -64,11 +64,11 @@ namespace App\Models{
  * @property int $id
  * @property string $batch_name
  * @property int $total_quantity
- * @property string $base_purchase_unit_price
+ * @property numeric $base_purchase_unit_price
  * @property int|null $supplier_id
  * @property array<array-key, mixed>|null $extra_costs
- * @property string $total_batch_cost
- * @property string $final_unit_price
+ * @property numeric $total_batch_cost
+ * @property numeric $final_unit_price
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property string $vat
@@ -149,8 +149,8 @@ namespace App\Models{
  * @property string $type
  * @property int $quantity
  * @property int|null $color_id
- * @property string $unit_price
- * @property string $total_price
+ * @property numeric $unit_price
+ * @property numeric $total_price
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Color|null $color
@@ -215,12 +215,12 @@ namespace App\Models{
  * @property string|null $iban
  * @property string|null $swift_code
  * @property string $bank_account_no
- * @property string|null $point_accumulation_rate
+ * @property numeric|null $point_accumulation_rate
  * @property string $type
  * @property string $referral_code
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property string|null $commission_rate
+ * @property numeric|null $commission_rate
  * @property-read mixed $added_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Order> $orders
  * @property-read int|null $orders_count
@@ -251,8 +251,8 @@ namespace App\Models{
  * @property int $id
  * @property int|null $order_id
  * @property int $collaborator_id
- * @property string $commission_rate
- * @property string $commission_amount
+ * @property numeric $commission_rate
+ * @property numeric $commission_amount
  * @property string $status
  * @property \Illuminate\Support\Carbon|null $paid_at
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -302,7 +302,7 @@ namespace App\Models{
 /**
  * @property int $id
  * @property string $type
- * @property string $commission_rate
+ * @property numeric $commission_rate
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read mixed $added_at
@@ -436,7 +436,7 @@ namespace App\Models{
  * @property string $bank_account_no
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property string|null $commission_rate
+ * @property numeric|null $commission_rate
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Category> $categories
  * @property-read int|null $categories_count
  * @property-read mixed $added_at
@@ -464,8 +464,8 @@ namespace App\Models{
  * @property int $id
  * @property int|null $order_id
  * @property int $distributor_id
- * @property string $commission_rate
- * @property string $commission_amount
+ * @property numeric $commission_rate
+ * @property numeric $commission_amount
  * @property string $status
  * @property \Illuminate\Support\Carbon|null $paid_at
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -605,6 +605,27 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
+ * @property string $name
+ * @property string $code
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Translation> $translations
+ * @property-read int|null $translations_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Language newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Language newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Language query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Language whereCode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Language whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Language whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Language whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Language whereUpdatedAt($value)
+ */
+	class Language extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
  * @property string $platform_user_id
  * @property int $user_id
  * @property string $platform
@@ -731,7 +752,7 @@ namespace App\Models{
  * @property int $id
  * @property string|null $order_no
  * @property int|null $customer_id
- * @property string $amount
+ * @property numeric $amount
  * @property string $status
  * @property string|null $payment_method
  * @property string|null $np_id
@@ -785,8 +806,8 @@ namespace App\Models{
  * @property int|null $color_id
  * @property int $smartphone_id
  * @property int $quantity
- * @property string $unit_price
- * @property string $sub_total
+ * @property numeric $unit_price
+ * @property numeric $sub_total
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Color|null $color
@@ -881,8 +902,8 @@ namespace App\Models{
  * @property array<array-key, mixed>|null $videos
  * @property string|null $slug
  * @property string|null $tag
- * @property string|null $latitude
- * @property string|null $longitude
+ * @property numeric|null $latitude
+ * @property numeric|null $longitude
  * @property string|null $location_name
  * @property string $post_type
  * @property int $status
@@ -946,7 +967,7 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
- * @property string $reward_rate
+ * @property numeric $reward_rate
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read mixed $added_at
@@ -1072,9 +1093,9 @@ namespace App\Models{
 /**
  * @property int $id
  * @property int $smartphone_id
- * @property string $selling_price
+ * @property numeric $selling_price
  * @property array<array-key, mixed>|null $additional_fee
- * @property string $total_price
+ * @property numeric $total_price
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read mixed $added_at
@@ -1193,8 +1214,8 @@ namespace App\Models{
  * @property int $id
  * @property int|null $order_id
  * @property int $supplier_id
- * @property string $commission_rate
- * @property string $commission_amount
+ * @property numeric $commission_rate
+ * @property numeric $commission_amount
  * @property string $status
  * @property \Illuminate\Support\Carbon|null $paid_at
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -1216,6 +1237,48 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierCommission whereUpdatedAt($value)
  */
 	class SupplierCommission extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property int $language_id
+ * @property int $translation_key_id
+ * @property string $value
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Language $language
+ * @property-read \App\Models\TranslationKey $translationKey
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Translation newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Translation newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Translation query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Translation whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Translation whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Translation whereLanguageId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Translation whereTranslationKeyId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Translation whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Translation whereValue($value)
+ */
+	class Translation extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property string $key
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Translation> $translations
+ * @property-read int|null $translations_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TranslationKey newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TranslationKey newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TranslationKey query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TranslationKey whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TranslationKey whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TranslationKey whereKey($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TranslationKey whereUpdatedAt($value)
+ */
+	class TranslationKey extends \Eloquent {}
 }
 
 namespace App\Models{

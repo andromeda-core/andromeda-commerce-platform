@@ -129,6 +129,24 @@
         scrollbar-color: #9ca3af #e5e7eb; /* thumb | track for light mode */
     }
 
+    /* Safari masonry fix - critical */
+    @supports (-webkit-appearance: none) {
+        [class*='columns-'] {
+            -webkit-column-break-inside: avoid;
+        }
+
+        [class*='columns-'] > article {
+            display: block;
+            overflow: hidden;
+        }
+
+        [class*='columns-'] img {
+            display: block !important;
+            width: 100%;
+            height: auto;
+        }
+    }
+
     .dark * {
         scrollbar-color: #52525b #18181b; /* thumb: zinc-600 | track: zinc-900 for dark mode */
     }
@@ -153,7 +171,7 @@
 
     /* Menu Item Inactive State */
     .menu-item-inactive {
-        @apply hover:bg-sidebar-hover-light font-medium text-black dark:text-white dark:hover:bg-surface-2-dark;
+        @apply font-medium text-black hover:bg-sidebar-hover-light dark:text-white dark:hover:bg-surface-2-dark;
     }
 
     .menu-sub-item-active {
@@ -162,7 +180,7 @@
 
     /* Menu Item Inactive State */
     .menu-sub-item-inactive {
-        @apply hover:bg-sidebar-hover-light font-normal text-sub-text-light dark:text-sub-text-dark dark:hover:bg-surface-2-dark;
+        @apply font-normal text-sub-text-light hover:bg-sidebar-hover-light dark:text-sub-text-dark dark:hover:bg-surface-2-dark;
     }
 
     /* Menu Item Icon Active State */
@@ -404,9 +422,6 @@ video.feed-video::-webkit-media-controls {
     margin-bottom: -1px !important;
     border-bottom: 1px solid transparent !important;
 }
-.masonry-item {
-    animation-delay: calc(var(--i) * 100ms);
-}
 
 /* Navigation Prompt Animations  */
 @keyframes fade-scale {
@@ -444,4 +459,21 @@ video.feed-video::-webkit-media-controls {
     .feed-page {
         height: -webkit-fill-available !important;
     }
+}
+
+/* Safari masonry fix  */
+[class*='columns-'] {
+    -webkit-column-break-inside: avoid;
+}
+
+[class*='columns-'] > article {
+    display: inline-block;
+    width: 100%;
+    vertical-align: top;
+}
+
+[class*='columns-'] img {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
 }

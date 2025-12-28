@@ -16,6 +16,7 @@ import Spinner from '@/Components/Spinner';
 import MasonryFeedItem from './MasonryFeedItem';
 import DesktopFeed from './DesktopFeed';
 
+
 const index = () => {
     const { currency, auth, cart_items } = usePage().props;
 
@@ -699,7 +700,7 @@ const index = () => {
                     fetchMorePostsAndProducts();
                 }
             },
-            { threshold: 0.5 },
+            { threshold: 0.1 },
         );
 
         observer.observe(loaderRef.current);
@@ -925,6 +926,14 @@ const index = () => {
         [generateURL],
     );
 
+
+    // masonary Breakpoints
+    const breakpointColumnsObj = {
+        default: 5,
+        1100: 4,
+        700: 3,
+        500: 2
+    };
     return (
         <MainLayout>
             <Head title="Home" />
@@ -972,10 +981,11 @@ const index = () => {
 
                     {/* Masonry Layout */}
                     <div
-                        className={`pb-20 pt-0 sm:pb-20 lg:pt-[75px] ${feedGallery ? 'hidden' : 'visible'}`}
+                        className={`pb-20 pt-3 sm:pb-20 lg:pt-[75px] ${feedGallery ? 'hidden' : 'visible'}`}
                     >
                         <div className="mx-auto max-w-8xl sm:px-6 lg:px-8">
-                            <div className="columns-2 gap-2 [column-fill:_balance] sm:columns-2 md:columns-3 lg:columns-4 lg:gap-3 xl:columns-5">
+
+                            <div className="gap-2 columns-2 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5">
                                 {feed.map((item, index) => (
                                     <MasonryFeedItem
                                         key={`${item.type}-${item.id}`}
@@ -984,9 +994,11 @@ const index = () => {
                                         onClick={() => handleItemClick(item, index)}
                                         Placeholder={Placeholder}
                                         currency={currency}
+                                        Index={index}
                                     />
                                 ))}
                             </div>
+
 
                             {isFeedLoaded && feed.length === 0 && (
                                 <div className="flex items-center justify-center px-6 py-12 bg-white border border-gray-200 shadow-sm rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
