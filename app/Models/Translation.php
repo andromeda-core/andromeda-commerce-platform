@@ -19,7 +19,7 @@ class Translation extends Model
         return $this->belongsTo(Language::class, 'language_id', 'id');
     }
 
-    public function translationKey(): BelongsTo
+    public function translationKeys(): BelongsTo
     {
         return $this->belongsTo(TranslationKey::class, 'translation_key_id', 'id');
     }

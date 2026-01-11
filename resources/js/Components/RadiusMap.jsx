@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { createPortal } from 'react-dom';
 import Spinner from './Spinner';
+import WebInput from './WebInput';
+import useWindowSize from '@/Hooks/useWindowSize';
+
 
 export default function RadiusMap({
     lat,
@@ -11,12 +14,17 @@ export default function RadiusMap({
     isModalOpen,
     setIsModalOpen,
     defaultRadius,
+    __,
 }) {
     const mapRef = useRef(null);
     const circleRef = useRef(null);
     const markerRef = useRef(null);
     const [radius, setRadius] = useState(defaultRadius ?? 1000);
     const [isLoaded, setIsLoaded] = useState(false);
+
+    const windowSize = useWindowSize();
+
+
 
     useEffect(() => {
         if (!lat || !lng || !isModalOpen || !mapRef.current) return;
@@ -118,11 +126,11 @@ export default function RadiusMap({
             ></div>
 
             {/* Modal content */}
-            <div className="relative z-10 w-full max-w-4xl max-h-full p-8 overflow-y-auto border border-surface-3-light dark:bg-surface-1-dark dark:border-surface-3-dark rounded-xl bg-backgroundLight dark:text-main-text-dark">
+            <div className={`relative z-10 w-full max-w-4xl max-h-full p-8 overflow-y-auto border border-surface-3-light  dark:border-surface-3-dark ${windowSize.width <= 1024 ? 'dark:bg-backgroundDark' : 'dark:bg-surface-1-dark'} rounded-xl bg-backgroundLight dark:text-main-text-dark`}>
                 {/* Header */}
                 <div className="flex items-center justify-between px-4 py-3 ">
                     <h3 className="text-xl font-semibold text-main-text-light dark:text-main-text-dark">
-                        Select Radius
+                        {__('Select Radius')}
                     </h3>
 
                 </div>
@@ -147,12 +155,50 @@ export default function RadiusMap({
                         </div>
                     )}
 
-                    {/* Radius text */}
-                    <div className="flex flex-col items-center w-full gap-3">
-                        <span className="text-sm text-sub-text-light dark:text-sub-text-dark">
-                            Radius: {(radius / 1000).toFixed(2)} km
+                    {/* Radius */}
+                    <div className="flex flex-col items-center w-full gap-2 mt-4">
+                        <label className="text-sm text-sub-text-light dark:text-sub-text-dark">
+                            {__('Radius')}
+                        </label>
+
+                        <div className="relative w-full max-w-xs">
+
+                            <WebInput
+                                Type={'number'}
+                                Value={(radius / 1000)}
+                                Action={(e) => {
+                                    const value = e.target.value;
+
+                                    if (value === '') {
+                                        setRadius(0);
+                                    }
+
+                                    const km = parseFloat(value);
+
+                                    if (isNaN(km)) return;
+
+
+
+                                    const meters = km * 1000;
+                                    setRadius(meters);
+
+                                    if (circleRef.current) {
+                                        circleRef.current.setRadius(meters);
+                                    }
+                                }}
+                            />
+
+                            {/* KM suffix */}
+                            <span className="absolute text-sm -translate-y-1/2 pointer-events-none right-7 top-7 text-sub-text-light dark:text-sub-text-dark">
+                                KM
+                            </span>
+                        </div>
+
+                        <span className="text-xs text-sub-text-light dark:text-sub-text-dark">
+                            {__('You can drag the circle on the map or enter radius manually')}
                         </span>
                     </div>
+
                 </div>
 
                 {/* Footer */}
@@ -161,14 +207,14 @@ export default function RadiusMap({
                         onClick={() => setIsModalOpen(false)}
                         className="px-4 py-2  w-[160px] h-[46px] text-md font-medium rounded-md bg-surface-2-light  text-main-text-light transition-all hover:bg-surface-3-light dark:hover:bg-surface-3-dark/80 dark:text-sub-text-dark dark:bg-surface-3-dark"
                     >
-                        Close
+                        {__('Close')}
                     </button>
 
                     <button
                         onClick={() => radiusConfirmed()}
                         className="px-4 py-2 w-[160px] h-[46px]  text-md font-semibold justify-center gap-2 rounded-md bg-main-text-light  text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light  dark:hover:bg-main-text-dark/80"
                     >
-                        Save Radius
+                        {__('Save Radius')}
                     </button>
                 </div>
             </div>

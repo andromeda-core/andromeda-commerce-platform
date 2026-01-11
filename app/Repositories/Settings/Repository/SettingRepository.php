@@ -11,11 +11,14 @@ use App\Jobs\AppLightLogoStoreOnAWS;
 use App\Jobs\AppPWALogoDestroyOnAWS;
 use App\Jobs\AppPWALogoStoreOnAWS;
 use App\Models\AdditionalFeeList;
+use App\Models\Addon;
 use App\Models\AwsSetting;
 use App\Models\Capacity;
 use App\Models\Color;
 use App\Models\CommissionSetting;
+use App\Models\Condition;
 use App\Models\Country;
+use App\Models\CourierCompany;
 use App\Models\Currency;
 use App\Models\GeneralSetting;
 use App\Models\GoogleMapSetting;
@@ -23,6 +26,7 @@ use App\Models\MetaSetting;
 use App\Models\ModelName;
 use App\Models\NowPayment;
 use App\Models\Permission;
+use App\Models\ReturnPolicy;
 use App\Models\RewardSetting;
 use App\Models\Role;
 use App\Models\SmtpSetting;
@@ -33,7 +37,9 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Intervention\Image\ImageManager;
+use Str;
 
 class SettingRepository implements ISettingRepository
 {
@@ -55,7 +61,11 @@ class SettingRepository implements ISettingRepository
         private AwsSetting $aws_setting,
         private GoogleMapSetting $google_map_setting,
         private MetaSetting $meta_setting,
-        private NowPayment $now_payment
+        private NowPayment $now_payment,
+        private ReturnPolicy $return_policy,
+        private CourierCompany $courier_company,
+        private Condition $condition,
+        private Addon $addon,
 
     ) {}
 
@@ -79,6 +89,7 @@ class SettingRepository implements ISettingRepository
             ...($request->hasFile('app_favicon') ? ['app_favicon' => 'nullable|image|max:2048'] : []),
             ...($request->hasFile('app_pwa_logo') ? ['app_pwa_logo' => 'nullable|image|max:2048'] : []),
             'app_description' => ['nullable', 'min:30', 'string', 'max:1000'],
+            'app_product_delivery_info' => ['nullable', 'string', 'max:500'],
         ], [
             'contact_number.regex' => 'The Contact Number Accepted With + Country Code - Example: +8801xxxxxxxxx',
 
@@ -1434,6 +1445,9 @@ class SettingRepository implements ISettingRepository
     {
         $validated_req = $request->validate([
             'name' => ['required', 'unique:additional_fee_lists,name'],
+            'category' => ['required', 'string', 'in:shipping_fee,import_tax', 'max:255'],
+            'value_type' => ['required', 'string', 'in:fixed,percentage'],
+            'default_value' => ['required', 'numeric', 'min:0'],
             'is_active' => ['required', 'boolean'],
         ]);
 
@@ -1460,6 +1474,9 @@ class SettingRepository implements ISettingRepository
     {
         $validated_req = $request->validate([
             'name' => ['required', 'unique:additional_fee_lists,name,'.$id],
+            'category' => ['required', 'string', 'in:shipping_fee,import_tax', 'max:255'],
+            'value_type' => ['required', 'string', 'in:fixed,percentage'],
+            'default_value' => ['required', 'numeric', 'min:0'],
             'is_active' => ['required', 'boolean'],
         ]);
 
@@ -2694,6 +2711,688 @@ class SettingRepository implements ISettingRepository
                 'message' => 'NOWPayment Setting Activated Successfully',
             ];
 
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    // Return Policy Settings
+    public function getAllReturnPolicies()
+    {
+        $return_policies = $this->return_policy->with(['language'])->latest()->paginate(10);
+
+        return $return_policies;
+    }
+
+    public function getSingleReturnPolicy(string $id)
+    {
+        $return_policy = $this->return_policy->find($id);
+
+        return $return_policy;
+    }
+
+    public function storeReturnPolicy(Request $request)
+    {
+        $validated_req = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'content' => ['required', 'array', 'min:1'],
+            'content.*.title' => ['required', 'string', 'max:255'],
+            'content.*.content' => ['required', 'string'],
+            'language_id' => ['required', 'exists:languages,id'],
+        ], [
+            'content.*.title.required' => 'title is required',
+            'content.*.content.required' => 'content is required',
+        ]);
+
+        // Check each content item for empty HTML
+        foreach ($validated_req['content'] as $index => $section) {
+
+            if (empty($section['title'])) {
+                throw ValidationException::withMessages([
+                    "content.{$index}.title" => 'Section '.($index + 1).' title is required',
+                ]);
+            }
+
+            $cleanContent = trim($section['content']);
+            if (in_array($cleanContent, ['<p><br></p>', '<p></p>', ''])) {
+                throw ValidationException::withMessages([
+                    "content.{$index}.content" => 'Section '.($index + 1).' content is required',
+                ]);
+            }
+
+        }
+
+        try {
+
+            $slug = Str::slug($validated_req['name']);
+            $validated_req['slug'] = $slug;
+
+            $created = $this->return_policy->create($validated_req);
+
+            if (empty($created)) {
+                throw new Exception('Something went wrong while creating return policy');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Return Policy Created Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function updateReturnPolicy(Request $request, string $id)
+    {
+        $validated_req = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'content' => ['required', 'array', 'min:1'],
+            'content.*.title' => ['required', 'string', 'max:255'],
+            'content.*.content' => ['required', 'string'],
+            'language_id' => ['required', 'exists:languages,id'],
+        ], [
+            'content.*.title.required' => 'title is required',
+            'content.*.content.required' => 'content is required',
+
+        ]);
+
+        // Check each content item for empty HTML
+        foreach ($validated_req['content'] as $index => $section) {
+
+            if (empty($section['title'])) {
+                throw ValidationException::withMessages([
+                    "content.{$index}.title" => 'Section '.($index + 1).' title is required',
+                ]);
+            }
+
+            $cleanContent = trim($section['content']);
+            if (in_array($cleanContent, ['<p><br></p>', '<p></p>', ''])) {
+                throw ValidationException::withMessages([
+                    "content.{$index}.content" => 'Section '.($index + 1).' content is required',
+                ]);
+            }
+
+        }
+
+        try {
+
+            $return_policy = $this->getSingleReturnPolicy($id);
+
+            if (empty($return_policy)) {
+                throw new Exception('Return Policy Not Found');
+            }
+
+            $return_policy->fill($validated_req);
+
+            if ($return_policy->isDirty('name')) {
+                $slug = Str::slug($validated_req['name']);
+                $validated_req['slug'] = $slug;
+            }
+
+            $updated = $return_policy->update($validated_req);
+
+            if (! $updated) {
+                throw new Exception('Something went wrong while updating return policy');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Return Policy Updated Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+
+    }
+
+    public function toggleReturnPolicyStatus(string $id)
+    {
+        try {
+            $return_policy = $this->getSingleReturnPolicy($id);
+            if (empty($return_policy)) {
+                throw new Exception('Return Policy Not Found');
+            }
+
+            $return_policy->update(['is_active' => ! $return_policy->is_active]);
+
+            return [
+                'status' => true,
+                'message' => 'Return Policy Status Toggled Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function destroyReturnPolicy(string $id)
+    {
+        try {
+            $return_policy = $this->getSingleReturnPolicy($id);
+            if (empty($return_policy)) {
+                throw new Exception('Return Policy Not Found');
+            }
+
+            $deleted = $return_policy->delete();
+
+            if (! $deleted) {
+                throw new Exception('Something went wrong while deleting return policy');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Return Policy Deleted Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function destroyReturnPolicyBySelection(Request $request)
+    {
+        try {
+
+            $ids = $request->array('ids');
+
+            if (blank($ids)) {
+                throw new Exception('Please Select Atleast One Return Policy');
+            }
+
+            $deleted = $this->return_policy->destroy($ids);
+
+            if ($deleted !== count($ids)) {
+                throw new Exception('Something went wrong while deleting return policy');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Return Policy Deleted Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    // Courier Company Settings
+    public function getAllCourierCompanies()
+    {
+        $courier_companies = $this->courier_company->latest()->paginate(10);
+
+        return $courier_companies;
+    }
+
+    public function getSingleCourierCompany(string $id)
+    {
+        $courier_company = $this->courier_company->find($id);
+
+        return $courier_company;
+    }
+
+    public function storeCourierCompany(Request $request)
+    {
+        $validated_req = $request->validate([
+            'courier_name' => ['required', 'string', 'max:255'],
+            'courier_code' => ['required', 'string', 'max:255'],
+            'tracking_url' => ['required', 'string', 'max:255'],
+            'is_international' => ['sometimes', 'boolean'],
+        ]);
+
+        try {
+            $created = $this->courier_company->create($validated_req);
+
+            if (empty($created)) {
+                throw new Exception('Something went wrong while creating courier company');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Courier Company Created Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function updateCourierCompany(Request $request, string $id)
+    {
+        $validated_req = $request->validate([
+            'courier_name' => ['required', 'string', 'max:255'],
+            'courier_code' => ['required', 'string', 'max:255'],
+            'tracking_url' => ['required', 'string', 'max:255'],
+            'is_international' => ['sometimes', 'boolean'],
+        ]);
+
+        try {
+            $courier_company = $this->getSingleCourierCompany($id);
+            if (empty($courier_company)) {
+                throw new Exception('Courier Company Not Found');
+            }
+
+            $updated = $courier_company->update($validated_req);
+
+            if (! $updated) {
+                throw new Exception('Something went wrong while updating courier company');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Courier Company Updated Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+
+    }
+
+    public function toggleCourierCompanyStatus(string $id)
+    {
+        try {
+            $courier_company = $this->getSingleCourierCompany($id);
+            if (empty($courier_company)) {
+                throw new Exception('Courier Company Not Found');
+            }
+
+            $updated = $courier_company->update([
+                'is_active' => ! $courier_company->is_active,
+            ]);
+
+            if (! $updated) {
+                throw new Exception('Something went wrong while updating courier company');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Courier Company Status Toggled Successfully',
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function destroyCourierCompany(string $id)
+    {
+        try {
+            $courier_company = $this->getSingleCourierCompany($id);
+            if (empty($courier_company)) {
+                throw new Exception('Courier Company Not Found');
+            }
+
+            $deleted = $courier_company->delete();
+
+            if (! $deleted) {
+                throw new Exception('Something went wrong while deleting courier company');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Courier Company Deleted Successfully',
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function destroyCourierCompanyBySelection(Request $request)
+    {
+        try {
+            $ids = $request->array('ids');
+
+            if (blank($ids)) {
+                throw new Exception('Courier Company Not Found');
+            }
+
+            $deleted = $this->courier_company->destroy($ids);
+
+            if ($deleted !== count($ids)) {
+                throw new Exception('Something went wrong while deleting courier company');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Courier Company Deleted Successfully',
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    // Conditions Settings
+    public function getAllConditions()
+    {
+        $conditions = $this->condition->latest()->paginate(10);
+
+        return $conditions;
+    }
+
+    public function getSingleCondition(string $id)
+    {
+        $condition = $this->condition->find($id);
+
+        return $condition;
+    }
+
+    public function storeCondition(Request $request)
+    {
+        $validated_req = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        try {
+            $created = $this->condition->create($validated_req);
+
+            if (empty($created)) {
+                throw new Exception('Something went wrong while creating condition');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Condition Created Successfully',
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function updateCondition(Request $request, string $id)
+    {
+        $validated_req = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        try {
+            $condition = $this->getSingleCondition($id);
+            if (empty($condition)) {
+                throw new Exception('Condition Not Found');
+            }
+
+            $updated = $condition->update($validated_req);
+
+            if (! $updated) {
+                throw new Exception('Something went wrong while updating condition');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Condition Updated Successfully',
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+
+    }
+
+    public function toggleConditionStatus(string $id)
+    {
+        try {
+            $condition = $this->getSingleCondition($id);
+            if (empty($condition)) {
+                throw new Exception('Condition Not Found');
+            }
+
+            $updated = $condition->update([
+                'is_active' => ! $condition->is_active,
+            ]);
+
+            if (! $updated) {
+                throw new Exception('Something went wrong while updating condition');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Condition Status Toggled Successfully',
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function destroyCondition(string $id)
+    {
+        try {
+            $condition = $this->getSingleCondition($id);
+            if (empty($condition)) {
+                throw new Exception('Condition Not Found');
+            }
+
+            $deleted = $condition->delete();
+
+            if (! $deleted) {
+                throw new Exception('Something went wrong while deleting condition');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Condition Deleted Successfully',
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function destroyConditionBySelection(Request $request)
+    {
+        try {
+            $ids = $request->array('ids');
+
+            if (blank($ids)) {
+                throw new Exception('Please Select Atleast One Condition');
+            }
+
+            $deleted = $this->condition->destroy($ids);
+
+            if ($deleted !== count($ids)) {
+                throw new Exception('Something Went Wrong While Deleting Condition');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Condition Deleted Successfully',
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    // Addons Settings
+    public function getAllAddons()
+    {
+        $addons = $this->addon->latest()->paginate(10);
+
+        return $addons;
+    }
+
+    public function getSingleAddon(string $id)
+    {
+        $addon = $this->addon->find($id);
+
+        return $addon;
+    }
+
+    public function storeAddon(Request $request)
+    {
+        $validated_req = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'price' => ['required', 'integer', 'min:0'],
+        ]);
+
+        try {
+            $created = $this->addon->create($validated_req);
+
+            if (empty($created)) {
+                throw new Exception('Something went wrong while creating addon');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Addon Created Successfully',
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function updateAddon(Request $request, string $id)
+    {
+
+        $validated_req = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'price' => ['required', 'integer', 'min:0'],
+        ]);
+
+        try {
+            $addon = $this->getSingleAddon($id);
+            if (empty($addon)) {
+                throw new Exception('Addon Not Found');
+            }
+
+            $updated = $addon->update($validated_req);
+
+            if (! $updated) {
+                throw new Exception('Something went wrong while updating addon');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Addon Updated Successfully',
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function toggleAddonStatus(string $id)
+    {
+        try {
+            $addon = $this->getSingleAddon($id);
+            if (empty($addon)) {
+                throw new Exception('Addon Not Found');
+            }
+
+            $updated = $addon->update([
+                'is_active' => ! $addon->is_active,
+            ]);
+
+            if (! $updated) {
+                throw new Exception('Something went wrong while updating addon');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Addon Status Toggled Successfully',
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function destroyAddon(string $id)
+    {
+        try {
+            $addon = $this->getSingleAddon($id);
+            if (empty($addon)) {
+                throw new Exception('Addon Not Found');
+            }
+
+            $deleted = $addon->delete();
+
+            if (! $deleted) {
+                throw new Exception('Something went wrong while deleting addon');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Addon Deleted Successfully',
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function destroyAddonBySelection(Request $request)
+    {
+        try {
+            $ids = $request->array('ids');
+
+            if (blank($ids)) {
+                throw new Exception('Please Select Atleast One Addon');
+            }
+
+            $deleted = $this->addon->destroy($ids);
+
+            if ($deleted !== count($ids)) {
+                throw new Exception('Something Went Wrong While Deleting Addon');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Addon Deleted Successfully',
+            ];
         } catch (Exception $e) {
             return [
                 'status' => false,

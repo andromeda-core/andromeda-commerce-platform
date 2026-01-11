@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Orders\Repository;
 
+use App\Helpers\Trans;
 use App\Jobs\CourierInvoiceDestroyOnAWS;
 use App\Jobs\CourierInvoiceStoreOnAWS;
 use App\Jobs\Meta\NotifyCustomerAboutAwaitingPaymentOrderFromCryptoJob;
@@ -17,10 +18,13 @@ use App\Models\PackageRecording;
 use App\Models\RewardPoint;
 use App\Models\RewardSetting;
 use App\Models\Smartphone;
+use App\Models\SmartphoneCartAddon;
+use App\Models\SmartphoneOrderItemAddon;
 use App\Models\SpecialCountry;
 use App\Models\User;
 use App\Notifications\NotifyCustomerAboutAwaitingPaymentOrderFromCrypto;
 use App\Repositories\Orders\Interface\IOrderRepository;
+use App\Services\CartPriceCalculator;
 use App\Services\NOWPaymentPaymentService;
 use Cache;
 use Exception;
@@ -42,7 +46,11 @@ class OrderRepository implements IOrderRepository
         private RewardPoint $reward_point,
         private NOWPaymentPaymentService $now_payment_service,
         private PackageRecording $package_recording,
-        private SpecialCountry $special_country
+        private SpecialCountry $special_country,
+        private Trans $trans,
+        private SmartphoneCartAddon $smartphone_cart_addon,
+        private SmartphoneOrderItemAddon $smartphone_order_item_addon,
+        private CartPriceCalculator $cart_price_calculator
     ) {}
 
     public function getAllOrders(Request $request)
@@ -73,7 +81,8 @@ class OrderRepository implements IOrderRepository
                 'collaborator',
                 'customer',
                 'customer.user',
-                'customer.country',
+                'shippingAddress',
+                'shippingAddress.country',
                 'orderPackageRecordings',
                 'orderItems',
                 'orderItems.smartphone',
@@ -84,6 +93,7 @@ class OrderRepository implements IOrderRepository
                 'orderItems.smartphone.category.distributor',
                 'orderItems.smartphone.category.distributor.user',
                 'orderItems.color',
+                'orderItems.smartphoneAddons',
             ]
         )->find($id);
 
@@ -554,15 +564,18 @@ class OrderRepository implements IOrderRepository
             $order = $this->order
                 ->with(
                     [
-                        'collaborator',
                         'customer',
                         'customer.user',
+                        'collaborator',
+                        'shippingAddress',
+                        'shippingAddress.country',
                         'orderItems',
                         'orderItems.smartphone',
                         'orderItems.smartphone.model_name',
                         'orderItems.smartphone.capacity',
                         'orderItems.smartphone.selling_info',
                         'orderItems.smartphone.category',
+                        'orderItems.smartphoneAddons',
                     ]
                 )
                 ->where('order_no', $order_no)
@@ -596,15 +609,18 @@ class OrderRepository implements IOrderRepository
             $order = $this->order
                 ->with(
                     [
-                        'collaborator',
                         'customer',
                         'customer.user',
+                        'collaborator',
+                        'shippingAddress',
+                        'shippingAddress.country',
                         'orderItems',
                         'orderItems.smartphone',
                         'orderItems.smartphone.model_name',
                         'orderItems.smartphone.capacity',
                         'orderItems.smartphone.selling_info',
                         'orderItems.smartphone.category',
+                        'orderItems.smartphoneAddons',
                     ]
                 )
                 ->where('order_no', $order_no)
@@ -637,7 +653,7 @@ class OrderRepository implements IOrderRepository
         try {
             $payment_method = $request->input('payment_method');
             if (empty($payment_method)) {
-                return response()->json(['message' => 'Please Select A Payment Method'], 400);
+                return response()->json(['message' => $this->trans::get('Please Select A Payment Method')], 400);
             }
 
             $referal_code = $request->input('referal_code');
@@ -646,76 +662,109 @@ class OrderRepository implements IOrderRepository
             $user = $request->user();
 
             if (empty($user)) {
-                throw new Exception('Please Login First');
+                throw new Exception($this->trans::get('Please Login First'));
             }
 
             $customer = $user->customer;
 
             if (empty($customer)) {
-                throw new Exception('Only Customers Can Place Order');
+                throw new Exception($this->trans::get('Only Customers Can Place Order'));
+            }
+
+            $shipping_address = $customer->active_shipping_address;
+            if (empty($shipping_address)) {
+                throw new Exception($this->trans::get('Please Add Shipping Address First'));
             }
 
             $cart_items = $this->cart->where('customer_id', $customer->id)->get();
             if ($cart_items->isEmpty()) {
-                throw new Exception('Cart Is Empty');
+                throw new Exception($this->trans::get('Cart Is Empty'));
             }
 
             $collaborator = $this->collaborator->where('referral_code', ! empty($refferalSessionData) ? $refferalSessionData['referal_code'] : $referal_code)->first();
             if (empty($collaborator) && (! empty($referal_code) || ! empty($refferalSessionData))) {
-                throw new Exception('Invalid Referal Code');
+                throw new Exception($this->trans::get('Invalid Referal Code'));
             }
 
             $smartphone_ids = [];
             $smartphone_quantities = [];
             $smartphone_color_ids = [];
+            $smartphone_unit_prices = [];
+            $smartphone_total_prices = [];
+
             $order_items = [];
             $inventoryItems = [];
-            $amount = 0;
+            $smartphone_addon_order_items = [];
 
             foreach ($cart_items as $item) {
                 if ($item->type === 'smartphone') {
                     $smartphone_ids[] = $item->smartphone_id;
                     $smartphone_quantities[$item->smartphone_id] = $item->quantity;
                     $smartphone_color_ids[$item->smartphone_id] = $item->color_id;
+                    $smartphone_unit_prices[$item->smartphone_id] = $item->unit_price;
+                    $smartphone_total_prices[$item->smartphone_id] = $item->total_price;
 
                 }
             }
 
-            $smartphones = $this->smartphone->with(['selling_info', 'inventory_items', 'model_name', 'category.distributor'])
+            $smartphone_addon_cart_items = $this->smartphone_cart_addon->where('customer_id', $customer->id)->get();
+            if ($smartphone_addon_cart_items->isNotEmpty()) {
+                foreach ($smartphone_addon_cart_items as $item) {
+                    $smartphone_addon_order_items[] = [
+                        'smartphone_id' => $item->smartphone_id,
+                        'addon_id' => $item->addon_id,
+                        'customer_id' => $customer->id,
+                        'quantity' => $item->quantity,
+                        'unit_price' => $item->unit_price,
+                        'total_price' => $item->total_price,
+                        'name' => $item->name,
+                    ];
+                }
+            }
+
+            $smartphones = $this->smartphone->with(['selling_info', 'inventory_items', 'model_name', 'category.distributor', 'selling_info.shipping_fee', 'selling_info.import_tax'])
                 ->whereIn('id', $smartphone_ids)
                 ->get();
 
             if ((count($smartphone_ids) !== $smartphones->count()) || $smartphones->isEmpty()) {
-                throw new Exception('Invalid Cart Items');
+                throw new Exception($this->trans::get('Invalid Cart Items'));
             }
+
+            $calculation = $this->cart_price_calculator->calculate($cart_items, $smartphone_addon_cart_items);
 
             foreach ($smartphones as $smartphone) {
                 if ($smartphone->inventory_items->isEmpty()) {
-                    throw new Exception(" {$smartphone->model_name->name} Smartphone Is Out Of Stock Please Check");
+                    throw new Exception(" {$smartphone->model_name->name} {$this->trans::get('Smartphone Is Out Of Stock Please Check')}");
                 }
 
                 if ($smartphone->inventory_items()->where('status', 'in_stock')->doesntExist()) {
-                    throw new Exception("{$smartphone->model_name->name} Smartphone Is Out Of Stock Please Check");
+                    throw new Exception("{$smartphone->model_name->name} {$this->trans::get('Smartphone Is Out Of Stock Please Check')}");
                 }
 
                 if ($smartphone->inventory_items()->where('status', 'in_stock')->count() < $smartphone_quantities[$smartphone->id]) {
-                    throw new Exception("{$smartphone->model_name->name} Smartphone Has Less Stock But You Have Selected More Quantity Please Check");
+                    throw new Exception("{$smartphone->model_name->name} {$this->trans::get('Smartphone Has Less Stock But You Have Selected More Quantity Please Check')}");
                 }
 
                 if (empty($smartphone->selling_info)) {
-                    throw new Exception("{$smartphone->model_name->name} Smartphone Dont have Selling Price Please Check");
+                    throw new Exception("{$smartphone->model_name->name} {$this->trans::get('Smartphone Dont have Selling Price Please Check')}");
                 }
 
                 $quantity = $smartphone_quantities[$smartphone->id];
-                $unit_price = $smartphone->selling_info->total_price;
-                $sub_total = $smartphone->selling_info->total_price * $quantity;
-                $amount += $sub_total;
+                $shipping_cost = $this->calculateShippingCost($smartphone->selling_info->shipping_fee, $smartphone, $quantity);
+                $import_cost = $this->calculateImportCost($smartphone->selling_info->import_tax, $smartphone);
+                $unit_price = $smartphone_unit_prices[$smartphone->id];
+                $product_total = $unit_price * $quantity;
+                $item_total = $product_total + $shipping_cost + $import_cost;
+
+                $amount = $calculation['total'];
 
                 $order_items[] = [
                     'smartphone_id' => $smartphone->id,
                     'unit_price' => $unit_price,
                     'quantity' => $quantity,
-                    'sub_total' => $sub_total,
+                    'sub_total' => $item_total,
+                    'shipping_cost' => $shipping_cost,
+                    'import_cost' => $import_cost,
                     'color_id' => $smartphone_color_ids[$smartphone->id],
                 ];
 
@@ -737,31 +786,38 @@ class OrderRepository implements IOrderRepository
 
             $order_data = [
                 'customer_id' => $customer->id,
+                'shipping_address_id' => $shipping_address->id,
                 'collaborator_id' => $collaborator ? $collaborator->id : null,
+                'sub_total' => $calculation['cart_subtotal'],
+                'import_tax' => $calculation['import_tax'],
+                'shipping_fee' => $calculation['shipping_fee'],
+                'addons_sub_total' => $calculation['addons_subtotal'],
                 'amount' => $amount,
                 'payment_method' => $payment_method,
             ];
 
             if ($payment_method === 'bank_transfer') {
-                $order = $this->createOrderFromWebsite($order_data, $order_items);
+                $order = $this->createOrderFromWebsite($order_data, $order_items, null, $smartphone_addon_order_items);
 
                 if ($order['status'] === false) {
                     throw new Exception($order['message']);
                 }
 
                 $this->clearCartExistingItems($customer->id);
+                $this->clearExistingAddonItems($customer->id, $this->smartphone_cart_addon);
+
                 DB::commit();
 
                 return [
                     'status' => true,
-                    'message' => 'Order Placed Successfully',
+                    'message' => $this->trans::get('Order Placed Successfully'),
                     'order' => $order['order'],
                     'type' => 'bank',
                     'redirect_uri' => route('website.orders.order-view', ['order_no' => $order['order']->order_no]),
                 ];
 
             } elseif ($payment_method === 'crypto') {
-                $order = $this->createOrderFromWebsite($order_data, $order_items, 'awaiting_payment');
+                $order = $this->createOrderFromWebsite($order_data, $order_items, 'awaiting_payment', order_item_addons: $smartphone_addon_order_items);
 
                 $response = $this->now_payment_service->createPaymentSession($order);
 
@@ -770,6 +826,7 @@ class OrderRepository implements IOrderRepository
                 }
 
                 $this->clearCartExistingItems($customer->id);
+                $this->clearExistingAddonItems($customer->id, $this->smartphone_cart_addon);
                 DB::commit();
 
                 return [
@@ -786,18 +843,19 @@ class OrderRepository implements IOrderRepository
                     throw new Exception($response['message']);
                 }
 
-                $order = $this->createOrderFromWebsite($order_data, $order_items, 'paid');
+                $order = $this->createOrderFromWebsite($order_data, $order_items, 'paid', order_item_addons: $smartphone_addon_order_items);
 
                 if ($order['status'] === false) {
                     throw new Exception($order['message']);
                 }
 
                 $this->clearCartExistingItems($customer->id);
+                $this->clearExistingAddonItems($customer->id, $this->smartphone_cart_addon);
                 DB::commit();
 
                 return [
                     'status' => true,
-                    'message' => 'Order Placed Successfully',
+                    'message' => $this->trans::get('Order Placed Successfully'),
                     'order' => $order['order'],
                     'type' => 'points',
                     'redirect_uri' => route('website.orders.order-view', ['order_no' => $order['order']->order_no]),
@@ -805,7 +863,7 @@ class OrderRepository implements IOrderRepository
 
             }
 
-            throw new Exception('Invalid Payment Method');
+            throw new Exception($this->trans::get('Invalid Payment Method'));
         } catch (Exception $e) {
             DB::rollBack();
 
@@ -817,13 +875,18 @@ class OrderRepository implements IOrderRepository
 
     }
 
-    private function createOrderFromWebsite($order_data, $order_items, ?string $status = null)
+    private function createOrderFromWebsite($order_data, $order_items, ?string $status, $order_item_addons)
     {
         try {
             $order = $this->order->create([
                 'customer_id' => $order_data['customer_id'],
+                'shipping_address_id' => $order_data['shipping_address_id'],
                 'collaborator_id' => $order_data['collaborator_id'],
                 'amount' => $order_data['amount'],
+                'sub_total' => $order_data['sub_total'],
+                'import_tax' => $order_data['import_tax'],
+                'shipping_fee' => $order_data['shipping_fee'],
+                'addons_sub_total' => $order_data['addons_sub_total'],
                 ...(! empty($status) ? ['status' => $status] : []),
                 'payment_method' => $order_data['payment_method'],
 
@@ -831,14 +894,40 @@ class OrderRepository implements IOrderRepository
 
             if (empty($order)) {
 
-                throw new Exception('Something Went Wrong While Placing An Order');
+                throw new Exception($this->trans::get('Something Went Wrong While Placing An Order'));
             }
 
-            $order->orderItems()->createMany($order_items);
+            DB::transaction(function () use ($order, $order_items, $order_item_addons) {
+                $order->orderItems()->createMany($order_items);
+
+                $orderItems = $order->orderItems()
+                    ->get()
+                    ->keyBy('smartphone_id');
+
+                $addonsToInsert = [];
+
+                foreach ($order_item_addons as $addon) {
+
+                    if (! isset($orderItems[$addon['smartphone_id']])) {
+                        continue;
+                    }
+
+                    $addonsToInsert[] = array_merge($addon, [
+                        'order_item_id' => $orderItems[$addon['smartphone_id']]->id,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+
+                if (! blank($addonsToInsert)) {
+                    $this->smartphone_order_item_addon->insert($addonsToInsert);
+                }
+
+            });
 
             return [
                 'status' => true,
-                'message' => 'Order Placed Successfully',
+                'message' => $this->trans::get('Order Placed Successfully'),
                 'order' => $order,
             ];
         } catch (Exception $e) {
@@ -848,6 +937,11 @@ class OrderRepository implements IOrderRepository
                 'message' => $e->getMessage(),
             ];
         }
+    }
+
+    private function clearExistingAddonItems(string $customer_id, $Model)
+    {
+        return $Model->where('customer_id', $customer_id)->delete();
     }
 
     private function clearCartExistingItems(string $customer_id)
@@ -863,13 +957,13 @@ class OrderRepository implements IOrderRepository
             }])->find($user_id);
 
             if (empty($user)) {
-                throw new Exception('User Not Found');
+                throw new Exception($this->trans::get('User Not Found'));
             }
 
             $total_points = (int) $user->points;
 
             if ($total_points < $amount) {
-                throw new Exception('You Dont Have Enough Points To Pay');
+                throw new Exception($this->trans::get('You Dont Have Enough Points To Pay'));
             }
 
             $remaining = $amount;
@@ -894,7 +988,7 @@ class OrderRepository implements IOrderRepository
 
             return [
                 'status' => true,
-                'message' => 'Paid With Points',
+                'message' => $this->trans::get('Paid With Points'),
             ];
         } catch (Exception $e) {
 
@@ -911,7 +1005,7 @@ class OrderRepository implements IOrderRepository
         if (empty($user)) {
             return [
                 'status' => false,
-                'message' => 'Please Login First',
+                'message' => $this->trans::get('Please Login First'),
             ];
         }
 
@@ -953,9 +1047,8 @@ class OrderRepository implements IOrderRepository
         $order = $this->order->with(
             [
                 'collaborator',
-                'customer',
-                'customer.user',
-                'customer.country',
+                'shippingAddress',
+                'shippingAddress.country',
                 'orderPackageRecordings',
                 'orderItems',
                 'orderItems.smartphone',
@@ -966,6 +1059,7 @@ class OrderRepository implements IOrderRepository
                 'orderItems.smartphone.category.distributor',
                 'orderItems.smartphone.category.distributor.user',
                 'orderItems.color',
+                'orderItems.smartphoneAddons',
             ]
         )->where('order_no', $order_no)
             ->first();
@@ -997,14 +1091,14 @@ class OrderRepository implements IOrderRepository
         if (empty($order)) {
             return [
                 'status' => false,
-                'message' => 'Order Not Found',
+                'message' => $this->trans::get('Order Not Found'),
             ];
         }
 
         if (! $request->hasFile('payment_proof')) {
             return [
                 'status' => false,
-                'message' => 'Payment Proof Not Found',
+                'message' => $this->trans::get('Payment Proof Not Found'),
             ];
         }
 
@@ -1027,13 +1121,13 @@ class OrderRepository implements IOrderRepository
 
             return [
                 'status' => true,
-                'message' => 'Payment Proof Uploaded Successfully',
+                'message' => $this->trans::get('Payment Proof Uploaded Successfully'),
             ];
         }
 
         return [
             'status' => false,
-            'message' => 'Something Went Wrong While Uploading Payment Proof',
+            'message' => $this->trans::get('Something Went Wrong While Uploading Payment Proof'),
         ];
 
     }
@@ -1057,7 +1151,7 @@ class OrderRepository implements IOrderRepository
         if (empty($order)) {
             return [
                 'status' => false,
-                'message' => 'Order Not Found',
+                'message' => $this->trans::get('Order Not Found'),
             ];
         }
 
@@ -1096,7 +1190,7 @@ class OrderRepository implements IOrderRepository
         if (empty($package_video_id)) {
             return [
                 'status' => false,
-                'message' => 'Packaging Video Not Found',
+                'message' => $this->trans::get('Packaging Video Not Found'),
             ];
         }
 
@@ -1105,7 +1199,7 @@ class OrderRepository implements IOrderRepository
         if (empty($package_video)) {
             return [
                 'status' => false,
-                'message' => 'Packaging Video Not Found',
+                'message' => $this->trans::get('Packaging Video Not Found'),
             ];
         }
 
@@ -1114,7 +1208,39 @@ class OrderRepository implements IOrderRepository
 
         return [
             'status' => true,
-            'message' => 'Packaging Video Viewed Successfully',
+            'message' => $this->trans::get('Packaging Video Viewed Successfully'),
         ];
+    }
+
+    private function calculateShippingCost($shipping_fee, $smartphone, $quantity)
+    {
+        if (empty($shipping_fee)) {
+            return 0;
+        }
+
+        $value_type = $shipping_fee->value_type;
+        $default_value = $shipping_fee->default_value;
+
+        if ($value_type === 'fixed') {
+            return (float) $default_value * $quantity;
+        }
+
+        return ((float) ($smartphone->selling_info->total_price * (float) $default_value) * $quantity) / 100;
+    }
+
+    private function calculateImportCost($import_tax, $smartphone)
+    {
+        if (empty($import_tax)) {
+            return 0;
+        }
+
+        $value_type = $import_tax->value_type;
+        $default_value = $import_tax->default_value;
+
+        if ($value_type === 'fixed') {
+            return (float) $default_value;
+        }
+
+        return ((float) $smartphone->selling_info->total_price * (float) $default_value) / 100;
     }
 }

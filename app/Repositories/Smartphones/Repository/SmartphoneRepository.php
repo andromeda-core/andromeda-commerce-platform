@@ -5,10 +5,15 @@ namespace App\Repositories\Smartphones\Repository;
 use App\Jobs\SmartphoneDestroyOnAWS;
 use App\Jobs\SmartphoneStoreOnAWS;
 use App\Jobs\SmartphoneUpdateOnAWS;
+use App\Models\Addon;
 use App\Models\Capacity;
 use App\Models\Category;
 use App\Models\Color;
+use App\Models\Condition;
+use App\Models\Country;
+use App\Models\CourierCompany;
 use App\Models\ModelName;
+use App\Models\ReturnPolicy;
 use App\Models\Smartphone;
 use App\Models\SmartphoneForSale;
 use App\Repositories\Smartphones\Interface\ISmartphoneRepository;
@@ -30,6 +35,11 @@ class SmartphoneRepository implements ISmartphoneRepository
         private Capacity $capacity,
         private Category $category,
         private SmartphoneForSale $smartphone_for_sale,
+        private Country $country,
+        private Condition $condition,
+        private CourierCompany $courier_company,
+        private ReturnPolicy $return_policy,
+        private Addon $addon,
     ) {}
 
     public function getAllSmartphones(Request $request)
@@ -44,7 +54,7 @@ class SmartphoneRepository implements ISmartphoneRepository
                         });
                 });
             })
-            ->with(['model_name', 'capacity', 'selling_info', 'category'])
+            ->with(['model_name', 'capacity', 'selling_info', 'category', 'selling_info.shipping_fee', 'selling_info.import_tax', 'addons'])
             ->latest()
             ->paginate(10)
             ->withQueryString();
@@ -54,7 +64,11 @@ class SmartphoneRepository implements ISmartphoneRepository
 
     public function getSingleSmartphone(string $id)
     {
-        $smartphone = $this->smartphone->with(['model_name', 'capacity', 'category', 'selling_info'])->find($id);
+        $smartphone = $this->smartphone->with(['model_name', 'capacity', 'category', 'country', 'condition', 'courier_company', 'return_policy', 'selling_info', 'selling_info.shipping_fee', 'selling_info.import_tax', 'addons:id'])->find($id);
+
+        if (! empty($smartphone)) {
+            $smartphone->addon_ids = ! blank($smartphone->addons) ? $smartphone->addons->pluck('id')->toArray() : [];
+        }
 
         return $smartphone;
     }
@@ -68,6 +82,13 @@ class SmartphoneRepository implements ISmartphoneRepository
             'color_ids.*' => ['required', 'exists:colors,id'],
             'category_id' => ['required', 'exists:categories,id'],
             'upc' => ['required', 'max:255', 'unique:smartphones,upc'],
+            'addon_ids' => ['nullable', 'array'],
+            'addon_ids.*' => ['nullable', 'exists:addons,id'],
+            'delivery_days' => ['required', 'integer', 'min:1', 'max:30'],
+            'country_id' => ['required', 'exists:countries,id'],
+            'condition_id' => ['required', 'exists:conditions,id'],
+            'courier_company_id' => ['required', 'exists:courier_companies,id'],
+            'return_policy_id' => ['required', 'exists:return_policies,id'],
             'images' => ['required', 'array', 'max:5'],
             'tag' => ['nullable', 'string', 'max:30', function ($attribute, $value, $fail) {
                 if (str_contains($value, ',')) {
@@ -127,9 +148,18 @@ class SmartphoneRepository implements ISmartphoneRepository
             $cleanSlug = preg_replace('/\s+/u', '-', trim($cleanSlug));
             $validated_req['slug'] = strtolower($cleanSlug);
 
+            // Detaching From Request To Let it Create First
+            if ($request->has('addon_ids')) {
+                unset($validated_req['addon_ids']);
+            }
+
             $smartphone = $this->smartphone->create($validated_req);
             if (empty($smartphone)) {
                 throw new Exception('Something Went Wrong While Creating Smartphone');
+            }
+
+            if ($request->has('addon_ids')) {
+                $smartphone->addons()->attach($request->array('addon_ids'));
             }
 
             if ($request->hasFile('images')) {
@@ -173,6 +203,13 @@ class SmartphoneRepository implements ISmartphoneRepository
             'color_ids' => ['required', 'array'],
             'color_ids.*' => ['required', 'exists:colors,id'],
             'category_id' => ['required', 'exists:categories,id'],
+            'delivery_days' => ['required', 'integer', 'min:1', 'max:30'],
+            'addon_ids' => ['nullable', 'array'],
+            'addon_ids.*' => ['nullable', 'exists:addons,id'],
+            'country_id' => ['required', 'exists:countries,id'],
+            'condition_id' => ['required', 'exists:conditions,id'],
+            'courier_company_id' => ['required', 'exists:courier_companies,id'],
+            'return_policy_id' => ['required', 'exists:return_policies,id'],
             'upc' => ['required', 'max:255', 'unique:smartphones,upc,'.$id],
             'images' => ['required', 'array', 'max:5'],
             'tag' => ['nullable', 'string', 'max:30', function ($attribute, $value, $fail) {
@@ -225,16 +262,14 @@ class SmartphoneRepository implements ISmartphoneRepository
             }
 
             $smartphone = $this->smartphone->find($id);
+            if (empty($smartphone)) {
+                throw new Exception('Smartphone Not Found');
+            }
 
-            // Not Needed Becasue Its Un-Necessary
-            // if (empty($smartphone->slug)) {
-            //     $model_name = $this->model_name->find($validated_req['model_name_id'])?->name ?? 'Smartphone';
-            //     $capacity = $this->capacity->find($validated_req['capacity_id'])?->name ?? '';
-            //     $raw_slug = "{$model_name}-{$capacity}-{$validated_req['upc']}-".Str::uuid();
-
-            //     $validated_req['slug'] = preg_replace('/\s+/u', '-', trim($raw_slug));
-
-            // }
+            if ($request->has('addon_ids')) {
+                unset($validated_req['addon_ids']);
+                $smartphone->addons()->sync($request->array('addon_ids'));
+            }
 
             if ($request->filled('deleted_images')) {
                 $deleted = $request->array('deleted_images');
@@ -253,10 +288,6 @@ class SmartphoneRepository implements ISmartphoneRepository
                 $remaining_images_array = array_values($remeaning_images);
 
                 $validated_req['images'] = $remaining_images_array;
-            }
-
-            if (empty($smartphone)) {
-                throw new Exception('Smartphone Not Found');
             }
 
             $updated = $smartphone->update($validated_req);
@@ -396,5 +427,30 @@ class SmartphoneRepository implements ISmartphoneRepository
                     'name' => $smartphone->model_name->name,
                 ];
             });
+    }
+
+    public function getCountries()
+    {
+        return $this->country->where('is_active', true)->get();
+    }
+
+    public function getConditions()
+    {
+        return $this->condition->where('is_active', true)->get();
+    }
+
+    public function getCourierCompanies()
+    {
+        return $this->courier_company->where('is_active', true)->get();
+    }
+
+    public function getReturnPolicies()
+    {
+        return $this->return_policy->where('is_active', true)->get();
+    }
+
+    public function getAddons()
+    {
+        return $this->addon->where('is_active', true)->get();
     }
 }

@@ -39,7 +39,7 @@ export default function index({ smartphone_for_sales }) {
                 label: 'Selling Price',
                 render: (item) => {
                     return (
-                        <span className="rounded-lg bg-blue-500 p-2 text-white">
+                        <span className="p-2 text-white bg-blue-500 rounded-lg">
                             {currency?.symbol}
                             {item.selling_price}
                         </span>
@@ -50,7 +50,7 @@ export default function index({ smartphone_for_sales }) {
                 label: 'Final Total Selling Price',
                 render: (item) => {
                     return (
-                        <span className="rounded-lg bg-blue-500 p-2 text-white">
+                        <span className="p-2 text-white bg-blue-500 rounded-lg">
                             {currency?.symbol}
                             {item.total_price}
                         </span>
@@ -79,7 +79,7 @@ export default function index({ smartphone_for_sales }) {
                     Content={
                         <>
                             {can('Smartphone For Sales Create') && (
-                                <div className="my-3 flex flex-wrap justify-end">
+                                <div className="flex flex-wrap justify-end my-3">
                                     <LinkButton
                                         Text={'Create Smartphone For Sale'}
                                         URL={route('dashboard.smartphone-for-sales.create')}

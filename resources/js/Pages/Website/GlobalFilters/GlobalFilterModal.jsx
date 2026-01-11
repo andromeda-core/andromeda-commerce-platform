@@ -6,29 +6,34 @@ import { createPortal } from 'react-dom';
 import getCookie from '@/Hooks/useGetCookie';
 import Toast from '@/Components/Toast';
 import Spinner from '@/Components/Spinner';
+import { useTranslation } from '@/Hooks/useTranslation';
 
-const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
-
-
-
+const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
     const windowSize = useWindowSize();
+
+    // Translation Hook
+    const { __ } = useTranslation();
+
     const isMobile = windowSize.width <= 1024;
     const [filterSaving, setFilterSaving] = useState(false);
 
     const [showInfoToast, setShowInfoToast] = useState(false);
     const [infoMessage, setInfoMessage] = useState('');
 
-
-    const filterModalRef = useRef(filterModal);
+    const filterModalRef = useRef(isOpen);
     const isClosingFilterModalRef = useRef(false);
-    const previousUrlRef = useRef(window.location.href);
+
+    useEffect(() => {
+        window.history.replaceState({}, '', window.location.pathname);
+    }, [isOpen]);
+
 
     // State for filters
     const [filters, setFilters] = useState(() => {
         const cookieValue = getCookie('post_preferences');
 
         const defaults = {
-            // text: true,
+            text: true,
             images: true,
             videos: true,
             show_posts: true,
@@ -43,11 +48,11 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
             const parsed = JSON.parse(decodeURIComponent(cookieValue));
 
             if (typeof parsed !== 'object' || parsed === null) {
-                throw new Error('Invalid cookie format');
+                throw new Error(__('Invalid cookie format'));
             }
 
             return {
-                // text: typeof parsed.text === 'boolean' ? parsed.text : defaults.text,
+                text: typeof parsed.text === 'boolean' ? parsed.text : defaults.text,
                 images: typeof parsed.images === 'boolean' ? parsed.images : defaults.images,
                 videos: typeof parsed.videos === 'boolean' ? parsed.videos : defaults.videos,
                 show_posts:
@@ -60,19 +65,18 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
                         : defaults.show_products,
             };
         } catch (error) {
-            console.warn('⚠️ Invalid post_preferences cookie. Using defaults.', error);
+            console.warn("⚠️" + __('Invalid post_preferences cookie. Using defaults.'), error);
             return defaults;
         }
     });
 
     useEffect(() => {
-        filterModalRef.current = filterModal;
-    }, [filterModal]);
+        filterModalRef.current = isOpen;
+    }, [isOpen]);
 
     // Toggle filter handler
     const handleFilterChange = (filterName, checked) => {
-        // const typeFilters = ['text', 'images', 'videos'];
-        const typeFilters = ['images', 'videos'];
+        const typeFilters = ['text', 'images', 'videos'];
         const visibilityFilters = ['show_posts', 'show_products'];
 
         if (!checked) {
@@ -83,7 +87,7 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
 
                 if (remainingTypeFilters.length === 0) {
                     setShowInfoToast(true);
-                    setInfoMessage('At least one post type filter must be selected');
+                    setInfoMessage(__('At least one post type filter must be selected'));
                     return;
                 }
             }
@@ -95,7 +99,7 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
 
                 if (remainingVisibilityFilters.length === 0) {
                     setShowInfoToast(true);
-                    setInfoMessage('At least one visibility filter must be selected');
+                    setInfoMessage(__('At least one visibility filter must be selected'));
                     return;
                 }
             }
@@ -105,8 +109,6 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
             ...prev,
             [filterName]: checked,
         }));
-
-
     };
 
     // Filters Saving In Cookie Or Updating Existing
@@ -116,17 +118,12 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
 
         router.reload({
             onFinish: () => {
-
                 setFilterSaving(false);
 
-                router.visit(route('website.global-filters.index'))
+                router.visit(route('website.global-filters.index'));
             },
         });
     };
-
-
-
-
 
     const ToastModal = () => {
         return (
@@ -144,41 +141,6 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
         );
     };
 
-    // APPENDING QUERY PARAM AND BLOCKING BODY SCROLL WHEN MODAL IS OPEN
-    useEffect(() => {
-        if (filterModal) {
-
-            const url = new URL(window.location.href);
-            if (!url.searchParams.has('modal')) {
-                url.searchParams.set('modal', 'global-filters');
-                window.history.pushState({}, '', url.toString());
-                previousUrlRef.current = url.toString();
-            }
-
-
-            document.body.style.overflow = 'hidden';
-            document.body.style.touchAction = 'none';
-        } else {
-
-            const url = new URL(window.location.href);
-            if (url.searchParams.get('modal') === 'global-filters') {
-                url.searchParams.delete('modal');
-                window.history.replaceState({}, '', url.toString());
-                previousUrlRef.current = url.toString();
-            }
-
-
-            document.body.style.overflow = '';
-            document.body.style.touchAction = '';
-        }
-
-        return () => {
-            document.body.style.overflow = '';
-            document.body.style.touchAction = '';
-        };
-    }, [filterModal]);
-
-
     // POP STATE HANDLING
     useEffect(() => {
         // Flag for intentional navigation
@@ -195,12 +157,10 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
             const isOnFilterModal = currentParams.get('modal') === 'global-filters';
 
             if (wasOnFilterModal && !isOnFilterModal) {
-
-
                 e.stopImmediatePropagation();
 
                 isClosingFilterModalRef.current = true;
-                setFilterModal(false);
+                close();
 
                 previousUrlRef.current = window.location.href;
 
@@ -230,7 +190,6 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
                 isIntentionalNavigationRef.current = false;
                 return;
             }
-
         };
 
         window.addEventListener('popstate', handlePopState);
@@ -248,21 +207,19 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
         };
     }, []);
 
-
-    if (!filterModal) return null;
+    if (!isOpen) return null;
 
     // Mobile Design
     if (isMobile) {
         return createPortal(
             <>
-
-                <div className="fixed inset-0 z-[50] flex flex-col bg-backgroundLight dark:bg-surface-1-dark">
+                <div className="fixed inset-0 z-[50] flex flex-col bg-backgroundLight dark:bg-backgroundDark">
                     {/* Mobile Header */}
-                    <div className="relative z-10 flex flex-col w-full overflow-y-auto text-main-text-light bg-backgroundLight dark:bg-surface-1-dark dark:text-main-text-dark ">
-                        <div className="flex items-center justify-center px-4 py-3 ">
+                    <div className="relative z-10 flex flex-col w-full overflow-y-auto bg-backgroundLight text-main-text-light dark:bg-backgroundDark dark:text-main-text-dark">
+                        <div className="flex items-center justify-center px-4 py-3">
                             <button
-                                onClick={() => setFilterModal(false)}
-                                className="absolute p-1 rounded-full text-main-text-light left-4 dark:text-main-text-dark "
+                                onClick={close}
+                                className="absolute p-1 rounded-full left-4 text-main-text-light dark:text-main-text-dark"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -280,25 +237,25 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
                                 </svg>
                             </button>
 
-                            <h2 className="mx-10 text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
-                                Filter Settings
+                            <h2 className="mx-10 text-xl font-semibold text-main-text-light dark:text-main-text-dark">
+                                {__('Filter Settings')}
                             </h2>
                         </div>
                     </div>
 
                     {/* Mobile Content */}
-                    <div className="flex-1 pb-32 overflow-y-auto">
+                    <div className="flex-1 pb-32 overflow-y-auto scrollbar-none">
                         {/* POST TYPE FILTERS Section */}
-                        <div className="px-5 py-6 border-b border-surface-1-light dark:border-surface-3-dark bg-backgroundLight dark:bg-surface-1-dark">
-                            <h2 className="mb-5 text-xs font-semibold tracking-wider uppercase text-sub-text-light dark:text-sub-text-dark ">
-                                Post Type Filters
+                        <div className="px-5 py-6 border-b border-surface-1-light bg-backgroundLight dark:border-surface-3-dark dark:bg-backgroundDark">
+                            <h2 className="mb-5 text-xs font-semibold text-sub-text-light dark:text-sub-text-dark">
+                                {__('Post Type Filters')}
                             </h2>
 
                             <div className="space-y-4">
                                 {/* Text Filter */}
-                                {/* <div className="flex items-center justify-between">
+                                <div className="flex items-center justify-between">
                                     <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
-                                        Text
+                                        {__('Text')}
                                     </span>
                                     <label className="relative inline-flex items-center cursor-pointer">
                                         <input
@@ -309,14 +266,14 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
                                                 handleFilterChange('text', e.target.checked)
                                             }
                                         />
-                                        <div className="peer h-5 w-9 rounded-full bg-gray-300 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-black dark:peer-checked:bg-white/80 peer-checked:after:translate-x-4"></div>
+                                        <div className="h-5 w-9 rounded-full bg-gray-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-black peer-checked:after:translate-x-4 dark:bg-[#646464] dark:after:bg-[#1e1e1e] dark:peer-checked:bg-[#e1e1e1]" />
                                     </label>
-                                </div> */}
+                                </div>
 
                                 {/* Images Filter */}
                                 <div className="flex items-center justify-between">
                                     <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
-                                        Images
+                                        {__('Images')}
                                     </span>
                                     <label className="relative inline-flex items-center cursor-pointer">
                                         <input
@@ -327,14 +284,14 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
                                                 handleFilterChange('images', e.target.checked)
                                             }
                                         />
-                                        <div className="peer h-5 w-9 rounded-full bg-gray-300 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-black dark:peer-checked:bg-white/80 peer-checked:after:translate-x-4"></div>
+                                        <div className="h-5 w-9 rounded-full bg-gray-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-black peer-checked:after:translate-x-4 dark:bg-[#646464] dark:after:bg-[#1e1e1e] dark:peer-checked:bg-[#e1e1e1]" />
                                     </label>
                                 </div>
 
                                 {/* Videos Filter */}
                                 <div className="flex items-center justify-between">
                                     <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
-                                        Videos
+                                        {__('Videos')}
                                     </span>
                                     <label className="relative inline-flex items-center cursor-pointer">
                                         <input
@@ -345,23 +302,23 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
                                                 handleFilterChange('videos', e.target.checked)
                                             }
                                         />
-                                        <div className="peer h-5 w-9 rounded-full bg-gray-300 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-black dark:peer-checked:bg-white/80 peer-checked:after:translate-x-4"></div>
+                                        <div className="h-5 w-9 rounded-full bg-gray-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-black peer-checked:after:translate-x-4 dark:bg-[#646464] dark:after:bg-[#1e1e1e] dark:peer-checked:bg-[#e1e1e1]" />
                                     </label>
                                 </div>
                             </div>
                         </div>
 
                         {/* VISIBILITY FILTER Section */}
-                        <div className="px-5 py-6 bg-backgroundLight dark:bg-surface-1-dark ">
-                            <h2 className="mb-5 text-xs font-semibold tracking-wider uppercase text-sub-text-light dark:text-sub-text-dark ">
-                                Visibility Filter
+                        <div className="px-5 py-6 bg-backgroundLight dark:bg-backgroundDark">
+                            <h2 className="mb-5 text-xs font-semibold text-sub-text-light dark:text-sub-text-dark">
+                                {__('Visibility Filters')}
                             </h2>
 
                             <div className="space-y-4">
                                 {/* Posts Filter */}
                                 <div className="flex items-center justify-between">
                                     <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
-                                        Posts
+                                        {__('Posts')}
                                     </span>
                                     <label className="relative inline-flex items-center cursor-pointer">
                                         <input
@@ -372,14 +329,14 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
                                                 handleFilterChange('show_posts', e.target.checked)
                                             }
                                         />
-                                        <div className="peer h-5 w-9 rounded-full bg-gray-300 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-black dark:peer-checked:bg-white/80 peer-checked:after:translate-x-4"></div>
+                                        <div className="h-5 w-9 rounded-full bg-gray-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-black peer-checked:after:translate-x-4 dark:bg-[#646464] dark:after:bg-[#1e1e1e] dark:peer-checked:bg-[#e1e1e1]" />
                                     </label>
                                 </div>
 
                                 {/* Products Filter */}
                                 <div className="flex items-center justify-between">
                                     <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
-                                        Products
+                                        {__('Products')}
                                     </span>
                                     <label className="relative inline-flex items-center cursor-pointer">
                                         <input
@@ -387,10 +344,13 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
                                             className="sr-only peer"
                                             checked={filters.show_products}
                                             onChange={(e) =>
-                                                handleFilterChange('show_products', e.target.checked)
+                                                handleFilterChange(
+                                                    'show_products',
+                                                    e.target.checked,
+                                                )
                                             }
                                         />
-                                        <div className="peer h-5 w-9 rounded-full bg-gray-300 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-black dark:peer-checked:bg-white/80 peer-checked:after:translate-x-4"></div>
+                                        <div className="h-5 w-9 rounded-full bg-gray-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-black peer-checked:after:translate-x-4 dark:bg-[#646464] dark:after:bg-[#1e1e1e] dark:peer-checked:bg-[#e1e1e1]" />
                                     </label>
                                 </div>
                             </div>
@@ -400,17 +360,21 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
                         <div className="w-1/2 m-auto my-6">
                             <button
                                 onClick={() => handleSaveFilters()}
-                                className="w-full px-4 py-3 text-base font-semibold transition-colors rounded-md bg-main-text-light text-main-text-dark dark:text-main-text-light dark:bg-main-text-dark dark:hover:bg-main-text-dark/80 hover:bg-black/80"
+                                className="w-full px-4 py-3 text-base font-semibold transition-colors rounded-md bg-main-text-light text-main-text-dark hover:bg-black/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
                             >
                                 <div className="flex items-center justify-center gap-3">
-                                    {filterSaving && <Spinner customSize={'size-4'} Color={"fill-black dark:fill-white"} />}
-                                    <span>Apply Filters</span>
+                                    {filterSaving && (
+                                        <Spinner
+                                            customSize={'size-4'}
+                                            Color={'fill-black dark:fill-white'}
+                                        />
+                                    )}
+                                    <span>{__('Apply Filters')}</span>
                                 </div>
                             </button>
                         </div>
                     </div>
                 </div>
-
 
                 <ToastModal />
             </>,
@@ -421,20 +385,17 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
     // Desktop Design
     return createPortal(
         <>
-
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                 <div
                     className="fixed inset-0 bg-black/30 backdrop-blur-sm"
-                    onClick={() => setFilterModal(false)}
+                    onClick={close}
                 />
-                <div className="relative w-full max-w-3xl border rounded-md border-surface-1-light bg-backgroundLight dark:bg-surface-1-dark dark:border-surface-3-dark">
-
-
-                    <div className="pt-8 ">
+                <div className="relative w-full max-w-3xl border rounded-md border-surface-1-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark">
+                    <div className="pt-8">
                         {/* Desktop Title - Centered */}
                         <div className="px-8 pb-4 text-start">
                             <h1 className="text-xl font-semibold text-main-text-light dark:text-main-text-dark">
-                                Filter Settings
+                                {__('Filter Settings')}
                             </h1>
                         </div>
 
@@ -442,15 +403,15 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
                         <div className="overflow-hidden rounded-md">
                             {/* POST TYPE FILTERS Section */}
                             <div className="px-8 py-6 pb-4 border-b border-surface-3-light dark:border-surface-3-dark">
-                                <h2 className="mb-6 text-xs font-semibold tracking-wider uppercase text-sub-text-light dark:text-white">
-                                    Post Type Filters
+                                <h2 className="mb-6 text-xs font-semibold text-sub-text-light dark:text-white">
+                                    {__('Post Type Filters')}
                                 </h2>
 
                                 <div className="space-y-5">
                                     {/* Text Filter */}
-                                    {/* <div className="flex items-center justify-between">
-                                        <span className="text-base font-medium text-black dark:text-white">
-                                            Text
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
+                                            {__('Text')}
                                         </span>
                                         <label className="relative inline-flex items-center cursor-pointer">
                                             <input
@@ -461,14 +422,14 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
                                                     handleFilterChange('text', e.target.checked)
                                                 }
                                             />
-                                            <div className="peer h-5 w-9 rounded-full bg-gray-300 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-black dark:peer-checked:bg-white/80 peer-checked:after:translate-x-4"></div>
+                                            <div className="h-5 w-9 rounded-full bg-gray-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-black peer-checked:after:translate-x-4 dark:bg-[#646464] dark:after:bg-[#1e1e1e] dark:peer-checked:bg-[#e1e1e1]" />
                                         </label>
-                                    </div> */}
+                                    </div>
 
                                     {/* Images Filter */}
                                     <div className="flex items-center justify-between">
                                         <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
-                                            Images
+                                            {__('Images')}
                                         </span>
                                         <label className="relative inline-flex items-center cursor-pointer">
                                             <input
@@ -479,14 +440,14 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
                                                     handleFilterChange('images', e.target.checked)
                                                 }
                                             />
-                                            <div className="peer h-5 w-9 rounded-full bg-gray-300 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-black dark:peer-checked:bg-white/80 peer-checked:after:translate-x-4"></div>
+                                            <div className="h-5 w-9 rounded-full bg-gray-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-black peer-checked:after:translate-x-4 dark:bg-[#646464] dark:after:bg-[#1e1e1e] dark:peer-checked:bg-[#e1e1e1]" />
                                         </label>
                                     </div>
 
                                     {/* Videos Filter */}
                                     <div className="flex items-center justify-between">
                                         <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
-                                            Videos
+                                            {__('Videos')}
                                         </span>
                                         <label className="relative inline-flex items-center cursor-pointer">
                                             <input
@@ -497,7 +458,7 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
                                                     handleFilterChange('videos', e.target.checked)
                                                 }
                                             />
-                                            <div className="peer h-5 w-9 rounded-full bg-gray-300 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-black dark:peer-checked:bg-white/80 peer-checked:after:translate-x-4"></div>
+                                            <div className="h-5 w-9 rounded-full bg-gray-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-black peer-checked:after:translate-x-4 dark:bg-[#646464] dark:after:bg-[#1e1e1e] dark:peer-checked:bg-[#e1e1e1]" />
                                         </label>
                                     </div>
                                 </div>
@@ -505,15 +466,15 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
 
                             {/* VISIBILITY FILTER Section */}
                             <div className="px-8 py-6">
-                                <h2 className="mb-6 text-xs font-semibold tracking-wider uppercase text-sub-text-light dark:text-sub-text-dark">
-                                    Visibility Filter
+                                <h2 className="mb-6 text-xs font-semibold text-sub-text-light dark:text-sub-text-dark">
+                                    {__('Visibility Filters')}
                                 </h2>
 
                                 <div className="space-y-5">
                                     {/* Posts Filter */}
                                     <div className="flex items-center justify-between">
                                         <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
-                                            Posts
+                                            {__('Posts')}
                                         </span>
                                         <label className="relative inline-flex items-center cursor-pointer">
                                             <input
@@ -521,17 +482,20 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
                                                 className="sr-only peer"
                                                 checked={filters.show_posts}
                                                 onChange={(e) =>
-                                                    handleFilterChange('show_posts', e.target.checked)
+                                                    handleFilterChange(
+                                                        'show_posts',
+                                                        e.target.checked,
+                                                    )
                                                 }
                                             />
-                                            <div className="peer h-5 w-9 rounded-full bg-gray-300 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-black dark:peer-checked:bg-white/80 peer-checked:after:translate-x-4"></div>
+                                            <div className="h-5 w-9 rounded-full bg-gray-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-black peer-checked:after:translate-x-4 dark:bg-[#646464] dark:after:bg-[#1e1e1e] dark:peer-checked:bg-[#e1e1e1]" />
                                         </label>
                                     </div>
 
                                     {/* Products Filter */}
                                     <div className="flex items-center justify-between">
                                         <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
-                                            Products
+                                            {__('Products')}
                                         </span>
                                         <label className="relative inline-flex items-center cursor-pointer">
                                             <input
@@ -539,10 +503,13 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
                                                 className="sr-only peer"
                                                 checked={filters.show_products}
                                                 onChange={(e) =>
-                                                    handleFilterChange('show_products', e.target.checked)
+                                                    handleFilterChange(
+                                                        'show_products',
+                                                        e.target.checked,
+                                                    )
                                                 }
                                             />
-                                            <div className="peer h-5 w-9 rounded-full bg-gray-300 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:bg-black dark:peer-checked:bg-white/80 peer-checked:after:translate-x-4"></div>
+                                            <div className="h-5 w-9 rounded-full bg-gray-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-black peer-checked:after:translate-x-4 dark:bg-[#646464] dark:after:bg-[#1e1e1e] dark:peer-checked:bg-[#e1e1e1]" />
                                         </label>
                                     </div>
                                 </div>
@@ -553,18 +520,22 @@ const GlobalFilterModal = ({ filterModal, setFilterModal }) => {
                         <div className="w-1/2 m-auto my-6">
                             <button
                                 onClick={() => handleSaveFilters()}
-                                className="w-full px-4 py-3 text-base font-semibold text-white transition-colors bg-black rounded-md dark:text-black dark:bg-white dark:hover:bg-white/80 hover:bg-black/80"
+                                className="w-full px-4 py-3 text-base font-semibold text-white transition-colors bg-black rounded-md hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80"
                             >
                                 <div className="flex items-center justify-center gap-3">
-                                    {filterSaving && <Spinner customSize={'size-4'} Color={"fill-black dark:fill-white"} />}
-                                    <span>Apply Filters</span>
+                                    {filterSaving && (
+                                        <Spinner
+                                            customSize={'size-4'}
+                                            Color={'fill-black dark:fill-white'}
+                                        />
+                                    )}
+                                    <span> {__('Apply Filters')}</span>
                                 </div>
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
-
 
             <ToastModal />
         </>,

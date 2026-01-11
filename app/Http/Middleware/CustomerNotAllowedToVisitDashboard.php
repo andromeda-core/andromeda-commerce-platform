@@ -19,7 +19,7 @@ class CustomerNotAllowedToVisitDashboard
 
         // dd($request->route()->getName());
 
-        if (Auth::check() && Auth::user()->hasRole('Customer') && $request->routeIs('dashboard')) {
+        if (Auth::check() && Auth::user()->hasRole('Customer') && ($request->routeIs('dashboard.*') || $request->routeIs('dashboard'))) {
             return redirect()->route('home');
         }
 

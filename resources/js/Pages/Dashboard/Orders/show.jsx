@@ -9,11 +9,15 @@ import Swal from 'sweetalert2';
 import Toast from '@/Components/Toast';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 import getContrastingColor from '@/Hooks/useColorContraster';
+import { useTranslation } from '@/Hooks/useTranslation';
 
 export default function show({ order }) {
     // Currency
     const { currency } = usePage().props;
     const [downloading, setDownloading] = useState(false);
+
+    // Translation Hook
+    const { __ } = useTranslation();
 
     // Error State
     const [ValidationErrors, setValidationErrors] = useState({});
@@ -378,6 +382,7 @@ export default function show({ order }) {
         }
     }, [videoIsntBeignUploadedYetOnAWS]);
 
+
     return (
         <>
             <AuthenticatedLayout>
@@ -509,95 +514,176 @@ export default function show({ order }) {
                                             Order Items
                                         </h2>
                                         <div className="space-y-4">
-                                            {order.order_items && order.order_items.length > 0 ? (
-                                                order.order_items.map((item) => (
-                                                    <div
+                                            {order.order_items?.map((item) => {
+                                                const addonsTotal =
+                                                    item.smartphone_addons?.reduce(
+                                                        (total, addon) => total + Number(addon.total_price),
+                                                        0
+                                                    ) || 0;
+
+                                                const finalItemTotal =
+                                                    Number(item.sub_total) + addonsTotal;
+
+                                                return (
+                                                    <Card
                                                         key={item.id}
-                                                        className="flex flex-col gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-deepcharcoal sm:flex-row sm:items-center sm:justify-between"
-                                                    >
-                                                        {/* Left side: image + details */}
-                                                        <div className="flex items-center gap-4">
-                                                            <img
-                                                                src={
-                                                                    item?.smartphone
-                                                                        ?.smartphone_image_urls[0]
-                                                                }
-                                                                alt="Smartphone"
-                                                                onError={(e) =>
-                                                                    (e.target.src = Placeholder)
-                                                                }
-                                                                className="h-[100px] w-[100px] rounded-lg object-cover"
-                                                            />
-                                                            <div className="min-w-0">
-                                                                <h3 className="text-sm font-medium text-gray-900 truncate dark:text-white/90">
-                                                                    {item?.smartphone?.model_name
-                                                                        ?.name || 'N/A'}
-                                                                </h3>
-                                                                <p className="text-sm text-gray-500 dark:text-white/70">
-                                                                    UPC/EAN:{' '}
-                                                                    {item?.smartphone?.upc || 'N/A'}
-                                                                </p>
+                                                        Content={
+                                                            <div className="flex flex-col gap-4 p-4 rounded-md sm:flex-row sm:items-start">
 
-                                                                <span
-                                                                    className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium"
-                                                                    style={{
-                                                                        backgroundColor:
-                                                                            item?.color?.code,
-                                                                        color: getContrastingColor(
-                                                                            item?.color?.code,
-                                                                        ),
-                                                                    }}
-                                                                >
-                                                                    {item?.color?.name}
-                                                                </span>
-                                                            </div>
-                                                        </div>
+                                                                {/* IMAGE */}
+                                                                <div className="flex items-center justify-center flex-shrink-0 w-24 h-24 overflow-hidden rounded-md bg-surface-3-light dark:bg-surface-3-dark">
+                                                                    <img
+                                                                        src={
+                                                                            item?.smartphone?.smartphone_image_urls?.[0] ||
+                                                                            Placeholder
+                                                                        }
+                                                                        alt={item?.smartphone?.model_name?.name}
+                                                                        className="object-cover w-full h-full"
+                                                                        loading="lazy"
+                                                                        onError={(e) => (e.target.src = Placeholder)}
+                                                                    />
+                                                                </div>
 
-                                                        {/* Right side: price info */}
-                                                        <div className="flex justify-between w-full text-right sm:w-auto sm:justify-end sm:gap-8">
-                                                            <div>
-                                                                <p className="text-sm font-medium text-gray-900 dark:text-white/90">
-                                                                    {currency?.symbol}
-                                                                    {item.unit_price ?? 0}
-                                                                </p>
-                                                                <p className="text-sm text-gray-500 dark:text-white/70">
-                                                                    Qty: {item.quantity ?? 0}
-                                                                </p>
+                                                                {/* DETAILS */}
+                                                                <div className="flex-1 space-y-3">
+
+                                                                    {/* HEADER */}
+                                                                    <div>
+                                                                        <h3 className="text-base font-semibold text-main-text-light dark:text-main-text-dark">
+                                                                            {item?.smartphone?.model_name?.name || 'N/A'}
+                                                                        </h3>
+
+                                                                        <div className="flex flex-wrap gap-2 mt-1 text-xs">
+                                                                            {item?.smartphone?.capacity?.name && (
+                                                                                <span className="px-2 py-0.5 rounded-md bg-surface-3-light dark:bg-surface-3-dark text-sub-text-light dark:text-sub-text-dark">
+                                                                                    {item.smartphone.capacity.name}
+                                                                                </span>
+                                                                            )}
+
+                                                                            {item?.color?.name && (
+                                                                                <span className="px-2 py-0.5 rounded-md bg-surface-3-light dark:bg-surface-3-dark text-sub-text-light dark:text-sub-text-dark">
+                                                                                    {item.color.name}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {/* META */}
+                                                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                                                        <div className="flex justify-between">
+                                                                            <span className="text-sub-text-light dark:text-sub-text-dark">
+                                                                                UPC / EAN
+                                                                            </span>
+                                                                            <span className="font-medium text-main-text-light dark:text-main-text-dark">
+                                                                                {item.smartphone?.upc || '—'}
+                                                                            </span>
+                                                                        </div>
+
+                                                                        <div className="flex justify-between">
+                                                                            <span className="text-sub-text-light dark:text-sub-text-dark">
+                                                                                Quantity
+                                                                            </span>
+                                                                            <span className="font-medium text-main-text-light dark:text-main-text-dark">
+                                                                                {item.quantity}
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {/* PRICING BREAKDOWN */}
+                                                                    <div className="pt-3 space-y-1 text-sm border-t border-dashed border-surface-3-light dark:border-surface-3-dark">
+                                                                        <div className="flex justify-between">
+                                                                            <span className="text-sub-text-light dark:text-sub-text-dark">
+                                                                                Unit Price
+                                                                            </span>
+                                                                            <span className="text-main-text-light dark:text-main-text-dark">
+                                                                                {currency?.symbol}
+                                                                                {Number(item.unit_price).toFixed(2)}
+                                                                            </span>
+                                                                        </div>
+
+                                                                        <div className="flex justify-between">
+                                                                            <span className="text-sub-text-light dark:text-sub-text-dark">
+                                                                                Product Total
+                                                                            </span>
+                                                                            <span className="text-main-text-light dark:text-main-text-dark">
+                                                                                {currency?.symbol}
+                                                                                {(item.unit_price * item.quantity).toFixed(2)}
+                                                                            </span>
+                                                                        </div>
+
+                                                                        <div className="flex justify-between">
+                                                                            <span className="text-sub-text-light dark:text-sub-text-dark">
+                                                                                Shipping
+                                                                            </span>
+                                                                            <span className="text-main-text-light dark:text-main-text-dark">
+                                                                                {currency?.symbol}
+                                                                                {Number(item.shipping_cost || 0).toFixed(2)}
+                                                                            </span>
+                                                                        </div>
+
+                                                                        <div className="flex justify-between">
+                                                                            <span className="text-sub-text-light dark:text-sub-text-dark">
+                                                                                Import Tax
+                                                                            </span>
+                                                                            <span className="text-main-text-light dark:text-main-text-dark">
+                                                                                {currency?.symbol}
+                                                                                {Number(item.import_cost || 0).toFixed(2)}
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {/* ADDONS */}
+                                                                    {item.smartphone_addons?.length > 0 && (
+                                                                        <div className="pt-3 border-t border-dashed border-surface-3-light dark:border-surface-3-dark">
+                                                                            <p className="mb-2 text-xs font-semibold text-sub-text-light dark:text-sub-text-dark">
+                                                                                Add-ons
+                                                                            </p>
+
+                                                                            <div className="space-y-1 text-sm">
+                                                                                {item.smartphone_addons.map((addon) => (
+                                                                                    <div
+                                                                                        key={addon.id}
+                                                                                        className="flex justify-between"
+                                                                                    >
+                                                                                        <span className="text-sub-text-light dark:text-sub-text-dark">
+                                                                                            {addon.name} × {addon.quantity}
+                                                                                        </span>
+                                                                                        <span className="text-main-text-light dark:text-main-text-dark">
+                                                                                            {currency?.symbol}
+                                                                                            {Number(addon.total_price).toFixed(2)}
+                                                                                        </span>
+                                                                                    </div>
+                                                                                ))}
+
+                                                                                <div className="flex justify-between pt-1 font-medium">
+                                                                                    <span className="text-sub-text-light dark:text-sub-text-dark">Add-ons Total</span>
+                                                                                    <span className="text-main-text-light dark:text-main-text-dark">
+                                                                                        {currency?.symbol}
+                                                                                        {addonsTotal.toFixed(2)}
+                                                                                    </span>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+
+                                                                    {/* FINAL TOTAL */}
+                                                                    <div className="flex justify-between pt-3 mt-3 border-t border-surface-3-light dark:border-surface-3-dark">
+                                                                        <span className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+                                                                            Final Item Total
+                                                                        </span>
+                                                                        <span className="text-base font-bold text-main-text-light dark:text-main-text-dark">
+                                                                            {currency?.symbol}
+                                                                            {finalItemTotal.toFixed(2)}
+                                                                        </span>
+                                                                    </div>
+
+                                                                </div>
                                                             </div>
-                                                            <div>
-                                                                <p className="text-sm font-semibold text-gray-900 dark:text-white/90">
-                                                                    {currency?.symbol}
-                                                                    {item.sub_total ?? 0}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <div className="py-8 text-center">
-                                                    <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full">
-                                                        <svg
-                                                            className="w-8 h-8 text-gray-400"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            viewBox="0 0 24 24"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth="2"
-                                                                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m13-8l-2-2m0 0L5 3m0 0v.01M19 3v.01"
-                                                            />
-                                                        </svg>
-                                                    </div>
-                                                    <h3 className="mb-1 text-sm font-medium text-gray-900 dark:text-white/90">
-                                                        No items found
-                                                    </h3>
-                                                    <p className="text-sm text-gray-500 dark:text-white/90">
-                                                        This order doesn't have any items yet.
-                                                    </p>
-                                                </div>
-                                            )}
+                                                        }
+                                                    />
+                                                );
+                                            })}
+
                                         </div>
                                     </div>
                                 }
@@ -1155,39 +1241,41 @@ export default function show({ order }) {
 
                             {/* Addresses */}
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                <Card
-                                    Content={
-                                        <div className="p-6">
-                                            <h3 className="flex items-center mb-3 font-semibold text-gray-900 text-md dark:text-white/90">
-                                                <svg
-                                                    className="w-5 h-5 mr-2"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth="2"
-                                                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                                                    />
-                                                </svg>
-                                                Shipping Address 1
-                                            </h3>
-                                            <address className="text-sm not-italic text-gray-600 break-all whitespace-normal dark:text-white/90">
-                                                {order?.customer?.state || 'N/A'},{' '}
-                                                {order?.customer?.city || 'N/A'}
-                                                <br />
-                                                {order?.customer?.address_line1},{' '}
-                                                {order?.customer?.postal_code || ''}
-                                                <br />
-                                                {order?.customer?.country?.name || ''}
-                                            </address>
-                                        </div>
-                                    }
-                                />
+                                {order?.shipping_address?.address_line1 && (
+                                    <Card
+                                        Content={
+                                            <div className="p-6">
+                                                <h3 className="flex items-center mb-3 font-semibold text-gray-900 text-md dark:text-white/90">
+                                                    <svg
+                                                        className="w-5 h-5 mr-2"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth="2"
+                                                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                                                        />
+                                                    </svg>
+                                                    Shipping Address 1
+                                                </h3>
+                                                <address className="text-sm not-italic text-gray-600 break-all whitespace-normal dark:text-white/90">
+                                                    {order?.shipping_address?.state || 'N/A'},{' '}
+                                                    {order?.shipping_address?.city || 'N/A'}
+                                                    <br />
+                                                    {order?.shipping_address?.address_line1},{' '}
+                                                    {order?.shipping_address?.postal_code || ''}
+                                                    <br />
+                                                    {order?.shipping_address?.country?.name || ''}
+                                                </address>
+                                            </div>
+                                        }
+                                    />
+                                )}
 
-                                {order.customer?.address_line2 && (
+                                {order.shipping_address?.address_line2 && (
                                     <Card
                                         Content={
                                             <div className="p-6">
@@ -1208,13 +1296,13 @@ export default function show({ order }) {
                                                     Shipping Address 2
                                                 </h3>
                                                 <address className="text-sm not-italic text-gray-600 break-all whitespace-normal dark:text-white/90">
-                                                    {order?.customer?.state || 'N/A'},{' '}
-                                                    {order?.customer?.city || 'N/A'}
+                                                    {order?.shipping_address?.state || 'N/A'},{' '}
+                                                    {order?.shipping_address?.city || 'N/A'}
                                                     <br />
-                                                    {order?.customer?.address_line2},{' '}
-                                                    {order?.customer?.postal_code || ''}
+                                                    {order?.shipping_address?.address_line2},{' '}
+                                                    {order?.shipping_address?.postal_code || ''}
                                                     <br />
-                                                    {order?.customer?.country?.name || ''}
+                                                    {order?.shipping_address?.country?.name || ''}
                                                 </address>
                                             </div>
                                         }
@@ -1234,43 +1322,65 @@ export default function show({ order }) {
                                         </h3>
 
                                         {/* Products */}
-                                        <div className="mb-4 space-y-2">
-                                            {order?.order_items?.map((item, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="flex justify-between text-sm text-gray-700 dark:text-white/90"
-                                                >
-                                                    <div>
-                                                        <span className="font-medium">
-                                                            {item.smartphone?.model_name?.name}
-                                                        </span>
-                                                        <div className="text-xs text-gray-500">
-                                                            UPC: {item.smartphone?.upc} | Capacity:{' '}
-                                                            {item.smartphone?.capacity?.name}
-                                                        </div>
-                                                        <div className="text-xs text-gray-500">
-                                                            Qty: {item.quantity}
-                                                        </div>
-                                                    </div>
+                                        <div className="space-y-3">
 
-                                                    <span className="font-medium">
-                                                        {currency?.symbol}
-                                                        {item.sub_total}
+                                            {/* Subtotal */}
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-sub-text-light dark:text-sub-text-dark">{__('Product SubTotal')}</span>
+                                                <span className="font-semibold text-sub-text-ight dark:text-sub-text-dark">
+                                                    {currency?.symbol}{parseFloat(Number(order.sub_total)).toFixed(2) || '0.00'}
+                                                </span>
+                                            </div>
+
+                                            {/* Addon Total */}
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-sub-text-light dark:text-sub-text-dark">{__('Addons SubTotal')}</span>
+                                                <span className="font-semibold text-sub-text-ight dark:text-sub-text-dark">
+                                                    {currency?.symbol}{parseFloat(Number(order.addons_sub_total)).toFixed(2) || '0.00'}
+                                                </span>
+                                            </div>
+
+
+                                            {/* Shipping Fee */}
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-sub-text-light dark:text-sub-text-dark">{__('Shipping Fee')}</span>
+                                                <span className="font-semibold text-sub-text-ight dark:text-sub-text-dark">
+                                                    {currency?.symbol}{parseFloat(Number(order.shipping_fee)).toFixed(2) || '0.00'}
+                                                </span>
+                                            </div>
+
+                                            {/* Improt Tax */}
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-sub-text-light dark:text-sub-text-dark">{__('Import Tax')}</span>
+                                                <span className="font-semibold text-sub-text-ight dark:text-sub-text-dark">
+                                                    {currency?.symbol}{parseFloat(Number(order.import_tax)).toFixed(2) || '0.00'}
+                                                </span>
+                                            </div>
+
+
+                                            {order?.discount > 0 && (
+                                                <div className="flex justify-between text-sm">
+                                                    <span className="text-sub-text-light dark:text-sub-text-dark">
+                                                        {__('Discount')}
+                                                    </span>
+                                                    <span className="font-semibold text-green-600 dark:text-green-400">
+                                                        -{currency?.symbol}
+                                                        {parseFloat(order.discount).toFixed(2)}
                                                     </span>
                                                 </div>
-                                            ))}
-                                        </div>
+                                            )}
 
-                                        {/* Summary */}
-                                        <div className="space-y-3">
-                                            <div className="pt-3 border-t">
-                                                <div className="flex justify-between">
-                                                    <span className="text-base font-semibold text-gray-900 dark:text-white/90">
-                                                        Total
+                                            {/* Summary */}
+                                            <div className="pt-3 border-t border-surface-3-light dark:border-surface-3-dark">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-base font-semibold text-sub-text-light dark:text-sub-text-dark">
+                                                        {__('Total')}
                                                     </span>
-                                                    <span className="text-base font-bold text-indigo-600 dark:text-white/90">
+                                                    <span className="text-xl font-semibold text-sub-text-light dark:text-sub-text-dark">
                                                         {currency?.symbol}
-                                                        {order?.amount ?? 0}
+                                                        {parseFloat(
+                                                            order.amount,
+                                                        ).toFixed(2)}
                                                     </span>
                                                 </div>
                                             </div>

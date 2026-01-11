@@ -5,13 +5,11 @@ import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 import Toast from '@/Components/Toast';
 import axios from 'axios';
 
-import useWindowSize from '@/Hooks/useWindowSize';
 import Spinner from '@/Components/Spinner';
+import { useTranslation } from '@/Hooks/useTranslation';
 
 export default function index({ orders, next_page_url }) {
     const { currency } = usePage().props;
-    const windowSize = useWindowSize();
-
     const [allOrders, setAllOrders] = useState(orders || []);
     const nextPageUrlRef = useRef(next_page_url || null);
 
@@ -21,6 +19,10 @@ export default function index({ orders, next_page_url }) {
     const [showErrorMessage, setShowErrorMessage] = useState(false);
     const [successMessage, setSuccessMessage] = useState(null);
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+
+
+    // Translation Hook
+    const { __ } = useTranslation();
 
     const [activeTab, setActiveTab] = useState('all');
 
@@ -145,7 +147,7 @@ export default function index({ orders, next_page_url }) {
 
     return (
         <MainLayout>
-            <Head title="My Orders" />
+            <Head title={__("Orders", true)} />
 
             {(showInfoMessage || showErrorMessage || showSuccessMessage) && (
                 <Toast
@@ -210,67 +212,64 @@ export default function index({ orders, next_page_url }) {
                                     {/* Status Tabs */}
                                     {orders.length > 0 && (
                                         <>
-
                                             <TabButton
-                                                label="All"
+                                                label={__('All')}
                                                 count={orders.length}
                                                 active={activeTab === 'all'}
                                                 onClick={() => setActiveTab('all')}
                                             />
                                             <TabButton
-                                                label="Pending"
+                                                label={__('Pending')}
                                                 count={filterOrdersByStatus('pending').length}
                                                 active={activeTab === 'pending'}
                                                 onClick={() => setActiveTab('pending')}
                                             />
 
                                             <TabButton
-                                                label="Awaiting Payment"
+                                                label={__('Awaiting Payment')}
                                                 count={filterOrdersByStatus('awaiting_payment').length}
                                                 active={activeTab === 'awaiting_payment'}
                                                 onClick={() => setActiveTab('awaiting_payment')}
                                             />
 
                                             <TabButton
-                                                label="Paid"
+                                                label={__('Paid')}
                                                 count={filterOrdersByStatus('paid').length}
                                                 active={activeTab === 'paid'}
                                                 onClick={() => setActiveTab('paid')}
                                             />
                                             <TabButton
-                                                label="Shipped"
+                                                label={__('Shipped')}
                                                 count={filterOrdersByStatus('shipped').length}
                                                 active={activeTab === 'shipped'}
                                                 onClick={() => setActiveTab('shipped')}
                                             />
                                             <TabButton
-                                                label="Delivered"
+                                                label={__('Delivered')}
                                                 count={filterOrdersByStatus('delivered').length}
                                                 active={activeTab === 'delivered'}
                                                 onClick={() => setActiveTab('delivered')}
                                             />
                                             <TabButton
-                                                label="Arrived Locally"
+                                                label={__('Arrived Locally')}
                                                 count={filterOrdersByStatus('arrived_locally').length}
                                                 active={activeTab === 'arrived_locally'}
                                                 onClick={() => setActiveTab('arrived_locally')}
                                             />
 
                                             <TabButton
-                                                label="Failed"
+                                                label={__('Failed')}
                                                 count={filterOrdersByStatus('failed').length}
                                                 active={activeTab === 'failed'}
                                                 onClick={() => setActiveTab('failed')}
                                             />
                                             <TabButton
-                                                label="Expired"
+                                                label={__('Expired')}
                                                 count={filterOrdersByStatus('expired').length}
                                                 active={activeTab === 'expired'}
                                                 onClick={() => setActiveTab('expired')}
                                             />
                                         </>
-
-
                                     )}
 
                                 </div>
@@ -294,11 +293,11 @@ export default function index({ orders, next_page_url }) {
                     {/* Orders Grid */}
                     <div className="px-4 mt-10 sm:px-0">
                         {filteredOrders.length === 0 ? (
-                            <EmptyOrders />
+                            <EmptyOrders __={__} />
                         ) : (
                             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                                 {filteredOrders.map((order) => (
-                                    <OrderCard key={order.id} order={order} currency={currency} />
+                                    <OrderCard key={order.id} order={order} currency={currency} __={__} />
                                 ))}
                             </div>
                         )}
@@ -313,7 +312,7 @@ export default function index({ orders, next_page_url }) {
                     className="flex items-center justify-center gap-2 py-10 text-center transition-all duration-100 text-main-text-light animate-pulse dark:text-main-text-dark"
                 >
                     <Spinner />
-                    Loading more...
+                    {__('Loading More')}...
                 </div>
             )}
         </MainLayout>
@@ -348,28 +347,28 @@ function TabButton({ label, count, active, onClick }) {
 }
 
 // Order Card Component
-function OrderCard({ order, currency }) {
+function OrderCard({ order, currency, __ }) {
     const getStatusColor = (status) => {
         const statusLower = status.toLowerCase();
         switch (statusLower) {
-            case 'pending':
+            case __('pending'):
                 return 'bg-yellow-500 text-main-text-dark';
-            case 'paid':
+            case __('paid'):
                 return 'bg-blue-500 text-main-text-dark';
-            case 'shipped':
+            case __('shipped'):
                 return 'bg-pink-500 text-main-text-dark';
-            case 'delivered':
+            case __('delivered'):
                 return 'bg-green-500 text-main-text-dark';
-            case 'arrived_locally':
+            case __('arrived_locally'):
                 return 'bg-stone-500 text-main-text-dark';
-            case 'failed':
+            case __('failed'):
                 return 'bg-red-500 text-main-text-dark';
-            case 'expired':
+            case __('expired'):
                 return 'bg-gray-500 text-main-text-dark';
-            case 'awaiting_payment':
+            case __('awaiting_payment'):
                 return 'bg-indigo-500 text-main-text-dark';
 
-            case 'blockchain_confirmation_pending':
+            case __('blockchain_confirmation_pending'):
                 return 'bg-indigo-500 text-main-text-dark';
 
             default:
@@ -409,7 +408,7 @@ function OrderCard({ order, currency }) {
                                 </div>
                                 <div className="flex-1">
                                     <p className="text-xs font-semibold tracking-wide text-red-900 uppercase dark:text-red-100">
-                                        Payment Proof Required
+                                        {__('Payment Proof Required')}
                                     </p>
                                 </div>
                             </div>
@@ -440,7 +439,7 @@ function OrderCard({ order, currency }) {
                                 </div>
                                 <div className="flex-1">
                                     <p className="text-xs font-semibold tracking-wide uppercase text-amber-900 dark:text-amber-100">
-                                        Awaiting Payment Approval
+                                        {__('Awaiting Payment Approval')}
                                     </p>
                                 </div>
                             </div>
@@ -495,12 +494,12 @@ function OrderCard({ order, currency }) {
                                         />
                                     </svg>
                                     {order.order_items_count}{' '}
-                                    {order.order_items_count === 1 ? 'Item' : 'Items'}
+                                    {order.order_items_count === 1 ? __('Item') : __('Items')}
                                 </span>
                             </div>
                         </div>
                         <div className="text-right">
-                            <p className="text-sm text-black dark:text-sub-text-dark">Total</p>
+                            <p className="text-sm text-black dark:text-sub-text-dark">{__('Total')}</p>
                             <p className="text-xl font-semibold text-sub-text-light dark:text-sub-text-dark">
                                 {currency?.symbol}
                                 {parseFloat(order.amount).toFixed(2)}
@@ -539,7 +538,7 @@ function OrderCard({ order, currency }) {
                                 <span className="text-sm font-semibold text-center text-sub-text-light dark:text-sub-text-dark">
                                     +{remainingCount}
                                     <br />
-                                    <span className="text-xs font-normal">More</span>
+                                    <span className="text-xs font-normal">{__('More')}</span>
                                 </span>
                             </div>
                         )}
@@ -563,7 +562,7 @@ function OrderCard({ order, currency }) {
                                     </svg>
                                 </div>
                                 <span className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
-                                    Crypto Payment
+                                    {__('Crypto Payment')}
                                 </span>
                             </>
                         ) : order.payment_method === 'points' ? (
@@ -585,7 +584,7 @@ function OrderCard({ order, currency }) {
                                     </svg>
                                 </div>
                                 <span className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
-                                    Points Payment
+                                    {__('Points Payment')}
                                 </span>
                             </>
                         ) : (
@@ -607,7 +606,7 @@ function OrderCard({ order, currency }) {
                                     </svg>
                                 </div>
                                 <span className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
-                                    Bank Transfer
+                                    {__('Bank Transfer')}
                                 </span>
                             </>
                         )}
@@ -634,7 +633,7 @@ function OrderCard({ order, currency }) {
                                 d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                             />
                         </svg>
-                        View Details
+                        {__('View Details')}
                     </button>
                 </div>
             </Link>
@@ -643,23 +642,25 @@ function OrderCard({ order, currency }) {
 }
 
 // Empty Orders Component
-function EmptyOrders() {
+function EmptyOrders({ __ }) {
+
+
     return (
         <div className="flex min-h-[50vh] items-center justify-center px-6">
             <div className="text-center">
                 <h3 className="text-[22px] font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
-                    No orders yet
+                    {__('No orders yet')}
                 </h3>
 
                 <p className="max-w-xs mt-2 mb-8 text-sm leading-relaxed text-sub-text-light dark:text-sub-text-dark">
-                    Start shopping to see your orders here
+                    {__('Start shopping to see your orders here')}
                 </p>
 
                 <Link
                     href={route('home')}
                     className="inline-flex items-center justify-center rounded-md bg-main-text-light px-10 py-2.5 text-md font-semibold dark:text-main-text-light  text-main-text-dark transition-colors hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text  dark:hover:bg-main-text-dark/80"
                 >
-                    Start Shopping
+                    {__('Start shopping')}
                 </Link>
             </div>
         </div>

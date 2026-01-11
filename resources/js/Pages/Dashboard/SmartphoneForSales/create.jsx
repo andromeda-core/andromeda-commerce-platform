@@ -10,59 +10,29 @@ import SelectInput from '@/Components/SelectInput';
 import Toast from '@/Components/Toast';
 import Swal from 'sweetalert2';
 import BarcodeScannerComponent from 'react-qr-barcode-scanner';
-export default function create({ smartphones, additional_fee_lists }) {
+export default function create({ smartphones, shipping_fee_lists, import_tax_lists }) {
     // Create Data Form Data
     const { data, setData, post, processing, errors } = useForm({
         smartphone_id: '',
         selling_price: '',
-        additional_fee: [],
+        shipping_fee_id: '',
+        import_tax_id: '',
     });
 
     const { currency } = usePage().props;
-    const [file_error, setFileError] = useState(null);
 
     // Extra Cost Data Handling
-    const [additionalFees, setAdditionalFees] = useState([]);
-    const addAdditionalFee = () => {
-        setAdditionalFees([...additionalFees, { type: '', amount: '' }]);
-    };
-    const removeAdditionalFee = (index) => {
-        const updatedCosts = additionalFees.filter((_, i) => i !== index);
-        setAdditionalFees(updatedCosts);
-        setData('additional_fee', updatedCosts);
-    };
-    const handleChange = (index, field, value) => {
-        const updatedCosts = [...additionalFees];
-        updatedCosts[index][field] = value;
-        setData('additional_fee', updatedCosts);
-        setAdditionalFees(updatedCosts);
-    };
+    const [additionalFees, setAdditionalFees] = useState(false);
 
     // Scanners
     const [smartphoneScannerOpen, setSmartphoneScannerOpen] = useState(false);
 
-    useEffect(() => {
-        if (errors?.file_error) {
-            setFileError(errors.file_error);
-        }
-        const timeout = setTimeout(() => {
-            setFileError(null);
-        }, 3000);
-
-        return () => {
-            clearTimeout(timeout);
-        };
-    }, [errors]);
     // Create Data Form Request
     const submit = (e) => {
         e.preventDefault();
 
         post(route('dashboard.smartphone-for-sales.store'));
     };
-
-    useEffect(() => {
-        console.log(data);
-    }, [data]);
 
     return (
         <>
@@ -76,7 +46,6 @@ export default function create({ smartphones, additional_fee_lists }) {
                     child={'Create Smartphone For Sale'}
                 />
 
-                {file_error != null && <Toast flash={{ info: file_error }} />}
                 <Card
                     Content={
                         <>
@@ -107,13 +76,13 @@ export default function create({ smartphones, additional_fee_lists }) {
                                 <Card
                                     Content={
                                         <>
-                                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                            <div className="grid grid-cols-1 gap-4 mb-10 md:grid-cols-2">
                                                 <div className="flex items-center">
                                                     <PrimaryButton
                                                         Type={'button'}
                                                         Id={'scan_smartphone'}
                                                         ClassName={
-                                                            'dark:bg-deepcharcoal mt-2 dark:text-white p-2  rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
+                                                            'dark:bg-deepcharcoal mt-6 dark:text-white p-2  rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
                                                         }
                                                         Icon={
                                                             <svg
@@ -182,146 +151,136 @@ export default function create({ smartphones, additional_fee_lists }) {
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center justify-end w-full">
-                                                <PrimaryButton
-                                                    Text={'Add Additional Fee'}
-                                                    Type={'button'}
-                                                    Id={'add_additional_fee'}
-                                                    CustomClass={'w-[200px]'}
-                                                    Action={addAdditionalFee}
-                                                    Icon={
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            strokeWidth={1.5}
-                                                            stroke="currentColor"
-                                                            className="size-6"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                d="m4.5 5.25 7.5 7.5 7.5-7.5m-15 6 7.5 7.5 7.5-7.5"
-                                                            />
-                                                        </svg>
-                                                    }
-                                                />
-                                            </div>
+                                            {!additionalFees && (
+                                                <div className="flex items-center justify-end w-full">
+                                                    <PrimaryButton
+                                                        Text={'Add Additional Fee'}
+                                                        Type={'button'}
+                                                        Id={'add_additional_fee'}
+                                                        CustomClass={'w-[200px]'}
+                                                        Action={() => setAdditionalFees(true)}
+                                                        Icon={
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                strokeWidth={1.5}
+                                                                stroke="currentColor"
+                                                                className="size-6"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="m4.5 5.25 7.5 7.5 7.5-7.5m-15 6 7.5 7.5 7.5-7.5"
+                                                                />
+                                                            </svg>
+                                                        }
+                                                    />
+                                                </div>
+                                            )}
 
-                                            {additionalFees.length > 0 && (
+                                            {additionalFees && (
                                                 <div
-                                                    className="grid grid-cols-1 col-span-1 gap-5 overflow-x-auto scrollbar-thin dark:scrollbar-track-slate-900 dark:scrollbar-thumb-slate-700"
+                                                    className="grid grid-cols-1 col-span-1 gap-5 overflow-x-auto align-middle scrollbar-thin dark:scrollbar-track-slate-900 dark:scrollbar-thumb-slate-700"
                                                     style={{ overflow: 'visible' }}
                                                 >
                                                     <table className="w-full border-collapse">
-                                                        <thead>
-                                                            <tr>
-                                                                <th className="p-2 text-left text-gray-700 border dark:border-gray-700 dark:text-gray-400">
-                                                                    Type
-                                                                </th>
-                                                                <th className="p-2 text-left text-gray-700 border dark:border-gray-700 dark:text-gray-400">
-                                                                    Amount
-                                                                </th>
-                                                                <th className="p-2 text-center text-gray-700 border dark:border-gray-700 dark:text-gray-400">
-                                                                    Action
-                                                                </th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {additionalFees.map((item, idx) => (
-                                                                <tr key={idx}>
-                                                                    <td className="w-1/2 p-2 border dark:border-gray-700">
-                                                                        <SelectInput
-                                                                            InputName={
-                                                                                'Select Type'
-                                                                            }
-                                                                            Id={'type'}
-                                                                            Name={'type'}
-                                                                            Value={item.type}
-                                                                            items={
-                                                                                additional_fee_lists
-                                                                            }
-                                                                            itemKey={'name'}
-                                                                            customPlaceHolder={true}
-                                                                            Action={(value) =>
-                                                                                handleChange(
-                                                                                    idx,
-                                                                                    'type',
-                                                                                    value,
-                                                                                )
-                                                                            }
-                                                                            Error={
-                                                                                errors[
-                                                                                `additional_fee.${idx}.type`
-                                                                                ]
-                                                                            }
-                                                                        />
-                                                                    </td>
-                                                                    <td className="w-1/2 p-2 border dark:border-gray-700">
-                                                                        <Input
-                                                                            InputName={'Amount'}
-                                                                            Id={'amount'}
-                                                                            Name={'amount'}
-                                                                            Error={
-                                                                                errors[
-                                                                                `additional_fee.${idx}.amount`
-                                                                                ]
-                                                                            }
-                                                                            Value={item.amount}
-                                                                            Required={true}
-                                                                            Type={'number'}
-                                                                            Placeholder={
-                                                                                'Enter Amount'
-                                                                            }
-                                                                            Action={(e) =>
-                                                                                handleChange(
-                                                                                    idx,
-                                                                                    'amount',
-                                                                                    e.target.value,
-                                                                                )
-                                                                            }
-                                                                        />
-                                                                    </td>
 
-                                                                    <td className="p-2 border dark:border-gray-700">
-                                                                        <div className="flex items-center justify-center">
-                                                                            <PrimaryButton
-                                                                                Type={'button'}
-                                                                                Id={
-                                                                                    'delete_additional_fee_' +
-                                                                                    idx
-                                                                                }
-                                                                                Action={() =>
-                                                                                    removeAdditionalFee(
-                                                                                        idx,
-                                                                                    )
-                                                                                }
-                                                                                CustomClass={
-                                                                                    'w-[50px] bg-red-500 hover:bg-red-600'
-                                                                                }
-                                                                                Icon={
-                                                                                    <svg
-                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                        fill="none"
-                                                                                        viewBox="0 0 24 24"
-                                                                                        strokeWidth={
-                                                                                            1.5
-                                                                                        }
-                                                                                        stroke="currentColor"
-                                                                                        className="size-6"
-                                                                                    >
-                                                                                        <path
-                                                                                            strokeLinecap="round"
-                                                                                            strokeLinejoin="round"
-                                                                                            d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                                                                                        />
-                                                                                    </svg>
-                                                                                }
-                                                                            />
-                                                                        </div>
-                                                                    </td>
-                                                                </tr>
-                                                            ))}
+                                                        <tbody>
+                                                            <tr>
+                                                                <td className="w-1/2 p-2 border dark:border-gray-700">
+                                                                    <SelectInput
+                                                                        InputName={
+                                                                            'Shipping Fee'
+                                                                        }
+                                                                        Id={'shipping_fee_id'}
+                                                                        Name={'shipping_fee_id'}
+                                                                        Value={data.shipping_fee_id}
+                                                                        items={
+                                                                            shipping_fee_lists
+                                                                        }
+                                                                        itemKey={'name'}
+                                                                        customPlaceHolder={true}
+                                                                        Placeholder={"Select Shipping Fee"}
+                                                                        Action={(value) => {
+                                                                            setData(
+                                                                                'shipping_fee_id',
+                                                                                value,
+                                                                            );
+                                                                        }
+                                                                        }
+                                                                        Error={
+                                                                            errors.shipping_fee_id
+                                                                        }
+                                                                    />
+                                                                </td>
+                                                                <td className="w-1/2 p-2 border dark:border-gray-700">
+                                                                    <SelectInput
+                                                                        InputName={
+                                                                            'Import Tax'
+                                                                        }
+                                                                        Id={'import_tax_id'}
+                                                                        Name={'import_tax_id'}
+                                                                        Value={data.import_tax_id}
+                                                                        items={
+                                                                            import_tax_lists
+                                                                        }
+                                                                        itemKey={'name'}
+                                                                        customPlaceHolder={true}
+                                                                        Placeholder={"Select Import Tax"}
+                                                                        Action={(value) => {
+                                                                            setData(
+                                                                                'import_tax_id',
+                                                                                value,
+                                                                            );
+                                                                        }
+                                                                        }
+                                                                        Error={
+                                                                            errors.import_tax_id
+                                                                        }
+                                                                    />
+                                                                </td>
+
+                                                                <td className="p-2 border dark:border-gray-700">
+                                                                    <div className="flex items-center justify-center">
+                                                                        <PrimaryButton
+                                                                            Type={'button'}
+                                                                            Id={
+                                                                                'delete_additional_fee'
+                                                                            }
+                                                                            Action={() => {
+                                                                                setAdditionalFees(
+                                                                                    false
+                                                                                )
+                                                                                setData('shipping_fee_id', '');
+                                                                                setData('import_tax_id', '');
+                                                                            }
+                                                                            }
+                                                                            CustomClass={
+                                                                                'w-[50px] bg-red-500 hover:bg-red-600'
+                                                                            }
+                                                                            Icon={
+                                                                                <svg
+                                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                                    fill="none"
+                                                                                    viewBox="0 0 24 24"
+                                                                                    strokeWidth={
+                                                                                        1.5
+                                                                                    }
+                                                                                    stroke="currentColor"
+                                                                                    className="size-6"
+                                                                                >
+                                                                                    <path
+                                                                                        strokeLinecap="round"
+                                                                                        strokeLinejoin="round"
+                                                                                        d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                                                                                    />
+                                                                                </svg>
+                                                                            }
+                                                                        />
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
                                                         </tbody>
                                                     </table>
                                                 </div>
@@ -330,19 +289,16 @@ export default function create({ smartphones, additional_fee_lists }) {
                                             <PrimaryButton
                                                 Text={'Create Smartphone For Sale'}
                                                 Type={'submit'}
-                                                CustomClass={'w-[250px] '}
+                                                CustomClass={'w-[300px] '}
                                                 Disabled={
                                                     processing ||
                                                     data.smartphone_id === '' ||
                                                     data.selling_price == 0 ||
                                                     data.selling_price === '' ||
-                                                    (additionalFees.length > 0 &&
-                                                        additionalFees.some(
-                                                            (cost) =>
-                                                                cost.type === '' ||
-                                                                cost.amount == 0 ||
-                                                                cost.amount === '',
-                                                        ))
+                                                    (additionalFees && (
+                                                        data.shipping_fee_id === '' &&
+                                                        data.import_tax_id === ''
+                                                    ))
                                                 }
                                                 Spinner={processing}
                                                 Icon={

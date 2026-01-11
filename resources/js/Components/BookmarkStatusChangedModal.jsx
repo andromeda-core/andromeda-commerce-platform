@@ -1,3 +1,4 @@
+import { useTranslation } from '@/Hooks/useTranslation';
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -7,6 +8,8 @@ const BookmarkStatusChangedModal = ({
     BookmarkStatusChanged,
 }) => {
 
+    // Translation Hook
+    const { __ } = useTranslation();
     useEffect(() => {
         if (BookmarkStatusChanged) {
             const timer = setTimeout(() => {
@@ -20,6 +23,7 @@ const BookmarkStatusChangedModal = ({
     if (!BookmarkStatusChanged) return null;
 
     const isBookmarked = viewablePost?.is_bookmarked;
+
 
     return createPortal(
         <div className="fixed inset-0 z-[100004] flex items-center justify-center ">
@@ -65,7 +69,7 @@ const BookmarkStatusChangedModal = ({
 
 
                 <p className="text-sm font-medium text-main-text-light lg:text-xl dark:text-main-text-dark">
-                    {isBookmarked ? "Bookmarked!" : "Bookmark Removed"}
+                    {isBookmarked ? __("Bookmarked") + "!" : __("Bookmark Removed") + "!"}
                 </p>
             </div>
 

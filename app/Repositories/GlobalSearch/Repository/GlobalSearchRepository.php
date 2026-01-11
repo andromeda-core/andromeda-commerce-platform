@@ -238,7 +238,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                 'filters' => ['required', 'array'],
                 'filters' => ['required', 'array'],
 
-                // 'post_preferences.text' => ['required'],
+                'post_preferences.text' => ['required'],
                 'post_preferences.images' => ['required'],
                 'post_preferences.videos' => ['required'],
                 'query' => ['nullable', 'string'],
@@ -310,7 +310,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                     return $results;
                 }
 
-                // $text = false; // filter_var($post_preferences['text'], FILTER_VALIDATE_BOOLEAN);
+                $text = filter_var($post_preferences['text'], FILTER_VALIDATE_BOOLEAN);
                 $images = filter_var($post_preferences['images'], FILTER_VALIDATE_BOOLEAN);
                 $videos = filter_var($post_preferences['videos'], FILTER_VALIDATE_BOOLEAN);
 
@@ -351,15 +351,15 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                     });
                 }
 
-                $posts = $posts->where(function ($q) use ($images, $videos) {
+                $posts = $posts->where(function ($q) use ($images, $videos, $text) {
 
-                    // if ($text) {
+                    if ($text) {
 
-                    //     $q->orWhere(function ($sub) {
-                    //         $sub->whereNull('images')
-                    //             ->whereNull('videos');
-                    //     });
-                    // }
+                        $q->orWhere(function ($sub) {
+                            $sub->whereNull('images')
+                                ->whereNull('videos');
+                        });
+                    }
 
                     if ($images) {
 
@@ -379,10 +379,11 @@ class GlobalSearchRepository implements IGlobalSearchRepository
 
                 // info(json_encode($posts->get()->toArray()));
                 $posts = $posts->with(['floor'])
-                    ->where(function ($sub) {
-                        $sub->whereRaw('JSON_LENGTH(images) > 0')
-                            ->orWhereRaw('JSON_LENGTH(videos) > 0');
-                    })
+                 // its For restricting The Text Only Posts -> Not needed Now
+                    // ->where(function ($sub) {
+                    //     $sub->whereRaw('JSON_LENGTH(images) > 0')
+                    //         ->orWhereRaw('JSON_LENGTH(videos) > 0');
+                    // })
                     ->latest()
                     ->forPage($page, $perPage)
                     ->get()
@@ -441,7 +442,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                         });
                     }
 
-                    $smartphones = $smartphones->with(['capacity'])
+                    $smartphones = $smartphones->with(['capacity', 'selling_info'])
                         ->whereHas('selling_info')
                         ->whereNotNull('slug')
                         ->latest()
@@ -468,6 +469,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                                 'tag' => $smartphone->tag,
                                 'type' => 'smartphones',
                                 'content' => $smartphone->content,
+                                'selling_info' => $smartphone->selling_info,
                                 'slug' => $smartphone->slug,
                                 'created_at' => $smartphone->created_at->format('Y-m-d g:i A'),
                                 'timestamp' => $smartphone->created_at->timestamp,
@@ -630,7 +632,9 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                             'name' => $result->name ?? null,
                             'image' => $result->image ?? null,
                             'video_thumbnail' => $result?->video_thumbnail ?? null,
+                            'selling_info' => $result->selling_info ?? null,
                             'location_name' => $result->location_name ?? null,
+                            'content' => $result->content ?? null,
                             'capacity' => $result->capacity ?? null,
                             'tag' => $result->tag ?? null,
                             'created_at' => $result->created_at ?? null,
@@ -645,10 +649,10 @@ class GlobalSearchRepository implements IGlobalSearchRepository
 
                 return [];
             })
-            ->filter(function ($result) {
+            // ->filter(function ($result) {
 
-                return ! is_null($result->id) && ! is_null($result->type) && (! empty($result->image) || ! empty($result->video_thumbnail));
-            })
+            //     return ! is_null($result->id) && ! is_null($result->type) && (! empty($result->image) || ! empty($result->video_thumbnail));
+            // })
             ->unique(function ($result) {
 
                 return $result->type.'-'.$result->id;

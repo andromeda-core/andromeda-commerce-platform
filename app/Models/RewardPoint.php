@@ -11,7 +11,7 @@ class RewardPoint extends Model
 
     protected $appends = ['added_at'];
 
-    //    Relationships
+    // Relationships
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'id');

@@ -20,11 +20,16 @@ class Customer extends Model
 
     // Attributes
 
-    protected $appends = ['added_at'];
+    protected $appends = ['added_at', 'active_shipping_address'];
 
     public function getAddedAtAttribute()
     {
         return ! empty($this->created_at) ? $this->created_at->format('Y-m-d') : null;
+    }
+
+    public function getActiveShippingAddressAttribute()
+    {
+        return $this->shippingAddresses()->where('is_active', 1)->first();
     }
 
     // RelationShips
@@ -46,5 +51,10 @@ class Customer extends Model
     public function cart_items(): HasMany
     {
         return $this->hasMany(CartItem::class, 'customer_id', 'id');
+    }
+
+    public function shippingAddresses(): HasMany
+    {
+        return $this->hasMany(ShippingAddress::class, 'customer_id', 'id');
     }
 }

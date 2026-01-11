@@ -13,6 +13,7 @@ use App\Http\Controllers\Dashboard\DistributorController;
 use App\Http\Controllers\Dashboard\FloorController;
 use App\Http\Controllers\Dashboard\HomeController;
 use App\Http\Controllers\Dashboard\InventoryController;
+use App\Http\Controllers\Dashboard\LanguageController;
 use App\Http\Controllers\Dashboard\OrderController;
 use App\Http\Controllers\Dashboard\PackageRecordingController;
 use App\Http\Controllers\Dashboard\PostController;
@@ -22,6 +23,9 @@ use App\Http\Controllers\Dashboard\SettingController;
 use App\Http\Controllers\Dashboard\SmartphoneController;
 use App\Http\Controllers\Dashboard\SmartphoneForSaleController;
 use App\Http\Controllers\Dashboard\SupplierController;
+use App\Http\Controllers\Dashboard\TranslationController;
+use App\Http\Controllers\Dashboard\TranslationKeyController;
+use App\Http\Controllers\Dashboard\TranslationSystemController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\MetaController;
 use App\Http\Controllers\Website\BookmarkController as WebsiteBookmarkController;
@@ -37,6 +41,8 @@ use App\Http\Controllers\Website\PostController as WebsitePostController;
 use App\Http\Controllers\Website\PrivacyPolicyController;
 use App\Http\Controllers\Website\ProductController;
 use App\Http\Controllers\Website\ProfileController as WebsiteProfileController;
+use App\Http\Controllers\Website\ReturnPolicyController as WebsiteReturnPolicyController;
+use App\Http\Controllers\Website\ShippingAddressController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 
@@ -58,6 +64,10 @@ Route::group(['as' => 'website.'], function () {
         Route::get('/hashtag/{hashtag?}', 'hashtagIndex')->name('hashtag.index');
         Route::post('/hashtag-results', 'hashtagResults')->name('hashtag-results');
     });
+
+    // Global Language Route
+    Route::get('/languages-translations-get-all-json', [LanguageController::class, 'getAllLanguagesAndTranslationsJson'])->name('languages-translations.getalljson');
+    Route::post('/languages-set-language', [LanguageController::class, 'setLanguage'])->name('languages.set-language');
 
     // Global Search Route
     Route::controller(GlobalSearchController::class)->name('global-search.')->group(function () {
@@ -96,6 +106,7 @@ Route::group(['as' => 'website.'], function () {
     Route::controller(WebsiteBookmarkController::class)->middleware('auth')->name('bookmarks.')->group(function () {
         Route::get('/bookmarks', 'index')->name('index');
         Route::get('/bookmarks/get-bookmarked-posts', 'getBookmarkedPosts')->name('get-bookmarked-posts');
+        Route::delete('/bookmarks-destroy', 'destroyBookmark')->name('destroy');
     });
 
     // Product Routes
@@ -111,13 +122,14 @@ Route::group(['as' => 'website.'], function () {
         Route::post('/cart/add-item', 'addItem')->name('add-item');
         Route::delete('/cart/remove-item', 'removeItem')->name('remove-item');
         Route::put('/cart/update-item', 'updateItem')->name('update-item');
+        Route::put('/cart/update-smartphone-addon-item', 'updateSmartphoneAddonItem')->name('update-smartphone-addon-item');
+        Route::delete('/cart/remove-smartphone-addon-item', 'removeSmartphoneAddonItem')->name('remove-smartphone-addon-item');
         Route::post('/cart/referal-code', 'referalCode')->name('referal-code');
         Route::delete('/cart/remove-referal', 'removeReferal')->name('remove-referal');
         Route::post('/cart-item-buy-now', 'buyNow')->name('buy-now');
     });
 
     // Checkout Routes
-
     Route::controller(CheckoutController::class)->middleware('auth')->name('checkout.')->group(function () {
         Route::get('/checkout', 'index')->name('index');
         Route::post('/checkout', 'store')->name('store');
@@ -148,10 +160,19 @@ Route::group(['as' => 'website.'], function () {
         Route::get('/contact', 'index')->name('index');
         Route::post('/contact-store', 'store')->name('store');
     });
+
+    // Shipping Address Routes
+    Route::resource('/shipping-addresses', ShippingAddressController::class)->except(['show', 'edit', 'create']);
+    Route::put('/shipping-address-status-toggle/{id?}', [ShippingAddressController::class, 'toggleStatus'])->name('shipping-addresses.toggle-status');
+    Route::post('/shipping-address-store-from-profile', [ShippingAddressController::class, 'storeShippingAddressFromProfile'])->name('shipping-addresses.store.from-profile');
+
+    // Return Policy Routes
+    Route::get('/return-policy/{slug?}', WebsiteReturnPolicyController::class)->name('return-policy.index');
+
 });
 
 // Dashboard Routes
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', HomeController::class)->name('dashboard');
     Route::prefix('/dashboard')->name('dashboard.')->group(function () {
 
@@ -399,6 +420,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('/profile/account-destroy', 'destroyAccount')->name('profile.account.destroy');
         });
 
+        // Translation System
+        Route::prefix('/translation-system')->name('translation-system.')->group(function () {
+
+            Route::get('/translation-system', TranslationSystemController::class)->name('index');
+
+            // Language Routes
+            Route::resource('/languages', LanguageController::class)->except(['show']);
+            Route::delete('/languages-destroy-by-selection', [LanguageController::class, 'destroyBySelection'])->name('languages.destroybyselection');
+
+            // Translation Key Routes
+            Route::resource('/translation-keys', TranslationKeyController::class);
+            Route::delete('/translation-keys-destroy-by-selection', [TranslationKeyController::class, 'destroyBySelection'])->name('translation-keys.destroybyselection');
+
+            // Translations Route
+            Route::controller(TranslationController::class)->prefix('/translations')->name('translations.')->group(function () {
+                Route::get('/translations/lang/{language_code?}', 'index')->name('index');
+                Route::put('/translations/{language_code?}', 'saveTranslations')->name('save');
+            });
+        });
+
         // Data Deletion Request Routes
         Route::controller(DataDeletionRequestController::class)->name('data-deletion-requests.')->group(function () {
             Route::get('/data-deletion-requests', 'index')->name('index');
@@ -567,6 +608,46 @@ Route::middleware(['auth', 'verified'])->group(function () {
                     Route::put('/now-payment-settings-toggle-status/{id?}', 'NOWPaymentSettingToggleStatus')->name('now-payment-settings.toggle-status');
                     Route::delete('/now-payment-settings-destroy/{id?}', 'NOWPaymentSettingDestroy')->name('now-payment-settings.destroy');
                     Route::delete('/now-payment-settings-destroy-by-selection', 'NOWPaymentSettingDestroyBySelection')->name('now-payment-settings.destroybyselection');
+
+                    // Return Policy  Routes
+                    Route::get('/return-policy-settings', 'returnPolicyIndex')->name('return-policy-settings.index');
+                    Route::get('/return-policy-settings-create', 'returnPolicyCreate')->name('return-policy-settings.create');
+                    Route::post('/return-policy-settings-store', 'returnPolicyStore')->name('return-policy-settings.store');
+                    Route::get('/return-policy-settings-edit/{id?}', 'returnPolicyEdit')->name('return-policy-settings.edit');
+                    Route::put('/return-policy-settings-update/{id?}', 'returnPolicyUpdate')->name('return-policy-settings.update');
+                    Route::put('/return-policy-settings-toggle-status/{id?}', 'returnPolicyToggleStatus')->name('return-policy-settings.toggle-status');
+                    Route::delete('/return-policy-settings-destroy/{id?}', 'returnPolicyDestroy')->name('return-policy-settings.destroy');
+                    Route::delete('/return-policy-settings-destroy-by-selection', 'returnPolicyDestroyBySelection')->name('return-policy-settings.destroybyselection');
+
+                    // Courier Company  Routes
+                    Route::get('/courier-company-settings', 'courierCompanyIndex')->name('courier-company-settings.index');
+                    Route::get('/courier-company-settings-create', 'courierCompanyCreate')->name('courier-company-settings.create');
+                    Route::post('/courier-company-settings-store', 'courierCompanyStore')->name('courier-company-settings.store');
+                    Route::get('/courier-company-settings-edit/{id?}', 'courierCompanyEdit')->name('courier-company-settings.edit');
+                    Route::put('/courier-company-settings-update/{id?}', 'courierCompanyUpdate')->name('courier-company-settings.update');
+                    Route::put('/courier-company-settings-toggle-status/{id?}', 'courierCompanyToggleStatus')->name('courier-company-settings.toggle-status');
+                    Route::delete('/courier-company-settings-destroy/{id?}', 'courierCompanyDestroy')->name('courier-company-settings.destroy');
+                    Route::delete('/courier-company-settings-destroy-by-selection', 'courierCompanyDestroyBySelection')->name('courier-company-settings.destroybyselection');
+
+                    // Condition Routes
+                    Route::get('/condition-settings', 'conditionIndex')->name('condition-settings.index');
+                    Route::get('/condition-settings-create', 'conditionCreate')->name('condition-settings.create');
+                    Route::post('/condition-settings-store', 'conditionStore')->name('condition-settings.store');
+                    Route::get('/condition-settings-edit/{id?}', 'conditionEdit')->name('condition-settings.edit');
+                    Route::put('/condition-settings-update/{id?}', 'conditionUpdate')->name('condition-settings.update');
+                    Route::put('/condition-settings-toggle-status/{id?}', 'conditionToggleStatus')->name('condition-settings.toggle-status');
+                    Route::delete('/condition-settings-destroy/{id?}', 'conditionDestroy')->name('condition-settings.destroy');
+                    Route::delete('/condition-settings-destroy-by-selection', 'conditionDestroyBySelection')->name('condition-settings.destroybyselection');
+
+                    // Addon Routes
+                    Route::get('/addon-settings', 'addonIndex')->name('addon-settings.index');
+                    Route::get('/addon-settings-create', 'addonCreate')->name('addon-settings.create');
+                    Route::post('/addon-settings-store', 'addonStore')->name('addon-settings.store');
+                    Route::get('/addon-settings-edit/{id?}', 'addonEdit')->name('addon-settings.edit');
+                    Route::put('/addon-settings-update/{id?}', 'addonUpdate')->name('addon-settings.update');
+                    Route::put('/addon-settings-toggle-status/{id?}', 'addonToggleStatus')->name('addon-settings.toggle-status');
+                    Route::delete('/addon-settings-destroy/{id?}', 'addonDestroy')->name('addon-settings.destroy');
+                    Route::delete('/addon-settings-destroy-by-selection', 'addonDestroyBySelection')->name('addon-settings.destroybyselection');
 
                 });
 

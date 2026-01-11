@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Cache;
 
 class GeneralSetting extends Model
 {
-    protected $fillable = ['app_name', 'contact_email', 'contact_number', 'app_main_logo_dark', 'app_main_logo_light', 'app_favicon', 'app_pwa_logo', 'app_description'];
+    protected $fillable = ['app_name', 'contact_email', 'contact_number', 'app_main_logo_dark', 'app_main_logo_light', 'app_favicon', 'app_pwa_logo', 'app_description', 'app_product_delivery_info'];
 
     protected static function booted(): void
     {

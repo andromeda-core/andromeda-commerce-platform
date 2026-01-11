@@ -1,7 +1,13 @@
+import { useTranslation } from '@/Hooks/useTranslation';
 import React, { useEffect } from 'react';
+
 import { createPortal } from 'react-dom';
 
 const LinkCopiedModal = ({ linkCopied, setLinkCopied }) => {
+
+
+    // Translation Hook
+    const { __ } = useTranslation();
     useEffect(() => {
         if (linkCopied) {
             const timer = setTimeout(() => {
@@ -44,7 +50,7 @@ const LinkCopiedModal = ({ linkCopied, setLinkCopied }) => {
 
 
                 <p className="text-sm font-medium text-main-text-light lg:text-xl dark:text-main-text-dark">
-                    Link copied!
+                    {__('Link copied')}!
                 </p>
             </div>
 

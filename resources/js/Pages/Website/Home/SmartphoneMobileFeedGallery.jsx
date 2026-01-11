@@ -1,25 +1,37 @@
-
-import SelectInput from '@/Components/SelectInput';
+import Accordion from '@/Components/Accordian';
+import ProductSelectInput from '@/Components/ProductSelectInput';
+import SmartphoneDetails from '@/Components/SmartphoneDetails';
 import Spinner from '@/Components/Spinner';
 import Toast from '@/Components/Toast';
 import { router } from '@inertiajs/react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-
-
-const SmartphoneMobileGalleryModal = (
-    { smartphone, setShowQrCode, setLinkCopied, currency, cart_items, auth, navigateToHashtag, placeholderImage }
-) => {
-
+const SmartphoneMobileGalleryModal = ({
+    smartphone,
+    setShowQrCode,
+    setLinkCopied,
+    currency,
+    cart_items,
+    auth,
+    navigateToHashtag,
+    placeholderImage,
+    __,
+    showErrorMessage,
+    showInfoMessage,
+    ErrorMessage,
+    InfoMessage,
+    setInfoMessage,
+    setShowInfoMessage,
+    setErrorMessage,
+    setShowErrorMessage,
+}) => {
 
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [actionDropdownOpen, setActionDropdownOpen] = useState(null);
     const actionDropdownRef = useRef(null);
     const thumbnailContainerRef = useRef(null);
     const scrollContainerRef = useRef(null);
-
-
 
     // Handle Media scroll Smartphone Media
     const handleScroll = (e) => {
@@ -28,7 +40,6 @@ const SmartphoneMobileGalleryModal = (
         const itemWidth = container.offsetWidth;
         const newIndex = Math.round(scrollLeft / itemWidth);
 
-
         if (newIndex !== currentImageIndex) {
             setCurrentImageIndex(newIndex);
 
@@ -36,11 +47,10 @@ const SmartphoneMobileGalleryModal = (
             activeThumb?.scrollIntoView({
                 behavior: 'smooth',
                 block: 'nearest',
-                inline: 'center'
+                inline: 'center',
             });
         }
     };
-
 
     const handleThumbnailClick = (index) => {
         setCurrentImageIndex(index);
@@ -48,11 +58,9 @@ const SmartphoneMobileGalleryModal = (
         targetMainItem?.scrollIntoView({
             behavior: 'instant',
             block: 'nearest',
-            inline: 'start'
+            inline: 'start',
         });
     };
-
-
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -64,28 +72,349 @@ const SmartphoneMobileGalleryModal = (
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    const [selectedColor, setSelectedColor] = useState('');
+    const [selectedAddon, setSelectedAddon] = useState('');
+    const [toggleAccordion, setToggleAccordion] = useState(false);
+    const [smartphoneTotalPrice, setSmartphoneTotalPrice] = useState({});
 
-
+    const [cartItemAddons, setCartItemAddons] = useState([]);
+    const [cartItemSmartphones, setCartItemSmartphones] = useState([]);
 
     const [cartProcessing, setCartProcessing] = useState(false);
     const [buyNowProcessing, setBuyNowProcessing] = useState(false);
+    const [canActionOnSmartphone, setCanActionOnSmartphone] = useState(false);
 
-    const [showErrorMessage, setShowErrorMessage] = useState(false);
-    const [ErrorMessage, setErrorMessage] = useState('');
+    // Checking Stock
+    const [isInStock, setIsInStock] = useState(smartphone?.inventory_items_count > 0);
 
+    // Checking Cart State
+    const [isInCart, setIsInCart] = useState(false);
 
+    // Cart Item Create Logic Of Frontend
 
-    const [showInfoMessage, setShowInfoMessage] = useState(false);
-    const [InfoMessage, setInfoMessage] = useState('');
+    // Smartphone Handling
+    useEffect(() => {
+        if (!smartphone || smartphone.type !== 'smartphones') return;
+        if (!selectedColor) return;
+        if (isInCart) {
+            setInfoMessage(__('Please Remove Previous Item From Cart To Add New Item'));
+            setShowInfoMessage(true);
+            setSelectedColor('');
+            return;
+        }
+        const color = smartphone.colors?.find((c) => c.id === selectedColor);
 
-    const [selectedColor, setSelectedColor] = useState('');
-    const [quantity, setQuantity] = useState(1);
+        if (!color) return;
 
-    const handleAddCartItem = async (type, item_id, quantity, color, total_stock) => {
+        setCartItemSmartphones((prev) => {
+            const existingIndex = prev.findIndex(
+                (item) => item.smartphone_id === smartphone.id && item.color_id === color.id,
+            );
+
+            if (existingIndex !== -1) {
+                const updated = [...prev];
+
+                const unitPrice = Number(smartphone.selling_info?.total_price || 0);
+                const previousTotal = Number(updated[existingIndex].price || 0);
+
+                const newTotal = previousTotal + unitPrice;
+
+                updated[existingIndex] = {
+                    ...updated[existingIndex],
+                    quantity: updated[existingIndex].quantity + 1,
+                    price: parseFloat(Number(newTotal)).toFixed(2),
+                };
+
+                return updated;
+            }
+
+            return [
+                ...prev,
+                {
+                    smartphone_id: smartphone.id,
+                    name: smartphone.name,
+                    color_id: color.id,
+                    color_name: color.name,
+                    capacity: smartphone.capacity || null,
+                    price: parseFloat(Number(smartphone.selling_info?.total_price || 0)).toFixed(2),
+                    unit_price: Number(smartphone.selling_info?.total_price || 0),
+                    quantity: 1,
+                },
+            ];
+        });
+
+        const timer = setTimeout(() => {
+            setSelectedColor('');
+        }, 100);
+
+        return () => clearTimeout(timer);
+    }, [selectedColor, isInCart]);
+
+    // Addon handling
+    useEffect(() => {
+        if (!smartphone || smartphone.type !== 'smartphones') return;
+        if (!selectedAddon) return;
+
+        if (
+            cartItemSmartphones?.length === 0
+        ) {
+            setSelectedAddon('');
+            setInfoMessage(__('Please select any Product First'));
+            setShowInfoMessage(true);
+            return;
+        }
+
+        const addon = smartphone.addons.find((a) => a.id === selectedAddon);
+
+        if (!addon) return;
+
+        setCartItemAddons((prev) => {
+            const existingIndex = prev.findIndex(
+                (a) => a.id === selectedAddon && a.smartphone_id === smartphone.id,
+            );
+
+            if (existingIndex !== -1) {
+                const updated = [...prev];
+
+                const unitPrice = Number(addon.price || 0);
+                const previousTotal = Number(updated[existingIndex].price || 0);
+
+                const newTotal = previousTotal + unitPrice;
+
+                updated[existingIndex] = {
+                    ...updated[existingIndex],
+                    quantity: updated[existingIndex].quantity + 1,
+                    price: parseFloat(Number(newTotal)).toFixed(2),
+                };
+
+                return updated;
+            }
+
+            return [
+                ...prev,
+                {
+                    id: addon.id,
+                    name: addon.name,
+                    price: parseFloat(Number(addon.price || 0)).toFixed(2),
+                    unit_price: Number(addon.price || 0),
+                    quantity: 1,
+                    smartphone_id: smartphone.id,
+                },
+            ];
+        });
+
+        const timer = setTimeout(() => {
+            setSelectedAddon('');
+        }, 100);
+
+        return () => clearTimeout(timer);
+    }, [selectedAddon]);
+
+    // Calculating BASE Smartphone Total Price
+
+    const baseTotal = useMemo(() => {
+        const smartphoneTotal = cartItemSmartphones
+            .reduce((sum, item) => sum + Number(item.price || 0), 0);
+
+        const addonTotal = cartItemAddons
+            .reduce((sum, item) => sum + Number(item.price || 0), 0);
+
+        return smartphoneTotal + addonTotal;
+    }, [cartItemSmartphones, cartItemAddons, smartphone?.id]);
+
+    const feeAppliedRef = useRef({});
+
+    // Calculating Smartphone Total Price
+    useEffect(() => {
+        if (!smartphone || smartphone.type !== 'smartphones') return;
+        const smartphoneId = smartphone.id;
+
+        if (baseTotal === 0) {
+            setSmartphoneTotalPrice((prev) => ({
+                ...prev,
+                [smartphoneId]: 0,
+            }));
+            feeAppliedRef.current[smartphoneId] = false;
+            return;
+        }
+
+        let shippingAmount = 0;
+        let taxAmount = 0;
+
+        if (!feeAppliedRef.current[smartphoneId]) {
+            const import_tax = smartphone.selling_info?.import_tax;
+
+            if (import_tax) {
+                taxAmount =
+                    import_tax.value_type === 'percentage'
+                        ? (baseTotal * Number(import_tax.default_value || 0)) / 100
+                        : Number(import_tax.default_value || 0);
+            }
+
+            feeAppliedRef.current[smartphoneId] = {
+                tax: taxAmount,
+            };
+        } else {
+            taxAmount = feeAppliedRef.current[smartphoneId].tax;
+        }
+
+        // Adding Shipping Fee With Each Product
+        const shipping_fee = smartphone.selling_info?.shipping_fee;
+
+        if (shipping_fee) {
+            const current_smartphone = cartItemSmartphones;
+
+            let quantity = null;
+
+            if (current_smartphone.length !== 0) {
+                quantity = current_smartphone[0].quantity;
+            }
+
+            shippingAmount =
+                shipping_fee.value_type === 'percentage'
+                    ? (baseTotal * Number(shipping_fee.default_value || 0) * quantity) / 100
+                    : Number(shipping_fee.default_value || 0) * quantity;
+        }
+
+        const total = (baseTotal + shippingAmount + taxAmount).toFixed(2);
+
+        setSmartphoneTotalPrice((prev) => ({
+            ...prev,
+            [smartphoneId]: total,
+        }));
+    }, [baseTotal, smartphone?.id]);
+
+    // Addon Quantity Increase Handling
+    const handleAddonIncrease = (id) => {
+        setCartItemAddons((prev) => {
+            return prev.map((a) => {
+                if (a.id === id) {
+                    const addon = smartphone.addons.find((addon) => addon.id === id);
+
+                    const unitPrice = Number(addon.price || 0);
+                    const previousTotal = Number(a.price || 0);
+
+                    const newTotal = previousTotal + unitPrice;
+                    return {
+                        ...a,
+                        quantity: a.quantity + 1,
+                        price: parseFloat(Number(newTotal)).toFixed(2),
+                    };
+                }
+                return a;
+            });
+        });
+    };
+
+    // Addon Quantity Decrease Handling
+    const handleAddonDecrease = (id) => {
+        setCartItemAddons((prev) => {
+            return prev
+                .map((a) => {
+                    if (a.id === id) {
+                        const addon = smartphone.addons.find((addon) => addon.id === id);
+
+                        const unitPrice = Number(addon.price || 0);
+                        const previousTotal = Number(a.price || 0);
+
+                        const newTotal = previousTotal - unitPrice;
+                        const newQty = a.quantity - 1;
+
+                        return {
+                            ...a,
+                            quantity: newQty,
+                            price: parseFloat(Number(newTotal)).toFixed(2),
+                        };
+                    }
+                    return a;
+                })
+                .filter((a) => a.quantity > 0);
+        });
+    };
+
+    // Smartphone Quantity Increase Handling
+    const handleSmartphoneIncrease = (id) => {
+        setCartItemSmartphones((prev) => {
+            return prev.map((a) => {
+                if (a.color_id === id) {
+                    const unitPrice = Number(smartphone.selling_info?.total_price || 0);
+                    const previousTotal = Number(a.price || 0);
+
+                    const newTotal = previousTotal + unitPrice;
+                    return {
+                        ...a,
+                        quantity: a.quantity + 1,
+                        price: parseFloat(Number(newTotal)).toFixed(2),
+                    };
+                }
+                return a;
+            });
+        });
+    };
+
+    // Smartphone Quantity Decrease Handling
+    const handleSmartphoneDecrease = (id) => {
+        setCartItemSmartphones((prev) => {
+            return prev
+                .map((a) => {
+                    if (a.color_id === id) {
+                        const newQty = a.quantity - 1;
+                        const unitPrice = Number(smartphone.selling_info?.total_price || 0);
+                        const previousTotal = Number(a.price || 0);
+
+                        const newTotal = previousTotal - unitPrice;
+
+                        return {
+                            ...a,
+                            quantity: newQty,
+                            price: parseFloat(Number(newTotal)).toFixed(2),
+                        };
+                    }
+                    return a;
+                })
+                .filter((a) => a.quantity > 0);
+        });
+    };
+
+    // Update Stock When Feed Gallery Changes
+    useEffect(() => {
+        if (smartphone?.type === 'smartphones') {
+            setIsInStock(smartphone?.inventory_items_count > 0);
+        }
+    }, [smartphone?.inventory_items_count, smartphone?.type]);
+
+    // Stock Count Badge
+    const StockBadge = ({ smartphone }) => {
+        const stock = smartphone?.inventory_items_count || 0;
+        let badgeClass, text;
+
+        if (stock > 10) {
+            badgeClass = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+            text = `${__('In Stock')}: ${stock}`;
+        } else if (stock > 0) {
+            badgeClass = 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+            text = `${__('Low Stock')}: ${stock}`;
+        } else {
+            badgeClass = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+            text = __('Out of Stock');
+        }
+
+        return (
+            <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${badgeClass}`}
+            >
+                {text}
+            </span>
+        );
+    };
+
+    // Handle Create Cart Item
+    const handleAddCartItem = async (smartphones, addons, total_stock) => {
         try {
             setCartProcessing(true);
-            if (color === '' || !color) {
-                setInfoMessage('Please select a color first');
+
+            if (smartphones.length === 0 && addons.length === 0) {
+                setInfoMessage(__('Please select any Item First'));
                 setShowInfoMessage(true);
                 setCartProcessing(false);
                 return;
@@ -93,34 +422,56 @@ const SmartphoneMobileGalleryModal = (
 
             if (!isInStock) {
                 setInfoMessage(
-                    'Sorry, this item is currently out of stock and cannot be added to your cart',
+                    __('Sorry, this item is currently out of stock and cannot be added to your cart'),
                 );
                 setShowInfoMessage(true);
                 setCartProcessing(false);
                 return;
             }
+
+            let quantity = 0;
+            smartphones.forEach((smartphone) => {
+                quantity += smartphone.quantity;
+            });
 
             if (quantity > total_stock) {
                 setInfoMessage(
-                    `Only ${total_stock} item${total_stock === 1 ? '' : 's'} available. Please adjust your quantity`,
+                    `${'Only'} ${total_stock} ${total_stock === 1 ? __('Item') : __('Items')} ${__('Stock available. For This Smartphone Please adjust your quantity')}`,
                 );
                 setShowInfoMessage(true);
                 setCartProcessing(false);
                 return;
             }
 
-            const data = {
-                type: type,
-                item_id: item_id,
-                quantity: quantity,
-                color: color,
+            let data = {
+                smartphones: [],
+                addons: [],
             };
+
+            smartphones
+                .forEach((smartphone) => {
+                    data = {
+                        ...data,
+                        smartphones: [...data.smartphones, smartphone],
+                    };
+                });
+
+            addons
+                .forEach((addon) => {
+                    data = {
+                        ...data,
+                        addons: [...data.addons, addon],
+                    };
+                });
 
             router.post(
                 route('website.carts.add-item'),
                 { ...data },
                 {
-                    onFinish: () => setCartProcessing(false),
+                    onFinish: () => {
+                        setCartProcessing(false);
+                        setIsInCart(true);
+                    },
                     preserveScroll: true,
                     preserveUrl: true,
                     preserveState: true,
@@ -144,25 +495,23 @@ const SmartphoneMobileGalleryModal = (
 
             router.delete(route('website.carts.remove-item'), {
                 data: data,
+                preserveScroll: true,
+                preserveUrl: true,
+                preserveState: true,
 
-                onError: (errors) => {
-                    setShowErrorMessage(true);
-                    setErrorMessage(
-                        errors.message || 'Something Went Wrong While Removing Cart Item',
-                    );
-                },
                 onFinish: () => {
                     setCartProcessing(false);
+                    setIsInCart(false);
                 },
             });
         } catch (error) {
             setShowErrorMessage(true);
-            setErrorMessage(error?.message || 'Something Went Wrong While Removing Cart Item');
+            setErrorMessage(error?.message || __('Something Went Wrong While Removing Cart Item'));
             setCartProcessing(false);
         }
     };
 
-    const handleBuyNow = async (type, item_id, quantity, color, total_stock) => {
+    const handleBuyNow = async (smartphones, addons, item_id, total_stock) => {
         try {
             setBuyNowProcessing(true);
             const alreadyExists = cart_items.some((item) => item.smartphone_id === item_id);
@@ -177,8 +526,8 @@ const SmartphoneMobileGalleryModal = (
                 return;
             }
 
-            if (color === '' || !color) {
-                setInfoMessage('Please select a color first');
+            if (smartphones.length === 0 && addons.length === 0) {
+                setInfoMessage(__('Please select any Item First'));
                 setShowInfoMessage(true);
                 setBuyNowProcessing(false);
                 return;
@@ -186,36 +535,61 @@ const SmartphoneMobileGalleryModal = (
 
             if (!isInStock) {
                 setInfoMessage(
-                    'Sorry, this item is currently out of stock and cannot be added to your cart',
+                    __('Sorry, this item is currently out of stock and cannot be added to your cart'),
                 );
                 setShowInfoMessage(true);
                 setBuyNowProcessing(false);
                 return;
             }
+
+            let quantity = 0;
+            smartphones.forEach((smartphone) => {
+                quantity += smartphone.quantity;
+            });
 
             if (quantity > total_stock) {
                 setInfoMessage(
-                    `Only ${total_stock} item${total_stock === 1 ? '' : 's'} available. Please adjust your quantity`,
+                    `${'Only'} ${total_stock} ${total_stock === 1 ? __('Item') : __('Items')} ${__('Stock available. For This Smartphone Please adjust your quantity')}`,
                 );
                 setShowInfoMessage(true);
                 setBuyNowProcessing(false);
                 return;
             }
 
-            const data = {
-                type: type,
-                item_id: item_id,
-                quantity: quantity,
-                color: color,
+            let data = {
+                smartphones: [],
+                addons: [],
             };
 
+            smartphones
+                .forEach((smartphone) => {
+                    data = {
+                        ...data,
+                        smartphones: [...data.smartphones, smartphone],
+                    };
+                });
+
+            addons
+                .forEach((addon) => {
+                    data = {
+                        ...data,
+                        addons: [...data.addons, addon],
+                    };
+                });
+
             router.post(
-                route('website.carts.buy-now'),
+                route('website.carts.add-item'),
                 { ...data },
                 {
-                    onFinish: () => {
-                        setBuyNowProcessing(false);
+                    onSuccess: () => {
+                        setTimeout(() => {
+                            router.visit(route('website.checkout.index'));
+                        }, 500);
                     },
+                    onFinish: () => setBuyNowProcessing(false),
+                    preserveScroll: true,
+                    preserveUrl: true,
+                    preserveState: true,
                 },
             );
         } catch (error) {
@@ -224,96 +598,48 @@ const SmartphoneMobileGalleryModal = (
             setErrorMessage(error.message);
         }
     };
-    // Checking Stock
-    const [isInStock, setIsInStock] = useState(smartphone?.inventory_items_count > 0);
-    const StockBadge = ({ smartphone }) => {
-        const stock = smartphone?.inventory_items_count || 0;
 
-        let badgeClass, text, icon;
-
-        if (stock > 10) {
-            badgeClass = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-            text = `In Stock: ${stock}`;
-            icon = (
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                    />
-                </svg>
-            );
-        } else if (stock > 0) {
-            badgeClass = 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
-            text = `Low Stock: ${stock}`;
-            icon = (
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                        fillRule="evenodd"
-                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                        clipRule="evenodd"
-                    />
-                </svg>
-            );
-        } else {
-            badgeClass = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-            text = 'Out of Stock';
-            icon = (
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                        fillRule="evenodd"
-                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                        clipRule="evenodd"
-                    />
-                </svg>
-            );
-        }
-
-        return (
-            <span
-                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${badgeClass}`}
-            >
-                {icon}
-                {text}
-            </span>
-        );
-    };
-
-    // Auto Selecting Color And Quantity If Available Via Cart Item
+    // Watching The Smartphone Cart Item If Smarpthone added Than enable Action Buttons
     useEffect(() => {
-        if (cart_items.length > 0) {
-            const existingCartItem = cart_items.find(
-                (item) => item.smartphone_id === smartphone.id && item.type === 'smartphone',
-            );
-
-            if (existingCartItem) {
-                const selectedColorObj = smartphone?.colors?.find(
-                    (color) => color.id === existingCartItem.color_id,
-                );
-
-                if (selectedColorObj) {
-                    setSelectedColor(selectedColorObj.id);
-                }
-                setQuantity(existingCartItem.quantity);
-            }
+        if (
+            cartItemSmartphones?.length >
+            0 &&
+            cartItemSmartphones
+        ) {
+            setCanActionOnSmartphone(true);
+        } else {
+            setCanActionOnSmartphone(false);
         }
-    }, [cart_items, smartphone.id, smartphone?.colors]);
+    }, [cartItemSmartphones, smartphone?.id]);
 
-
-
+    // Watcing The Cart items When FeedChanges From Cart if exists than makes it true
+    useEffect(() => {
+        if (smartphone?.type !== 'smartphones' || !smartphone?.id) return;
+        setIsInCart(cart_items.some((item) => item.smartphone_id === smartphone?.id));
+    }, [smartphone?.id]);
 
     // LOCKING BODY WHEN MOUNT TO PREVENT SCROLLS BENEATH MODAL
+    // And Cleanup when unmounts
     useEffect(() => {
-
-        document.body.style.overflow = "hidden";
-        document.body.style.touchAction = "none";
+        document.body.style.overflow = 'hidden';
+        document.body.style.touchAction = 'none';
 
         return () => {
-            // Restore scroll when modal closes
-            document.body.style.overflow = "";
-            document.body.style.touchAction = "";
+
+            document.body.style.overflow = '';
+            document.body.style.touchAction = '';
+
+            setCartItemAddons([]);
+            setCartItemSmartphones([]);
+            setBuyNowProcessing(false);
+            setCartProcessing(false);
+            setIsInCart(false);
+
         };
     }, []);
+
+
+
 
     return (
         <>
@@ -322,7 +648,6 @@ const SmartphoneMobileGalleryModal = (
                     flash={{
                         ...(showErrorMessage && { error: ErrorMessage }),
                         ...(showInfoMessage && { info: InfoMessage }),
-
                     }}
                     onClosed={(type) => {
                         if (type === 'info') {
@@ -333,18 +658,16 @@ const SmartphoneMobileGalleryModal = (
                             setErrorMessage(null);
                             setShowErrorMessage(false);
                         }
-
                     }}
                 />
             )}
 
             {createPortal(
-                <div className="fixed inset-0 z-[70] flex flex-col bg-backgroundLight dark:bg-backgroundDark overscroll-contain">
-                    {/* Header - Keep intact as requested */}
+                <div className="fixed inset-0 z-[70] flex flex-col overscroll-contain bg-backgroundLight dark:bg-backgroundDark">
                     <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
                         <button
                             onClick={() => navigateToHashtag(smartphone.tag)}
-                            className="font-medium text-md text-main-text-light dark:text-main-text-dark"
+                            className="text-[18px] font-medium text-main-text-light dark:text-main-text-dark"
                         >
                             {smartphone.tag}
                         </button>
@@ -357,20 +680,24 @@ const SmartphoneMobileGalleryModal = (
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                     viewBox="0 0 24 24"
-                                    strokeWidth={1.5}
+                                    strokeWidth={2}
                                     stroke="currentColor"
-                                    className="w-7 h-7"
+                                    className="h-7 w-7"
                                 >
                                     <path
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
-                                        d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
+                                        d="
+      M3.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+      M12 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+      M20.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+    "
                                     />
                                 </svg>
                             </button>
 
                             {actionDropdownOpen && (
-                                <div className="absolute right-0 z-50 w-56 border rounded-md border-surface-3-light bg-backgroundLight dark:border-surface-3-dark top-full dark:bg-surface-1-dark">
+                                <div className="absolute right-0 z-50 w-56 border rounded-md top-full border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark">
                                     <div className="py-1">
                                         <button
                                             onClick={() => {
@@ -398,13 +725,13 @@ const SmartphoneMobileGalleryModal = (
                                                     d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z"
                                                 />
                                             </svg>
-                                            <span>QR Code</span>
+                                            <span>{__('QR Code')}</span>
                                         </button>
 
                                         <button
                                             onClick={() => {
                                                 const url =
-                                                    route('home') + "?m-slug=" + smartphone.slug;
+                                                    route('home') + '?m-slug=' + smartphone.slug;
                                                 navigator.clipboard.writeText(url.trim());
                                                 setLinkCopied(true);
                                                 setActionDropdownOpen(null);
@@ -425,7 +752,7 @@ const SmartphoneMobileGalleryModal = (
                                                     d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75"
                                                 />
                                             </svg>
-                                            <span>Copy Link</span>
+                                            <span>{__('Copy Link')}</span>
                                         </button>
                                     </div>
                                 </div>
@@ -433,11 +760,9 @@ const SmartphoneMobileGalleryModal = (
                         </div>
                     </div>
 
-
-
                     <div className="flex-1 px-8 overflow-y-auto scrollbar-none">
                         {smartphone?.images?.length > 0 && (
-                            <div className="relative mb-4 overflow-hidden ">
+                            <div className="relative mb-4 overflow-hidden">
                                 {/* Horizontal Scroll Container - Swipeable */}
                                 <div
                                     ref={scrollContainerRef}
@@ -448,8 +773,7 @@ const SmartphoneMobileGalleryModal = (
                                         msOverflowStyle: 'none',
                                         WebkitOverflowScrolling: 'touch',
                                         scrollSnapType: 'x mandatory',
-                                        height: 'calc(100vh - 180px)'
-
+                                        height: 'calc(100vh - 180px)',
                                     }}
                                 >
                                     {smartphone.images.map((image, index) => (
@@ -457,17 +781,14 @@ const SmartphoneMobileGalleryModal = (
                                             key={index}
                                             className="flex items-center justify-center w-full h-full shrink-0 snap-center snap-always"
                                         >
-
                                             <img
                                                 src={image || placeholderImage}
                                                 alt={`${smartphone.name} ${index + 1}`}
                                                 className="object-cover w-full h-full max-w-full max-h-full rounded-md"
-                                                loading={"eager"}
-                                                fetchpriority={"high"}
+                                                loading={'eager'}
+                                                fetchpriority={'high'}
                                                 decoding="async"
-                                                onError={(e) =>
-                                                    (e.target.src = placeholderImage)
-                                                }
+                                                onError={(e) => (e.target.src = placeholderImage)}
                                             />
                                         </div>
                                     ))}
@@ -475,156 +796,61 @@ const SmartphoneMobileGalleryModal = (
                             </div>
                         )}
 
-
                         {/* Thumbnail Refs */}
                         <div className="flex items-center justify-center gap-0 py-4">
                             {/* Thumbnails */}
-                            {((smartphone.images.length > 1)) && (
+                            {smartphone.images.length > 1 && (
                                 <div
                                     ref={thumbnailContainerRef}
                                     className="flex items-center gap-3 overflow-x-auto scrollbar-none"
                                     style={{ scrollBehavior: 'smooth' }}
                                 >
                                     {/* Render thumbnails */}
-                                    {smartphone.images.map(
-                                        (mediaItem, index) => {
-
-                                            return (
-                                                <button
-                                                    key={index}
-                                                    onClick={() => handleThumbnailClick(index)}
-                                                    className={`aspect-square ${currentImageIndex === index ? 'border-[3px] border-main-text-light dark:border-main-text-dark' : ''} w-[clamp(70px,5vw,70px)] flex-shrink-0 overflow-hidden rounded-md  transition-all`}
-                                                >
-                                                    <img
-                                                        src={
-                                                            mediaItem ||
-                                                            placeholderImage
-                                                        }
-                                                        alt={`Thumbnail ${index + 1}`}
-                                                        className="object-cover w-full h-full"
-                                                        loading={
-                                                            currentImageIndex ===
-                                                                index
-                                                                ? 'eager'
-                                                                : 'lazy'
-                                                        }
-                                                        decoding="async"
-                                                        fetchpriority={
-                                                            currentImageIndex ===
-                                                                index
-                                                                ? 'high'
-                                                                : 'low'
-                                                        }
-                                                        onError={(
-                                                            e,
-                                                        ) =>
-                                                        (e.target.src =
-                                                            placeholderImage)
-                                                        }
-                                                    />
-                                                </button>
-                                            );
-                                        },
-                                    )}
+                                    {smartphone.images.map((mediaItem, index) => {
+                                        return (
+                                            <button
+                                                key={index}
+                                                onClick={() => handleThumbnailClick(index)}
+                                                className={`aspect-square ${currentImageIndex === index ? 'border-[3px] border-main-text-light dark:border-main-text-dark' : ''} w-[clamp(70px,5vw,70px)] flex-shrink-0 overflow-hidden rounded-md transition-all`}
+                                            >
+                                                <img
+                                                    src={mediaItem || placeholderImage}
+                                                    alt={`Thumbnail ${index + 1}`}
+                                                    className="object-cover w-full h-full"
+                                                    loading={
+                                                        currentImageIndex === index
+                                                            ? 'eager'
+                                                            : 'lazy'
+                                                    }
+                                                    decoding="async"
+                                                    fetchpriority={
+                                                        currentImageIndex === index ? 'high' : 'low'
+                                                    }
+                                                    onError={(e) =>
+                                                        (e.target.src = placeholderImage)
+                                                    }
+                                                />
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             )}
-
-
                         </div>
 
-
                         {/* Full Content - Scrollable, No Truncation */}
-                        <div className="mt-4">
-                            {/* Full Content - Scrollable, No Truncation */}
-                            <div className="mb-4">
-                                {smartphone?.content && (
-                                    <div
-                                        className="text-sm leading-relaxed prose text-gray-900 break-words dark:text-white/80"
-                                        dangerouslySetInnerHTML={{
-                                            __html: smartphone?.content,
-                                        }}
+                        <div className="mt-4 mb-10">
+                            <div key={smartphone?.slug} className="max-w-lg">
+                                <div className="flex flex-col items-start gap-4">
+                                    <SmartphoneDetails
+                                        key={smartphone?.slug}
+                                        StockBadge={StockBadge({ smartphone })}
+                                        currency={currency}
+                                        product={smartphone}
                                     />
-                                )}
-                            </div>
 
-                            <div className="space-y-3">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm text-gray-900 dark:text-white/80">
-                                        <strong>Payment :</strong>
-                                    </span>
-                                    <div className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-orange-500 rounded-full">
-                                        <svg
-                                            className="size-10"
-                                            viewBox="0.004 0 64 64"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                        >
-                                            <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-                                            <g
-                                                id="SVGRepo_tracerCarrier"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            ></g>
-                                            <g id="SVGRepo_iconCarrier">
-                                                <path
-                                                    d="M63.04 39.741c-4.274 17.143-21.638 27.575-38.783 23.301C7.12 58.768-3.313 41.404.962 24.262 5.234 7.117 22.597-3.317 39.737.957c17.144 4.274 27.576 21.64 23.302 38.784z"
-                                                    fill="none"
-                                                ></path>
-                                                <path
-                                                    d="M46.11 27.441c.636-4.258-2.606-6.547-7.039-8.074l1.438-5.768-3.512-.875-1.4 5.616c-.922-.23-1.87-.447-2.812-.662l1.41-5.653-3.509-.875-1.439 5.766c-.764-.174-1.514-.346-2.242-.527l.004-.018-4.842-1.209-.934 3.75s2.605.597 2.55.634c1.422.355 1.68 1.296 1.636 2.042l-1.638 6.571c.098.025.225.061.365.117l-.37-.092-2.297 9.205c-.174.432-.615 1.08-1.609.834.035.051-2.552-.637-2.552-.637l-1.743 4.02 4.57 1.139c.85.213 1.683.436 2.502.646l-1.453 5.835 3.507.875 1.44-5.772c.957.26 1.887.5 2.797.726L27.504 50.8l3.511.875 1.453-5.823c5.987 1.133 10.49.676 12.383-4.738 1.527-4.36-.075-6.875-3.225-8.516 2.294-.531 4.022-2.04 4.483-5.157zM38.087 38.69c-1.086 4.36-8.426 2.004-10.807 1.412l1.928-7.729c2.38.594 10.011 1.77 8.88 6.317zm1.085-11.312c-.99 3.966-7.1 1.951-9.083 1.457l1.748-7.01c1.983.494 8.367 1.416 7.335 5.553z"
-                                                    fill="#ffffff"
-                                                ></path>
-                                            </g>
-                                        </svg>
-                                    </div>
-                                    <div className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-orange-500 rounded-full">
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            strokeWidth={1.5}
-                                            stroke="currentColor"
-                                            className="size-5"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z"
-                                            />
-                                        </svg>
-                                    </div>
-                                </div>
-
-                                <div className="text-sm text-gray-900 dark:text-white/80">
-                                    <div>
-                                        <strong>Shipping :</strong> EUR 24.99 (approx. KRW
-                                        41,515.74) KGB
-                                    </div>
-                                    <div className="mt-1">
-                                        International shipments may be subject to customs processing
-                                        and additional charges.
-                                    </div>
-                                </div>
-
-                                <div className="text-sm text-gray-900 dark:text-white/80">
-                                    <strong>Location :</strong> Korea
-                                </div>
-
-                                <div className="text-sm text-gray-900 dark:text-white/80">
-                                    <strong>Return & Exchange Policy :</strong>
-                                    <button className="ml-1 font-bold text-black underline hover:text-gray-800 dark:text-gray-400">
-                                        See details
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="w-full mt-6 space-y-4">
-                                <div className="flex justify-start">
-                                    <StockBadge smartphone={smartphone} />
-                                </div>
-
-                                <div className="relative w-full">
-                                    <SelectInput
+                                    {/* Divider */}
+                                    <div className="mt-1 h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
+                                    <ProductSelectInput
                                         Name={'color'}
                                         Id={'color'}
                                         items={smartphone?.colors}
@@ -636,206 +862,360 @@ const SmartphoneMobileGalleryModal = (
                                         }}
                                         customPlaceHolder={true}
                                     />
-                                </div>
 
-                                <div className="flex items-center justify-between w-full">
-                                    <span className="text-sm text-gray-900 dark:text-white">
-                                        Quantity
-                                    </span>
-                                    <div className="flex items-center">
-                                        <button
-                                            type="button"
-                                            onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                            className="flex items-center justify-center w-8 h-8 text-gray-600 bg-white border border-r-0 border-gray-300 rounded-l hover:bg-gray-50 focus:outline-none dark:border-gray-600 dark:bg-deepcharcoal dark:text-white/90 dark:hover:bg-zinc-900"
-                                        >
-                                            <svg
-                                                className="w-3 h-3"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M20 12H4"
-                                                />
-                                            </svg>
-                                        </button>
-                                        <input
-                                            type="text"
-                                            disabled
-                                            min="1"
-                                            value={quantity}
-                                            onChange={(e) =>
-                                                setQuantity(
-                                                    Math.max(1, parseInt(e.target.value) || 1),
-                                                )
-                                            }
-                                            className="w-12 h-8 px-2 text-sm text-center bg-white border-t border-b border-gray-300 focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-deepcharcoal dark:text-white/90"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setQuantity(quantity + 1)}
-                                            className="flex items-center justify-center w-8 h-8 text-gray-600 bg-white border border-l-0 border-gray-300 rounded-r hover:bg-gray-50 focus:outline-none dark:border-gray-600 dark:bg-deepcharcoal dark:text-white/90 dark:hover:bg-zinc-900"
-                                        >
-                                            <svg
-                                                className="w-3 h-3"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div className="h-32"></div>
-                            </div>
-                        </div>
-                    </div>
-
-
-
-                    {/* Sticky Bottom Bar */}
-
-                    <div className="fixed bottom-0 left-0 right-0 bg-black px-3 py-3 z-[100] sm:px-4 sm:py-5">
-                        <div className="flex items-center justify-between gap-2 sm:gap-3">
-                            {/* Price Display */}
-                            <div className="flex items-center min-w-0 gap-1 shrink">
-                                <span className="text-base font-bold text-white truncate sm:text-lg">
-                                    {currency?.symbol}
-                                    {smartphone?.selling_info?.total_price}
-                                </span>
-                            </div>
-
-                            {/* Action Buttons */}
-                            {!auth?.user && (
-                                <div className="flex gap-2 shrink-0">
-                                    <button
-                                        className="flex h-[30px] w-[110px] items-center justify-center gap-1 rounded-md border border-white text-[10px] font-medium text-white transition-colors hover:bg-white hover:text-black sm:h-[38px] sm:w-[130px] sm:text-xs"
-                                        onClick={() => {
-                                            router.visit(route('login'));
-                                        }}
-                                    >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            strokeWidth={1.5}
-                                            stroke="currentColor"
-                                            className="w-3 h-3 shrink-0"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
-                                            />
-                                        </svg>
-                                        <span className="truncate">Login</span>
-                                    </button>
-
-                                    <button
-                                        className="h-[30px] w-[80px] rounded-md bg-white text-[10px] font-medium text-black transition-colors hover:bg-gray-200 sm:h-[38px] sm:w-[90px] sm:text-xs"
-                                        onClick={() => {
-                                            router.visit(route('register'));
-                                        }}
-                                    >
-                                        Sign Up
-                                    </button>
-                                </div>
-                            )}
-
-                            {auth?.user && (
-                                <div className="flex gap-2 shrink-0">
-                                    {cart_items.length > 0 ? (
-                                        cart_items.some(
-                                            (item) => item.smartphone_id === smartphone.id,
-                                        ) ? (
-                                            <button
-                                                className={`flex h-[30px] w-[85px] items-center justify-center gap-1.5 rounded-md border border-white text-[10px] font-medium text-white transition-colors hover:bg-white hover:text-black sm:h-[38px] sm:w-[100px] sm:text-xs`}
-                                                onClick={() => {
-                                                    handleRemoveCartItem(
-                                                        'smartphone',
-                                                        smartphone.id,
-                                                    );
-                                                }}
-                                            >
-                                                {cartProcessing && (
-                                                    <Spinner customSize={'size-3'} />
-                                                )}
-                                                <span className="truncate">Remove</span>
-                                            </button>
-                                        ) : (
-                                            <button
-                                                className={`flex h-[30px] w-[70px] ${!isInStock && 'pointer-events-none opacity-50'} items-center justify-center gap-1.5 rounded-md border border-white text-[10px] font-medium text-white transition-colors hover:bg-white hover:text-black sm:h-[38px] sm:w-[85px] sm:text-xs`}
-                                                disabled={!isInStock}
-                                                onClick={() => {
-                                                    handleAddCartItem(
-                                                        'smartphone',
-                                                        smartphone.id,
-                                                        quantity,
-                                                        selectedColor,
-                                                        smartphone.inventory_items_count,
-                                                    );
-                                                }}
-                                            >
-                                                {cartProcessing && (
-                                                    <Spinner customSize={'size-3'} />
-                                                )}
-                                                <span className="truncate">Cart</span>
-                                            </button>
-                                        )
-                                    ) : (
-                                        <button
-                                            disabled={!isInStock}
-                                            className={`flex h-[30px] w-[70px] ${!isInStock && 'pointer-events-none opacity-50'} items-center justify-center gap-1.5 rounded-md border border-white text-[10px] font-medium text-white transition-colors hover:bg-white hover:text-black sm:h-[38px] sm:w-[85px] sm:text-xs`}
-                                            onClick={() => {
-                                                handleAddCartItem(
-                                                    'smartphone',
-                                                    smartphone.id,
-                                                    quantity,
-                                                    selectedColor,
-                                                    smartphone.inventory_items_count,
-                                                );
+                                    {smartphone?.addons?.length > 0 && (
+                                        <ProductSelectInput
+                                            InputName={'Add-ons'}
+                                            Name={'addons'}
+                                            Id={'addons'}
+                                            items={smartphone?.addons}
+                                            Value={selectedAddon}
+                                            itemKey={'name'}
+                                            Placeholder={'Addons'}
+                                            Action={(value) => {
+                                                setSelectedAddon(value);
                                             }}
-                                        >
-                                            {cartProcessing && <Spinner customSize={'size-3'} />}
-                                            <span className="truncate">Cart</span>
-                                        </button>
+                                            customPlaceHolder={true}
+                                        />
                                     )}
 
-                                    <button
-                                        disabled={!isInStock}
-                                        className={`${!isInStock && 'pointer-events-none opacity-50'} flex h-[30px] w-[85px] items-center justify-center gap-1.5 rounded-md bg-white text-[10px] font-medium text-black transition-colors hover:bg-gray-200 sm:h-[38px] sm:w-[100px] sm:text-xs`}
-                                        onClick={() => {
-                                            handleBuyNow(
-                                                'smartphone',
-                                                smartphone.id,
-                                                quantity,
-                                                selectedColor,
-                                                smartphone.inventory_items_count,
-                                            );
-                                        }}
-                                    >
-                                        {buyNowProcessing && <Spinner customSize={'size-3'} />}
-                                        <span className="truncate">Buy now</span>
-                                    </button>
+                                    {/* Divider */}
+                                    {(cartItemAddons?.length > 0 ||
+                                        cartItemSmartphones?.length > 0) && (
+                                            <div className="mt-5 h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
+                                        )}
+
+                                    {/* Smartphone Items */}
+                                    {cartItemSmartphones?.length > 0 &&
+                                        cartItemSmartphones?.map((smartphone, index) => (
+                                            <div
+                                                className="w-full p-4 rounded-sm bg-surface-1-light dark:bg-surface-2-dark"
+                                                key={index}
+                                            >
+                                                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                                    <div className="flex flex-col items-start gap-3">
+                                                        {/* Product Name */}
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-sm truncate text-main-text-light dark:text-main-text-dark">
+                                                                {smartphone?.name} /{' '}
+                                                                {smartphone?.capacity} /{' '}
+                                                                {smartphone?.color_name}
+                                                            </p>
+                                                        </div>
+
+                                                        {/* Price */}
+                                                        <div className="flex-shrink-0">
+                                                            <p className="font-medium text-md text-main-text-light dark:text-main-text-dark">
+                                                                {currency?.name} {currency?.symbol}{' '}
+                                                                {smartphone?.price}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Quantity Selector */}
+                                                    <div className="inline-flex items-center self-start overflow-hidden rounded-md border border-[#c8c8c8] dark:border-surface-3-dark">
+                                                        {/* DECREASE */}
+                                                        <button
+                                                            onClick={() =>
+                                                                handleSmartphoneDecrease(
+                                                                    smartphone?.color_id,
+                                                                )
+                                                            }
+                                                            className="flex items-center justify-center w-6 h-6 transition-colors bg-white text-main-text-light hover:bg-surface-2-light disabled:opacity-50 dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                        >
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 24 24"
+                                                                fill="none"
+                                                                stroke="currentColor"
+                                                                strokeWidth={1.5}
+                                                                className="w-3 h-3"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="M19.5 12h-15"
+                                                                />
+                                                            </svg>
+                                                        </button>
+
+                                                        {/* QUANTITY */}
+                                                        <span className="flex h-6 min-w-[2rem] items-center justify-center border-l border-r border-[#c8c8c8] bg-white text-sm font-semibold text-sub-text-light dark:border-surface-3-dark dark:bg-surface-2-dark dark:text-sub-text-dark">
+                                                            {smartphone?.quantity}
+                                                        </span>
+
+                                                        {/* INCREASE */}
+                                                        <button
+                                                            onClick={() =>
+                                                                handleSmartphoneIncrease(
+                                                                    smartphone?.color_id,
+                                                                )
+                                                            }
+                                                            className="flex items-center justify-center w-6 h-6 transition-colors bg-white text-main-text-light hover:bg-surface-2-light dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                        >
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 24 24"
+                                                                fill="none"
+                                                                stroke="currentColor"
+                                                                strokeWidth={1.5}
+                                                                className="w-3 h-3"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="M12 4.5v15m7.5-7.5h-15"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+
+
+                                                </div>
+                                            </div>
+                                        ))}
+
+                                    {/* Addon Items */}
+                                    {cartItemAddons?.length > 0 &&
+                                        cartItemAddons?.map((addon, index) => (
+                                            <div
+                                                className="w-full p-4 rounded-sm bg-surface-1-light dark:bg-surface-2-dark"
+                                                key={index}
+                                            >
+                                                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                                    <div className="flex flex-col items-start gap-3">
+                                                        {/* Product Name */}
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-sm truncate text-main-text-light dark:text-main-text-dark">
+                                                                {addon?.name}
+                                                            </p>
+                                                        </div>
+
+                                                        {/* Price */}
+                                                        <div className="flex-shrink-0">
+                                                            <p className="font-medium text-md text-main-text-light dark:text-main-text-dark">
+                                                                {currency?.name} {currency?.symbol}{' '}
+                                                                {addon?.price}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Quantity Selector */}
+                                                    <div className="inline-flex items-center self-start overflow-hidden rounded-md border border-[#c8c8c8] dark:border-surface-3-dark">
+                                                        {/* DECREASE */}
+                                                        <button
+                                                            onClick={() =>
+                                                                handleAddonDecrease(
+                                                                    addon?.id,
+                                                                )
+                                                            }
+                                                            className="flex items-center justify-center w-6 h-6 transition-colors bg-white text-main-text-light hover:bg-surface-2-light disabled:opacity-50 dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                        >
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 24 24"
+                                                                fill="none"
+                                                                stroke="currentColor"
+                                                                strokeWidth={1.5}
+                                                                className="w-3 h-3"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="M19.5 12h-15"
+                                                                />
+                                                            </svg>
+                                                        </button>
+
+                                                        {/* QUANTITY */}
+                                                        <span className="flex h-6 min-w-[2rem] items-center justify-center border-l border-r border-[#c8c8c8] bg-white text-sm font-semibold text-sub-text-light dark:border-surface-3-dark dark:bg-surface-2-dark dark:text-sub-text-dark">
+                                                            {addon?.quantity}
+                                                        </span>
+
+                                                        {/* INCREASE */}
+                                                        <button
+                                                            onClick={() =>
+                                                                handleAddonIncrease(
+                                                                    addon?.id,
+                                                                )
+                                                            }
+                                                            className="flex items-center justify-center w-6 h-6 transition-colors bg-white text-main-text-light hover:bg-surface-2-light dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                        >
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 24 24"
+                                                                fill="none"
+                                                                stroke="currentColor"
+                                                                strokeWidth={1.5}
+                                                                className="w-3 h-3"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="M12 4.5v15m7.5-7.5h-15"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        ))}
+
+                                    {/* Divider */}
+                                    <div className="mt-5 h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
+
+                                    {/* Product Price */}
+                                    <div className="flex items-center w-full">
+                                        <span className="font-medium text-left text-main-text-light dark:text-main-text-dark">
+                                            {__('Total Price')}
+                                        </span>
+                                        <span className="ml-auto text-right text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
+                                            {currency?.symbol}
+                                            {smartphoneTotalPrice[smartphone?.id] || 0}
+                                        </span>
+                                    </div>
+
+                                    {/* Buttons */}
+                                    <div className="flex w-full gap-x-4">
+                                        {auth?.user && (
+                                            <>
+                                                {!isInCart && (
+                                                    <>
+                                                        {/* Add to cart */}
+                                                        <button
+                                                            onClick={() => {
+                                                                handleAddCartItem(
+                                                                    cartItemSmartphones,
+                                                                    cartItemAddons,
+                                                                    smartphone?.inventory_items_count,
+                                                                );
+                                                            }}
+                                                            disabled={!canActionOnSmartphone}
+                                                            className={`h-12 flex-1 rounded-md border border-main-text-light bg-white text-center text-sm font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
+                                                        >
+                                                            <div className="flex items-center justify-center">
+                                                                {cartProcessing && <Spinner />}
+
+                                                                <span>{__('Add to cart')}</span>
+                                                            </div>
+                                                        </button>
+
+                                                        {/* Buy now */}
+                                                        <button
+                                                            onClick={() =>
+                                                                handleBuyNow(
+                                                                    cartItemSmartphones,
+                                                                    cartItemAddons,
+                                                                    smartphone?.id,
+                                                                    smartphone?.inventory_items_count,
+                                                                )
+                                                            }
+                                                            disabled={!canActionOnSmartphone}
+                                                            className={`h-12 flex-1 rounded-md border border-main-text-dark bg-main-text-light text-sm font-semibold text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
+                                                        >
+                                                            <div className="flex items-center justify-center">
+                                                                {buyNowProcessing && <Spinner />}
+
+                                                                <span>{__('Buy now')}</span>
+                                                            </div>
+                                                        </button>
+                                                    </>
+                                                )}
+
+                                                {isInCart && (
+                                                    <>
+                                                        {/* Remove */}
+                                                        <button
+                                                            onClick={() => {
+                                                                handleRemoveCartItem(
+                                                                    'smartphone',
+                                                                    smartphone?.id,
+                                                                );
+                                                            }}
+                                                            className={`h-12 flex-1 rounded-md border border-main-text-light bg-white text-center text-sm font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80`}
+                                                        >
+                                                            <div className="flex items-center justify-center">
+                                                                {cartProcessing && <Spinner />}
+
+                                                                <span>{__('Remove From Cart')}</span>
+                                                            </div>
+                                                        </button>
+
+                                                        {/* Buy now */}
+                                                        <button
+                                                            onClick={() =>
+                                                                handleBuyNow(
+                                                                    cartItemSmartphones,
+                                                                    cartItemAddons,
+                                                                    smartphone?.id,
+                                                                    smartphone?.inventory_items_count,
+                                                                )
+                                                            }
+                                                            className={`h-12 flex-1 rounded-md border border-main-text-dark bg-main-text-light text-sm font-semibold text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80`}
+                                                        >
+                                                            <div className="flex items-center justify-center">
+                                                                {buyNowProcessing && <Spinner />}
+
+                                                                <span>{__('Buy now')}</span>
+                                                            </div>
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </>
+                                        )}
+
+                                        {!auth?.user && (
+                                            <>
+                                                {/* Login */}
+                                                <button
+                                                    onClick={() =>
+                                                        router.get(route('login'), {
+                                                            redirect:
+                                                                window.location.pathname +
+                                                                window.location.search,
+                                                        })
+                                                    }
+                                                    className="flex-1 h-12 text-sm font-semibold transition bg-white border rounded-md border-main-text-light text-main-text-light hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80"
+                                                >
+                                                    {__('Login')}
+                                                </button>
+
+                                                {/*Register*/}
+                                                <button
+                                                    onClick={() =>
+                                                        router.get(route('register'), {
+                                                            redirect:
+                                                                window.location.pathname +
+                                                                window.location.search,
+                                                        })
+                                                    }
+                                                    className="flex-1 h-12 text-sm font-semibold transition border rounded-md border-main-text-dark bg-main-text-light text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80"
+                                                >
+                                                    {__('Register')}
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+
+                                    {/* Accordian */}
+                                    <div className="!mt-2">
+                                        {/* Product Details */}
+                                        <Accordion
+                                            content={smartphone?.content}
+                                            label={__('About this product')}
+                                            isHtml={true}
+                                            onToggle={setToggleAccordion}
+                                            defaultOpen={toggleAccordion}
+                                        />
+                                    </div>
                                 </div>
-                            )}
+                            </div>
                         </div>
                     </div>
                 </div>,
                 document.getElementById('modal-root') || document.body,
             )}
-
-
         </>
     );
 };

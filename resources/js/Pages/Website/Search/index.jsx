@@ -5,13 +5,13 @@ import GlobalSearch from '@/Components/GlobalSearch';
 import Toast from '@/Components/Toast';
 import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
-import TextPlaceholder from 'asset/assets/images/product/textPlaceholder.webp';
 import { useConfirm } from '@/Hooks/useConfirm';
 import useWindowSize from '@/Hooks/useWindowSize';
 import Spinner from '@/Components/Spinner';
+import { useTranslation } from '@/Hooks/useTranslation';
 
 // Memoized result item component
-const ResultItem = memo(({ item, onCopyLink, generateURL, activeView }) => {
+const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, __, currency }) => {
     const { width } = useWindowSize();
     const Tag = width > 1024 ? 'a' : Link;
     // List View
@@ -21,7 +21,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView }) => {
                 href={
                     item.type === 'posts'
                         ? route('home') + generateURL(item)
-                        : route('home') + '?m-slug=' + item.slug
+                        : route('home') + '?m-slug=' + item.slug + '&single_page=true'
                 }
                 target={width > 1024 ? '_blank' : undefined}
                 onClick={() =>
@@ -30,7 +30,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView }) => {
                 className="flex flex-wrap items-center gap-4 p-1 py-4 transition-colors rounded-md cursor-pointer group hover:bg-surface-2-light dark:hover:bg-surface-2-dark"
             >
                 {/* Thumbnail */}
-                <div className="flex-shrink-0 w-12 h-12 overflow-hidden rounded-lg bg-surface-1-light dark:bg-surface-1-dark">
+                <div className="flex-shrink-0 w-12 h-12 ml-10 overflow-hidden rounded-lg bg-surface-1-light dark:bg-surface-1-dark">
                     {item?.image || item?.video_thumbnail ? (
                         <img
                             src={item.image || item?.video_thumbnail || Placeholder}
@@ -73,9 +73,9 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView }) => {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center flex-shrink-0 gap-2 transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+                <div className="flex items-center flex-shrink-0 gap-2 mr-5 transition-opacity duration-200 opacity-0 group-hover:opacity-100">
                     <button
-                        title="Copy Link"
+                        title={__('Copy Link')}
                         className="p-4 rounded-full hover:bg-surface-3-light text-main-text-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                         onClick={(e) => {
                             e.preventDefault();
@@ -106,76 +106,123 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView }) => {
             </Tag>
         )
     }
+
+
     // Grid View
     return (
         <Tag
             href={
                 item.type === 'posts'
                     ? route('home') + generateURL(item)
-                    : route('home') + '?m-slug=' + item.slug
+                    : route('home') + '?m-slug=' + item.slug + '&single_page=true'
             }
             target={width > 1024 ? '_blank' : undefined}
             onClick={() => window.history.replaceState({}, '', route('home'))}
             // Removed grid-cols to allow for vertical card stacking in a parent grid
-            className="flex flex-col gap-2 transition-all cursor-pointer group"
+            className="relative overflow-hidden transition-all duration-300 rounded-md cursor-pointer no-touch-hover group break-inside-avoid"
         >
-            <div className="relative w-full overflow-hidden rounded-xl bg-white aspect-[2/3]">
 
+            {item?.image || item?.video_thumbnail ? (
+                <div className="relative">
+                    <div className="transition-transform duration-500 group-hover:scale-105 no-touch-hover aspect-[2/3]">
+                        {/* Top gradient */}
+                        <div
+                            className="pointer-events-none absolute inset-x-0 top-0 h-[40%]"
+                            style={{
+                                background:
+                                    'linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0))',
+                                mixBlendMode: 'multiply',
+                            }}
+                        />
 
-                {item?.image || item?.video_thumbnail ? (
-                    <img
-                        src={item.image || item?.video_thumbnail || Placeholder}
-                        alt={item.title || item.name}
-                        loading="lazy"
-                        decoding="async"
-                        onError={(e) => (e.target.src = Placeholder)}
-                        className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
-                    />
+                        {/* Bottom gradient */}
+                        <div
+                            className="pointer-events-none absolute inset-x-0 bottom-0 h-[40%]"
+                            style={{
+                                background:
+                                    'linear-gradient(to top, rgba(0,0,0,0.4), rgba(0,0,0,0))',
+                                mixBlendMode: 'multiply',
+                            }}
+                        />
 
-                ) : (
-                    <div className="relative w-full overflow-hidden rounded-xl bg-white aspect-[2/3]">
                         <img
-                            src={TextPlaceholder}
-                            alt={item.title}
+                            src={item.image || item?.video_thumbnail || Placeholder}
+                            alt={item.title || item.name}
                             loading="lazy"
                             decoding="async"
                             onError={(e) => (e.target.src = Placeholder)}
-                            className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+                            className="object-cover w-full h-full"
                         />
                     </div>
-                )}
 
-                <div className="absolute left-3 top-3">
-                    <span className="text-[8px] text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] sm:text-[9px] md:text-[10px] lg:text-[17px]">
-                        {item?.tag}
-                    </span>
-                </div>
+                    <div className="absolute left-3 top-3">
+                        <span className="text-white font-semibold text-[14px]">
+                            {item?.tag}
+                        </span>
+                    </div>
 
-                <div className="absolute inset-x-0 bottom-0 p-4">
-                    <div className="mt-1 flex items-center justify-between text-[8px] font-bold text-gray-200 drop-shadow-sm sm:text-[9px] md:text-[10px] lg:text-[17px]">
-                        <p className="text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] overflow-hidden text-ellipsis whitespace-nowrap block">
-                            {item?.content && item.content.length > 25 ? (
-                                <span
-                                    dangerouslySetInnerHTML={{
-                                        __html:
-                                            item.content.substring(0, 25) +
-                                            '...',
-                                    }}
-                                />
-                            ) : (
-                                <span
-                                    dangerouslySetInnerHTML={{
-                                        __html: item?.content,
-                                    }}
-                                />
-                            )}
-                        </p>
+                    <div className="absolute inset-x-0 bottom-0 p-4">
+
+                        {item?.type === 'smartphones' && (
+                            <div className="mt-2 flex flex-col font-semibold items-start justify-between text-[14px]">
+                                <p className="block overflow-hidden text-white text-ellipsis whitespace-nowrap">
+                                    {item.selling_info?.total_price
+                                        ? `${currency?.symbol}${item.selling_info.total_price}`
+                                        : ''}
+                                </p>
+                                <p className="block overflow-hidden text-white text-ellipsis whitespace-nowrap">
+                                    {item.name.length > 20
+                                        ? item.name.slice(0, 20) + '...'
+                                        : item.name}{' '}
+                                    (
+                                    {item.capacity.length > 10
+                                        ? item.capacity.slice(0, 10) + '...'
+                                        : item.capacity}
+                                    )
+                                </p>
+
+
+                            </div>
+                        )}
+
+
+                        {item?.type === 'posts' && (
+                            <div className="mt-1 flex items-center justify-between text-[14px]">
+                                <p className="flex-1 min-w-0 font-semibold leading-relaxed text-main-text-dark">
+                                    <span
+                                        className="line-clamp-2 break-all !display-['-webkit-box'] [&_*]:inline"
+                                        dangerouslySetInnerHTML={{
+                                            __html: item?.content?.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(),
+                                        }}
+                                    />
+                                </p>
+                            </div>
+                        )}
 
                     </div>
                 </div>
+            ) : (
+                <div className="relative flex flex-col bg-surface-2-light dark:bg-surface-2-dark p-[18px] text-black dark:text-white w-full min-h-[clamp(300px,100%,100%)]">
 
-            </div>
+                    <div className="absolute left-4 top-3">
+                        <span className="text-black dark:text-white font-semibold text-[14px]">
+                            {item?.tag}
+                        </span>
+                    </div>
 
+
+
+                    <div className="mt-10">
+                        <p className="line-clamp-[10] whitespace-pre-line break-all opacity-90 text-[14px]">
+                            <span
+                                dangerouslySetInnerHTML={{
+                                    __html: item?.content.trim(),
+                                }}
+                            ></span>
+                        </p>
+                    </div>
+                </div>
+            )}
         </Tag>
     );
 
@@ -192,7 +239,10 @@ const Index = ({
     search_history_next_page_url,
     all_search_histories
 }) => {
-    const { auth } = usePage().props;
+    const { auth, currency } = usePage().props;
+
+    // Translation Hook
+    const { __ } = useTranslation();
 
     // Consolidated state management
     const [state, setState] = useState({
@@ -240,7 +290,7 @@ const Index = ({
 
     const generateURL = useCallback((post) => {
         return (
-            `?slug=${encodeURIComponent(post?.slug)}&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''
+            `?slug=${encodeURIComponent(post?.slug)}&single_page=true&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''
             }` +
             `${post?.longitude != null ? '&lng=' + encodeURIComponent(post?.longitude) : ''}` +
             `${post?.location_name != null
@@ -333,7 +383,7 @@ const Index = ({
                 updateState({ isFetchingMoreHistories: false });
             }
         } catch (err) {
-            console.error('Error fetching more search histories:', err);
+            console.error(__('Error fetching more search histories') + ':', err);
             updateState({ isFetchingMoreHistories: false });
         }
     }, [state.searchHistoriesNextPageUrl, state.isFetchingMoreHistories]);
@@ -356,7 +406,7 @@ const Index = ({
                 });
             }
         } catch (err) {
-            console.error('Error fetching history results:', err);
+            console.error(__('Error fetching history results') + ':', err);
         }
     }, [auth.user]);
 
@@ -393,7 +443,7 @@ const Index = ({
             }
         } catch (err) {
             updateUiState({
-                errorMessage: err.message || 'Failed to fetch search results',
+                errorMessage: err.message || __('Failed to fetch search results'),
                 showErrorMessage: true
             });
             updateState({ searchHistoryLoading: false });
@@ -470,7 +520,7 @@ const Index = ({
         } catch (err) {
             updateUiState({
                 showErrorMessage: true,
-                errorMessage: 'Error fetching more results: ' + err.message
+                errorMessage: __('Error fetching more results') + ':' + ' ' + err.message
             });
             updateState({ isFetchingMore: false });
         }
@@ -483,12 +533,12 @@ const Index = ({
 
         try {
             const result = await confirm({
-                title: 'Are You Sure You Want To Delete Your Search History?',
-                text: "You Won't Be Able To Revert This!",
+                title: __('Are You Sure You Want To Delete Your Search History') + '?',
+                text: __("You Won't Be Able To Revert This") + "!",
                 icon: 'danger',
                 showCancelButton: true,
-                confirmButtonText: 'Yes, Delete it!',
-                cancelButtonText: 'Cancel'
+                confirmButtonText: __('Yes'),
+                cancelButtonText: __('No')
             });
 
             if (result.isConfirmed) {
@@ -528,7 +578,7 @@ const Index = ({
 
         } catch (e) {
             updateUiState({
-                errorMessage: e.message || 'Something went wrong',
+                errorMessage: e.message || __('Something went wrong'),
                 showErrorMessage: true
             });
             updateState({ searchHistoryLoading: false });
@@ -617,11 +667,11 @@ const Index = ({
     const getNoResultsMessage = useCallback(() => {
         if (hasPerformedSearch() && displayResults.length === 0 && currentResults.length === 0) {
             if (query && query.trim() !== '') {
-                return `No results found for "${query}"`;
+                return __('No results found for') + ": " + query;
             }
-            return 'No results found for your search';
+            return __('No results found for your search');
         }
-        return 'Try To Search Something To See Results';
+        return __('Try To Search Something To See Results');
     }, [hasPerformedSearch, displayResults.length, currentResults.length, state.activeTab, query]);
 
 
@@ -764,7 +814,7 @@ const Index = ({
                         }));
                     }
                 } catch (err) {
-                    console.error('Fetch matching history failed', err);
+                    console.error(__('Fetch matching history failed'), err);
                 }
             }
 
@@ -814,7 +864,7 @@ const Index = ({
 
     return (
         <MainLayout>
-            <Head title="Search" />
+            <Head title={__('Search', true)} />
 
             <ConfirmDialog />
 
@@ -890,7 +940,7 @@ const Index = ({
                                         >
                                             <div className="flex items-center gap-1">
                                                 {tab.icon}
-                                                <span>{tab.label}</span>
+                                                <span>{__(tab.label)}</span>
                                                 <span className={`text-xs ${state.activeTab === tab.key ? 'text-main-text-dark dark:text-main-text-light' : 'text-main-text-light dark:text-main-text-dark'}`}>({tab.count})</span>
                                             </div>
                                         </button>
@@ -1002,14 +1052,14 @@ const Index = ({
                                 })()}
 
                                 {matchTypes.map((mt) => (
-                                    <button
+                                    <div
                                         key={mt}
                                         onClick={() =>
                                             updateState({
                                                 activeMatchType: state.activeMatchType === mt ? null : mt,
                                             })
                                         }
-                                        className={`text-xs  py-1 transition-colors text-main-text-light dark:text-main-text-dark`}
+                                        className={`text-xs  py-1 transition-colors cursor-pointer text-main-text-light dark:text-main-text-dark`}
                                         aria-pressed={state.activeMatchType === mt}
                                     >
                                         <div className="flex items-center">
@@ -1038,7 +1088,7 @@ const Index = ({
                                             )}
                                         </div>
 
-                                    </button>
+                                    </div>
                                 ))}
 
 
@@ -1051,18 +1101,18 @@ const Index = ({
                                     className={`
               p-1 rounded-lg transition-all duration-200
               ${activeView === 'list'
-                                            ? 'bg-surface-1-light dark:bg-surface-1-dark'
-                                            : 'hover:bg-surface-1-light dark:hover:bg-surface-1-dark'
+                                            ? 'bg-surface-2-light dark:bg-surface-2-dark'
+                                            : 'hover:bg-surface-2-light dark:hover:bg-surface-2-dark'
                                         }
             `}
                                     aria-label="List view"
-                                    title="List view"
+                                    title={__("List view")}
                                 >
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
                                         viewBox="0 0 24 24"
-                                        strokeWidth={1}
+                                        strokeWidth={1.5}
                                         stroke="currentColor"
                                         className="size-7"
                                     >
@@ -1080,12 +1130,12 @@ const Index = ({
                                     className={`
               p-1 rounded-lg transition-all duration-200
               ${activeView === 'grid'
-                                            ? 'bg-surface-1-light dark:bg-surface-1-dark'
-                                            : 'hover:bg-surface-1-light dark:hover:bg-surface-1-dark'
+                                            ? 'bg-surface-2-light dark:bg-surface-2-dark'
+                                            : 'hover:bg-surface-2-light dark:hover:bg-surface-2-dark'
                                         }
             `}
                                     aria-label="Grid view"
-                                    title="Grid view"
+                                    title={__("Grid view")}
                                 >
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -1116,7 +1166,7 @@ const Index = ({
                         {state.searchHistoryLoading && typeof state.activeTab === 'number' ? (
                             <div className="flex items-center justify-center py-16" role="status" aria-live="polite">
                                 <Spinner />
-                                <span className="sr-only">Loading results...</span>
+                                <span className="sr-only">{__('Loading results')}...</span>
                             </div>
                         ) : (
                             finalResults.map((item) => (
@@ -1126,6 +1176,8 @@ const Index = ({
                                     onCopyLink={handleCopyLink}
                                     generateURL={generateURL}
                                     activeView={activeView}
+                                    __={__}
+                                    currency={currency}
                                 />
                             ))
                         )}
@@ -1143,7 +1195,7 @@ const Index = ({
                             <div className="flex items-center justify-center">
                                 <Spinner />
                             </div>
-                            <span>Loading more...</span>
+                            <span>{__('Loading more')}...</span>
                         </div>
                     )}
 
@@ -1174,7 +1226,7 @@ const Index = ({
                                     currentResults.length === 0 &&
                                     state.activeTab === 'all' && (
                                         <p className="mt-2 text-sm text-sub-text-light dark:text-sub-text-dark">
-                                            Try adjusting your search terms or filters
+                                            {__("Try adjusting your search terms or filters")}
                                         </p>
                                     )}
                             </div>

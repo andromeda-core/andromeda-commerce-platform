@@ -21,7 +21,6 @@ class ProductController extends Controller
         }
 
         $data = $this->product->getSingleSmartphone($request, $slug);
-
         if ($data['status'] === false) {
             return response()->json([
                 'status' => false,

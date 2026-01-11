@@ -46,8 +46,13 @@ class SmartphoneController extends Controller implements HasMiddleware
         $model_names = $this->smartphone->getModelNames();
         $capacities = $this->smartphone->getCapacities();
         $categories = $this->smartphone->getCategories();
+        $countries = $this->smartphone->getCountries();
+        $conditions = $this->smartphone->getConditions();
+        $courier_companies = $this->smartphone->getCourierCompanies();
+        $return_policies = $this->smartphone->getReturnPolicies();
+        $addons = $this->smartphone->getAddons();
 
-        return Inertia::render('Dashboard/Smartphones/create', compact('colors', 'model_names', 'capacities', 'categories'));
+        return Inertia::render('Dashboard/Smartphones/create', compact('colors', 'model_names', 'capacities', 'categories', 'countries', 'conditions', 'courier_companies', 'return_policies', 'addons'));
     }
 
     public function store(Request $request)
@@ -94,8 +99,13 @@ class SmartphoneController extends Controller implements HasMiddleware
         $model_names = $this->smartphone->getModelNames();
         $capacities = $this->smartphone->getCapacities();
         $categories = $this->smartphone->getCategories();
+        $countries = $this->smartphone->getCountries();
+        $conditions = $this->smartphone->getConditions();
+        $courier_companies = $this->smartphone->getCourierCompanies();
+        $return_policies = $this->smartphone->getReturnPolicies();
+        $addons = $this->smartphone->getAddons();
 
-        return Inertia::render('Dashboard/Smartphones/edit', compact('smartphone', 'colors', 'model_names', 'capacities', 'categories'));
+        return Inertia::render('Dashboard/Smartphones/edit', compact('colors', 'model_names', 'capacities', 'categories', 'countries', 'conditions', 'courier_companies', 'return_policies', 'smartphone', 'addons'));
     }
 
     public function update(Request $request, ?string $id = null)

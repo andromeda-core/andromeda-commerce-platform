@@ -27,6 +27,7 @@ export default function index({ general_setting }) {
         app_pwa_logo: null,
         is_removed_app_pwa_logo: false,
         app_description: general_setting?.app_description || '',
+        app_product_delivery_info: general_setting?.app_product_delivery_info || '',
     });
 
     // Optional for Tracking File Upload Status
@@ -149,6 +150,19 @@ export default function index({ general_setting }) {
                                         Error={errors.app_description}
                                         Rows={1}
                                         Placeholder="Please Enter Your Appliation Description For Breif"
+                                    />
+
+
+                                    <Textarea
+                                        Action={(e) => setData('app_product_delivery_info', e.target.value)}
+                                        Id={'app_product_delivery_info'}
+                                        Name={'app_product_delivery_info'}
+                                        InputName={'Product Delivery Information'}
+                                        Required={false}
+                                        Value={data.app_product_delivery_info}
+                                        Error={errors.app_product_delivery_info}
+                                        Rows={1}
+                                        Placeholder="Please Enter Product Delivery Information"
                                     />
                                 </div>
 

@@ -31,17 +31,18 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user()?->load(['customer', 'roles']);
+
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request?->user() ? array_merge(
-                    $request->user()->toArray(),
-                    [
-                        'role' => $request->user()->roles()->pluck('name')->implode(''),
-                        'permissions' => $request->user()->getAllPermissions()->pluck('name'),
-                    ],
+                'user' => $user ? [
+                    ...collect($user)->except('roles')->toArray(),
+                    'customer' => $user->customer,
+                    'role' => $user->roles->pluck('name')->implode(''),
+                    'permissions' => $user->getAllPermissions()->pluck('name'),
 
-                ) : null,
+                ] : null,
             ],
 
             'flash' => function () {
@@ -58,8 +59,8 @@ class HandleInertiaRequests extends Middleware
 
             'asset' => asset(''),
 
-            ...($request->user() && $request->user()?->hasRole('Customer') && $request->routeIs('home') ? [
-                'cart_items' => CartItem::where('customer_id', $request->user()->customer?->id)->get(),
+            ...($user && $user?->hasRole('Customer') && $request->routeIs('home') ? [
+                'cart_items' => CartItem::where('customer_id', $user->customer?->id)->get(),
             ] : ['cart_items' => []]),
         ];
     }

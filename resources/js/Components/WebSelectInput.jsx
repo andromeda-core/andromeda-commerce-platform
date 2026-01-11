@@ -5,7 +5,7 @@ import Select from 'react-select';
 export default function WebSelectInput({
     Name,
     Id,
-    CustomCss,
+    CustomCss = null,
     Required = false,
     InputName,
     Error,
@@ -25,7 +25,7 @@ export default function WebSelectInput({
             ...base,
             backgroundColor: '#2a2a2a',
             color: '#ffffff',
-            border: '1.5px solid #3a3a3a',
+            border: '1px solid #3a3a3a',
             borderRadius: '6px',
             minHeight: '40px',
             outline: 'none !important',
@@ -155,7 +155,7 @@ export default function WebSelectInput({
             ...base,
             backgroundColor: '#ffffff',
             color: '#111827',
-            border: '1.5px solid #c8c8c8',
+            border: '1px solid #c8c8c8',
             borderRadius: '6px',
             minHeight: '40px',
             outline: 'none !important',
@@ -267,7 +267,7 @@ export default function WebSelectInput({
         }),
         placeholder: (base) => ({
             ...base,
-            color: '#6b7280',
+            color: '#9ca3af',
             fontWeight: 400,
             fontSize: "0.875rem",
             lineHeight: "1.25rem"
@@ -291,7 +291,7 @@ export default function WebSelectInput({
 
     return (
         <>
-            <div className={`${CustomCss} w-full`}>
+            <div className={`${CustomCss ? CustomCss : ''} w-full`}>
                 <label
                     htmlFor={Id}
                     className="mb-1.5 block text-sm font-medium text-main-text-light dark:text-main-text-dark"

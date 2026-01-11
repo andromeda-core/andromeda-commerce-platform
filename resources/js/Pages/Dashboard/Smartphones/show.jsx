@@ -26,7 +26,7 @@ export default function Show({ smartphone }) {
             <Card
                 Content={
                     <>
-                        <div className="my-3 flex flex-wrap justify-end gap-4">
+                        <div className="flex flex-wrap justify-end gap-4 my-3">
                             <LinkButton
                                 Text={'Edit Smartphone'}
                                 URL={route('dashboard.smartphones.edit', smartphone.id)}
@@ -103,10 +103,10 @@ export default function Show({ smartphone }) {
                                                     smartphone.colors.map((color) => (
                                                         <span
                                                             key={color.id}
-                                                            className="flex items-center gap-2 rounded-md border border-gray-300 px-2 py-1 dark:border-gray-600"
+                                                            className="flex items-center gap-2 px-2 py-1 border border-gray-300 rounded-md dark:border-gray-600"
                                                         >
                                                             <span
-                                                                className="h-4 w-4 rounded-full border"
+                                                                className="w-4 h-4 border rounded-full"
                                                                 style={{
                                                                     backgroundColor: color.code,
                                                                 }}
@@ -146,8 +146,8 @@ export default function Show({ smartphone }) {
                                             <dd className="font-medium text-gray-900 dark:text-gray-100">
                                                 {(smartphone?.selling_info &&
                                                     currency.symbol +
-                                                        ' ' +
-                                                        smartphone?.selling_info?.total_price) ||
+                                                    ' ' +
+                                                    smartphone?.selling_info?.total_price) ||
                                                     'N/A'}
                                             </dd>
                                         </div>
@@ -158,6 +158,57 @@ export default function Show({ smartphone }) {
                                             </dt>
                                             <dd className="font-medium text-gray-900 dark:text-gray-100">
                                                 {smartphone?.tag || 'N/A'}
+                                            </dd>
+                                        </div>
+
+
+                                        <div className="flex justify-between py-3">
+                                            <dt className="text-gray-600 dark:text-gray-400">
+                                                Country/Region
+                                            </dt>
+                                            <dd className="font-medium text-gray-900 dark:text-gray-100">
+                                                {smartphone?.country?.name || 'N/A'}
+                                            </dd>
+                                        </div>
+
+
+
+                                        <div className="flex justify-between py-3">
+                                            <dt className="text-gray-600 dark:text-gray-400">
+                                                Condition
+                                            </dt>
+                                            <dd className="font-medium text-gray-900 dark:text-gray-100">
+                                                {smartphone?.condition?.name || 'N/A'}
+                                            </dd>
+                                        </div>
+
+
+                                        <div className="flex justify-between py-3">
+                                            <dt className="text-gray-600 dark:text-gray-400">
+                                                Return Policy
+                                            </dt>
+                                            <dd className="font-medium text-gray-900 dark:text-gray-100">
+                                                {smartphone?.return_policy?.name || 'N/A'}
+                                            </dd>
+                                        </div>
+
+
+                                        <div className="flex justify-between py-3">
+                                            <dt className="text-gray-600 dark:text-gray-400">
+                                                Courier Company
+                                            </dt>
+                                            <dd className="font-medium text-gray-900 dark:text-gray-100">
+                                                {smartphone?.courier_company?.courier_name || 'N/A'}
+                                            </dd>
+                                        </div>
+
+
+                                        <div className="flex justify-between py-3">
+                                            <dt className="text-gray-600 dark:text-gray-400">
+                                                Max Delivery Days
+                                            </dt>
+                                            <dd className="font-medium text-gray-900 dark:text-gray-100">
+                                                {smartphone?.delivery_days || 'N/A'}
                                             </dd>
                                         </div>
                                     </dl>
@@ -191,7 +242,7 @@ export default function Show({ smartphone }) {
                                                                     src={img}
                                                                     alt={`Image ${index + 1}`}
                                                                     loading="lazy"
-                                                                    className="h-full w-full select-none rounded-lg object-cover"
+                                                                    className="object-cover w-full h-full rounded-lg select-none"
                                                                 />
                                                                 <div className="swiper-lazy-preloader dark:swiper-lazy-preloader-white"></div>
                                                             </SwiperSlide>

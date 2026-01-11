@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Website;
 use App\Http\Controllers\Controller;
 use App\Repositories\GlobalSearch\Interface\IGlobalSearchRepository;
 use App\Repositories\Posts\Interface\IPostRepository;
-use App\Repositories\SearchHistories\Interface\ISearchHistoryRepository;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -14,7 +13,6 @@ class PostController extends Controller
     public function __construct(
         private IPostRepository $post,
         private IGlobalSearchRepository $globalSearch,
-        private ISearchHistoryRepository $search_history
     ) {}
 
     public function index(Request $request)

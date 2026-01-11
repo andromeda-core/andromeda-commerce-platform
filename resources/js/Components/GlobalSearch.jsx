@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import SelectInput from '@/Components/SelectInput';
 import useWindowSize from '@/Hooks/useWindowSize';
 import axios from 'axios';
 import { createPortal } from 'react-dom';
@@ -11,6 +10,7 @@ import getCookie from '@/Hooks/useGetCookie';
 import Toast from './Toast';
 import Spinner from './Spinner';
 import WebSelectInput from './WebSelectInput';
+import { useTranslation } from '@/Hooks/useTranslation';
 
 
 const GlobalSearch = ({
@@ -22,6 +22,10 @@ const GlobalSearch = ({
     defaultFiltersCleared = false,
 }) => {
     const windowSize = useWindowSize();
+
+    // Translation Hook
+    const { __ } = useTranslation();
+
     const [searchApplying, setSearchApplying] = useState(false);
 
     const [ErrorMessage, setErrorMessage] = useState(null);
@@ -40,7 +44,7 @@ const GlobalSearch = ({
     const [showProducts, setShowProducts] = useState(true);
 
     const [postPreferences, setPostPreferences] = useState({
-        // text: true,
+        text: true,
         videos: true,
         images: true,
         show_posts: showPosts,
@@ -170,7 +174,7 @@ const GlobalSearch = ({
 
             onClose(selectedDates, dateStr, instance) {
                 if (selectedDates.length !== 2 && selectedDates.length !== 0) {
-                    setInfoMessage('Please select both start and end dates.');
+                    setInfoMessage(__('Please select both start and end dates.'));
                     setShowInfoMessage(true);
                     setPostFilters((prev) => ({
                         ...prev,
@@ -202,7 +206,7 @@ const GlobalSearch = ({
                 setAutoCompletionDropdown(true);
                 axios
                     .post(route('website.global-search.auto-completion'), {
-                        search: autoCompletionLocationSearch, // send in request body
+                        search: autoCompletionLocationSearch,
                     })
                     .then((res) => {
                         const predictions = res.data.data.predictions || [];
@@ -210,7 +214,7 @@ const GlobalSearch = ({
                         setAutoCompletionResults(predictions);
                         setAutoCompletionLoading(false);
                         if (predictions.length < 1) {
-                            setInfoMessage('No Results Found');
+                            setInfoMessage(res.data.message || __('No Results Found'));
                             setShowInfoMessage(true);
                             setAutoCompletionDropdown(false);
                         }
@@ -219,7 +223,7 @@ const GlobalSearch = ({
         } catch (e) {
             setAutoCompletionLoading(false);
             setAutoCompletionDropdown(true);
-            setErrorMessage(e.message || 'Something went wrong');
+            setErrorMessage(e.message || __('Something went wrong'));
             setShowErrorMessage(true);
         }
     };
@@ -280,7 +284,7 @@ const GlobalSearch = ({
                 }
             })
             .catch((e) => {
-                setErrorMessage(e.message || 'Something went wrong');
+                setErrorMessage(e.message || __('Something went wrong'));
                 setShowErrorMessage(true);
                 setAddressReady(false);
             })
@@ -336,11 +340,11 @@ const GlobalSearch = ({
 
         if (type == 'search_history') {
             if (postFilters.from_floor_id != '' && postFilters.to_floor_id == '') {
-                setInfoMessage('Please Select (To Floor)');
+                setInfoMessage(__('Please Select (To Floor)'));
                 setShowInfoMessage(true);
                 return;
             } else if (postFilters.to_floor_id != '' && postFilters.from_floor_id == '') {
-                setInfoMessage('Please Select (From Floor)');
+                setInfoMessage(__('Please Select (From Floor)'));
                 setShowInfoMessage(true);
                 return;
             }
@@ -370,11 +374,11 @@ const GlobalSearch = ({
         if (type !== 'filter') {
 
             if (postFilters.from_floor_id != '' && postFilters.to_floor_id == '') {
-                setInfoMessage('Please Select (To Floor)');
+                setInfoMessage(__('Please Select (To Floor)'));
                 setShowInfoMessage(true);
                 return;
             } else if (postFilters.to_floor_id != '' && postFilters.from_floor_id == '') {
-                setInfoMessage('Please Select (From Floor)');
+                setInfoMessage(__('Please Select (From Floor)'));
                 setShowInfoMessage(true);
                 return;
             }
@@ -446,12 +450,12 @@ const GlobalSearch = ({
 
                     if (!isPrefChanged) {
                         if (currentQuery !== '') {
-                            setInfoMessage('To Apply Search Please Search Anything Else');
+                            setInfoMessage(__('To Apply Search Please Search Anything Else'));
                             setShowInfoMessage(true);
                             return;
                         }
 
-                        setInfoMessage('Please search something first');
+                        setInfoMessage(__('Please search something first'));
                         setShowInfoMessage(true);
                         return;
                     }
@@ -541,6 +545,20 @@ const GlobalSearch = ({
     // };
 
 
+    // Clearing Search States when spatiotemporal filter modla closes
+    useEffect(() => {
+
+        if (!isSpatiotemporalFilters) {
+            setSearchQuery('');
+            setAutoCompletionLocationSearch('');
+            setAutoCompletionDropdown(false);
+            setAutoCompletionResults([]);
+            setAutoCompletionLoading(false);
+            setAddressReady(false);
+        }
+
+    }, [isSpatiotemporalFilters]);
+
     return (
         <>
             {(showErrorMessage || showInfoMessage) && (
@@ -577,7 +595,7 @@ const GlobalSearch = ({
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
                                     stroke="currentColor"
-                                    className="absolute cursor-pointer text-main-text-light left-3 size-5 dark:text-main-text-dark"
+                                    className="absolute cursor-pointer text-main-text-light left-3 sm:left-4 size-5 dark:text-main-text-dark"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -611,7 +629,7 @@ const GlobalSearch = ({
 
 
                                 <button
-                                    className={`transition rounded-full text-main-text-light dark:text-main-text-dark ${searchQuery !== '' ? 'opaticy-100' : 'opacity-0 pointer-events-none'}`}
+                                    className={`transition  rounded-full text-main-text-light dark:text-main-text-dark ${searchQuery !== '' ? 'opaticy-100' : 'opacity-0 pointer-events-none'}`}
                                     onClick={() => {
                                         setSearchQuery('');
                                         setIsPrefChanged(true);
@@ -642,7 +660,7 @@ const GlobalSearch = ({
 
                         {additional_filters && (
                             <button
-                                className="mr-1.5 rounded-full text-main-text-light transition dark:text-main-text-dark sm:mr-2 sm:p-2"
+                                className="mr-3 transition rounded-full text-main-text-light dark:text-main-text-dark sm:mr-2 sm:p-2"
                                 onClick={() => setIsSpatiotemporalFilters(true)}
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="text-main-text-light size-5 dark:text-main-text-dark">
@@ -677,7 +695,7 @@ const GlobalSearch = ({
                                     {/* Header */}
                                     <div className="flex items-center justify-start shrink-0 ">
                                         <h2 className="text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
-                                            Advanced Search
+                                            {__('Advanced Search')}
                                         </h2>
 
                                     </div>
@@ -690,7 +708,7 @@ const GlobalSearch = ({
                                             <div className="z-[50] mx-auto w-full transition-all duration-300">
                                                 <div className="py-2 mx-auto sm:py-3">
                                                     <label htmlFor="advanced_search_input" className="mx-1 text-sm font-medium text-main-text-light dark:text-main-text-dark">
-                                                        Keywords Search
+                                                        {__('Keywords Search')}
                                                     </label>
                                                     <div className="flex items-center w-full p-1 mt-2 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-2-dark sm:p-1">
                                                         <div className="relative flex items-center w-full rounded-md">
@@ -698,7 +716,7 @@ const GlobalSearch = ({
                                                                 ref={modalSearchInputRef}
                                                                 type="text"
                                                                 id='advanced_search_input'
-                                                                placeholder='Enter Keywords'
+                                                                placeholder={__('Enter Keywords')}
                                                                 className="flex-1 ml-0 text-sm placeholder-gray-400 bg-transparent border-none outline-none text-main-text-light focus:ring-0 dark:text-main-text-dark"
                                                                 value={searchQuery}
                                                                 onChange={(e) => {
@@ -730,7 +748,7 @@ const GlobalSearch = ({
 
                                                             {searchQuery !== '' && (
                                                                 <button
-                                                                    className="mr-2 rounded-full p-1.5 text-main-text-light transition bg-surface-1-light  dark:text-main-text-dark  sm:p-2"
+                                                                    className="mr-2 rounded-full p-1.5 text-main-text-light transition dark:bg-surface-3-dark bg-surface-1-light  dark:text-main-text-dark sm:p-2"
                                                                     onClick={() => {
                                                                         setSearchQuery('');
                                                                         setIsPrefChanged(true);
@@ -767,7 +785,7 @@ const GlobalSearch = ({
                                             {/* Address Input */}
                                             <div className="mt-3 mb-5">
                                                 <label htmlFor="advanced_address_input" className="mx-1 text-sm font-medium text-main-text-light dark:text-main-text-dark">
-                                                    Location
+                                                    {__('Location')}
                                                 </label>
                                                 <div className="flex items-center p-1 mt-2 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-2-dark">
                                                     <div className="relative flex items-center w-full rounded-md">
@@ -775,7 +793,7 @@ const GlobalSearch = ({
                                                         <input
                                                             key={getPlaceDetails}
                                                             id='advanced_address_input'
-                                                            placeholder='Enter an address to filter by location'
+                                                            placeholder={__('Enter an address to filter by location')}
                                                             type="search"
                                                             className="flex-1 ml-0 text-sm text-black placeholder-gray-400 bg-transparent border-none outline-none focus:ring-0 dark:text-main-text-dark"
                                                             value={autoCompletionLocationSearch}
@@ -844,7 +862,7 @@ const GlobalSearch = ({
                                                     {/* Radius */}
                                                     <div className="relative col-span-1">
                                                         <label className="block mx-1 mb-2 text-sm font-medium text-main-text-light dark:text-main-text-dark">
-                                                            Radius (Optional)
+                                                            {__('Radius')} ({__('Optional')})
                                                         </label>
                                                         <div
                                                             onClick={() => setIsRadiusModal(true)}
@@ -894,6 +912,7 @@ const GlobalSearch = ({
                                                         setIsModalOpen={setIsRadiusModal}
                                                         lat={postFilters.address.lat}
                                                         lng={postFilters.address.lng}
+                                                        __={__}
                                                         onRadiusChange={(newRadius) => {
                                                             setPostFilters((prev) => ({
                                                                 ...prev,
@@ -909,7 +928,7 @@ const GlobalSearch = ({
                                                     {/* Floor Range */}
                                                     <div className="col-span-2">
                                                         <label className="mx-1 mb-2 text-sm font-medium text-main-text-light dark:text-main-text-dark">
-                                                            Floor Range (Optional)
+                                                            {__('Floor Range')}({__('Optional')})
                                                         </label>
                                                         <div className="flex items-start justify-between gap-2">
                                                             <WebSelectInput
@@ -918,7 +937,7 @@ const GlobalSearch = ({
                                                                 Value={postFilters.from_floor_id}
                                                                 items={floors.from_floors}
                                                                 itemKey="name"
-                                                                Placeholder="From Floor"
+                                                                Placeholder={__('From Floor')}
                                                                 customPlaceHolder={true}
                                                                 Action={(value) => {
                                                                     setPostFilters({
@@ -939,7 +958,7 @@ const GlobalSearch = ({
                                                                 Value={postFilters.to_floor_id}
                                                                 items={floors.to_floors}
                                                                 itemKey="name"
-                                                                Placeholder="To Floor"
+                                                                Placeholder={__('To Floor')}
                                                                 customPlaceHolder={true}
                                                                 Action={(value) => {
                                                                     setPostFilters({
@@ -957,13 +976,13 @@ const GlobalSearch = ({
                                                     {/* Time Range */}
                                                     <div className="col-span-3">
                                                         <label className="mx-1 mb-2 text-sm font-medium text-main-text-light dark:text-main-text-dark">
-                                                            Date & Time Range (Optional)
+                                                            {__('Date & Time Range')} ({__('Optional')})
                                                         </label>
                                                         <div className="flex h-[50px] mt-2 items-center gap-2 rounded-md border border-surface-3-light bg-white p-1 outline-none transition focus:outline-none focus:ring-0 dark:border-surface-3-dark dark:bg-surface-2-dark">
                                                             <input
                                                                 ref={rangeRef}
                                                                 readOnly
-                                                                placeholder="Select Date & Time Range"
+                                                                placeholder={__('Select Date & Time Range')}
                                                                 className="w-full text-sm placeholder-gray-400 bg-transparent border-none outline-none text-main-text-light focus:outline-none focus:ring-0 dark:text-main-text-dark"
                                                             />
                                                         </div>
@@ -999,7 +1018,7 @@ const GlobalSearch = ({
                                                             <span className="sr-only"></span>
                                                         </div>
                                                     )}
-                                                    Apply Search
+                                                    {__('Apply Search')}
                                                 </button>
                                             </div>
                                         )}
@@ -1013,7 +1032,7 @@ const GlobalSearch = ({
                                 <div className="absolute inset-0 bg-black/70"></div>
 
                                 {/* Fullscreen slide-over */}
-                                <div className="relative z-10 flex flex-col w-full h-full overflow-y-auto text-black bg-backgroundLight dark:bg-surface-1-dark dark:text-main-text-dark sm:pb-20">
+                                <div className="relative z-10 flex flex-col w-full h-full overflow-y-auto text-black bg-backgroundLight dark:bg-backgroundDark dark:text-main-text-dark sm:pb-20">
                                     {/* Top Bar */}
                                     <div className="flex items-center justify-center px-4 py-3">
                                         <button
@@ -1037,18 +1056,18 @@ const GlobalSearch = ({
                                         </button>
 
                                         <h2 className="mx-10 text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
-                                            Advanced Search
+                                            {__('Advanced Search')}
                                         </h2>
                                     </div>
 
                                     {/* Content */}
-                                    <div className="flex-1 px-2 space-y-6">
+                                    <div className="flex-1 px-4 space-y-6">
                                         <section className="w-full mt-4">
                                             {/* Search Bar */}
                                             <div className="z-[50] mx-auto w-full transition-all duration-300">
                                                 <div className="py-2 mx-auto sm:py-3">
                                                     <label htmlFor="advanced_search_input" className="mx-1 text-sm font-medium text-main-text-light dark:text-main-text-dark">
-                                                        Keywords Search
+                                                        {__("Keywords Search")}
                                                     </label>
                                                     <div className="flex items-center w-full p-1 mt-2 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-2-dark sm:p-1">
                                                         <div className="relative flex items-center w-full rounded-md">
@@ -1056,7 +1075,7 @@ const GlobalSearch = ({
                                                                 ref={modalSearchInputRef}
                                                                 type="text"
                                                                 id='advanced_search_input'
-                                                                placeholder='Enter Keywords'
+                                                                placeholder={__('Enter Keywords')}
                                                                 className="flex-1 ml-0 text-sm placeholder-gray-400 bg-transparent border-none outline-none text-main-text-light focus:ring-0 dark:text-main-text-dark"
                                                                 value={searchQuery}
                                                                 onChange={(e) => {
@@ -1088,7 +1107,7 @@ const GlobalSearch = ({
 
                                                             {searchQuery !== '' && (
                                                                 <button
-                                                                    className="mr-2 rounded-full p-1.5 text-main-text-light transition bg-surface-1-light  dark:text-main-text-dark  sm:p-2"
+                                                                    className="mr-2 rounded-full p-1.5 text-main-text-light transition dark:bg-surface-3-dark bg-surface-1-light  dark:text-main-text-dark sm:p-2"
                                                                     onClick={() => {
                                                                         setSearchQuery('');
                                                                         setIsPrefChanged(true);
@@ -1125,7 +1144,7 @@ const GlobalSearch = ({
                                             {/* Address Input */}
                                             <div className="mt-3 mb-5">
                                                 <label htmlFor="advanced_address_input" className="mx-1 text-sm font-medium text-main-text-light dark:text-main-text-dark">
-                                                    Location
+                                                    {__('Location')}
                                                 </label>
                                                 <div className="flex items-center p-1 mt-2 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-2-dark">
                                                     <div className="relative flex items-center w-full rounded-md">
@@ -1133,7 +1152,7 @@ const GlobalSearch = ({
                                                         <input
                                                             key={getPlaceDetails}
                                                             id='advanced_address_input'
-                                                            placeholder='Enter an address to filter by location'
+                                                            placeholder={__('Enter an address to filter by location')}
                                                             type="search"
                                                             className="flex-1 ml-0 text-sm text-black placeholder-gray-400 bg-transparent border-none outline-none focus:ring-0 dark:text-main-text-dark"
                                                             value={autoCompletionLocationSearch}
@@ -1202,7 +1221,7 @@ const GlobalSearch = ({
                                                     {/* Radius */}
                                                     <div className="relative col-span-3">
                                                         <label className="block mx-1 mb-2 text-sm font-medium text-main-text-light dark:text-main-text-dark">
-                                                            Radius (Optional)
+                                                            {__('Radius')} ({__('Optional')})
                                                         </label>
                                                         <div
                                                             onClick={() => setIsRadiusModal(true)}
@@ -1250,6 +1269,7 @@ const GlobalSearch = ({
                                                         key={isRadiusModal}
                                                         isModalOpen={isRadiusModal}
                                                         setIsModalOpen={setIsRadiusModal}
+                                                        __={__}
                                                         lat={postFilters.address.lat}
                                                         lng={postFilters.address.lng}
                                                         onRadiusChange={(newRadius) => {
@@ -1267,7 +1287,7 @@ const GlobalSearch = ({
                                                     {/* Floor Range */}
                                                     <div className="col-span-3">
                                                         <label className="mx-1 mb-2 text-sm font-medium text-main-text-light dark:text-main-text-dark">
-                                                            Floor Range (Optional)
+                                                            {__('Floor Range')} ({__('Optional')})
                                                         </label>
                                                         <div className="flex items-start justify-between gap-2">
                                                             <WebSelectInput
@@ -1276,7 +1296,7 @@ const GlobalSearch = ({
                                                                 Value={postFilters.from_floor_id}
                                                                 items={floors.from_floors}
                                                                 itemKey="name"
-                                                                Placeholder="From Floor"
+                                                                Placeholder={__("From Floor")}
                                                                 customPlaceHolder={true}
                                                                 Action={(value) => {
                                                                     setPostFilters({
@@ -1297,7 +1317,7 @@ const GlobalSearch = ({
                                                                 Value={postFilters.to_floor_id}
                                                                 items={floors.to_floors}
                                                                 itemKey="name"
-                                                                Placeholder="To Floor"
+                                                                Placeholder={__("To Floor")}
                                                                 customPlaceHolder={true}
                                                                 Action={(value) => {
                                                                     setPostFilters({
@@ -1315,13 +1335,13 @@ const GlobalSearch = ({
                                                     {/* Time Range */}
                                                     <div className="col-span-3">
                                                         <label className="mx-1 mb-2 text-sm font-medium text-main-text-light dark:text-main-text-dark">
-                                                            Date & Time Range (Optional)
+                                                            {__('Date & Time Range')} ({__('Optional')})
                                                         </label>
                                                         <div className="flex h-[50px] mt-2 items-center gap-2 rounded-md border border-surface-3-light bg-white p-1 outline-none transition focus:outline-none focus:ring-0 dark:border-surface-3-dark dark:bg-surface-2-dark">
                                                             <input
                                                                 ref={rangeRef}
                                                                 readOnly
-                                                                placeholder="Select Date & Time Range"
+                                                                placeholder={__('Select Date & Time Range')}
                                                                 className="w-full text-sm placeholder-gray-400 bg-transparent border-none outline-none text-main-text-light focus:outline-none focus:ring-0 dark:text-main-text-dark"
                                                             />
                                                         </div>
@@ -1357,7 +1377,7 @@ const GlobalSearch = ({
                                                             <span className="sr-only"></span>
                                                         </div>
                                                     )}
-                                                    Apply Search
+                                                    {__('Apply Search')}
                                                 </button>
                                             </div>
                                         )}
@@ -1380,7 +1400,7 @@ const GlobalSearch = ({
                         <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto border rounded-md bg-backgroundLight border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark sm:p-8">
                             <div className="text-center">
                                 <h2 className="text-lg font-medium text-main-text-light dark:text-main-text-dark">
-                                    Please Wait While We Are Setting up Location
+                                    {__('Please Wait While We Are Setting up Location')}
                                 </h2>
 
                                 <div className="flex items-center justify-center mt-5">
@@ -1403,7 +1423,7 @@ const GlobalSearch = ({
                             <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto border rounded-md bg-backgroundLight border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark sm:p-8">
                                 <div className="text-center">
                                     <h2 className="text-lg font-medium text-main-text-light dark:text-main-text-dark">
-                                        Please Wait While We Are Finding Results For You
+                                        {__('Please Wait While We Are Finding Results For You')}
                                     </h2>
 
                                     <div className="flex items-center justify-center mt-5">

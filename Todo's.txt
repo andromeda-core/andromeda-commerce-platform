@@ -760,3 +760,205 @@ AND have all content—regular posts, product posts, and ad posts (to be impleme
 mixed, in a single home archive page. From there, if someone wants to view only posts or only products, implement filters so they can view them accordingly.
 
 
+
+
+
+NEW REQ -> (Group = 1)
+Please implement the profile section according to your understanding, following the PDF.
+Shipping Address and related contents Issue:
+For this phase, please implement the system so that users can save one billing address and one shipping address separately in the user dashboard.
+Product Page Structure
+Each product should continue to be displayed as a single page per product (one product per ID), as it is currently.
+However, even if a product has a single ID, the following information is absolutely necessary for international shipping. These are purely shipping-related details. In that sense, you already have a feature in the admin dashboard that allows adding various costs.
+Therefore, in addition to costs, any of the following items that are currently missing should be addable by the admin.
+This should be implemented statically, not dynamically, so it can be done in a simple way.
+It only means adding additional input fields per product.
+The required fields are:
+1 Country / Region
+2 Product Condition
+3 Shipping
+4 Customs & Import Fees
+5 Shipping Method
+6 Courier
+7 Return Policy
+8 Storage Capacity Add-on
+
+Timestamp issue on the post and product:
+Could you please share your opinion on this part, as it seems there is currently some confusion around it?
+
+
+
+Explanation -> (Group = 1)
+### 1 & 2. Shipping Address and Billing Address (Billing Address Wont be implemented)
+
+You may implement this according to your proposed approach.
+If supporting multiple shipping addresses requires significant development effort, it is acceptable to initially allow only one saved shipping address.
+
+However, both a shipping address and a billing address must exist as separate concepts.
+
+The billing address is mandatory and universally used across all e-commerce websites.
+In general, when a user makes a payment, they enter the payer’s information, including card details and address.
+
+
+The billing address represents who paid for the order, which makes it an essential and standard requirement.
+Every internet commerce site on earth supports a billing address.
+
+---
+
+### 3. Return Policy
+
+Each product ID has exactly one return policy.
+
+Entering a return policy manually every time a product is registered is inefficient and creates unnecessary workload.
+
+The optimal solution to reduce operational overhead is to implement Return Policy Templates that administrators can manage in advance.
+
+Administrators should be able to:
+
+* Create and store multiple return policy templates
+* Select an appropriate template when registering a product
+* Automatically attach the selected return policy to the product
+
+---
+
+### 4. Storage Capacity
+
+The storage capacity configuration already exists as a feature in the admin menu.
+No additional implementation is required for this item.
+---
+
+### 5. Country / Region Information
+
+There are two different types of country/region information in the system:
+
+1. User Profile Country/Region
+
+* Entered by the user as part of their personal information during registration
+
+2. Shipping Destination Country/Region
+
+* Entered when the buyer specifies the address where they want the product to be delivered
+
+These two must be treated as separate data fields with different purposes.
+
+---
+
+### 6. Product Status / Shipping / Customs & Import Tax / Shipping Method / Courier
+
+These fields must be implemented as dropdown selections.
+
+Since conditions vary by product, these values should be managed using administrator-defined templates.
+
+Workflow:
+* Administrators predefine multiple templates (e.g., shipping, customs, delivery conditions)
+* When registering a product, the admin selects the appropriate template
+* The selected options are then displayed automatically in all relevant user-facing screens
+
+
+
+
+
+RELATED FILTERS -> remeaning
+The video auto-play toggle should work globally, exactly as explained above, and it should be placed inside the Filter popup.
+In other words:
+When the toggle is ON in the Filter popup, all video posts across the entire site should auto-play.
+When the toggle is OFF, auto-play should be disabled for all video posts site-wide.
+Regarding the items shown in the three-dots menu on the single page:
+The Time-Space information is a type of data entered from the admin panel and includes timestamp-based information.
+When a user clicks the Time-Space text after tapping the three-dots menu on the frontend, a map should open, and the corresponding time-space location should be visually indicated on the map.
+Separately:
+The post creation date should be displayed in addition to the above.
+The post creation date must appear only on the post’s single page.
+It must not appear on the product’s single page.
+
+
+
+
+RELATED SMARTPHONe BACKEND AND ITS Frontend -> remenaing
+
+
+
+DEVEOIPMENT APPROACH
+I reviewed the smartphone backend structure you previously shared. While it is functional, I found it quite complex, and several columns defined in that structure are not actually being used or displayed on the frontend.
+
+
+
+Because of this, I would like to propose a simplified and more practical approach that aligns both the backend logic and the frontend PDF-based design.
+1. Additional Fees Module (Improved)
+Currently, we only store the fee name. I propose enhancing this module with the following structure:
+id
+name (Import Tax, VAT, etc.)
+category (tax / shipping / other)
+value_type (percentage / fixed)
+default_value (5, 10, 30, etc.)
+is_active
+
+
+
+At the product pricing stage, where the admin currently selects a fee type and manually enters a price, we can make this dynamic. The admin will select fees directly from this additional fee list.
+We will add two select inputs:
+Shipping Fee
+Import Fee
+Other Fee (which will show Other Type additonal Fee From Additional Fee list table),
+
+
+
+Based on the selected fee template, the system will automatically calculate the value, whether it is fixed or percentage-based. This will also ensure that the shipping and import fees are correctly displayed on the frontend without extra manual work.
+2. Return Policy Template
+A return policy template will be created in settings with the following fields:
+id
+name
+description
+is_active
+
+
+
+This return policy will be assigned during smartphone creation. At the same time, the admin will select the country and courier, along with delivery time (from and to).
+3. Courier Template
+I will also create a courier template with these fields:
+id
+courier_name
+courier_code
+tracking_url (Example: https://carrier.com/track/{tracking_number})
+is_international (boolean)
+is_active (boolean)
+created_at
+
+
+
+This will make courier assignment consistent and reusable across products.
+4. Conditions Template
+For product conditions, I am planning to create a simple template where only the condition name is stored. This template will then be reused and assigned during smartphone creation.
+
+
+
+5.Add-ons
+An add-ons template will be created (for example, phone cases). These add-ons will be assignable during smartphone creation.
+If no add-ons are assigned, the add-ons section will not appear on the product single page.
+
+
+
+
+
+With this structure, both the backend and frontend will be fully aligned, simpler to manage, and fully compatible with the PDF design requirements.
+
+
+
+Everything looks good except for one point.
+Regarding storage capacity:
+Although our designer created the PDF that shows multiple storage options, the original design intention of the existing system is that one unique product has one unique ID, and its storage capacity cannot be changed. From this perspective, I believe that a feature allowing users to select multiple storage capacities on the product single page is not necessary.
+In fact, this site already implements storage capacity as a template concept, where multiple storage templates can be saved in advance and loaded when needed. Given this design philosophy, users should not be able to select multiple storage options on the product single page.
+If you agree with this reasoning, then this feature can be removed.
+Instead, there is a more important issue that should be addressed.
+After a smartphone product is registered (including its price), the market price changes frequently due to exchange rate fluctuations. I think we should prioritize a feature that covers this problem.
+For example:
+A feature where the displayed price automatically updates based on exchange rates is necessary.
+In addition to that, the system should allow the admin to manually override and adjust the price of an already registered product at any time.
+I believe this pricing and exchange-rate handling functionality is more necessary and valuable than adding multiple storage selection on the product single page.
+
+
+MY REPLY
+Sounds good. We will keep the Storage Size module as it is.
+Regarding taxes, we will handle them through the Additional Fee List. All tax types will be created and managed in this module. The admin will then assign the required tax fee to a smartphone during product setup.
+This approach allows centralized tax management. Whenever the admin needs to update a tax value, they can simply update it in the Additional Fee List, and the system will automatically recalculate and update the total_price for all smartphones where that specific tax is assigned.
+This ensures consistency, reduces manual effort, and keeps pricing logic clean and maintainable.

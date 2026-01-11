@@ -5,7 +5,7 @@ import Select from 'react-select';
 export default function SelectInput({
     Name,
     Id,
-    CustomCss,
+    CustomCss = null,
     Required = false,
     InputName,
     Error,
@@ -25,6 +25,7 @@ export default function SelectInput({
             ...base,
             backgroundColor: '#0D0E12',
             color: '#ffffff',
+            minHeight: '40px',
             border: state.isFocused ? '1px solid #3b82f6' : '1px solid #4b5563',
             boxShadow: 'none',
             '&:hover': {
@@ -44,6 +45,19 @@ export default function SelectInput({
             color: '#fff',
             '&:active': {
                 backgroundColor: '#4b5563',
+            },
+        }),
+        indicatorSeparator: () => ({
+            display: 'none',
+        }),
+        valueContainer: (base) => ({
+            ...base,
+            padding: '2px 12px',
+        }),
+        indicatorsContainer: (base) => ({
+            ...base,
+            '& > div': {
+                padding: '10px',
             },
         }),
         singleValue: (base) => ({
@@ -69,6 +83,7 @@ export default function SelectInput({
             ...base,
             backgroundColor: '#ffffff', // white
             color: '#111827', // gray-900
+            minHeight: '40px',
             borderColor: state.isFocused ? '#2563eb' : '#d1d5db',
             boxShadow: 'none',
             '&:hover': {
@@ -86,6 +101,19 @@ export default function SelectInput({
             color: '#111827',
             '&:active': {
                 backgroundColor: '#e5e7eb',
+            },
+        }),
+        indicatorSeparator: () => ({
+            display: 'none',
+        }),
+        valueContainer: (base) => ({
+            ...base,
+            padding: '2px 12px',
+        }),
+        indicatorsContainer: (base) => ({
+            ...base,
+            '& > div': {
+                padding: '10px',
             },
         }),
         singleValue: (base) => ({
@@ -118,13 +146,13 @@ export default function SelectInput({
 
     return (
         <>
-            <div className={`${CustomCss} w-full`}>
+            <div className={`${CustomCss ? CustomCss : ''} w-full`}>
                 <label
                     htmlFor={Id}
-                    className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
+                    className="mb-1.5 block text-sm font-medium text-main-text-light dark:text-main-text-dark"
                 >
                     {InputName}
-                    {Required && <span className="text-red-500 dark:text-white"> *</span>}
+                    {Required && <span className="font-bold text-main-text-light dark:text-main-text-dark"> *</span>}
                 </label>
 
                 <div className="relative">
@@ -166,9 +194,11 @@ export default function SelectInput({
                     />
                 </div>
 
-                <div className="h-5 mt-2">
-                    {Error && <p className="text-sm text-red-500">{Error}</p>}
-                </div>
+                {Error && (
+                    <div className="h-5 mt-2">
+                        {Error && <p className="h-5 text-sm text-red-500">{Error}</p>}
+                    </div>
+                )}
             </div>
         </>
     );

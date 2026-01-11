@@ -91,7 +91,7 @@ export default function ShippingInvoice({ order }) {
                             viewBox="0 0 24 24"
                             strokeWidth={1.5}
                             stroke="currentColor"
-                            className="size-4"
+                            className="size-6"
                         >
                             <path
                                 strokeLinecap="round"
@@ -128,11 +128,11 @@ export default function ShippingInvoice({ order }) {
                             </h1>
 
                             <div className="mt-3 space-y-1 text-sm">
-                                <p className="break-all text-emerald-100">
-                                    📧 {generalSetting?.contact_email}
+                                <p className="text-sm text-white break-all sm:text-base">
+                                    {order.customer?.user?.email}
                                 </p>
-                                <p className="break-words text-emerald-100">
-                                    📞 {generalSetting?.contact_number}
+                                <p className="text-sm text-white break-words sm:text-base">
+                                    {order.customer?.user?.phone}
                                 </p>
                             </div>
                         </div>
@@ -158,21 +158,20 @@ export default function ShippingInvoice({ order }) {
                         <h3 className="pb-2 mb-4 text-lg font-bold text-gray-800 border-b">
                             📥 RECEIVER DETAILS
                         </h3>
-                        <p className="text-sm font-medium">{order.customer?.user?.name}</p>
+                        <p className="text-sm font-medium">{order.shipping_address?.name}</p>
                         <p className="text-sm">
-                            {order?.customer?.address_line1}
+                            {order?.shipping_address?.address_line1}
                             {', '}
-                            {order?.customer?.address_line2 != null
-                                ? order?.customer?.address_line2
+                            {order?.shipping_address?.address_line2 != null
+                                ? order?.shipping_address?.address_line2
                                 : ''}
                         </p>
                         <p className="text-sm">
-                            {order.customer?.city}, {order.customer?.state}{' '}
-                            {order.customer?.postal_code}
+                            {order.shipping_address?.city}, {order.shipping_address?.state}{' '}
+                            {order.shipping_address?.postal_code}
                         </p>
                         <div className="grid grid-cols-2 gap-4 mt-2">
-                            <p className="text-sm">📞 {order.customer?.user?.phone}</p>
-                            <p className="text-sm break-all">📧 {order.customer?.user?.email}</p>
+                            <p className="text-sm">📞 {order.shipping_address?.phone}</p>
                         </div>
                     </div>
                 </div>
@@ -230,30 +229,118 @@ export default function ShippingInvoice({ order }) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {order.order_items?.map((item, i) => (
-                                    <tr key={i} className="hover:bg-gray-50">
-                                        <td className="px-4 py-2 text-gray-900 border">
-                                            <p className="font-medium">
-                                                {item.smartphone?.model_name?.name}
-                                            </p>
-                                            <p className="text-sm text-gray-600">
-                                                {item.smartphone?.capacity?.name || 'Standard'}
-                                            </p>
-                                        </td>
-                                        <td className="px-4 py-2 text-center text-gray-900 border">
-                                            {item.quantity}
-                                        </td>
-                                        <td className="px-4 py-2 text-right text-gray-900 border">
-                                            {currency?.symbol}
-                                            {item.unit_price}
-                                        </td>
-                                        <td className="px-4 py-2 font-semibold text-right text-gray-900 border">
-                                            {currency?.symbol}
-                                            {item.sub_total}
-                                        </td>
-                                    </tr>
-                                ))}
+                                {order.order_items?.map((item, i) => {
+
+                                    const addonsTotal =
+                                        item.smartphone_addons?.reduce(
+                                            (sum, addon) => sum + Number(addon.total_price),
+                                            0
+                                        ) || 0;
+
+                                    const declaredValue =
+                                        Number(item.sub_total) + addonsTotal;
+
+                                    return (
+                                        <React.Fragment key={i}>
+                                            {/* MAIN ITEM ROW */}
+                                            <tr className="hover:bg-gray-50">
+                                                <td className="px-4 py-3 text-gray-900 align-top border">
+                                                    <p className="font-medium">
+                                                        {item.smartphone?.model_name?.name}
+                                                    </p>
+                                                    <p className="text-sm text-gray-600">
+                                                        {item.smartphone?.capacity?.name || 'Standard'}
+                                                    </p>
+                                                </td>
+
+                                                <td className="px-4 py-3 text-center text-gray-900 border">
+                                                    {item.quantity}
+                                                </td>
+
+                                                <td className="px-4 py-3 text-right text-gray-900 border">
+                                                    {currency?.symbol}{Number(item.unit_price).toFixed(2)}
+                                                </td>
+
+                                                <td className="px-4 py-3 font-semibold text-right text-gray-900 border">
+                                                    {currency?.symbol}{declaredValue.toFixed(2)}
+                                                </td>
+                                            </tr>
+
+                                            {/* BREAKDOWN ROW */}
+                                            <tr className="bg-gray-50">
+                                                <td colSpan={4} className="px-4 py-2 text-sm text-gray-600 border">
+                                                    <div className="space-y-1">
+
+                                                        {/* Product total */}
+                                                        <div className="flex justify-between">
+                                                            <span>Product Value</span>
+                                                            <span>
+                                                                {currency?.symbol}
+                                                                {Number(item.unit_price * item.quantity).toFixed(2)}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Shipping */}
+                                                        {Number(item.shipping_cost) > 0 && (
+                                                            <div className="flex justify-between">
+                                                                <span>Shipping Cost</span>
+                                                                <span>
+                                                                    {currency?.symbol}
+                                                                    {Number(item.shipping_cost).toFixed(2)}
+                                                                </span>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Import tax */}
+                                                        {Number(item.import_cost) > 0 && (
+                                                            <div className="flex justify-between">
+                                                                <span>Import / Customs Tax</span>
+                                                                <span>
+                                                                    {currency?.symbol}
+                                                                    {Number(item.import_cost).toFixed(2)}
+                                                                </span>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Add-ons */}
+                                                        {item.smartphone_addons?.length > 0 && (
+                                                            <div className="pt-2 mt-2 border-t border-dashed">
+                                                                <p className="text-xs font-semibold text-gray-700">
+                                                                    Add-ons
+                                                                </p>
+
+                                                                {item.smartphone_addons.map((addon) => (
+                                                                    <div
+                                                                        key={addon.id}
+                                                                        className="flex justify-between text-sm"
+                                                                    >
+                                                                        <span>
+                                                                            {addon.name} × {addon.quantity}
+                                                                        </span>
+                                                                        <span>
+                                                                            {currency?.symbol}
+                                                                            {Number(addon.total_price).toFixed(2)}
+                                                                        </span>
+                                                                    </div>
+                                                                ))}
+
+                                                                <div className="flex justify-between pt-1 font-medium">
+                                                                    <span>Add-ons Total</span>
+                                                                    <span>
+                                                                        {currency?.symbol}
+                                                                        {addonsTotal.toFixed(2)}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </React.Fragment>
+                                    );
+                                })}
                             </tbody>
+
                         </table>
                     </div>
                 </div>

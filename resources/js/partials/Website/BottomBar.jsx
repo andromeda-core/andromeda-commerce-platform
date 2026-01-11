@@ -11,12 +11,12 @@ const BottomBar = ({
     moreDropdown,
     setMoreDropdown,
     // cartItemsCount,
-    setFilterModal,
-    filterModal,
+    setActiveModal,
+    activeModal,
+    __
 }) => {
     const { user } = usePage().props.auth;
     const dropdownRef = useRef(null);
-
 
 
     const bottomBarRef = useRef(null);
@@ -257,6 +257,9 @@ const BottomBar = ({
                                 }}
                             >
                                 <ul className="flex flex-col">
+
+
+
                                     {user && (
                                         <>
                                             {user?.role === 'Admin' && (
@@ -280,41 +283,15 @@ const BottomBar = ({
                                                             />
                                                         </svg>
 
-                                                        <span>Dashboard</span>
+                                                        <span>{__('Dashboard')}</span>
                                                     </Link>
                                                 </li>
                                             )}
 
 
-                                            <li>
 
 
 
-                                                <button
-                                                    className={`${filterModal ? 'menu-sub-item-active' : 'menu-sub-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
-                                                    onClick={(e) => {
-                                                        setFilterModal(!filterModal);
-                                                        setMoreDropdown(false);
-                                                    }}
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        strokeWidth={1.5}
-                                                        stroke="currentColor"
-                                                        className={`size-4`}
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
-                                                        />
-                                                    </svg>
-
-                                                    <span>Filter</span>
-                                                </button>
-                                            </li>
 
                                             <li>
                                                 <Link
@@ -336,7 +313,7 @@ const BottomBar = ({
                                                             d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
                                                         />
                                                     </svg>
-                                                    My Cart{' '}
+                                                    {__('Cart')} {' '}
                                                     {/* {cartItemsCount > 0 && (
                                                         <span className="relative ml-auto">
                                                             <span className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-indigo-500 rounded-full animate-pulse">
@@ -369,7 +346,7 @@ const BottomBar = ({
                                                             d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"
                                                         />
                                                     </svg>
-                                                    My Orders
+                                                    {__('Orders')}
                                                 </Link>
                                             </li>
 
@@ -393,7 +370,7 @@ const BottomBar = ({
                                                             d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"
                                                         />
                                                     </svg>
-                                                    My Bookmarks
+                                                    {__('Bookmark')}
                                                 </Link>
                                             </li>
 
@@ -417,7 +394,7 @@ const BottomBar = ({
                                                             d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
                                                         />
                                                     </svg>
-                                                    Data Deletion
+                                                    {__('Data Deletion')}
                                                 </Link>
                                             </li>
                                         </>
@@ -427,7 +404,7 @@ const BottomBar = ({
                                         <li>
                                             <Link
                                                 href={route('login')}
-                                                className={`menu-item-inactive flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
+                                                className={`menu-sub-item-inactive flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                             >
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -443,10 +420,68 @@ const BottomBar = ({
                                                         d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75"
                                                     />
                                                 </svg>
-                                                Login
+                                                {__('Login')}
                                             </Link>
                                         </li>
                                     )}
+
+                                    <li>
+
+
+
+                                        <button
+                                            className={`${activeModal === 'global-filters' ? 'menu-sub-item-active' : 'menu-sub-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
+                                            onClick={() => {
+                                                if (activeModal === 'global-filters') {
+                                                    setActiveModal(null);
+                                                } else {
+                                                    setActiveModal('global-filters');
+                                                }
+                                                setMoreDropdown(false);
+                                            }}
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.5}
+                                                stroke="currentColor"
+                                                className={`size-4`}
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
+                                                />
+                                            </svg>
+
+                                            <span>{__('Filter')}</span>
+                                        </button>
+                                    </li>
+
+                                    <li>
+                                        <button
+                                            className={`${activeModal === 'language-filters' ? 'menu-sub-item-active' : 'menu-sub-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
+                                            onClick={(e) => {
+                                                if (activeModal === 'language-filters') {
+                                                    setActiveModal(null);
+                                                } else {
+                                                    setActiveModal('language-filters');
+                                                }
+                                                setMoreDropdown(false);
+                                            }}
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}
+                                                className={`size-4`}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="m10.5 21 5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 0 1 6-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 0 1-3.827-5.802" />
+                                            </svg>
+
+
+
+                                            <span>{__('Language')}</span>
+                                        </button>
+                                    </li>
+
 
                                     <li>
                                         <Link
@@ -469,7 +504,7 @@ const BottomBar = ({
                                                     d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.25-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z"
                                                 />
                                             </svg>
-                                            Privacy Policy
+                                            {__('Privacy Policy')}
                                         </Link>
                                     </li>
 
@@ -492,7 +527,7 @@ const BottomBar = ({
                                                     d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"
                                                 />
                                             </svg>
-                                            Contact Us
+                                            {__('Contact Us')}
                                         </Link>
                                     </li>
 
@@ -532,16 +567,16 @@ const BottomBar = ({
                                                     fill="currentColor"
                                                 />
                                             </svg>
-                                            <div className="hidden dark:block">Light Mode</div>
+                                            <div className="hidden dark:block">{__('Light Mode')}</div>
 
-                                            <div className="block dark:hidden">Dark Mode</div>
+                                            <div className="block dark:hidden">{__('Dark Mode')}</div>
                                         </button>
                                     </li>
 
                                     {user && (
                                         <li>
                                             <button
-                                                className={`flex w-full items-center gap-3 rounded-md px-2 py-2 text-sm menu-sub-item-inactive transition-colors`}
+                                                className={`flex w-full items-center gap-3 rounded-sm px-2 py-2 text-sm logout-menu-item-button transition-colors`}
                                                 onClick={() => {
                                                     router.post(route('logout'), {
                                                         onFinish: () => {
@@ -580,7 +615,7 @@ const BottomBar = ({
                                                         d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25"
                                                     />
                                                 </svg>
-                                                Logout
+                                                {__('Logout')}
                                             </button>
                                         </li>
                                     )}

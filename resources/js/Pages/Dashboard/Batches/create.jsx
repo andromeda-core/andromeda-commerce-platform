@@ -146,7 +146,7 @@ export default function create({ suppliers, smartphones, storage_locations }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Batches'}
                                     URL={route('dashboard.batches.index')}
@@ -274,7 +274,7 @@ export default function create({ suppliers, smartphones, storage_locations }) {
                                                 />
                                             </div>
 
-                                            <div className="flex w-full items-center justify-end">
+                                            <div className="flex items-center justify-end w-full">
                                                 <PrimaryButton
                                                     Text={'Add More Items'}
                                                     Type={'button'}
@@ -339,7 +339,7 @@ export default function create({ suppliers, smartphones, storage_locations }) {
                                                                             Type={'button'}
                                                                             Id={'scan_smartphone'}
                                                                             ClassName={
-                                                                                'dark:bg-deepcharcoal mt-2 dark:text-white p-2  rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
+                                                                                'dark:bg-deepcharcoal mt-6 dark:text-white p-2  rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
                                                                             }
                                                                             Icon={
                                                                                 <svg
@@ -421,7 +421,7 @@ export default function create({ suppliers, smartphones, storage_locations }) {
                                                                             Type={'button'}
                                                                             Id={'scan_smartphone'}
                                                                             ClassName={
-                                                                                'dark:bg-deepcharcoal dark:text-white p-2  rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
+                                                                                'dark:bg-deepcharcoal dark:text-white p-2  mt-6 rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
                                                                             }
                                                                             Icon={
                                                                                 <svg
@@ -479,7 +479,7 @@ export default function create({ suppliers, smartphones, storage_locations }) {
                                                                             Type={'button'}
                                                                             Id={'scan_smartphone'}
                                                                             ClassName={
-                                                                                'dark:bg-deepcharcoal dark:text-white p-2  rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
+                                                                                'dark:bg-deepcharcoal dark:text-white p-2  mt-6 rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
                                                                             }
                                                                             Icon={
                                                                                 <svg
@@ -537,7 +537,7 @@ export default function create({ suppliers, smartphones, storage_locations }) {
                                                                             Type={'button'}
                                                                             Id={'scan_smartphone'}
                                                                             ClassName={
-                                                                                'dark:bg-deepcharcoal dark:text-white p-2  rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
+                                                                                'dark:bg-deepcharcoal dark:text-white p-2 mt-6  rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
                                                                             }
                                                                             Icon={
                                                                                 <svg
@@ -595,7 +595,7 @@ export default function create({ suppliers, smartphones, storage_locations }) {
                                                                             Type={'button'}
                                                                             Id={'scan_smartphone'}
                                                                             ClassName={
-                                                                                'dark:bg-deepcharcoal dark:text-white p-2  rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
+                                                                                'dark:bg-deepcharcoal dark:text-white p-2  mt-6 rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
                                                                             }
                                                                             Icon={
                                                                                 <svg
@@ -654,7 +654,7 @@ export default function create({ suppliers, smartphones, storage_locations }) {
                                                 ))}
                                             </div>
 
-                                            <div className="flex w-full items-center justify-end">
+                                            <div className="flex items-center justify-end w-full">
                                                 <PrimaryButton
                                                     Text={'Add Extra Cost'}
                                                     Type={'button'}
@@ -681,17 +681,17 @@ export default function create({ suppliers, smartphones, storage_locations }) {
                                             </div>
 
                                             {extraCosts.length > 0 && (
-                                                <div className="col-span-1 grid grid-cols-1 gap-5 overflow-x-auto scrollbar-thin dark:scrollbar-track-slate-900 dark:scrollbar-thumb-slate-700">
+                                                <div className="grid grid-cols-1 col-span-1 gap-5 overflow-x-auto scrollbar-thin dark:scrollbar-track-slate-900 dark:scrollbar-thumb-slate-700">
                                                     <table className="w-full border-collapse">
                                                         <thead>
                                                             <tr>
-                                                                <th className="border p-2 text-left text-gray-700 dark:border-gray-700 dark:text-gray-400">
+                                                                <th className="p-2 text-left text-gray-700 border dark:border-gray-700 dark:text-gray-400">
                                                                     Cost Type
                                                                 </th>
-                                                                <th className="border p-2 text-left text-gray-700 dark:border-gray-700 dark:text-gray-400">
+                                                                <th className="p-2 text-left text-gray-700 border dark:border-gray-700 dark:text-gray-400">
                                                                     Amount
                                                                 </th>
-                                                                <th className="border p-2 text-center text-gray-700 dark:border-gray-700 dark:text-gray-400">
+                                                                <th className="p-2 text-center text-gray-700 border dark:border-gray-700 dark:text-gray-400">
                                                                     Action
                                                                 </th>
                                                             </tr>
@@ -699,14 +699,14 @@ export default function create({ suppliers, smartphones, storage_locations }) {
                                                         <tbody>
                                                             {extraCosts.map((item, idx) => (
                                                                 <tr key={idx}>
-                                                                    <td className="border p-2 dark:border-gray-700">
+                                                                    <td className="p-2 border dark:border-gray-700">
                                                                         <Input
                                                                             InputName={'Cost Type'}
                                                                             Id={'cost_type'}
                                                                             Name={'cost_type'}
                                                                             Error={
                                                                                 errors[
-                                                                                    `extra_costs.${idx}.cost_type`
+                                                                                `extra_costs.${idx}.cost_type`
                                                                                 ]
                                                                             }
                                                                             Value={item.cost_type}
@@ -724,14 +724,14 @@ export default function create({ suppliers, smartphones, storage_locations }) {
                                                                             }
                                                                         />
                                                                     </td>
-                                                                    <td className="border p-2 dark:border-gray-700">
+                                                                    <td className="p-2 border dark:border-gray-700">
                                                                         <Input
                                                                             InputName={'Amount'}
                                                                             Id={'amount'}
                                                                             Name={'amount'}
                                                                             Error={
                                                                                 errors[
-                                                                                    `extra_costs.${idx}.amount`
+                                                                                `extra_costs.${idx}.amount`
                                                                                 ]
                                                                             }
                                                                             Value={item.amount}
@@ -750,7 +750,7 @@ export default function create({ suppliers, smartphones, storage_locations }) {
                                                                         />
                                                                     </td>
 
-                                                                    <td className="border p-2 dark:border-gray-700">
+                                                                    <td className="p-2 border dark:border-gray-700">
                                                                         <div className="flex items-center justify-center">
                                                                             <PrimaryButton
                                                                                 Type={'button'}
@@ -846,11 +846,11 @@ export default function create({ suppliers, smartphones, storage_locations }) {
 
                 {smartphoneScannerOpen && (
                     <>
-                        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                             <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                             {/* Modal content */}
-                            <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
+                            <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
                                 <div className="text-center">
                                     <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                         Place The Camera On The Barcode
@@ -946,11 +946,11 @@ export default function create({ suppliers, smartphones, storage_locations }) {
 
                 {imei1ScannerOpen && (
                     <>
-                        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                             <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                             {/* Modal content */}
-                            <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
+                            <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
                                 <div className="text-center">
                                     <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                         Place The Camera On The Barcode
@@ -1013,11 +1013,11 @@ export default function create({ suppliers, smartphones, storage_locations }) {
 
                 {imei2ScannerOpen && (
                     <>
-                        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                             <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                             {/* Modal content */}
-                            <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
+                            <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
                                 <div className="text-center">
                                     <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                         Place The Camera On The Barcode
@@ -1081,11 +1081,11 @@ export default function create({ suppliers, smartphones, storage_locations }) {
 
                 {eidScannerOpen && (
                     <>
-                        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                             <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                             {/* Modal content */}
-                            <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
+                            <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
                                 <div className="text-center">
                                     <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                         Place The Camera On The Barcode
@@ -1148,11 +1148,11 @@ export default function create({ suppliers, smartphones, storage_locations }) {
 
                 {serialScannerOpen && (
                     <>
-                        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                             <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                             {/* Modal content */}
-                            <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
+                            <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
                                 <div className="text-center">
                                     <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                         Place The Camera On The Barcode
@@ -1214,21 +1214,21 @@ export default function create({ suppliers, smartphones, storage_locations }) {
                 )}
 
                 {showProgressModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                         <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                         {/* Modal content */}
-                        <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
+                        <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
                             <div className="text-center">
                                 <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                     Please Wait While We Are Uploading Your Files
                                 </h2>
 
-                                <div className="mt-5 flex items-center justify-center">
+                                <div className="flex items-center justify-center mt-5">
                                     <div role="status">
                                         <svg
                                             aria-hidden="true"
-                                            className="h-8 w-8 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"
+                                            className="w-8 h-8 text-gray-200 animate-spin fill-blue-600 dark:text-gray-600"
                                             viewBox="0 0 100 101"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"

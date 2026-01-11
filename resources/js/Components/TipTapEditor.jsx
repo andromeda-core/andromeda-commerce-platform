@@ -89,14 +89,14 @@ export default function TipTapEditor({ Label, Id, Action, Value, Required = fals
             {Label && (
                 <label
                     htmlFor={Id}
-                    className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300"
+                    className="mb-1.5 block text-sm font-medium text-main-text-light dark:text-main-text-dark"
                 >
                     {Label}{' '}
-                    {Required ? <span className="text-red-500 dark:text-white"> *</span> : ''}
+                    {Required && <span className="font-bold text-main-text-light dark:text-main-text-dark"> *</span>}
                 </label>
             )}
 
-            <div className="p-2 rounded-lg shadow-2xl dark:bg-deepcharcoal">
+            <div className="p-2 rounded-lg dark:bg-deepcharcoal">
                 {/* Toolbar */}
                 <div className="flex flex-wrap gap-2 m-1">
                     <button
@@ -154,7 +154,7 @@ export default function TipTapEditor({ Label, Id, Action, Value, Required = fals
 
                 {/* Editor */}
                 <div
-                    className="max-h-[500px] min-h-[200px] cursor-text resize-y overflow-auto rounded-lg border bg-white p-4 shadow-sm scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-900 dark:border-gray-600 dark:bg-deepcharcoal dark:text-white"
+                    className="max-h-[500px] min-h-[200px] cursor-text resize-y overflow-auto rounded-lg border bg-white p-4  scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-900 dark:border-gray-600 dark:bg-deepcharcoal dark:text-white"
                     onClick={() => editor.chain().focus().run()}
                 >
                     <EditorContent editor={editor} className="h-auto" id={Id} />

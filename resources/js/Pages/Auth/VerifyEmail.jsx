@@ -77,7 +77,7 @@ export default function VerifyEmail() {
                                         strokeLinejoin="round"
                                     />
                                 </svg>
-                                Logout
+                                {__('Logout')}
                             </>
                         }
                         Spinner={LogoutProcessing}
@@ -87,10 +87,10 @@ export default function VerifyEmail() {
                 <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
                     <div>
                         <div className="mb-5 sm:mb-8">
-                            <h1 className="mb-2 text-4xl font-bold text-black sm:text-title-md dark:text-main-text-dark">
+                            <h1 className="mb-2 text-4xl font-bold text-main-text-light sm:text-title-md dark:text-main-text-dark">
                                 Verify Email
                             </h1>
-                            <p className="text-sm text-black dark:text-sub-text-dark">
+                            <p className="text-sm text-main-text-light dark:text-sub-text-dark">
                                 Thanks for signing up! Before getting started, could you verify your
                                 email address by clicking on the link we just emailed to you? If you
                                 didn't receive the email, we will gladly send you another.
@@ -122,7 +122,7 @@ export default function VerifyEmail() {
                                         Disabled={verificationSent}
                                     />
 
-                                    <p className="mt-3 text-black dark:text-sub-text-dark">
+                                    <p className="mt-3 text-main-text-light dark:text-sub-text-dark">
                                         Retry Will Be Available after{' '}
                                         <span className="text-green-800">{timer}</span> seconds
                                     </p>

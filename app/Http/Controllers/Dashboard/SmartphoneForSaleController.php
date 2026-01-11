@@ -34,7 +34,6 @@ class SmartphoneForSaleController extends Controller implements HasMiddleware
     public function index(Request $request)
     {
         $smartphone_for_sales = $this->smartphone_for_sale->getAllSmartphoneForSales($request);
-
         $search = $request->input('search');
 
         return Inertia::render('Dashboard/SmartphoneForSales/index', compact('smartphone_for_sales', 'search'));
@@ -44,9 +43,10 @@ class SmartphoneForSaleController extends Controller implements HasMiddleware
     {
 
         $smartphones = $this->smartphone->getSmartphones();
-        $additional_fee_lists = $this->smartphone_for_sale->getAllAdditionalFeeLists();
+        $shipping_fee_lists = $this->smartphone_for_sale->getAllShippingFeeLists();
+        $import_tax_lists = $this->smartphone_for_sale->getAllImportTaxFeeLists();
 
-        return Inertia::render('Dashboard/SmartphoneForSales/create', compact('smartphones', 'additional_fee_lists'));
+        return Inertia::render('Dashboard/SmartphoneForSales/create', compact('smartphones', 'shipping_fee_lists', 'import_tax_lists'));
     }
 
     public function store(Request $request)
@@ -75,9 +75,10 @@ class SmartphoneForSaleController extends Controller implements HasMiddleware
 
         $smartphones = $this->smartphone->getSmartphones($smartphone_for_sale->smartphone_id);
 
-        $additional_fee_lists = $this->smartphone_for_sale->getAllAdditionalFeeLists();
+        $shipping_fee_lists = $this->smartphone_for_sale->getAllShippingFeeLists();
+        $import_tax_lists = $this->smartphone_for_sale->getAllImportTaxFeeLists();
 
-        return Inertia::render('Dashboard/SmartphoneForSales/edit', compact('smartphones', 'smartphone_for_sale', 'additional_fee_lists'));
+        return Inertia::render('Dashboard/SmartphoneForSales/edit', compact('smartphones', 'smartphone_for_sale', 'shipping_fee_lists', 'import_tax_lists'));
     }
 
     public function update(Request $request, ?string $id = null)

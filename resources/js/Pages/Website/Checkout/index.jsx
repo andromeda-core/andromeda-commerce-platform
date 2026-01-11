@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
-import getContrastingColor from '@/Hooks/useColorContraster';
 import Toast from '@/Components/Toast';
 import axios from 'axios';
 import Spinner from '@/Components/Spinner';
@@ -12,11 +11,15 @@ import { createPortal } from 'react-dom';
 import WebInput from '@/Components/WebInput';
 import WebTextArea from '@/Components/WebTextArea';
 import PrimaryButton from '@/Components/PrimaryButton';
+import { useTranslation } from '@/Hooks/useTranslation';
 
 
-export default function Checkout({ cart_items, refferalSessionData, customer, meta_usernames, is_eligible_for_social_message }) {
+export default function Checkout({ cart_items, refferalSessionData, shipping_address, total_summary, meta_usernames, is_eligible_for_social_message, addon_items }) {
     const { currency, auth } = usePage().props;
     const windowSize = useWindowSize();
+
+    // Translation Hook
+    const { __ } = useTranslation();
 
     const [infoMessage, setInfoMessage] = useState(null);
     const [showInfoMessage, setShowInfoMessage] = useState(false);
@@ -41,14 +44,14 @@ export default function Checkout({ cart_items, refferalSessionData, customer, me
     const [referalCode, setReferalCode] = useState('');
 
     const [shippingInfo, setShippingInfo] = useState({
-        full_name: customer?.name || '',
-        email: customer?.email || '',
-        phone: customer?.phone || '',
-        address: customer.address || '',
-        city: customer.city || '',
-        state: customer.state || '',
-        postal_code: customer.postal_code || '',
-        country: customer.country || '',
+        full_name: shipping_address?.name || '',
+        email: shipping_address?.email || '',
+        phone: shipping_address?.phone || '',
+        address: shipping_address?.address_line1.concat(shipping_address?.address_line2 !== null ? " " + shipping_address?.address_line2 : '') || '',
+        city: shipping_address?.city || '',
+        state: shipping_address?.state || '',
+        postal_code: shipping_address?.postal_code || '',
+        country: shipping_address?.country_id || '',
     });
 
     const [showConfetti, setShowConfetti] = useState(false);
@@ -136,7 +139,7 @@ export default function Checkout({ cart_items, refferalSessionData, customer, me
 
     const handleApplyReferal = async () => {
         if (referalCode === '') {
-            setError('Referal Code is Required');
+            setError(__('Referal Code is Required'));
             setTimeout(() => {
                 setError(null);
             }, 2000);
@@ -159,36 +162,16 @@ export default function Checkout({ cart_items, refferalSessionData, customer, me
         }
     };
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setShippingInfo((prev) => ({ ...prev, [name]: value }));
-    };
 
-    const calculateSummary = () => {
-        const subtotal = cart_items.reduce((total, item) => {
-            const price = parseFloat(item.smartphone?.selling_info?.total_price || 0);
-            return total + price * item.quantity;
-        }, 0);
-
-        const total = subtotal;
-
-        return {
-            subtotal: subtotal.toFixed(2),
-
-            total: total.toFixed(2),
-            itemCount: cart_items.reduce((sum, item) => sum + item.quantity, 0),
-        };
-    };
-
-    const summary = calculateSummary();
+    const [summary, setSummary] = useState(total_summary || [])
 
     const handlePlaceOrder = async () => {
         // Validate shipping info
-        const requiredFields = ['full_name', 'email', 'phone', 'address', 'city', 'country'];
+        const requiredFields = ['full_name', 'phone', 'address', 'city', 'country'];
         const emptyFields = requiredFields.filter((field) => !shippingInfo[field]);
 
         if (emptyFields.length > 0) {
-            setInfoMessage('Please Complete Your Profile Before Placing An Order');
+            setInfoMessage(__('Please Complete Your Profile Before Placing An Order'));
             setShowInfoMessage(true);
             return;
         }
@@ -230,9 +213,55 @@ export default function Checkout({ cart_items, refferalSessionData, customer, me
             });
     };
 
+
+    const calculateShippingCost = (shipping_fee, product, quantity) => {
+        if (!shipping_fee) return 0;
+
+        const { value_type, default_value } = shipping_fee;
+
+        if (!default_value || default_value === 0) return 0;
+
+
+        if (value_type === 'fixed') {
+            return parseFloat((Number(default_value) * Number(quantity))).toFixed(2);
+        }
+
+
+        if (value_type === 'percentage') {
+            const shippingCost = (product.selling_info?.total_price * default_value) / 100;
+            return parseFloat(Number(shippingCost) * Number(quantity)).toFixed(2)
+
+        }
+
+        return __('Free');
+    };
+
+    const calculateImportCost = (import_tax, product) => {
+
+        if (!import_tax) return 0;
+
+        const { value_type, default_value } = import_tax;
+
+        if (!default_value || default_value === 0) return 0;
+
+
+        if (value_type === 'fixed') {
+            return parseFloat(default_value).toFixed(2);
+        }
+
+
+        if (value_type === 'percentage') {
+            const shippingCost = (product.selling_info?.total_price * default_value) / 100;
+            return parseFloat(shippingCost).toFixed(2);
+
+        }
+
+        return noTaxMessage;
+    };
+
     return (
         <MainLayout>
-            <Head title="Checkout" />
+            <Head title={__("Checkout", true)} />
 
             {(showInfoMessage || showErrorMessage || showSuccessMessage) && (
                 <Toast
@@ -307,16 +336,16 @@ export default function Checkout({ cart_items, refferalSessionData, customer, me
                                 d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
                             />
                         </svg>
-                        Back to Cart
+                        {__('Back to Cart')}
                     </Link>
 
                     {/* Header */}
                     <div className="px-4 mb-6 sm:px-0">
                         <h1 className="text-xl font-semibold text-main-text-light dark:text-main-text-dark sm:text-3xl">
-                            Checkout
+                            {__('Checkout')}
                         </h1>
                         <p className="mt-1 text-sm text-sub-text-light dark:text-sub-text-dark">
-                            Complete your order by providing your shipping information
+                            {__('Complete your order by providing your shipping information')}
                         </p>
                     </div>
 
@@ -326,18 +355,27 @@ export default function Checkout({ cart_items, refferalSessionData, customer, me
                             {/* Shipping Information */}
                             <ShippingForm
                                 shippingInfo={shippingInfo}
-                                handleInputChange={handleInputChange}
+                                __={__}
                             />
 
                             {/* Payment Method */}
                             <PaymentMethod
                                 paymentMethod={paymentMethod}
                                 setPaymentMethod={setPaymentMethod}
+                                __={__}
                             />
 
                             {/* Order Items Summary (Mobile Only) */}
                             {windowSize.width <= 1024 && (
-                                <OrderItemsSummary cart_items={cart_items} currency={currency} />
+                                <OrderItemsSummary
+                                    cart_items={cart_items}
+                                    currency={currency}
+                                    __={__}
+                                    addon_items={addon_items}
+                                    calculateImportCost={calculateImportCost}
+                                    calculateShippingCost={calculateShippingCost}
+
+                                />
                             )}
                         </div>
 
@@ -349,6 +387,10 @@ export default function Checkout({ cart_items, refferalSessionData, customer, me
                                     <OrderItemsSummary
                                         cart_items={cart_items}
                                         currency={currency}
+                                        addon_items={addon_items}
+                                        __={__}
+                                        calculateImportCost={calculateImportCost}
+                                        calculateShippingCost={calculateShippingCost}
                                     />
                                 )}
 
@@ -368,12 +410,13 @@ export default function Checkout({ cart_items, refferalSessionData, customer, me
                                     removingReferalProcessing={removingReferalProcessing}
                                     handlePlaceOrder={handlePlaceOrder}
                                     processingOrder={processingOrder}
+                                    __={__}
                                 />
 
 
                                 {/* Social Message Buttons */}
                                 {is_eligible_for_social_message && (
-                                    <SocialMessageButtons user={auth?.user} meta_usernames={meta_usernames} />
+                                    <SocialMessageButtons user={auth?.user} meta_usernames={meta_usernames} __={__} />
 
                                 )}
 
@@ -387,20 +430,20 @@ export default function Checkout({ cart_items, refferalSessionData, customer, me
 }
 
 // Shipping Form Component
-function ShippingForm({ shippingInfo, handleInputChange }) {
+function ShippingForm({ shippingInfo, __ }) {
     return (
         <div className="p-6 border rounded-md bg-main-text-dark border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
             <div className="flex items-center justify-between">
                 <h2 className="flex items-center gap-2 mb-6 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
 
-                    Shipping Information
+                    {__('Shipping Information')}
                 </h2>
 
                 <Link
-                    href={route('website.profile.index')}
+                    href={route('website.shipping-addresses.index')}
                     className="font-medium text-main-text-light hover:text-sub-text-light text-md dark:hover:text-sub-text-dark dark:text-main-text-dark"
                 >
-                    Edit Information
+                    {__('Edit Information')}
                 </Link>
             </div>
 
@@ -409,7 +452,7 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
                     <div>
 
                         <WebInput
-                            InputName={"Full Name"}
+                            InputName={__('Full Name')}
                             Id={'full_name'}
                             Name={'full_name'}
                             Disabled={true}
@@ -424,16 +467,15 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
 
                     <div>
                         <WebInput
-                            InputName={"Email Address"}
-                            Id={'email'}
-                            Name={'email'}
+                            InputName={__("Phone Number")}
+                            Id={'phone'}
+                            Name={'phone'}
                             Disabled={true}
-                            Placeholder={"John Doe"}
-                            Value={shippingInfo.email}
+                            Placeholder={"+1 (555) 000-0000"}
+                            Type={"tel"}
+                            Value={shippingInfo.phone}
                             Required={true}
-                            Type={'email'}
                             ClassName={"dark:bg-surface-2-dark dark:border-surface-3-dark"}
-
                         />
                     </div>
                 </div>
@@ -441,24 +483,12 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
 
 
 
-                <div>
-                    <WebInput
-                        InputName={" Phone Number"}
-                        Id={'phone'}
-                        Name={'phone'}
-                        Disabled={true}
-                        Placeholder={"+1 (555) 000-0000"}
-                        Type={"tel"}
-                        Value={shippingInfo.phone}
-                        Required={true}
-                        ClassName={"dark:bg-surface-2-dark dark:border-surface-3-dark"}
-                    />
-                </div>
+
 
                 <div>
 
                     <WebTextArea
-                        InputName={"Address"}
+                        InputName={__("Address")}
                         Id={'address'}
                         Name={'address'}
                         Disabled={true}
@@ -474,7 +504,7 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div>
                         <WebInput
-                            InputName={"City"}
+                            InputName={__("City")}
                             Id={'city'}
                             Name={'city'}
                             Disabled={true}
@@ -489,7 +519,7 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
                     <div>
 
                         <WebInput
-                            InputName={"Postal Code"}
+                            InputName={__("Postal Code")}
                             Id={'postal_code'}
                             Name={'postal_code'}
                             Disabled={true}
@@ -505,7 +535,7 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
 
 
                         <WebInput
-                            InputName={"Country"}
+                            InputName={__("Country")}
                             Id={'country'}
                             Name={'country'}
                             Disabled={true}
@@ -523,12 +553,12 @@ function ShippingForm({ shippingInfo, handleInputChange }) {
 }
 
 // Payment Method Component
-function PaymentMethod({ paymentMethod, setPaymentMethod }) {
+function PaymentMethod({ paymentMethod, setPaymentMethod, __ }) {
     return (
         <div className="p-6 border rounded-md bg-surface-1-light border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
             <h2 className="flex items-center gap-2 mb-6 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
 
-                Payment Method
+                {__('Payment Method')}
             </h2>
 
             <div className="space-y-3">
@@ -567,10 +597,10 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
                             </div>
                             <div>
                                 <p className="font-semibold text-main-text-light dark:text-main-text-dark">
-                                    Direct Bank Transfer
+                                    {__('Direct Bank Transfer')}
                                 </p>
                                 <p className="text-sm text-sub-text-light dark:text-sub-text-dark">
-                                    Pay directly to our bank account
+                                    {__('Pay directly to our bank account')}
                                 </p>
                             </div>
                         </div>
@@ -609,10 +639,10 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
                             </div>
                             <div>
                                 <p className="font-semibold text-main-text-light dark:text-main-text-dark">
-                                    Crypto Payment
+                                    {__('Crypto Payment')}
                                 </p>
                                 <p className="text-sm text-sub-text-light dark:text-sub-text-dark">
-                                    Pay with crypto currency
+                                    {__('Pay with crypto currency')}
                                 </p>
                             </div>
                         </div>
@@ -654,10 +684,10 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
                             </div>
                             <div>
                                 <p className="font-semibold text-main-text-light dark:text-main-text-dark">
-                                    Points
+                                    {__('Points')}
                                 </p>
                                 <p className="text-sm text-sub-text-light dark:text-sub-text-dark">
-                                    Pay directly with your points
+                                    {__('Pay directly with your points')}
                                 </p>
                             </div>
                         </div>
@@ -669,57 +699,129 @@ function PaymentMethod({ paymentMethod, setPaymentMethod }) {
 }
 
 // Order Items Summary Component
-function OrderItemsSummary({ cart_items, currency }) {
+function OrderItemsSummary({ cart_items, currency, __, addon_items, calculateImportCost, calculateShippingCost }) {
+
     return (
         <div className="p-6 border rounded-md bg-surface-1-light border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
             <h2 className="flex items-center gap-2 mb-4 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
-                Order Items ({cart_items.length})
+                {__('Order Items')} ({cart_items.length})
             </h2>
 
             <div className="pr-2 space-y-4 overflow-y-auto max-h-96">
-                {cart_items.map((item) => (
-                    <div
-                        key={item.id}
-                        className="flex gap-3 p-3 border rounded-md border-surface-3-light bg-surface-2-light dark:border-surface-3-dark dark:bg-surface-2-dark"
-                    >
-                        <div className="flex items-center justify-center flex-shrink-0 w-20 h-20 overflow-hidden rounded-md bg-main-text-dark dark:bg-surface-2-dark">
-                            <img
-                                src={item?.smartphone?.smartphone_image_urls?.[0] || Placeholder}
-                                alt={item?.smartphone?.model_name?.name || 'Product'}
-                                className="object-contain max-w-full max-h-full"
-                                loading="lazy"
-                                onError={(e) => (e.target.src = Placeholder)}
-                            />
-                        </div>
-                        <div className="flex-1">
-                            <h3 className="mb-1 text-sm font-semibold text-main-text-light dark:text-main-text-dark">
-                                {item?.smartphone?.model_name?.name || 'N/A'}
-                            </h3>
-                            {item?.color && (
-                                <div className="flex flex-wrap gap-2 mb-3">
-                                    <span
-                                        className={`inline-flex items-center rounded-md py-0.5 px-2 text-xs font-medium bg-surface-3-light text-sub-text-light dark:bg-surface-3-dark dark:text-sub-text-dark`}
+                {cart_items.map((item) => {
+                    const shipping_fee = calculateShippingCost(item?.smartphone?.selling_info?.shipping_fee, item?.smartphone, item?.quantity);
+                    const import_tax = calculateImportCost(item?.smartphone?.selling_info?.import_tax, item?.smartphone);
+                    const relatedAddons = addon_items.filter(
+                        addon => addon.smartphone_id === item.smartphone_id
+                    );
+                    return (
+                        <div
+                            key={item.id}
+                            className="flex gap-3 p-3 border rounded-md border-surface-3-light bg-surface-2-light dark:border-surface-3-dark dark:bg-surface-2-dark"
+                        >
+                            <div className="flex items-center justify-center flex-shrink-0 w-20 h-20 overflow-hidden rounded-md bg-main-text-dark dark:bg-surface-2-dark">
+                                <img
+                                    src={item?.smartphone?.smartphone_image_urls?.[0] || Placeholder}
+                                    alt={item?.smartphone?.model_name?.name || __('Product')}
+                                    className="object-contain max-w-full max-h-full"
+                                    loading="lazy"
+                                    onError={(e) => (e.target.src = Placeholder)}
+                                />
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="mb-1 text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+                                    {item?.smartphone?.model_name?.name || 'N/A'}
+                                </h3>
 
-                                    >
-                                        {'Color: ' + item.color?.name || 'N/A'}
+                                {item?.smartphone?.capacity && (
+                                    <div className="flex flex-wrap gap-2 mb-3">
+                                        <span
+                                            className={`inline-flex items-center rounded-md bg-surface-2-light px-2.5 py-0.5 text-xs font-medium text-sub-text-light dark:bg-surface-3-dark dark:text-sub-text-dark`}
+                                        >
+                                            {__('Capacity') + ': ' + item?.smartphone?.capacity?.name || 'N/A'}
+                                        </span>
+                                    </div>
+                                )}
+
+                                {item?.color && (
+                                    <div className="flex flex-wrap gap-2 mb-3">
+                                        <span
+                                            className={`inline-flex items-center rounded-md py-0.5 px-2 text-xs font-medium bg-surface-3-light text-sub-text-light dark:bg-surface-3-dark dark:text-sub-text-dark`}
+
+                                        >
+                                            {__('Color') + ': ' + item.color?.name || 'N/A'}
+                                        </span>
+                                    </div>
+                                )}
+
+                                <div className="mx-2 mt-2 space-y-1 text-xs text-sub-text-light dark:text-sub-text-dark">
+
+                                    <div className="flex justify-between">
+                                        <span>
+                                            {__('Product')} ({currency.symbol}{item.unit_price} × {item.quantity})
+                                        </span>
+                                        <span>
+                                            {currency.symbol}
+                                            {(item.unit_price * item.quantity).toFixed(2)}
+                                        </span>
+                                    </div>
+
+                                    <div className="flex justify-between">
+                                        <span>{__('Shipping')}</span>
+                                        <span>
+                                            {currency.symbol}
+                                            {Number(shipping_fee).toFixed(2)}
+                                        </span>
+                                    </div>
+
+                                    <div className="flex justify-between">
+                                        <span>{__('Import / Customs Tax')}</span>
+                                        <span>
+                                            {currency.symbol}
+                                            {Number(import_tax).toFixed(2)}
+                                        </span>
+                                    </div>
+
+                                    {relatedAddons.length > 0 && (
+                                        <>
+                                            <div className="pt-1 mt-1 border-t border-dashed border-surface-3-light">
+                                                <p className="text-xs font-semibold">{__('Add-ons')}</p>
+
+                                                {relatedAddons.map(addon => (
+                                                    <div key={addon.id} className="flex justify-between">
+                                                        <span>{addon.name} × {addon.quantity}</span>
+                                                        <span>
+                                                            {currency.symbol}
+                                                            {Number(addon.total_price).toFixed(2)}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+
+                                <div className="flex justify-between mx-2 mt-2 text-sm font-bold text-main-text-light dark:text-main-text-dark">
+                                    <span>{__('Item Total')}</span>
+                                    <span>
+                                        {currency.symbol}
+                                        {(
+                                            (item.unit_price * item.quantity) +
+                                            Number(shipping_fee) +
+                                            Number(import_tax) +
+                                            relatedAddons.reduce((t, a) => t + Number(a.total_price), 0)
+                                        ).toFixed(2)}
                                     </span>
                                 </div>
-                            )}
 
-                            <div className="flex items-center justify-between px-2 mt-2 gap-2n">
-                                <span className="text-xs text-sub-text-light dark:text-sub-text-dark">
-                                    Qty: {item.quantity}
-                                </span>
-                                <span className="text-sm font-bold text-sub-text-light dark:text-sub-text-dark">
-                                    {currency?.symbol}
-                                    {(
-                                        item.smartphone?.selling_info?.total_price * item.quantity
-                                    ).toFixed(2)}
-                                </span>
                             </div>
+
                         </div>
-                    </div>
-                ))}
+
+
+                    )
+                })}
+
             </div>
         </div>
     );
@@ -741,23 +843,45 @@ function OrderSummaryCard({
     removingReferalProcessing,
     handlePlaceOrder,
     processingOrder,
+    __,
 }) {
     return (
         <div className="p-6 border rounded-md bg-surface-1-light border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
             <h2 className="flex items-center gap-2 mb-6 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
 
-                Order Summary
+                {__('Order Summary')}
             </h2>
 
             <div className="mb-6 space-y-4">
                 <div className="flex justify-between text-sm">
-                    <span className="text-main-text-light dark:text-main-text-dark">Subtotal</span>
-                    <span className="font-semibold text-sub-text-light dark:text-sub-text-dark">
-                        {currency?.symbol}
-                        {summary.subtotal}
+                    <span className="text-sub-text-light dark:text-sub-text-dark">{__('Product SubTotal')}</span>
+                    <span className="font-semibold text-sub-text-ight dark:text-sub-text-dark">
+                        {currency?.symbol}{parseFloat(Number(summary.cart_subtotal)).toFixed(2) || '0.00'}
                     </span>
                 </div>
 
+
+                <div className="flex justify-between text-sm">
+                    <span className="text-sub-text-light dark:text-sub-text-dark">{__('Addons SubTotal')}</span>
+                    <span className="font-semibold text-sub-text-ight dark:text-sub-text-dark">
+                        {currency?.symbol}{parseFloat(Number(summary.addons_subtotal)).toFixed(2) || '0.00'}
+                    </span>
+                </div>
+
+
+                <div className="flex justify-between text-sm">
+                    <span className="text-sub-text-light dark:text-sub-text-dark">{__('Shipping Fee')} </span>
+                    <span className="font-semibold text-sub-text-ight dark:text-sub-text-dark">
+                        {currency?.symbol}{parseFloat(Number(summary.shipping_fee)).toFixed(2) || '0.00'}
+                    </span>
+                </div>
+
+                <div className="flex justify-between text-sm">
+                    <span className="text-sub-text-light dark:text-sub-text-dark">{__('Import Tax')}</span>
+                    <span className="font-semibold text-sub-text-ight dark:text-sub-text-dark">
+                        {currency?.symbol}{parseFloat(Number(summary.import_tax)).toFixed(2) || '0.00'}
+                    </span>
+                </div>
                 {referalData.total_points > 0 && (
                     <div className="flex justify-between text-sm">
                         <span className="flex items-center gap-1 text-sub-text-light dark:text-sub-text-dark">
@@ -780,7 +904,7 @@ function OrderSummaryCard({
                                     d="M6 6h.008v.008H6V6z"
                                 />
                             </svg>
-                            <span className="mr-1">Referal Points</span>
+                            <span className="mr-1">{__('Referal Points')}</span>
                             <span className="mr-1">({referalData?.referal_code})</span>
                             {!removingReferalProcessing ? (
                                 <button
@@ -815,7 +939,7 @@ function OrderSummaryCard({
                 <div className="pt-4 border-t border-surface-3-light dark:border-surface-3-dark">
                     <div className="flex items-center justify-between">
                         <span className="font-semibold text-md text-sub-text-light dark:text-sub-text-dark">
-                            Total
+                            {__('Total')}
                         </span>
                         <span className="text-2xl font-semibold text-sub-text-light dark:text-sub-text-dark">
                             {currency?.symbol}
@@ -854,7 +978,7 @@ function OrderSummaryCard({
                                     d="M6 6h.008v.008H6V6z"
                                 />
                             </svg>
-                            Wana Earn Points? Add Referal Code
+                            {__('Wana Earn Points? Add Referal Code')}
                         </button>
                     ) : (
                         <div className="space-y-2">
@@ -864,12 +988,12 @@ function OrderSummaryCard({
                                     <WebInput
                                         Value={referalCode}
                                         Action={(e) => setReferalCode(e.target.value)}
-                                        Placeholder={"Enter Refferal Code"}
+                                        Placeholder={__("Enter Refferal Code")}
                                         Error={error}
                                     />
 
                                     <PrimaryButton
-                                        Text={"Apply"}
+                                        Text={__("Apply")}
                                         Spinner={applyingReferalProcessing}
                                         Action={handleApplyReferal}
                                         Type={'button'}
@@ -896,7 +1020,7 @@ function OrderSummaryCard({
                     <Spinner />
 
                 )}
-                <span>Place Order</span>
+                <span>{__('Place Order')}</span>
             </button>
 
             {/* Secure Checkout Badge */}
@@ -915,14 +1039,14 @@ function OrderSummaryCard({
                         d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
                     />
                 </svg>
-                <span className="font-medium">Secure Checkout</span>
+                <span className="font-medium">{__('Secure Checkout')}</span>
             </div>
         </div>
     );
 }
 
 // Social Message Buttons
-function SocialMessageButtons({ user, meta_usernames }) {
+function SocialMessageButtons({ user, meta_usernames, __ }) {
     return (
         <div className="p-4 bg-white border border-gray-200 rounded-md dark:border-surface-3-dark dark:bg-surface-1-dark">
             <div className="flex flex-col w-full gap-3">
@@ -957,7 +1081,7 @@ function SocialMessageButtons({ user, meta_usernames }) {
 
                     {/* Text - Responsive */}
                     <span className="relative text-xs sm:text-sm">
-                        Message us on Instagram
+                        {__('Message us on Instagram')}
                     </span>
                 </a>
 
@@ -980,7 +1104,7 @@ function SocialMessageButtons({ user, meta_usernames }) {
 
                     {/* Text - Responsive */}
                     <span className="relative text-xs sm:text-sm">
-                        Message us on Facebook
+                        {__('Message us on Facebook')}
                     </span>
                 </a>
             </div>

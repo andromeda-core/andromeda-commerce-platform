@@ -66,10 +66,10 @@ const DropdownMenuItem = ({
                                         <li key={index}>
                                             <button
                                                 onClick={item.onClick}
-                                                className={`flex items-center gap-3 w-full menu-sub-item-inactive text-sm rounded-md px-4 py-2 transition-colors`}
+                                                className={`flex items-center gap-3 w-full  text-sm rounded-md px-4 py-2 transition-colors ${item?.isLogout ? 'logout-menu-item-button' : 'menu-sub-item-inactive'}`}
                                             >
 
-                                                <span className='font-normal text-sub-text-light dark:text-sub-text-dark'>{item.label}</span>
+                                                <span className='font-normal'>{item.label}</span>
                                                 {item?.processing && (
 
                                                     <Spinner Color={"fill-black dark:fill-white"} />

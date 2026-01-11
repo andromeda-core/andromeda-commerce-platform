@@ -1,7 +1,9 @@
 import Input from '@/Components/Input';
 import PrimaryButton from '@/Components/PrimaryButton';
 import SelectInput from '@/Components/SelectInput';
+import WebInput from '@/Components/WebInput';
 import WebSelectInput from '@/Components/WebSelectInput';
+import { useTranslation } from '@/Hooks/useTranslation';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
@@ -11,6 +13,8 @@ export default function Register({ countries }) {
     const [showPasswordToggle, setshowPasswordToggle] = useState(false);
     const [showPasswordConfirmationToggle, setShowPasswordConfirmationToggle] = useState(false);
 
+    // Translation Hook
+    const { __ } = useTranslation();
     // Register User Form Data
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
@@ -19,6 +23,7 @@ export default function Register({ countries }) {
         country_id: '',
         password: '',
         password_confirmation: '',
+        redirect: new URLSearchParams(window.location.search).get('redirect') || '',
     });
 
     // Register User Form Request
@@ -32,13 +37,13 @@ export default function Register({ countries }) {
 
     return (
         <GuestLayout>
-            <Head title="Register" />
+            <Head title={__("Register", true)} />
 
             <div className="flex flex-col flex-1 w-full px-4 md:my-5 lg:w-1/2">
                 <div className="w-full max-w-md pt-10 mx-auto">
                     <Link
                         href={route('home')}
-                        className="inline-flex items-center text-sm text-black transition-colors hover:text-gray-700 dark:text-main-text-dark dark:hover:text-sub-text-dark "
+                        className="inline-flex items-center text-sm transition-colors text-main-text-light hover:text-gray-700 dark:text-main-text-dark dark:hover:text-sub-text-dark "
                     >
                         <svg
                             className="stroke-current"
@@ -56,24 +61,24 @@ export default function Register({ countries }) {
                                 strokeLinejoin="round"
                             />
                         </svg>
-                        Back to Website
+                        {__('Back to Website')}
                     </Link>
                 </div>
                 <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
                     <div>
                         <div className="mb-5 sm:mb-8">
-                            <h1 className="mb-2 text-4xl font-semibold text-black sm:text-title-md dark:text-main-text-dark">
-                                Register
+                            <h1 className="mb-2 text-4xl font-semibold text-main-text-light sm:text-title-md dark:text-main-text-dark">
+                                {__('Register')}
                             </h1>
                             <p className="text-sm text-gray-500 dark:text-sub-text-dark">
-                                Create Your Account To Login From Your Account
+                                {__('Create Your Account To Login From Your Account')}
                             </p>
                         </div>
                         <div>
                             <form onSubmit={submit}>
                                 <div className="space-y-0">
-                                    <Input
-                                        InputName={'Name'}
+                                    <WebInput
+                                        InputName={__('Name')}
                                         Error={errors.name}
                                         Value={data.name}
                                         Action={(e) => setData('name', e.target.value)}
@@ -84,8 +89,8 @@ export default function Register({ countries }) {
                                         Required={true}
                                     />
 
-                                    <Input
-                                        InputName={'Email'}
+                                    <WebInput
+                                        InputName={__('Email')}
                                         Error={errors.email}
                                         Value={data.email}
                                         Action={(e) => setData('email', e.target.value)}
@@ -96,12 +101,12 @@ export default function Register({ countries }) {
                                         Required={true}
                                     />
 
-                                    <Input
-                                        InputName={'Phone'}
+                                    <WebInput
+                                        InputName={__('Phone Number')}
                                         Error={errors.phone}
                                         Value={data.phone}
                                         Action={(e) => setData('phone', e.target.value)}
-                                        Placeholder={'Phone'}
+                                        Placeholder={__('Phone Number')}
                                         Id={'phone'}
                                         Name={'phone'}
                                         Type={'text'}
@@ -112,35 +117,36 @@ export default function Register({ countries }) {
 
                                     <div className="relative bottom-3 z-[50]">
                                         <WebSelectInput
-                                            InputName={'Country'}
+                                            InputName={__('Country')}
                                             Id={'country_id'}
                                             Name={'country_id'}
                                             Error={errors.country_id}
                                             Value={data.country_id}
                                             items={countries}
                                             itemKey={'name'}
-                                            Placeholder={'Select Country'}
+                                            Placeholder={__('Select Country')}
+                                            customPlaceHolder={true}
                                             Required={true}
                                             Action={(value) => setData('country_id', value)}
                                         />
                                     </div>
 
-                                    <Input
-                                        InputName={'Password'}
+                                    <WebInput
+                                        InputName={__('Password')}
                                         Error={errors.password}
                                         Value={data.password}
                                         Action={(e) => setData('password', e.target.value)}
                                         ShowPasswordToggle={showPasswordToggle}
                                         setShowPasswordToggle={setshowPasswordToggle}
-                                        Placeholder={'Enter Your password'}
+                                        Placeholder={__('Enter Password')}
                                         Id={'password'}
                                         Name={'password'}
                                         Type={'password'}
                                         Required={true}
                                     />
 
-                                    <Input
-                                        InputName={'Confirm Password'}
+                                    <WebInput
+                                        InputName={__('Password Confirmation')}
                                         Error={errors.password_confirmation}
                                         Value={data.password_confirmation}
                                         Action={(e) =>
@@ -148,7 +154,7 @@ export default function Register({ countries }) {
                                         }
                                         ShowPasswordToggle={showPasswordConfirmationToggle}
                                         setShowPasswordToggle={setShowPasswordConfirmationToggle}
-                                        Placeholder={'Enter  Confirm Password'}
+                                        Placeholder={__('Re-Enter The New Password')}
                                         Id={'password_confirmation'}
                                         Name={'password_confirmation'}
                                         Type={'password'}
@@ -157,7 +163,7 @@ export default function Register({ countries }) {
 
                                     <div>
                                         <PrimaryButton
-                                            Text={'Register'}
+                                            Text={__('Register')}
                                             Disabled={
                                                 processing ||
                                                 data.name == '' ||
@@ -168,22 +174,7 @@ export default function Register({ countries }) {
                                                 data.password != data.password_confirmation
                                             }
                                             Type={'submit'}
-                                            Icon={
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    strokeWidth={1.5}
-                                                    stroke="currentColor"
-                                                    className="size-6"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z"
-                                                    />
-                                                </svg>
-                                            }
+
                                             Spinner={processing}
                                         />
                                     </div>
@@ -191,15 +182,15 @@ export default function Register({ countries }) {
                             </form>
 
                             <div className="mt-5">
-                                <p className="text-sm font-normal text-center text-black dark:text-sub-text-dark sm:text-start">
-                                    Already have an account?{' '}
+                                <p className="text-sm font-normal text-center text-main-text-light dark:text-sub-text-dark sm:text-start">
+                                    {__('Already have an account')}?{' '}
                                     <Link
                                         href={route('login')}
-                                        className="text-sm text-black dark:text-main-text-dark dark:hover:text-sub-text-dark hover:text-black/80"
+                                        className="text-sm font-bold text-main-text-light dark:text-main-text-dark dark:hover:text-sub-text-dark hover:text-main-text-light/80"
                                     >
                                         {' '}
                                         {'  '}
-                                        Login
+                                        {__('Login')}
                                     </Link>
                                 </p>
                             </div>

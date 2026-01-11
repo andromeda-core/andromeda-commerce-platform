@@ -27,4 +27,14 @@ interface ISmartphoneRepository
     public function getCategories();
 
     public function getSmartphones(?string $id = null);
+
+    public function getCountries();
+
+    public function getConditions();
+
+    public function getCourierCompanies();
+
+    public function getReturnPolicies();
+
+    public function getAddons();
 }

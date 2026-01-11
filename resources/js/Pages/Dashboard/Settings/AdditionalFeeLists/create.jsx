@@ -4,7 +4,7 @@ import LinkButton from '@/Components/LinkButton';
 import PrimaryButton from '@/Components/PrimaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import React from 'react';
 import SelectInput from '@/Components/SelectInput';
 
@@ -12,9 +12,12 @@ export default function create() {
     // Create Data Form Data
     const { data, setData, post, processing, errors } = useForm({
         name: '',
+        category: '',
+        value_type: '',
+        default_value: '',
         is_active: 1,
     });
-
+    const { currency } = usePage().props;
     // Create Data Form Request
     const submit = (e) => {
         e.preventDefault();
@@ -63,7 +66,7 @@ export default function create() {
                                 <Card
                                     Content={
                                         <>
-                                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                            <div className="grid grid-cols-1 gap-4 mb-10 md:grid-cols-2">
                                                 <Input
                                                     InputName={'Additional Fee List Name'}
                                                     Error={errors.name}
@@ -75,6 +78,67 @@ export default function create() {
                                                     Type={'text'}
                                                     Required={true}
                                                 />
+
+
+                                                <SelectInput
+                                                    InputName={'Aditional Fee list Category'}
+                                                    Id={'category'}
+                                                    Name={'category'}
+                                                    Value={data.category}
+                                                    Error={errors.category}
+                                                    Action={(value) => setData('category', value)}
+                                                    items={[
+                                                        { id: 'shipping_fee', name: "Shipping Fee" },
+                                                        { id: 'import_tax', name: "Import Tax" },
+                                                    ]}
+                                                    itemKey={'name'}
+                                                    Placeholder={'Select Aditional Fee list Category'}
+                                                    Required={true}
+                                                />
+
+
+
+                                                <SelectInput
+                                                    InputName={'Aditional Fee list Type'}
+                                                    Id={'value_type'}
+                                                    Name={'value_type'}
+                                                    Value={data.value_type}
+                                                    Error={errors.value_type}
+                                                    Action={(value) => setData('value_type', value)}
+                                                    items={[
+                                                        { id: 'fixed', name: "Fixed" },
+                                                        { id: 'percentage', name: "Percentage" },
+                                                    ]}
+                                                    itemKey={'name'}
+                                                    Placeholder={'Select Aditional Fee list Type'}
+                                                    Required={true}
+                                                />
+
+
+                                                <div className="flex items-center">
+                                                    <Input
+                                                        CustomCss={`w-[40px] ${!errors.default_value ? ' mt-5' : 'mt-0'}`}
+                                                        Value={currency?.symbol}
+                                                        readOnly={true}
+                                                    />
+
+
+                                                    <Input
+                                                        InputName={'Additional Fee List Value'}
+                                                        Error={errors.default_value}
+                                                        Value={data.default_value}
+                                                        Action={(e) => setData('default_value', e.target.value)}
+                                                        Placeholder={'Enter Additional Fee List Value'}
+                                                        Id={'default_value'}
+                                                        Name={'default_value'}
+                                                        Type={'number'}
+                                                        Required={true}
+                                                    />
+
+                                                </div>
+
+
+
 
                                                 <SelectInput
                                                     InputName={'Aditional Fee list Status'}
@@ -100,6 +164,9 @@ export default function create() {
                                                 Disabled={
                                                     processing ||
                                                     data.name.trim() === '' ||
+                                                    data.category.trim() === '' ||
+                                                    data.value_type.trim() === '' ||
+                                                    data.default_value.trim() === '' ||
                                                     data.is_active === ''
                                                 }
                                                 Spinner={processing}

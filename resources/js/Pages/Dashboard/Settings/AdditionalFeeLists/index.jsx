@@ -33,15 +33,38 @@ export default function index({ additional_fee_lists }) {
         const columns = [
             { key: 'name', label: 'Additional Fee List Name' },
             {
+                label: 'Additional Fee List Category', render: (item) => {
+                    if (item?.category) {
+                        return item?.category.replace(/_/g, ' ');
+                    } else {
+                        return "N/A";
+                    }
+                }
+            },
+            { key: 'value_type', label: 'Additional Fee List Type' },
+            {
+                label: 'Additional Fee List Value', render: (item) => {
+                    if (item?.default_value) {
+                        return (
+                            <span className="p-3 text-white bg-green-500 rounded-lg">
+                                {item?.value_type === 'fixed' && props?.currency?.symbol}{item?.default_value}{item?.value_type === 'percentage' && '%'}
+                            </span>
+                        );
+                    } else {
+                        return "N/A";
+                    }
+                }
+            },
+            {
                 label: 'Additional Fee List Status',
                 render: (item) => {
                     if (item.is_active === 1) {
                         return (
-                            <span className="rounded-lg bg-green-500 p-3 text-white">Active</span>
+                            <span className="p-3 text-white bg-green-500 rounded-lg">Active</span>
                         );
                     } else {
                         return (
-                            <span className="rounded-lg bg-red-500 p-2 text-white">In Active</span>
+                            <span className="p-2 text-white bg-red-500 rounded-lg">In Active</span>
                         );
                     }
                 },
@@ -68,7 +91,7 @@ export default function index({ additional_fee_lists }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end gap-4">
+                            <div className="flex flex-wrap justify-end gap-4 my-3">
                                 <LinkButton
                                     Text={'Create Additional Fee List'}
                                     URL={route('dashboard.settings.additional_fee_lists.create')}

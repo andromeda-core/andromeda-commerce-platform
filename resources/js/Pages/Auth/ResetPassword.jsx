@@ -1,5 +1,6 @@
-import Input from '@/Components/Input';
 import PrimaryButton from '@/Components/PrimaryButton';
+import WebInput from '@/Components/WebInput';
+import { useTranslation } from '@/Hooks/useTranslation';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
@@ -8,6 +9,9 @@ export default function ResetPassword({ token, email }) {
     // Show Password States
     const [showPasswordToggle, setshowPasswordToggle] = useState(false);
     const [showPasswordConfirmationToggle, setShowPasswordConfirmationToggle] = useState(false);
+
+    // Translation Hook
+    const { __ } = useTranslation();
 
     // Reset Password Form Data
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -28,13 +32,13 @@ export default function ResetPassword({ token, email }) {
 
     return (
         <GuestLayout>
-            <Head title="Reset Password" />
+            <Head title={__("Reset Password", true)} />
 
             <div className="flex flex-col flex-1 w-full md:my-5 lg:w-1/2">
                 <div className="w-full max-w-md pt-10 mx-auto">
                     <Link
                         href={route('home')}
-                        className="inline-flex items-center text-sm text-black transition-colors hover:text-gray-700 dark:text-main-text-dark dark:hover:text-sub-text-dark "
+                        className="inline-flex items-center text-sm transition-colors text-main-text-light hover:text-gray-700 dark:text-main-text-dark dark:hover:text-sub-text-dark "
                     >
                         <svg
                             className="stroke-current"
@@ -52,24 +56,24 @@ export default function ResetPassword({ token, email }) {
                                 strokeLinejoin="round"
                             />
                         </svg>
-                        Back to Website
+                        {__('Back to Website')}
                     </Link>
                 </div>
                 <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
                     <div>
                         <div className="mb-5 sm:mb-8">
-                            <h1 className="mb-2 text-4xl font-bold text-black sm:text-title-md dark:text-main-text-dark">
-                                Reset Password
+                            <h1 className="mb-2 text-4xl font-bold text-main-text-light sm:text-title-md dark:text-main-text-dark">
+                                {__('Reset Password')}
                             </h1>
-                            <p className="text-sm text-black dark:text-sub-text-dark">
-                                Set New Password For Your Account
+                            <p className="text-sm text-main-text-light dark:text-sub-text-dark">
+                                {__('Set New Password For Your Account')}
                             </p>
                         </div>
                         <div>
                             <form onSubmit={submit}>
                                 <div className="space-y-0">
-                                    <Input
-                                        InputName={'Email'}
+                                    <WebInput
+                                        InputName={__('Email')}
                                         Error={errors.email}
                                         Value={data.email}
                                         Action={(e) => setData('email', e.target.value)}
@@ -80,22 +84,22 @@ export default function ResetPassword({ token, email }) {
                                         Required={true}
                                     />
 
-                                    <Input
-                                        InputName={'Password'}
+                                    <WebInput
+                                        InputName={__('Password')}
                                         Error={errors.password}
                                         Value={data.password}
                                         Action={(e) => setData('password', e.target.value)}
                                         ShowPasswordToggle={showPasswordToggle}
                                         setShowPasswordToggle={setshowPasswordToggle}
-                                        Placeholder={'Enter Your password'}
+                                        Placeholder={__('Enter Password')}
                                         Id={'password'}
                                         Name={'password'}
                                         Type={'password'}
                                         Required={true}
                                     />
 
-                                    <Input
-                                        InputName={'Confirm Password'}
+                                    <WebInput
+                                        InputName={__('Password Confirmation')}
                                         Error={errors.password_confirmation}
                                         Value={data.password_confirmation}
                                         Action={(e) =>
@@ -103,7 +107,7 @@ export default function ResetPassword({ token, email }) {
                                         }
                                         ShowPasswordToggle={showPasswordConfirmationToggle}
                                         setShowPasswordToggle={setShowPasswordConfirmationToggle}
-                                        Placeholder={'Enter  Confirm Password'}
+                                        Placeholder={__('Re-Enter The New Password')}
                                         Id={'password_confirmation'}
                                         Name={'password_confirmation'}
                                         Type={'password'}
@@ -112,7 +116,7 @@ export default function ResetPassword({ token, email }) {
 
                                     <div>
                                         <PrimaryButton
-                                            Text={'Reset Password '}
+                                            Text={__('Reset Password')}
                                             Disabled={
                                                 processing ||
                                                 data.password === '' ||
@@ -121,22 +125,7 @@ export default function ResetPassword({ token, email }) {
                                                 data.password !== data.password_confirmation
                                             }
                                             Type={'submit'}
-                                            Icon={
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    strokeWidth="1.5"
-                                                    stroke="currentColor"
-                                                    className="size-5"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
-                                                    />
-                                                </svg>
-                                            }
+
                                             Spinner={processing}
                                         />
                                     </div>

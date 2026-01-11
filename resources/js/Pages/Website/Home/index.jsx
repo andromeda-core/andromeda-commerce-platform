@@ -15,10 +15,15 @@ import MobileFeed from './MobileFeed';
 import Spinner from '@/Components/Spinner';
 import MasonryFeedItem from './MasonryFeedItem';
 import DesktopFeed from './DesktopFeed';
+import { useTranslation } from '@/Hooks/useTranslation';
+import MobileFeedSinglePage from './MobileFeedSinglePage';
 
 
 const index = () => {
     const { currency, auth, cart_items } = usePage().props;
+
+    // Translation Hook
+    const { __ } = useTranslation();
 
     const [ErrorMessage, setErrorMessage] = useState(null);
     const [showErrorMessage, setShowErrorMessage] = useState(false);
@@ -59,13 +64,13 @@ const index = () => {
             try {
                 parsed = JSON.parse(decodeURIComponent(cookieValue));
             } catch (error) {
-                console.warn('⚠️ Invalid post_preferences cookie. Using defaults.', error);
+                console.warn('⚠️ ' + __('Invalid post_preferences cookie. Using defaults.'), error);
                 parsed = null;
             }
         }
 
         const defaultPreferences = {
-            // text: true,
+            text: true,
             videos: true,
             images: true,
             show_posts: true,
@@ -139,7 +144,7 @@ const index = () => {
             console.error(error.message);
 
             setShowErrorMessage(true);
-            setErrorMessage('Failed to Fetch Feed Please try again later.');
+            setErrorMessage(__('Failed to Fetch Feed Please try again later.'));
         }
     };
 
@@ -169,7 +174,7 @@ const index = () => {
                 preserveScroll: true,
             });
         } catch (error) {
-            console.error('Hashtag navigation failed:', error);
+            console.error(__('Hashtag navigation failed') + ":", error);
         }
     };
 
@@ -203,15 +208,22 @@ const index = () => {
     // Checking Slug In URL If Found Than Auto Opening  FEED AND PC Modal
     const hasOpenedSlugRef = useRef(false);
 
+
+    // Single Page For Mobile FEED GALLERY
+    const isSinglePageRef = useRef(false);
+
     useEffect(() => {
         if (!isFeedLoaded || hasOpenedSlugRef.current) return;
 
         const params = new URLSearchParams(window.location.search);
         const post_slug = params.get('slug');
         const smartphone_slug = params.get('m-slug');
+        const isSinglePage = params.get('single_page') === 'true';
 
-        if (!post_slug && !smartphone_slug) return;
+        if ((!post_slug && !smartphone_slug) && !isSinglePage) return;
 
+
+        isSinglePageRef.current = isSinglePage;
         setIsFeedOpeningDirectly(true);
         let feedItem = null;
 
@@ -230,6 +242,7 @@ const index = () => {
                 setFeedGallery(feedItem);
                 setFeedOpen(true);
                 setFeedIndex(index);
+
             }
 
             window.history.replaceState({}, '', window.location.href);
@@ -241,6 +254,7 @@ const index = () => {
 
             window.history.replaceState({}, '', window.location.href);
         }
+
     }, [isFeedLoaded, feed]);
 
     // Fetch Single Post Method
@@ -256,13 +270,13 @@ const index = () => {
                 try {
                     parsed = JSON.parse(decodeURIComponent(cookieValue));
                 } catch (error) {
-                    console.warn('⚠️ Invalid post_preferences cookie. Using defaults.', error);
+                    console.warn('⚠️ ' + __('Invalid post_preferences cookie. Using defaults.'), error);
                     parsed = null;
                 }
             }
 
             const defaultPreferences = {
-                // text: true,
+                text: true,
                 videos: true,
                 images: true,
                 show_posts: true,
@@ -334,12 +348,13 @@ const index = () => {
                 }
             } else {
                 setShowInfoMessage(true);
-                setInfoMessage('Post Not Found');
+                setInfoMessage(__('Post Not Found'));
                 window.history.replaceState({}, '', window.location.pathname);
             }
         } catch (err) {
             setShowErrorMessage(true);
-            setErrorMessage(err.message);
+            setErrorMessage(__(err.response.data.message) || __('Something went wrong' + "!"));
+            window.history.replaceState({}, '', window.location.pathname);
         }
     };
 
@@ -357,13 +372,13 @@ const index = () => {
                 try {
                     parsed = JSON.parse(decodeURIComponent(cookieValue));
                 } catch (error) {
-                    console.warn('⚠️ Invalid post_preferences cookie. Using defaults.', error);
+                    console.warn('⚠️ ' + __('Invalid post_preferences cookie. Using defaults.'), error);
                     parsed = null;
                 }
             }
 
             const defaultPreferences = {
-                // text: true,
+                text: true,
                 videos: true,
                 images: true,
                 show_posts: true,
@@ -434,12 +449,13 @@ const index = () => {
                 }
             } else {
                 setShowInfoMessage(true);
-                setInfoMessage('Smartphone Not Found');
+                setInfoMessage(__('Smartphone Not Found'));
                 window.history.replaceState({}, '', window.location.pathname);
             }
         } catch (err) {
             setShowErrorMessage(true);
-            setErrorMessage(err.message);
+            setErrorMessage(__(err.response.data.message) || __('Something went wrong' + "!"));
+            window.history.replaceState({}, '', window.location.pathname);
         }
     };
 
@@ -519,6 +535,7 @@ const index = () => {
         } catch (err) {
             setShowErrorMessage(true);
             setErrorMessage(err.message);
+
         } finally {
             isfetchingMoreYAxisFeed.current = false;
         }
@@ -533,13 +550,13 @@ const index = () => {
             try {
                 parsed = JSON.parse(decodeURIComponent(cookieValue));
             } catch (error) {
-                console.warn('⚠️ Invalid post_preferences cookie. Using defaults.', error);
+                console.warn('⚠️ ' + __('Invalid post_preferences cookie. Using defaults.'), error);
                 parsed = null;
             }
         }
 
         const defaultPreferences = {
-            // text: true,
+            text: true,
             videos: true,
             images: true,
             show_posts: true,
@@ -590,7 +607,7 @@ const index = () => {
                 relatedFeedNextUrlsRef.current[slug] = null;
             }
         } catch (err) {
-            console.error(`[${slug}] ❌ Error fetching related FEED`, err);
+            console.error(`[${slug}] ❌ ${__('Error fetching related FEED')}`, err);
 
             setShowErrorMessage(true);
             setErrorMessage(err.message);
@@ -677,14 +694,14 @@ const index = () => {
                 };
 
                 img.onerror = () => {
-                    console.error('Failed to load SVG image');
+                    console.error(__('Failed to load SVG image'));
                     URL.revokeObjectURL(url);
                     setIsQrDownloading(false);
                 };
 
                 img.src = url;
             } catch (error) {
-                console.error('Error downloading QR code:', error);
+                console.error(__('Error downloading QR code' + ":"), error);
                 setIsQrDownloading(false);
             }
         }, 100);
@@ -726,7 +743,10 @@ const index = () => {
         if (feedGallery) {
             const images = Array.isArray(feedGallery.post_image_urls)
                 ? feedGallery.post_image_urls.map((url) => ({ type: 'image', url }))
-                : [];
+                : (feedGallery?.images.map((image) => ({
+                    type: 'image',
+                    url: image,
+                })) || []);
             const videos =
                 Array.isArray(feedGallery.post_video_urls) && feedGallery.type === 'posts'
                     ? feedGallery.post_video_urls.map((url) => ({
@@ -774,20 +794,13 @@ const index = () => {
     useEffect(() => {
         const handlePopState = (e) => {
             const currentUrl = new URL(window.location.href);
-            const currentParams = new URLSearchParams(currentUrl.search);
+            // const currentParams = new URLSearchParams(currentUrl.search);
 
             // Check if we're coming FROM a URL with mobile-feed-gallery
             const previousUrl = new URL(previousUrlRef.current);
             const previousParams = new URLSearchParams(previousUrl.search);
             const wasOnMobileGallery = previousParams.has('mobile-feed-gallery');
 
-            // console.log('📍 PopState:', {
-            //     from: previousUrlRef.current,
-            //     to: window.location.href,
-            //     wasOnMobileGallery,
-            //     mobileGalleryOpen: MobileFeedGalleryOpenRef.current,
-            //     feedOpen: feedGalleryRef.current !== null
-            // });
 
             // Priority 1: Mobile gallery is currently open OR we just came from mobile gallery
             if (MobileFeedGalleryOpenRef.current || wasOnMobileGallery) {
@@ -815,6 +828,10 @@ const index = () => {
                 setFeedOpen(false);
                 setFeedIndex(0);
 
+                if (isSinglePageRef.current) {
+                    isSinglePageRef.current = false;
+                }
+
                 const cleanUrl = window.location.pathname;
                 window.history.replaceState({}, '', cleanUrl);
 
@@ -832,17 +849,11 @@ const index = () => {
             const url = new URL(window.location.href);
             const modalValue = url.searchParams.get('modal');
 
-            if (modalValue === 'global-filters') {
+            if (modalValue === 'filter') {
                 window.history.replaceState({}, '', window.location.pathname);
                 return true;
             }
 
-            // console.log('🚦 Inertia check:', {
-            //     isClosing: isClosingMobileGalleryRef.current,
-            //     mobileGalleryOpen: MobileFeedGalleryOpenRef.current,
-            //     feedOpen: feedGalleryRef.current !== null,
-            //     pathname
-            // });
 
             // Block if we just closed mobile gallery
             if (isClosingMobileGalleryRef.current && pathname === '/' && !isSidebarClickActive) {
@@ -927,16 +938,9 @@ const index = () => {
     );
 
 
-    // masonary Breakpoints
-    const breakpointColumnsObj = {
-        default: 5,
-        1100: 4,
-        700: 3,
-        500: 2
-    };
     return (
         <MainLayout>
-            <Head title="Home" />
+            <Head title={__("Home", true)} />
 
             {(showErrorMessage || showInfoMessage) && (
                 <Toast
@@ -963,7 +967,7 @@ const index = () => {
             {!isFeedLoaded && (
                 <div className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-[10px] text-gray-700 transition-all duration-100 dark:text-white/80 lg:text-[18px]">
                     <Spinner />
-                    Please Wait While We Load Data...
+                    {__('Please Wait While We Load Data')}...
                 </div>
             )}
 
@@ -995,13 +999,15 @@ const index = () => {
                                         Placeholder={Placeholder}
                                         currency={currency}
                                         Index={index}
+                                        windowSize={windowSize}
+
                                     />
                                 ))}
                             </div>
 
 
                             {isFeedLoaded && feed.length === 0 && (
-                                <div className="flex items-center justify-center px-6 py-12 bg-white border border-gray-200 shadow-sm rounded-xl dark:border-gray-700 dark:bg-deepcharcoal">
+                                <div className="flex items-center justify-center px-6 py-12 rounded-md bg-backgroundLight dark:bg-backgroundDark">
                                     <div className="flex flex-col items-center gap-4">
                                         {/* Custom No Content SVG */}
                                         <div className="flex items-center justify-center w-20 h-20">
@@ -1135,10 +1141,10 @@ const index = () => {
                                         {/* Text */}
                                         <div className="text-center">
                                             <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                                                No Content Found
+                                                {__('No Content Found')}
                                             </h3>
                                             <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                                                No posts or products Found
+                                                {__('No posts or products Found')}
                                             </p>
                                         </div>
                                     </div>
@@ -1152,7 +1158,7 @@ const index = () => {
                                     className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-[10px] text-gray-700 transition-all duration-100 dark:text-white/80 lg:text-[18px]"
                                 >
                                     <Spinner />
-                                    Loading more...
+                                    {__('Loading More')}...
                                 </div>
                             )}
                         </div>
@@ -1182,9 +1188,6 @@ const index = () => {
                                     currency={currency}
                                     setInfoMessage={setInfoMessage}
                                     setShowInfoMessage={setShowInfoMessage}
-                                    setSuccessMessage={setSuccessMessage}
-                                    setShowSuccessMessage={setShowSuccessMessage}
-                                    windowSize={windowSize}
                                     feedIndex={feedIndex}
                                     relatedFeed={relatedFeed}
                                     relatedFeedNextUrlsRef={relatedFeedNextUrlsRef}
@@ -1192,17 +1195,20 @@ const index = () => {
                                     fetchMoreYAxis={fetchMorePostsAndProducts}
                                     nextPageUrl={nextPageUrlRef.current}
                                     fetchRelatedFeed={fetchRelatedFeed}
+                                    __={__}
+
                                 />
                             )}
                         </>
                     )}
 
                     {/* MOBILE FEED */}
-                    {windowSize.width <= 1024 && feedOpen && feedGallery !== null && (
+                    {windowSize.width <= 1024 && feedOpen && feedGallery !== null && !isSinglePageRef.current && (
                         <MobileFeed
                             feed={feed}
                             feedGallery={feedGallery}
                             setFeedGallery={setFeedGallery}
+                            setFeedOpen={setFeedOpen}
                             setLinkCopied={setLinkCopied}
                             setShowQrCode={setShowQrCode}
                             setBookmarkStatusChanged={setBookmarkStatusChanged}
@@ -1224,9 +1230,51 @@ const index = () => {
                             Placeholder={Placeholder}
                             isfetchingMoreYAxisFeed={isfetchingMoreYAxisFeed.current}
                             isFeedOpeningDirectly={isFeedOpeningDirectly}
+                            showErrorMessage={showErrorMessage}
+                            showInfoMessage={showInfoMessage}
+                            ErrorMessage={ErrorMessage}
+                            InfoMessage={InfoMessage}
+                            setInfoMessage={setInfoMessage}
+                            setShowInfoMessage={setShowInfoMessage}
+                            setErrorMessage={setErrorMessage}
+                            windowSize={windowSize}
+                            setShowErrorMessage={setShowErrorMessage}
+                            __={__}
                         />
                     )}
 
+                    {/*Mobile Feed Single Page */}
+                    {windowSize.width <= 1024 && feedOpen && feedGallery !== null && isSinglePageRef.current && (
+                        <MobileFeedSinglePage
+                            feedGallery={feedGallery}
+                            setFeedGallery={setFeedGallery}
+                            setLinkCopied={setLinkCopied}
+                            setShowQrCode={setShowQrCode}
+                            setBookmarkStatusChanged={setBookmarkStatusChanged}
+                            auth={auth}
+                            generateURL={generateURL}
+                            navigateToHashtag={navigateToHashtag}
+                            setFeedIndex={setFeedIndex}
+                            MobileFeedGalleryOpen={MobileFeedGalleryOpen}
+                            setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
+                            cart_items={cart_items}
+                            currency={currency}
+                            placeholderImage={Placeholder}
+                            isFeedOpeningDirectly={isFeedOpeningDirectly}
+                            showErrorMessage={showErrorMessage}
+                            showInfoMessage={showInfoMessage}
+                            ErrorMessage={ErrorMessage}
+                            InfoMessage={InfoMessage}
+                            setInfoMessage={setInfoMessage}
+                            setShowInfoMessage={setShowInfoMessage}
+                            setErrorMessage={setErrorMessage}
+                            windowSize={windowSize}
+                            setShowErrorMessage={setShowErrorMessage}
+                            setFeedOpen={setFeedOpen}
+                            setMediaItems={setMediaItems}
+                            __={__}
+                        />
+                    )}
                     {/* QR CODE */}
                     {showQrCode &&
                         createPortal(
@@ -1285,7 +1333,7 @@ const index = () => {
                                                     setLinkCopied(true);
                                                 }}
                                             >
-                                                Copy
+                                                {__('Copy')}
                                             </button>
 
                                             {/* Download Button */}
@@ -1313,7 +1361,7 @@ const index = () => {
                                                                     d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                                                                 />
                                                             </svg>
-                                                            Download
+                                                            {__('Download')}
                                                         </>
                                                     )}
                                                 </button>

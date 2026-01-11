@@ -2,8 +2,6 @@ import { useRef } from 'react';
 import InstagramStyledVideoPlayer from './InstagramStyledVideoPlayer';
 import CustomizedVideoPlayer from './CustomizedVideoPlayer';
 import VideoPlayer from './VideoPlayer';
-import Spinner from './Spinner';
-
 const VideoWithThumbnail = ({
     className,
     videoUrl,

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Helpers\Trans;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,15 +30,20 @@ class PasswordResetLinkController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'email' => 'required|email',
+            'email' => ['required', 'string', 'email', 'max:255'],
+        ], [
+            'email.required' => Trans::get('Please enter your email address.'),
+            'email.email' => Trans::get('Please enter a valid email address.'),
+            'email.max' => Trans::get('Email address cannot exceed 255 characters.'),
+            'email.string' => Trans::get('Email must be a valid text.'),
         ]);
 
         if (empty(Cache::get('smtp_config'))) {
             if (app()->environment('local')) {
-                return back()->withErrors(['email' => 'Please Configure SMTP Setting First'])->with('info', 'Please Configure SMTP Setting First');
+                return back()->withErrors(['email' => Trans::get('Please Configure SMTP Setting First')])->with('info', Trans::get('Please Configure SMTP Setting First'));
             }
             if (app()->environment('production')) {
-                return back()->withErrors(['email' => 'Failed To Send Reset Password Mail Please Try Again Later'])->with('error', 'Failed To Send Reset Password Mail Please Try Again Later');
+                return back()->withErrors(['email' => Trans::get('Failed To Send Reset Password Mail Please Try Again Later')])->with('error', Trans::get('Failed To Send Reset Password Mail Please Try Again Later'));
             }
         }
 
@@ -49,11 +55,11 @@ class PasswordResetLinkController extends Controller
         );
 
         if ($status == Password::RESET_LINK_SENT) {
-            return back()->with('success', __($status));
+            return back()->with('success', Trans::get('Reset password link has been sent to your email address.'));
         }
 
         throw ValidationException::withMessages([
-            'email' => [trans($status)],
+            'email' => [Trans::get('Please Wait Before Re-Trying')],
         ]);
     }
 }

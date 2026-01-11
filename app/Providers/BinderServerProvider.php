@@ -40,18 +40,28 @@ use App\Repositories\Posts\Interface\IPostRepository;
 use App\Repositories\Posts\Repository\PostRepository;
 use App\Repositories\Products\Interface\IProductsRepository;
 use App\Repositories\Products\Repository\ProductsRepository;
+use App\Repositories\ReturnPolicy\Interface\IReturnPolicyRepository;
+use App\Repositories\ReturnPolicy\Repository\ReturnPolicyRepository;
 use App\Repositories\RewardPoints\Interface\IRewardPointRepository;
 use App\Repositories\RewardPoints\Repository\RewardPointRepository;
 use App\Repositories\SearchHistories\Interface\ISearchHistoryRepository;
 use App\Repositories\SearchHistories\Repository\SearchHistoryRepository;
 use App\Repositories\Settings\Interface\ISettingRepository;
 use App\Repositories\Settings\Repository\SettingRepository;
+use App\Repositories\ShippingAddress\Interface\IShippingAddressRepository;
+use App\Repositories\ShippingAddress\Repository\ShippingAddressRepository;
 use App\Repositories\SmartphoneForSales\Interface\ISmartphoneForSaleRepository;
 use App\Repositories\SmartphoneForSales\Repository\SmartphoneForSaleRepository;
 use App\Repositories\Smartphones\Interface\ISmartphoneRepository;
 use App\Repositories\Smartphones\Repository\SmartphoneRepository;
 use App\Repositories\Suppliers\Interface\ISupplierRepository;
 use App\Repositories\Suppliers\Repository\SupplierRepository;
+use App\Repositories\TranslationSystem\Language\Interface\ILanguageRepository;
+use App\Repositories\TranslationSystem\Language\Repository\LanguageRepository;
+use App\Repositories\TranslationSystem\TranslationKey\Interface\ITranslationKeyRepository;
+use App\Repositories\TranslationSystem\TranslationKey\Repository\TranslationKeyRepository;
+use App\Repositories\TranslationSystem\Translations\Interface\ITranslationRepository;
+use App\Repositories\TranslationSystem\Translations\Repository\TranslationRepository;
 use App\Repositories\Users\Interface\IUserRepository;
 use App\Repositories\Users\Repository\UserRepository;
 use Illuminate\Support\ServiceProvider;
@@ -89,6 +99,11 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(IDataDeletionRequestRepository::class, DataDeletionRequestRepository::class);
         $this->app->bind(IProductsRepository::class, ProductsRepository::class);
         $this->app->bind(ICartRepository::class, CartRepository::class);
+        $this->app->bind(ILanguageRepository::class, LanguageRepository::class);
+        $this->app->bind(ITranslationKeyRepository::class, TranslationKeyRepository::class);
+        $this->app->bind(ITranslationRepository::class, TranslationRepository::class);
+        $this->app->bind(IShippingAddressRepository::class, ShippingAddressRepository::class);
+        $this->app->bind(IReturnPolicyRepository::class, ReturnPolicyRepository::class);
 
     }
 

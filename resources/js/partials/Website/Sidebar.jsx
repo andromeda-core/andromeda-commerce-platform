@@ -1,7 +1,7 @@
 import DropdownMenuItem from '@/Components/DropdownMenuItem';
 import useDarkMode from '@/Hooks/useDarkMode';
 import { Link, router, usePage } from '@inertiajs/react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const Sidebar = ({
     light_logo,  // Will be Used Later (Maybe)
@@ -9,8 +9,9 @@ const Sidebar = ({
     app_name,
     darkMode,
     setDarkMode,
-    setFilterModal,
-    filterModal,
+    setActiveModal,
+    activeModal,
+    __
 }) => {
     const { user } = usePage().props.auth;
     const isDarkMode = useDarkMode();
@@ -20,25 +21,27 @@ const Sidebar = ({
     const [selectedNavLink, setSelectedNavLink] = useState(null);
 
 
+
     //  Dropdown Auto Open If Any Dropdown item Route is Active
     useEffect(() => {
         const ordersRoute = route().current() === 'website.orders.index';
         const cartRoute = route().current() === 'website.carts.index';
         const bookmarkRoute = route().current() === 'website.bookmarks.index';
+        const profileRoute = route().current() === 'website.profile.index';
+        const ShippingAddressRoute = route().current() === 'website.shipping-addresses.index';
 
-        if (ordersRoute || cartRoute || bookmarkRoute) {
-            setSelectedNavLink('My Page');
+        if (profileRoute || ShippingAddressRoute || ordersRoute || cartRoute || bookmarkRoute) {
+            setSelectedNavLink(__('My Page'));
         }
 
 
-        const accountRoute = route().current() === 'website.profile.index';
         const privacyRoute = route().current() === 'website.privacy-policy.index';
         const dataDeletionRoute = route().current() === 'website.data-deletion.index';
         const contactRoute = route().current() === 'website.contact.index';
 
 
-        if (accountRoute || privacyRoute || dataDeletionRoute || contactRoute) {
-            setSelectedNavLink('Setting');
+        if (privacyRoute || dataDeletionRoute || contactRoute) {
+            setSelectedNavLink(__('Setting'));
         }
     }, []);
 
@@ -73,7 +76,7 @@ const Sidebar = ({
     return (
         <div className="flex min-h-screen">
             <aside
-                className={`fixed left-0 top-0 z-[50] p-4  flex h-full flex-col overflow-y-auto bg-backgroundLight transition-all duration-300 dark:bg-backgroundDark w-64`}
+                className={`fixed left-0 top-0 z-[50] p-4  flex h-full flex-col overflow-y-auto bg-backgroundLight transition-all duration-300 dark:bg-backgroundDark w-72`}
             >
                 {/* Logo */}
                 <Link href={route('home')} data-sidebar-link="true" >
@@ -102,7 +105,7 @@ const Sidebar = ({
                         <li>
                             <Link
                                 data-sidebar-link="true"
-                                title="Explore"
+                                title={__('Explore')}
                                 href={route('home')}
                                 className={`flex w-full items-center gap-3 px-4   rounded-md py-2.5 text-md transition-colors ${route().current() === 'home'
                                     ? 'menu-item-active'
@@ -130,7 +133,7 @@ const Sidebar = ({
                                     </g>
                                 </svg>
 
-                                <span>Explore</span>
+                                <span>{__('Explore')}</span>
                             </Link>
                         </li>
 
@@ -139,7 +142,7 @@ const Sidebar = ({
                         <li>
                             <Link
                                 data-sidebar-link="true"
-                                title="Search"
+                                title={__('Search')}
 
                                 href={route('website.global-search.index')}
                                 className={`flex w-full items-center gap-3 px-4 rounded-md py-2.5 text-md transition-colors ${route().current() === 'website.global-search.index'
@@ -162,7 +165,7 @@ const Sidebar = ({
                                         d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
                                     />
                                 </svg>
-                                <span>Search</span>
+                                <span>{__('Search')}</span>
                             </Link>
                         </li>
 
@@ -170,15 +173,19 @@ const Sidebar = ({
                         <li>
                             <button
                                 data-sidebar-link="true"
-                                title="Filters"
+                                title={__('Filter')}
 
-                                className={`flex w-full items-center gap-3 px-4 rounded-md py-2.5 text-md transition-colors ${filterModal
+                                className={`flex w-full items-center gap-3 px-4 rounded-md py-2.5 text-md transition-colors ${activeModal === 'global-filters'
                                     ? 'menu-item-active'
                                     : 'menu-item-inactive'
                                     }`}
 
                                 onClick={(e) => {
-                                    setFilterModal(!filterModal);
+                                    if (activeModal === 'global-filters') {
+                                        setActiveModal(null);
+                                    } else {
+                                        setActiveModal('global-filters');
+                                    }
                                 }}
                             >
                                 <svg
@@ -195,86 +202,52 @@ const Sidebar = ({
                                         d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
                                     />
                                 </svg>
-                                <span>Filter</span>
+                                <span>{__('Filter')}</span>
                             </button>
                         </li>
 
 
                         {/* My Page */}
                         {user && (
-                            <li>
-                                <DropdownMenuItem
-                                    label="My Page"
-                                    selected={selectedNavLink}
-                                    setSelected={setSelectedNavLink}
-
-                                    icon={
-                                        <svg xmlns="http://www.w3.org/2000/svg" className={`size-6 text-main-text-light dark:text-main-text-dark`} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                                        </svg>
-
-                                    }
-                                    items={[
-                                        {
-                                            label: 'Orders',
-                                            href: route('website.orders.index'),
-                                            routeName: 'website.orders.index',
-                                            type: 'link',
-                                        },
-
-                                        {
-                                            label: 'Cart',
-                                            href: route('website.carts.index'),
-                                            routeName: 'website.carts.index',
-                                            type: 'link',
-
-                                        },
-
-
-                                        {
-                                            label: 'Bookmark',
-                                            href: route('website.bookmarks.index'),
-                                            routeName: 'website.bookmarks.index',
-                                            type: 'link',
-
-                                        },
-
-                                    ]}
-                                />
-                            </li>
-                        )}
-
-
-
-                        <li>
                             <DropdownMenuItem
-                                label="Setting"
+                                label={__('My Page')}
                                 selected={selectedNavLink}
                                 setSelected={setSelectedNavLink}
 
                                 icon={
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={"size-6 text-main-text-light dark:text-main-text-dark"}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" className={`size-6 text-main-text-light dark:text-main-text-dark`} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                                     </svg>
-
-
 
                                 }
                                 items={[
-
-                                    user && user.role !== 'Customer' &&
                                     {
-                                        label: 'Dashboard',
-                                        href: route('dashboard'),
-                                        routeName: 'dashboard',
+                                        label: __('Orders'),
+                                        href: route('website.orders.index'),
+                                        routeName: 'website.orders.index',
                                         type: 'link',
-                                    }
-                                    ,
+                                    },
+
+                                    {
+                                        label: __('Cart'),
+                                        href: route('website.carts.index'),
+                                        routeName: 'website.carts.index',
+                                        type: 'link',
+
+                                    },
+
+
+                                    {
+                                        label: __('Bookmark'),
+                                        href: route('website.bookmarks.index'),
+                                        routeName: 'website.bookmarks.index',
+                                        type: 'link',
+
+                                    },
 
                                     user &&
                                     {
-                                        label: 'Account',
+                                        label: __('Personal Information'),
                                         href: route('website.profile.index'),
                                         routeName: 'website.profile.index',
                                         type: 'link',
@@ -282,99 +255,150 @@ const Sidebar = ({
                                     }
                                     ,
 
-                                    {
-                                        label: 'Privacy Policy',
-                                        href: route('website.privacy-policy.index'),
-                                        routeName: 'website.privacy-policy.index',
-                                        type: 'link',
-
-                                    },
-
 
                                     user &&
                                     {
-                                        label: 'Data Deletion',
-                                        href: route('website.data-deletion.index'),
-                                        routeName: 'website.data-deletion.index',
+                                        label: __('Shipping Address'),
+                                        href: route('website.shipping-addresses.index'),
+                                        routeName: 'website.shipping-addresses.index',
                                         type: 'link',
 
-                                    },
-
-                                    {
-                                        label: isDarkMode ? 'Light Mode' : 'Dark Mode',
-                                        type: 'button',
-                                        onClick: () => {
-                                            setDarkMode(!darkMode);
-                                            localStorage.setItem('darkMode', !darkMode);
-                                        }
-
-                                    },
-
-                                    {
-                                        label: 'Language',
-                                        type: 'button',
-                                        onClick: () => { }
-
-                                    },
-
-                                    {
-                                        label: 'Contact Us',
-                                        href: route('website.contact.index'),
-                                        routeName: 'website.contact.index',
-                                        type: 'link',
-
-
-                                    },
-
-                                    user &&
-                                    {
-                                        label: 'Logout',
-                                        type: 'button',
-                                        onClick: () => {
-                                            setLogoutProcessing(true);
-                                            router.post(route('logout'), {
-                                                onFinish: () => {
-                                                    setLogoutProcessing(false);
-                                                    router.visit(route('home'), {
-                                                        replace: true,
-                                                    });
-                                                    window.history.pushState(
-                                                        null,
-                                                        '',
-                                                        window.location.href,
-                                                    );
-                                                    window.addEventListener(
-                                                        'popstate',
-                                                        function () {
-                                                            router.visit(
-                                                                route('home'),
-                                                            );
-                                                        },
-                                                    );
-                                                    router.reload({
-                                                        replace: true,
-                                                    });
-                                                },
-                                            });
-                                        },
-                                        processing: logoutProcessing
-
-
-                                    },
-
-
-                                    !user &&
-                                    {
-                                        label: 'Login',
-                                        href: route('login'),
-                                        routeName: 'login',
-                                        type: 'link',
-
-                                    },
+                                    }
+                                    ,
 
                                 ]}
                             />
-                        </li>
+
+                        )}
+
+
+
+                        <DropdownMenuItem
+                            label={__('Setting')}
+                            selected={selectedNavLink}
+                            setSelected={setSelectedNavLink}
+
+                            icon={
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={"size-6 text-main-text-light dark:text-main-text-dark"}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                </svg>
+
+
+
+                            }
+                            items={[
+
+                                user && user.role !== 'Customer' &&
+                                {
+                                    label: __('Dashboard'),
+                                    href: route('dashboard'),
+                                    routeName: 'dashboard',
+                                    type: 'link',
+                                }
+                                ,
+
+
+
+                                {
+                                    label: __('Privacy Policy'),
+                                    href: route('website.privacy-policy.index'),
+                                    routeName: 'website.privacy-policy.index',
+                                    type: 'link',
+
+                                },
+
+                                user &&
+                                {
+                                    label: __('Data Deletion'),
+                                    href: route('website.data-deletion.index'),
+                                    routeName: 'website.data-deletion.index',
+                                    type: 'link',
+
+                                },
+
+                                {
+                                    label: isDarkMode ? __('Light Mode') : __('Dark Mode'),
+                                    type: 'button',
+                                    onClick: () => {
+                                        setDarkMode(!darkMode);
+                                        localStorage.setItem('darkMode', !darkMode);
+                                    }
+
+                                },
+
+                                {
+                                    label: __('Language'),
+                                    type: 'button',
+                                    onClick: () => {
+                                        if (activeModal === 'language-filters') {
+                                            setActiveModal(null);
+                                        } else {
+                                            setActiveModal('language-filters');
+                                        }
+                                    }
+
+                                },
+
+                                {
+                                    label: __('Contact Us'),
+                                    href: route('website.contact.index'),
+                                    routeName: 'website.contact.index',
+                                    type: 'link',
+
+
+                                },
+
+                                user &&
+                                {
+                                    label: __('Logout'),
+                                    type: 'button',
+                                    isLogout: true,
+                                    onClick: () => {
+                                        setLogoutProcessing(true);
+                                        router.post(route('logout'), {
+                                            onFinish: () => {
+                                                setLogoutProcessing(false);
+                                                router.visit(route('home'), {
+                                                    replace: true,
+                                                });
+                                                window.history.pushState(
+                                                    null,
+                                                    '',
+                                                    window.location.href,
+                                                );
+                                                window.addEventListener(
+                                                    'popstate',
+                                                    function () {
+                                                        router.visit(
+                                                            route('home'),
+                                                        );
+                                                    },
+                                                );
+                                                router.reload({
+                                                    replace: true,
+                                                });
+                                            },
+                                        });
+                                    },
+                                    processing: logoutProcessing,
+
+
+
+                                },
+
+
+                                !user &&
+                                {
+                                    label: __('Login'),
+                                    href: route('login'),
+                                    routeName: 'login',
+                                    type: 'link',
+
+                                },
+
+                            ]}
+                        />
 
                     </ul>
                 </nav>

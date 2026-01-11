@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Helpers\Trans;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -27,8 +28,21 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'email' => ['required', 'string', 'email', 'max:255'],
             'password' => ['required', 'string'],
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'email.required' => Trans::get('Please enter your email address.'),
+            'email.email' => Trans::get('Please enter a valid email address.'),
+            'email.max' => Trans::get('Email address cannot exceed 255 characters.'),
+            'email.string' => Trans::get('Email must be a valid text.'),
+
+            'password.required' => Trans::get('Please enter your password.'),
+            'password.string' => Trans::get('Password must be a valid text.'),
         ];
     }
 

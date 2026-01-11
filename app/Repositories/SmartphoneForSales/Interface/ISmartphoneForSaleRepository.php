@@ -19,4 +19,8 @@ interface ISmartphoneForSaleRepository
     public function destroySmartphoneForSaleBySelection(Request $request);
 
     public function getAllAdditionalFeeLists();
+
+    public function getAllShippingFeeLists();
+
+    public function getAllImportTaxFeeLists();
 }

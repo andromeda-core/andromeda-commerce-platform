@@ -12,18 +12,25 @@ import BarcodeScannerComponent from 'react-qr-barcode-scanner';
 import Toast from '@/Components/Toast';
 import TipTapEditor from '@/Components/TipTapEditor';
 
-export default function create({ colors, model_names, capacities, categories }) {
+export default function create({ colors, model_names, capacities, categories, conditions, countries, return_policies, courier_companies, addons }) {
     // Create Data Form Data
     const { data, setData, post, processing, errors } = useForm({
         model_name_id: '',
         capacity_id: '',
         color_ids: [],
         category_id: '',
+        country_id: '',
+        delivery_days: '',
+        condition_id: '',
+        courier_company_id: '',
+        return_policy_id: '',
+        addon_ids: [],
         upc: '',
         images: [],
         tag: '',
         content: '',
     });
+
 
     const [file_error, setFileError] = useState(null);
 
@@ -156,7 +163,7 @@ export default function create({ colors, model_names, capacities, categories }) 
                                                         Type={'button'}
                                                         Id={'scan_upc'}
                                                         ClassName={
-                                                            'dark:bg-deepcharcoal dark:text-white p-2  rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
+                                                            'dark:bg-deepcharcoal dark:text-white p-2 mt-6  rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
                                                         }
                                                         Icon={
                                                             <svg
@@ -207,9 +214,122 @@ export default function create({ colors, model_names, capacities, categories }) 
                                                     Type={'text'}
                                                     Required={false}
                                                 />
+
+
+
+                                                <Input
+                                                    InputName={'Approx Max Delivery Days (In No.s Like 1, 2, 3, 4, 5)'}
+                                                    Error={errors.delivery_days}
+                                                    Value={data.delivery_days}
+                                                    Action={(e) => setData('delivery_days', e.target.value)}
+                                                    Placeholder={'Enter Delivery Days'}
+                                                    Id={'delivery_days'}
+                                                    Name={'delivery_days'}
+                                                    Type={'number'}
+                                                    Required={true}
+                                                />
+
+
+
+
+                                                <SelectInput
+                                                    InputName={'Country/Region'}
+                                                    Id={'country_id'}
+                                                    Name={'country_id'}
+                                                    Error={errors.country_id}
+                                                    Value={data.country_id}
+                                                    items={countries}
+                                                    itemKey={'name'}
+                                                    Placeholder={'Select Country'}
+                                                    customPlaceHolder={true}
+                                                    Required={true}
+                                                    Multiple={false}
+                                                    Action={(value) => {
+                                                        setData('country_id', value);
+                                                    }}
+                                                />
+
+
+
+                                                <SelectInput
+                                                    InputName={'Condition'}
+                                                    Id={'condition_id'}
+                                                    Name={'condition_id'}
+                                                    Error={errors.condition_id}
+                                                    Value={data.condition_id}
+                                                    items={conditions}
+                                                    itemKey={'name'}
+                                                    Placeholder={'Select Condition'}
+                                                    customPlaceHolder={true}
+                                                    Required={true}
+                                                    Multiple={false}
+                                                    Action={(value) => {
+                                                        setData('condition_id', value);
+                                                    }}
+                                                />
+
+
+
+
+
+                                                <SelectInput
+                                                    InputName={'Return Policy'}
+                                                    Id={'return_policy_id'}
+                                                    Name={'return_policy_id'}
+                                                    Error={errors.return_policy_id}
+                                                    Value={data.return_policy_id}
+                                                    items={return_policies}
+                                                    itemKey={'name'}
+                                                    Placeholder={'Select Return Policy'}
+                                                    customPlaceHolder={true}
+                                                    Required={true}
+                                                    Multiple={false}
+                                                    Action={(value) => {
+                                                        setData('return_policy_id', value);
+                                                    }}
+                                                />
+
+
+                                                <SelectInput
+                                                    InputName={'Courier Company'}
+                                                    Id={'courier_company_id'}
+                                                    Name={'courier_company_id'}
+                                                    Error={errors.courier_company_id}
+                                                    Value={data.courier_company_id}
+                                                    items={courier_companies}
+                                                    itemKey={'courier_name'}
+                                                    Placeholder={'Select Courier Company'}
+                                                    customPlaceHolder={true}
+                                                    Required={true}
+                                                    Multiple={false}
+                                                    Action={(value) => {
+                                                        setData('courier_company_id', value);
+                                                    }}
+                                                />
+
+
+                                                <SelectInput
+                                                    InputName={'Addons'}
+                                                    Id={'addon_ids'}
+                                                    Name={'addon_ids'}
+                                                    Error={errors.addon_ids}
+                                                    Value={data.addon_ids}
+                                                    items={addons}
+                                                    itemKey={'name'}
+                                                    Placeholder={'Select Addons'}
+                                                    customPlaceHolder={true}
+                                                    Required={false}
+                                                    Multiple={true}
+                                                    Action={(value) => {
+                                                        setData('addon_ids', value);
+                                                    }}
+                                                />
+
+
+
                                             </div>
 
-                                            <div className="grid grid-cols-1 col-span-2 gap-4 md:grid-cols-1">
+                                            <div className="grid grid-cols-1 col-span-2 gap-4 mt-10 md:grid-cols-1">
                                                 <FileUploaderInput
                                                     InputName={'Smart Phone Images'}
                                                     Id={'images'}
@@ -263,7 +383,12 @@ export default function create({ colors, model_names, capacities, categories }) 
                                                     data.upc.trim() === '' ||
                                                     data.images?.length === 0 ||
                                                     data.category_id === '' ||
-                                                    data.content.trim() === ''
+                                                    data.content.trim() === '' ||
+                                                    data.country_id === '' ||
+                                                    data.condition_id === '' ||
+                                                    data.courier_company_id === '' ||
+                                                    data.return_policy_id === '' ||
+                                                    data.delivery_days === ''
                                                 }
                                                 Spinner={processing}
                                                 Icon={

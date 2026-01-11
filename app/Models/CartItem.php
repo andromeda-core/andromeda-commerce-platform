@@ -15,6 +15,8 @@ class CartItem extends Model
         'color_id',
         'unit_price',
         'total_price',
+        'capacity',
+        'color_name',
     ];
 
     // Relations

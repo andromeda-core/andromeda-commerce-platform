@@ -1,7 +1,10 @@
+import { useTranslation } from "@/Hooks/useTranslation";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AppStatusModal({ show, type, title, message, onConfirm }) {
     if (!show) return null;
+
+    const { __ } = useTranslation();
 
     const colors = {
         info: "bg-indigo-600",
@@ -49,7 +52,7 @@ export default function AppStatusModal({ show, type, title, message, onConfirm }
                                     className="flex-1 py-2 text-sm rounded-md text-main-text-dark bg-main-text-light dark:bg-main-text-dark dark:text-main-text-light"
                                     onClick={onConfirm}
                                 >
-                                    OK
+                                    {__('OK')}
                                 </button>
                             )}
                         </div>

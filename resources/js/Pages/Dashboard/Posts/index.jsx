@@ -87,7 +87,7 @@ export default function index({ posts }) {
             {
                 label: 'View',
                 type: 'link',
-                href: (item) => route('dashboard.posts.show', encodeURIComponent(item.slug)) + '?from_backend=true',
+                href: (item) => route('dashboard.posts.show', encodeURIComponent(item.slug)),
             },
 
             ...(canEdit
@@ -96,7 +96,7 @@ export default function index({ posts }) {
                         label: 'Edit',
                         type: 'link',
                         href: (item) =>
-                            route('dashboard.posts.edit', encodeURIComponent(item.slug)) + '?from_backend=true',
+                            route('dashboard.posts.edit', encodeURIComponent(item.slug)),
                     },
                 ]
                 : []),

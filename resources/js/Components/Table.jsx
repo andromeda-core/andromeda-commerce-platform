@@ -4,7 +4,6 @@ import debounce from 'lodash.debounce';
 import React, { useEffect, useRef, useState } from 'react';
 import Input from './Input';
 import { createPortal } from 'react-dom';
-import Toast from './Toast';
 
 export default function Table({
     resetSingleSelectedId,
@@ -293,7 +292,7 @@ export default function Table({
                         )}
                     </div>
                     {Search && (
-                        <div className="flex flex-wrap gap-3 sm:flex-row sm:items-center">
+                        <div className="flex flex-wrap items-center gap-3 sm:flex-row">
                             {DefaultSearchInput && (
                                 <div className="relative">
                                     <Input
@@ -592,8 +591,8 @@ export default function Table({
                                             onClick={() => handlePagination(link.url)}
                                             disabled={!link.url || link.active}
                                             className={`text-theme-sm flex h-10 w-10 items-center justify-center rounded-lg font-medium ${link.active
-                                                    ? 'bg-indigo-800/[0.08] text-indigo-500'
-                                                    : 'text-gray-700 hover:bg-indigo-500/[0.08] hover:text-indigo-500 dark:text-gray-400 dark:hover:text-indigo-500'
+                                                ? 'bg-indigo-800/[0.08] text-indigo-500'
+                                                : 'text-gray-700 hover:bg-indigo-500/[0.08] hover:text-indigo-500 dark:text-gray-400 dark:hover:text-indigo-500'
                                                 }`}
                                         >
                                             {link.label}

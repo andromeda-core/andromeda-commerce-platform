@@ -3,19 +3,19 @@ import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import Toast from '@/Components/Toast';
 import getCookie from '@/Hooks/useGetCookie';
 import MainLayout from '@/Layouts/Website/MainLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import axios from 'axios';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import useWindowSize from '@/Hooks/useWindowSize';
 import Spinner from '@/Components/Spinner';
-import TextPlaceholder from 'asset/assets/images/product/textPlaceholder.webp';
+import { useTranslation } from '@/Hooks/useTranslation';
 
 
 
 
 // Memoized result item component
-const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width }) => {
+const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width, __, currency }) => {
     const Tag = width > 1024 ? 'a' : Link;
     // List View
     if (activeView === 'list') {
@@ -24,7 +24,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width }) =
                 href={
                     item.type === 'posts'
                         ? route('home') + generateURL(item)
-                        : route('home') + '?m-slug=' + item.slug
+                        : route('home') + '?m-slug=' + item.slug + '&single_page=true'
                 }
                 target={width > 1024 ? '_blank' : undefined}
                 onClick={() =>
@@ -33,7 +33,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width }) =
                 className="flex flex-wrap items-center gap-4 p-1 py-4 transition-colors rounded-md cursor-pointer group hover:bg-surface-2-light dark:hover:bg-surface-2-dark"
             >
                 {/* Thumbnail */}
-                <div className="flex-shrink-0 w-12 h-12 overflow-hidden rounded-lg bg-surface-1-light dark:bg-surface-1-dark">
+                <div className="flex-shrink-0 w-12 h-12 ml-10 overflow-hidden rounded-lg bg-surface-1-light dark:bg-surface-1-dark">
                     {item?.image || item?.video_thumbnail ? (
                         <img
                             src={item.image || item?.video_thumbnail || Placeholder}
@@ -76,9 +76,9 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width }) =
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center flex-shrink-0 gap-2 transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+                <div className="flex items-center flex-shrink-0 gap-2 mr-5 transition-opacity duration-200 opacity-0 group-hover:opacity-100">
                     <button
-                        title="Copy Link"
+                        title={__('Copy Link')}
                         className="p-4 rounded-full hover:bg-surface-3-light text-main-text-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                         onClick={(e) => {
                             e.preventDefault();
@@ -86,7 +86,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width }) =
                             const url =
                                 item.type === 'posts'
                                     ? route('home') + generateURL(item)
-                                    : route('home') + '?m-slug=' + item.slug;
+                                    : route('home') + '?m-slug=' + item.slug + '&single_page=true'
                             onCopyLink(url);
                         }}
                     >
@@ -115,70 +115,115 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width }) =
             href={
                 item.type === 'posts'
                     ? route('home') + generateURL(item)
-                    : route('home') + '?m-slug=' + item.slug
+                    : route('home') + '?m-slug=' + item.slug + '&single_page=true'
             }
             target={width > 1024 ? '_blank' : undefined}
             onClick={() => window.history.replaceState({}, '', route('home'))}
             // Removed grid-cols to allow for vertical card stacking in a parent grid
-            className="flex flex-col gap-2 transition-all cursor-pointer group"
+            className="relative overflow-hidden transition-all duration-300 rounded-md cursor-pointer no-touch-hover group break-inside-avoid"
         >
-            <div className="relative w-full overflow-hidden rounded-xl bg-white aspect-[2/3]">
 
+            {item?.image || item?.video_thumbnail ? (
+                <div className="relative">
+                    <div className="transition-transform duration-500 group-hover:scale-105 no-touch-hover aspect-[2/3]">
+                        {/* Top gradient */}
+                        <div
+                            className="pointer-events-none absolute inset-x-0 top-0 h-[40%]"
+                            style={{
+                                background:
+                                    'linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0))',
+                                mixBlendMode: 'multiply',
+                            }}
+                        />
 
-                {item?.image || item?.video_thumbnail ? (
-                    <img
-                        src={item.image || item?.video_thumbnail || Placeholder}
-                        alt={item.title || item.name}
-                        loading="lazy"
-                        decoding="async"
-                        onError={(e) => (e.target.src = Placeholder)}
-                        className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
-                    />
+                        {/* Bottom gradient */}
+                        <div
+                            className="pointer-events-none absolute inset-x-0 bottom-0 h-[40%]"
+                            style={{
+                                background:
+                                    'linear-gradient(to top, rgba(0,0,0,0.4), rgba(0,0,0,0))',
+                                mixBlendMode: 'multiply',
+                            }}
+                        />
 
-                ) : (
-                    <div className="relative w-full overflow-hidden rounded-xl bg-white aspect-[2/3]">
                         <img
-                            src={TextPlaceholder}
-                            alt={item.title}
+                            src={item.image || item?.video_thumbnail || Placeholder}
+                            alt={item.title || item.name}
                             loading="lazy"
                             decoding="async"
                             onError={(e) => (e.target.src = Placeholder)}
-                            className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+                            className="object-cover w-full h-full"
                         />
                     </div>
-                )}
 
-                <div className="absolute left-3 top-3">
-                    <span className="text-[8px] text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] sm:text-[9px] md:text-[10px] lg:text-[17px]">
-                        {item?.tag}
-                    </span>
-                </div>
+                    <div className="absolute left-3 top-3">
+                        <span className="text-white font-semibold text-[14px]">
+                            {item?.tag}
+                        </span>
+                    </div>
 
-                <div className="absolute inset-x-0 bottom-0 p-4">
-                    <div className="mt-1 flex items-center justify-between text-[8px] font-bold text-gray-200 drop-shadow-sm sm:text-[9px] md:text-[10px] lg:text-[17px]">
-                        <p className="text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)] overflow-hidden text-ellipsis whitespace-nowrap block">
-                            {item?.content && item.content.length > 25 ? (
-                                <span
-                                    dangerouslySetInnerHTML={{
-                                        __html:
-                                            item.content.substring(0, 25) +
-                                            '...',
-                                    }}
-                                />
-                            ) : (
-                                <span
-                                    dangerouslySetInnerHTML={{
-                                        __html: item?.content,
-                                    }}
-                                />
-                            )}
-                        </p>
+                    <div className="absolute inset-x-0 bottom-0 p-4">
+
+                        {item?.type === 'smartphones' && (
+                            <div className="mt-2 flex flex-col font-semibold items-start justify-between text-[14px]">
+                                <p className="block overflow-hidden text-white text-ellipsis whitespace-nowrap">
+                                    {item.selling_info?.total_price
+                                        ? `${currency?.symbol}${item.selling_info.total_price}`
+                                        : ''}
+                                </p>
+                                <p className="block overflow-hidden text-white text-ellipsis whitespace-nowrap">
+                                    {item.name.length > 20
+                                        ? item.name.slice(0, 20) + '...'
+                                        : item.name}{' '}
+                                    (
+                                    {item.capacity.length > 10
+                                        ? item.capacity.slice(0, 10) + '...'
+                                        : item.capacity}
+                                    )
+                                </p>
+
+
+                            </div>
+                        )}
+
+
+                        {item?.type === 'posts' && (
+                            <div className="mt-1 flex items-center justify-between text-[14px]">
+                                <p className="flex-1 min-w-0 font-semibold leading-relaxed text-main-text-dark">
+                                    <span
+                                        className="line-clamp-2 break-all !display-['-webkit-box'] [&_*]:inline"
+                                        dangerouslySetInnerHTML={{
+                                            __html: item?.content?.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(),
+                                        }}
+                                    />
+                                </p>
+                            </div>
+                        )}
 
                     </div>
                 </div>
+            ) : (
+                <div className="relative flex flex-col bg-surface-2-light dark:bg-surface-2-dark p-[18px] text-black dark:text-white w-full min-h-[clamp(300px,100%,100%)]">
 
-            </div>
+                    <div className="absolute left-4 top-3">
+                        <span className="text-black dark:text-white font-semibold text-[14px]">
+                            {item?.tag}
+                        </span>
+                    </div>
 
+
+
+                    <div className="mt-10">
+                        <p className="line-clamp-[10] whitespace-pre-line break-all  opacity-90 text-[14px]">
+                            <span
+                                dangerouslySetInnerHTML={{
+                                    __html: item?.content.trim(),
+                                }}
+                            ></span>
+                        </p>
+                    </div>
+                </div>
+            )}
         </Tag>
     );
 
@@ -186,6 +231,8 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width }) =
 
 
 const hashtagPosts = ({ hashtag, google_map_api_key }) => {
+
+    const { currency } = usePage().props;
     const [results, setResults] = useState([]);
     const [nextPageUrl, setNextPageUrl] = useState(null);
 
@@ -194,11 +241,15 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
     const [linkCopied, setLinkCopied] = useState(false);
 
 
+    // Translation Hook
+    const { __ } = useTranslation();
+
+
     const loaderRef = useRef(null);
 
     const generateURL = (post) => {
         return (
-            `?slug=${encodeURIComponent(post?.slug)}&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
+            `?slug=${encodeURIComponent(post?.slug)}&single_page=true&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
             `${post?.longitude != null ? '&lng=' + encodeURIComponent(post?.longitude) : ''}` +
             `${post?.location_name != null ? '&location_name=' + encodeURIComponent(post?.location_name) : ''}` +
             `&timestamp=${encodeURIComponent(post?.timestamp)}` +
@@ -223,7 +274,7 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
             try {
                 parsed = JSON.parse(decodeURIComponent(cookieValue));
             } catch (error) {
-                console.warn('⚠️ Invalid post_preferences cookie. Using defaults.', error);
+                console.warn('⚠️ ' + __('Invalid post_preferences cookie. Using defaults.'), error);
                 parsed = null;
             }
         }
@@ -282,7 +333,7 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                 try {
                     parsed = JSON.parse(decodeURIComponent(cookieValue));
                 } catch (error) {
-                    console.warn('⚠️ Invalid post_preferences cookie. Using defaults.', error);
+                    console.warn('⚠️ ' + __('Invalid post_preferences cookie. Using defaults.'), error);
                     parsed = null;
                 }
             }
@@ -357,7 +408,7 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
 
     return (
         <MainLayout>
-            <Head title="HashTag" />
+            <Head title={__('HashTag')} />
             {showErrorMessage && (
                 <Toast
                     flash={{ error: ErrorMessage }}
@@ -388,7 +439,7 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                             >
                                 <div className={`relative flex-shrink-0 px-4 py-2 text-sm transition-all rounded-full whitespace-nowrap  bg-main-text-light text-main-text-dark dark:bg-main-text-dark dark:text-main-text-light font-semibold
                                                 `}>
-                                    All
+                                    {__('All')}
                                     <span
                                         className={`ml-1 text-xs text-main-text-dark dark:text-main-text-light`}
                                     >
@@ -415,18 +466,19 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                                 className={`
               p-1 rounded-lg transition-all duration-200
               ${activeView === 'list'
-                                        ? 'bg-surface-1-light dark:bg-surface-1-dark'
-                                        : 'hover:bg-surface-1-light dark:hover:bg-surface-1-dark'
+                                        ? 'bg-surface-2-light dark:bg-surface-2-dark'
+                                        : 'hover:bg-surface-2-light dark:hover:bg-surface-2-dark'
                                     }
             `}
                                 aria-label="List view"
-                                title="List view"
+                                title={__("List View")}
+
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                     viewBox="0 0 24 24"
-                                    strokeWidth={1}
+                                    strokeWidth={1.5}
                                     stroke="currentColor"
                                     className="size-7"
                                 >
@@ -444,12 +496,12 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                                 className={`
               p-1 rounded-lg transition-all duration-200
               ${activeView === 'grid'
-                                        ? 'bg-surface-1-light dark:bg-surface-1-dark'
-                                        : 'hover:bg-surface-1-light dark:hover:bg-surface-1-dark'
+                                        ? 'bg-surface-2-light dark:bg-surface-2-dark'
+                                        : 'hover:bg-surface-2-light dark:hover:bg-surface-2-dark'
                                     }
             `}
                                 aria-label="Grid view"
-                                title="Grid view"
+                                title={__("Grid View")}
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -475,11 +527,11 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                             {!isLoaded ? (
                                 <div className="flex items-center justify-center gap-2 py-10 text-center transition-all duration-100 text-main-text-light animate-pulse dark:text-main-text-dark">
                                     <Spinner />
-                                    Please Wait While We Load Data...
+                                    {__('Please Wait While We Load Data')}...
                                 </div>
                             ) : (
                                 <div className="py-10 text-center text-main-text-light dark:text-main-text-dark">
-                                    No results found
+                                    {__('No results found')}
                                 </div>
                             )}
                         </>
@@ -499,6 +551,8 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                                         generateURL={generateURL}
                                         activeView={activeView}
                                         width={width}
+                                        __={__}
+                                        currency={currency}
                                     />
                                 ))}
                             </div>
@@ -515,7 +569,7 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                             <div className="flex items-center justify-center">
                                 <Spinner />
                             </div>
-                            Loading more...
+                            {__('Loading More')}...
                         </div>
                     )}
                 </div>

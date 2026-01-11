@@ -1,3 +1,4 @@
+import { useTranslation } from '@/Hooks/useTranslation';
 import useWindowSize from '@/Hooks/useWindowSize';
 import { usePage } from '@inertiajs/react';
 import React, { useState, useEffect } from 'react';
@@ -8,6 +9,8 @@ const PWAAlertBar = ({ onClose }) => {
     const windowSize = useWindowSize();
     const [isVisible, setIsVisible] = useState(false);
     const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+    const { __ } = useTranslation();
 
     useEffect(() => {
         const handleBeforeInstallPrompt = (e) => {
@@ -96,10 +99,10 @@ const PWAAlertBar = ({ onClose }) => {
 
                         <div className="flex-wrap flex-1 min-w-0">
                             <p className="text-sm font-medium leading-tight text-main-text-light dark:text-main-text-dark">
-                                Install App
+                                {__('Install App')}
                             </p>
                             <p className="mt-0.5 text-xs text-sub-text-light line-clamp-1 dark:text-sub-text-dark">
-                                For seamless experience
+                                {__('For seamless experience')}
                             </p>
                         </div>
 
@@ -108,7 +111,7 @@ const PWAAlertBar = ({ onClose }) => {
                                 onClick={handleInstall}
                                 className="rounded-lg  bg-main-text-light dark:bg-main-text-dark  dark:hover:bg-main-text-dark/80 px-4 py-1.5 text-sm font-semibold text-main-text-dark dark:text-main-text-light transition-colors duration-200 hover:bg-main-text-light/80"
                             >
-                                Install
+                                {__('Install')}
                             </button>
                             <button
                                 onClick={handleClose}

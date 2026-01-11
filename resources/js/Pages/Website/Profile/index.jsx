@@ -11,6 +11,7 @@ import axios from 'axios';
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Cropper from 'react-easy-crop';
+import { useTranslation } from '@/Hooks/useTranslation';
 
 const Index = ({ user, countries }) => {
     const [infoMessage, setInfoMessage] = useState('');
@@ -38,6 +39,10 @@ const Index = ({ user, countries }) => {
     const isDarkMode = useDarkMode();
     const fileInputRef = useRef(null);
 
+
+
+    const { __ } = useTranslation();
+
     // Profile Form Data
     const {
         data: profileData,
@@ -56,6 +61,7 @@ const Index = ({ user, countries }) => {
         postal_code: user?.customer?.postal_code || '',
         country_id: user?.customer?.country_id || '',
     });
+
 
     // Password Change Form Data
     const {
@@ -93,7 +99,7 @@ const Index = ({ user, countries }) => {
                     setErrorMessage(errorMessages.join(', '));
                 } else {
                     setShowErrorMessage(true);
-                    setErrorMessage('Something went wrong. Please check all fields and try again.');
+                    setErrorMessage(__('Something went wrong. Please check all fields and try again.'));
                 }
             },
         });
@@ -104,7 +110,7 @@ const Index = ({ user, countries }) => {
         e.preventDefault();
 
         if (passwordData.password !== passwordData.password_confirmation) {
-            setInfoMessage('New Password and Confirm Password do not match.');
+            setInfoMessage(__('New Password and Confirm Password do not match.'));
             setShowInfoMessage(true);
             return;
         }
@@ -131,7 +137,7 @@ const Index = ({ user, countries }) => {
                     setErrorMessage(errorMessages.join(', '));
                 } else {
                     setShowErrorMessage(true);
-                    setErrorMessage('Something went wrong while changing password.');
+                    setErrorMessage(__('Something went wrong while changing password.'));
                 }
             },
         });
@@ -353,7 +359,7 @@ const Index = ({ user, countries }) => {
 
     return (
         <MainLayout>
-            <Head title="Profile" />
+            <Head title={__("Personal Information", true)} />
 
             {(showErrorMessage || showInfoMessage || showSuccessMessage) && (
                 <Toast
@@ -385,15 +391,15 @@ const Index = ({ user, countries }) => {
 
                     <div className="my-10">
                         <h1 className="text-2xl font-semibold text-main-text-light dark:text-main-text-dark">
-                            Account Settings
+                            {__('Account Settings')}
                         </h1>
                         <p className="mt-1 text-sm text-sub-text-light dark:sub-text-dark">
-                            Manage your profile, contact details, and security in one place.
+                            {__('Manage your profile, contact details, and security in one place.')}
                         </p>
                     </div>
 
                     {/* Avatar */}
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-start gap-6 ">
                         <div
                             onClick={() => fileInputRef.current?.click()}
                             className="relative flex items-center justify-center w-20 h-20 text-center rounded-full cursor-pointer bg-surface-2-light dark:bg-surface-2-dark"
@@ -447,12 +453,12 @@ const Index = ({ user, countries }) => {
                                 <div className="flex flex-wrap items-center justify-between gap-1 mt-3 font-medium">
                                     <p className="px-2 py-1 mt-1 text-xs rounded-full bg-surface-1-light dark:bg-surface-1-dark text-main-text-light dark:text-main-text-dark">
 
-                                        {user?.customer?.orders_count || 0} Orders
+                                        {user?.customer?.orders_count || 0} {__('Orders')}
                                     </p>
 
                                     <p className="px-2 py-1 mt-1 text-xs rounded-full bg-surface-1-light dark:bg-surface-1-dark text-main-text-light dark:text-main-text-dark">
 
-                                        {user?.points || 0} Points
+                                        {user?.points || 0} {__('Points')}
                                     </p>
                                 </div>
                             </div>
@@ -462,29 +468,18 @@ const Index = ({ user, countries }) => {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setIsChangePasswordOpen(true)}
-                                className="px-10 py-2 font-semibold rounded-md text-md text-main-text-dark dark:text-main-text-light bg-main-text-light hover:bg-main-text-light/80 dark:bg-main-text-dark dark:hover:bg-main-text-dark/80"
+                                className="px-2 py-2 text-sm font-semibold rounded-md lg:px-10 lg:text-md text-main-text-dark dark:text-main-text-light bg-main-text-light hover:bg-main-text-light/80 dark:bg-main-text-dark dark:hover:bg-main-text-dark/80"
                             >
-                                Change Password
+                                {__('Change Password')}
                             </button>
                             <button
                                 onClick={() => {
                                     setIsEditProfileOpen(true);
-                                    setProfileData({
-                                        name: user?.name,
-                                        email: user?.email,
-                                        phone: user?.phone,
-                                        address_line1: user?.customer?.address_line1,
-                                        address_line2: user?.customer?.address_line1,
-                                        state: user?.customer?.state,
-                                        postal_code: user?.customer?.postal_code,
-                                        city: user?.customer?.city,
-                                        country_id: user?.customer?.country?.id,
 
-                                    });
                                 }}
-                                className="px-10 py-2 font-semibold rounded-md text-md text-main-text-dark dark:text-main-text-light bg-main-text-light hover:bg-main-text-light/80 dark:bg-main-text-dark dark:hover:bg-main-text-dark/80"
+                                className="px-2 py-2 text-sm font-semibold rounded-md lg:px-10 lg:text-md text-main-text-dark dark:text-main-text-light bg-main-text-light hover:bg-main-text-light/80 dark:bg-main-text-dark dark:hover:bg-main-text-dark/80"
                             >
-                                Edit Profile
+                                {__('Edit Profile')}
                             </button>
                         </div>
                     </div>
@@ -492,43 +487,57 @@ const Index = ({ user, countries }) => {
                     {/* Personal Information */}
                     <div className="mb-10">
                         <h3 className="mb-4 font-semibold text-md text-main-text-light dark:text-main-text-dark">
-                            Personal Information
+                            {__('Personal Information')}
                         </h3>
 
                         <div className="grid grid-cols-2 gap-4">
-                            <InfoBox label="Email Address" value={user?.email || 'N/A'} />
-                            <InfoBox label="Phone Number" value={user?.phone || 'N/A'} />
+                            <InfoBox label={__("Email Address")} value={user?.email || 'N/A'} />
+                            <InfoBox label={("Phone Number")} value={user?.phone || 'N/A'} />
                         </div>
                     </div>
 
                     {/* Address Information */}
                     <div>
                         <h3 className="mb-4 text-sm font-semibold text-black dark:text-white">
-                            Address Information
+                            {__('Address Information')}
                         </h3>
 
                         <div className="grid grid-cols-2 gap-4">
                             <InfoBox
-                                label="Address Line 1"
+                                label={__("Address Line 1")}
                                 value={user?.customer?.address_line1 || 'N/A'}
                             />
                             <InfoBox
-                                label="Address Line 2"
+                                label={__("Address Line 2")}
                                 value={user?.customer?.address_line2 || 'N/A'}
                             />
                             <InfoBox label="State" value={user?.customer?.state || 'N/A'} />
                             <InfoBox
-                                label="Postal Code"
+                                label={__("Postal Code")}
                                 value={user?.customer?.postal_code || 'N/A'}
                             />
-                            <InfoBox label="City" value={user?.customer?.city || 'N/A'} />
+                            <InfoBox label={__("City")} value={user?.customer?.city || 'N/A'} />
                             <InfoBox
-                                label="Country"
+                                label={__("Country")}
                                 value={user?.customer?.country?.name || 'N/A'}
                             />
                         </div>
                     </div>
 
+
+                    {/* Manage Shipping Address */}
+                    <div className='my-4'>
+                        <div className="flex items-center gap-1">
+                            <Link href={route('website.shipping-addresses.index')} className='text-sm font-semibold lg:text-md'>
+                                {__('Manage Shipping Address')}
+                            </Link>
+
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3 mt-1">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                            </svg>
+                        </div>
+
+                    </div>
 
                 </div>
             </div>
@@ -551,7 +560,7 @@ const Index = ({ user, countries }) => {
                                     {/* Header */}
                                     <div className="flex items-center justify-between pb-4">
                                         <h2 className="text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
-                                            Edit Profile
+                                            {__('Edit Profile')}
                                         </h2>
                                     </div>
 
@@ -568,10 +577,10 @@ const Index = ({ user, countries }) => {
                                                 <div>
                                                     <WebInput
                                                         Id={'name'}
-                                                        InputName={'Name'}
+                                                        InputName={__('Name')}
                                                         Error={UpdateProfileErrors.name}
                                                         Name={'name'}
-                                                        Placeholder={'Enter Full Name'}
+                                                        Placeholder={__('Enter Full Name')}
                                                         Type={'text'}
                                                         Value={profileData.name}
                                                         Action={(e) =>
@@ -585,10 +594,10 @@ const Index = ({ user, countries }) => {
                                                 <div>
                                                     <WebInput
                                                         Id={'email'}
-                                                        InputName={'Email'}
+                                                        InputName={__('Email')}
                                                         Error={UpdateProfileErrors.email}
                                                         Name={'email'}
-                                                        Placeholder={'Enter Email'}
+                                                        Placeholder={__('Enter Email')}
                                                         Type={'email'}
                                                         Value={profileData.email}
                                                         Action={(e) =>
@@ -602,10 +611,10 @@ const Index = ({ user, countries }) => {
                                                 <div>
                                                     <WebInput
                                                         Id={'phone'}
-                                                        InputName={'Phone'}
+                                                        InputName={__('Phone')}
                                                         Error={UpdateProfileErrors.phone}
                                                         Name={'phone'}
-                                                        Placeholder={'Enter Phone'}
+                                                        Placeholder={__('Enter Phone')}
                                                         Type={'text'}
                                                         Value={profileData.phone}
                                                         Action={(e) =>
@@ -617,7 +626,7 @@ const Index = ({ user, countries }) => {
                                                 {/* Country */}
                                                 <div>
                                                     <WebSelectInput
-                                                        InputName={'Country'}
+                                                        InputName={__('Country')}
                                                         Id={'country_id'}
                                                         Name={'country_id'}
                                                         Value={profileData.country_id}
@@ -628,20 +637,21 @@ const Index = ({ user, countries }) => {
                                                         items={countries}
                                                         itemKey={'name'}
                                                         Error={UpdateProfileErrors.country_id}
-                                                        Placeholder={'Select Country'}
+                                                        Placeholder={__('Select Country')}
+                                                        customPlaceHolder={true}
                                                     />
                                                 </div>
 
                                                 {/* Address Line 1 */}
                                                 <div className='col-span-2'>
                                                     <WebTextArea
-                                                        InputName={'Address 1'}
+                                                        InputName={__('Address 1')}
                                                         Id={'address_1'}
                                                         Name={'address_1'}
                                                         Error={UpdateProfileErrors.address_line1}
                                                         Value={profileData.address_line1}
                                                         Required={true}
-                                                        Placeholder={'Enter Address 1'}
+                                                        Placeholder={__('Enter Address 1')}
                                                         Action={(e) =>
                                                             setProfileData(
                                                                 'address_line1',
@@ -655,11 +665,11 @@ const Index = ({ user, countries }) => {
                                                 {/* Address Line 2 */}
                                                 <div className='col-span-2'>
                                                     <WebTextArea
-                                                        InputName={'Address 2'}
+                                                        InputName={__('Address 2')}
                                                         Id={'address_2'}
                                                         Name={'address_2'}
                                                         Error={UpdateProfileErrors.address_line2}
-                                                        Placeholder={'Enter Address 2'}
+                                                        Placeholder={__('Enter Address 2')}
                                                         Value={profileData.address_line2}
                                                         Required={false}
                                                         Action={(e) =>
@@ -676,10 +686,10 @@ const Index = ({ user, countries }) => {
                                                 <div>
                                                     <WebInput
                                                         Id={'City'}
-                                                        InputName={'City'}
+                                                        InputName={__('City')}
                                                         Error={UpdateProfileErrors.city}
                                                         Name={'city'}
-                                                        Placeholder={'Enter City'}
+                                                        Placeholder={__('Enter City')}
                                                         Type={'text'}
                                                         Value={profileData.city}
                                                         Action={(e) =>
@@ -692,10 +702,10 @@ const Index = ({ user, countries }) => {
                                                 <div>
                                                     <WebInput
                                                         Id={'state'}
-                                                        InputName={'State'}
+                                                        InputName={__('State')}
                                                         Error={UpdateProfileErrors.state}
                                                         Name={'state'}
-                                                        Placeholder={'Enter State'}
+                                                        Placeholder={__('Enter State')}
                                                         Type={'text'}
                                                         Value={profileData.state}
                                                         Action={(e) =>
@@ -709,10 +719,10 @@ const Index = ({ user, countries }) => {
                                                 <div>
                                                     <WebInput
                                                         Id={'postal_code'}
-                                                        InputName={'Postal Code'}
+                                                        InputName={__('Postal Code')}
                                                         Error={UpdateProfileErrors.postal_code}
                                                         Name={'postal_code'}
-                                                        Placeholder={'Enter Postal Code'}
+                                                        Placeholder={__('Enter Postal Code')}
                                                         Type={'text'}
                                                         Value={profileData.postal_code}
                                                         Action={(e) =>
@@ -734,7 +744,7 @@ const Index = ({ user, countries }) => {
                                                     onClick={() => setIsEditProfileOpen(false)}
                                                     className="h-[50px] w-[180px] rounded-md bg-surface-2-light  text-main-text-light transition-all hover:bg-surface-3-light dark:hover:bg-surface-3-dark/80 dark:text-sub-text-dark dark:bg-surface-3-dark"
                                                 >
-                                                    Cancel
+                                                    {__('Cancel')}
                                                 </button>
 
                                                 <button
@@ -748,7 +758,7 @@ const Index = ({ user, countries }) => {
                                                     {UpdateProfileProcessing && (
                                                         <Spinner customSize={'size-5'} />
                                                     )}
-                                                    Save Changes
+                                                    {__('Save Changes')}
                                                 </button>
                                             </div>
                                         </form>
@@ -762,7 +772,7 @@ const Index = ({ user, countries }) => {
                                 <div className="absolute inset-0 bg-black/70"></div>
 
                                 {/* Fullscreen slide-over */}
-                                <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-backgroundLight text-main-text-light dark:bg-surface-1-dark border border-surface-1-light dark:border-surface-3-dark  dark:text-main-text-dark">
+                                <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-backgroundLight text-main-text-light dark:bg-backgroundDark border border-surface-1-light dark:border-surface-3-dark  dark:text-main-text-dark">
                                     {/* Top Bar */}
                                     <div className="flex items-center justify-center px-4 py-3">
                                         <button
@@ -786,7 +796,7 @@ const Index = ({ user, countries }) => {
                                         </button>
 
                                         <h2 className="mx-10 text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
-                                            Edit Profile
+                                            {__('Edit Profile')}
                                         </h2>
                                     </div>
 
@@ -800,10 +810,10 @@ const Index = ({ user, countries }) => {
                                             <div>
                                                 <WebInput
                                                     Id={'name'}
-                                                    InputName={'Name'}
+                                                    InputName={__('Name')}
                                                     Error={UpdateProfileErrors.name}
                                                     Name={'name'}
-                                                    Placeholder={'Enter Full Name'}
+                                                    Placeholder={__('Enter Full Name')}
                                                     Type={'text'}
                                                     Value={profileData.name}
                                                     Action={(e) =>
@@ -817,10 +827,10 @@ const Index = ({ user, countries }) => {
                                             <div>
                                                 <WebInput
                                                     Id={'email'}
-                                                    InputName={'Email'}
+                                                    InputName={__('Email')}
                                                     Error={UpdateProfileErrors.email}
                                                     Name={'email'}
-                                                    Placeholder={'Enter Email'}
+                                                    Placeholder={__('Enter Email')}
                                                     Type={'email'}
                                                     Value={profileData.email}
                                                     Action={(e) =>
@@ -834,10 +844,10 @@ const Index = ({ user, countries }) => {
                                             <div>
                                                 <WebInput
                                                     Id={'phone'}
-                                                    InputName={'Phone'}
+                                                    InputName={__('Phone')}
                                                     Error={UpdateProfileErrors.phone}
                                                     Name={'phone'}
-                                                    Placeholder={'Enter Phone'}
+                                                    Placeholder={__('Enter Phone')}
                                                     Type={'text'}
                                                     Value={profileData.phone}
                                                     Action={(e) =>
@@ -849,7 +859,7 @@ const Index = ({ user, countries }) => {
 
                                             <div>
                                                 <WebSelectInput
-                                                    InputName={'Country'}
+                                                    InputName={__('Country')}
                                                     Id={'country_id'}
                                                     Name={'country_id'}
                                                     Value={profileData.country_id}
@@ -860,18 +870,20 @@ const Index = ({ user, countries }) => {
                                                     items={countries}
                                                     itemKey={'name'}
                                                     Error={UpdateProfileErrors.country_id}
-                                                    Placeholder={'Select Country'}
+                                                    Placeholder={__('Select Country')}
+                                                    customPlaceHolder={true}
                                                 />
                                             </div>
 
                                             {/* Address Line 1 */}
                                             <div>
                                                 <WebTextArea
-                                                    InputName={'Address 1'}
+                                                    InputName={__('Address 1')}
                                                     Id={'address_1'}
                                                     Name={'address_1'}
                                                     Error={UpdateProfileErrors.address_line1}
                                                     Value={profileData.address_line1}
+                                                    Placeholder={__('Enter Address 1')}
                                                     Required={true}
                                                     Action={(e) =>
                                                         setProfileData(
@@ -886,12 +898,13 @@ const Index = ({ user, countries }) => {
                                             {/* Address Line 2 */}
                                             <div>
                                                 <WebTextArea
-                                                    InputName={'Address 2'}
+                                                    InputName={__('Address 2')}
                                                     Id={'address_2'}
                                                     Name={'address_2'}
                                                     Error={UpdateProfileErrors.address_line2}
                                                     Value={profileData.address_line2}
                                                     Required={false}
+                                                    Placeholder={__('Enter Address 2')}
                                                     Action={(e) =>
                                                         setProfileData(
                                                             'address_line2',
@@ -907,7 +920,7 @@ const Index = ({ user, countries }) => {
                                                 <div>
                                                     <WebInput
                                                         Id={'City'}
-                                                        InputName={'City'}
+                                                        InputName={__('City')}
                                                         Error={UpdateProfileErrors.city}
                                                         Name={'city'}
                                                         Placeholder={'Enter City'}
@@ -923,7 +936,7 @@ const Index = ({ user, countries }) => {
                                                 <div>
                                                     <WebInput
                                                         Id={'state'}
-                                                        InputName={'State'}
+                                                        InputName={__('State')}
                                                         Error={UpdateProfileErrors.state}
                                                         Name={'state'}
                                                         Placeholder={'Enter State'}
@@ -942,7 +955,7 @@ const Index = ({ user, countries }) => {
                                                 <div>
                                                     <WebInput
                                                         Id={'postal_code'}
-                                                        InputName={'Postal Code'}
+                                                        InputName={__('Postal Code')}
                                                         Error={UpdateProfileErrors.postal_code}
                                                         Name={'postal_code'}
                                                         Placeholder={'Enter Postal Code'}
@@ -966,7 +979,7 @@ const Index = ({ user, countries }) => {
                                                     onClick={() => setIsEditProfileOpen(false)}
                                                     className="h-[50px] w-[180px] rounded-md bg-surface-2-light  text-main-text-light transition-all hover:bg-surface-3-light dark:hover:bg-surface-3-dark/80 dark:text-sub-text-dark dark:bg-surface-3-dark"
                                                 >
-                                                    Cancel
+                                                    {__('Cancel')}
                                                 </button>
 
                                                 <button
@@ -980,7 +993,7 @@ const Index = ({ user, countries }) => {
                                                     {UpdateProfileProcessing && (
                                                         <Spinner customSize={'size-5'} />
                                                     )}
-                                                    Save Changes
+                                                    {__('Save Changes')}
                                                 </button>
                                             </div>
                                         </form>
@@ -1011,7 +1024,7 @@ const Index = ({ user, countries }) => {
                                     {/* Header */}
                                     <div className="flex items-center justify-between pb-4">
                                         <h2 className="text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
-                                            Change Password
+                                            {__('Change Password')}
                                         </h2>
 
 
@@ -1027,10 +1040,10 @@ const Index = ({ user, countries }) => {
                                             <div>
                                                 <WebInput
                                                     Id={'current_password'}
-                                                    InputName={'Current Password'}
+                                                    InputName={__('Current Password')}
                                                     Error={UpdatePasswordErrors.current_password}
                                                     Name={'current_password'}
-                                                    Placeholder={'Enter Your Current Password'}
+                                                    Placeholder={__('Enter Your Current Password')}
                                                     Type={'password'}
                                                     Value={passwordData.current_password}
                                                     Action={(e) =>
@@ -1049,10 +1062,10 @@ const Index = ({ user, countries }) => {
                                             <div>
                                                 <WebInput
                                                     Id={'password'}
-                                                    InputName={'Password'}
+                                                    InputName={__('Password')}
                                                     Error={UpdatePasswordErrors.password}
                                                     Name={'password'}
-                                                    Placeholder={'Enter Password'}
+                                                    Placeholder={__('Enter Password')}
                                                     Type={'password'}
                                                     Value={passwordData.password}
                                                     Action={(e) =>
@@ -1068,12 +1081,12 @@ const Index = ({ user, countries }) => {
                                             <div>
                                                 <WebInput
                                                     Id={'password_confirmation'}
-                                                    InputName={'Password Confirmation'}
+                                                    InputName={__('Password Confirmation')}
                                                     Error={
                                                         UpdatePasswordErrors.password_confirmation
                                                     }
                                                     Name={'password_confirmation'}
-                                                    Placeholder={'Re-Enter The New Password'}
+                                                    Placeholder={__('Re-Enter The New Password')}
                                                     Type={'password'}
                                                     Value={passwordData.password_confirmation}
                                                     Action={(e) =>
@@ -1096,7 +1109,7 @@ const Index = ({ user, countries }) => {
                                                     onClick={() => setIsChangePasswordOpen(false)}
                                                     className="h-[50px] w-[180px] rounded-md bg-surface-2-light  text-main-text-light transition-all hover:bg-surface-3-light dark:hover:bg-surface-3-dark/80 dark:text-sub-text-dark dark:bg-surface-3-dark"
                                                 >
-                                                    Cancel
+                                                    {__('Cancel')}
                                                 </button>
 
                                                 <button
@@ -1110,7 +1123,7 @@ const Index = ({ user, countries }) => {
                                                     {UpdatePasswordProcessing && (
                                                         <Spinner customSize={'size-5'} />
                                                     )}
-                                                    Change Password
+                                                    {__('Change Password')}
                                                 </button>
                                             </div>
                                         </form>
@@ -1124,7 +1137,7 @@ const Index = ({ user, countries }) => {
                                 <div className="absolute inset-0 bg-black/70"></div>
 
                                 {/* Fullscreen slide-over */}
-                                <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-backgroundLight text-main-text-light dark:bg-surface-1-dark border border-surface-1-light dark:border-surface-3-dark  dark:text-main-text-dark">
+                                <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-backgroundLight text-main-text-light dark:bg-backgroundDark border border-surface-1-light dark:border-surface-3-dark  dark:text-main-text-dark">
                                     {/* Top Bar */}
                                     <div className="flex items-center justify-center px-4 py-3 ">
                                         <button
@@ -1148,7 +1161,7 @@ const Index = ({ user, countries }) => {
                                         </button>
 
                                         <h2 className="mx-10 text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
-                                            Change Password
+                                            {__('Change Password')}
                                         </h2>
                                     </div>
 
@@ -1162,10 +1175,10 @@ const Index = ({ user, countries }) => {
                                             <div>
                                                 <WebInput
                                                     Id={'current_password'}
-                                                    InputName={'Current Password'}
+                                                    InputName={__('Current Password')}
                                                     Error={UpdatePasswordErrors.current_password}
                                                     Name={'current_password'}
-                                                    Placeholder={'Enter Current Password'}
+                                                    Placeholder={__('Enter Current Password')}
                                                     Type={'password'}
                                                     Value={passwordData.current_password}
                                                     Action={(e) =>
@@ -1182,10 +1195,10 @@ const Index = ({ user, countries }) => {
                                             <div>
                                                 <WebInput
                                                     Id={'password'}
-                                                    InputName={'Password'}
+                                                    InputName={__('Password')}
                                                     Error={UpdatePasswordErrors.password}
                                                     Name={'password'}
-                                                    Placeholder={'Enter Password'}
+                                                    Placeholder={__('Enter Password')}
                                                     Type={'password'}
                                                     Value={passwordData.password}
                                                     Action={(e) =>
@@ -1199,12 +1212,12 @@ const Index = ({ user, countries }) => {
                                             <div>
                                                 <WebInput
                                                     Id={'password_confirmation'}
-                                                    InputName={'Password Confirmation'}
+                                                    InputName={__('Password Confirmation')}
                                                     Error={
                                                         UpdatePasswordErrors.password_confirmation
                                                     }
                                                     Name={'password_confirmation'}
-                                                    Placeholder={'Re-Enter The New Password'}
+                                                    Placeholder={__('Re-Enter The New Password')}
                                                     Type={'password'}
                                                     Value={passwordData.password_confirmation}
                                                     Action={(e) =>
@@ -1225,7 +1238,7 @@ const Index = ({ user, countries }) => {
                                                     onClick={() => setIsChangePasswordOpen(false)}
                                                     className="h-[50px] w-[180px] rounded-md bg-surface-2-light  text-main-text-light transition-all hover:bg-surface-3-light dark:hover:bg-surface-3-dark/80 dark:text-sub-text-dark dark:bg-surface-3-dark"
                                                 >
-                                                    Cancel
+                                                    {__('Cancel')}
                                                 </button>
 
                                                 <button
@@ -1239,7 +1252,7 @@ const Index = ({ user, countries }) => {
                                                     {UpdatePasswordProcessing && (
                                                         <Spinner customSize={'size-5'} />
                                                     )}
-                                                    Change Password
+                                                    {__('Change Password')}
                                                 </button>
                                             </div>
                                         </form>
@@ -1278,10 +1291,10 @@ const Index = ({ user, countries }) => {
                                     <div className="flex items-center justify-between pb-4">
                                         <div className="flex-1 min-w-0">
                                             <h3 className="text-base font-semibold truncate text-main-text-light dark:text-main-text-dark sm:text-lg">
-                                                Crop Profile Picture
+                                                {__('Crop Profile Picture')}
                                             </h3>
                                             <p className="mt-0.5 truncate text-xs text-sub-text-light dark:text-sub-text-dark sm:text-sm">
-                                                Adjust and position your image
+                                                {__('Adjust and position your image')}
                                             </p>
                                         </div>
                                     </div>
@@ -1311,7 +1324,7 @@ const Index = ({ user, countries }) => {
                                             <div>
                                                 <div className="flex items-center justify-between mb-2">
                                                     <label className="text-xs font-medium text-main-text-light dark:text-main-text-dark sm:text-sm">
-                                                        Zoom Level
+                                                        {__('Zoom Level')}
                                                     </label>
                                                     <span className="font-mono text-xs text-main-text-light tabular-nums dark:text-main-text-dark sm:text-sm">
                                                         {Math.round(zoom * 100)}%
@@ -1413,7 +1426,7 @@ const Index = ({ user, countries }) => {
                                                     </svg>
                                                 </div>
                                                 <p className="text-[11px] leading-relaxed text-main-text-light dark:text-main-text-dark min-[]:sm:text-xs">
-                                                    Drag to reposition, pinch or use slider to zoom
+                                                    {__('Drag to reposition, pinch or use slider to zoom')}
                                                 </p>
                                             </div>
                                         </div>
@@ -1434,14 +1447,14 @@ const Index = ({ user, countries }) => {
                                                 }}
                                                 className="h-[50px] w-[180px] rounded-md bg-surface-2-light  text-main-text-light transition-all hover:bg-surface-3-light dark:hover:bg-surface-3-dark/80 dark:text-sub-text-dark dark:bg-surface-3-dark"
                                             >
-                                                Cancel
+                                                {__('Cancel')}
                                             </button>
 
                                             <button
                                                 onClick={handleCropSaveAndUpload}
                                                 className={`flex h-[50px] w-[180px] items-center text-md font-semibold justify-center gap-2 rounded-md bg-main-text-light  text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light  dark:hover:bg-main-text-dark/80`}
                                             >
-                                                Save & Upload
+                                                {__('Save & Upload')}
                                             </button>
                                         </div>
                                     </div>
@@ -1489,7 +1502,7 @@ const Index = ({ user, countries }) => {
                                         </button>
 
                                         <h3 className="text-base font-semibold truncate text-main-text-light dark:text-main-text-dark sm:text-lg">
-                                            Crop Profile Picture
+                                            {__('Crop Profile Picture')}
                                         </h3>
                                     </div>
 
@@ -1518,7 +1531,7 @@ const Index = ({ user, countries }) => {
                                             <div>
                                                 <div className="flex items-center justify-between mb-2">
                                                     <label className="text-xs font-medium text-black dark:text-white sm:text-sm">
-                                                        Zoom Level
+                                                        {__('Zoom Level')}
                                                     </label>
                                                     <span className="font-mono text-xs text-black tabular-nums dark:text-white sm:text-sm">
                                                         {Math.round(zoom * 100)}%
@@ -1620,7 +1633,7 @@ const Index = ({ user, countries }) => {
                                                     </svg>
                                                 </div>
                                                 <p className="text-[11px] leading-relaxed text-main-text-light dark:text-main-text-dark sm:text-xs">
-                                                    Drag to reposition, pinch or use slider to zoom
+                                                    {__('Drag to reposition, pinch or use slider to zoom')}
                                                 </p>
                                             </div>
                                         </div>
@@ -1641,14 +1654,14 @@ const Index = ({ user, countries }) => {
                                                 }}
                                                 className="h-[50px] w-[180px] rounded-md bg-surface-2-light  text-main-text-light transition-all hover:bg-surface-3-light dark:hover:bg-surface-3-dark/80 dark:text-sub-text-dark dark:bg-surface-3-dark"
                                             >
-                                                Cancel
+                                                {__('Cancel')}
                                             </button>
 
                                             <button
                                                 onClick={handleCropSaveAndUpload}
                                                 className={`flex h-[50px] w-[180px] items-center text-md font-semibold justify-center gap-2 rounded-md bg-main-text-light  text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light  dark:hover:bg-main-text-dark/80`}
                                             >
-                                                Save & Upload
+                                                {__("Save & Upload")}
                                             </button>
                                         </div>
                                     </div>

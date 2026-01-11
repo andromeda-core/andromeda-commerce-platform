@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import AppStatusModal from "./AppStatusModal";
 import { registerSW } from 'virtual:pwa-register';
+import { useTranslation } from "@/Hooks/useTranslation";
 
 export default function AppStatusManager() {
     const [status, setStatus] = useState({
@@ -10,6 +11,8 @@ export default function AppStatusManager() {
         message: "",
         onConfirm: null,
     });
+
+    const { __ } = useTranslation();
 
     const showModal = (config) => {
         setStatus({
@@ -32,8 +35,8 @@ export default function AppStatusManager() {
             onNeedRefresh() {
                 showModal({
                     type: "info",
-                    title: "New version available",
-                    message: "A newer version is available. Update now?",
+                    title: __("New version available"),
+                    message: __("A newer version is available. Update now?"),
                     onConfirm: () => window.location.reload(true),
                 });
             },
@@ -46,8 +49,8 @@ export default function AppStatusManager() {
         const handleOffline = () => {
             showModal({
                 type: "error",
-                title: "You're Offline",
-                message: "Internet connection lost. Please reconnect.",
+                title: __("You're Offline"),
+                message: __("Internet connection lost. Please reconnect."),
                 onConfirm: null,
             });
         };
@@ -57,8 +60,8 @@ export default function AppStatusManager() {
 
             showModal({
                 type: "success",
-                title: "Back Online",
-                message: "Internet restored. You’re now browsing live content.",
+                title: __("Back Online"),
+                message: __("Internet restored. You’re now browsing live content."),
                 onConfirm: hideModal,
             });
         };

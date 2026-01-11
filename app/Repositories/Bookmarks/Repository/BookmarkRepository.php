@@ -125,7 +125,7 @@ class BookmarkRepository implements IBookmarkRepository
         }
 
         $images = $request->boolean('images', true);
-        $text = false; // $request->boolean('text', true);
+        $text = $request->boolean('text', true);
         $videos = $request->boolean('videos', true);
         $show_posts = $request->boolean('show_posts', true);
 

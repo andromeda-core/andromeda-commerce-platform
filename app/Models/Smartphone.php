@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Cache;
@@ -17,6 +18,11 @@ class Smartphone extends Model
         'capacity_id',
         'color_ids',
         'category_id',
+        'country_id',
+        'condition_id',
+        'delivery_days',
+        'courier_company_id',
+        'return_policy_id',
         'upc',
         'images',
         'tag',
@@ -26,6 +32,8 @@ class Smartphone extends Model
     ];
 
     protected $appends = ['added_at', 'colors', 'smartphone_image_urls'];
+
+    protected $with = ['addons'];
 
     public function getColorsAttribute()
     {
@@ -80,6 +88,37 @@ class Smartphone extends Model
     public function cart_items(): HasMany
     {
         return $this->hasMany(CartItem::class, 'smartphone_id', 'id');
+    }
+
+    public function country(): BelongsTo
+    {
+        return $this->belongsTo(Country::class, 'country_id', 'id');
+    }
+
+    public function condition(): BelongsTo
+    {
+        return $this->belongsTo(Condition::class, 'condition_id', 'id');
+    }
+
+    public function courier_company(): BelongsTo
+    {
+        return $this->belongsTo(CourierCompany::class, 'courier_company_id', 'id');
+    }
+
+    public function return_policy(): BelongsTo
+    {
+        return $this->belongsTo(ReturnPolicy::class, 'return_policy_id', 'id');
+    }
+
+    public function smartphoneAddons(): HasMany
+    {
+        return $this->hasMany(SmartphoneCartAddon::class, 'smartphone_id', 'id');
+    }
+
+    // Pivot
+    public function addons(): BelongsToMany
+    {
+        return $this->belongsToMany(Addon::class, 'smartphone_addons', 'smartphone_id', 'addon_id');
     }
 
     // Scout Searching method

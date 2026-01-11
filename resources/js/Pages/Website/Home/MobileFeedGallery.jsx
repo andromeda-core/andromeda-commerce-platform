@@ -1,16 +1,30 @@
 import React from 'react'
 import SmartphoneMobileFeedGallery from "./SmartphoneMobileFeedGallery";
 import PostMobileFeedGallery from './PostMobileFeedGallery';
-const MobileFeedGallery = ({ feedGallery, setShowQrCode, setLinkCopied, auth, currency, cart_items, navigateToHashtag, placeholderImage, generateURL }) => {
+const MobileFeedGallery = (
+    {
+        feedGallery,
+        setShowQrCode,
+        setLinkCopied,
+        auth,
+        currency,
+        cart_items,
+        navigateToHashtag,
+        placeholderImage,
+        generateURL,
+        __,
+        showErrorMessage,
+        showInfoMessage,
+        ErrorMessage,
+        InfoMessage,
+        setInfoMessage,
+        setShowInfoMessage,
+        setErrorMessage,
+        setShowErrorMessage,
 
 
-    // Force Pause Videos If Not Already
-    // useEffect(() => {
-    //     const videos = document.querySelectorAll('video');
-    //     videos.forEach((video, index) => {
-    //         video.pause();
-    //     });
-    // }, []);
+    }
+) => {
 
     return (
         <>
@@ -24,6 +38,15 @@ const MobileFeedGallery = ({ feedGallery, setShowQrCode, setLinkCopied, auth, cu
                     cart_items={cart_items}
                     navigateToHashtag={navigateToHashtag}
                     placeholderImage={placeholderImage}
+                    showErrorMessage={showErrorMessage}
+                    showInfoMessage={showInfoMessage}
+                    ErrorMessage={ErrorMessage}
+                    InfoMessage={InfoMessage}
+                    setInfoMessage={setInfoMessage}
+                    setShowInfoMessage={setShowInfoMessage}
+                    setErrorMessage={setErrorMessage}
+                    setShowErrorMessage={setShowErrorMessage}
+                    __={__}
 
                 />
             )}
@@ -38,6 +61,7 @@ const MobileFeedGallery = ({ feedGallery, setShowQrCode, setLinkCopied, auth, cu
                     post={feedGallery}
                     setLinkCopied={setLinkCopied}
                     setShowQrCode={setShowQrCode}
+                    __={__}
                 />
             )}
         </>

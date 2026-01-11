@@ -21,12 +21,19 @@ class CheckoutController extends Controller
     public function index(Request $request)
     {
 
+        if (! $request->user()) {
+            return to_route('login');
+        }
+
         $data = $this->cart->getCartItems($request);
         $cart_items = $data['cart_items'];
+        $addon_items = $data['addon_items'];
+        $total_summary = $data['total_summary'];
 
-        if (empty($cart_items)) {
+        if (blank($cart_items)) {
             return to_route('home');
         }
+
         $meta_usernames = [];
         $meta_setting = Cache::get('meta_setting');
 
@@ -37,26 +44,14 @@ class CheckoutController extends Controller
             ];
         }
 
-        // Its For Strict For Checking The Referal Reward Point, If Cart item or quantity changes and  total_price changes but reward_points isnt so this method is for that purpose
-        $refferalSessionData = $this->cart->updateCartRefferalSession(session()->get('referal_data'), $cart_items);
+        // Its For Strict  Checking The Referal Reward Point, If Cart item or quantity changes and  total_price changes but reward_points isnt so this method is for that purpose
+        $refferalSessionData = $this->cart->updateCartRefferalSession(session()->get('referal_data'), $cart_items, $addon_items);
 
-        $raw_customer = $this->user->getSingleCustomer($request->user()->id);
-
-        $customer = [
-            'name' => $raw_customer?->name,
-            'email' => $raw_customer?->email,
-            'phone' => $raw_customer?->phone,
-            'address' => $raw_customer?->customer?->address_line1.' '.$raw_customer?->customer?->address_line2,
-            'city' => $raw_customer?->customer?->city,
-            'state' => $raw_customer?->customer?->state,
-            'postal_code' => $raw_customer?->customer?->postal_code,
-            'country' => $raw_customer?->customer?->country?->name,
-
-        ];
+        $shipping_address = $request?->user()?->load(['customer', 'customer.shippingAddresses'])?->customer?->active_shipping_address;
 
         $is_eligible_for_social_message = $this->user->isCustomerEligableForSocialMessageSendOrReceive($request->user()->id);
 
-        return Inertia::render('Website/Checkout/index', compact('cart_items', 'refferalSessionData', 'customer', 'meta_usernames', 'is_eligible_for_social_message'));
+        return Inertia::render('Website/Checkout/index', compact('cart_items', 'total_summary', 'refferalSessionData', 'shipping_address', 'meta_usernames', 'addon_items', 'is_eligible_for_social_message'));
     }
 
     public function store(Request $request)

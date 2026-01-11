@@ -7,7 +7,7 @@ use App\Models\SmartphoneForSale;
 use App\Repositories\SmartphoneForSales\Interface\ISmartphoneForSaleRepository;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Cache;
 
 class SmartphoneForSaleRepository implements ISmartphoneForSaleRepository
 {
@@ -24,7 +24,7 @@ class SmartphoneForSaleRepository implements ISmartphoneForSaleRepository
                     $subQ->where('name', 'like', '%'.$request->input('search').'%');
                 });
             })
-            ->with(['smartphone', 'smartphone.model_name'])
+            ->with(['smartphone', 'smartphone.model_name', 'shipping_fee', 'import_tax'])
             ->latest()
             ->paginate(10)
             ->withQueryString();
@@ -44,7 +44,8 @@ class SmartphoneForSaleRepository implements ISmartphoneForSaleRepository
         $validated_req = $request->validate([
             'smartphone_id' => ['required', 'exists:smartphones,id', 'unique:smartphone_for_sales,smartphone_id'],
             'selling_price' => ['required', 'numeric', 'min:1'],
-            'additional_fee' => ['nullable', 'array'],
+            'shipping_fee_id' => ['nullable', 'exists:additional_fee_lists,id'],
+            'import_tax_id' => ['nullable', 'exists:additional_fee_lists,id'],
 
         ], [
             'smartphone_id.required' => 'Smartphone is required',
@@ -52,36 +53,11 @@ class SmartphoneForSaleRepository implements ISmartphoneForSaleRepository
             'smartphone_id.unique' => 'Smartphone is already Exists',
         ]);
 
-        $validator = Validator::make($request->all(), [
-            'additional_fee.*.type' => ['required', 'string', 'max:255'],
-            'additional_fee.*.amount' => ['required', 'numeric', 'min:1'],
-        ], [
-            'additional_fee.*.type.required' => 'Additional fee type is required',
-            'additional_fee.*.type.max' => 'Additional fee type Should Not Exceed 255 Characters',
-            'additional_fee.*.type.string' => 'Additional fee type Must Be A String',
-            'additional_fee.*.amount.required' => 'Additional fee amount is required',
-            'additional_fee.*.amount.numeric' => 'Additional fee amount Must Be Numeric',
-            'additional_fee.*.amount.min' => 'Additional fee amount must be at least 1',
-        ]);
-
-        if ($validator->fails()) {
-            return [
-                'status' => false,
-                'message' => $validator->errors()->first(),
-            ];
-        }
-
         try {
 
             $total_price = (float) $validated_req['selling_price'];
-
-            if (isset($validated_req['additional_fee'])) {
-                foreach ($validated_req['additional_fee'] as $fee) {
-                    $total_price += (float) $fee['amount'];
-                }
-            }
-
             $validated_req['total_price'] = $total_price;
+
             $created = $this->smartphone_for_sale->create($validated_req);
             if (empty($created)) {
                 throw new Exception('Something Went Wrong While Creating Smartphone For Sale');
@@ -104,32 +80,14 @@ class SmartphoneForSaleRepository implements ISmartphoneForSaleRepository
         $validated_req = $request->validate([
             'smartphone_id' => ['required', 'exists:smartphones,id', 'unique:smartphone_for_sales,smartphone_id,'.$id],
             'selling_price' => ['required', 'numeric', 'min:1'],
-            'additional_fee' => ['nullable', 'array'],
+            'shipping_fee_id' => ['nullable', 'exists:additional_fee_lists,id'],
+            'import_tax_id' => ['nullable', 'exists:additional_fee_lists,id'],
 
         ], [
             'smartphone_id.required' => 'Smartphone ID is required',
             'smartphone_id.exists' => 'Smartphone ID is not valid',
             'smartphone_id.unique' => 'Smartphone ID is already used',
         ]);
-
-        $validator = Validator::make($request->all(), [
-            'additional_fee.*.type' => ['required', 'string', 'max:255'],
-            'additional_fee.*.amount' => ['required', 'numeric', 'min:1'],
-        ], [
-            'additional_fee.*.type.required' => 'Additional fee type is required',
-            'additional_fee.*.type.max' => 'Additional fee type Should Not Exceed 255 Characters',
-            'additional_fee.*.type.string' => 'Additional fee type Must Be A String',
-            'additional_fee.*.amount.required' => 'Additional fee amount is required',
-            'additional_fee.*.amount.numeric' => 'Additional fee amount Must Be Numeric',
-            'additional_fee.*.amount.min' => 'Additional fee amount must be at least 1',
-        ]);
-
-        if ($validator->fails()) {
-            return [
-                'status' => false,
-                'message' => $validator->errors()->first(),
-            ];
-        }
 
         try {
 
@@ -226,5 +184,47 @@ class SmartphoneForSaleRepository implements ISmartphoneForSaleRepository
                 'name' => $list->name,
             ];
         });
+    }
+
+    public function getAllShippingFeeLists()
+    {
+        $currency = Cache::get('currency');
+
+        return $this->additional_fee_list->where('is_active', true)->where('category', 'shipping_fee')->get()
+            ->map(function ($list) use ($currency) {
+                $name = $list->name;
+                $type = $list->value_type;
+                $price = $currency?->symbol.$list->default_value ?? 0;
+                $percentage = $list->default_value ?? 0;
+
+                $list->name = $name.' '.(
+                    $type === 'percentage'
+                        ? $percentage.'%'
+                        : $price." ( {$type} )"
+                );
+
+                return $list;
+            });
+    }
+
+    public function getAllImportTaxFeeLists()
+    {
+        $currency = Cache::get('currency');
+
+        return $this->additional_fee_list->where('is_active', true)->where('category', 'import_tax')->get()
+            ->map(function ($list) use ($currency) {
+                $name = $list->name;
+                $type = $list->value_type;
+                $price = $currency?->symbol.$list->default_value ?? 0;
+                $percentage = $list->default_value ?? 0;
+
+                $list->name = $name.' '.(
+                    $type === 'percentage'
+                        ? $percentage.'%'
+                        : $price." ( {$type} )"
+                );
+
+                return $list;
+            });
     }
 }

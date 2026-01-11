@@ -16,9 +16,13 @@ interface ICartRepository
 
     public function updateItem(Request $request);
 
+    public function updateSmartphoneAddonItem(Request $request);
+
+    public function removeSmartphoneAddonItem(Request $request);
+
     public function referalCode(Request $request);
 
     public function removeReferal(Request $request);
 
-    public function updateCartRefferalSession(?array $session_data, $cart_items);
+    public function updateCartRefferalSession(?array $session_data, $cart_items, $addon_items);
 }

@@ -233,4 +233,64 @@ interface ISettingRepository
     public function destroyNOWPaymentSettingBySelection(Request $request);
 
     public function toggleNOWPaymentSettingStatus(string $id);
+
+    // Return Policy Settings
+    public function getAllReturnPolicies();
+
+    public function getSingleReturnPolicy(string $id);
+
+    public function storeReturnPolicy(Request $request);
+
+    public function updateReturnPolicy(Request $request, string $id);
+
+    public function toggleReturnPolicyStatus(string $id);
+
+    public function destroyReturnPolicy(string $id);
+
+    public function destroyReturnPolicyBySelection(Request $request);
+
+    // Courier Company Settings
+    public function getAllCourierCompanies();
+
+    public function getSingleCourierCompany(string $id);
+
+    public function storeCourierCompany(Request $request);
+
+    public function updateCourierCompany(Request $request, string $id);
+
+    public function toggleCourierCompanyStatus(string $id);
+
+    public function destroyCourierCompany(string $id);
+
+    public function destroyCourierCompanyBySelection(Request $request);
+
+    // Conditions Settings
+    public function getAllConditions();
+
+    public function getSingleCondition(string $id);
+
+    public function storeCondition(Request $request);
+
+    public function updateCondition(Request $request, string $id);
+
+    public function toggleConditionStatus(string $id);
+
+    public function destroyCondition(string $id);
+
+    public function destroyConditionBySelection(Request $request);
+
+    // Addons Settings
+    public function getAllAddons();
+
+    public function getSingleAddon(string $id);
+
+    public function storeAddon(Request $request);
+
+    public function updateAddon(Request $request, string $id);
+
+    public function toggleAddonStatus(string $id);
+
+    public function destroyAddon(string $id);
+
+    public function destroyAddonBySelection(Request $request);
 }

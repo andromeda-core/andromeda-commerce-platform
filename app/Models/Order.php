@@ -26,7 +26,12 @@ class Order extends Model
     protected $fillable = [
         'order_no',
         'customer_id',
+        'shipping_address_id',
         'amount',
+        'sub_total',
+        'import_tax',
+        'shipping_fee',
+        'addons_sub_total',
         'status',
         'collaborator_id',
         'courier_company',
@@ -76,6 +81,11 @@ class Order extends Model
     public function collaboratorCommissions(): HasMany
     {
         return $this->hasMany(CollaboratorCommission::class, 'order_id', 'id');
+    }
+
+    public function shippingAddress(): BelongsTo
+    {
+        return $this->belongsTo(ShippingAddress::class, 'shipping_address_id', 'id');
     }
 
     // Static Booting
@@ -161,6 +171,27 @@ class Order extends Model
             $is_eligible = SpecialCountry::where('country_id', $order->customer->country_id)->exists();
 
             if ($order->status === 'paid' && empty($order->np_id)) {
+                $order->load([
+                    'customer',
+                    'customer.user',
+                    'shippingAddress',
+                    'shippingAddress.country',
+
+                    'orderItems' => function ($q) {
+                        $q->with([
+                            'smartphone' => function ($q) {
+                                $q->with([
+                                    'selling_info.shipping_fee',
+                                    'selling_info.import_tax',
+                                    'model_name',
+                                    'capacity',
+                                ]);
+                            },
+                            'smartphoneAddons',
+                        ]);
+                    },
+                ]);
+
                 $user->notify(new OrderStatusPaidNotification($order, $currency));
 
                 if ($is_eligible && $user_meta_contacts->isNotEmpty() && ! empty($meta_setting)) {

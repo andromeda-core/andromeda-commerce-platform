@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Customers\Repository;
 
+use App\Helpers\Trans;
 use App\Models\Country;
 use App\Models\Customer;
 use App\Models\User;
@@ -16,7 +17,8 @@ class CustomerRepository implements ICustomerRepository
     public function __construct(
         private Customer $customer,
         private User $user,
-        private Country $country
+        private Country $country,
+        private Trans $trans,
     ) {}
 
     public function getAllCustomers(Request $request)
@@ -279,27 +281,26 @@ class CustomerRepository implements ICustomerRepository
 
     public function updateCustomerProfile(Request $request, string $id)
     {
-
         $user = $this->user->with(['customer'])->find($id);
 
         if (empty($user)) {
             return [
                 'status' => false,
-                'message' => 'Something Went Wrong While Finding Linked User To Customer',
+                'message' => $this->trans::get('Something Went Wrong While Finding Linked User To Customer'),
             ];
         }
 
         if (! $user->hasRole('Customer')) {
             return [
                 'status' => false,
-                'message' => 'Only Customers Can Update Profile From Here',
+                'message' => $this->trans::get('Only Customers Can Update Profile From Here'),
             ];
         }
 
         if (! $user->is($request->user())) {
             return [
                 'status' => false,
-                'message' => 'You Can Only Update Your Profile',
+                'message' => $this->trans::get('You Can Only Update Your Profile'),
             ];
         }
 
@@ -311,10 +312,10 @@ class CustomerRepository implements ICustomerRepository
             'state' => ['required', 'string', 'max:255'],
             'city' => ['required', 'string', 'max:255'],
             'postal_code' => ['required', 'string', 'max:255'],
-            'address_line1' => ['required', 'string'],
+            'address_line1' => ['required', 'required', 'string'],
             'address_line2' => ['nullable', 'string'],
         ], [
-            'phone.regex' => 'The Number Accepted With + Country Code - Example: +8801xxxxxxxxx',
+            'phone.regex' => $this->trans::get('The Number Accepted With + Country Code - Example: +8801xxxxxxxxx'),
         ]);
 
         DB::beginTransaction();
@@ -329,7 +330,7 @@ class CustomerRepository implements ICustomerRepository
             $customer = $user->customer;
 
             if (empty($customer)) {
-                throw new Exception('Something Went Wrong While Finding Customer');
+                throw new Exception($this->trans::get('Something Went Wrong While Finding Customer'));
             }
 
             $customer->update([
@@ -346,7 +347,7 @@ class CustomerRepository implements ICustomerRepository
 
             return [
                 'status' => true,
-                'message' => 'Profile Updated Successfully',
+                'message' => $this->trans::get('Profile Updated Successfully'),
             ];
 
         } catch (Exception $e) {

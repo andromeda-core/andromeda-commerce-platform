@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OrderItem extends Model
 {
     protected $fillable = [
-        'order_id', 'smartphone_id', 'product_id', 'quantity', 'unit_price', 'sub_total', 'color_id',
+        'order_id', 'smartphone_id', 'product_id', 'quantity', 'unit_price', 'sub_total', 'color_id', 'shipping_cost', 'import_cost',
     ];
 
     //   Attributes
@@ -33,5 +34,10 @@ class OrderItem extends Model
     public function color(): BelongsTo
     {
         return $this->belongsTo(Color::class, 'color_id', 'id');
+    }
+
+    public function smartphoneAddons(): HasMany
+    {
+        return $this->hasMany(SmartphoneOrderItemAddon::class, 'order_item_id', 'id');
     }
 }

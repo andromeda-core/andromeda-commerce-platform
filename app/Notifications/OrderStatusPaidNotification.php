@@ -63,8 +63,8 @@ class OrderStatusPaidNotification extends Notification implements ShouldQueue
             ->action('View Your Order', route('website.orders.order-view', $this->order->order_no))
             ->line('We truly appreciate your trust in us and look forward to delivering your order soon.')
             ->attachData($pdf->output(), "invoice-{$this->order->order_no}.pdf", [
-                            'mime' => 'application/pdf',
-                        ]);
+                'mime' => 'application/pdf',
+            ]);
 
         return $mail;
     }

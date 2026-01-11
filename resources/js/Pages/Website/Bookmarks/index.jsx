@@ -7,14 +7,23 @@ import getCookie from '@/Hooks/useGetCookie';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 import Spinner from '@/Components/Spinner';
 import MasonryFeedItem from '../Home/MasonryFeedItem';
+import { useTranslation } from '@/Hooks/useTranslation';
+import BookmarkStatusChangedModal from '@/Components/BookmarkStatusChangedModal';
+import useWindowSize from '@/Hooks/useWindowSize';
+
 
 export default function index() {
     const [bookmarkedPosts, setBookmarkedPosts] = useState([]);
+    const [bookmarkStatusChanged, setBookmarkStatusChanged] = useState(false);
+    const [bookmarkActionPost, setBookmarkActionPost] = useState(null);
     const [nextPageUrl, setNextPageUrl] = useState(null);
 
-
+    const windowSize = useWindowSize();
+    // Translation Hook
+    const { __ } = useTranslation();
     const loaderRef = useRef(null);
     const [isLoaded, setIsLoaded] = useState(false);
+
 
     const [ErrorMessage, setErrorMessage] = useState(null);
     const [showErrorMessage, setShowErrorMessage] = useState(false);
@@ -41,13 +50,13 @@ export default function index() {
                 try {
                     parsed = JSON.parse(decodeURIComponent(cookieValue));
                 } catch (error) {
-                    console.warn('⚠️ Invalid post_preferences cookie. Using defaults.', error);
+                    console.warn('⚠️ ' + __('Invalid post_preferences cookie. Using defaults.'), error);
                     parsed = null;
                 }
             }
 
             const defaultPreferences = {
-                // text: true,
+                text: true,
                 videos: true,
                 images: true,
                 show_posts: true,
@@ -103,7 +112,7 @@ export default function index() {
             });
             setNextPageUrl(res.data.next_page_url);
         } catch (error) {
-            console.error('Error fetching more posts:', error);
+            console.error(__('Error fetching more posts') + ':', error);
         } finally {
             isFetchingRef.current = false;
         }
@@ -147,7 +156,7 @@ export default function index() {
 
     return (
         <MainLayout>
-            <Head title="Bookmarks" />
+            <Head title={__("Bookmarks", true)} />
 
             {showErrorMessage && (
                 <Toast
@@ -164,16 +173,18 @@ export default function index() {
             {!isLoaded && (
                 <div className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80">
                     <Spinner />
-                    Please Wait While We Load Bookmarked Posts...
+                    {__('Please Wait While We Load Bookmarked Posts...')}
                 </div>
             )}
 
             {/* Masonry Layout */}
             {isLoaded && (
-                <div className="pb-20 sm:pb-20">
-                    <div className="max-w-6xl pt-10 mx-auto sm:px-4 lg:px-6">
-                        {/* Compact Masonry */}
-                        <div className="gap-2 columns-2 sm:columns-2 md:columns-2 lg:columns-3 xl:columns-3">
+                <div
+                    className={`pb-20 pt-3 sm:pb-20 lg:pt-[75px]`}
+                >
+                    <div className="mx-auto max-w-8xl sm:px-6 lg:px-8">
+
+                        <div className="gap-2 columns-2 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5">
                             {bookmarkedPosts.map((item, index) => {
                                 return (
                                     <MasonryFeedItem
@@ -183,6 +194,13 @@ export default function index() {
                                         onClick={() => handleOpenPost(item)}
                                         Placeholder={Placeholder}
                                         Index={index}
+                                        isBookmarkPage={true}
+                                        setBookmarkedPosts={setBookmarkedPosts}
+                                        setBookmarkStatusChanged={setBookmarkStatusChanged}
+                                        setBookmarkActionPost={setBookmarkActionPost}
+                                        windowSize={windowSize}
+
+
                                     />
                                 );
                             })}
@@ -192,18 +210,19 @@ export default function index() {
                             <div className="flex min-h-[50vh] items-center justify-center px-6">
                                 <div className="text-center">
                                     <h3 className="text-[22px] font-semibold tracking-tight text-black dark:text-white">
-                                        No Bookmarks Found
+
+                                        {__('No Bookmarks Found')}
                                     </h3>
 
                                     <p className="max-w-md mt-2 mb-8 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                                        Start bookmarking your favorite Posts to see them here
+                                        {__('Start bookmarking your favorite Posts to see them here')}
                                     </p>
 
                                     <Link
                                         href={route('home')}
                                         className="inline-flex items-center justify-center rounded-md bg-black px-10 py-2.5 text-sm font-medium text-white transition-colors hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80"
                                     >
-                                        Bookmark Now
+                                        {__('Bookmark Now')}
                                     </Link>
                                 </div>
                             </div>
@@ -218,12 +237,22 @@ export default function index() {
                                         className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80"
                                     >
                                         <Spinner />
-                                        Loading more...
+                                        {__('Loading more' + '...')}
                                     </div>
                                 )}
                             </>
                         )}
                     </div>
+
+                    {/* Bookmark */}
+                    {bookmarkStatusChanged && (
+                        <BookmarkStatusChangedModal
+                            BookmarkStatusChanged={bookmarkStatusChanged}
+                            setBookmarkStatusChanged={setBookmarkStatusChanged}
+                            viewablePost={bookmarkActionPost}
+                        />
+                    )}
+
                 </div>
             )}
         </MainLayout>

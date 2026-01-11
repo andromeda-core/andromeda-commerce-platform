@@ -32,6 +32,7 @@ export default function index({ smartphones }) {
 
     const { currency } = usePage().props;
 
+
     const [columns, setColumns] = useState([]);
     const [actions, setActions] = useState([]);
     useEffect(() => {
@@ -90,6 +91,23 @@ export default function index({ smartphones }) {
 
             {
                 label: 'Selling Price',
+                render: (item) => {
+                    if (item?.selling_info) {
+                        return (
+                            <span className="p-2 text-white bg-blue-500 rounded-lg">
+                                {currency?.symbol}
+                                {item?.selling_info?.total_price}
+                            </span>
+                        );
+                    }
+
+                    return 'N/A';
+                },
+            },
+
+
+            {
+                label: 'Total Price',
                 render: (item) => {
                     if (item?.selling_info) {
                         return (

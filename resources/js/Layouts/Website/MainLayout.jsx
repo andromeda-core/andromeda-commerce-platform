@@ -7,14 +7,17 @@ import GlobalFilterModal from '@/Pages/Website/GlobalFilters/GlobalFilterModal';
 import BottomBar from '@/partials/Website/BottomBar';
 import Sidebar from '@/partials/Website/Sidebar';
 import { usePage } from '@inertiajs/react';
-import axios from 'axios';
 import React, { useEffect, useRef, useState } from 'react';
 import { useFilterStore } from '@/Hooks/useFilterStore';
-// import ActivateNavigationPrompt from '@/Components/ActivateNavigationPrompt';
+import GlobalLanguageFilter from '@/Pages/Website/GlobalLanguageFilters/GlobalLanguageFilter';
+import { useLanguageStore } from '@/Hooks/useLanguageStore';
+import getCookie from '@/Hooks/useGetCookie';
+import { useTranslation } from '@/Hooks/useTranslation';
 
 
 export default function MainLayout({ children }) {
     const { asset, generalSetting, flash, auth } = usePage().props;
+    const { __ } = useTranslation();
 
     // Application Logo Sate With Default Images
     const [ApplicationLogoLight, setApplicationLogoLight] = useState(
@@ -36,25 +39,6 @@ export default function MainLayout({ children }) {
         }
     }, []);
 
-    // Managing SidebarToggle State (Not Using RN)
-    // const [sidebarToggle, setSidebarToggle] = useState(() => {
-    //     const saved = localStorage.getItem('sidebarToggle');
-    //     if (saved === null) {
-    //         return false;
-    //     }
-    //     try {
-    //         const parsed = JSON.parse(saved);
-    //         if (typeof parsed === 'boolean') {
-    //             return parsed;
-    //         }
-    //         localStorage.removeItem('sidebarToggle');
-    //         return false;
-    //     } catch (error) {
-    //         localStorage.removeItem('sidebarToggle');
-    //         return false;
-    //     }
-    // });
-
     // Managing Loader State
     const [loaded, setLoaded] = useState(true);
 
@@ -64,20 +48,123 @@ export default function MainLayout({ children }) {
     // Window Size Hook
     const windowSize = useWindowSize();
 
-    // Sidebar Collapse Logic
-    const [isCollapsed, setIsCollapsed] = useState(false);
     const [moreDropdown, setMoreDropdown] = useState(false);
     const moreDropdownRef = useRef(null);
 
 
 
-    // Filter Pop Up Modal
-    const [filterModal, setFilterModal] = useState(false);
+    // Language and Filter Modal Handling State
+    const [activeModal, setActiveModal] = useState(null);
+
+
+    // Previouus URL REF FOR MODALS POP STATE
+    const previousUrlRef = useRef(window.location.href);
+
+    // Global Filter Zustand Store Sync
     const setIsOpen = useFilterStore((s) => s.setIsOpen);
+    useEffect(() => {
+        setIsOpen(activeModal === 'filter');
+    }, [activeModal]);
+
+
+    // Global Language Zustand Store Sync
+    const languages = useLanguageStore((state) => state.languages);
+    const fetchLanguages = useLanguageStore((state) => state.fetchLanguages);
+    const loading = useLanguageStore((state) => state.loading);
+    const setLanguageLocale = useLanguageStore(state => state.setLanguageLocale);
+    const setLanguageId = useLanguageStore(state => state.setLanguageId);
+    const activeLanguageId = useLanguageStore(state => state.activeLanguageId);
+    const isLoaded = useLanguageStore(state => state.isLoaded);
 
     useEffect(() => {
-        setIsOpen(filterModal);
-    }, [filterModal]);
+        // Initial Load
+        if (!isLoaded) {
+            fetchLanguages(true);
+            return;
+        }
+
+        //  Login (User ID exists but store has old ID or is guest)
+        if (auth?.user) {
+            if (auth.user.language_id !== activeLanguageId) {
+                fetchLanguages(true);
+            }
+        }
+
+        // Logout (User ID becomes null, but store still has auth data)
+
+        if (!auth?.user && activeLanguageId !== 1 && activeLanguageId !== null) {
+            fetchLanguages(true);
+        }
+
+    }, [auth?.user?.id, isLoaded]);
+
+
+    useEffect(() => {
+        // Syning User Locales With Zustand Store If Authenticated
+        if (auth?.user) {
+            setLanguageLocale(auth.user.language_locale);
+            setLanguageId(auth.user.language_id);
+        }
+
+        if (!auth?.user) {
+            const language_cookie = getCookie('language');
+            if (!language_cookie) {
+                setLanguageLocale('en');
+                setLanguageId(1);
+            }
+
+            try {
+                const name = "language=";
+                const match = document.cookie.match(new RegExp('(^|;\\s*)' + name + '([^;]*)'));
+
+                if (match) {
+                    const decoded = decodeURIComponent(match[2]);
+                    const parsed = JSON.parse(decoded);
+
+                    if (parsed?.language_locale && parsed?.language_id) {
+                        setLanguageLocale(parsed.language_locale);
+                        setLanguageId(parsed.language_id);
+                        return;
+                    }
+                }
+                throw new Error("Invalid Cookie");
+
+            } catch (e) {
+                setLanguageLocale('en');
+                setLanguageId(1);
+            }
+        }
+    }, [auth.user?.id]);
+
+
+
+    // Appending HISTORY WHEN FILTER OR LANGUAGE MODAL OPENS
+    useEffect(() => {
+        const url = new URL(window.location.href);
+
+        if (activeModal) {
+            url.searchParams.set('modal', activeModal);
+            window.history.pushState({ modal: activeModal }, '', url.toString());
+            previousUrlRef.current = url.toString();
+            document.body.style.overflow = 'hidden';
+            document.body.style.touchAction = 'none';
+        } else {
+            if (url.searchParams.has('modal')) {
+                url.searchParams.delete('modal');
+                window.history.pushState({}, '', url.toString());
+                previousUrlRef.current = url.toString();
+            }
+            document.body.style.overflow = '';
+            document.body.style.touchAction = '';
+        }
+
+        return () => {
+            document.body.style.overflow = '';
+            document.body.style.touchAction = '';
+        };
+    }, [activeModal]);
+
+
 
     return (
         <>
@@ -85,7 +172,19 @@ export default function MainLayout({ children }) {
                 <Preloader loaded={loaded} setLoaded={setLoaded} />
                 <AppStatusManager />
 
-                <GlobalFilterModal filterModal={filterModal} setFilterModal={setFilterModal} />
+                <GlobalFilterModal
+                    isOpen={activeModal === 'global-filters'}
+                    close={() => setActiveModal(null)}
+                    previousUrlRef={previousUrlRef}
+                />
+                <GlobalLanguageFilter
+                    isOpen={activeModal === 'language-filters'}
+                    close={() => setActiveModal(null)}
+                    previousUrlRef={previousUrlRef}
+                    languages={languages}
+                    loading={loading}
+                />
+
 
                 <Toast flash={flash} />
 
@@ -98,8 +197,9 @@ export default function MainLayout({ children }) {
                             app_name={generalSetting?.app_name}
                             darkMode={darkMode}
                             setDarkMode={setDarkMode}
-                            setFilterModal={setFilterModal}
-                            filterModal={filterModal}
+                            setActiveModal={setActiveModal}
+                            activeModal={activeModal}
+                            __={__}
                         />
 
                     </div>
@@ -125,7 +225,7 @@ export default function MainLayout({ children }) {
                             children
                         ) : (
                             <div className="flex h-[80vh] items-center justify-center text-sub-text-light dark:text-sub-text-dark">
-                                No content available.
+                                {__('No content available.')}
                             </div>
                         )}
                     </main>
@@ -139,9 +239,11 @@ export default function MainLayout({ children }) {
                         setMoreDropdown={setMoreDropdown}
                         moreDropdownRef={moreDropdownRef}
                         // cartItemsCount={cartItemsCount}
-                        setFilterModal={setFilterModal}
-                        filterModal={filterModal}
+                        setActiveModal={setActiveModal}
+                        activeModal={activeModal}
+                        __={__}
                     />
+
 
                 )}
 

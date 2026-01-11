@@ -1,6 +1,6 @@
 import LinkButton from '@/Components/LinkButton';
 import PrimaryButton from '@/Components/PrimaryButton';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import html2pdf from 'html2pdf.js';
 import React, { useState } from 'react';
 import QRCode from 'react-qr-code';
@@ -36,7 +36,7 @@ export default function CustomerOrderInvoice({ order }) {
 
     return (
         <>
-            <Head title="Order - Customer Invoice" />
+            <Head title={`Order - Customer Invoice - ${order.order_no}`} />
 
             <div className="mx-auto flex lg:flex-nowrap flex-wrap w-auto items-center justify-center gap-4 lg:w-[600px] print:hidden">
                 <PrimaryButton
@@ -81,14 +81,12 @@ export default function CustomerOrderInvoice({ order }) {
                         </svg>
                     }
                 />
-
-
                 {auth?.user ? (
                     <>
                         {auth?.user?.role === 'Admin' ? (
-                            <LinkButton
+                            <PrimaryButton
                                 Text={'Back'}
-                                URL={route('dashboard.orders.show', order.id)}
+                                Action={() => router.get(route('dashboard.orders.show', order.id))}
                                 Icon={
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -107,9 +105,9 @@ export default function CustomerOrderInvoice({ order }) {
                                 }
                             />
                         ) : (
-                            <LinkButton
+                            <PrimaryButton
                                 Text={'Back'}
-                                URL={route('home')}
+                                Action={() => router.get(route('home'))}
                                 Icon={
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -184,10 +182,10 @@ export default function CustomerOrderInvoice({ order }) {
                             </h1>
                             <div className="mt-2 space-y-1">
                                 <p className="text-sm text-white break-all sm:text-base">
-                                    {generalSetting.contact_email}
+                                    {order.customer?.user?.email}
                                 </p>
                                 <p className="text-sm text-white break-words sm:text-base">
-                                    {generalSetting.contact_number}
+                                    {order.customer?.user?.phone}
                                 </p>
                             </div>
                         </div>
@@ -209,28 +207,26 @@ export default function CustomerOrderInvoice({ order }) {
 
                 {/* Customer Info */}
                 <div className="p-4 border-b border-gray-200 sm:p-6 lg:p-8">
-                    <h3 className="mb-4 text-lg font-semibold text-gray-700">Customer Details:</h3>
+                    <h3 className="mb-4 text-lg font-semibold text-gray-700">Shipping Details:</h3>
                     <div className="p-4 rounded-lg bg-gray-50 sm:p-5">
                         <div className="space-y-1">
                             <p className="text-sm font-semibold text-gray-900 break-words sm:text-base">
-                                {order?.customer?.user?.name}
+                                {order?.shipping_address?.name}
                             </p>
 
                             <p className="text-sm text-gray-600 break-words sm:text-base">
-                                {order?.customer?.address_line1}
+                                {order?.shipping_address?.address_line1}
                                 {', '}
-                                {order?.customer?.address_line2 != null
-                                    ? order?.customer?.address_line2
+                                {order?.shipping_address?.address_line2 != null
+                                    ? order?.shipping_address?.address_line2
                                     : ''}
                             </p>
                             <p className="text-sm text-gray-600 break-words sm:text-base">
-                                {order?.customer?.city}
+                                {order?.shipping_address?.city}
                             </p>
+
                             <p className="mt-2 text-sm text-gray-600 break-all sm:text-base">
-                                {order?.customer?.user?.email}
-                            </p>
-                            <p className="mt-2 text-sm text-gray-600 break-all sm:text-base">
-                                {order?.customer?.user?.phone}
+                                {order?.shipping_address?.phone}
                             </p>
                         </div>
                     </div>
@@ -238,45 +234,8 @@ export default function CustomerOrderInvoice({ order }) {
 
                 {/* Items Table */}
                 <div className="p-4 sm:p-6 lg:p-8">
-                    {/* Mobile Card View */}
-                    <div className="block space-y-4 sm:hidden">
-                        <h3 className="mb-4 text-lg font-semibold text-gray-700">Order Items</h3>
-                        {order?.order_items.map((item, index) => (
-                            <div key={index} className="p-4 border rounded-lg bg-gray-50">
-                                <div className="space-y-2">
-                                    <h4 className="font-medium text-gray-900 break-words">
-                                        {item.smartphone?.model_name?.name}
-                                    </h4>
-                                    <p className="text-sm text-gray-600 break-words">
-                                        {item.smartphone?.capacity?.name}
-                                    </p>
-                                    <div className="grid grid-cols-3 gap-2 text-sm">
-                                        <div>
-                                            <span className="text-gray-500">Price:</span>
-                                            <p className="font-medium">
-                                                {currency?.symbol}
-                                                {item.unit_price}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <span className="text-gray-500">Qty:</span>
-                                            <p className="font-medium">{item.quantity}</p>
-                                        </div>
-                                        <div>
-                                            <span className="text-gray-500">Total:</span>
-                                            <p className="font-semibold text-gray-900">
-                                                {currency?.symbol}
-                                                {item.sub_total}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
                     {/* Desktop Table View */}
-                    <div className="hidden overflow-x-auto sm:block">
+                    <div className="block overflow-x-auto">
                         <table className="w-full min-w-[600px]">
                             <thead>
                                 <tr className="border-b-2 border-gray-300">
@@ -298,31 +257,113 @@ export default function CustomerOrderInvoice({ order }) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {order?.order_items.map((item, index) => (
-                                    <tr
-                                        key={index}
-                                        className="border-b border-gray-200 hover:bg-gray-50"
-                                    >
-                                        <td className="px-2 py-4 text-sm text-gray-900 break-words lg:text-base">
-                                            {item.smartphone?.model_name?.name}
-                                        </td>
-                                        <td className="px-2 py-4 text-sm text-gray-600 break-words lg:text-base">
-                                            {item.smartphone?.capacity?.name}
-                                        </td>
-                                        <td className="px-2 py-4 text-sm text-right text-gray-900 lg:text-base">
-                                            {currency?.symbol}
-                                            {item.unit_price}
-                                        </td>
-                                        <td className="px-2 py-4 text-sm text-center text-gray-900 lg:text-base">
-                                            {item.quantity}
-                                        </td>
-                                        <td className="px-2 py-4 text-sm font-semibold text-right text-gray-900 lg:text-base">
-                                            {currency?.symbol}
-                                            {item.sub_total}
-                                        </td>
-                                    </tr>
-                                ))}
+                                {order?.order_items.map((item, index) => {
+                                    const addonsTotal =
+                                        item.smartphone_addons?.reduce(
+                                            (sum, addon) => sum + Number(addon.total_price),
+                                            0
+                                        ) || 0;
+
+                                    const itemGrandTotal = Number(item.sub_total) + addonsTotal;
+
+                                    return (
+                                        <React.Fragment key={index}>
+
+                                            <tr className="border-b border-gray-200">
+                                                <td className="px-2 py-4 text-sm font-medium text-gray-900">
+                                                    {item.smartphone?.model_name?.name}
+                                                </td>
+
+                                                <td className="px-2 py-4 text-sm text-gray-600">
+                                                    {item.smartphone?.capacity?.name}
+                                                </td>
+
+                                                <td className="px-2 py-4 text-sm text-right text-gray-900">
+                                                    {currency?.symbol}
+                                                    {item.unit_price}
+                                                </td>
+
+                                                <td className="px-2 py-4 text-sm text-center text-gray-900">
+                                                    {item.quantity}
+                                                </td>
+
+                                                <td className="px-2 py-4 text-sm font-bold text-right text-gray-900">
+                                                    {currency?.symbol}
+                                                    {itemGrandTotal.toFixed(2)}
+                                                </td>
+                                            </tr>
+
+
+                                            <tr className="bg-gray-50">
+                                                <td colSpan={5} className="px-4 py-3 text-sm text-gray-600">
+                                                    <div className="space-y-1">
+                                                        <div className="flex justify-between">
+                                                            <span>
+                                                                Product ({item.unit_price} × {item.quantity})
+                                                            </span>
+                                                            <span>
+                                                                {currency?.symbol}
+                                                                {(item.unit_price * item.quantity).toFixed(2)}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="flex justify-between">
+                                                            <span>Shipping</span>
+                                                            <span>
+                                                                {currency?.symbol}
+                                                                {Number(item.shipping_cost || 0).toFixed(2)}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="flex justify-between">
+                                                            <span>Import Tax</span>
+                                                            <span>
+                                                                {currency?.symbol}
+                                                                {Number(item.import_cost || 0).toFixed(2)}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* ADDONS BREAKDOWN */}
+                                                        {item.smartphone_addons?.length > 0 && (
+                                                            <>
+                                                                <div className="pt-2 mt-2 border-t border-dashed">
+                                                                    <p className="text-xs font-semibold text-gray-700">
+                                                                        Add-ons
+                                                                    </p>
+
+                                                                    {item.smartphone_addons.map((addon) => (
+                                                                        <div
+                                                                            key={addon.id}
+                                                                            className="flex justify-between text-sm"
+                                                                        >
+                                                                            <span>
+                                                                                {addon.name} × {addon.quantity}
+                                                                            </span>
+                                                                            <span>
+                                                                                {currency?.symbol}
+                                                                                {Number(addon.total_price).toFixed(2)}
+                                                                            </span>
+                                                                        </div>
+                                                                    ))}
+
+                                                                    <div className="flex justify-between pt-1 font-medium">
+                                                                        <span>Add-ons total</span>
+                                                                        <span>
+                                                                            {currency?.symbol}
+                                                                            {addonsTotal.toFixed(2)}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </React.Fragment>
+                                    );
+                                })}
                             </tbody>
+
                         </table>
                     </div>
 

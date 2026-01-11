@@ -17,6 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
             \App\Http\Middleware\EnsureUserIsActive::class,
             \App\Http\Middleware\CustomerNotAllowedToVisitDashboard::class,
+            \App\Http\Middleware\SetAppLocale::class,
+        ]);
+
+        $middleware->encryptCookies(except: [
+            'language',
         ]);
 
         $middleware->alias([

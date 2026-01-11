@@ -28,8 +28,12 @@ class ProductsRepository implements IProductsRepository
 
             if ($show_products) {
                 $smartphone = $this->smartphone
-                    ->with(['model_name', 'capacity', 'selling_info'])
-                    ->withCount('inventory_items')
+                    ->with(['model_name', 'capacity', 'selling_info', 'selling_info.shipping_fee', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug'])
+                    ->withCount([
+                        'inventory_items' => function ($query) {
+                            $query->where('status', 'in_stock');
+                        },
+                    ])
                     ->whereHas('selling_info')
                     ->whereNotNull('slug')
                     ->where('slug', $slug)
@@ -40,7 +44,7 @@ class ProductsRepository implements IProductsRepository
                             ->where('id', '!=', $smartphone->id)
                             ->whereHas('selling_info')
                             ->whereNotNull('slug')
-                            ->with(['model_name', 'capacity', 'selling_info'])
+                            ->with(['model_name', 'capacity', 'selling_info', 'selling_info.shipping_fee', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug'])
                             ->where(function ($query) use ($smartphone) {
                                 $query->where('tag', 'like', '%'.$smartphone->tag.'%')
                                     ->orWhere('content', 'like', '%'.$smartphone->content.'%')
@@ -61,13 +65,18 @@ class ProductsRepository implements IProductsRepository
                             ->map(function ($smartphone) {
                                 return [
                                     'id' => $smartphone->id,
-                                    'name' => $smartphone->model_name->name,
-                                    'capacity' => $smartphone->capacity->name,
-                                    'images' => $smartphone->smartphone_image_urls,
-                                    'colors' => $smartphone->colors,
-                                    'upc' => $smartphone->upc,
-                                    'selling_info' => $smartphone->selling_info,
-                                    'inventory_items_count' => $smartphone->inventory_items_count,
+                                    'name' => $smartphone?->model_name->name,
+                                    'capacity' => $smartphone?->capacity->name,
+                                    'images' => $smartphone?->smartphone_image_urls,
+                                    'colors' => $smartphone?->colors,
+                                    'upc' => $smartphone?->upc,
+                                    'selling_info' => $smartphone?->selling_info,
+                                    'country' => $smartphone?->country,
+                                    'condition' => $smartphone?->condition,
+                                    'delivery_days' => $smartphone?->delivery_days,
+                                    'courier_company' => $smartphone?->courier_company,
+                                    'return_policy' => $smartphone?->return_policy,
+                                    'inventory_items_count' => $smartphone?->inventory_items_count,
                                     'slug' => $smartphone->slug,
                                     'tag' => $smartphone->tag,
                                     'content' => $smartphone->content,
@@ -121,25 +130,34 @@ class ProductsRepository implements IProductsRepository
                         }
 
                         return [
-                            'id' => $smartphone->id,
-                            'name' => $smartphone->model_name->name,
-                            'capacity' => $smartphone->capacity->name,
-                            'images' => $smartphone->smartphone_image_urls,
+                            'id' => $smartphone?->id,
+                            'name' => $smartphone?->model_name?->name,
+                            'capacity' => $smartphone?->capacity->name,
+                            'images' => $smartphone?->smartphone_image_urls,
                             'colors' => $smartphone->colors,
-                            'upc' => $smartphone->upc,
-                            'selling_info' => $smartphone->selling_info,
-                            'inventory_items_count' => $smartphone->inventory_items_count,
-                            'slug' => $smartphone->slug,
-                            'tag' => $smartphone->tag,
-                            'content' => $smartphone->content,
+                            'upc' => $smartphone?->upc,
+                            'selling_info' => $smartphone?->selling_info,
+                            'inventory_items_count' => $smartphone?->inventory_items_count,
+                            'country' => $smartphone?->country,
+                            'condition' => $smartphone?->condition,
+                            'courier_company' => $smartphone?->courier_company,
+                            'return_policy' => $smartphone?->return_policy,
+                            'addons' => $smartphone?->addons,
+                            'slug' => $smartphone?->slug,
+                            'tag' => $smartphone?->tag,
+                            'content' => $smartphone?->content,
                             'type' => 'smartphones',
                             'related' => collect([...$related_posts, ...$related_smartphones])->shuffle(),
                         ];
                     });
 
+                if ($smartphone->isEmpty()) {
+                    throw new Exception('Smartphone Not Found');
+                }
+
                 return [
                     'status' => true,
-                    'smartphone' => $smartphone[0],
+                    'smartphone' => $smartphone->first(),
                 ];
             }
 

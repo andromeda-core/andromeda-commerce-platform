@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\Trans;
 use Cache;
 use Exception;
 use Illuminate\Support\Facades\Http;
@@ -41,13 +42,13 @@ class NOWPaymentPaymentService
             $data = $response->json();
 
             if (! $response->successful() || empty($data['invoice_url'])) {
-                throw new Exception($data['message'] ?? 'Unable to create NOWPayments session.');
+                throw new Exception($data['message'] ?? Trans::get('Unable to create NOWPayments session.'));
             }
 
             return [
                 'status' => true,
                 'payment_url' => $data['invoice_url'],
-                'message' => 'Payment Session Created Successfully Redirecting To NOWPayments',
+                'message' => Trans::get('Payment Session Created Successfully Redirecting To NOWPayments'),
             ];
         } catch (Exception $e) {
             return [

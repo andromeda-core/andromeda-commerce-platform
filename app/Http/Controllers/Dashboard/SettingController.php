@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Repositories\Settings\Interface\ISettingRepository;
+use App\Repositories\TranslationSystem\Language\Interface\ILanguageRepository;
 use Artisan;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -11,7 +12,8 @@ use Inertia\Inertia;
 class SettingController extends Controller
 {
     public function __construct(
-        private ISettingRepository $setting
+        private ISettingRepository $setting,
+        private ILanguageRepository $language
     ) {}
 
     // Menu Page
@@ -1366,5 +1368,389 @@ class SettingController extends Controller
 
         return back()->with('success', $deleted['message']);
 
+    }
+
+    // Return Policy Methods
+    public function returnPolicyIndex()
+    {
+        $return_policies = $this->setting->getAllReturnPolicies();
+
+        return Inertia::render('Dashboard/Settings/ReturnPolicy/index', compact('return_policies'));
+
+    }
+
+    public function returnPolicyCreate()
+    {
+        $languages = $this->language->getAllLanguagesWithoutPagination();
+
+        return Inertia::render('Dashboard/Settings/ReturnPolicy/create', compact('languages'));
+    }
+
+    public function returnPolicyEdit(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.return-policy-settings.index')->with('error', 'Return Policy ID not found');
+        }
+
+        $return_policy = $this->setting->getSingleReturnPolicy($id);
+
+        if (empty($return_policy)) {
+            return to_route('dashboard.settings.return-policy-settings.index')->with('error', 'Return Policy Not Found');
+        }
+
+        $languages = $this->language->getAllLanguagesWithoutPagination();
+
+        return Inertia::render('Dashboard/Settings/ReturnPolicy/edit', compact('return_policy', 'languages'));
+    }
+
+    public function returnPolicyStore(Request $request)
+    {
+        $created = $this->setting->storeReturnPolicy($request);
+
+        if ($created['status'] === false) {
+            return back()->with('error', $created['message']);
+        }
+
+        return to_route('dashboard.settings.return-policy-settings.index')->with('success', $created['message']);
+    }
+
+    public function returnPolicyUpdate(Request $request, ?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.return-policy-settings.index')->with('error', 'Return Policy ID not found');
+        }
+
+        $updated = $this->setting->updateReturnPolicy($request, $id);
+
+        if ($updated['status'] === false) {
+            return back()->with('error', $updated['message']);
+        }
+
+        return to_route('dashboard.settings.return-policy-settings.index')->with('success', $updated['message']);
+    }
+
+    public function returnPolicyToggleStatus(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.return-policy-settings.index')->with('error', 'Return Policy ID not found');
+        }
+
+        $response = $this->setting->toggleReturnPolicyStatus($id);
+        if ($response['status'] === false) {
+            return back()->with('error', $response['message']);
+        }
+
+        return back()->with('success', $response['message']);
+    }
+
+    public function returnPolicyDestroy(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.return-policy-settings.index')->with('error', 'Return Policy ID not found');
+        }
+
+        $deleted = $this->setting->destroyReturnPolicy($id);
+
+        if ($deleted['status'] === false) {
+            return back()->with('error', $deleted['message']);
+        }
+
+        return back()->with('success', $deleted['message']);
+    }
+
+    public function returnPolicyDestroyBySelection(Request $request)
+    {
+        $deleted = $this->setting->destroyReturnPolicyBySelection($request);
+
+        if ($deleted['status'] === false) {
+            return back()->with('error', $deleted['message']);
+        }
+
+        return back()->with('success', $deleted['message']);
+    }
+
+    // Courier Company Methods
+    public function courierCompanyIndex()
+    {
+        $courier_companies = $this->setting->getAllCourierCompanies();
+
+        return Inertia::render('Dashboard/Settings/CourierCompany/index', compact('courier_companies'));
+
+    }
+
+    public function courierCompanyCreate()
+    {
+        return Inertia::render('Dashboard/Settings/CourierCompany/create');
+    }
+
+    public function courierCompanyEdit(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.courier-company-settings.index')->with('error', 'Courier Company ID not found');
+        }
+
+        $courier_company = $this->setting->getSingleCourierCompany($id);
+
+        if (empty($courier_company)) {
+            return to_route('dashboard.settings.courier-company-settings.index')->with('error', 'Courier Company Not Found');
+        }
+
+        return Inertia::render('Dashboard/Settings/CourierCompany/edit', compact('courier_company'));
+    }
+
+    public function courierCompanyStore(Request $request)
+    {
+        $created = $this->setting->storeCourierCompany($request);
+
+        if ($created['status'] === false) {
+            return back()->with('error', $created['message']);
+        }
+
+        return to_route('dashboard.settings.courier-company-settings.index')->with('success', $created['message']);
+    }
+
+    public function courierCompanyUpdate(Request $request, ?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.courier-company-settings.index')->with('error', 'Courier Company ID not found');
+        }
+
+        $updated = $this->setting->updateCourierCompany($request, $id);
+
+        if ($updated['status'] === false) {
+            return back()->with('error', $updated['message']);
+        }
+
+        return to_route('dashboard.settings.courier-company-settings.index')->with('success', $updated['message']);
+    }
+
+    public function courierCompanyToggleStatus(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.courier-company-settings.index')->with('error', 'Courier Company ID not found');
+        }
+
+        $response = $this->setting->toggleCourierCompanyStatus($id);
+        if ($response['status'] === false) {
+            return back()->with('error', $response['message']);
+        }
+
+        return back()->with('success', $response['message']);
+    }
+
+    public function courierCompanyDestroy(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.courier-company-settings.index')->with('error', 'Courier Company ID not found');
+        }
+
+        $deleted = $this->setting->destroyCourierCompany($id);
+
+        if ($deleted['status'] === false) {
+            return back()->with('error', $deleted['message']);
+        }
+
+        return back()->with('success', $deleted['message']);
+    }
+
+    public function courierCompanyDestroyBySelection(Request $request)
+    {
+        $deleted = $this->setting->destroyCourierCompanyBySelection($request);
+
+        if ($deleted['status'] === false) {
+            return back()->with('error', $deleted['message']);
+        }
+
+        return back()->with('success', $deleted['message']);
+    }
+
+    // Condition Methods
+    public function conditionIndex()
+    {
+        $conditions = $this->setting->getAllConditions();
+
+        return Inertia::render('Dashboard/Settings/Conditions/index', compact('conditions'));
+
+    }
+
+    public function conditionCreate()
+    {
+        return Inertia::render('Dashboard/Settings/Conditions/create');
+    }
+
+    public function conditionEdit(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.condition-settings.index')->with('error', 'Condition ID not found');
+        }
+
+        $condition = $this->setting->getSingleCondition($id);
+
+        if (empty($condition)) {
+            return to_route('dashboard.settings.condition-settings.index')->with('error', 'Condition Not Found');
+        }
+
+        return Inertia::render('Dashboard/Settings/Conditions/edit', compact('condition'));
+    }
+
+    public function conditionStore(Request $request)
+    {
+        $created = $this->setting->storeCondition($request);
+
+        if ($created['status'] === false) {
+            return back()->with('error', $created['message']);
+        }
+
+        return to_route('dashboard.settings.condition-settings.index')->with('success', $created['message']);
+    }
+
+    public function conditionUpdate(Request $request, ?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.condition-settings.index')->with('error', 'Condition ID not found');
+        }
+
+        $updated = $this->setting->updateCondition($request, $id);
+
+        if ($updated['status'] === false) {
+            return back()->with('error', $updated['message']);
+        }
+
+        return to_route('dashboard.settings.condition-settings.index')->with('success', $updated['message']);
+    }
+
+    public function conditionToggleStatus(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.condition-settings.index')->with('error', 'Condition ID not found');
+        }
+
+        $response = $this->setting->toggleConditionStatus($id);
+        if ($response['status'] === false) {
+            return back()->with('error', $response['message']);
+        }
+
+        return back()->with('success', $response['message']);
+    }
+
+    public function conditionDestroy(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.condition-settings.index')->with('error', 'Condition ID not found');
+        }
+
+        $deleted = $this->setting->destroyCondition($id);
+
+        if ($deleted['status'] === false) {
+            return back()->with('error', $deleted['message']);
+        }
+
+        return back()->with('success', $deleted['message']);
+    }
+
+    public function conditionDestroyBySelection(Request $request)
+    {
+        $deleted = $this->setting->destroyConditionBySelection($request);
+
+        if ($deleted['status'] === false) {
+            return back()->with('error', $deleted['message']);
+        }
+
+        return back()->with('success', $deleted['message']);
+    }
+
+    // Addon Methods
+    public function addonIndex()
+    {
+        $addons = $this->setting->getAllAddons();
+
+        return Inertia::render('Dashboard/Settings/Addons/index', compact('addons'));
+
+    }
+
+    public function addonCreate()
+    {
+        return Inertia::render('Dashboard/Settings/Addons/create');
+    }
+
+    public function addonEdit(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.addon-settings.index')->with('error', 'Addon ID not found');
+        }
+
+        $addon = $this->setting->getSingleAddon($id);
+
+        if (empty($addon)) {
+            return to_route('dashboard.settings.addon-settings.index')->with('error', 'Addon Not Found');
+        }
+
+        return Inertia::render('Dashboard/Settings/Addons/edit', compact('addon'));
+    }
+
+    public function addonStore(Request $request)
+    {
+        $created = $this->setting->storeAddon($request);
+
+        if ($created['status'] === false) {
+            return back()->with('error', $created['message']);
+        }
+
+        return to_route('dashboard.settings.addon-settings.index')->with('success', $created['message']);
+    }
+
+    public function addonUpdate(Request $request, ?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.addon-settings.index')->with('error', 'Addon ID not found');
+        }
+
+        $updated = $this->setting->updateAddon($request, $id);
+
+        if ($updated['status'] === false) {
+            return back()->with('error', $updated['message']);
+        }
+
+        return to_route('dashboard.settings.addon-settings.index')->with('success', $updated['message']);
+    }
+
+    public function addonToggleStatus(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.addon-settings.index')->with('error', 'Addon ID not found');
+        }
+
+        $response = $this->setting->toggleAddonStatus($id);
+        if ($response['status'] === false) {
+            return back()->with('error', $response['message']);
+        }
+
+        return back()->with('success', $response['message']);
+    }
+
+    public function addonDestroy(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.addon-settings.index')->with('error', 'Addon ID not found');
+        }
+
+        $deleted = $this->setting->destroyAddon($id);
+
+        if ($deleted['status'] === false) {
+            return back()->with('error', $deleted['message']);
+        }
+
+        return back()->with('success', $deleted['message']);
+    }
+
+    public function addonDestroyBySelection(Request $request)
+    {
+        $deleted = $this->setting->destroyAddonBySelection($request);
+
+        if ($deleted['status'] === false) {
+            return back()->with('error', $deleted['message']);
+        }
+
+        return back()->with('success', $deleted['message']);
     }
 }

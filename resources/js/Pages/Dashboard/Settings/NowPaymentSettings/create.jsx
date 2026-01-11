@@ -28,7 +28,7 @@ export default function create() {
 
                 <BreadCrumb
                     header={'Settings - Create NOWPayment Setting'}
-                    parent={'Google Map Settings'}
+                    parent={'NOWPayment Settings'}
                     parent_link={route('dashboard.settings.now-payment-settings.index')}
                     child={'NowPayment Settings'}
                 />

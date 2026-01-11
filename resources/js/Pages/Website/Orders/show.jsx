@@ -2,17 +2,21 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
-import getContrastingColor from '@/Hooks/useColorContraster';
 import useWindowSize from '@/Hooks/useWindowSize';
 import { createPortal } from 'react-dom';
 import CustomFileUploader from '@/Components/CustomFileUploader';
 import Toast from '@/Components/Toast';
 import VideoWithThumbnail from '@/Components/VideoWithThumbnail';
 import axios from 'axios';
+import { useTranslation } from '@/Hooks/useTranslation';
 
 export default function OrderView({ order }) {
     const { currency } = usePage().props;
     const windowSize = useWindowSize();
+
+
+    // Translation Hook
+    const { __ } = useTranslation();
 
     const [showVideoModal, setShowVideoModal] = useState(false);
     const [selectedVideo, setSelectedVideo] = useState({});
@@ -37,27 +41,28 @@ export default function OrderView({ order }) {
     const getStatusColor = (status) => {
         const statusLower = status.toLowerCase();
         switch (statusLower) {
-            case 'pending':
-                return 'bg-yellow-500 text-white';
-            case 'paid':
-                return 'bg-blue-500 text-white';
-            case 'shipped':
-                return 'bg-pink-500 text-white';
-            case 'delivered':
-                return 'bg-green-500 text-white';
-            case 'arrived_locally':
-                return 'bg-stone-500 text-white';
-            case 'failed':
-                return 'bg-red-500 text-white';
-            case 'expired':
-                return 'bg-gray-500 text-white';
-            case 'awaiting_payment':
-                return 'bg-indigo-500 text-white';
-            case 'blockchain_confirmation_pending':
-                return 'bg-indigo-500 text-white';
+            case __('pending'):
+                return 'bg-yellow-500 text-main-text-dark';
+            case __('paid'):
+                return 'bg-blue-500 text-main-text-dark';
+            case __('shipped'):
+                return 'bg-pink-500 text-main-text-dark';
+            case __('delivered'):
+                return 'bg-green-500 text-main-text-dark';
+            case __('arrived_locally'):
+                return 'bg-stone-500 text-main-text-dark';
+            case __('failed'):
+                return 'bg-red-500 text-main-text-dark';
+            case __('expired'):
+                return 'bg-gray-500 text-main-text-dark';
+            case __('awaiting_payment'):
+                return 'bg-indigo-500 text-main-text-dark';
+
+            case __('blockchain_confirmation_pending'):
+                return 'bg-indigo-500 text-main-text-dark';
 
             default:
-                return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
+                return 'bg-gray-100 text-main-text-light dark:bg-gray-900/30 dark:text-main-text-dark';
         }
     };
 
@@ -125,7 +130,7 @@ export default function OrderView({ order }) {
                 onError: (errors) => {
                     setShowErrorMessage(true);
                     setErrorMessage(
-                        errors.payment_proof || 'Failed to upload payment proof. Please try again.',
+                        errors.payment_proof || __('Failed to upload payment proof. Please try again.'),
                     );
                 },
                 onFinish: () => {
@@ -254,7 +259,7 @@ export default function OrderView({ order }) {
 
     return (
         <MainLayout>
-            <Head title={`Order #${order.order_no}`} />
+            <Head title={`${__('Order', true)} #${order.order_no}`} />
 
             {showErrorMessage && (
                 <Toast
@@ -295,11 +300,10 @@ export default function OrderView({ order }) {
                                         </div>
                                         <div className="flex-1">
                                             <p className="text-sm font-semibold text-red-900 dark:text-red-100">
-                                                Payment Proof Required
+                                                {__('Payment Proof Required')}
                                             </p>
                                             <p className="text-xs text-red-700 dark:text-red-200/80">
-                                                Please upload your payment proof to confirm this
-                                                order
+                                                {__('Please upload your payment proof to confirm this order')}
                                             </p>
                                         </div>
                                     </div>
@@ -309,7 +313,7 @@ export default function OrderView({ order }) {
                                             onClick={() => setViewBankDetails(true)}
                                             className="flex-shrink-0 px-4 py-2 text-sm font-semibold text-white transition-all bg-red-600 rounded-lg hover:bg-red-700"
                                         >
-                                            View Bank Details
+                                            {__('View Bank Details')}
                                         </button>
 
                                         <button
@@ -327,7 +331,7 @@ export default function OrderView({ order }) {
                                             }}
                                             className="flex-shrink-0 px-4 py-2 text-sm font-semibold text-white transition-all bg-red-600 rounded-lg hover:bg-red-700"
                                         >
-                                            Upload Now
+                                            {__('Upload Now')}
                                         </button>
                                     </div>
                                 </div>
@@ -361,13 +365,10 @@ export default function OrderView({ order }) {
                                         </div>
                                         <div className="flex-1">
                                             <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">
-                                                Payment Proof Submitted - Awaiting Approval
+                                                {__('Payment Proof Submitted - Awaiting Approval')}
                                             </p>
                                             <p className="mt-1 text-xs text-amber-800 dark:text-amber-200/80">
-                                                We're reviewing your payment proof. This usually
-                                                takes 1-2 business days. If your order isn't
-                                                approved within 2-3 days, please contact our support
-                                                team.
+                                                {__("We're reviewing your payment proof. This usually takes 1-2 business days. If your order isn't approved within 2-3 days, please contact our support team.")}
                                             </p>
                                         </div>
                                     </div>
@@ -375,7 +376,7 @@ export default function OrderView({ order }) {
                                         href={route('website.contact.index')}
                                         className="flex-shrink-0 px-4 py-2 text-sm font-semibold text-white transition-all rounded-lg whitespace-nowrap bg-amber-600 hover:bg-amber-700"
                                     >
-                                        Contact Support
+                                        {__('Contact Support')}
                                     </Link>
                                 </div>
                             </div>
@@ -405,16 +406,16 @@ export default function OrderView({ order }) {
                                     d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
                                 />
                             </svg>
-                            Back to Orders
+                            {__('Back to Orders')}
                         </Link>
 
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                             <div>
                                 <h1 className="text-3xl font-bold text-main-text-light dark:text-main-text-dark">
-                                    Order #{order.order_no}
+                                    {__('Order')} #{order.order_no}
                                 </h1>
                                 <p className="mt-1 text-sm text-sub-text-light dark:text-sub-text-dark">
-                                    Placed on {order.order_placed_date}
+                                    {__('Placed on')} {order.order_placed_date}
                                 </p>
                             </div>
                             <span
@@ -432,58 +433,184 @@ export default function OrderView({ order }) {
                             <div className="p-6 border rounded-md border-surface-3-light bg-surface-1-light dark:border-surface-3-dark dark:bg-surface-1-dark">
                                 <h2 className="flex items-center gap-2 mb-4 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
 
-                                    Order Items
+                                    {__('Order Items')}
                                 </h2>
                                 <div className="space-y-4">
-                                    {order.order_items?.map((item) => (
-                                        <div
-                                            key={item.id}
-                                            className="flex flex-col gap-4 p-4 border rounded-md border-surface-3-light bg-surface-1-light dark:border-surface-3-dark dark:bg-surface-1-dark sm:flex-row sm:items-center"
-                                        >
-                                            <div className="flex items-center justify-center flex-shrink-0 w-24 h-24 overflow-hidden rounded-md bg-surface-3-light dark:bg-surface-3-dark">
-                                                <img
-                                                    src={
-                                                        item?.smartphone
-                                                            ?.smartphone_image_urls?.[0] ||
-                                                        Placeholder
-                                                    }
-                                                    alt={item?.smartphone?.model_name?.name}
-                                                    className="object-cover w-full h-full"
-                                                    loading="lazy"
-                                                    onError={(e) => (e.target.src = Placeholder)}
-                                                />
-                                            </div>
-                                            <div className="flex-1">
-                                                <h3 className="mb-1 font-semibold text-main-text-light dark:text-main-text-dark">
-                                                    {item?.smartphone?.model_name?.name || 'N/A'}
-                                                </h3>
-                                                <p className="mb-2 text-sm text-sub-text-light dark:text-sub-text-dark">
-                                                    {item?.smartphone?.capacity?.name && (
-                                                        <span className="mr-2">
-                                                            {item.smartphone.capacity.name}
-                                                        </span>
-                                                    )}
-                                                    <span
-                                                        className="inline-flex items-center rounded-md px-2 py-0.5 text-xs dark:bg-surface-3-dark dark:text-sub-text-dark text-black/80 bg-surface-3-light font-medium"
 
-                                                    >
-                                                        {item?.color?.name}
-                                                    </span>
-                                                </p>
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-sm text-sub-text-light dark:text-sub-text-dark">
-                                                        Qty: {item.quantity}
-                                                    </span>
-                                                    <span className="text-lg font-bold text-sub-text-light dark:text-sub-text-dark">
-                                                        {currency?.symbol}
-                                                        {parseFloat(
-                                                            item.unit_price * item.quantity,
-                                                        ).toFixed(2)}
-                                                    </span>
+                                    <div className="space-y-4">
+
+                                        {order.order_items?.map((item) => {
+                                            const addonsTotal =
+                                                item.smartphone_addons?.reduce(
+                                                    (total, addon) => total + Number(addon.total_price),
+                                                    0
+                                                ) || 0;
+
+                                            const finalItemTotal =
+                                                Number(item.sub_total) + addonsTotal;
+
+                                            return (
+                                                <div
+                                                    className="flex flex-col gap-4 p-4 border rounded-md border-surface-3-light bg-surface-1-light dark:border-surface-3-dark dark:bg-surface-1-dark sm:flex-row sm:items-center"
+                                                    key={item.id}
+                                                >
+
+                                                    {/* IMAGE */}
+                                                    <div className="flex items-center justify-center flex-shrink-0 w-24 h-24 overflow-hidden rounded-md bg-surface-3-light dark:bg-surface-3-dark">
+                                                        <img
+                                                            src={
+                                                                item?.smartphone?.smartphone_image_urls?.[0] ||
+                                                                Placeholder
+                                                            }
+                                                            alt={item?.smartphone?.model_name?.name}
+                                                            className="object-cover w-full h-full"
+                                                            loading="lazy"
+                                                            onError={(e) => (e.target.src = Placeholder)}
+                                                        />
+                                                    </div>
+
+                                                    {/* DETAILS */}
+                                                    <div className="flex-1 space-y-3">
+
+                                                        {/* HEADER */}
+                                                        <div>
+                                                            <h3 className="text-base font-semibold text-main-text-light dark:text-main-text-dark">
+                                                                {item?.smartphone?.model_name?.name || 'N/A'}
+                                                            </h3>
+
+                                                            <div className="flex flex-wrap gap-2 mt-1 text-xs">
+                                                                {item?.smartphone?.capacity?.name && (
+                                                                    <span className="px-2 py-0.5 rounded-md bg-surface-3-light dark:bg-surface-3-dark text-sub-text-light dark:text-sub-text-dark">
+                                                                        {item.smartphone.capacity.name}
+                                                                    </span>
+                                                                )}
+
+                                                                {item?.color?.name && (
+                                                                    <span className="px-2 py-0.5 rounded-md bg-surface-3-light dark:bg-surface-3-dark text-sub-text-light dark:text-sub-text-dark">
+                                                                        {item.color.name}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* META */}
+                                                        <div className="grid grid-cols-2 gap-2 text-sm">
+                                                            <div className="flex justify-between">
+                                                                <span className="text-sub-text-light dark:text-sub-text-dark">
+                                                                    {__('UPC / EAN')}
+                                                                </span>
+                                                                <span className="font-medium text-main-text-light dark:text-main-text-dark">
+                                                                    {item.smartphone?.upc || '—'}
+                                                                </span>
+                                                            </div>
+
+                                                            <div className="flex justify-between">
+                                                                <span className="text-sub-text-light dark:text-sub-text-dark">
+                                                                    {__('Quantity')}
+                                                                </span>
+                                                                <span className="font-medium text-main-text-light dark:text-main-text-dark">
+                                                                    {item.quantity}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* PRICING BREAKDOWN */}
+                                                        <div className="pt-3 space-y-1 text-sm border-t border-dashed border-surface-3-light dark:border-surface-3-dark">
+                                                            <div className="flex justify-between">
+                                                                <span className="text-sub-text-light dark:text-sub-text-dark">
+                                                                    {__('Unit Price')}
+                                                                </span>
+                                                                <span className="text-main-text-light dark:text-main-text-dark">
+                                                                    {currency?.symbol}
+                                                                    {Number(item.unit_price).toFixed(2)}
+                                                                </span>
+                                                            </div>
+
+                                                            <div className="flex justify-between">
+                                                                <span className="text-sub-text-light dark:text-sub-text-dark">
+                                                                    {__('Product Total')}
+                                                                </span>
+                                                                <span className="text-main-text-light dark:text-main-text-dark">
+                                                                    {currency?.symbol}
+                                                                    {(item.unit_price * item.quantity).toFixed(2)}
+                                                                </span>
+                                                            </div>
+
+                                                            <div className="flex justify-between">
+                                                                <span className="text-sub-text-light dark:text-sub-text-dark">
+                                                                    {__('Shipping')}
+                                                                </span>
+                                                                <span className="text-main-text-light dark:text-main-text-dark">
+                                                                    {currency?.symbol}
+                                                                    {Number(item.shipping_cost || 0).toFixed(2)}
+                                                                </span>
+                                                            </div>
+
+                                                            <div className="flex justify-between">
+                                                                <span className="text-sub-text-light dark:text-sub-text-dark">
+                                                                    {__('Import Tax')}
+                                                                </span>
+                                                                <span className="text-main-text-light dark:text-main-text-dark">
+                                                                    {currency?.symbol}
+                                                                    {Number(item.import_cost || 0).toFixed(2)}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* ADDONS */}
+                                                        {item.smartphone_addons?.length > 0 && (
+                                                            <div className="pt-3 border-t border-dashed border-surface-3-light dark:border-surface-3-dark">
+                                                                <p className="mb-2 text-xs font-semibold text-sub-text-light dark:text-sub-text-dark">
+                                                                    {__('Add-ons')}
+                                                                </p>
+
+                                                                <div className="space-y-1 text-sm">
+                                                                    {item.smartphone_addons.map((addon) => (
+                                                                        <div
+                                                                            key={addon.id}
+                                                                            className="flex justify-between"
+                                                                        >
+                                                                            <span className="text-sub-text-light dark:text-sub-text-dark">
+                                                                                {addon.name} × {addon.quantity}
+                                                                            </span>
+                                                                            <span className="text-main-text-light dark:text-main-text-dark">
+                                                                                {currency?.symbol}
+                                                                                {Number(addon.total_price).toFixed(2)}
+                                                                            </span>
+                                                                        </div>
+                                                                    ))}
+
+                                                                    <div className="flex justify-between pt-1 font-medium">
+                                                                        <span className="text-sub-text-light dark:text-sub-text-dark">{__('Add-ons Total')}</span>
+                                                                        <span className="text-main-text-light dark:text-main-text-dark">
+                                                                            {currency?.symbol}
+                                                                            {addonsTotal.toFixed(2)}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* FINAL TOTAL */}
+                                                        <div className="flex justify-between pt-3 mt-3 border-t border-surface-3-light dark:border-surface-3-dark">
+                                                            <span className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+                                                                {__('Final Item Total')}
+                                                            </span>
+                                                            <span className="text-base font-bold text-main-text-light dark:text-main-text-dark">
+                                                                {currency?.symbol}
+                                                                {finalItemTotal.toFixed(2)}
+                                                            </span>
+                                                        </div>
+
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                    ))}
+                                            );
+                                        })}
+
+
+                                    </div>
+
+
                                 </div>
                             </div>
 
@@ -496,7 +623,7 @@ export default function OrderView({ order }) {
                                     <div className="flex items-center justify-between mb-4">
                                         <h2 className="flex items-center gap-2 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
 
-                                            Payment Proof
+                                            {__('Payment Proof')}
                                         </h2>
                                         {order.payment_proof && order.status === 'pending' && (
                                             <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
@@ -514,7 +641,7 @@ export default function OrderView({ order }) {
                                                         d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
                                                     />
                                                 </svg>
-                                                Pending Approval
+                                                {__('Pending Approval')}
                                             </span>
                                         )}
                                     </div>
@@ -527,7 +654,7 @@ export default function OrderView({ order }) {
                                             >
                                                 <img
                                                     src={order.payment_proof}
-                                                    alt="Payment Proof"
+                                                    alt={__('Payment Proof')}
                                                     className="object-contain w-full h-64 transition-transform duration-300 group-hover:scale-105"
                                                 />
                                             </div>
@@ -551,12 +678,10 @@ export default function OrderView({ order }) {
                                                         </svg>
                                                         <div className="flex-1">
                                                             <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
-                                                                Your payment proof is under review
+                                                                {__('Your payment proof is under review')}
                                                             </p>
                                                             <p className="mt-1 text-xs text-amber-700 dark:text-amber-200/80">
-                                                                We'll notify you once it's approved.
-                                                                This typically takes 1-2 business
-                                                                days.
+                                                                {__("We'll notify you once it's approved. This typically takes 1-2 business days.")}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -574,7 +699,7 @@ export default function OrderView({ order }) {
                                                 preview={paymentProofPreview}
                                                 fileName={paymentProofFile?.name}
                                                 fileSize={paymentProofFile?.size}
-                                                uploadButtonText="Upload Payment Proof"
+                                                uploadButtonText={__('Upload Payment Proof')}
                                                 disabled={isUploading}
                                             />
 
@@ -607,7 +732,7 @@ export default function OrderView({ order }) {
                                                                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                                                 ></path>
                                                             </svg>
-                                                            Uploading...
+                                                            {__('Uploading')}...
                                                         </>
                                                     ) : (
                                                         <>
@@ -625,7 +750,7 @@ export default function OrderView({ order }) {
                                                                     d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
                                                                 />
                                                             </svg>
-                                                            Upload Payment Proof
+                                                            {__('Upload Payment Proof')}
                                                         </>
                                                     )}
                                                 </button>
@@ -640,7 +765,7 @@ export default function OrderView({ order }) {
                                 <div className="p-6 border rounded-md bg-surface-1-light border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
                                     <h2 className="flex items-center gap-2 mb-4 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
 
-                                        Packaging Videos
+                                        {__('Packaging Videos')}
                                     </h2>
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                                         {order.order_package_recordings.map((recording, index) => (
@@ -678,7 +803,7 @@ export default function OrderView({ order }) {
                                                 </div>
                                                 <div className="p-3 text-center">
                                                     <p className="text-sm font-semibold text-sub-text-light dark:text-sub-text-dark">
-                                                        Packaging Video {index + 1}
+                                                        {__('Packaging Video')} {index + 1}
                                                     </p>
                                                 </div>
                                             </div>
@@ -688,56 +813,58 @@ export default function OrderView({ order }) {
                             )}
 
                             {/* Shipping Address */}
-                            <div className="p-6 border rounded-md bg-surface-1-light border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
-                                <h2 className="flex items-center gap-2 mb-4 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
+                            {order?.shipping_address && (
+                                <div className="p-6 border rounded-md bg-surface-1-light border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+                                    <h2 className="flex items-center gap-2 mb-4 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
 
-                                    Shipping Address
-                                </h2>
-                                <div className="p-4 border rounded-md bg-surface-2-light border-surface-3-light dark:bg-surface-2-dark dark:border-surface-3-dark">
-                                    <address className="text-sm not-italic text-sub-text-light dark:text-sub-text-dark">
-                                        <p className="font-semibold">
-                                            {order.customer?.user?.name}
-                                        </p>
-                                        <p className="mt-2">
-                                            {order.customer?.address_line1}
-                                            {order.customer?.address_line2 && (
-                                                <>, {order.customer.address_line2}</>
-                                            )}
-                                        </p>
-                                        <p>
-                                            {order.customer?.city}, {order.customer?.state}{' '}
-                                            {order.customer?.postal_code}
-                                        </p>
-                                        <p>{order.customer?.country?.name}</p>
-                                        {order.customer?.user?.phone && (
-                                            <p className="flex items-center gap-2 mt-2">
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    strokeWidth={2}
-                                                    stroke="currentColor"
-                                                    className="w-4 h-4"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"
-                                                    />
-                                                </svg>
-                                                {order.customer.user.phone}
+                                        {__('Shipping Address')}
+                                    </h2>
+                                    <div className="p-4 border rounded-md bg-surface-2-light border-surface-3-light dark:bg-surface-2-dark dark:border-surface-3-dark">
+                                        <address className="text-sm not-italic text-sub-text-light dark:text-sub-text-dark">
+                                            <p className="font-semibold">
+                                                {order.shipping_address?.name}
                                             </p>
-                                        )}
-                                    </address>
+                                            <p className="mt-2">
+                                                {order.shipping_address?.address_line1}
+                                                {order.shipping_address?.address_line2 && (
+                                                    <>, {order.shipping_address.address_line2}</>
+                                                )}
+                                            </p>
+                                            <p>
+                                                {order.shipping_address?.city}, {order.shipping_address?.state}{' '}
+                                                {order.shipping_address?.postal_code}
+                                            </p>
+                                            <p>{order.shipping_address?.country?.name}</p>
+                                            {order.shipping_address?.phone && (
+                                                <p className="flex items-center gap-2 mt-2">
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        strokeWidth={2}
+                                                        stroke="currentColor"
+                                                        className="w-4 h-4"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"
+                                                        />
+                                                    </svg>
+                                                    {order.shipping_address?.phone}
+                                                </p>
+                                            )}
+                                        </address>
+                                    </div>
                                 </div>
-                            </div>
 
+                            )}
                             {/* Courier Details */}
                             {order?.status != 'paid' && order?.status != 'pending' && (
                                 <div className="p-6 border rounded-md border-surface-3-light bg-surface-1-light dark:border-surface-3-dark dark:bg-surface-1-dark">
                                     <h2 className="flex items-center gap-2 mb-6 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
 
-                                        Courier Details
+                                        {__('Courier Details')}
                                     </h2>
 
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -746,11 +873,11 @@ export default function OrderView({ order }) {
                                             <div className="flex items-center gap-2 mb-2">
 
                                                 <span className="text-xs font-semibold tracking-wider uppercase text-sub-text-light dark:text-sub-text-dark">
-                                                    Courier Company
+                                                    {__('Courier Company')}
                                                 </span>
                                             </div>
                                             <p className="text-base font-bold break-words text-sub-text-light dark:text-sub-text-dark">
-                                                {order.courier_company || 'Not Assigned'}
+                                                {order.courier_company || 'N/A'}
                                             </p>
                                         </div>
 
@@ -759,7 +886,7 @@ export default function OrderView({ order }) {
                                             <div className="flex items-center gap-2 mb-2">
 
                                                 <span className="text-xs font-semibold tracking-wider uppercase text-sub-text-light dark:text-sub-text-dark">
-                                                    Tracking Number
+                                                    {__('Tracking Number')}
                                                 </span>
                                             </div>
                                             <p className="font-mono text-base font-bold break-words text-sub-text-light dark:text-sub-text-dark">
@@ -772,11 +899,11 @@ export default function OrderView({ order }) {
                                             <div className="flex items-center gap-2 mb-2">
 
                                                 <span className="text-xs font-semibold tracking-wider uppercase text-sub-text-light dark:text-sub-text-dark">
-                                                    Shipping Date
+                                                    {__('Shipping Date')}
                                                 </span>
                                             </div>
                                             <p className="text-base font-bold break-words text-sub-text-light dark:text-sub-text-dark">
-                                                {order?.shipping_date || 'Pending'}
+                                                {order?.shipping_date || __('Pending')}
                                             </p>
                                         </div>
                                     </div>
@@ -790,26 +917,54 @@ export default function OrderView({ order }) {
                             <div className="p-6 border rounded-md border-surface-3-light bg-surface-1-light dark:border-surface-3-dark dark:bg-surface-1-dark">
                                 <h2 className="flex items-center gap-2 mb-4 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
 
-                                    Order Summary
+                                    {__('Order Summary')}
                                 </h2>
                                 <div className="space-y-3">
-                                    {order.order_items?.map((item) => (
-                                        <div key={item.id} className="flex justify-between text-sm">
-                                            <span className="text-sub-text-light dark:text-sub-text-dark">
-                                                {item.smartphone?.model_name?.name} ×{' '}
-                                                {item.quantity}
-                                            </span>
-                                            <span className="font-semibold text-sub-text-light dark:text-sub-text-dark">
-                                                {currency?.symbol}
-                                                {parseFloat(item.sub_total).toFixed(2)}
+
+                                    {/* Subtotal */}
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-sub-text-light dark:text-sub-text-dark">{__('Product SubTotal')}</span>
+                                        <span className="font-semibold text-sub-text-ight dark:text-sub-text-dark">
+                                            {currency?.symbol}{parseFloat(Number(order.sub_total)).toFixed(2) || '0.00'}
+                                        </span>
+                                    </div>
+
+                                    {/* Addon Total */}
+                                    {order.addons_sub_total > 0 && (
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-sub-text-light dark:text-sub-text-dark">{__('Addons SubTotal')}</span>
+                                            <span className="font-semibold text-sub-text-ight dark:text-sub-text-dark">
+                                                {currency?.symbol}{parseFloat(Number(order.addons_sub_total)).toFixed(2) || '0.00'}
                                             </span>
                                         </div>
-                                    ))}
+                                    )}
+
+
+                                    {/* Shipping Fee */}
+                                    {order?.shipping_fee > 0 && (
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-sub-text-light dark:text-sub-text-dark">{__('Shipping Fee')}</span>
+                                            <span className="font-semibold text-sub-text-ight dark:text-sub-text-dark">
+                                                {currency?.symbol}{parseFloat(Number(order.shipping_fee)).toFixed(2) || '0.00'}
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {/* Improt Tax */}
+                                    {order?.import_tax > 0 && (
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-sub-text-light dark:text-sub-text-dark">{__('Import Tax')}</span>
+                                            <span className="font-semibold text-sub-text-ight dark:text-sub-text-dark">
+                                                {currency?.symbol}{parseFloat(Number(order.import_tax)).toFixed(2) || '0.00'}
+                                            </span>
+                                        </div>
+                                    )}
+
 
                                     {order.discount > 0 && (
                                         <div className="flex justify-between text-sm">
                                             <span className="text-sub-text-light dark:text-sub-text-dark">
-                                                Discount
+                                                {__('Discount')}
                                             </span>
                                             <span className="font-semibold text-green-600 dark:text-green-400">
                                                 -{currency?.symbol}
@@ -821,12 +976,12 @@ export default function OrderView({ order }) {
                                     <div className="pt-3 border-t border-surface-3-light dark:border-surface-3-dark">
                                         <div className="flex items-center justify-between">
                                             <span className="text-base font-semibold text-sub-text-light dark:text-sub-text-dark">
-                                                Total
+                                                {__('Total')}
                                             </span>
                                             <span className="text-xl font-semibold text-sub-text-light dark:text-sub-text-dark">
                                                 {currency?.symbol}
                                                 {parseFloat(
-                                                    order.total_amount || order.amount,
+                                                    order.amount,
                                                 ).toFixed(2)}
                                             </span>
                                         </div>
@@ -838,7 +993,7 @@ export default function OrderView({ order }) {
                             <div className="p-6 border rounded-md bg-surface-1-light border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
                                 <h2 className="flex items-center gap-2 mb-4 text-lg font-semibold text-sub-text-light dark:text-sub-text-dark">
 
-                                    Payment Method
+                                    {__('Payment Method')}
                                 </h2>
                                 <div className="flex items-center gap-3 p-2 rounded-md">
                                     {order.payment_method === 'crypto' ? (
@@ -857,7 +1012,7 @@ export default function OrderView({ order }) {
                                                 </svg>
                                             </div>
                                             <span className="font-semibold text-sub-text-light dark:text-sub-text-dark">
-                                                Crypto Payment
+                                                {__('Crypto Payment')}
                                             </span>
                                         </>
                                     ) : order.payment_method === 'points' ? (
@@ -877,7 +1032,7 @@ export default function OrderView({ order }) {
                                                 />
                                             </svg>
                                             <span className="font-semibold text-gray-900 dark:text-sub-text-dark">
-                                                Points Payment
+                                                {__('Points Payment')}
                                             </span>
                                         </>
                                     ) : (
@@ -897,7 +1052,7 @@ export default function OrderView({ order }) {
                                                 />
                                             </svg>
                                             <span className="font-semibold text-sub-text-light dark:text-sub-text-dark">
-                                                Bank Transfer
+                                                {__('Bank Transfer')}
                                             </span>
                                         </>
                                     )}
@@ -907,18 +1062,17 @@ export default function OrderView({ order }) {
                             {/* Help Section */}
                             <div className="p-6 border rounded-md bg-surface-1-light border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
                                 <h2 className="mb-2 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
-                                    Need Help?
+                                    {__('Need Help')}?
                                 </h2>
                                 <p className="mb-4 text-sm text-sub-text-light dark:text-sub-text-dark">
-                                    Contact our support team if you have any questions about your
-                                    order.
+                                    {__('Contact our support team if you have any questions about your order.')}
                                 </p>
                                 <Link
                                     href={route('website.contact.index')}
                                     className="flex items-center justify-center w-full gap-2 px-4 py-3 font-semibold transition-all rounded-md bg-main-text-light text-md text-main-text-dark dark:text-main-text-light dark:bg-main-text-dark hover:bg-main-text-light/80 dark:hover:bg-main-text-dark/80 "
                                 >
 
-                                    Contact Support
+                                    {__('Contact Support')}
                                 </Link>
                             </div>
                         </div>
@@ -1003,7 +1157,7 @@ export default function OrderView({ order }) {
                                     {/* Header */}
                                     <div className="flex items-center justify-between pb-4">
                                         <h2 className="text-xl font-semibold tracking-tight dark:text-main-text-dark text-main-text-light0">
-                                            Bank Details
+                                            {__('Bank Details')}
                                         </h2>
 
                                     </div>
@@ -1030,7 +1184,7 @@ export default function OrderView({ order }) {
                                                                     d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z"
                                                                 />
                                                             </svg>
-                                                            Bank Name
+                                                            {__('Bank Name')}
                                                         </label>
                                                         <p className="text-lg font-bold text-sub-text-light dark:text-sub-text-dark">
                                                             {order?.order_items[0]?.smartphone
@@ -1066,7 +1220,7 @@ export default function OrderView({ order }) {
                                                                     />
                                                                 </svg>
                                                                 <span className="absolute px-2 py-1 text-xs font-semibold rounded-md shadow-lg text-main-text-light dark:text-main-text-dark bg-surface-3-light top-10 whitespace-nowrap dark:bg-surface-3-dark">
-                                                                    Copied!
+                                                                    {__('Copied')}!
                                                                 </span>
                                                             </>
                                                         ) : (
@@ -1108,7 +1262,7 @@ export default function OrderView({ order }) {
                                                                     d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
                                                                 />
                                                             </svg>
-                                                            Account Name
+                                                            {__('Account Name')}
                                                         </label>
                                                         <p className="text-lg font-bold text-sub-text-light dark:text-sub-text-dark">
                                                             {order?.order_items[0]?.smartphone
@@ -1144,7 +1298,7 @@ export default function OrderView({ order }) {
                                                                     />
                                                                 </svg>
                                                                 <span className="absolute px-2 py-1 text-xs font-semibold rounded-md shadow-lg text-main-text-light dark:text-main-text-dark bg-surface-3-light top-10 whitespace-nowrap dark:bg-surface-3-dark">
-                                                                    Copied!
+                                                                    {__('Copied')}!
                                                                 </span>
                                                             </>
                                                         ) : (
@@ -1186,7 +1340,7 @@ export default function OrderView({ order }) {
                                                                     d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"
                                                                 />
                                                             </svg>
-                                                            Account Number
+                                                            {__('Account Number')}
                                                         </label>
                                                         <p className="text-lg font-bold text-sub-text-light dark:text-sub-text-dark">
                                                             {order?.order_items[0]?.smartphone
@@ -1222,7 +1376,7 @@ export default function OrderView({ order }) {
                                                                     />
                                                                 </svg>
                                                                 <span className="absolute px-2 py-1 text-xs font-semibold rounded-md shadow-lg text-main-text-light dark:text-main-text-dark bg-surface-3-light top-10 whitespace-nowrap dark:bg-surface-3-dark">
-                                                                    Copied!
+                                                                    {__('Copied')}!
                                                                 </span>
                                                             </>
                                                         ) : (
@@ -1264,7 +1418,7 @@ export default function OrderView({ order }) {
                                                                     d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"
                                                                 />
                                                             </svg>
-                                                            IBAN
+                                                            {__('IBAN')}
                                                         </label>
                                                         <p className="text-lg font-bold text-sub-text-light dark:text-sub-text-dark">
                                                             {order?.order_items[0]?.smartphone
@@ -1300,7 +1454,7 @@ export default function OrderView({ order }) {
                                                                     />
                                                                 </svg>
                                                                 <span className="absolute px-2 py-1 text-xs font-semibold rounded-md shadow-lg text-main-text-light dark:text-main-text-dark bg-surface-3-light top-10 whitespace-nowrap dark:bg-surface-3-dark">
-                                                                    Copied!
+                                                                    {__('Copied')}!
                                                                 </span>
                                                             </>
                                                         ) : (
@@ -1347,7 +1501,7 @@ export default function OrderView({ order }) {
                                                                     d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h.75v.75h-.75v-.75zM13.5 19.5h.75v.75h-.75v-.75zM19.5 13.5h.75v.75h-.75v-.75zM19.5 19.5h.75v.75h-.75v-.75zM16.5 16.5h.75v.75h-.75v-.75z"
                                                                 />
                                                             </svg>
-                                                            SWIFT Code
+                                                            {__('SWIFT Code')}
                                                         </label>
                                                         <p className="text-lg font-bold text-sub-text-light dark:text-sub-text-dark">
                                                             {order?.order_items[0]?.smartphone
@@ -1383,7 +1537,7 @@ export default function OrderView({ order }) {
                                                                     />
                                                                 </svg>
                                                                 <span className="absolute px-2 py-1 text-xs font-semibold rounded-md shadow-lg text-main-text-light dark:text-main-text-dark bg-surface-3-light top-10 whitespace-nowrap dark:bg-surface-3-dark">
-                                                                    Copied!
+                                                                    {__('Copied')}!
                                                                 </span>
                                                             </>
                                                         ) : (
@@ -1425,7 +1579,7 @@ export default function OrderView({ order }) {
                                                     </svg>
                                                     <div>
                                                         <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">
-                                                            Important Instructions
+                                                            {__('Important Instructions')}
                                                         </p>
                                                         <ul className="mt-2 space-y-1 text-xs text-amber-800 dark:text-amber-200/80">
                                                             <li className="flex items-start gap-2">
@@ -1433,8 +1587,7 @@ export default function OrderView({ order }) {
                                                                     •
                                                                 </span>
                                                                 <span>
-                                                                    Please include your order number
-                                                                    in the payment reference
+                                                                    {__('Please include your order number in the payment reference')}
                                                                 </span>
                                                             </li>
                                                             <li className="flex items-start gap-2">
@@ -1442,8 +1595,7 @@ export default function OrderView({ order }) {
                                                                     •
                                                                 </span>
                                                                 <span>
-                                                                    Upload payment proof after
-                                                                    completing the transfer
+                                                                    {__('Upload payment proof after completing the transfer')}
                                                                 </span>
                                                             </li>
                                                             <li className="flex items-start gap-2">
@@ -1451,8 +1603,7 @@ export default function OrderView({ order }) {
                                                                     •
                                                                 </span>
                                                                 <span>
-                                                                    Processing time: 2-3 business
-                                                                    days
+                                                                    {__('Processing time: 2-3 business days')}
                                                                 </span>
                                                             </li>
                                                         </ul>
@@ -1495,7 +1646,7 @@ export default function OrderView({ order }) {
                                         </button>
 
                                         <h3 className="text-base font-semibold truncate text-main-text-light dark:text-main-text-dark sm:text-lg">
-                                            Bank Details
+                                            {__('Bank Details')}
                                         </h3>
                                     </div>
 
@@ -1521,7 +1672,7 @@ export default function OrderView({ order }) {
                                                                     d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z"
                                                                 />
                                                             </svg>
-                                                            Bank Name
+                                                            {__('Bank Name')}
                                                         </label>
                                                         <p className="text-lg font-bold text-sub-text-light dark:text-sub-text-dark">
                                                             {order?.order_items[0]?.smartphone
@@ -1557,7 +1708,7 @@ export default function OrderView({ order }) {
                                                                     />
                                                                 </svg>
                                                                 <span className="absolute px-2 py-1 text-xs font-semibold rounded-md shadow-lg text-main-text-light dark:text-main-text-dark bg-surface-3-light top-10 whitespace-nowrap dark:bg-surface-3-dark">
-                                                                    Copied!
+                                                                    {__('Copied')}!
                                                                 </span>
                                                             </>
                                                         ) : (
@@ -1599,7 +1750,7 @@ export default function OrderView({ order }) {
                                                                     d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
                                                                 />
                                                             </svg>
-                                                            Account Name
+                                                            {__('Account Name')}
                                                         </label>
                                                         <p className="text-lg font-bold text-sub-text-light dark:text-sub-text-dark">
                                                             {order?.order_items[0]?.smartphone
@@ -1635,7 +1786,7 @@ export default function OrderView({ order }) {
                                                                     />
                                                                 </svg>
                                                                 <span className="absolute px-2 py-1 text-xs font-semibold rounded-md shadow-lg text-main-text-light dark:text-main-text-dark bg-surface-3-light top-10 whitespace-nowrap dark:bg-surface-3-dark">
-                                                                    Copied!
+                                                                    {__('Copied')}!
                                                                 </span>
                                                             </>
                                                         ) : (
@@ -1677,7 +1828,7 @@ export default function OrderView({ order }) {
                                                                     d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"
                                                                 />
                                                             </svg>
-                                                            Account Number
+                                                            {__('Account Number')}
                                                         </label>
                                                         <p className="text-lg font-bold text-sub-text-light dark:text-sub-text-dark">
                                                             {order?.order_items[0]?.smartphone
@@ -1713,7 +1864,7 @@ export default function OrderView({ order }) {
                                                                     />
                                                                 </svg>
                                                                 <span className="absolute px-2 py-1 text-xs font-semibold rounded-md shadow-lg text-main-text-light dark:text-main-text-dark bg-surface-3-light top-10 whitespace-nowrap dark:bg-surface-3-dark">
-                                                                    Copied!
+                                                                    {__('Copied')}!
                                                                 </span>
                                                             </>
                                                         ) : (
@@ -1755,7 +1906,7 @@ export default function OrderView({ order }) {
                                                                     d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"
                                                                 />
                                                             </svg>
-                                                            IBAN
+                                                            {__('IBAN')}
                                                         </label>
                                                         <p className="text-lg font-bold text-sub-text-light dark:text-sub-text-dark">
                                                             {order?.order_items[0]?.smartphone
@@ -1791,7 +1942,7 @@ export default function OrderView({ order }) {
                                                                     />
                                                                 </svg>
                                                                 <span className="absolute px-2 py-1 text-xs font-semibold rounded-md shadow-lg text-main-text-light dark:text-main-text-dark bg-surface-3-light top-10 whitespace-nowrap dark:bg-surface-3-dark">
-                                                                    Copied!
+                                                                    {__('Copied')}!
                                                                 </span>
                                                             </>
                                                         ) : (
@@ -1838,7 +1989,7 @@ export default function OrderView({ order }) {
                                                                     d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h.75v.75h-.75v-.75zM13.5 19.5h.75v.75h-.75v-.75zM19.5 13.5h.75v.75h-.75v-.75zM19.5 19.5h.75v.75h-.75v-.75zM16.5 16.5h.75v.75h-.75v-.75z"
                                                                 />
                                                             </svg>
-                                                            SWIFT Code
+                                                            {__('SWIFT Code')}
                                                         </label>
                                                         <p className="text-lg font-bold text-sub-text-light dark:text-sub-text-dark">
                                                             {order?.order_items[0]?.smartphone
@@ -1874,7 +2025,7 @@ export default function OrderView({ order }) {
                                                                     />
                                                                 </svg>
                                                                 <span className="absolute px-2 py-1 text-xs font-semibold rounded-md shadow-lg text-main-text-light dark:text-main-text-dark bg-surface-3-light top-10 whitespace-nowrap dark:bg-surface-3-dark">
-                                                                    Copied!
+                                                                    {__('Copied')}!
                                                                 </span>
                                                             </>
                                                         ) : (
@@ -1916,7 +2067,7 @@ export default function OrderView({ order }) {
                                                     </svg>
                                                     <div>
                                                         <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">
-                                                            Important Instructions
+                                                            {__('Important Instructions')}
                                                         </p>
                                                         <ul className="mt-2 space-y-1 text-xs text-amber-800 dark:text-amber-200/80">
                                                             <li className="flex items-start gap-2">
@@ -1924,8 +2075,7 @@ export default function OrderView({ order }) {
                                                                     •
                                                                 </span>
                                                                 <span>
-                                                                    Please include your order number
-                                                                    in the payment reference
+                                                                    {__('Please include your order number in the payment reference')}
                                                                 </span>
                                                             </li>
                                                             <li className="flex items-start gap-2">
@@ -1933,8 +2083,7 @@ export default function OrderView({ order }) {
                                                                     •
                                                                 </span>
                                                                 <span>
-                                                                    Upload payment proof after
-                                                                    completing the transfer
+                                                                    {__('Upload payment proof after completing the transfer')}
                                                                 </span>
                                                             </li>
                                                             <li className="flex items-start gap-2">
@@ -1942,8 +2091,7 @@ export default function OrderView({ order }) {
                                                                     •
                                                                 </span>
                                                                 <span>
-                                                                    Processing time: 2-3 business
-                                                                    days
+                                                                    {__('Processing time: 2-3 business days')}
                                                                 </span>
                                                             </li>
                                                         </ul>

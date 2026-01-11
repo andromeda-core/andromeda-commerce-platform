@@ -3,210 +3,228 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Invoice - {{ $order->order_no }}</title>
 </head>
 
-<body style="margin: 0; line-height: 1.5; font-family: notosanskr; box-sizing: border-box;">
+<body style="margin:0; font-family:Arial, Helvetica, sans-serif; background:#f3f4f6;">
 
-    <div id="invoice"
-        style="width: 100%; min-height: 100vh; margin-left: auto; margin-right: auto;
-           background-color: #ffffff;
-          ">
-        {{-- Header --}}
-        <div style="padding: 1rem; color: rgb(255, 255, 255); background-color: rgb(31, 41, 55);">
-            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                <div style="flex: 1 1 0%;">
-                    <div
-                        style="display: flex; align-items: center; justify-content: center; width: 3rem; height: 3rem; margin-bottom: 1rem; border-radius: .5rem;">
-                        @php
-                            $logoPath = $generalSetting?->app_main_logo_dark
-                                ? $generalSetting->app_main_logo_dark
-                                : public_path('assets/images/Logo/256w.png');
+    <div style="
+    max-width:1100px;
+    margin:0 auto;
+    background:#ffffff;
+    min-height:100vh;
+">
 
-                            try {
-                                if (filter_var($logoPath, FILTER_VALIDATE_URL)) {
-                                    // If it's AWS URL, fetch and encode
+        <div style="
+        background:#1f2937;
+        color:#ffffff;
+        padding:24px;
+    ">
+            <table width="100%">
+                <tr>
+                    <td valign="top">
+                        <div
+                            style="
+                        width:56px;
+                        height:56px;
+                        margin-bottom:12px;
+
+                    ">
+                            @php
+                                $logoPath = $generalSetting?->app_main_logo_dark
+                                    ? $generalSetting->app_main_logo_dark
+                                    : public_path('assets/images/Logo/256w.png');
+
+                                try {
+                                    if (filter_var($logoPath, FILTER_VALIDATE_URL)) {
+                                        // If it's AWS URL, fetch and encode
         $logoData = @file_get_contents($logoPath);
     } else {
         // If it's local file
-                                    $logoData = @file_get_contents($logoPath);
-                                }
+                                        $logoData = @file_get_contents($logoPath);
+                                    }
 
-                                $logoBase64 = $logoData ? 'data:image/png;base64,' . base64_encode($logoData) : null;
-                            } catch (\Exception $e) {
-                                $logoBase64 = null;
-                            }
+                                    $logoBase64 = $logoData
+                                        ? 'data:image/png;base64,' . base64_encode($logoData)
+                                        : null;
+                                } catch (\Exception $e) {
+                                    $logoBase64 = null;
+                                }
+                            @endphp
+
+                            @if ($logoBase64)
+                                <img src="{{ $logoBase64 }}" width="56" height="56" style="display:block;">
+                            @endif
+                        </div>
+
+                        <h1 style="margin:0; font-size:22px; font-weight:700; color:#ffffff;">
+                            {{ $generalSetting->app_name }}
+                        </h1>
+
+                        <p style="margin:6px 0 0; font-size:14px; color:#ffffff;">
+                            {{ $order->customer?->user?->email ?? 'N/A' }}<br>
+                            {{ $order->customer?->user?->phone ?? 'N/A' }}
+                        </p>
+                    </td>
+
+                    <td valign="top" align="right">
+                        <h2 style="margin:0; font-size:26px; font-weight:700; color:#ffffff;">INVOICE</h2>
+
+                        <p style="margin:12px 0 0; font-size:14px; color:#ffffff;">
+                            Invoice No:<br>
+                            <strong>#{{ $order->order_no }}</strong>
+                        </p>
+
+                        <p style="margin:6px 0 0; font-size:14px; color:#ffffff;">
+                            Date: {{ $order->added_at }}<br>
+                            Status: <strong>{{ ucfirst($order->status) }}</strong>
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div style="padding:24px; border-bottom:1px solid #e5e7eb;">
+            <h3 style="margin:0 0 12px; font-size:18px; color:#374151;">
+                Shipping Details
+            </h3>
+
+            <div
+                style="
+            background:#f9fafb;
+            padding:16px;
+            border-radius:8px;
+            font-size:14px;
+            color:#374151;
+        ">
+                <strong>{{ $order->shippingAddress->name }}</strong><br>
+                {{ $order->shippingAddress->address_line1 }},
+                {{ $order->shippingAddress->address_line2 }}<br>
+                {{ $order->shippingAddress->city }}<br><br>
+                {{ $order->shippingAddress->phone }}
+            </div>
+        </div>
+
+        <div style="padding:24px;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+                <thead>
+                    <tr style="border-bottom:2px solid #d1d5db;">
+                        <th align="left" style="padding:10px; font-size:14px;">Product</th>
+                        <th align="left" style="padding:10px; font-size:14px;">Capacity</th>
+                        <th align="right" style="padding:10px; font-size:14px;">Price</th>
+                        <th align="center" style="padding:10px; font-size:14px;">Qty</th>
+                        <th align="right" style="padding:10px; font-size:14px;">Total</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach ($order->orderItems as $item)
+                        @php
+                            $addonsTotal = $item->smartphoneAddons->sum('total_price');
+                            $itemGrandTotal = $item->sub_total + $addonsTotal;
                         @endphp
 
-                        @if ($logoBase64)
-                            <img src="{{ $logoBase64 }}" alt="Logo" width="56" height="56"
-                                style="display:block;" />
-                        @else
-                            <span>Logo</span>
-                        @endif
-                    </div>
-                    <h1
-                        style="font-size: 1.25rem; line-height: 1.75rem; font-weight: 700; overflow-wrap: break-word; margin: 0;">
-                        {{ $generalSetting->app_name }}
-                    </h1>
-                    <div style="margin-top: .5rem;">
-                        <p
-                            style="font-size: .875rem; line-height: 1.25rem; color: rgb(255, 255, 255); word-break: break-all; margin: 0; margin-bottom: .25rem;">
-                            {{ $generalSetting->contact_email }}
-                        </p>
-                        <p
-                            style="font-size: .875rem; line-height: 1.25rem; color: rgb(255, 255, 255); overflow-wrap: break-word; margin: 0;">
-                            {{ $generalSetting->contact_number }}
-                        </p>
-                    </div>
-                </div>
-                <div style="text-align: left;">
-                    <h2 style="font-size: 1.5rem; line-height: 2rem; font-weight: 700; margin: 0;">INVOICE</h2>
-                    <div style="margin-top: 1rem; color: rgb(255, 255, 255); border-radius: .5rem;">
-                        <p style="font-size: .875rem; line-height: 1.25rem; margin: 0;">Invoice No:</p>
-                        <p style="font-size: 1.125rem; line-height: 1.75rem; font-weight: 700; margin: 0;">
-                            #{{ $order->order_no }}</p>
-                        <p style="margin-top: .5rem; font-size: .875rem; line-height: 1.25rem; margin-bottom: 0;">Date:
-                            {{ $order->added_at }}</p>
-                    </div>
-                    <p style="font-size: .875rem; line-height: 1.25rem; margin: 0;">
-                        Status: <span style="font-weight: 500;">{{ ucfirst($order->status) }}</span>
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        {{-- Customer Info --}}
-        <div style="padding: 1rem; border-bottom-width: 1px; border-color: rgb(229, 231, 235);">
-            <h3
-                style="margin-bottom: 1rem; font-size: 1.125rem; line-height: 1.75rem; font-weight: 600; color: rgb(55, 65, 81); margin-top: 0;">
-                Customer Details:</h3>
-            <div style="padding: 1rem; border-radius: .5rem; background-color: rgb(249, 250, 251);">
-                <div>
-                    <p
-                        style="font-size: .875rem; line-height: 1.25rem; font-weight: 600; color: rgb(17, 24, 39); overflow-wrap: break-word; margin: 0; margin-bottom: .25rem;">
-                        {{ $order->customer->user->name }}
-                    </p>
-                    <p
-                        style="font-size: .875rem; line-height: 1.25rem; color: rgb(75, 85, 99); overflow-wrap: break-word; margin: 0; margin-bottom: .25rem;">
-                        {{ $order->customer->address_line1 }},
-                        {{ $order->customer->address_line2 ?? '' }}
-                    </p>
-                    <p
-                        style="font-size: .875rem; line-height: 1.25rem; color: rgb(75, 85, 99); overflow-wrap: break-word; margin: 0; margin-bottom: .25rem;">
-                        {{ $order->customer->city }}
-                    </p>
-                    <p
-                        style="margin-top: .5rem; font-size: .875rem; line-height: 1.25rem; color: rgb(75, 85, 99); word-break: break-all; margin-bottom: .25rem;">
-                        {{ $order->customer->user->email }}
-                    </p>
-                    <p
-                        style="margin-top: .5rem; font-size: .875rem; line-height: 1.25rem; color: rgb(75, 85, 99); word-break: break-all; margin-bottom: 0;">
-                        {{ $order->customer->user->phone }}
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        {{-- Items --}}
-        <div style="padding: 1rem;">
-
-            {{-- Desktop Table View --}}
-            <div style="overflow-x: auto;">
-                <table
-                    style="width: 100%; min-width: 600px; text-indent: 0; border-color: inherit; border-collapse: collapse;">
-                    <thead>
-                        <tr style="border-bottom-width: 2px; border-color: rgb(209, 213, 219);">
-                            <th
-                                style="padding-left: .5rem; padding-right: .5rem; padding-top: .75rem; padding-bottom: .75rem; font-size: .875rem; line-height: 1.25rem; font-weight: 600; text-align: left; color: rgb(55, 65, 81);">
-                                Product</th>
-                            <th
-                                style="padding-left: .5rem; padding-right: .5rem; padding-top: .75rem; padding-bottom: .75rem; font-size: .875rem; line-height: 1.25rem; font-weight: 600; text-align: left; color: rgb(55, 65, 81);">
-                                Capacity</th>
-                            <th
-                                style="padding-left: .5rem; padding-right: .5rem; padding-top: .75rem; padding-bottom: .75rem; font-size: .875rem; line-height: 1.25rem; font-weight: 600; text-align: right; color: rgb(55, 65, 81);">
-                                Price</th>
-                            <th
-                                style="padding-left: .5rem; padding-right: .5rem; padding-top: .75rem; padding-bottom: .75rem; font-size: .875rem; line-height: 1.25rem; font-weight: 600; text-align: center; color: rgb(55, 65, 81);">
-                                Qty</th>
-                            <th
-                                style="padding-left: .5rem; padding-right: .5rem; padding-top: .75rem; padding-bottom: .75rem; font-size: .875rem; line-height: 1.25rem; font-weight: 600; text-align: right; color: rgb(55, 65, 81);">
-                                Total</th>
+                        {{-- MAIN ROW --}}
+                        <tr style="border-bottom:1px solid #e5e7eb;">
+                            <td style="padding:14px; font-weight:600;">
+                                {{ $item->smartphone->model_name->name }}
+                            </td>
+                            <td style="padding:14px; color:#6b7280;">
+                                {{ $item->smartphone->capacity->name }}
+                            </td>
+                            <td align="right" style="padding:14px;">
+                                {{ $currency->symbol }}{{ number_format($item->unit_price, 2) }}
+                            </td>
+                            <td align="center" style="padding:14px;">
+                                {{ $item->quantity }}
+                            </td>
+                            <td align="right" style="padding:14px; font-weight:700;">
+                                {{ $currency->symbol }}{{ number_format($itemGrandTotal, 2) }}
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($order->orderItems as $item)
-                            <tr style="border-bottom-width: 1px; border-color: rgb(229, 231, 235);">
-                                <td
-                                    style="padding-left: .5rem; padding-right: .5rem; padding-top: 1rem; padding-bottom: 1rem; font-size: .875rem; line-height: 1.25rem; color: rgb(17, 24, 39); overflow-wrap: break-word;">
-                                    {{ $item->smartphone->model_name->name }}
-                                </td>
-                                <td
-                                    style="padding-left: .5rem; padding-right: .5rem; padding-top: 1rem; padding-bottom: 1rem; font-size: .875rem; line-height: 1.25rem; color: rgb(75, 85, 99); overflow-wrap: break-word;">
-                                    {{ $item->smartphone->capacity->name }}
-                                </td>
-                                <td
-                                    style="padding-left: .5rem; padding-right: .5rem; padding-top: 1rem; padding-bottom: 1rem; font-size: .875rem; line-height: 1.25rem; text-align: right; color: rgb(17, 24, 39);">
-                                    {{ $currency->symbol }}{{ number_format($item->unit_price, 2) }}
-                                </td>
-                                <td
-                                    style="padding-left: .5rem; padding-right: .5rem; padding-top: 1rem; padding-bottom: 1rem; font-size: .875rem; line-height: 1.25rem; text-align: center; color: rgb(17, 24, 39);">
-                                    {{ $item->quantity }}
-                                </td>
-                                <td
-                                    style="padding-left: .5rem; padding-right: .5rem; padding-top: 1rem; padding-bottom: 1rem; font-size: .875rem; line-height: 1.25rem; text-align: right; color: rgb(17, 24, 39);">
-                                    {{ $currency->symbol }}{{ number_format($item->sub_total, 2) }}
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
 
-            {{-- Totals --}}
-            <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
-                <div style="width: 20rem;">
-                    <div style="padding: 1rem;">
-                        <div
-                            style="display: flex; justify-content: space-between; padding-top: .5rem; padding-bottom: .5rem;">
-                            <span
-                                style="font-size: 1rem; line-height: 1.5rem; font-weight: 600; color: rgb(17, 24, 39);">Total:</span>
-                            <span
-                                style="font-size: 1rem; line-height: 1.5rem; font-weight: 700; color: rgb(37, 99, 235); overflow-wrap: break-word;">
-                                {{ $currency->symbol }}{{ number_format($order->amount, 2) }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
+                        {{-- BREAKDOWN --}}
+                        <tr style="background:#f9fafb;">
+                            <td colspan="5" style="padding:14px; font-size:13px; color:#4b5563;">
+                                <table width="100%">
+                                    <tr>
+                                        <td>Product ({{ number_format($item->unit_price, 2) }} ×
+                                            {{ $item->quantity }})
+                                        </td>
+                                        <td align="right">
+                                            {{ $currency->symbol }}{{ number_format($item->unit_price * $item->quantity, 2) }}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Shipping</td>
+                                        <td align="right">
+                                            {{ $currency->symbol }}{{ number_format($item->shipping_cost, 2) }}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Import Tax</td>
+                                        <td align="right">
+                                            {{ $currency->symbol }}{{ number_format($item->import_cost, 2) }}
+                                        </td>
+                                    </tr>
+
+                                    @if ($item->smartphoneAddons->count())
+                                        <tr>
+                                            <td colspan="2">
+                                                <hr style="border:none;border-top:1px dashed #d1d5db;">
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td colspan="2" style="font-size:12px; font-weight:600;">Add-ons</td>
+                                        </tr>
+
+                                        @foreach ($item->smartphoneAddons as $addon)
+                                            <tr>
+                                                <td>{{ $addon?->name ?? 'N/A' }} × {{ $addon?->quantity ?? 'N/A' }}
+                                                </td>
+                                                <td align="right">
+                                                    {{ $currency->symbol }}{{ number_format($addon?->total_price, 2) }}
+                                                </td>
+                                            </tr>
+                                        @endforeach
+
+                                        <tr style="font-weight:600;">
+                                            <td>Add-ons total</td>
+                                            <td align="right">
+                                                {{ $currency->symbol }}{{ number_format($addonsTotal, 2) }}
+                                            </td>
+                                        </tr>
+                                    @endif
+                                </table>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+
+            {{-- TOTAL --}}
+            <div style="margin-top:24px; text-align:right;">
+                <strong style="font-size:18px;">
+                    Total:
+                    <span style="color:#2563eb;">
+                        {{ $currency->symbol }}{{ number_format($order->amount, 2) }}
+                    </span>
+                </strong>
             </div>
         </div>
 
-        {{-- Footer with QR --}}
 
-
-        <div
-            style="padding: 1rem; text-align: center; border-top: 1px solid #000; background-color: rgb(249, 250, 251);  page-break-before: auto;">
-            <div style="display: flex; justify-content: center; margin-top: 2rem; margin-bottom: 1.5rem;">
-                <div style="text-align: center;">
-                    <div
-                        style="display: flex; align-items: center; justify-content: center; width: 6rem; height: 6rem; margin: 0 auto .75rem auto; background-color: rgb(229, 231, 235); border: 2px dashed rgb(156, 163, 175);">
-                        <img src="data:image/png;base64, {!! base64_encode(
-                            QrCode::format('png')->size(120)->generate(route('orders.customer-order-invoice', $order->order_no)),
-                        ) !!}" alt="QR"
-                            style="width: 100%; height: auto;">
-                    </div>
-                    <p style="font-size: .75rem; line-height: 1rem; color: rgb(107, 114, 128); margin: 0;">Scan To
-                        Verify Invoice</p>
-                </div>
-            </div>
+        <div style="padding:24px; text-align:center; border-top:1px solid #e5e7eb;">
+            <img src="data:image/png;base64,{!! base64_encode(
+                QrCode::format('png')->size(120)->generate(route('orders.customer-order-invoice', $order->order_no)),
+            ) !!}">
+            <p style="font-size:12px; color:#6b7280; margin-top:8px;">
+                Scan To Verify Invoice
+            </p>
         </div>
-
-
 
     </div>
-
 </body>
 
 </html>

@@ -17,10 +17,11 @@ class CartController extends Controller
     {
         $data = $this->cart->getCartItems($request);
         $cart_items = $data['cart_items'];
-
+        $addon_items = $data['addon_items'];
+        $total_summary = $data['total_summary'];
         $refferalSessionData = session()->get('referal_data');
 
-        return Inertia::render('Website/Cart/index', compact('cart_items', 'refferalSessionData'));
+        return Inertia::render('Website/Cart/index', compact('cart_items', 'refferalSessionData', 'addon_items', 'total_summary'));
     }
 
     public function getCartItems(Request $request)
@@ -108,6 +109,7 @@ class CartController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => $response['message'],
+                    'total_summary' => [],
                 ]);
 
             }
@@ -115,6 +117,7 @@ class CartController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => $response['message'],
+                'total_summary' => $response['total_summary'],
             ]);
         }
 
@@ -135,12 +138,14 @@ class CartController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => $response['message'],
+                'total_summary' => [],
             ]);
         }
 
         return response()->json([
             'status' => true,
             'message' => $response['message'],
+            'total_summary' => $response['total_summary'],
         ]);
     }
 
@@ -189,5 +194,54 @@ class CartController extends Controller
         }
 
         return to_route('website.checkout.index');
+    }
+
+    public function updateSmartphoneAddonItem(Request $request)
+    {
+        $response = $this->cart->updateSmartphoneAddonItem($request);
+
+        if ($response['status'] === false) {
+            return response()->json([
+                'status' => false,
+                'message' => $response['message'],
+                'total_summary' => [],
+            ]);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => $response['message'],
+            'total_summary' => $response['total_summary'],
+        ]);
+    }
+
+    public function removeSmartphoneAddonItem(Request $request)
+    {
+
+        $response = $this->cart->removeSmartphoneAddonItem($request);
+
+        if ($request->ajax() && $request->wantsJson()) {
+            if ($response['status'] === false) {
+                return response()->json([
+                    'status' => false,
+                    'message' => $response['message'],
+                    'total_summary' => [],
+                ]);
+
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => $response['message'],
+                'total_summary' => $response['total_summary'],
+            ]);
+        }
+
+        if ($response['status'] === false) {
+            return back()->with('error', $response['message']);
+        }
+
+        return back()->with('success', $response['message']);
+
     }
 }

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Preloader from '@/Components/Preloader';
 import Toast from '@/Components/Toast';
 import AppStatusManager from '@/Components/AppStatusManager';
+import { useLanguageStore } from '@/Hooks/useLanguageStore';
+import getCookie from '@/Hooks/useGetCookie';
 
 export default function GuestLayout({ children }) {
     // Global General Setting Prop
@@ -73,6 +75,51 @@ export default function GuestLayout({ children }) {
     }, [darkMode]);
 
 
+    // Global Language Zustand Store Sync
+    const fetchLanguages = useLanguageStore((state) => state.fetchLanguages);
+    const setLanguageLocale = useLanguageStore(state => state.setLanguageLocale);
+    const setLanguageId = useLanguageStore(state => state.setLanguageId);
+    const isLoaded = useLanguageStore(state => state.isLoaded);
+
+    useEffect(() => {
+
+        if (!isLoaded) {
+            fetchLanguages();
+        }
+
+    }, [isLoaded]);
+
+    useEffect(() => {
+        // Syning User Locales With Zustand Store
+        const language_cookie = getCookie('language');
+        if (!language_cookie) {
+            setLanguageLocale('en');
+            setLanguageId(1);
+        }
+
+        try {
+            const name = "language=";
+            const match = document.cookie.match(new RegExp('(^|;\\s*)' + name + '([^;]*)'));
+
+            if (match) {
+                const decoded = decodeURIComponent(match[2]);
+                const parsed = JSON.parse(decoded);
+
+                if (parsed?.language_locale && parsed?.language_id) {
+                    setLanguageLocale(parsed.language_locale);
+                    setLanguageId(parsed.language_id);
+                    return;
+                }
+            }
+            throw new Error("Invalid Cookie");
+
+        } catch (e) {
+            setLanguageLocale('en');
+            setLanguageId(1);
+        }
+    }, []);
+
+
     return (
         <>
             <Preloader loaded={loaded} setLoaded={setLoaded} />
@@ -98,7 +145,7 @@ export default function GuestLayout({ children }) {
                         </div>
                     </div>
 
-                    <div className="fixed z-50 hidden bottom-6 right-6 sm:block">
+                    <div className="fixed z-50 bottom-6 right-6">
                         <button
                             className="inline-flex items-center justify-center text-white transition-colors bg-black rounded-full dark:text-black dark:bg-white hover:bg-brand-600 size-14"
                             onClick={() => {

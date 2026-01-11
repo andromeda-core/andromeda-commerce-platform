@@ -1,7 +1,10 @@
+import { useTranslation } from '@/Hooks/useTranslation'
 import React from 'react'
 import { createPortal } from 'react-dom'
 
 const ActivateNavigationPrompt = ({ setNeedsActivation }) => {
+
+    const { __ } = useTranslation();
     return (
         createPortal(
             <div
@@ -30,17 +33,17 @@ const ActivateNavigationPrompt = ({ setNeedsActivation }) => {
                     {/* Text */}
                     <div className="space-y-1 text-center">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                            Tap to Continue
+                            {__('Tap to Continue')}
                         </h3>
                         <p className="text-sm text-gray-600 dark:text-white/70">
-                            Activate navigation to explore
+                            {__('Activate navigation to explore')}
                         </p>
                     </div>
 
                     {/* Status indicator */}
                     <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-white/50">
                         <span className="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-pulse"></span>
-                        Ready
+                        {__('Ready')}
                     </div>
                 </div>
             </div>,

@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import Toast from './Toast';
+import { useTranslation } from '@/Hooks/useTranslation';
 
 export default function CustomFileUploader({
     onFileSelect,
@@ -9,14 +10,16 @@ export default function CustomFileUploader({
     preview = null,
     fileName = null,
     fileSize = null,
-    isUploading = false,
-    uploadButtonText = 'Upload File',
+    uploadButtonText = '',
     className = '',
     disabled = false,
 }) {
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef(null);
     const dropZoneRef = useRef(null);
+
+    // Translation Hook
+    const { __ } = useTranslation();
 
     const [infoMessage, setInfoMessage] = useState(null);
     const [showInfoMessage, setShowInfoMessage] = useState(false);
@@ -44,7 +47,7 @@ export default function CustomFileUploader({
         });
 
         if (!isValidType) {
-            setInfoMessage(`Please select a valid file type: ${getFileTypeName()}`);
+            setInfoMessage(`${__('Please select a valid file type')}: ${getFileTypeName()}`);
             setShowInfoMessage(true);
 
             return false;
@@ -53,7 +56,7 @@ export default function CustomFileUploader({
         // Validate file size
         if (file.size > maxSize) {
             const maxSizeMB = (maxSize / 1024 / 1024).toFixed(2);
-            setInfoMessage(`File size must be less than ${maxSizeMB}MB`);
+            setInfoMessage(`${__('File size must be less than')} ${maxSizeMB}MB`);
             setShowInfoMessage(true);
             return false;
         }
@@ -273,12 +276,12 @@ export default function CustomFileUploader({
                         />
                     </svg>
                     <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
-                        {isDragging ? 'Drop your file here' : uploadButtonText}
+                        {isDragging ? __('Drop your file here') : uploadButtonText}
                     </h3>
                     <p className="mb-4 text-sm text-gray-600 dark:text-white/60">
                         {isDragging
-                            ? 'Release to upload'
-                            : 'Click to select or drag and drop your file'}
+                            ? __('Release to upload')
+                            : __('Click to select or drag and drop your file')}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-white/40">
                         {getFileTypeName()} (max. {(maxSize / 1024 / 1024).toFixed(0)}MB)

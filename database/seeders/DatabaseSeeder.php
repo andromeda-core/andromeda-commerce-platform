@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
             // CountrySeeder::class,
             // PermissionSeeder::class,
             // PostSeeder::class,
+            LanguageSeeder::class,
+            TranslationKeysSeeder::class,
         ]);
     }
 }

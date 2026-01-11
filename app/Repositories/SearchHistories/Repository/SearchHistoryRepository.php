@@ -27,37 +27,50 @@ class SearchHistoryRepository implements ISearchHistoryRepository
             ->paginate(10)
             ->withPath(route('website.global-search.history-results-getmore'));
 
-        $filteredCollection = $histories->getCollection()->transform(function ($history) {
+        // its For restricting The Text Only Posts -> Not needed Now
+        // $filteredCollection = $histories->getCollection()->transform(function ($history) {
 
+        //     $results = collect();
+
+        //     if (! empty($history->results)) {
+        //         $decoded = json_decode($history->results);
+
+        //         if (is_array($decoded)) {
+        //             $results = collect($decoded)
+        //                 ->filter(function ($result) {
+        //                     return
+        //                         ! empty($result->id)
+        //                         && ! empty($result->type)
+        //                         && (
+        //                             ! empty($result->image)
+        //                             || ! empty($result->video_thumbnail)
+        //                         );
+        //                 })
+        //                 ->values();
+        //         }
+        //     }
+
+        //     $history->results = $results;
+
+        //     return $history;
+        // })->filter(function ($history) {
+        //     return $history->results->isNotEmpty();
+        // })
+        //     ->values();
+
+        // $histories->setCollection($filteredCollection);
+
+        $histories->getCollection()->transform(function ($history) {
             $results = collect();
 
             if (! empty($history->results)) {
-                $decoded = json_decode($history->results);
-
-                if (is_array($decoded)) {
-                    $results = collect($decoded)
-                        ->filter(function ($result) {
-                            return
-                                ! empty($result->id)
-                                && ! empty($result->type)
-                                && (
-                                    ! empty($result->image)
-                                    || ! empty($result->video_thumbnail)
-                                );
-                        })
-                        ->values();
-                }
+                $results = json_decode($history->results);
             }
 
             $history->results = $results;
 
             return $history;
-        })->filter(function ($history) {
-            return $history->results->isNotEmpty();
-        })
-            ->values();
-
-        $histories->setCollection($filteredCollection);
+        });
 
         return [
             'results' => $histories->items(),
@@ -113,37 +126,42 @@ class SearchHistoryRepository implements ISearchHistoryRepository
             ];
         }
 
-        $decoded = json_decode($history->results);
+        // its For restricting The Text Only Posts -> Not needed Now
+        // $decoded = json_decode($history->results);
 
-        if (! is_array($decoded)) {
-            return [
-                'status' => false,
-                'history' => null,
-                'history_results' => null,
-            ];
+        // if (! is_array($decoded)) {
+        //     return [
+        //         'status' => false,
+        //         'history' => null,
+        //         'history_results' => null,
+        //     ];
+        // }
+
+        // $filteredResults = collect($decoded)
+        //     ->filter(function ($result) {
+        //         return
+        //             ! empty($result->id)
+        //             && ! empty($result->type)
+        //             && (
+        //                 ! empty($result->image)
+        //                 || ! empty($result->video_thumbnail)
+        //             );
+        //     })
+        //     ->values();
+
+        // if ($filteredResults->isEmpty()) {
+        //     return [
+        //         'status' => false,
+        //         'history' => null,
+        //         'history_results' => null,
+        //     ];
+        // }
+
+        // $history->results = $filteredResults;
+
+        if (! empty($history?->results)) {
+            $results = json_decode($history->results);
         }
-
-        $filteredResults = collect($decoded)
-            ->filter(function ($result) {
-                return
-                    ! empty($result->id)
-                    && ! empty($result->type)
-                    && (
-                        ! empty($result->image)
-                        || ! empty($result->video_thumbnail)
-                    );
-            })
-            ->values();
-
-        if ($filteredResults->isEmpty()) {
-            return [
-                'status' => false,
-                'history' => null,
-                'history_results' => null,
-            ];
-        }
-
-        $history->results = $filteredResults;
 
         return [
             'status' => true,

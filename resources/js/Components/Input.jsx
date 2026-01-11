@@ -16,6 +16,7 @@ export default function Input({
     InputRef,
     readOnly = false,
     Disabled = false,
+    ClassName = null
 
 }) {
     return (
@@ -34,7 +35,7 @@ export default function Input({
                     id={Id}
                     disabled={Disabled}
                     ref={InputRef}
-                    className={`shadow-theme-xs focus:ring-3 focus:outline-hidden mb-2 h-[42px] w-full min-w-0 max-w-full rounded-lg border border-gray-300 bg-transparent py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-blue-300 focus:ring-blue-500/10 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-blue-800 ${Disabled && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
+                    className={`shadow-theme-xs focus:ring-3 focus:outline-hidden mb-2 h-[42px] w-full min-w-0 max-w-full rounded-md border border-gray-300 bg-transparent py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-blue-300 focus:ring-blue-500/10 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-blue-800  ${Disabled && 'cursor-not-allowed opacity-25 dark:opacity-40'} ${ClassName || ''}`}
                     placeholder={Placeholder}
                     step="any"
                     name={Name}
@@ -43,6 +44,7 @@ export default function Input({
                     required={Required}
                     {...(Type === 'password' ? { autoComplete: 'off' } : {})}
                     {...(Type === 'number' ? { min: 0 } : {})}
+                    {...(Type === 'checkbox' ? { checked: Value } : {})}
                 />
                 {Error && Type !== 'password' && (
                     <span className="absolute right-3.5 top-5 -translate-y-1/2">
@@ -79,9 +81,14 @@ export default function Input({
 
                     </span>
                 )}
+
+                {Error && (
+                    Error && <p className="text-sm text-red-500">{Error}</p>
+                )}
             </div>
 
-            <div className="mb-4">{Error && <p className="text-sm text-red-500">{Error}</p>}</div>
+
+
         </div>
     );
 }

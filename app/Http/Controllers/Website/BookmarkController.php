@@ -42,4 +42,15 @@ class BookmarkController extends Controller
         }
 
     }
+
+    public function destroyBookmark(Request $request)
+    {
+        $toggled = $this->bookmark->toggleBookmark($request);
+
+        if ($toggled['status'] === false) {
+            return back()->with('error', $toggled['message']);
+        }
+
+        return back();
+    }
 }

@@ -71,7 +71,6 @@ class PostController extends Controller implements HasMiddleware
         }
 
         $post = $this->post->getSinglePostBySlug($slug, $request);
-
         if (empty($post)) {
             return to_route('dashboard.posts.index')->with('error', 'Post Not Found');
         }
