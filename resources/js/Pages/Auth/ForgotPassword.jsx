@@ -1,4 +1,3 @@
-import Input from '@/Components/Input';
 import PrimaryButton from '@/Components/PrimaryButton';
 import WebInput from '@/Components/WebInput';
 import { useTranslation } from '@/Hooks/useTranslation';

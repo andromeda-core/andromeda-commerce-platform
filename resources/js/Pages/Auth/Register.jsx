@@ -1,6 +1,4 @@
-import Input from '@/Components/Input';
 import PrimaryButton from '@/Components/PrimaryButton';
-import SelectInput from '@/Components/SelectInput';
 import WebInput from '@/Components/WebInput';
 import WebSelectInput from '@/Components/WebSelectInput';
 import { useTranslation } from '@/Hooks/useTranslation';
