@@ -272,7 +272,7 @@ const MobileFeed = ({
         return (items) => {
             if (!items || items.length === 0 || !parentFeedSlugRef.current) return items;
 
-            const slug = parentFeedSlugRef.current;
+            // const slug = parentFeedSlugRef.current;
             // const relatedCount = getRelatedCount(slug);
 
             // No related items, return as-is
@@ -355,6 +355,8 @@ const MobileFeed = ({
             const hasPoster = hasVideo && item.post_video_urls[0]?.thumbnail_url;
 
             const isLoaded = isTextPost || loadedItems.has(item?.slug) || hasPoster;
+
+
 
             const handleOnLoad = () => {
                 if (item?.slug) {
@@ -1825,7 +1827,9 @@ const MobileFeed = ({
         };
     }, []);
 
-
+    const isIOS =
+        typeof window !== 'undefined' &&
+        /iPhone|iPad|iPod/i.test(navigator.userAgent);
     return (
         <>
             {createPortal(
@@ -1872,8 +1876,8 @@ const MobileFeed = ({
                                     className="min-w-full feed-page snap-start"
                                     style={{
                                         height: feedItemHeight,
-                                        contentVisibility: 'auto',
-                                        contain: 'layout',
+                                        contentVisibility: isIOS ? 'visible' : 'auto',
+                                        contain: isIOS ? 'none' : 'layout',
                                         willChange: 'scroll-position',
                                     }}
                                 >
