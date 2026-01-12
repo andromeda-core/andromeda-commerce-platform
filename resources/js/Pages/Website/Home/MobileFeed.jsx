@@ -1451,6 +1451,7 @@ const MobileFeed = ({
                     return;
                 }
 
+
                 if (isMobileFeedGalleryOpenRef.current) {
                     return;
                 }
@@ -1462,6 +1463,9 @@ const MobileFeed = ({
                 if (useHomeNavStore.getState().navigatingHome) {
                     return;
                 }
+
+
+
 
                 if (
                     isXLoopingRef.current ||
@@ -1481,6 +1485,7 @@ const MobileFeed = ({
                         itemWidthRef.current[rowIndex] ||
                         (itemWidthRef.current[rowIndex] = rowContainer.offsetWidth);
                 }
+
 
                 if (!itemWidth) return;
 
@@ -1574,6 +1579,7 @@ const MobileFeed = ({
                 }
 
                 // LEFT LOOP (same for all feeds now)
+
                 if (SL <= leftLimit) {
                     lastLoopTime = now;
                     isXLoopingRef.current = true;
@@ -1776,6 +1782,8 @@ const MobileFeed = ({
 
             setFeedGallery(null);
             setFeedOpen(false);
+            setIsScrollCompleted(false);
+            setLocalFeed(null);
 
             // Clear caches
             relatedItemsCache.current.clear();
@@ -1789,6 +1797,9 @@ const MobileFeed = ({
             feedRef.current = [];
             localRelatedFeedRef.current = null;
 
+
+
+
             // Reset flags
             isLoopingRef.current = false;
             isXLoopingRef.current = false;
@@ -1800,8 +1811,11 @@ const MobileFeed = ({
             hasInitializedHorizontalRef.current = false;
             hasUserInteractedRef.current = false;
 
+
             parentFeedSlugRef.current = null;
             itemHeightRef.current = null;
+
+
 
             // Reset stateful memory holders
             setLoadedItems(new Set());

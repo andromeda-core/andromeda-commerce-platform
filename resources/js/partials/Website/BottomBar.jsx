@@ -140,7 +140,11 @@ const BottomBar = ({
                         onClick={() => {
                             useHomeNavStore.getState().startHomeNavigation();
                             window.history.replaceState({}, '', window.location.pathname);
-                            router.visit(route('home'));
+                            router.visit(route('home'), {
+                                onFinish: () => {
+                                    useHomeNavStore.getState().endHomeNavigation();
+                                }
+                            });
                         }}
                         className={`flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${route().current() === 'home' ? 'menu-item-active' : 'menu-item-inactive'
                             }`}

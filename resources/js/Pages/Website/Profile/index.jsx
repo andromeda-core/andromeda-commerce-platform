@@ -39,8 +39,6 @@ const Index = ({ user, countries }) => {
     const isDarkMode = useDarkMode();
     const fileInputRef = useRef(null);
 
-
-
     const { __ } = useTranslation();
 
     // Profile Form Data
@@ -61,7 +59,6 @@ const Index = ({ user, countries }) => {
         postal_code: user?.customer?.postal_code || '',
         country_id: user?.customer?.country_id || '',
     });
-
 
     // Password Change Form Data
     const {
@@ -99,7 +96,9 @@ const Index = ({ user, countries }) => {
                     setErrorMessage(errorMessages.join(', '));
                 } else {
                     setShowErrorMessage(true);
-                    setErrorMessage(__('Something went wrong. Please check all fields and try again.'));
+                    setErrorMessage(
+                        __('Something went wrong. Please check all fields and try again.'),
+                    );
                 }
             },
         });
@@ -267,8 +266,12 @@ const Index = ({ user, countries }) => {
     function InfoBox({ label, value }) {
         return (
             <div className="px-4 py-3 break-words rounded-md bg-surface-1-light dark:bg-surface-1-dark">
-                <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">{label}</p>
-                <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">{value}</p>
+                <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">
+                    {label}
+                </p>
+                <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">
+                    {value}
+                </p>
             </div>
         );
     }
@@ -359,7 +362,7 @@ const Index = ({ user, countries }) => {
 
     return (
         <MainLayout>
-            <Head title={__("Personal Information", true)} />
+            <Head title={__('Personal Information', true)} />
 
             {(showErrorMessage || showInfoMessage || showSuccessMessage) && (
                 <Toast
@@ -385,21 +388,21 @@ const Index = ({ user, countries }) => {
                 />
             )}
 
-
             <div className="sm:px-6 lg:px-8">
-                <div className={`px-6  mx-auto ${windowSize.width > 1024 ? 'pb-0' : 'pb-24'} lg:max-w-6xl sm:max-w-3xl`}>
-
+                <div
+                    className={`mx-auto px-6 ${windowSize.width > 1024 ? 'pb-0' : 'pb-24'} sm:max-w-3xl lg:max-w-6xl`}
+                >
                     <div className="my-10">
                         <h1 className="text-2xl font-semibold text-main-text-light dark:text-main-text-dark">
                             {__('Account Settings')}
                         </h1>
-                        <p className="mt-1 text-sm text-sub-text-light dark:sub-text-dark">
+                        <p className="mt-1 text-sm dark:sub-text-dark text-sub-text-light">
                             {__('Manage your profile, contact details, and security in one place.')}
                         </p>
                     </div>
 
                     {/* Avatar */}
-                    <div className="flex items-start gap-6 ">
+                    <div className="flex items-start gap-6">
                         <div
                             onClick={() => fileInputRef.current?.click()}
                             className="relative flex items-center justify-center w-20 h-20 text-center rounded-full cursor-pointer bg-surface-2-light dark:bg-surface-2-dark"
@@ -444,20 +447,17 @@ const Index = ({ user, countries }) => {
                     </div>
                     {/* Profile Row */}
                     <div className="flex flex-wrap items-center justify-between gap-4 mb-12">
-
                         <div className="flex flex-col items-start mt-4">
                             <h3 className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
                                 {user?.name || 'User'}
                             </h3>
-                            <div >
+                            <div>
                                 <div className="flex flex-wrap items-center justify-between gap-1 mt-3 font-medium">
-                                    <p className="px-2 py-1 mt-1 text-xs rounded-full bg-surface-1-light dark:bg-surface-1-dark text-main-text-light dark:text-main-text-dark">
-
+                                    <p className="px-2 py-1 mt-1 text-xs rounded-full bg-surface-1-light text-main-text-light dark:bg-surface-1-dark dark:text-main-text-dark">
                                         {user?.customer?.orders_count || 0} {__('Orders')}
                                     </p>
 
-                                    <p className="px-2 py-1 mt-1 text-xs rounded-full bg-surface-1-light dark:bg-surface-1-dark text-main-text-light dark:text-main-text-dark">
-
+                                    <p className="px-2 py-1 mt-1 text-xs rounded-full bg-surface-1-light text-main-text-light dark:bg-surface-1-dark dark:text-main-text-dark">
                                         {user?.points || 0} {__('Points')}
                                     </p>
                                 </div>
@@ -465,19 +465,18 @@ const Index = ({ user, countries }) => {
                         </div>
 
                         {/* Actions */}
-                        <div className="flex gap-3">
+                        {/* Actions */}
+                        <div className="flex w-full gap-3 sm:w-auto">
                             <button
                                 onClick={() => setIsChangePasswordOpen(true)}
-                                className="px-2 py-2 text-sm font-semibold rounded-md lg:px-10 lg:text-md text-main-text-dark dark:text-main-text-light bg-main-text-light hover:bg-main-text-light/80 dark:bg-main-text-dark dark:hover:bg-main-text-dark/80"
+                                className="min-w-[160px] flex-1 whitespace-nowrap rounded-md bg-main-text-light px-4 py-2 text-sm font-semibold text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
                             >
                                 {__('Change Password')}
                             </button>
-                            <button
-                                onClick={() => {
-                                    setIsEditProfileOpen(true);
 
-                                }}
-                                className="px-2 py-2 text-sm font-semibold rounded-md lg:px-10 lg:text-md text-main-text-dark dark:text-main-text-light bg-main-text-light hover:bg-main-text-light/80 dark:bg-main-text-dark dark:hover:bg-main-text-dark/80"
+                            <button
+                                onClick={() => setIsEditProfileOpen(true)}
+                                className="min-w-[160px] flex-1 whitespace-nowrap rounded-md bg-main-text-light px-4 py-2 text-sm font-semibold text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
                             >
                                 {__('Edit Profile')}
                             </button>
@@ -491,8 +490,8 @@ const Index = ({ user, countries }) => {
                         </h3>
 
                         <div className="grid grid-cols-2 gap-4">
-                            <InfoBox label={__("Email Address")} value={user?.email || 'N/A'} />
-                            <InfoBox label={("Phone Number")} value={user?.phone || 'N/A'} />
+                            <InfoBox label={__('Email Address')} value={user?.email || 'N/A'} />
+                            <InfoBox label={'Phone Number'} value={user?.phone || 'N/A'} />
                         </div>
                     </div>
 
@@ -504,41 +503,52 @@ const Index = ({ user, countries }) => {
 
                         <div className="grid grid-cols-2 gap-4">
                             <InfoBox
-                                label={__("Address Line 1")}
+                                label={__('Address Line 1')}
                                 value={user?.customer?.address_line1 || 'N/A'}
                             />
                             <InfoBox
-                                label={__("Address Line 2")}
+                                label={__('Address Line 2')}
                                 value={user?.customer?.address_line2 || 'N/A'}
                             />
                             <InfoBox label="State" value={user?.customer?.state || 'N/A'} />
                             <InfoBox
-                                label={__("Postal Code")}
+                                label={__('Postal Code')}
                                 value={user?.customer?.postal_code || 'N/A'}
                             />
-                            <InfoBox label={__("City")} value={user?.customer?.city || 'N/A'} />
+                            <InfoBox label={__('City')} value={user?.customer?.city || 'N/A'} />
                             <InfoBox
-                                label={__("Country")}
+                                label={__('Country')}
                                 value={user?.customer?.country?.name || 'N/A'}
                             />
                         </div>
                     </div>
 
-
                     {/* Manage Shipping Address */}
-                    <div className='my-4'>
+                    <div className="my-4">
                         <div className="flex items-center gap-1">
-                            <Link href={route('website.shipping-addresses.index')} className='text-sm font-semibold lg:text-md'>
+                            <Link
+                                href={route('website.shipping-addresses.index')}
+                                className="text-sm font-semibold lg:text-md"
+                            >
                                 {__('Manage Shipping Address')}
                             </Link>
 
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3 mt-1">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                className="w-3 h-3 mt-1"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                                />
                             </svg>
                         </div>
-
                     </div>
-
                 </div>
             </div>
 
@@ -556,7 +566,7 @@ const Index = ({ user, countries }) => {
                                 />
 
                                 {/* Modal Card */}
-                                <div className="relative z-10 w-full max-w-4xl p-12 pb-1 border rounded-md border-surface-1-light dark:border-surface-3-dark bg-backgroundLight dark:bg-surface-1-dark dark:text-main-text-dark text-main-text-light">
+                                <div className="relative z-10 w-full max-w-4xl p-12 pb-1 border rounded-md border-surface-1-light bg-backgroundLight text-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark">
                                     {/* Header */}
                                     <div className="flex items-center justify-between pb-4">
                                         <h2 className="text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
@@ -570,9 +580,7 @@ const Index = ({ user, countries }) => {
                                             onSubmit={handleEditProfileSubmit}
                                             className="mb-10 space-y-5"
                                         >
-
                                             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-
                                                 {/* Name */}
                                                 <div>
                                                     <WebInput
@@ -643,7 +651,7 @@ const Index = ({ user, countries }) => {
                                                 </div>
 
                                                 {/* Address Line 1 */}
-                                                <div className='col-span-2'>
+                                                <div className="col-span-2">
                                                     <WebTextArea
                                                         InputName={__('Address 1')}
                                                         Id={'address_1'}
@@ -663,7 +671,7 @@ const Index = ({ user, countries }) => {
                                                 </div>
 
                                                 {/* Address Line 2 */}
-                                                <div className='col-span-2'>
+                                                <div className="col-span-2">
                                                     <WebTextArea
                                                         InputName={__('Address 2')}
                                                         Id={'address_2'}
@@ -737,12 +745,10 @@ const Index = ({ user, countries }) => {
                                             </div>
 
                                             <div className="flex items-center justify-end gap-3">
-
-
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsEditProfileOpen(false)}
-                                                    className="h-[50px] w-[180px] rounded-md bg-surface-2-light  text-main-text-light transition-all hover:bg-surface-3-light dark:hover:bg-surface-3-dark/80 dark:text-sub-text-dark dark:bg-surface-3-dark"
+                                                    className="h-[50px] w-[180px] rounded-md bg-surface-2-light text-main-text-light transition-all hover:bg-surface-3-light dark:bg-surface-3-dark dark:text-sub-text-dark dark:hover:bg-surface-3-dark/80"
                                                 >
                                                     {__('Cancel')}
                                                 </button>
@@ -753,7 +759,7 @@ const Index = ({ user, countries }) => {
                                                         UpdateProfileProcessing ||
                                                         isProfileUpdateButtonDisabled
                                                     }
-                                                    className={`flex h-[50px] w-[180px] font-semibold text-md  items-center justify-center gap-2 rounded-md bg-main-text-light  text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80 ${(UpdateProfileProcessing || isProfileUpdateButtonDisabled) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
+                                                    className={`text-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md bg-main-text-light font-semibold text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80 ${(UpdateProfileProcessing || isProfileUpdateButtonDisabled) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
                                                 >
                                                     {UpdateProfileProcessing && (
                                                         <Spinner customSize={'size-5'} />
@@ -772,7 +778,7 @@ const Index = ({ user, countries }) => {
                                 <div className="absolute inset-0 bg-black/70"></div>
 
                                 {/* Fullscreen slide-over */}
-                                <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-backgroundLight text-main-text-light dark:bg-backgroundDark border border-surface-1-light dark:border-surface-3-dark  dark:text-main-text-dark">
+                                <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto border border-surface-1-light bg-backgroundLight text-main-text-light dark:border-surface-3-dark dark:bg-backgroundDark dark:text-main-text-dark">
                                     {/* Top Bar */}
                                     <div className="flex items-center justify-center px-4 py-3">
                                         <button
@@ -973,11 +979,10 @@ const Index = ({ user, countries }) => {
                                             </div>
 
                                             <div className="flex items-center justify-end gap-3">
-
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsEditProfileOpen(false)}
-                                                    className="h-[50px] w-[180px] rounded-md bg-surface-2-light  text-main-text-light transition-all hover:bg-surface-3-light dark:hover:bg-surface-3-dark/80 dark:text-sub-text-dark dark:bg-surface-3-dark"
+                                                    className="h-[50px] w-[180px] rounded-md bg-surface-2-light text-main-text-light transition-all hover:bg-surface-3-light dark:bg-surface-3-dark dark:text-sub-text-dark dark:hover:bg-surface-3-dark/80"
                                                 >
                                                     {__('Cancel')}
                                                 </button>
@@ -988,7 +993,7 @@ const Index = ({ user, countries }) => {
                                                         UpdateProfileProcessing ||
                                                         isProfileUpdateButtonDisabled
                                                     }
-                                                    className={`flex h-[50px] w-[180px] tetx-md font-semibold  items-center justify-center gap-2 rounded-md bg-black  text-white transition-all hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80 ${(UpdateProfileProcessing || isProfileUpdateButtonDisabled) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
+                                                    className={`tetx-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md bg-black font-semibold text-white transition-all hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80 ${(UpdateProfileProcessing || isProfileUpdateButtonDisabled) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
                                                 >
                                                     {UpdateProfileProcessing && (
                                                         <Spinner customSize={'size-5'} />
@@ -1020,14 +1025,12 @@ const Index = ({ user, countries }) => {
                                 />
 
                                 {/* Modal Card */}
-                                <div className="relative z-10 w-full max-w-2xl p-10 py-12 border rounded-md border-surface-1-light dark:border-surface-3-dark bg-backgroundLight dark:bg-surface-1-dark dark:text-main-text-dark">
+                                <div className="relative z-10 w-full max-w-2xl p-10 py-12 border rounded-md border-surface-1-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark">
                                     {/* Header */}
                                     <div className="flex items-center justify-between pb-4">
                                         <h2 className="text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
                                             {__('Change Password')}
                                         </h2>
-
-
                                     </div>
 
                                     {/* Content */}
@@ -1107,7 +1110,7 @@ const Index = ({ user, countries }) => {
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsChangePasswordOpen(false)}
-                                                    className="h-[50px] w-[180px] rounded-md bg-surface-2-light  text-main-text-light transition-all hover:bg-surface-3-light dark:hover:bg-surface-3-dark/80 dark:text-sub-text-dark dark:bg-surface-3-dark"
+                                                    className="h-[50px] w-[180px] rounded-md bg-surface-2-light text-main-text-light transition-all hover:bg-surface-3-light dark:bg-surface-3-dark dark:text-sub-text-dark dark:hover:bg-surface-3-dark/80"
                                                 >
                                                     {__('Cancel')}
                                                 </button>
@@ -1118,7 +1121,7 @@ const Index = ({ user, countries }) => {
                                                         UpdatePasswordProcessing ||
                                                         isPasswordChangeButtonDisabled
                                                     }
-                                                    className={`flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md bg-main-text-light  text-white transition-all hover:bg-black/80 dark:bg-white dark:text-main-text-light  text-md font-semibold dark:hover:bg-white/80 ${(UpdatePasswordProcessing || isPasswordChangeButtonDisabled) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
+                                                    className={`text-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md bg-main-text-light font-semibold text-white transition-all hover:bg-black/80 dark:bg-white dark:text-main-text-light dark:hover:bg-white/80 ${(UpdatePasswordProcessing || isPasswordChangeButtonDisabled) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
                                                 >
                                                     {UpdatePasswordProcessing && (
                                                         <Spinner customSize={'size-5'} />
@@ -1137,9 +1140,9 @@ const Index = ({ user, countries }) => {
                                 <div className="absolute inset-0 bg-black/70"></div>
 
                                 {/* Fullscreen slide-over */}
-                                <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-backgroundLight text-main-text-light dark:bg-backgroundDark border border-surface-1-light dark:border-surface-3-dark  dark:text-main-text-dark">
+                                <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto border border-surface-1-light bg-backgroundLight text-main-text-light dark:border-surface-3-dark dark:bg-backgroundDark dark:text-main-text-dark">
                                     {/* Top Bar */}
-                                    <div className="flex items-center justify-center px-4 py-3 ">
+                                    <div className="flex items-center justify-center px-4 py-3">
                                         <button
                                             onClick={() => setIsChangePasswordOpen(false)}
                                             className="absolute p-1 text-black rounded-full left-4 dark:text-main-text-dark"
@@ -1230,13 +1233,12 @@ const Index = ({ user, countries }) => {
                                                 />
                                             </div>
 
-
                                             {/* Actions */}
                                             <div className="flex items-center justify-end gap-3">
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsChangePasswordOpen(false)}
-                                                    className="h-[50px] w-[180px] rounded-md bg-surface-2-light  text-main-text-light transition-all hover:bg-surface-3-light dark:hover:bg-surface-3-dark/80 dark:text-sub-text-dark dark:bg-surface-3-dark"
+                                                    className="h-[50px] w-[180px] rounded-md bg-surface-2-light text-main-text-light transition-all hover:bg-surface-3-light dark:bg-surface-3-dark dark:text-sub-text-dark dark:hover:bg-surface-3-dark/80"
                                                 >
                                                     {__('Cancel')}
                                                 </button>
@@ -1247,7 +1249,7 @@ const Index = ({ user, countries }) => {
                                                         UpdatePasswordProcessing ||
                                                         isPasswordChangeButtonDisabled
                                                     }
-                                                    className={`flex h-[50px] w-[180px] text-md font-semibold items-center justify-center gap-2 rounded-md bg-main-text-light  text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80 ${(UpdatePasswordProcessing || isPasswordChangeButtonDisabled) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
+                                                    className={`text-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md bg-main-text-light font-semibold text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80 ${(UpdatePasswordProcessing || isPasswordChangeButtonDisabled) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
                                                 >
                                                     {UpdatePasswordProcessing && (
                                                         <Spinner customSize={'size-5'} />
@@ -1286,7 +1288,7 @@ const Index = ({ user, countries }) => {
                                         }
                                     }}
                                 />
-                                <div className="border border-surface-1-light dark:border-surface-3-dark relative z-10 max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-md bg-backgroundLight p-8  dark:bg-surface-1-dark dark:text-main-text-dark">
+                                <div className="relative z-10 max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-md border border-surface-1-light bg-backgroundLight p-8 dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark">
                                     {/* Header */}
                                     <div className="flex items-center justify-between pb-4">
                                         <div className="flex-1 min-w-0">
@@ -1302,7 +1304,7 @@ const Index = ({ user, countries }) => {
                                     {/* Content */}
                                     <div className="mt-6">
                                         {/* Crop Area */}
-                                        <div className="relative w-full h-64 bg-surface-1-light xs:h-72 dark:bg-deepcharcoal sm:h-80 md:h-96">
+                                        <div className="relative w-full h-64 xs:h-72 bg-surface-1-light dark:bg-deepcharcoal sm:h-80 md:h-96">
                                             <Cropper
                                                 image={profileImage}
                                                 crop={crop}
@@ -1326,7 +1328,7 @@ const Index = ({ user, countries }) => {
                                                     <label className="text-xs font-medium text-main-text-light dark:text-main-text-dark sm:text-sm">
                                                         {__('Zoom Level')}
                                                     </label>
-                                                    <span className="font-mono text-xs text-main-text-light tabular-nums dark:text-main-text-dark sm:text-sm">
+                                                    <span className="font-mono text-xs tabular-nums text-main-text-light dark:text-main-text-dark sm:text-sm">
                                                         {Math.round(zoom * 100)}%
                                                     </span>
                                                 </div>
@@ -1411,8 +1413,8 @@ const Index = ({ user, countries }) => {
                                             </div>
 
                                             {/* Helpful Tip */}
-                                            <div className="flex items-center gap-2 rounded-md bg-surface-2-light dark:bg-surface-3-dark p-2.5 sm:p-3">
-                                                <div className="flex-shrink-0 ">
+                                            <div className="flex items-center gap-2 rounded-md bg-surface-2-light p-2.5 dark:bg-surface-3-dark sm:p-3">
+                                                <div className="flex-shrink-0">
                                                     <svg
                                                         className="h-3.5 w-3.5 text-main-text-light dark:text-main-text-dark sm:h-4 sm:w-4"
                                                         fill="currentColor"
@@ -1425,8 +1427,10 @@ const Index = ({ user, countries }) => {
                                                         />
                                                     </svg>
                                                 </div>
-                                                <p className="text-[11px] leading-relaxed text-main-text-light dark:text-main-text-dark min-[]:sm:text-xs">
-                                                    {__('Drag to reposition, pinch or use slider to zoom')}
+                                                <p className="min-[]:sm:text-xs text-[11px] leading-relaxed text-main-text-light dark:text-main-text-dark">
+                                                    {__(
+                                                        'Drag to reposition, pinch or use slider to zoom',
+                                                    )}
                                                 </p>
                                             </div>
                                         </div>
@@ -1445,21 +1449,20 @@ const Index = ({ user, countries }) => {
                                                         fileInputRef.current.value = '';
                                                     }
                                                 }}
-                                                className="h-[50px] w-[180px] rounded-md bg-surface-2-light  text-main-text-light transition-all hover:bg-surface-3-light dark:hover:bg-surface-3-dark/80 dark:text-sub-text-dark dark:bg-surface-3-dark"
+                                                className="h-[50px] w-[180px] rounded-md bg-surface-2-light text-main-text-light transition-all hover:bg-surface-3-light dark:bg-surface-3-dark dark:text-sub-text-dark dark:hover:bg-surface-3-dark/80"
                                             >
                                                 {__('Cancel')}
                                             </button>
 
                                             <button
                                                 onClick={handleCropSaveAndUpload}
-                                                className={`flex h-[50px] w-[180px] items-center text-md font-semibold justify-center gap-2 rounded-md bg-main-text-light  text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light  dark:hover:bg-main-text-dark/80`}
+                                                className={`text-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md bg-main-text-light font-semibold text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80`}
                                             >
                                                 {__('Save & Upload')}
                                             </button>
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
                         ) : (
                             // MOBILE VERSION
@@ -1468,7 +1471,7 @@ const Index = ({ user, countries }) => {
                                 <div className="absolute inset-0 bg-black/70"></div>
 
                                 {/* Fullscreen slide-over */}
-                                <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-backgroundLight text-main-text-light dark:bg-surface-1-dark border border-surface-1-light dark:border-surface-3-dark  dark:text-main-text-dark">
+                                <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto border border-surface-1-light bg-backgroundLight text-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark">
                                     {/* Top Bar */}
                                     <div className="flex items-center justify-center px-4 py-3">
                                         <button
@@ -1618,7 +1621,7 @@ const Index = ({ user, countries }) => {
                                             </div>
 
                                             {/* Helpful Tip */}
-                                            <div className="flex items-center gap-2 rounded-md bg-surface-2-light dark:bg-surface-3-dark p-2.5 sm:p-3">
+                                            <div className="flex items-center gap-2 rounded-md bg-surface-2-light p-2.5 dark:bg-surface-3-dark sm:p-3">
                                                 <div className="flex-shrink-0">
                                                     <svg
                                                         className="h-3.5 w-3.5 text-main-text-light dark:text-main-text-dark sm:h-4 sm:w-4"
@@ -1633,7 +1636,9 @@ const Index = ({ user, countries }) => {
                                                     </svg>
                                                 </div>
                                                 <p className="text-[11px] leading-relaxed text-main-text-light dark:text-main-text-dark sm:text-xs">
-                                                    {__('Drag to reposition, pinch or use slider to zoom')}
+                                                    {__(
+                                                        'Drag to reposition, pinch or use slider to zoom',
+                                                    )}
                                                 </p>
                                             </div>
                                         </div>
@@ -1652,16 +1657,16 @@ const Index = ({ user, countries }) => {
                                                         fileInputRef.current.value = '';
                                                     }
                                                 }}
-                                                className="h-[50px] w-[180px] rounded-md bg-surface-2-light  text-main-text-light transition-all hover:bg-surface-3-light dark:hover:bg-surface-3-dark/80 dark:text-sub-text-dark dark:bg-surface-3-dark"
+                                                className="h-[50px] w-[180px] rounded-md bg-surface-2-light text-main-text-light transition-all hover:bg-surface-3-light dark:bg-surface-3-dark dark:text-sub-text-dark dark:hover:bg-surface-3-dark/80"
                                             >
                                                 {__('Cancel')}
                                             </button>
 
                                             <button
                                                 onClick={handleCropSaveAndUpload}
-                                                className={`flex h-[50px] w-[180px] items-center text-md font-semibold justify-center gap-2 rounded-md bg-main-text-light  text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light  dark:hover:bg-main-text-dark/80`}
+                                                className={`text-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md bg-main-text-light font-semibold text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80`}
                                             >
-                                                {__("Save & Upload")}
+                                                {__('Save & Upload')}
                                             </button>
                                         </div>
                                     </div>
