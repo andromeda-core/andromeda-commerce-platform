@@ -8,7 +8,7 @@ import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function Register({ countries }) {
+export default function Register({ countries, redirect }) {
     // Toggle Show Password States
     const [showPasswordToggle, setshowPasswordToggle] = useState(false);
     const [showPasswordConfirmationToggle, setShowPasswordConfirmationToggle] = useState(false);
@@ -23,7 +23,7 @@ export default function Register({ countries }) {
         country_id: '',
         password: '',
         password_confirmation: '',
-        redirect: new URLSearchParams(window.location.search).get('redirect') || '',
+        redirect: new URLSearchParams(window.location.search).get('redirect') || redirect || '',
     });
 
     // Register User Form Request

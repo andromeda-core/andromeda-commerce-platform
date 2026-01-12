@@ -1186,12 +1186,16 @@ const MobileFeed = ({
         const scrollTick = () => {
             if (isLoopingRef.current) return;
 
+            if (isMobileFeedGalleryOpenRef.current) {
+                return;
+            }
+
+
             const firstRealItem = container.children[1];
             if (firstRealItem) {
                 itemHeightRef.current ||= firstRealItem.getBoundingClientRect().height;
                 itemHeight = itemHeightRef.current;
             }
-
             if (
                 isProcessingRef.current ||
                 isLockedRef.current ||
@@ -1465,8 +1469,6 @@ const MobileFeed = ({
                 }
 
 
-
-
                 if (
                     isXLoopingRef.current ||
                     isProcessingRef.current ||
@@ -1674,7 +1676,6 @@ const MobileFeed = ({
                     };
 
                     preserveXAxisScrollRef.current[rowIndex] = currentScrollLeft;
-
                     if (newItem.type === 'smartphones') {
                         const url = new URL(window.location.origin + window.location.pathname);
                         url.searchParams.set('m-slug', newItem.slug);
@@ -1823,6 +1824,7 @@ const MobileFeed = ({
 
         };
     }, []);
+
 
     return (
         <>

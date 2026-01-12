@@ -3187,6 +3187,7 @@ const DesktopFeed = ({
                                                                                 router.get(
                                                                                     route('login'),
                                                                                     {
+
                                                                                         redirect:
                                                                                             window
                                                                                                 .location
@@ -3195,6 +3196,7 @@ const DesktopFeed = ({
                                                                                                 .location
                                                                                                 .search,
                                                                                     },
+
                                                                                 )
                                                                             }
                                                                             className="flex-1 h-12 text-lg font-semibold transition bg-white border rounded-md border-main-text-light text-main-text-light hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80"

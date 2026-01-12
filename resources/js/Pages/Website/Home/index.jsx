@@ -216,9 +216,12 @@ const index = () => {
         if (!isFeedLoaded || hasOpenedSlugRef.current) return;
 
         const params = new URLSearchParams(window.location.search);
+
         const post_slug = params.get('slug');
         const smartphone_slug = params.get('m-slug');
         const isSinglePage = params.get('single_page') === 'true';
+
+
 
         if ((!post_slug && !smartphone_slug) && !isSinglePage) return;
 

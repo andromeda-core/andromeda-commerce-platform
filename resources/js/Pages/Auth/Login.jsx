@@ -6,7 +6,7 @@ import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function Login({ canResetPassword }) {
+export default function Login({ canResetPassword, redirect }) {
     // Toggle Show Password State
     const [ShowPasswordToggle, setShowPasswordToggle] = useState(false);
 
@@ -15,7 +15,7 @@ export default function Login({ canResetPassword }) {
         email: '',
         password: '',
         remember: false,
-        redirect: new URLSearchParams(window.location.search).get('redirect') || '',
+        redirect: new URLSearchParams(window.location.search).get('redirect') || redirect || '',
     });
 
     // Translation Hook

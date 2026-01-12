@@ -1169,12 +1169,14 @@ const SmartphoneMobileGalleryModal = ({
                                             <>
                                                 {/* Login */}
                                                 <button
-                                                    onClick={() =>
+                                                    onClick={() => {
+                                                        const redirectUrl =
+                                                            window.location.pathname + window.location.search;
                                                         router.get(route('login'), {
-                                                            redirect:
-                                                                window.location.pathname +
-                                                                window.location.search,
+
+                                                            redirect: redirectUrl
                                                         })
+                                                    }
                                                     }
                                                     className="flex-1 h-12 text-sm font-semibold transition bg-white border rounded-md border-main-text-light text-main-text-light hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80"
                                                 >
@@ -1183,12 +1185,14 @@ const SmartphoneMobileGalleryModal = ({
 
                                                 {/*Register*/}
                                                 <button
-                                                    onClick={() =>
+                                                    onClick={() => {
+                                                        const redirectUrl =
+                                                            window.location.pathname + window.location.search;
                                                         router.get(route('register'), {
-                                                            redirect:
-                                                                window.location.pathname +
-                                                                window.location.search,
+                                                            redirect: redirectUrl
                                                         })
+                                                    }
+
                                                     }
                                                     className="flex-1 h-12 text-sm font-semibold transition border rounded-md border-main-text-dark bg-main-text-light text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80"
                                                 >

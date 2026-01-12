@@ -60,6 +60,7 @@ export default function MainLayout({ children }) {
     // Previouus URL REF FOR MODALS POP STATE
     const previousUrlRef = useRef(window.location.href);
 
+
     // Global Filter Zustand Store Sync
     const setIsOpen = useFilterStore((s) => s.setIsOpen);
     useEffect(() => {

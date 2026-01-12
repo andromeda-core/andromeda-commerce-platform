@@ -32,7 +32,9 @@ const GlobalLanguageFilter = ({ isOpen, close, languages, loading, previousUrlRe
 
 
     useEffect(() => {
-        window.history.replaceState({}, '', window.location.pathname);
+        if (isOpen) {
+            window.history.replaceState({}, '', window.location.pathname);
+        }
     }, [isOpen]);
 
 

@@ -22,9 +22,10 @@ class RegisteredUserController extends Controller
      */
     public function create(): Response
     {
+        $redirect = request()->input('redirect');
         $countries = Cache::get('countries');
 
-        return Inertia::render('Auth/Register', compact('countries'));
+        return Inertia::render('Auth/Register', compact('countries', 'redirect'));
     }
 
     /**
