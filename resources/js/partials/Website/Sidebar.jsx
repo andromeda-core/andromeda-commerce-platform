@@ -76,7 +76,7 @@ const Sidebar = ({
     return (
         <div className="flex min-h-screen">
             <aside
-                className={`fixed left-0 top-0 z-[50] p-4  flex h-full flex-col overflow-y-auto bg-backgroundLight transition-all duration-300 dark:bg-backgroundDark w-72`}
+                className={`fixed left-0 top-0 z-[50] p-4  flex h-full flex-col overflow-y-auto bg-backgroundLight transition-all duration-300 dark:bg-backgroundDark xl:w-64 `}
             >
                 {/* Logo */}
                 <Link href={route('home')} data-sidebar-link="true" >

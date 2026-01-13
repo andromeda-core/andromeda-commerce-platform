@@ -454,26 +454,19 @@ const MasonryFeedItem = memo(
                             </div>
 
                             <div className="absolute inset-x-0 bottom-0 p-3 bg-transparent">
-                                <div className="mt-2 flex flex-col font-semibold items-start justify-between text-[14px]">
-                                    <p className="block overflow-hidden text-white text-ellipsis whitespace-nowrap">
+                                <div className="mt-2 flex flex-col font-semibold items-start text-[14px] w-full">
+                                    <p className="w-full text-white truncate">
                                         {item.selling_info?.total_price
                                             ? `${currency?.symbol}${item.selling_info.total_price}`
                                             : ''}
                                     </p>
-                                    <p className="block overflow-hidden text-white text-ellipsis whitespace-nowrap">
-                                        {item.name.length > 20
-                                            ? item.name.slice(0, 20) + '...'
-                                            : item.name}{' '}
-                                        (
-                                        {item.capacity.length > 10
-                                            ? item.capacity.slice(0, 10) + '...'
-                                            : item.capacity}
-                                        )
+
+                                    <p className="w-full text-white truncate">
+                                        {item.name} ({item.capacity})
                                     </p>
-
-
                                 </div>
                             </div>
+
                         </>
                     )}
                 </div>

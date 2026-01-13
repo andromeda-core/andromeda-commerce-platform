@@ -720,7 +720,7 @@ const index = () => {
                     fetchMorePostsAndProducts();
                 }
             },
-            { threshold: 0.1 },
+            { threshold: 1 },
         );
 
         observer.observe(loaderRef.current);
@@ -941,6 +941,7 @@ const index = () => {
     );
 
 
+
     return (
         <MainLayout>
             <Head title={__("Home", true)} />
@@ -988,9 +989,16 @@ const index = () => {
 
                     {/* Masonry Layout */}
                     <div
-                        className={`pb-20 pt-3 sm:pb-20 lg:pt-[75px] ${feedGallery ? 'hidden' : 'visible'}`}
+                        className={`pb-20 pt-3 sm:pb-20 lg:pt-[75px]`}
+                        style={{
+                            opacity: feedOpen ? 0 : 1,
+                            pointerEvents: feedOpen ? 'none' : 'auto',
+                            position: 'relative',
+                            zIndex: feedOpen ? 0 : 1,
+                        }}
                     >
-                        <div className="mx-auto max-w-8xl sm:px-6 lg:px-8">
+                        <div className="mx-auto max-w-8xl sm:px-6 lg:px-8 "
+                        >
 
                             <div className="gap-2 columns-2 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5">
                                 {feed.map((item, index) => (

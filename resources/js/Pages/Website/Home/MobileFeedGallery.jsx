@@ -21,9 +21,8 @@ const MobileFeedGallery = (
         setShowInfoMessage,
         setErrorMessage,
         setShowErrorMessage,
-
-
     }
+
 ) => {
 
     return (

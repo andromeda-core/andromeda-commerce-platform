@@ -10,116 +10,178 @@ const InstagramStyledVideoPlayer = ({
     slug,
     timelinePadding = 12,
     isMainFeed = false,
+
 }) => {
 
-    //  CREATE UNIQUE INSTANCE ID
+
+
+    /* -------------------- INSTANCE -------------------- */
     const instanceId = useRef(`${slug}-${Math.random().toString(36).substr(2, 9)}`).current;
 
+    /* -------------------- STATE -------------------- */
     const [isPlaying, setIsPlaying] = useState(false);
     const [isMuted, setIsMuted] = useState(true);
     const [showControls, setShowControls] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
-    const [isDragging, setIsDragging] = useState(false);
-    const [showTimeline, setShowTimeline] = useState(false);
+    const [progress, setProgress] = useState(0);
 
+    /* -------------------- REFS -------------------- */
     const videoRef = useRef(null);
     const timelineRef = useRef(null);
-    const progressIntervalRef = useRef(null);
-    const rafRef = useRef(null);
+    const progressBarRef = useRef(null);
+    const isDraggingRef = useRef(false);
     const controlsTimeoutRef = useRef(null);
+    const pendingSeekRef = useRef(null);
+    const ignoreTimeUpdateRef = useRef(false);
 
-    const registerVideo = useVideoStore(state => state.registerVideo);
-    const unregisterVideo = useVideoStore(state => state.unregisterVideo);
 
-    const [pendingSeekTime, setPendingSeekTime] = useState(null);
+    /* -------------------- STORE -------------------- */
+    const registerVideo = useVideoStore(s => s.registerVideo);
+    const unregisterVideo = useVideoStore(s => s.unregisterVideo);
 
-    //  STABLE REF WITH INSTANCE ID IN LOGS
+    /* -------------------- REGISTER PLAYER -------------------- */
     const playerMethodsRef = useRef({
         play: async () => {
             const video = videoRef.current;
-
-            if (!video) {
-                console.warn('[VideoPlayer] ❌ No video element for play():', instanceId);
-                return;
-            }
+            if (!video) return;
 
             try {
                 video.playsInline = true;
                 video.setAttribute('playsinline', '');
-
-                if (video.readyState < 2) {
-                    await new Promise((resolve) => {
-                        const onCan = () => {
-                            video.removeEventListener('canplay', onCan);
-                            resolve();
-                        };
-                        setTimeout(() => {
-                            video.removeEventListener('canplay', onCan);
-                            resolve();
-                        }, 500);
-                        video.addEventListener('canplay', onCan);
-                    });
-                }
-
                 await video.play();
             } catch (e) {
-                // If play fails due to autoplay policy, try muted
                 if (e.name === 'NotAllowedError') {
-                    try {
-                        video.muted = true;
-                        setIsMuted(true);
-                        await video.play();
-                    } catch (retryError) {
-                        console.error('[VideoPlayer] Muted play also failed:', retryError);
-                        throw retryError;
-                    }
-                } else {
-                    throw e;
+                    video.muted = true;
+                    setIsMuted(true);
+                    await video.play();
                 }
             }
         },
-
-        pause: () => {
-            const video = videoRef.current;
-
-            if (!video) {
-                console.warn('[VideoPlayer] ❌ No video element for pause():', instanceId);
-                return;
-            }
-
-            video.pause();
-        },
-
+        pause: () => videoRef.current?.pause(),
         getElement: () => videoRef.current,
-
-        isPaused: () => {
-            const video = videoRef.current;
-            return !video || video.paused;
-        },
-
-        getSlug: () => slug, //  Storing original slug for matching
-
-        getInstanceId: () => instanceId
+        isPaused: () => !videoRef.current || videoRef.current.paused,
+        getSlug: () => slug,
+        getInstanceId: () => instanceId,
     });
+    const handleVideoClick = () => togglePlayPause();
 
-    //  REGISTER WITH UNIQUE INSTANCE ID
+
+    /* -------------------- CONTROLS -------------------- */
+    const togglePlayPause = () => {
+        const video = videoRef.current;
+        if (!video) return;
+        video.paused ? video.play() : video.pause();
+        showControlsTemporarily();
+    };
+
+    const toggleMute = useCallback((e) => {
+        e.stopPropagation();
+        const video = videoRef.current;
+        if (!video) return;
+        video.muted = !video.muted;
+        setIsMuted(video.muted);
+    }, []);
+
+    const showControlsTemporarily = () => {
+        setShowControls(true);
+        clearTimeout(controlsTimeoutRef.current);
+        controlsTimeoutRef.current = setTimeout(() => {
+            if (isPlaying) setShowControls(false);
+        }, 3000);
+    };
+
+    /* -------------------- TIMELINE LOGIC -------------------- */
+    const getClientX = (e) => e.clientX;
+
+    const seekFromClientX = (clientX) => {
+        const bar = timelineRef.current;
+        const video = videoRef.current;
+        if (!bar || !video || !video.duration) return;
+
+        const rect = bar.getBoundingClientRect();
+        const pos = Math.min(Math.max(clientX - rect.left, 0), rect.width);
+        const percent = pos / rect.width;
+        const time = percent * video.duration;
+
+        pendingSeekRef.current = time;
+        setCurrentTime(time);
+        setProgress(percent * 100);
+    };
+
+    const onPointerDown = (e) => {
+        e.preventDefault();
+        isDraggingRef.current = true;
+        ignoreTimeUpdateRef.current = true;
+
+        seekFromClientX(getClientX(e));
+
+        document.addEventListener('pointermove', onPointerMove);
+        document.addEventListener('pointerup', onPointerUp);
+        document.addEventListener('pointercancel', onPointerUp);
+    };
+
+    const onPointerMove = (e) => {
+        if (!isDraggingRef.current) return;
+        seekFromClientX(getClientX(e));
+    };
+
+    const onPointerUp = () => {
+        isDraggingRef.current = false;
+
+        const video = videoRef.current;
+        const seekTime = pendingSeekRef.current;
+        pendingSeekRef.current = null;
+
+        if (!video || seekTime == null) return;
+
+        const wasPlaying = !video.paused;
+
+        //  iOS compositor safety
+        video.pause();
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                if (!video) return;
+
+                video.currentTime = seekTime;
+
+                if (wasPlaying) {
+                    video.play().catch(() => { });
+                } else {
+                    video.play().catch(() => { });
+                }
+
+                // allow timeupdate AFTER seek settles
+                setTimeout(() => {
+                    ignoreTimeUpdateRef.current = false;
+                }, 50);
+            });
+        });
+
+        showControlsTemporarily();
+
+        document.removeEventListener('pointermove', onPointerMove);
+        document.removeEventListener('pointerup', onPointerUp);
+        document.removeEventListener('pointercancel', onPointerUp);
+    };
+
+
+
+
     useEffect(() => {
         if (!slug) return;
-        registerVideo(instanceId, playerMethodsRef.current); // Using instanceId instead of slug
+        registerVideo(instanceId, playerMethodsRef.current);
+        return () => unregisterVideo(instanceId);
+    }, [slug, instanceId]);
 
-        return () => {
-            unregisterVideo(instanceId);
-        };
-    }, [slug, registerVideo, unregisterVideo, instanceId]);
 
-    const getClientX = (e) => (e.touches ? e.touches[0].clientX : e.clientX);
 
-    // SYNC UI WITH REAL VIDEO EVENTS
+
+    /* -------------------- VIDEO EVENTS -------------------- */
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
-
 
         const onLoaded = () => {
             setDuration(video.duration);
@@ -128,225 +190,45 @@ const InstagramStyledVideoPlayer = ({
 
         const onPlay = () => {
             setIsPlaying(true);
-            setShowControls(false);
+            if (!isDraggingRef.current) {
+                setShowControls(false);
+            }
         };
 
         const onPause = () => {
             setIsPlaying(false);
-            setShowControls(true);
+            if (!isDraggingRef.current) {
+                setShowControls(true);
+            }
         };
 
-        const onVolume = () => {
-            setIsMuted(video.muted);
+        const onTimeUpdate = () => {
+            if (isDraggingRef.current || ignoreTimeUpdateRef.current) return;
+            setCurrentTime(video.currentTime);
+            setProgress((video.currentTime / video.duration) * 100);
         };
 
-        const onEnded = () => {
-            setIsPlaying(false);
-            setShowControls(true);
-        };
-
-        video.addEventListener("loadedmetadata", onLoaded);
-        video.addEventListener("play", onPlay);
-        video.addEventListener("pause", onPause);
-        video.addEventListener("volumechange", onVolume);
-        video.addEventListener("ended", onEnded);
-
-        setIsMuted(!!video.muted);
-        setIsPlaying(!video.paused);
-        setDuration(video.duration || 0);
+        video.addEventListener('loadedmetadata', onLoaded);
+        video.addEventListener('play', onPlay);
+        video.addEventListener('pause', onPause);
+        video.addEventListener('timeupdate', onTimeUpdate);
 
         return () => {
-            video.removeEventListener("loadedmetadata", onLoaded);
-            video.removeEventListener("play", onPlay);
-            video.removeEventListener("pause", onPause);
-            video.removeEventListener("volumechange", onVolume);
-            video.removeEventListener("ended", onEnded);
+            video.removeEventListener('loadedmetadata', onLoaded);
+            video.removeEventListener('play', onPlay);
+            video.removeEventListener('pause', onPause);
+            video.removeEventListener('timeupdate', onTimeUpdate);
         };
-    }, [videoUrl, instanceId, OnLoadedMetaData]);
-
-    // Rest of your component code stays the same...
-    const togglePlayPause = () => {
-        const video = videoRef.current;
-        if (!video) return;
-
-        if (video.paused) {
-            video.play().catch(e => console.error('[InstagramPlayer] toggle play error:', e));
-        } else {
-            video.pause();
-        }
-
-        showControlsTemporarily();
-    };
-
-    const toggleMute = useCallback((e) => {
-        e.stopPropagation();
-        const video = videoRef.current;
-        if (!video) return;
-
-        const newMutedState = !video.muted;
-        video.muted = newMutedState;
-        setIsMuted(newMutedState);
-    }, []);
-    const showControlsTemporarily = () => {
-        setShowControls(true);
-
-        clearTimeout(controlsTimeoutRef.current);
-        controlsTimeoutRef.current = setTimeout(() => {
-            if (isPlaying) setShowControls(false);
-        }, 3000);
-    };
-
-    const handleVideoClick = () => togglePlayPause();
-
-    const calculateTimeFromPosition = (clientX) => {
-        const rect = timelineRef.current?.getBoundingClientRect();
-        if (!rect) return 0;
-
-        const offset = Math.max(0, Math.min(clientX - rect.left, rect.width));
-        const percentage = offset / rect.width;
-
-        // If we have duration, calculate exact time, otherwise store percentage
-        if (duration && duration > 0) {
-            return percentage * duration;
-        }
-
-        // Return percentage as time (will be converted when duration is available)
-        return percentage;
-    };
-
-
-    const handleTimelineDragStart = (e) => {
-        setIsDragging(true);
-        setShowTimeline(true);
-        const newTime = calculateTimeFromPosition(getClientX(e));
-
-        const video = videoRef.current;
-        if (video && duration && duration > 0) {
-            video.currentTime = newTime;
-            setCurrentTime(newTime);
-        } else {
-            // Store as pending seek if no duration yet
-            setPendingSeekTime(newTime);
-            setCurrentTime(newTime * 100);
-        }
-    };
-
-    const handleTimelineDrag = (e) => {
-        if (!isDragging) return;
-
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = requestAnimationFrame(() => {
-            const newTime = calculateTimeFromPosition(getClientX(e));
-            const video = videoRef.current;
-
-            if (video && duration && duration > 0) {
-                video.currentTime = newTime;
-                setCurrentTime(newTime);
-            } else {
-                // Store as pending seek if no duration yet
-                setPendingSeekTime(newTime);
-                setCurrentTime(newTime * 100);
-            }
-        });
-    };
-
-    const handleTimelineClick = (e) => {
-        if (isDragging) return;
-
-        const newTime = calculateTimeFromPosition(getClientX(e));
-        const video = videoRef.current;
-
-        if (video && duration && duration > 0) {
-            video.currentTime = newTime;
-            setCurrentTime(newTime);
-        } else {
-            // Store as pending seek
-            setPendingSeekTime(newTime);
-            setCurrentTime(newTime * 100);
-        }
-    };
-
-    const handleTimelineDragEnd = () => {
-        setIsDragging(false);
-        setTimeout(() => setShowTimeline(false), 500);
-    };
-
-    useEffect(() => {
-        if (!isDragging) return;
-
-        const move = (e) => { e.preventDefault(); handleTimelineDrag(e); };
-        const up = () => handleTimelineDragEnd();
-
-        document.body.style.overflowX = "hidden";
-        document.addEventListener("mousemove", move, { passive: false });
-        document.addEventListener("mouseup", up);
-        document.addEventListener("touchmove", move, { passive: false });
-        document.addEventListener("touchend", up);
-
-        return () => {
-            document.body.style.overflowX = "";
-            document.removeEventListener("mousemove", move);
-            document.removeEventListener("mouseup", up);
-            document.removeEventListener("touchmove", move);
-            document.removeEventListener("touchend", up);
-        };
-    }, [isDragging]);
-
-
-
-    // Apply pending seek time when duration becomes available
-    useEffect(() => {
-        const video = videoRef.current;
-        if (!video || !duration || duration === 0 || pendingSeekTime === null) return;
-
-        // Convert stored percentage to actual time
-        const seekTime = pendingSeekTime <= 1 ? pendingSeekTime * duration : pendingSeekTime;
-        video.currentTime = seekTime;
-        setCurrentTime(seekTime);
-        setPendingSeekTime(null);
-
-    }, [duration, pendingSeekTime]);
-
-
-
-    useEffect(() => {
-        if (!isPlaying) {
-            clearInterval(progressIntervalRef.current);
-            return;
-        }
-
-        progressIntervalRef.current = setInterval(() => {
-            if (!isDragging && videoRef.current) {
-                setCurrentTime(videoRef.current.currentTime);
-            }
-        }, 100);
-
-        return () => clearInterval(progressIntervalRef.current);
-    }, [isPlaying, isDragging]);
-
-
-
-
+    }, [OnLoadedMetaData]);
 
 
     // CleanUp
     useEffect(() => {
         return () => {
-            clearInterval(progressIntervalRef.current);
             clearTimeout(controlsTimeoutRef.current);
-            cancelAnimationFrame(rafRef.current);
         };
     }, []);
 
-
-
-
-
-    const progressPercentage = duration && duration > 0
-        ? (currentTime / duration) * 100
-        : pendingSeekTime !== null
-            ? (pendingSeekTime * 100)
-            : 0;
 
     return (
         <div className="relative w-full h-full bg-black"
@@ -416,6 +298,7 @@ const InstagramStyledVideoPlayer = ({
 
             {/* Timeline */}
             <div
+                ref={progressBarRef}
                 className={`absolute left-0 right-0 z-10 flex items-center gap-1 px-2 py-4 ${isMainFeed ? 'bottom-12' : '-bottom-3'}`}
                 style={{
                     paddingBottom: `max(16px, env(safe-area-inset-bottom))`,
@@ -444,19 +327,31 @@ const InstagramStyledVideoPlayer = ({
                 {/* Timeline */}
                 <div
                     ref={timelineRef}
-                    onMouseEnter={() => setShowTimeline(true)}
-                    onMouseLeave={() => !isDragging && setShowTimeline(false)}
-                    onMouseDown={handleTimelineDragStart}
-                    onTouchStart={handleTimelineDragStart}
-                    onClick={handleTimelineClick}
+                    onPointerDown={onPointerDown}
                     className="relative flex-1 cursor-pointer select-none"
-                    style={{ padding: "12px 0" }}
+                    style={{
+                        padding: "16px 0",
+                        touchAction: 'none',
+                        WebkitUserSelect: 'none',
+                        WebkitTouchCallout: 'none',
+                    }}
                 >
-                    <div className="relative w-full">
+
+                    <div className="relative w-full"
+
+                        style={{
+                            padding: '0',
+                        }}
+                    >
                         <div className="w-full bg-white/30 rounded-full h-1.5">
                             <div
-                                className="h-full transition-all bg-white rounded-full"
-                                style={{ width: `${progressPercentage}%` }}
+                                className="h-full bg-white rounded-full"
+                                style={{
+                                    width: `${progress}%`,
+                                    transition: isDraggingRef.current
+                                        ? 'none'
+                                        : 'width 120ms linear',
+                                }}
                             />
                         </div>
                     </div>

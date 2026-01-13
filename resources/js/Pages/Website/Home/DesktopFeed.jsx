@@ -1040,10 +1040,13 @@ const DesktopFeed = ({
     // Arrows Destructuring From Arrow State
     const { isLeftDisabled, isRightDisabled, isTopDisabled, isBottomDisabled } = arrowStates;
 
+
     // TEXT ONLY POSTS
     if (feedGallery !== null && feedGallery?.type === 'posts' && isTextPost) {
         return (
-            <>
+            <div
+                className="fixed inset-0 z-[80] bg-backgroundLight dark:bg-backgroundDark"
+            >
                 {/* Modal Container */}
                 <div className="h-full mt-10 overflow-hidden">
                     <div className="relative mx-auto w-full max-w-[1300px] px-6 lg:px-[96px] xl:px-[120px]">
@@ -1052,7 +1055,7 @@ const DesktopFeed = ({
                         <button
                             onClick={handleLeftPrevious}
                             disabled={isLeftDisabled}
-                            className={`absolute left-[clamp(8px,3vw,10px)] top-1/2 z-[60] -translate-y-1/2 rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isLeftDisabled ? 'cursor-not-allowed opacity-20' : ''}`}
+                            className={`absolute left-[clamp(8px,3vw,24px)] top-1/2 z-[60] -translate-y-1/2 rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isLeftDisabled ? 'cursor-not-allowed opacity-20' : ''}`}
                             aria-label="Previous item"
                         >
                             <svg
@@ -1445,13 +1448,15 @@ const DesktopFeed = ({
                         </div>
                     </div>
                 </div>
-            </>
+            </div>
         );
     }
     // Non Text POSTS
     if (feedGallery !== null && feedGallery?.type === 'posts') {
         return (
-            <>
+            <div
+                className="fixed inset-0 z-[80] bg-backgroundLight dark:bg-backgroundDark"
+            >
                 {/* Modal Container */}
 
                 <div className="h-full mt-10 overflow-hidden">
@@ -1461,7 +1466,7 @@ const DesktopFeed = ({
                         <button
                             onClick={handleLeftPrevious}
                             disabled={isLeftDisabled}
-                            className={`absolute left-[clamp(8px,3vw,10px)] top-1/2 z-[60] -translate-y-1/2 rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isLeftDisabled ? 'cursor-not-allowed opacity-20' : ''}`}
+                            className={`absolute left-[clamp(8px,3vw,24px)] top-1/2 z-[60] -translate-y-1/2 rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isLeftDisabled ? 'cursor-not-allowed opacity-20' : ''}`}
                             aria-label="Previous item"
                         >
                             <svg
@@ -2172,14 +2177,16 @@ const DesktopFeed = ({
                         </div>
                     </div>
                 </div>
-            </>
+            </div>
         );
     }
 
     // Smartphones
     if (feedGallery !== null && feedGallery?.type === 'smartphones') {
         return (
-            <>
+            <div
+                className="fixed inset-0 z-[80] bg-backgroundLight dark:bg-backgroundDark"
+            >
                 {/* Modal Container */}
                 <div className="h-full mt-10 overflow-hidden">
                     <div className="relative mx-auto w-full max-w-[1300px] px-6 lg:px-[96px] xl:px-[120px]">
@@ -2188,7 +2195,7 @@ const DesktopFeed = ({
                         <button
                             onClick={handleLeftPrevious}
                             disabled={isLeftDisabled}
-                            className={`absolute left-[clamp(8px,3vw,10px)] top-1/2 z-[60] -translate-y-1/2 rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isLeftDisabled ? 'cursor-not-allowed opacity-20' : ''}`}
+                            className={`absolute left-[clamp(8px,3vw,24px)] top-1/2 z-[60] -translate-y-1/2 rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isLeftDisabled ? 'cursor-not-allowed opacity-20' : ''}`}
                             aria-label="Previous item"
                         >
                             <svg
@@ -3252,7 +3259,7 @@ const DesktopFeed = ({
                         </div>
                     </div>
                 </div>
-            </>
+            </div>
         );
     }
     return null;

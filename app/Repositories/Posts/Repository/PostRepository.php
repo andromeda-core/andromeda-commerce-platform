@@ -669,7 +669,7 @@ class PostRepository implements IPostRepository
         $show_posts = $request->boolean('show_posts', true);
 
         $page = $request->input('page', 1);
-        $perPage = 6;
+        $perPage = 10;
 
         $cacheTags = [
             'images:'.(int) $images,

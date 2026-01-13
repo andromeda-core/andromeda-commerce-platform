@@ -9,7 +9,7 @@ import { useFilterStore } from '@/Hooks/useFilterStore';
 import { useVideoStore } from '@/Hooks/useVideoStore';
 import { useHomeNavStore } from '@/Hooks/useHomeNavStore';
 import InstagramStyledVideoPlayer from '@/Components/InstagramStyledVideoPlayer';
-
+// import "@/Components/dubugOverlay";
 const MobileFeed = ({
     feed,
     feedGallery,
@@ -52,6 +52,10 @@ const MobileFeed = ({
     }, []);
 
 
+    const isIOS =
+        typeof window !== 'undefined' &&
+        /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
     // Local feed state for seamless looping
     const [localFeed, setLocalFeed] = useState([]);
 
@@ -61,6 +65,9 @@ const MobileFeed = ({
     const isFeedOpeningDirectlyRef = useRef(isFeedOpeningDirectly);
     const isMobileFeedGalleryOpenRef = useRef(MobileFeedGalleryOpen);
     const hasUserInteractedRef = useRef(false);
+
+
+
 
     // its for FEED ITEMS To TRACK WHIHC ITEMS LOADED OR WHICH ARENT To SHOW SKELETON
     const [loadedItems, setLoadedItems] = useState(new Set());
@@ -147,7 +154,7 @@ const MobileFeed = ({
     };
 
     // Helper Function to Render Feed Skeleton before Showing Actual Feed After Opening
-    const RenderFeedItemSkeleton = (index) => {
+    const RenderFeedItemSkeleton = ({ index }) => {
         return (
             <div
                 key={`skeleton-${index}`}
@@ -162,6 +169,9 @@ const MobileFeed = ({
                     userSelect: 'none',
                     WebkitUserSelect: 'none',
                     msUserSelect: 'none',
+                    contain: 'layout paint',
+                    backfaceVisibility: 'hidden',
+                    WebkitBackfaceVisibility: 'hidden',
                 }}
                 onTouchStart={(e) => e.preventDefault()}
                 onTouchMove={(e) => e.preventDefault()}
@@ -212,7 +222,13 @@ const MobileFeed = ({
     };
 
     // State And Effect For Tracking The height Of Feed Item To Adjust Window
-    const [feedItemHeight, setFeedItemHeight] = useState(window.innerHeight);
+    const [feedItemHeight, setFeedItemHeight] = useState(() => {
+        // On iOS, use visualViewport if available for accurate height
+        if (isIOS && window.visualViewport) {
+            return window.visualViewport.height;
+        }
+        return window.innerHeight;
+    });
 
 
     useEffect(() => {
@@ -372,7 +388,7 @@ const MobileFeed = ({
                         height: feedItemHeight,
                         scrollSnapAlign: 'start',
                         scrollSnapStop: 'always',
-                        contain: 'layout',
+                        contain: isIOS ? 'style' : 'layout',
                         willChange: 'transform',
                         margin: 0,
                         padding: 0,
@@ -381,6 +397,11 @@ const MobileFeed = ({
                         boxSizing: 'border-box',
                         overflow: 'hidden',
                         lineHeight: 0,
+                        ...(isIOS && {
+                            // iOS: Force explicit dimensions
+                            minHeight: feedItemHeight,
+                            maxHeight: feedItemHeight,
+                        }),
                     }}
                 >
                     {/* Header: Tag + Three Dots */}
@@ -1048,6 +1069,38 @@ const MobileFeed = ({
         return () => container.removeEventListener('mousedown', handleClick);
     }, [actionDropdownOpen]);
 
+
+    // Force Re-layout on IOS
+    useEffect(() => {
+        if (!isIOS) return;
+
+        // Force iOS to recalculate layout after mount
+        const forceLayout = () => {
+            const container = scrollContainerRef.current;
+            if (!container) return;
+
+            // Trigger reflow
+            void container.offsetHeight;
+
+            // Force repaint
+            container.style.transform = 'translateZ(0)';
+
+            requestAnimationFrame(() => {
+                // Ensure height is correct
+                const correctHeight = window.visualViewport?.height || window.innerHeight;
+                if (Math.abs(feedItemHeight - correctHeight) > 10) {
+                    setFeedItemHeight(correctHeight);
+                }
+            });
+        };
+
+        // Run immediately and after a safety delay
+        forceLayout();
+        const timeoutId = setTimeout(forceLayout, 100);
+
+        return () => clearTimeout(timeoutId);
+    }, [isIOS, feedItemHeight]);
+
     // Scroll to the currently selected feed item on mount or index change In Y Axis
     useEffect(() => {
         if (isYSuspendedRef.current) return;
@@ -1061,12 +1114,35 @@ const MobileFeed = ({
         const alignToIndex = () => {
             if (!container || hasInitializedScroll.current) return;
 
-            const itemHeight = container.firstElementChild?.offsetHeight || window.innerHeight;
+            // iOS: Wait for layout to stabilize
+            const itemHeight = isIOS
+                ? feedItemHeight
+                : (container.firstElementChild?.offsetHeight || window.innerHeight);
+
             const targetScroll = (feedIndex + 1) * itemHeight;
 
-            container.style.scrollBehavior = 'instant';
+            // iOS: Using 'auto' instead of 'instant'
+            container.style.scrollBehavior = isIOS ? 'auto' : 'instant';
+
+            // iOS: Force layout recalculation
+            if (isIOS) {
+                void container.offsetHeight;
+            }
 
             container.scrollTop = targetScroll;
+
+
+            // iOS: Verify scroll position was set
+            if (isIOS) {
+                requestAnimationFrame(() => {
+                    const currentScroll = container.scrollTop;
+                    if (Math.abs(currentScroll - targetScroll) > 10) {
+                        container.scrollTop = targetScroll;
+                    }
+                });
+            }
+
+
             hasInitializedScroll.current = true;
             setIsScrollCompleted(true);
 
@@ -1077,8 +1153,12 @@ const MobileFeed = ({
             rafCleanups.add(raf1);
         };
 
+
+        // iOS: extra delay for layout stabilization
+        const initialDelay = isIOS ? 150 : 0;
+
         const raf2 = requestAnimationFrame(() => {
-            const timeout = setTimeout(alignToIndex, 0);
+            const timeout = setTimeout(alignToIndex, initialDelay);
             timeoutCleanups.add(timeout);
         });
         rafCleanups.add(raf2);
@@ -1086,11 +1166,10 @@ const MobileFeed = ({
         return () => {
             rafCleanups.forEach((raf) => cancelAnimationFrame(raf));
             timeoutCleanups.forEach((timeout) => clearTimeout(timeout));
-
             rafCleanups.clear();
             timeoutCleanups.clear();
         }
-    }, []);
+    }, [feedIndex, feedItemHeight, isIOS]);
 
     // MODIFIED: Fallback X-axis alignment - only run for NEW rows
     useEffect(() => {
@@ -1187,7 +1266,6 @@ const MobileFeed = ({
 
         const scrollTick = () => {
             if (isLoopingRef.current) return;
-
             if (isMobileFeedGalleryOpenRef.current) {
                 return;
             }
@@ -1540,6 +1618,8 @@ const MobileFeed = ({
                         rowContainer.parentElement.style.scrollSnapType = 'none';
                         rowContainer.style.pointerEvents = 'none';
 
+                        void rowContainer.offsetHeight;
+
                         const target = itemWidth;
                         rowContainer.scrollLeft = target;
                         lastScrollLeft = target;
@@ -1564,9 +1644,28 @@ const MobileFeed = ({
                         const timeout1 = setTimeout(() => {
                             rowContainer.style.scrollSnapType = '';
                             rowContainer.parentElement.style.scrollSnapType = '';
-                            rowContainer.style.scrollBehavior = 'smooth';
-                            rowContainer.style.pointerEvents = '';
-                        }, 50);
+
+                            if (isIOS) {
+                                const currentPos = rowContainer.scrollLeft;
+                                const snapTarget = Math.round(currentPos / itemWidth) * itemWidth;
+                                if (Math.abs(currentPos - snapTarget) > 5) {
+                                    rowContainer.scrollLeft = snapTarget;
+                                }
+
+                                requestAnimationFrame(() => {
+                                    rowContainer.style.scrollBehavior = 'smooth';
+                                    rowContainer.style.pointerEvents = '';
+                                });
+                            } else {
+                                rowContainer.style.scrollBehavior = 'smooth';
+                                rowContainer.style.pointerEvents = '';
+                            }
+
+
+
+
+
+                        }, 100);
 
 
                         timeouts.add(timeout1);
@@ -1583,8 +1682,8 @@ const MobileFeed = ({
                 }
 
                 // LEFT LOOP (same for all feeds now)
-
                 if (SL <= leftLimit) {
+
                     lastLoopTime = now;
                     isXLoopingRef.current = true;
                     setIsXAxisLooping(true);
@@ -1823,32 +1922,35 @@ const MobileFeed = ({
             // Reset stateful memory holders
             setLoadedItems(new Set());
 
-
         };
     }, []);
 
-    const isIOS =
-        typeof window !== 'undefined' &&
-        /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
     return (
         <>
             {createPortal(
-                <div className="fixed inset-0 z-50 bg-backgroundLight text-main-text-light scrollbar-none dark:bg-backgroundDark dark:text-main-text-dark">
+                <div className="fixed inset-0 z-50 overflow-hidden bg-backgroundLight text-main-text-light scrollbar-none dark:bg-backgroundDark dark:text-main-text-dark"
+                >
                     {(!isScrollCompleted || isXAxisLooping) && <RenderFeedItemSkeleton index={0} />}
                     <div
-                        className="scrollbar-none"
+                        className={`${MobileFeedGalleryOpen ? 'overflow-hidden' : ''} scrollbar-none`}
                         ref={scrollContainerRef}
                         style={{
                             height: '100%',
-                            overflowY: 'scroll',
-                            scrollSnapType: 'y mandatory',
+                            overflowY: MobileFeedGalleryOpen ? 'hidden' : 'auto',
+                            scrollSnapType: MobileFeedGalleryOpen ? 'none' : 'y mandatory',
                             overscrollBehavior: 'contain',
                             WebkitOverflowScrolling: 'touch',
-                            willChange: 'transform',
+                            contain: isIOS ? 'style' : 'size layout style',
                             overflowX: 'hidden',
                             margin: 0,
                             padding: 0,
                             display: 'block',
+                            ...(isIOS && {
+                                transform: 'translateZ(0)',
+                                WebkitTransform: 'translateZ(0)',
+                                minHeight: '100%',
+                            }),
                         }}
                     >
                         {/* DUMMY Y Axis TOP CLONE */}
@@ -1877,8 +1979,13 @@ const MobileFeed = ({
                                     style={{
                                         height: feedItemHeight,
                                         contentVisibility: isIOS ? 'visible' : 'auto',
-                                        contain: isIOS ? 'none' : 'layout',
+                                        contain: isIOS ? 'style' : 'layout',
                                         willChange: 'scroll-position',
+                                        ...(isIOS && {
+                                            minHeight: feedItemHeight,
+                                            maxHeight: feedItemHeight,
+                                            position: 'relative',
+                                        }),
                                     }}
                                 >
                                     <div
@@ -1990,6 +2097,7 @@ const MobileFeed = ({
                     setShowInfoMessage={setShowInfoMessage}
                     setErrorMessage={setErrorMessage}
                     setShowErrorMessage={setShowErrorMessage}
+
                     __={__}
                 />
             )}

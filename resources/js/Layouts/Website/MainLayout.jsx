@@ -19,6 +19,8 @@ export default function MainLayout({ children }) {
     const { asset, generalSetting, flash, auth } = usePage().props;
     const { __ } = useTranslation();
 
+
+
     // Application Logo Sate With Default Images
     const [ApplicationLogoLight, setApplicationLogoLight] = useState(
         asset + 'assets/images/Logo/LightLogo.png',
@@ -169,7 +171,7 @@ export default function MainLayout({ children }) {
 
     return (
         <>
-            <div className="relative flex w-full min-h-screen bg-backgroundLight dark:bg-backgroundDark">
+            <div className="relative flex w-full h-screen overflow-hidden bg-backgroundLight dark:bg-backgroundDark">
                 <Preloader loaded={loaded} setLoaded={setLoaded} />
                 <AppStatusManager />
 
@@ -209,13 +211,14 @@ export default function MainLayout({ children }) {
 
                 {/* Main Content Area */}
                 <div
-                    className={`flex-1 min-h-screen transition-all duration-300 ${windowSize.width > 1024
+                    className={`flex-1 min-h-screen transition-all  duration-300 ${windowSize.width > 1024
                         ? 'ml-[240px]'
                         : 'ml-0'
                         }`}
                 >
                     {/* Main Content */}
-                    <main className="min-h-screen px-3 pt-2 bg-backgroundLight dark:bg-backgroundDark lg:px-6 xl:px-8">
+                    <main
+                        className="h-full px-3 pt-2 overflow-y-auto scrollbar-none bg-backgroundLight dark:bg-backgroundDark lg:px-6 xl:px-8">
 
                         {/* Activation Navigation Prompt Modal */}
                         {/* {needsActivation &&
