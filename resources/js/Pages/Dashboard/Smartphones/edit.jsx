@@ -212,9 +212,9 @@ export default function edit({ colors, model_names, capacities, categories, cond
                                                     itemKey={'name'}
                                                     Placeholder={'Select Colors'}
                                                     Required={true}
-                                                    Multiple={true}
+                                                    Multiple={false}
                                                     Action={(value) => {
-                                                        setData('color_ids', value);
+                                                        setData('color_ids', [value]);
                                                     }}
                                                 />
 

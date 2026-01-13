@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 import Toast from '@/Components/Toast';
@@ -719,11 +719,19 @@ function OrderItemsSummary({ cart_items, currency, __, addon_items, calculateImp
                             key={item.id}
                             className="flex gap-3 p-3 border rounded-md border-surface-3-light bg-surface-2-light dark:border-surface-3-dark dark:bg-surface-2-dark"
                         >
-                            <div className="flex items-center justify-center flex-shrink-0 w-20 h-20 overflow-hidden rounded-md bg-main-text-dark dark:bg-surface-2-dark">
+                            <div className="relative flex w-20 h-20 overflow-hidden transition-all border-2 rounded-md cursor-pointer itesm-center border-trasparent bg-surface-1-light group/img aspect-square dark:bg-surface-1-dark dark:hover:border-surface-3-dark"
+
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    router.get(route('home') + '?m-slug=' + item?.smartphone?.slug + '&single_page=true');
+                                }}
+                            >
                                 <img
                                     src={item?.smartphone?.smartphone_image_urls?.[0] || Placeholder}
                                     alt={item?.smartphone?.model_name?.name || __('Product')}
-                                    className="object-contain max-w-full max-h-full"
+                                    className="object-cover w-full h-full transition-transform duration-300 group-hover/img:scale-110"
+
                                     loading="lazy"
                                     onError={(e) => (e.target.src = Placeholder)}
                                 />

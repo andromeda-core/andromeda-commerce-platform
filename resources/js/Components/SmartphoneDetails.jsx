@@ -83,6 +83,9 @@ const SmartphoneDetails = ({ currency, product, StockBadge }) => {
 
             <div className="space-y-4">
                 {/* Country/Region */}
+                <DetailRow label={__("Mode/Product")} value={product?.name || "N/A"} />
+                <DetailRow label={__("Color")} value={product?.colors?.[0]?.name || "N/A"} />
+                <DetailRow label={__("Storage Size")} value={product?.capacity || "N/A"} />
                 <DetailRow label={__("Country/Region")} value={product?.country?.name || "N/A"} />
 
                 {/* Condition */}

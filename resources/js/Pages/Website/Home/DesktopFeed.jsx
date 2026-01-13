@@ -48,6 +48,7 @@ const DesktopFeed = ({
     const relatedFeedRef = useRef(relatedFeed || {});
     const viewableFeedRef = useRef([]);
     const viewableFeedRefIndex = useRef(0);
+    const productRightPanelScrollRef = useRef(null);
 
 
     const [isTextPost, setIsTextPost] = useState(false);
@@ -449,16 +450,19 @@ const DesktopFeed = ({
 
     // Cart Item Create Logic Of Frontend
 
+    // on feedGallery Change selecting Color For Smartphone
+    useEffect(() => {
+        if (!feedGallery || feedGallery.type !== 'smartphones') return;
+        if ((cartItemSmartphones.filter((a) => a.smartphone_id === feedGallery.id).length === 0)) {
+            setSelectedColor(feedGallery.colors[0].id);
+        }
+    }, [feedGallery]);
+
     // Smartphone Handling
     useEffect(() => {
         if (!feedGallery || feedGallery.type !== 'smartphones') return;
         if (!selectedColor) return;
-        if (isInCart) {
-            setInfoMessage(__('Please Remove Previous Item From Cart To Add New Item'));
-            setShowInfoMessage(true);
-            setSelectedColor('');
-            return;
-        }
+
         const color = feedGallery.colors?.find((c) => c.id === selectedColor);
 
         if (!color) return;
@@ -507,7 +511,7 @@ const DesktopFeed = ({
         }, 100);
 
         return () => clearTimeout(timer);
-    }, [selectedColor, isInCart]);
+    }, [selectedColor]);
 
     // Addon handling
     useEffect(() => {
@@ -521,6 +525,13 @@ const DesktopFeed = ({
             setSelectedAddon('');
             setInfoMessage(__('Please select any Product First'));
             setShowInfoMessage(true);
+            return;
+        }
+
+        if (cart_items?.some((item) => item?.smartphone_id === feedGallery.id)) {
+            setShowInfoMessage(true);
+            setInfoMessage(__('Please Remove Previous Item From Cart To Add New Item'));
+            setSelectedAddon('');
             return;
         }
 
@@ -698,6 +709,13 @@ const DesktopFeed = ({
 
     // Smartphone Quantity Increase Handling
     const handleSmartphoneIncrease = (id) => {
+
+        if (cart_items.some((smartphone) => smartphone.smartphone_id === feedGallery.id)) {
+            setShowInfoMessage(true);
+            setInfoMessage(__('Please Remove Previous Item From Cart To Add New Item'));
+            return;
+        };
+
         setCartItemSmartphones((prev) => {
             return prev.map((a) => {
                 if (a.color_id === id) {
@@ -723,6 +741,11 @@ const DesktopFeed = ({
                 .map((a) => {
                     if (a.color_id === id) {
                         const newQty = a.quantity - 1;
+
+                        if (newQty === 0) {
+                            return a;
+                        }
+
                         const unitPrice = Number(feedGallery.selling_info?.total_price || 0);
                         const previousTotal = Number(a.price || 0);
 
@@ -2459,7 +2482,9 @@ const DesktopFeed = ({
                                                 )}
 
                                             {/* Right Side - Content & Details */}
-                                            <div className="flex h-[90vh] w-full flex-col lg:w-[40%] xl:w-[45%]">
+                                            <div className="flex h-[90vh] w-full flex-col lg:w-[40%] xl:w-[45%]"
+
+                                            >
                                                 {/* Image Thumbnails Strip */}
                                                 <div className="flex items-center gap-0 pb-1">
                                                     {/* Prev indicator */}
@@ -2617,7 +2642,9 @@ const DesktopFeed = ({
                                                 </div>
 
                                                 {/* Content Area */}
-                                                <div className="flex-1 overflow-y-auto scrollbar-none">
+                                                <div className="flex-1 overflow-y-auto scrollbar-none"
+                                                    ref={productRightPanelScrollRef}
+                                                >
                                                     {/* Tag and Actions Header */}
                                                     <div className="flex items-center justify-between mb-2">
                                                         <div className="flex-1">
@@ -2759,19 +2786,10 @@ const DesktopFeed = ({
                                                             />
 
                                                             {/* Divider */}
-                                                            <div className="mt-1 h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
-                                                            <ProductSelectInput
-                                                                Name={'color'}
-                                                                Id={'color'}
-                                                                items={feedGallery?.colors}
-                                                                Value={selectedColor}
-                                                                itemKey={'name'}
-                                                                Placeholder={__('Color')}
-                                                                Action={(value) => {
-                                                                    setSelectedColor(value);
-                                                                }}
-                                                                customPlaceHolder={true}
-                                                            />
+                                                            {feedGallery?.addons?.length > 0 &&
+                                                                <div className="mt-1 h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
+                                                            }
+
 
                                                             {feedGallery?.addons?.length > 0 && (
                                                                 <ProductSelectInput
@@ -3246,6 +3264,7 @@ const DesktopFeed = ({
                                                                     isHtml={true}
                                                                     onToggle={setToggleAccordion}
                                                                     defaultOpen={toggleAccordion}
+                                                                    scrollContainerRef={productRightPanelScrollRef}
                                                                 />
                                                             </div>
                                                         </div>

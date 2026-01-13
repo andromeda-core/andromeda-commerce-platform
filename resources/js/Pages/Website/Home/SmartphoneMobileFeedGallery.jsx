@@ -32,6 +32,7 @@ const SmartphoneMobileGalleryModal = ({
     const actionDropdownRef = useRef(null);
     const thumbnailContainerRef = useRef(null);
     const scrollContainerRef = useRef(null);
+    const ThumbScrollContainerRef = useRef(null);
 
     // Handle Media scroll Smartphone Media
     const handleScroll = (e) => {
@@ -54,7 +55,7 @@ const SmartphoneMobileGalleryModal = ({
 
     const handleThumbnailClick = (index) => {
         setCurrentImageIndex(index);
-        const targetMainItem = scrollContainerRef.current?.children[index];
+        const targetMainItem = ThumbScrollContainerRef.current?.children[index];
         targetMainItem?.scrollIntoView({
             behavior: 'instant',
             block: 'nearest',
@@ -90,18 +91,21 @@ const SmartphoneMobileGalleryModal = ({
     // Checking Cart State
     const [isInCart, setIsInCart] = useState(false);
 
+    // on fEED Open selecting Color For Smartphone
+    useEffect(() => {
+        if (!smartphone || smartphone.type !== 'smartphones') return;
+        if ((cartItemSmartphones.length === 0)) {
+            setSelectedColor(smartphone.colors[0].id);
+        }
+    }, [smartphone]);
+
     // Cart Item Create Logic Of Frontend
 
     // Smartphone Handling
     useEffect(() => {
         if (!smartphone || smartphone.type !== 'smartphones') return;
         if (!selectedColor) return;
-        if (isInCart) {
-            setInfoMessage(__('Please Remove Previous Item From Cart To Add New Item'));
-            setShowInfoMessage(true);
-            setSelectedColor('');
-            return;
-        }
+
         const color = smartphone.colors?.find((c) => c.id === selectedColor);
 
         if (!color) return;
@@ -148,7 +152,7 @@ const SmartphoneMobileGalleryModal = ({
         }, 100);
 
         return () => clearTimeout(timer);
-    }, [selectedColor, isInCart]);
+    }, [selectedColor]);
 
     // Addon handling
     useEffect(() => {
@@ -161,6 +165,14 @@ const SmartphoneMobileGalleryModal = ({
             setSelectedAddon('');
             setInfoMessage(__('Please select any Product First'));
             setShowInfoMessage(true);
+            return;
+        }
+
+
+        if (cart_items?.some((item) => item?.smartphone_id === smartphone.id)) {
+            setShowInfoMessage(true);
+            setInfoMessage(__('Please Remove Previous Item From Cart To Add New Item'));
+            setSelectedAddon('');
             return;
         }
 
@@ -334,6 +346,12 @@ const SmartphoneMobileGalleryModal = ({
 
     // Smartphone Quantity Increase Handling
     const handleSmartphoneIncrease = (id) => {
+        if (cart_items.some((item) => item.smartphone_id === smartphone.id)) {
+            setShowInfoMessage(true);
+            setInfoMessage(__('Please Remove Previous Item From Cart To Add New Item'));
+            return;
+        };
+
         setCartItemSmartphones((prev) => {
             return prev.map((a) => {
                 if (a.color_id === id) {
@@ -359,6 +377,11 @@ const SmartphoneMobileGalleryModal = ({
                 .map((a) => {
                     if (a.color_id === id) {
                         const newQty = a.quantity - 1;
+
+                        if (newQty === 0) {
+                            return a;
+                        }
+
                         const unitPrice = Number(smartphone.selling_info?.total_price || 0);
                         const previousTotal = Number(a.price || 0);
 
@@ -760,12 +783,14 @@ const SmartphoneMobileGalleryModal = ({
                         </div>
                     </div>
 
-                    <div className="flex-1 px-8 overflow-y-auto scrollbar-none">
+                    <div className="flex-1 px-8 overflow-y-auto scrollbar-none"
+                        ref={scrollContainerRef}
+                    >
                         {smartphone?.images?.length > 0 && (
                             <div className="relative mb-4 overflow-hidden">
                                 {/* Horizontal Scroll Container - Swipeable */}
                                 <div
-                                    ref={scrollContainerRef}
+                                    ref={ThumbScrollContainerRef}
                                     onScroll={handleScroll}
                                     className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none"
                                     style={{
@@ -849,19 +874,10 @@ const SmartphoneMobileGalleryModal = ({
                                     />
 
                                     {/* Divider */}
-                                    <div className="mt-1 h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
-                                    <ProductSelectInput
-                                        Name={'color'}
-                                        Id={'color'}
-                                        items={smartphone?.colors}
-                                        Value={selectedColor}
-                                        itemKey={'name'}
-                                        Placeholder={'Color'}
-                                        Action={(value) => {
-                                            setSelectedColor(value);
-                                        }}
-                                        customPlaceHolder={true}
-                                    />
+                                    {smartphone?.addons?.length > 0 &&
+                                        <div className="mt-1 h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
+                                    }
+
 
                                     {smartphone?.addons?.length > 0 && (
                                         <ProductSelectInput
@@ -1211,6 +1227,7 @@ const SmartphoneMobileGalleryModal = ({
                                             isHtml={true}
                                             onToggle={setToggleAccordion}
                                             defaultOpen={toggleAccordion}
+                                            scrollContainerRef={scrollContainerRef}
                                         />
                                     </div>
                                 </div>

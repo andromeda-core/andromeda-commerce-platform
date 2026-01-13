@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 import Toast from '@/Components/Toast';
 import axios from 'axios';
-
 import Spinner from '@/Components/Spinner';
 import { useTranslation } from '@/Hooks/useTranslation';
 

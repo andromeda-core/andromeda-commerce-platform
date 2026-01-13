@@ -482,6 +482,9 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Bitcoin', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Return Policy', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'We ship internationally. Please review the terms below before placing an order, as return eligibility and fees may vary by destination.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Mode/Product', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Storage Size', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Color', 'created_at' => $now, 'updated_at' => $now],
 
             // Backend
             ['key' => 'Profile Updated Successfully', 'created_at' => $now, 'updated_at' => $now],

@@ -5,7 +5,8 @@ const Accordion = ({
     content,
     isHtml = false,
     defaultOpen = false,
-    onToggle = null
+    onToggle = null,
+    scrollContainerRef = null,
 }) => {
     const [isOpen, setIsOpen] = useState(defaultOpen);
 
@@ -20,14 +21,30 @@ const Accordion = ({
 
 
     useEffect(() => {
-        if (isOpen && accordionRef.current) {
-            accordionRef.current.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start',
-            });
-        }
-    }, [isOpen]);
+        if (!isOpen) return;
+        if (!accordionRef.current) return;
+        if (!scrollContainerRef?.current) return;
 
+        const container = scrollContainerRef.current;
+        const accordionEl = accordionRef.current;
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                const containerRect = container.getBoundingClientRect();
+                const accordionRect = accordionEl.getBoundingClientRect();
+
+                const offset =
+                    accordionRect.top -
+                    containerRect.top +
+                    container.scrollTop;
+
+                container.scrollTo({
+                    top: offset - 12,
+                    behavior: 'smooth',
+                });
+            });
+        });
+    }, [isOpen]);
     return (
         <div className={isOpen ? 'w-full border-b border-[#c8c8c8] dark:border-surface-3-dark' : ''}>
             {/* Accordion Header */}

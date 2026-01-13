@@ -666,22 +666,7 @@ Route::get('/pwa-manifest', function () {
     $general_setting = Cache::get('general_config');
 
     $name = $general_setting->app_name ?? config('app.name');
-    // $shortName = null;
-    // if (str_contains($name, ' ')) {
-    //     // Name contains spaces → take first letter of each word
-    //     $shortName = collect(explode(' ', $name))
-    //         ->filter() // remove empty values
-    //         ->map(fn ($word) => strtoupper(substr($word, 0, 1)))
-    //         ->join('');
-    // } else {
-    //     // No spaces → take all capital letters (e.g., Andromeda → A)
-    //     preg_match_all('/[A-Z]/', $name, $matches);
-    //     $shortName = ! empty($matches[0])
-    //         ? implode('', $matches[0])
-    //         : strtoupper(substr($name, 0, 3));
-    // }
 
-    $logo = $general_setting?->app_main_logo_dark ?? asset('assets/images/Logo/DarkLogo.png');
     $pwaLogo = $general_setting?->app_pwa_logo ?? null;
 
     $themeColor = '#FFFFFF';
