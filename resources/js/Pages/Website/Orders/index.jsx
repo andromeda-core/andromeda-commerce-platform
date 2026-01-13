@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 import Toast from '@/Components/Toast';
@@ -377,6 +377,9 @@ function OrderCard({ order, currency, __ }) {
     };
 
     const displayImages = order.order_items?.slice(0, 4) || [];
+
+
+
     const remainingCount = (order.order_items?.length || 0) - 4;
 
     return (
@@ -515,6 +518,7 @@ function OrderCard({ order, currency, __ }) {
                             <div
                                 key={item.id}
                                 className="relative overflow-hidden transition-all border-2 rounded-md border-trasparent bg-surface-1-light group/img aspect-square dark:bg-surface-1-dark dark:hover:border-surface-3-dark"
+
                             >
                                 <img
                                     src={

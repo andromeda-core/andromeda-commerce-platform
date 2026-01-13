@@ -456,14 +456,21 @@ export default function OrderView({ order }) {
                                                 >
 
                                                     {/* IMAGE */}
-                                                    <div className="flex items-center justify-center flex-shrink-0 w-24 h-24 overflow-hidden rounded-md bg-surface-3-light dark:bg-surface-3-dark">
+                                                    <div className="relative w-24 h-24 overflow-hidden transition-all border-2 rounded-md cursor-pointer border-trasparent bg-surface-1-light group/img aspect-square dark:bg-surface-1-dark dark:hover:border-surface-3-dark"
+
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            router.get(route('home') + '?m-slug=' + item?.smartphone?.slug + '&single_page=true');
+                                                        }}
+                                                    >
                                                         <img
                                                             src={
                                                                 item?.smartphone?.smartphone_image_urls?.[0] ||
                                                                 Placeholder
                                                             }
                                                             alt={item?.smartphone?.model_name?.name}
-                                                            className="object-cover w-full h-full"
+                                                            className="object-cover w-full h-full transition-transform duration-300 group-hover/img:scale-110"
                                                             loading="lazy"
                                                             onError={(e) => (e.target.src = Placeholder)}
                                                         />
