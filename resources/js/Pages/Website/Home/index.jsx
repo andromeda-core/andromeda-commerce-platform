@@ -25,6 +25,14 @@ const index = () => {
     // Translation Hook
     const { __ } = useTranslation();
 
+
+    // Device Recognizer
+    const isMac =
+        typeof window !== 'undefined' &&
+        /Macintosh/i.test(navigator.userAgent) &&
+        navigator.maxTouchPoints === 0;
+
+
     const [ErrorMessage, setErrorMessage] = useState(null);
     const [showErrorMessage, setShowErrorMessage] = useState(false);
 
@@ -1000,7 +1008,7 @@ const index = () => {
                         <div className="mx-auto max-w-8xl sm:px-6 lg:px-8"
                         >
 
-                            <div className="gap-2 columns-2 sm:columns-2 md:columns-3 lg:columns-3 xl:columns-4">
+                            <div className={`gap-2 columns-2 sm:columns-2 md:columns-3 ${feed.length <= 2 ? 'lg:columns-2 xl:columns-2' : (isMac ? 'lg:columns-3 xl:columns-4' : 'lg:columns-4 xl:columns-5')}`}>
                                 {feed.map((item, index) => (
                                     <MasonryFeedItem
                                         key={`${item.type}-${item.id}`}

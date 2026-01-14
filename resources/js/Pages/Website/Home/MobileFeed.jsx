@@ -44,6 +44,7 @@ const MobileFeed = ({
     setErrorMessage,
     setShowErrorMessage,
     windowSize,
+
     __,
 }) => {
     useEffect(() => {
@@ -54,7 +55,11 @@ const MobileFeed = ({
 
     const isIOS =
         typeof window !== 'undefined' &&
-        /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        (
+            /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+        );
+
 
     // Local feed state for seamless looping
     const [localFeed, setLocalFeed] = useState([]);
