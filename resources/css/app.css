@@ -463,21 +463,21 @@ video.feed-video::-webkit-media-controls {
     .feed-page {
         height: -webkit-fill-available !important;
     }
+}
 
-    /* Safari masonry fix  */
-    [class*='columns-'] {
-        -webkit-column-break-inside: avoid;
-    }
+/* Safari masonry fix  */
+[class*='columns-'] {
+    -webkit-column-break-inside: avoid !important;
+}
 
-    [class*='columns-'] > article {
-        display: inline-block;
-        width: 100%;
-        vertical-align: top;
-    }
+[class*='columns-'] > article {
+    display: block;
+    width: 100%;
+    vertical-align: top;
+}
 
-    [class*='columns-'] img {
-        display: block !important;
-        width: 100% !important;
-        height: auto !important;
-    }
+[class*='columns-'] img {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
 }
