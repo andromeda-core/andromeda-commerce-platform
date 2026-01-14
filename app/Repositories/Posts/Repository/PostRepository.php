@@ -784,7 +784,7 @@ class PostRepository implements IPostRepository
 
                 $relatedSmartphones = collect();
 
-                if ($show_products && ! blank($allHashtags)) {
+                if ($show_products && ! blank($allHashtags) && $images) {
                     $relatedSmartphones = $this->smartphone
                         ->whereNotNull('slug')
                         ->whereHas('selling_info')
@@ -855,7 +855,7 @@ class PostRepository implements IPostRepository
 
             }
 
-            if ($show_products) {
+            if ($show_products && $images) {
                 $smartphones = $this->smartphone
                     ->with([
                         'model_name:id,name',
@@ -1168,7 +1168,7 @@ class PostRepository implements IPostRepository
                 $hasMore = $hasMore || ($related_posts->count() === $perPage);
             }
 
-            if ($show_products && ! empty($hashtag)) {
+            if ($show_products && ! empty($hashtag) && $images) {
                 $related_smartphones = $this->smartphone
                     ->when(! empty($smartphone), function ($subQuery) use ($smartphone) {
                         $subQuery->where('id', '!=', $smartphone->id);
@@ -1335,7 +1335,7 @@ class PostRepository implements IPostRepository
                 $hasMore = $hasMore || ($posts->count() === $perPage);
             }
 
-            if ($show_products) {
+            if ($show_products && $images) {
                 $smartphones = $this->smartphone
                     ->where('tag', $hashtag)
                     ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug'])

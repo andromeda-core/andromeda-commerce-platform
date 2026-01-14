@@ -423,7 +423,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
 
             }
 
-            if (isset($post_preferences['show_products']) && $post_preferences['show_products'] == true && ! empty($query)) {
+            if (isset($post_preferences['show_products']) && $post_preferences['show_products'] == true && ! empty($query) && isset($post_preferences['images']) && $post_preferences['images'] == true) {
                 if (isset($post_filters['address']) && blank($post_filters['address']['lat']) && blank($post_filters['address']['lng'])) {
                     $smartphones = $this->smartphone::query();
 

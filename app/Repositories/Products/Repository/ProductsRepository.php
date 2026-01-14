@@ -26,7 +26,7 @@ class ProductsRepository implements IProductsRepository
             $images = $request->boolean('images', true);
             $videos = $request->boolean('videos', true);
 
-            if ($show_products) {
+            if ($show_products && $images) {
                 $smartphone = $this->smartphone
                     ->with(['model_name', 'capacity', 'selling_info', 'selling_info.shipping_fee', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug'])
                     ->withCount([

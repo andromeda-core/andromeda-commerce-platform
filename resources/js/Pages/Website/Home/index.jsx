@@ -852,7 +852,7 @@ const index = () => {
             const url = new URL(window.location.href);
             const modalValue = url.searchParams.get('modal');
 
-            if (modalValue === 'filter') {
+            if (modalValue === 'global-filters') {
                 window.history.replaceState({}, '', window.location.pathname);
                 return true;
             }
