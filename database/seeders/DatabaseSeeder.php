@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
             // PermissionSeeder::class,
             // PostSeeder::class,
             // LanguageSeeder::class,
-            // TranslationKeysSeeder::class,
+            TranslationKeysSeeder::class,
         ]);
     }
 }
