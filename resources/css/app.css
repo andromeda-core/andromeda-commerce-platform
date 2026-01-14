@@ -171,7 +171,7 @@
 
     /* Menu Item Inactive State */
     .menu-item-inactive {
-        @apply font-medium text-black hover:bg-sidebar-hover-light dark:text-white dark:hover:bg-surface-2-dark;
+        @apply font-medium text-black dark:text-white lg:hover:bg-sidebar-hover-light lg:dark:hover:bg-surface-2-dark;
     }
 
     .menu-sub-item-active {
@@ -180,11 +180,11 @@
 
     /* Menu Item Inactive State */
     .menu-sub-item-inactive {
-        @apply font-normal text-sub-text-light hover:bg-sidebar-hover-light dark:text-sub-text-dark dark:hover:bg-surface-2-dark;
+        @apply font-normal text-sub-text-light dark:text-sub-text-dark lg:hover:bg-sidebar-hover-light lg:dark:hover:bg-surface-2-dark;
     }
 
     .logout-menu-item-button {
-        @apply font-normal text-sub-text-light hover:bg-red-600/90 hover:text-white dark:text-sub-text-dark dark:hover:bg-red-600/90 dark:hover:text-white;
+        @apply font-normal text-sub-text-light dark:text-sub-text-dark lg:hover:bg-red-600/90 lg:hover:text-white lg:dark:hover:bg-red-600/90 lg:dark:hover:text-white;
     }
 
     /* Menu Item Icon Active State */

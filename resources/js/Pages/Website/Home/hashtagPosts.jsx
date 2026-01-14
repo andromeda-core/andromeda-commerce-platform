@@ -38,7 +38,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width, __,
                     }
                 }
                 }
-                className="flex flex-wrap items-center gap-4 p-1 py-4 transition-colors rounded-md cursor-pointer group no-touch-hover hover:bg-surface-2-light dark:hover:bg-surface-2-dark"
+                className="flex flex-wrap items-center gap-4 p-1 py-4 transition-colors rounded-md cursor-pointer group no-touch-hover lg:hover:bg-surface-2-light lg:dark:hover:bg-surface-2-dark"
             >
                 {/* Thumbnail */}
                 <div className="flex-shrink-0 w-12 h-12 overflow-hidden rounded-lg bg-surface-1-light dark:bg-surface-1-dark">
@@ -87,7 +87,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width, __,
                 <div className="flex items-center flex-shrink-0 gap-2 mr-5 transition-opacity duration-200 opacity-100 lg:opacity-0 group-hover:opacity-100">
                     <button
                         title={__('Copy Link')}
-                        className="p-4 rounded-full hover:bg-surface-3-light text-main-text-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                        className="p-4 rounded-full lg:hover:bg-surface-3-light text-main-text-light dark:text-main-text-dark lg:dark:hover:bg-surface-3-dark"
                         onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
