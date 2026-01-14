@@ -471,7 +471,7 @@ const MobileFeed = ({
                                                 setShowQrCode(true);
                                                 setActionDropdownOpen(null);
                                             }}
-                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark "
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -528,7 +528,7 @@ const MobileFeed = ({
                                                                 },
                                                             );
                                                         }}
-                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark "
                                                     >
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
@@ -573,7 +573,7 @@ const MobileFeed = ({
                                                         setLinkCopied(true);
                                                         setActionDropdownOpen(null);
                                                     }}
-                                                    className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                    className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark "
                                                 >
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -593,7 +593,7 @@ const MobileFeed = ({
                                                 </button>
 
                                                 <button
-                                                    className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                    className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark "
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         setAutoplay(!videoAutoplay);
@@ -646,7 +646,7 @@ const MobileFeed = ({
                                                     setLinkCopied(true);
                                                     setActionDropdownOpen(null);
                                                 }}
-                                                className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark "
                                             >
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"

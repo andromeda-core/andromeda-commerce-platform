@@ -154,27 +154,34 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                     <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
                         <button
                             onClick={() => navigateToHashtag(post.tag)}
-                            className="font-medium text-md text-main-text-light dark:text-main-text-dark"
+                            className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark"
+
                         >
                             {post.tag}
                         </button>
                         <div className="relative" ref={actionDropdownRef}>
+
+
                             <button
-                                onClick={() => setActionDropdownOpen(!actionDropdownOpen)}
                                 className="text-main-text-light dark:text-main-text-dark"
+                                onClick={() => setActionDropdownOpen(!actionDropdownOpen)}
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                     viewBox="0 0 24 24"
-                                    strokeWidth={1.5}
+                                    strokeWidth={2.5}
                                     stroke="currentColor"
-                                    className="w-7 h-7"
+                                    className="h-7 w-7"
                                 >
                                     <path
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
-                                        d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
+                                        d="
+      M3.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+      M12 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+      M20.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+    "
                                     />
                                 </svg>
                             </button>
@@ -187,7 +194,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                                 setShowQrCode(true);
                                                 setActionDropdownOpen(null);
                                             }}
-                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -219,7 +226,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                                 setLinkCopied(true);
                                                 setActionDropdownOpen(null);
                                             }}
-                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
