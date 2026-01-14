@@ -224,7 +224,7 @@
 
     /* Menu Dropdown Item Inactive State */
     .menu-dropdown-item-inactive {
-        @apply text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5;
+        @apply text-gray-700 dark:text-gray-300 lg:hover:bg-gray-100 lg:dark:hover:bg-white/5;
     }
 
     /* Menu Dropdown Badge */
