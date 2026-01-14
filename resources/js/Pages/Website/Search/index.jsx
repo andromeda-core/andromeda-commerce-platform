@@ -542,14 +542,28 @@ const Index = ({
             });
 
             if (result.isConfirmed) {
+
+                if (observersRef.current.loader) {
+                    observersRef.current.loader.disconnect();
+                }
+
                 updateState({ searchHistoryLoading: true });
                 const res = await axios.delete(
                     route('website.global-search.search-history-destroy', { id })
                 );
 
                 if (res.data.status) {
+
+
                     setState(prev => {
                         const updatedHistories = prev.searchHistories.filter(h => h.id !== id);
+                        if (updatedHistories.length === 0) {
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 50);
+                            return prev;
+                        }
+
                         const newCache = { ...prev.historyResultsCache };
                         delete newCache[id];
 
@@ -566,6 +580,8 @@ const Index = ({
 
                         return { ...prev, ...updates };
                     });
+
+
 
                     if (state.activeTab === id && state.historyResults.length === 0) {
                         fetchHistoryResults();
