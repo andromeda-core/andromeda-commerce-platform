@@ -40,6 +40,7 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
             videos: true,
             show_posts: true,
             show_products: true,
+            video_autoplay: false,
         };
 
         if (!cookieValue || cookieValue === 'null' || cookieValue === 'undefined') {
@@ -65,6 +66,12 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                     typeof parsed.show_products === 'boolean'
                         ? parsed.show_products
                         : defaults.show_products,
+
+
+                video_autoplay:
+                    typeof parsed.video_autoplay === 'boolean'
+                        ? parsed.video_autoplay
+                        : defaults.video_autoplay,
             };
         } catch (error) {
             console.warn("⚠️" + __('Invalid post_preferences cookie. Using defaults.'), error);
@@ -311,7 +318,7 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                         </div>
 
                         {/* VISIBILITY FILTER Section */}
-                        <div className="px-5 py-6 bg-backgroundLight dark:bg-backgroundDark">
+                        <div className="px-5 py-6 border-b border-surface-1-light bg-backgroundLight dark:border-surface-3-dark dark:bg-backgroundDark">
                             <h2 className="mb-5 text-xs font-semibold text-sub-text-light dark:text-sub-text-dark">
                                 {__('Visibility Filters')}
                             </h2>
@@ -358,6 +365,38 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                             </div>
                         </div>
 
+
+                        {/* Video Auto Play FILTER Section */}
+                        <div className="px-5 py-6">
+                            <h2 className="mb-6 text-xs font-semibold text-sub-text-light dark:text-sub-text-dark">
+                                {__('Video AutoPlay Filter')}
+                            </h2>
+
+                            <div className="space-y-5">
+                                {/* Auto Play Filter */}
+                                <div className="flex items-center justify-between">
+                                    <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
+                                        {__('Autoplay')}
+                                    </span>
+                                    <label className="relative inline-flex items-center cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            className="sr-only peer"
+                                            checked={filters.video_autoplay}
+                                            onChange={(e) =>
+                                                handleFilterChange(
+                                                    'video_autoplay',
+                                                    e.target.checked,
+                                                )
+                                            }
+                                        />
+                                        <div className="h-5 w-9 rounded-full bg-gray-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-black peer-checked:after:translate-x-4 dark:bg-[#646464] dark:after:bg-[#1e1e1e] dark:peer-checked:bg-[#e1e1e1]" />
+                                    </label>
+                                </div>
+
+
+                            </div>
+                        </div>
                         {/* Apply Button - Mobile */}
                         <div className="w-1/2 m-auto my-6">
                             <button
@@ -467,7 +506,7 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                             </div>
 
                             {/* VISIBILITY FILTER Section */}
-                            <div className="px-8 py-6">
+                            <div className="px-8 py-6 pb-4 border-b border-surface-3-light dark:border-surface-3-dark">
                                 <h2 className="mb-6 text-xs font-semibold text-sub-text-light dark:text-sub-text-dark">
                                     {__('Visibility Filters')}
                                 </h2>
@@ -514,6 +553,40 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                                             <div className="h-5 w-9 rounded-full bg-gray-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-black peer-checked:after:translate-x-4 dark:bg-[#646464] dark:after:bg-[#1e1e1e] dark:peer-checked:bg-[#e1e1e1]" />
                                         </label>
                                     </div>
+                                </div>
+                            </div>
+
+
+
+                            {/* Video Auto Play FILTER Section */}
+                            <div className="px-8 py-6">
+                                <h2 className="mb-6 text-xs font-semibold text-sub-text-light dark:text-sub-text-dark">
+                                    {__('Video AutoPlay Filter')}
+                                </h2>
+
+                                <div className="space-y-5">
+                                    {/* Auto Play Filter */}
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
+                                            {__('Autoplay')}
+                                        </span>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                className="sr-only peer"
+                                                checked={filters.video_autoplay}
+                                                onChange={(e) =>
+                                                    handleFilterChange(
+                                                        'video_autoplay',
+                                                        e.target.checked,
+                                                    )
+                                                }
+                                            />
+                                            <div className="h-5 w-9 rounded-full bg-gray-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-black peer-checked:after:translate-x-4 dark:bg-[#646464] dark:after:bg-[#1e1e1e] dark:peer-checked:bg-[#e1e1e1]" />
+                                        </label>
+                                    </div>
+
+
                                 </div>
                             </div>
                         </div>

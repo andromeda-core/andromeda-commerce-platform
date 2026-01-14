@@ -485,6 +485,8 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Mode/Product', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Storage Size', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Color', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Video AutoPlay Filter', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Autoplay', 'created_at' => $now, 'updated_at' => $now],
 
             // Backend
             ['key' => 'Profile Updated Successfully', 'created_at' => $now, 'updated_at' => $now],

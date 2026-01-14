@@ -11,6 +11,7 @@ const VideoWithThumbnail = ({
     videoElementRef,
     Preload = 'metadata',
     thumbnail,
+    autoplay = false,
 }) => {
 
     const containerRef = useRef(null);
@@ -51,7 +52,7 @@ const VideoWithThumbnail = ({
                     videoUrl={videoUrl}
                     thumbnail={thumbnail}
                     className={className}
-                    autoPlay={false}
+                    autoPlay={autoplay}
                     videoElementRef={handleVideoElementRef}
                     OnLoadedMetaData={OnLoadedMetaData}
                     Preload={Preload}

@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import SunSpinner from './SunSpinner';
 import { useTranslation } from '@/Hooks/useTranslation';
+import { useVideoStore } from '@/Hooks/useVideoStore';
 
 export default function CustomizedVideoPlayer({
     videoUrl,
@@ -11,7 +12,12 @@ export default function CustomizedVideoPlayer({
     loaded,
     OnLoadedMetaData,
     Preload,
+    slug,
 }) {
+
+    const instanceId = useMemo(() => {
+        return `${slug}-${videoUrl}`;
+    }, [slug, videoUrl]);
 
     const { __ } = useTranslation();
 
@@ -19,8 +25,9 @@ export default function CustomizedVideoPlayer({
     const containerRef = useRef(null);
     const controlsRef = useRef(null);
     const progressBarRef = useRef(null);
-
-
+    const isAutoPlayingRef = useRef(false);
+    const playVerifyTimerRef = useRef(null);
+    const previousSlugRef = useRef(null);
 
     const [isMuted, setIsMuted] = useState(autoPlay ? true : false);
     const [showVolumeSlider, setShowVolumeSlider] = useState(false);
@@ -41,7 +48,176 @@ export default function CustomizedVideoPlayer({
 
     const [showActions, setShowActions] = useState(false);
 
-    // event listener for force pause
+    /* -------------------- STORE -------------------- */
+    const registerVideo = useVideoStore(s => s.registerVideo);
+    const unregisterVideo = useVideoStore(s => s.unregisterVideo);
+
+    /* -------------------- AUTOPLAY HANDLER -------------------- */
+    const attemptAutoPlay = async () => {
+        const video = videoRef.current;
+        if (!video || !autoPlay) {
+            return;
+        }
+
+
+        isAutoPlayingRef.current = true;
+
+        try {
+            // Reset video state
+            video.currentTime = 0;
+            video.muted = true;
+            video.playsInline = true;
+            video.setAttribute('playsinline', '');
+
+            setIsMuted(true);
+            setIsPlaying(false);
+            setHasEnded(false);
+            setProgress(0);
+            setCurrentTime(0);
+
+            // Wait for video to be ready
+            await new Promise((resolve) => {
+                if (video.readyState >= 2) {
+                    resolve();
+                } else {
+                    video.addEventListener('loadeddata', resolve, { once: true });
+                    setTimeout(resolve, 1000); // Fallback
+                }
+            });
+
+            // Attempt play
+            await video.play();
+
+
+            // Verify playback started
+            setTimeout(() => {
+                if (video && !video.paused && !video.ended) {
+                    setIsPlaying(true);
+
+                } else {
+                    setIsPlaying(false);
+                    console.error('[AutoPlay] Playback failed for:', slug);
+                }
+            }, 150);
+
+        } catch (error) {
+            console.error('[AutoPlay] Failed for', slug, ':', error.name, error.message);
+            setIsPlaying(false);
+        } finally {
+            setTimeout(() => {
+                isAutoPlayingRef.current = false;
+            }, 500);
+        }
+    };
+
+    /* -------------------- REGISTER PLAYER -------------------- */
+    const playerMethodsRef = useRef({
+        play: async () => {
+            const video = videoRef.current;
+            if (!video) return;
+
+            try {
+                video.playsInline = true;
+                video.setAttribute('playsinline', '');
+                await video.play();
+            } catch (e) {
+                if (e.name === 'NotAllowedError') {
+                    video.muted = true;
+                    setIsMuted(true);
+                    await video.play();
+                }
+            }
+        },
+        pause: () => videoRef.current?.pause(),
+        getElement: () => videoRef.current,
+        isPaused: () => !videoRef.current || videoRef.current.paused,
+        getSlug: () => slug,
+        getInstanceId: () => instanceId,
+    });
+
+    /* -------------------- SLUG CHANGE HANDLER - UNREGISTER OLD, REGISTER NEW -------------------- */
+    useEffect(() => {
+
+        if (!autoPlay) return;
+
+        const currentSlug = slug;
+        const previousSlug = previousSlugRef.current;
+
+
+        // Agar slug change hua hai
+        if (previousSlug !== null && previousSlug !== currentSlug && autoPlay) {
+            // Old video ko unregister karo
+            const oldInstanceId = `${previousSlug}-${videoUrl}`;
+            unregisterVideo(oldInstanceId);
+
+            // Pause old video if exists
+            const video = videoRef.current;
+            if (video) {
+                video.pause();
+                video.currentTime = 0;
+            }
+        }
+
+        // Update previous slug reference
+        previousSlugRef.current = currentSlug;
+
+        // Reset state for new video
+        isAutoPlayingRef.current = false;
+        setIsPlaying(false);
+        setHasEnded(false);
+        setProgress(0);
+        setCurrentTime(0);
+        setShowControls(true);
+        setIsMuted(autoPlay ? true : false);
+
+        // Cleanup timers
+        clearTimeout(playVerifyTimerRef.current);
+        clearTimeout(hideTimeout.current);
+
+        // Register new video
+        if (autoPlay) {
+            registerVideo(instanceId, playerMethodsRef.current);
+        }
+
+        // Cleanup on unmount
+        return () => {
+            if (autoPlay) {
+                unregisterVideo(instanceId);
+            }
+        };
+    }, [slug, instanceId, videoUrl, autoPlay]);
+
+    /* -------------------- AUTOPLAY TRIGGER -------------------- */
+    useEffect(() => {
+
+        const video = videoRef.current;
+        if (!video || !autoPlay) {
+            return;
+        }
+
+        if (!autoPlay) {
+            // Ensure video is paused and shows thumbnail
+            if (video) {
+                video.pause();
+                video.currentTime = 0;
+            }
+            return;
+        }
+
+
+
+        // Small delay to ensure video element is fully ready
+        const timer = setTimeout(() => {
+            attemptAutoPlay();
+        }, 150);
+
+        return () => {
+            clearTimeout(timer);
+        };
+    }, [slug, autoPlay]);
+
+    /* -------------------- EVENT LISTENERS -------------------- */
+    // Force pause event
     useEffect(() => {
         const container = containerRef.current;
         if (!container) return;
@@ -50,66 +226,44 @@ export default function CustomizedVideoPlayer({
             const video = videoRef.current;
             if (video) {
                 video.pause();
-                setIsPlaying(false);
                 setShowControls(true);
                 clearTimeout(hideTimeout.current);
             }
         };
 
         container.addEventListener('forcePause', handleForcePause);
-
-        return () => {
-            container.removeEventListener('forcePause', handleForcePause);
-        };
+        return () => container.removeEventListener('forcePause', handleForcePause);
     }, []);
 
-    // Apply initial time when video metadata loads
+    // Video metadata and events
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
-
 
         const handleLoadedMetadata = () => {
             setDuration(video.duration);
         };
 
         const handleEnded = () => {
-            setIsPlaying(false);
             setHasEnded(true);
-
+            setIsPlaying(false);
             clearTimeout(hideTimeout.current);
         };
 
-        const handleWaiting = () => {
-            setIsBuffering(true);
-        };
-
-        const handleCanPlay = () => {
-            setIsBuffering(false);
-        };
-
-        const handlePlaying = () => {
-            setIsBuffering(false);
-        };
-
-        const handleStalled = () => {
-            setIsBuffering(true);
-        };
+        const handleWaiting = () => setIsBuffering(true);
+        const handleCanPlay = () => setIsBuffering(false);
+        const handlePlaying = () => setIsBuffering(false);
+        const handleStalled = () => setIsBuffering(true);
 
         const handlePause = () => {
-            setIsPlaying(false);
-            setShowControls(true);
-        };
-
-        const handlePlay = () => {
-            setIsPlaying(true);
+            if (!isAutoPlayingRef.current) {
+                setShowControls(true);
+            }
         };
 
         video.addEventListener('loadedmetadata', handleLoadedMetadata);
         video.addEventListener('ended', handleEnded);
         video.addEventListener('pause', handlePause);
-        video.addEventListener('play', handlePlay);
-
         video.addEventListener('waiting', handleWaiting);
         video.addEventListener('canplay', handleCanPlay);
         video.addEventListener('playing', handlePlaying);
@@ -127,8 +281,6 @@ export default function CustomizedVideoPlayer({
             video.removeEventListener('loadedmetadata', handleLoadedMetadata);
             video.removeEventListener('ended', handleEnded);
             video.removeEventListener('pause', handlePause);
-            video.removeEventListener('play', handlePlay);
-
             video.removeEventListener('waiting', handleWaiting);
             video.removeEventListener('canplay', handleCanPlay);
             video.removeEventListener('playing', handlePlaying);
@@ -138,9 +290,9 @@ export default function CustomizedVideoPlayer({
                 videoElementRef.current = null;
             }
         };
-    }, [autoPlay, videoElementRef, videoUrl]);
+    }, [videoElementRef, slug]);
 
-    // Tracking Outside clicks to close the dropdown of actions
+    // Click outside for actions dropdown
     useEffect(() => {
         if (!showActions) return;
 
@@ -160,24 +312,13 @@ export default function CustomizedVideoPlayer({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [showActions]);
 
-    // Handle dragging with mouse/touch
+    // Progress bar dragging
     useEffect(() => {
         if (isDragging) {
-            const handleMouseMove = (e) => {
-                updateProgressFromEvent(e);
-            };
-
-            const handleTouchMove = (e) => {
-                updateProgressFromEvent(e.touches[0]);
-            };
-
-            const handleMouseUp = () => {
-                setIsDragging(false);
-            };
-
-            const handleTouchEnd = () => {
-                setIsDragging(false);
-            };
+            const handleMouseMove = (e) => updateProgressFromEvent(e);
+            const handleTouchMove = (e) => updateProgressFromEvent(e.touches[0]);
+            const handleMouseUp = () => setIsDragging(false);
+            const handleTouchEnd = () => setIsDragging(false);
 
             document.addEventListener('mousemove', handleMouseMove);
             document.addEventListener('mouseup', handleMouseUp);
@@ -193,16 +334,82 @@ export default function CustomizedVideoPlayer({
         }
     }, [isDragging, duration]);
 
-
-
-
-    const onTimeUpdate = () => {
+    // Video playback sync
+    useEffect(() => {
         const video = videoRef.current;
-        if (!video || isDragging) return;
-        setProgress((video.currentTime / video.duration) * 100);
-        setCurrentTime(video.currentTime);
-    };
+        if (!video) return;
 
+        const handleTimeUpdate = () => {
+            if (isDragging) return;
+            setCurrentTime(video.currentTime);
+            setProgress((video.currentTime / video.duration) * 100);
+        };
+
+        const handlePlay = () => {
+            clearTimeout(playVerifyTimerRef.current);
+
+            playVerifyTimerRef.current = setTimeout(() => {
+                const video = videoRef.current;
+                if (!video) return;
+
+                if (!video.paused && !video.ended) {
+                    setIsPlaying(true);
+                    setHasEnded(false);
+                } else {
+                    setIsPlaying(false);
+                    console.error('[Video] Play event but not playing for slug:', slug);
+                }
+            }, 100);
+        };
+
+        const handlePauseEvent = () => {
+            if (isAutoPlayingRef.current) {
+                console.warn('[Video] Pause ignored during autoplay for slug:', slug);
+                return;
+            }
+
+            setIsPlaying(false);
+            setShowControls(true);
+        };
+
+        video.addEventListener('timeupdate', handleTimeUpdate);
+        video.addEventListener('play', handlePlay);
+        video.addEventListener('pause', handlePauseEvent);
+
+        return () => {
+            video.removeEventListener('timeupdate', handleTimeUpdate);
+            video.removeEventListener('play', handlePlay);
+            video.removeEventListener('pause', handlePauseEvent);
+        };
+    }, [isDragging, slug]);
+
+    // Fullscreen tracking
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            const isCurrentlyFullscreen = !!(
+                document.fullscreenElement ||
+                document.webkitFullscreenElement ||
+                document.mozFullScreenElement ||
+                document.msFullscreenElement
+            );
+
+            setIsFullscreen(isCurrentlyFullscreen);
+        };
+
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+        return () => {
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+            document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+        };
+    }, []);
+
+    /* -------------------- CONTROL FUNCTIONS -------------------- */
     const togglePlayPause = () => {
         const video = videoRef.current;
         if (!video) return;
@@ -215,7 +422,6 @@ export default function CustomizedVideoPlayer({
                 setHasEnded(false);
             }
             video.play().catch(() => { });
-            setIsPlaying(true);
             setShowControls(true);
 
             hideTimeout.current = setTimeout(() => {
@@ -223,7 +429,6 @@ export default function CustomizedVideoPlayer({
             }, 100);
         } else {
             video.pause();
-            setIsPlaying(false);
             setShowControls(true);
         }
     };
@@ -278,7 +483,6 @@ export default function CustomizedVideoPlayer({
         }
     };
 
-    // Update progress from mouse/touch event
     const updateProgressFromEvent = (e) => {
         const video = videoRef.current;
         const progressBar = progressBarRef.current;
@@ -342,35 +546,6 @@ export default function CustomizedVideoPlayer({
         }
     };
 
-    useEffect(() => {
-        const videoElement = videoRef.current;
-        if (!videoElement) return;
-
-        // Track fullscreen changes
-        const handleFullscreenChange = () => {
-            const isCurrentlyFullscreen = !!(
-                document.fullscreenElement ||
-                document.webkitFullscreenElement ||
-                document.mozFullScreenElement ||
-                document.msFullscreenElement
-            );
-
-            setIsFullscreen(isCurrentlyFullscreen);
-        };
-
-        // Add listeners for all browser prefixes
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-
-        return () => {
-            document.removeEventListener('fullscreenchange', handleFullscreenChange);
-            document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-            document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
-            document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
-        };
-    }, []);
 
     return (
         <div
@@ -385,7 +560,6 @@ export default function CustomizedVideoPlayer({
             <div className="relative flex items-center justify-center w-full h-full pb-10 ">
                 {/* Video with click handler */}
                 <video
-
                     ref={videoRef}
                     className={`w-full h-full ${!isFullscreen && className || 'object-contain'}`}
                     playsInline
@@ -394,8 +568,7 @@ export default function CustomizedVideoPlayer({
                     controls={false}
                     poster={thumbnail}
                     crossOrigin="anonymous"
-                    onTimeUpdate={onTimeUpdate}
-                    autoPlay={autoPlay}
+                    muted={isMuted}
                     onLoadedMetadata={OnLoadedMetaData}
                     onClick={handleVideoClick}
                     style={{
@@ -499,9 +672,8 @@ export default function CustomizedVideoPlayer({
                         </div>
                     )}
                 </div>
-
-
             </div>
+
             {/* Timeline Bar */}
             {(!isPlaying || showControls) && (
                 <div className="absolute bottom-0 left-0 right-0 z-50 w-full pointer-events-none">
@@ -613,9 +785,6 @@ export default function CustomizedVideoPlayer({
                                         </svg>
                                         <span>{__('Fullscreen')}</span>
                                     </button>
-
-
-
                                 </div>
                             )}
                         </div>

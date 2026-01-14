@@ -7,6 +7,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import SmartphoneDetails from '@/Components/SmartphoneDetails';
 import Accordion from '@/Components/Accordian';
 import ProductSelectInput from '@/Components/ProductSelectInput';
+import { useVideoStore } from '@/Hooks/useVideoStore';
+import CustomizedVideoPlayer from '@/Components/CustomizedVideoPlayer';
 
 const DesktopFeed = ({
     feedGallery,
@@ -49,6 +51,40 @@ const DesktopFeed = ({
     const viewableFeedRef = useRef([]);
     const viewableFeedRefIndex = useRef(0);
     const productRightPanelScrollRef = useRef(null);
+
+
+    // Zutsand Video AutoPlay State
+    const videoAutoplay = useVideoStore((state) => state.autoplay);
+    const initAutoplay = useVideoStore((state) => state.initAutoplay);
+    const setActiveVideo = useVideoStore((state) => state.setActiveVideo);
+
+
+    useEffect(() => {
+        // only trigger after feedGallery is stable
+        const timeoutId = setTimeout(() => {
+            if (!feedGallery) {
+                setActiveVideo(null);
+                return;
+            }
+
+            // Only set active if current item is a video post
+            if (feedGallery.type === 'posts' && feedGallery.post_video_urls?.length > 0) {
+                setActiveVideo(feedGallery.slug);
+            } else {
+                setActiveVideo(null);
+            }
+        }, 200);
+
+        // Cleanup timeout if feedGallery changes again quickly
+        return () => clearTimeout(timeoutId);
+    }, [feedGallery, setActiveVideo]);
+
+
+
+    useEffect(() => {
+        initAutoplay();
+    }, []);
+
 
 
     const [isTextPost, setIsTextPost] = useState(false);
@@ -1625,7 +1661,7 @@ const DesktopFeed = ({
                                                         ref={MediaRef}
                                                     >
                                                         <div className="aspect-[3/2] h-[90vh] w-full max-w-[520px] lg:aspect-[2/4]">
-                                                            <div className="invisible w-full h-full bg-surface-1 dark:bg-backgroundDark">
+                                                            {/* <div className="invisible w-full h-full bg-surface-1 dark:bg-backgroundDark">
                                                                 {mediaItems[selectedMediaIndex]
                                                                     ?.type === 'image' ? (
                                                                     <img
@@ -1645,7 +1681,7 @@ const DesktopFeed = ({
                                                                     />
                                                                 ) : (
                                                                     <VideoWithThumbnail
-                                                                        type="customized"
+                                                                        autoPlay={videoAutoplay}
                                                                         className={
                                                                             'h-full w-full rounded-md object-cover object-center'
                                                                         }
@@ -1660,9 +1696,11 @@ const DesktopFeed = ({
                                                                                 selectedMediaIndex
                                                                             ]?.url
                                                                         }
+
+                                                                        slug={feedGallery?.slug}
                                                                     />
                                                                 )}
-                                                            </div>
+                                                            </div> */}
                                                             {/* Animated layers */}
                                                             <AnimatePresence
                                                                 initial={false}
@@ -1722,8 +1760,8 @@ const DesktopFeed = ({
                                                                                         }
                                                                                     />
                                                                                 ) : (
-                                                                                    <VideoWithThumbnail
-                                                                                        type="customized"
+                                                                                    <CustomizedVideoPlayer
+                                                                                        autoPlay={videoAutoplay}
                                                                                         className="object-cover object-center w-full h-full rounded-md"
                                                                                         videoUrl={
                                                                                             item.url
@@ -1738,6 +1776,9 @@ const DesktopFeed = ({
                                                                                                 item.url,
                                                                                             )
                                                                                         }
+
+
+                                                                                        slug={feedGallery?.slug}
                                                                                     />
                                                                                 )}
                                                                             </motion.div>

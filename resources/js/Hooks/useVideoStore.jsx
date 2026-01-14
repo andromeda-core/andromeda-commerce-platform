@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import getCookie from './useGetCookie';
 
 export const useVideoStore = create((set, get) => ({
     videoRefs: {},
@@ -109,23 +110,23 @@ export const useVideoStore = create((set, get) => ({
         }
     },
 
-    // Toggle autoplay preference
-    setAutoplay: (enabled) => {
-        set({ autoplay: enabled });
 
-        const expires = new Date(Date.now() + 365 * 864e5).toUTCString();
-        document.cookie = `video_autoplay=${enabled}; expires=${expires}; path=/`;
-    },
 
     // Initialize autoplay from cookie
     initAutoplay: () => {
-        const cookie = document.cookie
-            .split(';')
-            .find(c => c.trim().startsWith('video_autoplay='));
+        try {
+            const raw = getCookie('post_preferences');
+            if (!raw) {
+                set({ autoplay: false });
+                return;
+            }
 
-        if (cookie) {
-            const value = cookie.split('=')[1] === 'true';
-            set({ autoplay: value });
+            const prefs = JSON.parse(raw);
+            set({ autoplay: Boolean(prefs.video_autoplay) });
+
+        } catch (e) {
+            console.error('initAutoplay error', e);
+            set({ autoplay: false });
         }
-    }
+    },
 }));

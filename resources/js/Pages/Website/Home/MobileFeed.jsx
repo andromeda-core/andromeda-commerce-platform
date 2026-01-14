@@ -127,12 +127,15 @@ const MobileFeed = ({
 
     const isDarkMode = useDarkMode();
 
+
+
+
     // Video Player Control Zustand Hook Methods
     const setActiveVideo = useVideoStore((state) => state.setActiveVideo);
     const pauseAll = useVideoStore((state) => state.pauseAll);
-    const videoAutoplay = useVideoStore((state) => state.autoplay);
-    const setAutoplay = useVideoStore((state) => state.setAutoplay);
     const initAutoplay = useVideoStore((state) => state.initAutoplay);
+
+
 
     // Helper Function to Get Related Feed Count
     // const getRelatedCount = (slug) => {
@@ -592,48 +595,7 @@ const MobileFeed = ({
                                                     <span>{__('Copy Link')}</span>
                                                 </button>
 
-                                                <button
-                                                    className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark "
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setAutoplay(!videoAutoplay);
-                                                    }}
-                                                >
-                                                    {videoAutoplay ? (
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            strokeWidth={1.5}
-                                                            stroke="currentColor"
-                                                            className="w-5 h-5"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                d="M15.75 5.25v13.5m-7.5-13.5v13.5"
-                                                            />
-                                                        </svg>
-                                                    ) : (
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            strokeWidth={1.5}
-                                                            stroke="currentColor"
-                                                            className="w-5 h-5"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"
-                                                            />
-                                                        </svg>
-                                                    )}
-                                                    {videoAutoplay
-                                                        ? __('OFF Auto Play')
-                                                        : __('ON Auto Play')}
-                                                </button>
+
                                             </>
                                         )}
 
@@ -968,7 +930,6 @@ const MobileFeed = ({
             );
         },
         [
-            videoAutoplay,
             mobileFeedGalleryOpening,
             actionDropdownOpen,
             isDarkMode,

@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useVideoStore } from '@/Hooks/useVideoStore';
-
 const InstagramStyledVideoPlayer = ({
     videoUrl,
     thumbnail,
@@ -220,6 +219,12 @@ const InstagramStyledVideoPlayer = ({
             video.removeEventListener('timeupdate', onTimeUpdate);
         };
     }, [OnLoadedMetaData]);
+
+
+
+
+
+
 
 
     // CleanUp
