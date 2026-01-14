@@ -412,15 +412,6 @@ video.feed-video::-webkit-media-controls {
         transition: none !important;
         scale: 1 !important;
     }
-
-    *:hover {
-        background-color: inherit !important;
-        color: inherit !important;
-        opacity: inherit !important;
-        transform: none !important;
-        filter: none !important;
-        box-shadow: none !important;
-    }
 }
 
 .feed-page {
