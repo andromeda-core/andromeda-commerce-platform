@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback, memo } from 'react';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import GlobalSearch from '@/Components/GlobalSearch';
 import Toast from '@/Components/Toast';
@@ -13,20 +13,28 @@ import { useTranslation } from '@/Hooks/useTranslation';
 // Memoized result item component
 const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, __, currency }) => {
     const { width } = useWindowSize();
-    const Tag = width > 1024 ? 'a' : Link;
+
     // List View
     if (activeView === 'list') {
         return (
-            <Tag
-                href={
-                    item.type === 'posts'
+            <div
+                role={'button'}
+                onClick={() => {
+
+                    const url = item.type === 'posts'
                         ? route('home') + generateURL(item)
-                        : route('home') + '?m-slug=' + item.slug + '&single_page=true'
+                        : route('home') + '?m-slug=' + item.slug + '&single_page=true';
+
+                    if (width > 1024) {
+                        window.history.replaceState({}, '', route('home'));
+                        window.open(url, '_blank');
+                    } else {
+                        router.visit(url, {
+                            replace: true,
+                        });
+                    }
                 }
-                target={width > 1024 ? '_blank' : undefined}
-                onClick={() =>
-                    window.history.replaceState({}, '', route('home')
-                    )}
+                }
                 className="flex flex-wrap items-center gap-4 p-1 py-4 transition-colors rounded-md cursor-pointer group no-touch-hover hover:bg-surface-2-light dark:hover:bg-surface-2-dark"
             >
                 {/* Thumbnail */}
@@ -73,7 +81,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, __, curren
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center flex-shrink-0 gap-2 mr-5 transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+                <div className="flex items-center flex-shrink-0 gap-2 mr-5 transition-opacity duration-200 opacity-100 lg:opacity-0 group-hover:opacity-100">
                     <button
                         title={__('Copy Link')}
                         className="p-4 rounded-full hover:bg-surface-3-light text-main-text-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
@@ -103,7 +111,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, __, curren
                         </svg>
                     </button>
                 </div>
-            </Tag>
+            </div>
         )
     }
 

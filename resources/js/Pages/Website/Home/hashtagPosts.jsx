@@ -3,7 +3,7 @@ import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import Toast from '@/Components/Toast';
 import getCookie from '@/Hooks/useGetCookie';
 import MainLayout from '@/Layouts/Website/MainLayout';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import axios from 'axios';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
@@ -16,21 +16,29 @@ import { useTranslation } from '@/Hooks/useTranslation';
 
 // Memoized result item component
 const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width, __, currency }) => {
-    const Tag = width > 1024 ? 'a' : Link;
+
     // List View
     if (activeView === 'list') {
         return (
-            <Tag
-                href={
-                    item.type === 'posts'
+            <div
+                role={'button'}
+                onClick={() => {
+
+                    const url = item.type === 'posts'
                         ? route('home') + generateURL(item)
-                        : route('home') + '?m-slug=' + item.slug + '&single_page=true'
+                        : route('home') + '?m-slug=' + item.slug + '&single_page=true';
+
+                    if (width > 1024) {
+                        window.history.replaceState({}, '', route('home'));
+                        window.open(url, '_blank');
+                    } else {
+                        router.visit(url, {
+                            replace: true,
+                        });
+                    }
                 }
-                target={width > 1024 ? '_blank' : undefined}
-                onClick={() =>
-                    window.history.replaceState({}, '', route('home')
-                    )}
-                className="flex flex-wrap items-center gap-4 p-1 py-4 transition-colors rounded-md cursor-pointer no-touch-hover group hover:bg-surface-2-light dark:hover:bg-surface-2-dark"
+                }
+                className="flex flex-wrap items-center gap-4 p-1 py-4 transition-colors rounded-md cursor-pointer group no-touch-hover hover:bg-surface-2-light dark:hover:bg-surface-2-dark"
             >
                 {/* Thumbnail */}
                 <div className="flex-shrink-0 w-12 h-12 overflow-hidden rounded-lg bg-surface-1-light dark:bg-surface-1-dark">
@@ -76,7 +84,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width, __,
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center flex-shrink-0 gap-2 mr-5 transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+                <div className="flex items-center flex-shrink-0 gap-2 mr-5 transition-opacity duration-200 opacity-100 lg:opacity-0 group-hover:opacity-100">
                     <button
                         title={__('Copy Link')}
                         className="p-4 rounded-full hover:bg-surface-3-light text-main-text-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
@@ -86,7 +94,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width, __,
                             const url =
                                 item.type === 'posts'
                                     ? route('home') + generateURL(item)
-                                    : route('home') + '?m-slug=' + item.slug + '&single_page=true'
+                                    : route('home') + '?m-slug=' + item.slug;
                             onCopyLink(url);
                         }}
                     >
@@ -106,7 +114,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width, __,
                         </svg>
                     </button>
                 </div>
-            </Tag>
+            </div>
         )
     }
     // Grid View
