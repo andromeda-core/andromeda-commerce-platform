@@ -997,10 +997,10 @@ const index = () => {
                             zIndex: feedOpen ? 0 : 1,
                         }}
                     >
-                        <div className="mx-auto max-w-8xl sm:px-6 lg:px-8 "
+                        <div className="mx-auto max-w-8xl sm:px-6 lg:px-8"
                         >
 
-                            <div className="gap-2 columns-2 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5">
+                            <div className="gap-2 columns-2 sm:columns-2 md:columns-3 lg:columns-3 xl:columns-4">
                                 {feed.map((item, index) => (
                                     <MasonryFeedItem
                                         key={`${item.type}-${item.id}`}

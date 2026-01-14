@@ -465,7 +465,6 @@ video.feed-video::-webkit-media-controls {
     }
 }
 
-/* Safari masonry fix  */
 [class*='columns-'] {
     -webkit-column-break-inside: avoid !important;
 }
