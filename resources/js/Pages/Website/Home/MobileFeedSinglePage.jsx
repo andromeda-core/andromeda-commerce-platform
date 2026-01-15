@@ -230,6 +230,9 @@ const MobileFeedSinglePage = ({
 
             const hasVideo = item.type === 'posts' && item.post_video_urls?.length > 0;
 
+            const BottomOffset = hasVideo ? 105 : 70;
+
+
             const hasPoster = hasVideo && item.post_video_urls[0]?.thumbnail_url;
 
             const isLoaded = isTextPost || hasPoster;
@@ -408,7 +411,8 @@ const MobileFeedSinglePage = ({
                     {/* Bottom */}
                     {item.type === 'smartphones' && (
                         <div
-                            className={`absolute left-0 right-0 z-20 px-5 pt-3 text-main-text-dark bottom-20`}
+                            className={`absolute left-0 right-0 z-20 px-5 pt-3 text-main-text-dark`}
+                            style={{ bottom: `${BottomOffset}px` }}
                         >
                             <div className="mb-1 flex items-center justify-between text-[14px] font-semibold">
                                 <span className="text-[20px]">
@@ -470,7 +474,8 @@ const MobileFeedSinglePage = ({
 
                     {item.type === 'posts' && (
                         <div
-                            className={`absolute left-0 right-0 z-20 px-5 pt-3 text-main-text-dark bottom-[70px] ${hasVideo ? 'bottom-[110px]' : ''}`}
+                            className={`absolute left-0 right-0 z-20 px-5 pt-3 text-main-text-dark`}
+                            style={{ bottom: `${BottomOffset}px` }}
                         >
                             <div className="flex items-center justify-end mb-1">
                                 {isTextPost ? (
