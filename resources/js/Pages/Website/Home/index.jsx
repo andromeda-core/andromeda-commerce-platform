@@ -1050,15 +1050,19 @@ const index = () => {
             <div
                 className={`
         fixed inset-0 z-[50]
-        transition-opacity duration-200 ease-out will-change-transform contain-layout
+        transition-opacity duration-200 ease-out
+        will-change-transform contain-layout
+        transform-gpu
         ${showFeedSkeleton && !feedOpen && feed.length === 0
-                        ? 'opacity-100 pointer-events-auto'
-                        : 'opacity-0 pointer-events-none'}
+                        ? 'opacity-100'
+                        : 'opacity-0'}
+        pointer-events-none
     `}
             >
                 {windowSize.width > 1024 && <DesktopFeedSkeleton />}
                 {windowSize.width <= 1024 && <MobileFeedSkeleton />}
             </div>
+
             {isFeedLoaded && (
                 <>
                     {/* Search Bar */}
