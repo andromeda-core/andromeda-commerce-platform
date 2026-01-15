@@ -1,5 +1,4 @@
 import React, { memo, useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 
 const MobileFeedSkeleton = () => {
     const containerRef = useRef(null);
@@ -19,7 +18,7 @@ const MobileFeedSkeleton = () => {
         };
     }, []);
 
-    return createPortal(
+    return (
         <div className="fixed inset-0 z-[60] bg-backgroundLight dark:bg-backgroundDark">
 
             <div
@@ -61,9 +60,8 @@ const MobileFeedSkeleton = () => {
                     </div>
                 </div>
             </div>
-        </div>,
-        document.getElementById('modal-root') || document.body
-    );
+        </div>
+    )
 };
 
 export default memo(MobileFeedSkeleton);

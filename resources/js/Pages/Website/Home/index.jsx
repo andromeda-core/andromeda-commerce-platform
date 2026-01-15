@@ -21,7 +21,23 @@ import DesktopFeedSkeleton from '@/Components/DesktopFeedSkeleton';
 import MobileFeedSkeleton from '@/Components/MobileFeedSkeleton';
 
 
+
 const index = () => {
+
+    // show Skeleton when directly opening Any Feed
+    const [showFeedSkeleton, setShowFeedSkeleton] = useState(() => {
+        if (typeof window === 'undefined') return false;
+
+        const params = new URLSearchParams(window.location.search);
+        const isDirect = params.get('direct') === 'true';
+
+        if (isDirect) {
+            return true;
+        }
+        return false;
+    });
+
+
     const { currency, auth, cart_items } = usePage().props;
 
     // Translation Hook
@@ -35,13 +51,7 @@ const index = () => {
         navigator.maxTouchPoints === 0;
 
 
-    // show Skeleton when directly opening Any Feed
-    const [showFeedSkeleton, setShowFeedSkeleton] = useState(() => {
-        if (typeof window === 'undefined') return false;
 
-        const params = new URLSearchParams(window.location.search);
-        return params.get('direct') === 'true';
-    });
 
     useLayoutEffect(() => {
         if (!showFeedSkeleton) return;
@@ -218,7 +228,6 @@ const index = () => {
     };
 
     const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
-
 
 
 
@@ -1022,6 +1031,20 @@ const index = () => {
                 </div>
             )}
 
+
+            {showFeedSkeleton && !isFeedLoaded && (
+                <>
+                    {/* PC FEED SKELETON */}
+                    {windowSize.width > 1024 && showFeedSkeleton && (
+                        <DesktopFeedSkeleton />
+                    )}
+                    {/* Mobile Feed Skeleton */}
+                    {windowSize.width <= 1024 && showFeedSkeleton && (
+                        <MobileFeedSkeleton />
+                    )}
+                </>
+            )}
+
             {isFeedLoaded && (
                 <>
                     {/* Search Bar */}
@@ -1223,11 +1246,6 @@ const index = () => {
                     </div>
 
 
-                    {/* PC FEED SKELETON */}
-                    {windowSize.width > 1024 && showFeedSkeleton && (
-                        <DesktopFeedSkeleton />
-                    )}
-
                     {/* PC Feed  */}
                     {windowSize.width > 1024 && feedOpen && feedGallery !== null && (
                         <>
@@ -1266,11 +1284,6 @@ const index = () => {
                         </>
                     )}
 
-
-                    {/* Mobile Feed Skeleton */}
-                    {windowSize.width <= 1024 && showFeedSkeleton && (
-                        <MobileFeedSkeleton />
-                    )}
 
                     {/* MOBILE FEED */}
                     {windowSize.width <= 1024 && feedOpen && feedGallery !== null && !isSinglePageRef.current && (
