@@ -1011,6 +1011,8 @@ const index = () => {
         }
     }, [feedOpen]);
 
+
+
     return (
         <MainLayout>
             <Head title={__("Home", true)} />
@@ -1045,12 +1047,18 @@ const index = () => {
             )}
 
 
-            {showFeedSkeleton && feed.length === 0 && !feedOpen && (
-                <>
-                    {windowSize.width > 1024 && <DesktopFeedSkeleton />}
-                    {windowSize.width <= 1024 && <MobileFeedSkeleton />}
-                </>
-            )}
+            <div
+                className={`
+        fixed inset-0 z-[50]
+        transition-opacity duration-200 ease-out
+        ${showFeedSkeleton && !feedOpen && feed.length === 0
+                        ? 'opacity-100 pointer-events-auto'
+                        : 'opacity-0 pointer-events-none'}
+    `}
+            >
+                {windowSize.width > 1024 && <DesktopFeedSkeleton />}
+                {windowSize.width <= 1024 && <MobileFeedSkeleton />}
+            </div>
             {isFeedLoaded && (
                 <>
                     {/* Search Bar */}
