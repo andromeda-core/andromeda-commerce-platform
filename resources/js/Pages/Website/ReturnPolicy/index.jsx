@@ -5,7 +5,7 @@ import { Head, Link } from '@inertiajs/react';
 import React, { useEffect, useRef, useState } from 'react';
 
 const index = ({ return_policy }) => {
-    const [activeSection, setActiveSection] = useState('collect');
+    const [activeSection, setActiveSection] = useState(null);
     const isProgrammaticScroll = useRef(false);
     const windowSize = useWindowSize();
     const scrollTimeout = useRef(null);
@@ -25,6 +25,9 @@ const index = ({ return_policy }) => {
     }));
 
     useEffect(() => {
+        // Auto Selecting First Section
+        if (sections.length === 0) return;
+        setActiveSection(sections[0]?.id);
         const handleScroll = () => {
             if (isProgrammaticScroll.current) return;
 
@@ -275,9 +278,8 @@ const index = ({ return_policy }) => {
                                     </p>
                                     <Link
                                         href={route('website.contact.index')}
-                                        className="inline-flex items-center gap-2 px-20 py-1 font-semibold transition-all rounded-md lg:py-3 text-main-text-dark bg-main-text-light dark:bg-main-text-dark dark:text-main-text-light hover:bg-main-text-light/80 dark:hover:bg-main-text-dark/80"
+                                        className="inline-flex items-center justify-center w-full px-6 py-3 font-semibold transition-all rounded-md lg:px-20 sm:w-auto text-main-text-dark bg-main-text-light dark:bg-main-text-dark dark:text-main-text-light hover:bg-main-text-light/80 dark:hover:bg-main-text-dark/80"
                                     >
-
                                         {__('Contact Us')}
                                     </Link>
                                 </div>

@@ -388,9 +388,9 @@ const Index = ({ user, countries }) => {
                 />
             )}
 
-            <div className="sm:px-6 lg:px-8">
+            <div>
                 <div
-                    className={`mx-auto px-6 ${windowSize.width > 1024 ? 'pb-0' : 'pb-24'} sm:max-w-3xl lg:max-w-6xl`}
+                    className={`mx-auto px-4 sm:px-6 lg:px-8 sm:max-w-3xl lg:max-w-6xl ${windowSize.width > 1024 ? 'pb-0' : 'pb-24'} `}
                 >
                     <div className="my-10">
                         <h1 className="text-2xl font-semibold text-main-text-light dark:text-main-text-dark">

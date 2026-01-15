@@ -659,9 +659,8 @@ const index = () => {
                                     </p>
                                     <Link
                                         href={route('website.contact.index')}
-                                        className="inline-flex items-center gap-2 px-20 py-1 font-semibold transition-all rounded-md lg:py-3 text-main-text-dark bg-main-text-light dark:bg-main-text-dark dark:text-main-text-light hover:bg-main-text-light/80 dark:hover:bg-main-text-dark/80"
+                                        className="inline-flex items-center justify-center w-full px-6 py-3 font-semibold transition-all rounded-md lg:px-20 sm:w-auto text-main-text-dark bg-main-text-light dark:bg-main-text-dark dark:text-main-text-light hover:bg-main-text-light/80 dark:hover:bg-main-text-dark/80"
                                     >
-
                                         {__('Contact Us')}
                                     </Link>
                                 </div>
