@@ -24,6 +24,7 @@ const MobileFeedGallery = (
         setBookmarkStatusChanged,
         isDarkMode,
         setMobileFeedGalleryOpen,
+        smartphone_addon_items,
     }
 
 ) => {
@@ -49,6 +50,7 @@ const MobileFeedGallery = (
                     setErrorMessage={setErrorMessage}
                     setShowErrorMessage={setShowErrorMessage}
                     setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
+                    smartphone_addon_items={smartphone_addon_items}
                     __={__}
 
                 />

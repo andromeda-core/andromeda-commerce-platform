@@ -44,7 +44,7 @@ const MobileFeed = ({
     setErrorMessage,
     setShowErrorMessage,
     windowSize,
-
+    smartphone_addon_items,
     __,
 }) => {
     useEffect(() => {
@@ -1841,6 +1841,7 @@ const MobileFeed = ({
                     setBookmarkStatusChanged={setBookmarkStatusChanged}
                     isDarkMode={isDarkMode}
                     setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
+                    smartphone_addon_items={smartphone_addon_items}
 
                     __={__}
                 />

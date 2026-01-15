@@ -38,7 +38,8 @@ const index = () => {
     });
 
 
-    const { currency, auth, cart_items } = usePage().props;
+    const { currency, auth, cart_items, smartphone_addon_items } = usePage().props;
+
 
     // Translation Hook
     const { __ } = useTranslation();
@@ -1285,6 +1286,7 @@ const index = () => {
                                     fetchMoreYAxis={fetchMorePostsAndProducts}
                                     nextPageUrl={nextPageUrlRef.current}
                                     fetchRelatedFeed={fetchRelatedFeed}
+                                    smartphone_addon_items={smartphone_addon_items}
                                     __={__}
 
                                 />
@@ -1330,6 +1332,7 @@ const index = () => {
                             setErrorMessage={setErrorMessage}
                             windowSize={windowSize}
                             setShowErrorMessage={setShowErrorMessage}
+                            smartphone_addon_items={smartphone_addon_items}
                             __={__}
                         />
                     )}
@@ -1363,6 +1366,7 @@ const index = () => {
                             setShowErrorMessage={setShowErrorMessage}
                             setFeedOpen={setFeedOpen}
                             setMediaItems={setMediaItems}
+                            smartphone_addon_items={smartphone_addon_items}
                             __={__}
                         />
                     )}

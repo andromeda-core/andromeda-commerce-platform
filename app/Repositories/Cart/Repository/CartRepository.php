@@ -121,6 +121,7 @@ class CartRepository implements ICartRepository
     public function addItem(Request $request)
     {
 
+        DB::beginTransaction();
         try {
             $user = $request->user();
 
@@ -245,24 +246,192 @@ class CartRepository implements ICartRepository
                 }
             }
 
-            // dd($smartphone_cart_items, $addon_cart_items);
+            if (! blank($smartphone_cart_items)) {
+                $this->cart->insert($smartphone_cart_items);
+            }
 
-            DB::transaction(function () use ($smartphone_cart_items, $addon_cart_items) {
-                if (! blank($smartphone_cart_items)) {
-                    $this->cart->insert($smartphone_cart_items);
-                }
+            if (! blank($addon_cart_items)) {
+                $this->smartphone_cart_addon->insert($addon_cart_items);
 
-                if (! blank($addon_cart_items)) {
-                    $this->smartphone_cart_addon->insert($addon_cart_items);
+            }
 
-                }
-            });
+            DB::commit();
 
             return [
                 'status' => true,
                 'message' => 'Added Succesfully To Cart',
             ];
         } catch (Exception $e) {
+            DB::rollBack();
+
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function updateItemFromFeed(Request $request, ?string $smartphone_id = null)
+    {
+
+        DB::beginTransaction();
+        try {
+
+            if (empty($smartphone_id)) {
+                throw new Exception('Wrong Product Selected Please Select Valid Product');
+            }
+
+            $user = $request->user();
+
+            if (empty($user)) {
+                throw new Exception('Please login first');
+            }
+
+            if (! $user->hasRole('Customer')) {
+                throw new Exception('Only Customers Can Add items In Cart');
+            }
+
+            $customer = $user->customer;
+
+            if (empty($customer)) {
+                throw new Exception('Only Customers Can Add items To Cart And Purchase');
+            }
+
+            $smartphones = $request->array('smartphones');
+
+            if (blank($smartphones)) {
+                throw new Exception('Please Select Atleast One Smartphone');
+            }
+
+            $this->cart->where('customer_id', $customer->id)
+                ->where('smartphone_id', $smartphone_id)
+                ->delete();
+
+            $this->smartphone_cart_addon->where('customer_id', $customer->id)
+                ->where('smartphone_id', $smartphone_id)
+                ->delete();
+
+            $addons = $request->array('addons');
+
+            $smartphone_cart_items = [];
+            $addon_cart_items = [];
+
+            $already_items_in_cart = $this->cart->where('customer_id', $customer->id)->get();
+
+            if (! blank($smartphones)) {
+
+                foreach ($smartphones as $cart_smartphone) {
+                    $smartphone = $this->smartphone->where('id', $cart_smartphone['smartphone_id'])
+                        ->with(['selling_info', 'category.distributor.user'])
+                        ->withCount(['inventory_items as inventory_items_count' => function ($q) {
+                            $q->where('status', 'in_stock');
+                        }])
+                        ->first();
+
+                    if ($smartphone->inventory_items_count < $cart_smartphone['quantity']) {
+                        throw new Exception('Out Of Stock');
+                    }
+
+                    if ($already_items_in_cart->isNotEmpty()) {
+                        $is_same_distributor = $this->checkIsSameDistributor($already_items_in_cart, $smartphone);
+
+                        if (! $is_same_distributor) {
+                            throw new Exception('You Cannot Add Product From Different Distributor');
+                        }
+                    }
+
+                    if (empty($smartphone)) {
+                        throw new Exception('Wrong Product Selected Please Select Valid Product');
+                    }
+
+                    $exists = $this->cart->where('customer_id', $customer->id)->where('smartphone_id', $smartphone->id)
+                        ->with([
+                            'smartphone' => function ($q) {
+                                $q->withCount([
+                                    'inventory_items as inventory_items_count' => function ($q) {
+                                        $q->where('status', 'in_stock');
+                                    },
+                                ]);
+                            },
+                        ])
+                        ->first();
+
+                    if (! empty($exists)) {
+
+                        $total_quantity = $exists->quantity + $cart_smartphone['quantity'];
+
+                        if ($exists->smartphone->inventory_items_count < $total_quantity) {
+                            throw new Exception('Product Out Of Stock Please Adjust Quantity');
+                        }
+
+                        if ($exists->smartphone) {
+                            $exists->update([
+                                'quantity' => $total_quantity,
+                            ]);
+                        }
+
+                        continue;
+                    }
+
+                    $smartphone_cart_items[] = [
+                        'type' => 'smartphone',
+                        'color_id' => $cart_smartphone['color_id'],
+                        'color_name' => $cart_smartphone['color_name'],
+                        'capacity' => $cart_smartphone['capacity'],
+                        'customer_id' => $customer->id,
+                        'quantity' => $cart_smartphone['quantity'],
+                        'smartphone_id' => $smartphone->id,
+                        'total_price' => $cart_smartphone['price'],
+                        'unit_price' => $cart_smartphone['unit_price'],
+                    ];
+                }
+
+            }
+
+            if (! blank($addons)) {
+                foreach ($addons as $addon) {
+
+                    $exists = $this->smartphone_cart_addon->where('customer_id', $customer->id)->where('addon_id', $addon['id'])->where('smartphone_id', $addon['smartphone_id'])->with('addon')->first();
+                    if (! empty($exists)) {
+                        $exists->update([
+                            'quantity' => $exists->quantity + $addon['quantity'],
+                        ]);
+
+                        continue;
+                    }
+
+                    $addon_cart_items[] = [
+                        'addon_id' => $addon['id'],
+                        'name' => $addon['name'],
+                        'customer_id' => $customer->id,
+                        'smartphone_id' => $addon['smartphone_id'],
+                        'quantity' => $addon['quantity'],
+                        'total_price' => $addon['price'],
+                        'unit_price' => $addon['unit_price'],
+                    ];
+                }
+            }
+
+            // dd($smartphone_cart_items, $addon_cart_items);
+
+            if (! blank($smartphone_cart_items)) {
+                $this->cart->insert($smartphone_cart_items);
+            }
+
+            if (! blank($addon_cart_items)) {
+                $this->smartphone_cart_addon->insert($addon_cart_items);
+
+            }
+
+            DB::commit();
+
+            return [
+                'status' => true,
+                'message' => 'Updated Succesfully',
+            ];
+        } catch (Exception $e) {
+            DB::rollback();
+
             return [
                 'status' => false,
                 'message' => $e->getMessage(),

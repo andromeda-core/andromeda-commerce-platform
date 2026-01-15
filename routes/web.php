@@ -121,6 +121,7 @@ Route::group(['as' => 'website.'], function () {
         Route::get('/cart-get-items-count', 'getItemsCount')->name('get-items-count');
         Route::post('/cart/add-item', 'addItem')->name('add-item');
         Route::delete('/cart/remove-item', 'removeItem')->name('remove-item');
+        Route::put('/cart/update-item-from-feed/{smartphone_id?}', 'UpdateItemFromFeed')->name('update-item-from-feed');
         Route::put('/cart/update-item', 'updateItem')->name('update-item');
         Route::put('/cart/update-smartphone-addon-item', 'updateSmartphoneAddonItem')->name('update-smartphone-addon-item');
         Route::delete('/cart/remove-smartphone-addon-item', 'removeSmartphoneAddonItem')->name('remove-smartphone-addon-item');

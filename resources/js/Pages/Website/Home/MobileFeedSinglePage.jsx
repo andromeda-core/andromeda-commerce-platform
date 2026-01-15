@@ -35,6 +35,7 @@ const MobileFeedSinglePage = ({
     setMediaItems,
     setFeedIndex,
     isSinglePageRef,
+    smartphone_addon_items,
     __,
 }) => {
     useEffect(() => {
@@ -716,6 +717,7 @@ const MobileFeedSinglePage = ({
                     setErrorMessage={setErrorMessage}
                     setShowErrorMessage={setShowErrorMessage}
                     setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
+                    smartphone_addon_items={smartphone_addon_items}
                     __={__}
                 />
             )}
