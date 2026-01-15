@@ -1050,7 +1050,7 @@ const index = () => {
             <div
                 className={`
         fixed inset-0 z-[50]
-        transition-opacity duration-200 ease-out
+        transition-opacity duration-200 ease-out will-change-transform contain-layout
         ${showFeedSkeleton && !feedOpen && feed.length === 0
                         ? 'opacity-100 pointer-events-auto'
                         : 'opacity-0 pointer-events-none'}
