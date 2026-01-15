@@ -119,14 +119,24 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width, __,
     }
     // Grid View
     return (
-        <Tag
-            href={
-                item.type === 'posts'
+        <div
+            role={'button'}
+            onClick={() => {
+
+                const url = item.type === 'posts'
                     ? route('home') + generateURL(item)
-                    : route('home') + '?m-slug=' + item.slug + '&single_page=true'
+                    : route('home') + '?m-slug=' + item.slug + '&single_page=true';
+
+                if (width > 1024) {
+                    window.history.replaceState({}, '', route('home'));
+                    window.open(url, '_blank');
+                } else {
+                    router.visit(url, {
+                        replace: true,
+                    });
+                }
             }
-            target={width > 1024 ? '_blank' : undefined}
-            onClick={() => window.history.replaceState({}, '', route('home'))}
+            }
             // Removed grid-cols to allow for vertical card stacking in a parent grid
             className="relative overflow-hidden transition-all duration-300 rounded-md cursor-pointer no-touch-hover group break-inside-avoid"
         >
@@ -222,7 +232,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width, __,
 
 
                     <div className="mt-10">
-                        <p className="line-clamp-[10] whitespace-pre-line break-all  opacity-90 text-[14px]">
+                        <p className="line-clamp-[10] whitespace-pre-line break-all opacity-90 text-[14px]">
                             <span
                                 dangerouslySetInnerHTML={{
                                     __html: item?.content.trim(),
@@ -232,7 +242,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width, __,
                     </div>
                 </div>
             )}
-        </Tag>
+        </div>
     );
 
 });

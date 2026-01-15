@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\CartItem;
+use App\Models\SmartphoneCartAddon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
@@ -61,7 +62,9 @@ class HandleInertiaRequests extends Middleware
 
             ...($user && $user?->hasRole('Customer') && $request->routeIs('home') ? [
                 'cart_items' => CartItem::where('customer_id', $user->customer?->id)->get(),
-            ] : ['cart_items' => []]),
+                'smartphone_addon_items' => SmartphoneCartAddon::where('customer_id', $user->customer?->id)->get(),
+            ] : ['cart_items' => [], 'smartphone_addon_items' => []]),
+
         ];
     }
 }
