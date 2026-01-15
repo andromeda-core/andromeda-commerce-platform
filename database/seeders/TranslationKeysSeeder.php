@@ -493,6 +493,7 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Check inbox or spam folder', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Sent! Check your inbox.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Failed. Try again.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Post Created', 'created_at' => $now, 'updated_at' => $now],
 
             // Backend
             ['key' => 'Profile Updated Successfully', 'created_at' => $now, 'updated_at' => $now],

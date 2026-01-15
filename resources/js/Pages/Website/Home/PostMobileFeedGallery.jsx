@@ -489,6 +489,20 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                                     </svg>
                                                     <span>{__('Copy Link')}</span>
                                                 </button>
+
+
+
+                                                <span
+
+                                                    className="flex items-center w-full gap-3 px-4 py-3 text-xs transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
+                                                >
+
+                                                    <span>{__('Post Created')}:
+                                                        <p>
+                                                            {post?.added_at} {post?.created_at_time}
+                                                        </p>
+                                                    </span>
+                                                </span>
                                             </div>
                                         </div>
                                     )}
