@@ -25,6 +25,7 @@ const SmartphoneMobileGalleryModal = ({
     setShowInfoMessage,
     setErrorMessage,
     setShowErrorMessage,
+    setMobileFeedGalleryOpen
 }) => {
 
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -688,101 +689,26 @@ const SmartphoneMobileGalleryModal = ({
             {createPortal(
                 <div className="fixed inset-0 z-[70] flex flex-col overscroll-contain bg-backgroundLight dark:bg-backgroundDark">
                     <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
+
+                        <button
+                            onClick={() => {
+                                setMobileFeedGalleryOpen(false);
+                            }}
+                            className="text-[18px] font-semibold"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-6 text-main-text-light dark:text-main-text-dark">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                            </svg>
+
+                        </button>
+
                         <button
                             onClick={() => navigateToHashtag(smartphone.tag)}
                             className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark"
                         >
                             {smartphone.tag}
                         </button>
-                        <div className="relative" ref={actionDropdownRef}>
 
-
-                            <button
-                                className="text-main-text-light dark:text-main-text-dark"
-                                onClick={() => setActionDropdownOpen(!actionDropdownOpen)}
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth={2.5}
-                                    stroke="currentColor"
-                                    className="h-7 w-7"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="
-      M3.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
-      M12 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
-      M20.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
-    "
-                                    />
-                                </svg>
-                            </button>
-
-                            {actionDropdownOpen && (
-                                <div className="absolute right-0 z-50 w-56 border rounded-md top-full border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark">
-                                    <div className="py-1">
-                                        <button
-                                            onClick={() => {
-                                                setShowQrCode(true);
-                                                setActionDropdownOpen(null);
-                                            }}
-                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
-                                                stroke="currentColor"
-                                                className="w-5 h-5"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z"
-                                                />
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z"
-                                                />
-                                            </svg>
-                                            <span>{__('QR Code')}</span>
-                                        </button>
-
-                                        <button
-                                            onClick={() => {
-                                                const url =
-                                                    route('home') + '?m-slug=' + smartphone.slug + '&single_page=true&direct=true';
-                                                navigator.clipboard.writeText(url.trim());
-                                                setLinkCopied(true);
-                                                setActionDropdownOpen(null);
-                                            }}
-                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
-                                                stroke="currentColor"
-                                                className="w-5 h-5"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75"
-                                                />
-                                            </svg>
-                                            <span>{__('Copy Link')}</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
                     </div>
 
                     <div className="flex-1 px-8 overflow-y-auto scrollbar-none"
@@ -866,6 +792,99 @@ const SmartphoneMobileGalleryModal = ({
 
                         {/* Full Content - Scrollable, No Truncation */}
                         <div className="mt-4 mb-10">
+
+                            <div className="flex items-center justify-end mb-4">
+                                <div className="relative" ref={actionDropdownRef}>
+
+
+                                    <button
+                                        className="text-main-text-light dark:text-main-text-dark"
+                                        onClick={() => setActionDropdownOpen(!actionDropdownOpen)}
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            strokeWidth={2.5}
+                                            stroke="currentColor"
+                                            className="h-7 w-7"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                d="
+      M3.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+      M12 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+      M20.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+    "
+                                            />
+                                        </svg>
+                                    </button>
+
+                                    {actionDropdownOpen && (
+                                        <div className="absolute right-0 z-50 w-56 border rounded-md top-full border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark">
+                                            <div className="py-1">
+                                                <button
+                                                    onClick={() => {
+                                                        setShowQrCode(true);
+                                                        setActionDropdownOpen(null);
+                                                    }}
+                                                    className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
+                                                >
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        strokeWidth={1.5}
+                                                        stroke="currentColor"
+                                                        className="w-5 h-5"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z"
+                                                        />
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z"
+                                                        />
+                                                    </svg>
+                                                    <span>{__('QR Code')}</span>
+                                                </button>
+
+                                                <button
+                                                    onClick={() => {
+                                                        const url =
+                                                            route('home') + '?m-slug=' + smartphone.slug + '&single_page=true&direct=true';
+                                                        navigator.clipboard.writeText(url.trim());
+                                                        setLinkCopied(true);
+                                                        setActionDropdownOpen(null);
+                                                    }}
+                                                    className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
+                                                >
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        strokeWidth={1.5}
+                                                        stroke="currentColor"
+                                                        className="w-5 h-5"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75"
+                                                        />
+                                                    </svg>
+                                                    <span>{__('Copy Link')}</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
                             <div key={smartphone?.slug} className="max-w-lg">
                                 <div className="flex flex-col items-start gap-4">
                                     <SmartphoneDetails

@@ -12,7 +12,6 @@ const MobileFeedSinglePage = ({
     feedGallery,
     setShowQrCode,
     setLinkCopied,
-    setBookmarkStatusChanged,
     auth,
     generateURL,
     navigateToHashtag,
@@ -35,6 +34,7 @@ const MobileFeedSinglePage = ({
     setFeedOpen,
     setMediaItems,
     setFeedIndex,
+    isSinglePageRef,
     __,
 }) => {
     useEffect(() => {
@@ -53,8 +53,6 @@ const MobileFeedSinglePage = ({
     const [mobileFeedGalleryOpening, setMobileFeedGalleryOpening] = useState(false);
 
 
-    const actionDropdownRef = useRef(null);
-    const [actionDropdownOpen, setActionDropdownOpen] = useState(null);
 
 
     const isDarkMode = useDarkMode();
@@ -257,8 +255,23 @@ const MobileFeedSinglePage = ({
                 >
                     {/* Header: Tag + Three Dots */}
                     <div
-                        className={`absolute left-0 right-0 top-0 z-20 flex items-center justify-between px-4 pt-4 ${isTextPost ? 'text-main-text-light dark:text-main-text-dark' : 'text-main-text-dark '}`}
+                        className={`absolute left-0 right-0 top-2 z-20 flex items-center justify-between px-4 pt-4 ${isTextPost ? 'text-main-text-light dark:text-main-text-dark' : 'text-main-text-dark'}`}
                     >
+
+                        <button
+                            onClick={() => {
+                                setFeedGallery(null);
+                                setFeedOpen(false);
+                                isSinglePageRef.current = false;
+                            }}
+                            className="text-[18px] font-semibold"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-6">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                            </svg>
+
+                        </button>
+
                         <button
                             onClick={() => navigateToHashtag(item.tag)}
                             className="text-[18px] font-semibold"
@@ -266,213 +279,7 @@ const MobileFeedSinglePage = ({
                             {item.tag}
                         </button>
 
-                        <div
-                            className="relative"
-                            ref={(el) => {
-                                if (actionDropdownOpen === index) {
-                                    actionDropdownRef.current = el;
-                                }
-                            }}
-                        >
-                            <button
-                                className="font-semibold"
-                                data-dropdown-toggle="true"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setActionDropdownOpen(
-                                        actionDropdownOpen === index ? null : index,
-                                    );
-                                }}
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth={2.5}
-                                    stroke="currentColor"
-                                    className="h-7 w-7"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="
-      M3.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
-      M12 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
-      M20.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
-    "
-                                    />
-                                </svg>
-                            </button>
 
-                            {actionDropdownOpen === index && (
-                                <div
-                                    data-dropdown-menu="true"
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="absolute right-0 z-50 w-56 border rounded-md top-full border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
-                                >
-                                    <div className="py-1">
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setShowQrCode(true);
-                                                setActionDropdownOpen(null);
-                                            }}
-                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
-                                        >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
-                                                stroke="currentColor"
-                                                className="w-5 h-5"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z"
-                                                />
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z"
-                                                />
-                                            </svg>
-                                            <span>{__('QR Code')}</span>
-                                        </button>
-
-                                        {item.type === 'posts' && (
-                                            <>
-                                                {auth?.user && (
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            router.put(
-                                                                route(
-                                                                    'website.posts.bookmark',
-                                                                    item?.id,
-                                                                ),
-
-                                                                {
-                                                                    post_id: item?.id,
-                                                                },
-                                                                {
-                                                                    preserveScroll: true,
-                                                                    preserveUrl: true,
-                                                                    onSuccess: () => {
-                                                                        item.is_bookmarked =
-                                                                            !item.is_bookmarked;
-
-                                                                        setBookmarkStatusChanged(
-                                                                            true,
-                                                                        );
-                                                                    },
-                                                                    onError: (e) => {
-                                                                        setShowErrorMessage(true);
-                                                                        setErrorMessage(e.message);
-                                                                    },
-                                                                },
-                                                            );
-                                                        }}
-                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
-                                                    >
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            fill={
-                                                                item?.is_bookmarked
-                                                                    ? isDarkMode
-                                                                        ? '#fff'
-                                                                        : '#222'
-                                                                    : 'none'
-                                                            }
-                                                            stroke={
-                                                                item?.is_bookmarked
-                                                                    ? isDarkMode
-                                                                        ? '#fff'
-                                                                        : '#222'
-                                                                    : 'currentColor'
-                                                            }
-                                                            strokeWidth={1.5}
-                                                            viewBox="0 0 24 24"
-                                                            className="size-5"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"
-                                                            />
-                                                        </svg>
-                                                        <span>
-                                                            {item?.is_bookmarked
-                                                                ? __('Remove Bookmarker')
-                                                                : __('Bookmarker')}
-                                                        </span>
-                                                    </button>
-                                                )}
-
-                                                <button
-                                                    onClick={() => {
-                                                        const url =
-                                                            route('home') + generateURL(item);
-
-                                                        navigator.clipboard.writeText(url.trim());
-                                                        setLinkCopied(true);
-                                                        setActionDropdownOpen(null);
-                                                    }}
-                                                    className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        strokeWidth={1.5}
-                                                        stroke="currentColor"
-                                                        className="w-5 h-5"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75"
-                                                        />
-                                                    </svg>
-                                                    <span>{__('Copy Link')}</span>
-                                                </button>
-
-                                            </>
-                                        )}
-
-                                        {item.type === 'smartphones' && (
-                                            <button
-                                                onClick={() => {
-                                                    const url =
-                                                        route('home') + '?m-slug=' + item.slug + '&single_page=true&direct=true';
-                                                    navigator.clipboard.writeText(url.trim());
-                                                    setLinkCopied(true);
-                                                    setActionDropdownOpen(null);
-                                                }}
-                                                className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
-                                            >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    strokeWidth={1.5}
-                                                    stroke="currentColor"
-                                                    className="w-5 h-5"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75"
-                                                    />
-                                                </svg>
-                                                <span>{__('Copy Link')}</span>
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
                     </div>
 
                     {!isLoaded && <RenderFeedItemContentSkeleton />}
@@ -769,7 +576,6 @@ const MobileFeedSinglePage = ({
         [
             videoAutoplay,
             mobileFeedGalleryOpening,
-            actionDropdownOpen,
             isDarkMode,
         ],
     );
@@ -805,36 +611,7 @@ const MobileFeedSinglePage = ({
         setManualFeedGalleryItem(feedGallery);
     }, []);
 
-    // DROPDOWN Auto Closing LOGIC
-    useEffect(() => {
-        if (!containerRef.current) return;
 
-        const container = containerRef.current;
-
-        const handleClick = (event) => {
-            const clickedToggle = event.target.closest('[data-dropdown-toggle]');
-            if (clickedToggle) {
-                return; // Let the toggle button handler deal with it
-            }
-
-            // Check if click is inside any dropdown menu
-            const clickedInsideDropdown = event.target.closest('[data-dropdown-menu]');
-            if (clickedInsideDropdown) {
-                return; // Ignore clicks inside dropdown
-            }
-
-            // Check if click is inside dropdown content
-            if (actionDropdownRef.current && actionDropdownRef.current.contains(event.target)) {
-                return; // Ignore clicks inside dropdown
-            }
-
-            // Close dropdown for any other clicks
-            setActionDropdownOpen(null);
-        };
-
-        container.addEventListener('mousedown', handleClick);
-        return () => container.removeEventListener('mousedown', handleClick);
-    }, [actionDropdownOpen]);
 
 
     // INITIALIZING AUTOPLAY FROM COOKIE (ON MOUNT)
@@ -938,6 +715,7 @@ const MobileFeedSinglePage = ({
                     setShowInfoMessage={setShowInfoMessage}
                     setErrorMessage={setErrorMessage}
                     setShowErrorMessage={setShowErrorMessage}
+                    setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
                     __={__}
                 />
             )}

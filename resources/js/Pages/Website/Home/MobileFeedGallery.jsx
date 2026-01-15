@@ -21,6 +21,9 @@ const MobileFeedGallery = (
         setShowInfoMessage,
         setErrorMessage,
         setShowErrorMessage,
+        setBookmarkStatusChanged,
+        isDarkMode,
+        setMobileFeedGalleryOpen,
     }
 
 ) => {
@@ -45,6 +48,7 @@ const MobileFeedGallery = (
                     setShowInfoMessage={setShowInfoMessage}
                     setErrorMessage={setErrorMessage}
                     setShowErrorMessage={setShowErrorMessage}
+                    setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
                     __={__}
 
                 />
@@ -60,7 +64,11 @@ const MobileFeedGallery = (
                     post={feedGallery}
                     setLinkCopied={setLinkCopied}
                     setShowQrCode={setShowQrCode}
+                    setBookmarkStatusChanged={setBookmarkStatusChanged}
+                    isDarkMode={isDarkMode}
+                    auth={auth}
                     __={__}
+                    setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
                 />
             )}
         </>

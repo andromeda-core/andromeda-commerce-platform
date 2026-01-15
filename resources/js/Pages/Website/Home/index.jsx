@@ -959,6 +959,14 @@ const index = () => {
 
             // Update previous URL ref
             previousUrlRef.current = url.toString();
+        } else {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('mobile-feed-gallery');
+
+            window.history.replaceState({}, '', url.toString());
+
+            // Update previous URL ref
+            previousUrlRef.current = url.toString();
         }
     }, [MobileFeedGalleryOpen]);
     //)
@@ -1333,7 +1341,7 @@ const index = () => {
                             setFeedGallery={setFeedGallery}
                             setLinkCopied={setLinkCopied}
                             setShowQrCode={setShowQrCode}
-                            setBookmarkStatusChanged={setBookmarkStatusChanged}
+                            isSinglePageRef={isSinglePageRef}
                             auth={auth}
                             generateURL={generateURL}
                             navigateToHashtag={navigateToHashtag}
