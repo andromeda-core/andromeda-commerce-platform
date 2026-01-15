@@ -1053,7 +1053,7 @@ const index = () => {
         transition-opacity duration-200 ease-out
         will-change-transform contain-layout
         transform-gpu
-        ${showFeedSkeleton && !feedOpen && feed.length === 0
+        ${showFeedSkeleton
                         ? 'opacity-100'
                         : 'opacity-0'}
         pointer-events-none
