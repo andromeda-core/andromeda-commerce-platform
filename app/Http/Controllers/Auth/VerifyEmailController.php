@@ -21,7 +21,7 @@ class VerifyEmailController extends Controller
 
         if ($request->user()->markEmailAsVerified()) {
             event(new Verified($request->user()));
-            broadcast(new EmailVerified($request->user()))->toOthers();
+            broadcast(new EmailVerified($request->user()));
         }
 
         if ($request->user()->hasRole('Customer')) {
