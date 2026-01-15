@@ -1362,7 +1362,7 @@ const SmartphoneMobileGalleryModal = ({
                                                                             smartphone?.inventory_items_count,
                                                                         );
                                                                     }}
-                                                                    className="flex-1 h-12 text-lg font-semibold text-center text-white transition bg-green-600 border border-green-600 rounded-md hover:bg-green-700 dark:border-green-500 dark:bg-green-500 dark:hover:bg-green-600"
+                                                                    className="flex-1 h-12 text-sm font-semibold text-center text-white transition bg-green-600 border border-green-600 rounded-md hover:bg-green-700 dark:border-green-500 dark:bg-green-500 dark:hover:bg-green-600"
                                                                 >
                                                                     <div className="flex items-center justify-center">
                                                                         {cartProcessing && <Spinner />}
@@ -1388,7 +1388,7 @@ const SmartphoneMobileGalleryModal = ({
                                                                         ]);
                                                                         setHasCartChanges(false);
                                                                     }}
-                                                                    className="flex-1 h-12 text-lg font-semibold text-center transition bg-white border rounded-md border-main-text-light text-main-text-light hover:bg-gray-100 dark:border-main-text-dark dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                    className="flex-1 h-12 text-sm font-semibold text-center transition bg-white border rounded-md border-main-text-light text-main-text-light hover:bg-gray-100 dark:border-main-text-dark dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                 >
                                                                     <span>{__('Cancel')}</span>
                                                                 </button>
@@ -1400,7 +1400,7 @@ const SmartphoneMobileGalleryModal = ({
                                                                     onClick={() => {
                                                                         handleRemoveCartItem('smartphone', smartphone?.id);
                                                                     }}
-                                                                    className="flex-1 h-12 text-lg font-semibold text-center transition bg-white border rounded-md border-main-text-light text-main-text-light hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80"
+                                                                    className="flex-1 h-12 text-sm font-semibold text-center transition bg-white border rounded-md border-main-text-light text-main-text-light hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80"
                                                                 >
                                                                     <div className="flex items-center justify-center">
                                                                         {cartProcessing && <Spinner />}
@@ -1418,7 +1418,7 @@ const SmartphoneMobileGalleryModal = ({
                                                                             smartphone?.inventory_items_count,
                                                                         )
                                                                     }
-                                                                    className="flex-1 h-12 text-lg font-semibold transition border rounded-md border-main-text-dark bg-main-text-light text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80"
+                                                                    className="flex-1 h-12 text-sm font-semibold transition border rounded-md border-main-text-dark bg-main-text-light text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80"
                                                                 >
                                                                     <div className="flex items-center justify-center">
                                                                         {buyNowProcessing && <Spinner />}
