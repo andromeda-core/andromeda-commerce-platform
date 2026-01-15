@@ -148,6 +148,11 @@ export default function MainLayout({ children }) {
 
     // if email needs verification on mount and periodically
     useEffect(() => {
+
+        if (!auth?.user) {
+            return;
+        }
+
         const checkEmailVerification = () => {
             if (
                 auth?.user &&
@@ -162,7 +167,7 @@ export default function MainLayout({ children }) {
         checkEmailVerification();
 
 
-        const channel = window.Echo.private(`user.${auth?.user.id}`);
+        const channel = window.Echo.private(`user.${auth?.user?.id}`);
 
         channel.listen('.email.verified', (event) => {
             setShowEmailVerification(false);
