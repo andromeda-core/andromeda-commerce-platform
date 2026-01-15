@@ -36,37 +36,38 @@ export default function Login({ canResetPassword, redirect }) {
             <Head title={__("Login", true)} />
 
             <div className="flex flex-col flex-1 w-full md:my-5 lg:w-1/2">
-                <div className="w-full max-w-md pt-10 mx-auto">
-                    <Link
-                        href={route('home')}
-                        className="inline-flex items-center text-sm transition-colors text-main-text-light hover:text-gray-700 dark:text-main-text-dark dark:hover:text-sub-text-dark "
-                    >
-                        <svg
-                            className="stroke-current"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 20 20"
-                            fill="none"
-                        >
-                            <path
-                                d="M12.7083 5L7.5 10.2083L12.7083 15.4167"
-                                stroke=""
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            />
-                        </svg>
-                        {__('Back to Website')}
-                    </Link>
-                </div>
+
                 <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
+                    <div className="w-full mb-10">
+                        <Link
+                            href={route('home')}
+                            className="inline-flex items-center gap-1 text-[12px] transition-colors text-main-text-light hover:text-gray-700 dark:text-main-text-dark dark:hover:text-sub-text-dark "
+                        >
+                            <svg
+                                className="stroke-current"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="15"
+                                height="15"
+                                viewBox="0 0 20 20"
+                                fill="none"
+                            >
+                                <path
+                                    d="M12.7083 5L7.5 10.2083L12.7083 15.4167"
+                                    stroke=""
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            </svg>
+                            {__('Back to Website')}
+                        </Link>
+                    </div>
                     <div>
                         <div className="mb-5 sm:mb-8">
-                            <h1 className="mb-2 text-4xl font-semibold text-main-text-light sm:text-title-md dark:text-main-text-dark">
+                            <h1 className="mb-2 text-[21px] font-semibold text-main-text-light sm:text-title-md dark:text-main-text-dark">
                                 {__('Login')}
                             </h1>
-                            <p className="text-sm text-gray-500 dark:text-sub-text-dark">
+                            <p className="text-[12px] text-sub-text-light font-normal dark:text-sub-text-dark">
                                 {__('Enter your email and password to Login')}!
                             </p>
                         </div>

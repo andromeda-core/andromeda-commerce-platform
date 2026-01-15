@@ -38,9 +38,7 @@ class RegisteredUserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'phone' => ['required', 'regex:/^\+\d+$/', 'max:50', 'unique:users,phone'],
             'password' => ['required', 'min:8', 'max:50', 'confirmed', Rules\Password::defaults()],
-            'country_id' => ['required', 'exists:countries,id'],
         ],
             [
                 'name.required' => Trans::get('Please enter your full name.'),
@@ -53,18 +51,10 @@ class RegisteredUserController extends Controller
                 'email.unique' => Trans::get('This email is already registered.'),
                 'email.lowercase' => Trans::get('This email must be in lowercase.'),
 
-                'phone.required' => Trans::get('Please enter your phone number.'),
-                'phone.regex' => Trans::get('Phone number must include country code. Example: +8801XXXXXXXXX'),
-                'phone.max' => Trans::get('Phone number cannot exceed 50 characters.'),
-                'phone.unique' => Trans::get('This phone number is already registered.'),
-
                 'password.required' => Trans::get('Please enter your password.'),
                 'password.min' => Trans::get('Your password must be at least 8 characters long.'),
                 'password.max' => Trans::get('Password cannot exceed 50 characters.'),
                 'password.confirmed' => Trans::get('The password confirmation does not match.'),
-
-                'country_id.required' => Trans::get('The Country Field Is Required'),
-                'country_id.exists' => Trans::get('The Selected Country Does Not Exists'),
             ]);
 
         $user = User::create([
@@ -75,12 +65,11 @@ class RegisteredUserController extends Controller
         ]);
 
         $user->syncRoles('Customer');
-        $user->customer()->create([
-            'country_id' => $request->country_id,
-        ]);
+        $user->customer()->create();
 
         Auth::login($user);
         $user->notify(new SendEmailToUserAfterRegistration($user));
+        $user->sendEmailVerificationNotification();
 
         $redirect = request()->input('redirect');
         if ($redirect && str_starts_with($redirect, '/')) {

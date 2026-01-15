@@ -30,6 +30,8 @@ interface IUserRepository
 
     public function profileCompletionCheck(Request $request);
 
+    public function hasVerifiedEmail(Request $request);
+
     public function isCustomerEligableForSocialMessageSendOrReceive(string $user_id);
 
     public function uploadProfilePicture(Request $request);

@@ -487,6 +487,12 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Color', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Video AutoPlay Filter', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Autoplay', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Verify Your Email', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Sending', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Resend Verification', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Check inbox or spam folder', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Sent! Check your inbox.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Failed. Try again.', 'created_at' => $now, 'updated_at' => $now],
 
             // Backend
             ['key' => 'Profile Updated Successfully', 'created_at' => $now, 'updated_at' => $now],

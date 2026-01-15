@@ -37,7 +37,8 @@ export default function AuthenticatedLayout({ children }) {
     }, []);
 
     // Global Auth user Prop
-    const user = usePage().props.auth.user;
+    const user = auth?.user;
+
 
     // Managing Loader State
     const [loaded, setLoaded] = useState(true);
@@ -63,6 +64,7 @@ export default function AuthenticatedLayout({ children }) {
 
     // Managing Dark Mode State
     const [darkMode, setDarkMode] = useState(false);
+
 
     return (
         <>

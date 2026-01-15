@@ -74,10 +74,10 @@ export default function ForgotPassword() {
                 <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
                     <div>
                         <div className="mb-5 sm:mb-8">
-                            <h1 className="mb-2 text-4xl font-semibold text-main-text-light sm:text-title-md dark:text-main-text-dark">
+                            <h1 className="mb-2 text-[21px] font-semibold text-main-text-light sm:text-title-md dark:text-main-text-dark">
                                 {__('Forgot Password')}
                             </h1>
-                            <div className="mb-4 text-sm text-main-text-light dark:text-sub-text-dark">
+                            <div className="mb-4 text-[12px] font-normal text-sub-text-light dark:text-sub-text-dark">
                                 {__('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.')}
                             </div>
                         </div>

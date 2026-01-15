@@ -744,4 +744,27 @@ class UserRepository implements IUserRepository
 
         return $url;
     }
+
+    public function hasVerifiedEmail(Request $request)
+    {
+        $user = $request->user();
+
+        try {
+            if (empty($user)) {
+                throw new Exception('User not Found');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'User Found',
+                'hasVerifiedEmail' => $user->hasVerifiedEmail(),
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
 }

@@ -13,6 +13,7 @@ import GlobalLanguageFilter from '@/Pages/Website/GlobalLanguageFilters/GlobalLa
 import { useLanguageStore } from '@/Hooks/useLanguageStore';
 import getCookie from '@/Hooks/useGetCookie';
 import { useTranslation } from '@/Hooks/useTranslation';
+import EmailVerificationPopup from '@/Components/EmailVerificationPopup';
 
 
 export default function MainLayout({ children }) {
@@ -46,6 +47,11 @@ export default function MainLayout({ children }) {
 
     // Managing Dark Mode State
     const [darkMode, setDarkMode] = useState(false);
+
+    // Email Verification Popup State
+    const [showEmailVerification, setShowEmailVerification] = useState(false);
+
+
 
     // Window Size Hook
     const windowSize = useWindowSize();
@@ -140,6 +146,21 @@ export default function MainLayout({ children }) {
     }, [auth.user?.id]);
 
 
+    // if email needs verification on mount and periodically
+    useEffect(() => {
+        const checkEmailVerification = () => {
+            if (
+                auth?.user &&
+                !auth?.user.email_verified_at
+            ) {
+                setShowEmailVerification(true);
+            } else {
+                setShowEmailVerification(false);
+            }
+        };
+
+        checkEmailVerification();
+    }, [auth?.user]);
 
     // Appending HISTORY WHEN FILTER OR LANGUAGE MODAL OPENS
     useEffect(() => {
@@ -255,6 +276,14 @@ export default function MainLayout({ children }) {
             </div>
 
             <div id="modal-root"></div>
+
+
+            {showEmailVerification && (
+                <EmailVerificationPopup
+                    user={auth?.user}
+                    onClose={() => setShowEmailVerification(false)}
+                />
+            )}
         </>
     );
 }

@@ -63,6 +63,16 @@ class CheckoutController extends Controller
             return response()->json(['message' => 'Please Complete Your Profile Before Placing An Order'], 400);
         }
 
+        $is_email_verified = $this->user->hasVerifiedEmail($request);
+
+        if ($is_email_verified['status'] === false) {
+            return response()->json(['message' => $is_email_verified['message']], 400);
+        }
+
+        if (! $is_email_verified['hasVerifiedEmail']) {
+            return response()->json(['message' => 'Please Verify Your Email Before Placing An Order'], 400);
+        }
+
         $response = $this->order->placeOrderFromWebsite($request);
 
         if ($response['status'] === false) {

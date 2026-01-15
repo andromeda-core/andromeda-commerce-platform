@@ -16,9 +16,7 @@ export default function Register({ countries, redirect }) {
     // Register User Form Data
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
-        phone: '',
         email: '',
-        country_id: '',
         password: '',
         password_confirmation: '',
         redirect: new URLSearchParams(window.location.search).get('redirect') || redirect || '',
@@ -38,37 +36,40 @@ export default function Register({ countries, redirect }) {
             <Head title={__("Register", true)} />
 
             <div className="flex flex-col flex-1 w-full px-4 md:my-5 lg:w-1/2">
-                <div className="w-full max-w-md pt-10 mx-auto">
-                    <Link
-                        href={route('home')}
-                        className="inline-flex items-center text-sm transition-colors text-main-text-light hover:text-gray-700 dark:text-main-text-dark dark:hover:text-sub-text-dark "
-                    >
-                        <svg
-                            className="stroke-current"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 20 20"
-                            fill="none"
-                        >
-                            <path
-                                d="M12.7083 5L7.5 10.2083L12.7083 15.4167"
-                                stroke=""
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            />
-                        </svg>
-                        {__('Back to Website')}
-                    </Link>
-                </div>
+
                 <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
+
+                    <div className="w-full mb-10">
+                        <Link
+                            href={route('home')}
+                            className="inline-flex items-center text-[12px] gap-1 transition-colors text-main-text-light hover:text-gray-700 dark:text-main-text-dark dark:hover:text-sub-text-dark "
+                        >
+                            <svg
+                                className="stroke-current"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="15"
+                                height="15"
+                                viewBox="0 0 20 20"
+                                fill="none"
+                            >
+                                <path
+                                    d="M12.7083 5L7.5 10.2083L12.7083 15.4167"
+                                    stroke=""
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            </svg>
+                            {__('Back to Website')}
+                        </Link>
+                    </div>
+
                     <div>
                         <div className="mb-5 sm:mb-8">
-                            <h1 className="mb-2 text-4xl font-semibold text-main-text-light sm:text-title-md dark:text-main-text-dark">
+                            <h1 className="mb-2 text-[21px] font-semibold text-main-text-light sm:text-title-md dark:text-main-text-dark">
                                 {__('Register')}
                             </h1>
-                            <p className="text-sm text-gray-500 dark:text-sub-text-dark">
+                            <p className="text-[12px] font-normal text-sub-text-light dark:text-sub-text-dark">
                                 {__('Create Your Account To Login From Your Account')}
                             </p>
                         </div>
@@ -99,35 +100,6 @@ export default function Register({ countries, redirect }) {
                                         Required={true}
                                     />
 
-                                    <WebInput
-                                        InputName={__('Phone Number')}
-                                        Error={errors.phone}
-                                        Value={data.phone}
-                                        Action={(e) => setData('phone', e.target.value)}
-                                        Placeholder={__('Phone Number')}
-                                        Id={'phone'}
-                                        Name={'phone'}
-                                        Type={'text'}
-                                        Required={true}
-                                    />
-
-                                    {errors?.phone && <p className="mt-2">&nbsp;</p>}
-
-                                    <div className="relative bottom-3 z-[50]">
-                                        <WebSelectInput
-                                            InputName={__('Country')}
-                                            Id={'country_id'}
-                                            Name={'country_id'}
-                                            Error={errors.country_id}
-                                            Value={data.country_id}
-                                            items={countries}
-                                            itemKey={'name'}
-                                            Placeholder={__('Select Country')}
-                                            customPlaceHolder={true}
-                                            Required={true}
-                                            Action={(value) => setData('country_id', value)}
-                                        />
-                                    </div>
 
                                     <WebInput
                                         InputName={__('Password')}
@@ -166,7 +138,6 @@ export default function Register({ countries, redirect }) {
                                                 processing ||
                                                 data.name == '' ||
                                                 data.email == '' ||
-                                                data.phone == '' ||
                                                 data.password == '' ||
                                                 data.password_confirmation == '' ||
                                                 data.password != data.password_confirmation
@@ -180,11 +151,11 @@ export default function Register({ countries, redirect }) {
                             </form>
 
                             <div className="mt-5">
-                                <p className="text-sm font-normal text-center text-main-text-light dark:text-sub-text-dark sm:text-start">
+                                <p className="text-sm font-normal text-center text-main-text-light dark:text-main-text-dark sm:text-start">
                                     {__('Already have an account')}?{' '}
                                     <Link
                                         href={route('login')}
-                                        className="text-sm font-bold text-main-text-light dark:text-main-text-dark dark:hover:text-sub-text-dark hover:text-main-text-light/80"
+                                        className="text-sm font-bold text-main-text-light dark:text-main-text-dark dark:hover:text-main-text-dark hover:text-main-text-light/80"
                                     >
                                         {' '}
                                         {'  '}

@@ -9,13 +9,8 @@ import getCookie from '@/Hooks/useGetCookie';
 
 export default function GuestLayout({ children }) {
     // Global General Setting Prop
-    const { generalSetting } = usePage().props;
+    const { generalSetting, asset, flash } = usePage().props;
 
-    // Global Asset Prop To Get asset() path it uses Laravel Default asset() Method
-    const { asset } = usePage().props;
-
-    // Global Flash Messages Prop Can be Assessble Via (flash.success || flash.error)
-    const { flash } = usePage().props;
 
     // Managing Dark Mode State
     const [darkMode, setDarkMode] = useState(false);
@@ -130,20 +125,6 @@ export default function GuestLayout({ children }) {
                 <div className="relative flex flex-col justify-center w-full min-h-screen overflow-y-auto dark:bg-backgroundDark sm:p-0 lg:flex-row">
                     {children}
 
-                    <div className="relative items-center hidden w-full min-h-screen bg-surface-1-light dark:bg-surface-1-dark lg:grid lg:w-1/2">
-                        <div className="flex items-center justify-center z-1">
-                            <CommonGridShape />
-                            <div className="flex flex-col items-center max-w-xs">
-                                <Link
-                                    href={route('home')}
-                                    className="block mb-4 dark:none rounded-2xl"
-                                >
-                                    <img className='block dark:hidden' src={ApplicationLogoLight} alt="Logo" />
-                                    <img className='hidden dark:block' src={ApplicationLogoDark} alt="Logo" />
-                                </Link>
-                            </div>
-                        </div>
-                    </div>
 
                     <div className="fixed z-50 bottom-6 right-6">
                         <button
