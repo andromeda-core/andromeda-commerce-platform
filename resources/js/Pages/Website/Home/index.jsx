@@ -1045,7 +1045,7 @@ const index = () => {
             )}
 
 
-            {showFeedSkeleton && (
+            {showFeedSkeleton && !feedOpen && (
                 <>
                     {windowSize.width > 1024 && <DesktopFeedSkeleton />}
                     {windowSize.width <= 1024 && <MobileFeedSkeleton />}
