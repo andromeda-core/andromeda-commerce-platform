@@ -469,7 +469,7 @@ const MobileFeedSinglePage = ({
 
                     {item.type === 'posts' && (
                         <div
-                            className={`absolute left-0 right-0 z-20 px-5 pt-3 text-main-text-dark bottom-20 ${hasVideo ? 'bottom-[100px]' : ''}`}
+                            className={`absolute left-0 right-0 z-20 px-5 pt-3 text-main-text-dark bottom-[70px] ${hasVideo ? 'bottom-[100px]' : ''}`}
                         >
                             <div className="flex items-center justify-end mb-1">
                                 {isTextPost ? (

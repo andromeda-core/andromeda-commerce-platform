@@ -877,7 +877,7 @@ const SmartphoneMobileGalleryModal = ({
 
             {createPortal(
                 <div className="fixed inset-0 z-[70] flex flex-col overscroll-contain bg-backgroundLight dark:bg-backgroundDark">
-                    <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
+                    <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
 
                         <button
                             onClick={() => {
@@ -939,7 +939,7 @@ const SmartphoneMobileGalleryModal = ({
                         )}
 
                         {/* Thumbnail Refs */}
-                        <div className="flex items-center justify-center gap-0 py-4">
+                        <div className="flex items-center justify-start gap-0 pt-4">
                             {/* Thumbnails */}
                             {smartphone.images.length > 1 && (
                                 <div

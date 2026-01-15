@@ -152,7 +152,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
         <>
             {createPortal(
                 <div className="fixed inset-0 z-[70] flex flex-col bg-backgroundLight dark:bg-backgroundDark overscroll-contain">
-                    <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
+                    <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
 
 
                         <button
@@ -237,7 +237,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
 
 
                         {/* Thumbnail Refs */}
-                        <div className="flex items-center justify-center gap-0 py-4">
+                        <div className="flex items-center justify-start gap-0 pt-4">
                             {/* Thumbnails */}
                             {((Array.isArray(
                                 post?.post_video_urls,

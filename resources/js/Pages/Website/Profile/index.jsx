@@ -464,19 +464,20 @@ const Index = ({ user, countries }) => {
                             </div>
                         </div>
 
+
                         {/* Actions */}
-                        {/* Actions */}
-                        <div className="flex w-full gap-3 sm:w-auto">
+                        <div className="flex w-full gap-2 sm:w-auto sm:flex-none sm:gap-3">
                             <button
                                 onClick={() => setIsChangePasswordOpen(true)}
-                                className="min-w-[160px] flex-1 whitespace-nowrap rounded-md bg-main-text-light px-4 py-2 text-sm font-semibold text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
+                                className="flex-1 whitespace-nowrap rounded-md bg-main-text-light px-3 py-2 text-xs font-semibold sm:min-w-[160px] sm:flex-none sm:px-4 sm:text-sm text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
                             >
                                 {__('Change Password')}
                             </button>
 
                             <button
                                 onClick={() => setIsEditProfileOpen(true)}
-                                className="min-w-[160px] flex-1 whitespace-nowrap rounded-md bg-main-text-light px-4 py-2 text-sm font-semibold text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
+                                className="flex-1 whitespace-nowrap rounded-md bg-main-text-light px-3 py-2 text-xs font-semibold sm:min-w-[160px] sm:flex-none sm:px-4 sm:text-sm text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
+
                             >
                                 {__('Edit Profile')}
                             </button>

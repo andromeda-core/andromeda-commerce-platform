@@ -119,33 +119,72 @@ export default function RadiusMap({
     if (!isModalOpen) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
+        <div className={`fixed inset-0 z-50 flex items-center justify-center overflow-y-auto ${windowSize.width <= 1024 ? 'p-0' : 'p-4 sm:p-6'}`}>
             <div
                 className="fixed inset-0 backdrop-blur-[32px]"
                 onClick={() => setIsModalOpen(false)}
             ></div>
 
             {/* Modal content */}
-            <div className={`relative z-10 w-full max-w-4xl max-h-full p-8 overflow-y-auto border border-surface-3-light  dark:border-surface-3-dark ${windowSize.width <= 1024 ? 'dark:bg-backgroundDark' : 'dark:bg-surface-1-dark'} rounded-xl bg-backgroundLight dark:text-main-text-dark`}>
+            <div
+                className={`relative z-10 w-full overflow-y-auto border ${windowSize.width <= 1024
+                    ? 'h-full max-w-full rounded-none border-none'
+                    : 'max-w-4xl max-h-[90vh] rounded-xl border-surface-3-light dark:border-surface-3-dark'
+                    } ${windowSize.width <= 1024
+                        ? 'dark:bg-backgroundDark'
+                        : 'dark:bg-surface-1-dark'
+                    } bg-backgroundLight dark:text-main-text-dark`}
+            >
+                {/* PC */}
                 {/* Header */}
-                <div className="flex items-center justify-between px-4 py-3 ">
-                    <h3 className="text-xl font-semibold text-main-text-light dark:text-main-text-dark">
-                        {__('Select Radius')}
-                    </h3>
+                {windowSize.width > 1024 && (
+                    <div className={`flex items-center justify-start px-8 py-6`}>
 
-                </div>
+                        <h3 className={`font-semibold text-main-text-light dark:text-main-text-dark ${windowSize.width <= 1024 ? 'text-lg' : 'text-xl'}`}>
+                            {__('Select Radius')}
+                        </h3>
+                    </div>
+                )}
+                {/* MOBILE */}
+                {/* Header */}
+                {windowSize.width <= 1024 && (
+                    <div className="flex items-center justify-center px-4 py-3">
+                        <button
+                            onClick={() => setIsModalOpen(false)}
+                            className="absolute p-1 text-black rounded-full left-4 dark:text-main-text-dark"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="currentColor"
+                                className="size-6"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+                                />
+                            </svg>
+                        </button>
 
+                        <h2 className="mx-10 text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
+                            {__('Select Radius')}
+                        </h2>
+                    </div>
+
+                )}
                 {/* Map */}
-
-
-
-                <div className="relative flex flex-col items-center gap-2 p-4">
-
+                <div className={`relative flex flex-col items-center gap-2 ${windowSize.width <= 1024 ? 'px-4 py-2' : 'px-8 pt-4'}`}>
                     {/* Map container */}
                     <div
                         ref={mapRef}
                         id="radiusMap"
-                        className="h-[50vh] w-full rounded-md border border-surface-3-light dark:border-surface-3-dark"
+                        className={`w-full rounded-md border border-surface-3-light dark:border-surface-3-dark ${windowSize.width <= 1024
+                            ? 'h-[40vh]'
+                            : 'h-[50vh]'
+                            }`}
                     />
 
                     {/* Loader Overlay */}
@@ -161,11 +200,10 @@ export default function RadiusMap({
                             {__('Radius')}
                         </label>
 
-                        <div className="relative w-full max-w-xs">
-
+                        <div className="relative w-full lg:max-w-xs">
                             <WebInput
                                 Type={'number'}
-                                Value={(radius / 1000)}
+                                Value={radius / 1000}
                                 Action={(e) => {
                                     const value = e.target.value;
 
@@ -176,8 +214,6 @@ export default function RadiusMap({
                                     const km = parseFloat(value);
 
                                     if (isNaN(km)) return;
-
-
 
                                     const meters = km * 1000;
                                     setRadius(meters);
@@ -193,26 +229,34 @@ export default function RadiusMap({
                                 KM
                             </span>
                         </div>
-
-                        <span className="text-xs text-sub-text-light dark:text-sub-text-dark">
-                            {__('You can drag the circle on the map or enter radius manually')}
-                        </span>
                     </div>
+                </div>
 
+                {/* Helper Text */}
+                <div className={`flex items-center justify-center gap-3 ${windowSize.width <= 1024 ? 'px-4 pb-3' : 'px-8 pb-4'}`}>
+                    <span className="text-xs text-center text-sub-text-light dark:text-sub-text-dark">
+                        {__('You can drag the circle on the map or enter radius manually')}
+                    </span>
                 </div>
 
                 {/* Footer */}
-                <div className="flex justify-end gap-3 px-4 py-3">
+                <div className={`flex gap-3 ${windowSize.width <= 1024 ? 'flex-col px-4 pb-6 pt-2' : 'justify-end px-8 pb-6'}`}>
                     <button
                         onClick={() => setIsModalOpen(false)}
-                        className="px-4 py-2  w-[160px] h-[46px] text-md font-medium rounded-md bg-surface-2-light  text-main-text-light transition-all hover:bg-surface-3-light dark:hover:bg-surface-3-dark/80 dark:text-sub-text-dark dark:bg-surface-3-dark"
+                        className={`px-4 py-2 text-md font-medium rounded-md bg-surface-2-light text-main-text-light transition-all hover:bg-surface-3-light dark:hover:bg-surface-3-dark/80 dark:text-sub-text-dark dark:bg-surface-3-dark ${windowSize.width <= 1024
+                            ? 'w-full h-12 order-2'
+                            : 'w-[160px] h-[46px]'
+                            }`}
                     >
                         {__('Close')}
                     </button>
 
                     <button
                         onClick={() => radiusConfirmed()}
-                        className="px-4 py-2 w-[160px] h-[46px]  text-md font-semibold justify-center gap-2 rounded-md bg-main-text-light  text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light  dark:hover:bg-main-text-dark/80"
+                        className={`px-4 py-2 text-md font-semibold justify-center gap-2 rounded-md bg-main-text-light text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80 ${windowSize.width <= 1024
+                            ? 'w-full h-12 order-1'
+                            : 'w-[160px] h-[46px]'
+                            }`}
                     >
                         {__('Save Radius')}
                     </button>

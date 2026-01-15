@@ -38,7 +38,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, __, curren
                 className="flex flex-wrap items-center gap-4 p-1 py-4 transition-colors rounded-md cursor-pointer group no-touch-hover lg:hover:bg-surface-2-light lg:dark:hover:bg-surface-2-dark"
             >
                 {/* Thumbnail */}
-                <div className="flex-shrink-0 w-12 h-12 ml-3 overflow-hidden rounded-lg bg-surface-1-light dark:bg-surface-1-dark">
+                <div className="flex-shrink-0 w-12 h-12 ml-1 overflow-hidden rounded-lg lg:ml-3 bg-surface-1-light dark:bg-surface-1-dark">
                     {item?.image || item?.video_thumbnail ? (
                         <img
                             src={item.image || item?.video_thumbnail || Placeholder}
@@ -81,7 +81,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, __, curren
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center flex-shrink-0 gap-2 mr-5 transition-opacity duration-200 opacity-100 lg:opacity-0 group-hover:opacity-100">
+                <div className="flex items-center flex-shrink-0 gap-2 mr-1 transition-opacity duration-200 opacity-100 lg:mr-5 lg:opacity-0 group-hover:opacity-100">
                     <button
                         title={__('Copy Link')}
                         className="p-4 rounded-full lg:hover:bg-surface-3-light text-main-text-light dark:text-main-text-dark lg:dark:hover:bg-surface-3-dark"
@@ -1253,9 +1253,10 @@ const Index = ({
                                         d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
                                     />
                                 </svg>
-                                <p className="mt-4 text-lg font-medium text-main-text-light dark:text-main-text-dark">
+                                <p className="mt-4 text-lg font-medium break-words break-all whitespace-normal line-clamp-2 text-main-text-light dark:text-main-text-dark">
                                     {getNoResultsMessage()}
                                 </p>
+
                                 {hasPerformedSearch() &&
                                     currentResults.length === 0 &&
                                     state.activeTab === 'all' && (
