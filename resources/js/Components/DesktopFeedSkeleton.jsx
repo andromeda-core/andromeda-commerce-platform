@@ -10,7 +10,7 @@ const DesktopFeedSkeleton = () => {
                     </div>
 
                     <div className="absolute right-[clamp(8px,2vw,32px)] top-1/2 flex -translate-y-1/2 flex-col gap-6">
-                        {Array.from({ length: 4 }).map((_, i) => (
+                        {Array.from({ length: 3 }).map((_, i) => (
                             <div
                                 key={i}
                                 className="w-12 h-12 rounded-full animate-pulse bg-surface-1-light dark:bg-surface-2-dark"

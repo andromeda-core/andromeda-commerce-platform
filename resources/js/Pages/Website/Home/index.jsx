@@ -297,7 +297,6 @@ const index = () => {
                 setFeedGallery(feedItem);
                 setFeedOpen(true);
                 setFeedIndex(index);
-                setShowFeedSkeleton(false);
 
             }
 
@@ -411,8 +410,6 @@ const index = () => {
             setShowErrorMessage(true);
             setErrorMessage(__(err.response.data.message) || __('Something went wrong' + "!"));
             window.history.replaceState({}, '', window.location.pathname);
-        } finally {
-            setShowFeedSkeleton(false);
         }
     };
 
@@ -514,8 +511,6 @@ const index = () => {
             setShowErrorMessage(true);
             setErrorMessage(__(err.response.data.message) || __('Something went wrong' + "!"));
             window.history.replaceState({}, '', window.location.pathname);
-        } finally {
-            setShowFeedSkeleton(false);
         }
     };
 
@@ -1006,6 +1001,17 @@ const index = () => {
     );
 
 
+    const shouldShowSkeleton =
+        showFeedSkeleton && !feedOpen;
+
+
+    useEffect(() => {
+        if (feedOpen && showFeedSkeleton) {
+            requestAnimationFrame(() => {
+                setShowFeedSkeleton(false);
+            })
+        }
+    }, [feedOpen]);
 
     return (
         <MainLayout>
@@ -1041,18 +1047,23 @@ const index = () => {
             )}
 
 
-            {showFeedSkeleton && !isFeedLoaded && (
-                <>
-                    {/* PC FEED SKELETON */}
-                    {windowSize.width > 1024 && showFeedSkeleton && (
-                        <DesktopFeedSkeleton />
-                    )}
-                    {/* Mobile Feed Skeleton */}
-                    {windowSize.width <= 1024 && showFeedSkeleton && (
-                        <MobileFeedSkeleton />
-                    )}
-                </>
-            )}
+            <div
+                className={`
+        fixed inset-0 z-[50]
+        transition-opacity duration-500 ease-in-out
+        ${shouldShowSkeleton
+                        ? 'opacity-100 pointer-events-auto'
+                        : 'opacity-0 pointer-events-none'}
+    `}
+                style={{
+                    transitionProperty: 'opacity',
+                    transitionDuration: '500ms',
+                    transitionTimingFunction: 'ease-in-out'
+                }}
+            >
+                {windowSize.width > 1024 && <DesktopFeedSkeleton />}
+                {windowSize.width <= 1024 && <MobileFeedSkeleton />}
+            </div>
 
             {isFeedLoaded && (
                 <>
