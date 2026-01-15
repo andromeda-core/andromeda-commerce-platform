@@ -165,7 +165,7 @@ const DesktopFeed = ({
             const url = route('home') + generateURL(currentItem);
             window.history.replaceState({}, '', url);
         } else if (currentItem?.type === 'smartphones') {
-            const url = route('home') + '?m-slug=' + currentItem?.slug;
+            const url = route('home') + '?m-slug=' + currentItem?.slug + '&single_page=true&direct=true';
             window.history.replaceState({}, '', url);
         }
 
@@ -192,7 +192,7 @@ const DesktopFeed = ({
             const url = route('home') + generateURL(currentItem);
             window.history.replaceState({}, '', url);
         } else if (currentItem?.type === 'smartphones') {
-            const url = route('home') + '?m-slug=' + currentItem?.slug;
+            const url = route('home') + '?m-slug=' + currentItem?.slug + '&single_page=true&direct=true';
             window.history.replaceState({}, '', url);
         }
 
@@ -276,7 +276,7 @@ const DesktopFeed = ({
             const url = route('home') + generateURL(feedItem);
             window.history.replaceState({}, '', url);
         } else if (feedItem?.type === 'smartphones') {
-            const url = route('home') + '?m-slug=' + feedItem?.slug;
+            const url = route('home') + '?m-slug=' + feedItem?.slug + '&single_page=true&direct=true';
             window.history.replaceState({}, '', url);
         }
 
@@ -1241,21 +1241,9 @@ const DesktopFeed = ({
                                     <div className="mx-auto flex h-[90vh] w-full flex-col lg:w-[90%] xl:w-[75%]">
                                         {/* Tag and Actions Header */}
                                         <div className="flex items-center justify-between mb-2">
-                                            <div className="flex-1">
-                                                {feedGallery?.tag && (
-                                                    <button
-                                                        onClick={() =>
-                                                            navigateToHashtag(feedGallery?.tag)
-                                                        }
-                                                        className="text-lg font-medium text-main-text-light hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-sub-text-dark"
-                                                    >
-                                                        {feedGallery?.tag}
-                                                    </button>
-                                                )}
-                                            </div>
 
                                             {/* Three Dot Menu */}
-                                            <div className="relative">
+                                            <div className="relative flex-1">
                                                 <button
                                                     data-post-actions-button
                                                     className="p-2 transition-colors rounded-full hover:bg-surface-1-light dark:hover:bg-surface-1-dark"
@@ -1264,22 +1252,29 @@ const DesktopFeed = ({
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         fill="none"
                                                         viewBox="0 0 24 24"
-                                                        strokeWidth={1.5}
+                                                        strokeWidth={2.5}
                                                         stroke="currentColor"
-                                                        className="w-6 h-6 dark:text-white"
+                                                        className="h-7 w-7 text-main-text-light dark:text-main-text-dark"
                                                     >
                                                         <path
                                                             strokeLinecap="round"
                                                             strokeLinejoin="round"
-                                                            d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
+                                                            d="
+      M3.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+      M12 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+      M20.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+    "
                                                         />
                                                     </svg>
                                                 </button>
 
+
+
+
                                                 {showPostDesktopActionsDropdown && (
                                                     <div
                                                         data-post-actions-dropdown
-                                                        className="absolute right-0 z-50 w-56 border rounded-md top-full border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
+                                                        className="absolute left-0 z-50 w-56 border rounded-md top-full border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
                                                     >
                                                         <div className="py-2">
                                                             {/* QR Code */}
@@ -1333,24 +1328,28 @@ const DesktopFeed = ({
                                                                             {
                                                                                 preserveScroll: true,
                                                                                 preserveUrl: true,
-                                                                                onSuccess: () => {
-                                                                                    feedGallery.is_bookmarked =
-                                                                                        !feedGallery.is_bookmarked;
-                                                                                    setShowPostDesktopActionsDropdown(
-                                                                                        false,
-                                                                                    );
-                                                                                    setBookmarkStatusChanged(
-                                                                                        true,
-                                                                                    );
-                                                                                },
-                                                                                onError: (e) => {
-                                                                                    setShowErrorMessage(
-                                                                                        true,
-                                                                                    );
-                                                                                    setErrorMessage(
-                                                                                        e.message,
-                                                                                    );
-                                                                                },
+                                                                                onSuccess:
+                                                                                    () => {
+                                                                                        feedGallery.is_bookmarked =
+                                                                                            !feedGallery.is_bookmarked;
+                                                                                        setShowPostDesktopActionsDropdown(
+                                                                                            false,
+                                                                                        );
+                                                                                        setBookmarkStatusChanged(
+                                                                                            true,
+                                                                                        );
+                                                                                    },
+                                                                                onError:
+                                                                                    (
+                                                                                        e,
+                                                                                    ) => {
+                                                                                        setShowErrorMessage(
+                                                                                            true,
+                                                                                        );
+                                                                                        setErrorMessage(
+                                                                                            e.message,
+                                                                                        );
+                                                                                    },
                                                                             },
                                                                         );
                                                                     }}
@@ -1372,7 +1371,9 @@ const DesktopFeed = ({
                                                                                     : '#222'
                                                                                 : 'currentColor'
                                                                         }
-                                                                        strokeWidth={1.5}
+                                                                        strokeWidth={
+                                                                            1.5
+                                                                        }
                                                                         viewBox="0 0 24 24"
                                                                         className="w-5 h-5"
                                                                     >
@@ -1384,8 +1385,12 @@ const DesktopFeed = ({
                                                                     </svg>
                                                                     <span className="font-normal">
                                                                         {feedGallery?.is_bookmarked
-                                                                            ? __('Remove Bookmark')
-                                                                            : __('Bookmark')}
+                                                                            ? __(
+                                                                                'Remove Bookmarker',
+                                                                            )
+                                                                            : __(
+                                                                                'Bookmarker',
+                                                                            )}
                                                                     </span>
                                                                 </button>
                                                             )}
@@ -1395,7 +1400,9 @@ const DesktopFeed = ({
                                                                 onClick={(e) => {
                                                                     const url =
                                                                         route('home') +
-                                                                        generateURL(feedGallery);
+                                                                        generateURL(
+                                                                            feedGallery,
+                                                                        );
                                                                     navigator.clipboard.writeText(
                                                                         url.trim(),
                                                                     );
@@ -1428,6 +1435,22 @@ const DesktopFeed = ({
                                                     </div>
                                                 )}
                                             </div>
+
+                                            <div>
+                                                {feedGallery?.tag && (
+                                                    <button
+                                                        onClick={() =>
+                                                            navigateToHashtag(
+                                                                feedGallery?.tag,
+                                                            )
+                                                        }
+                                                        className="text-[18px] font-semibold text-main-text-light hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-sub-text-dark"
+                                                    >
+                                                        {feedGallery?.tag}
+                                                    </button>
+                                                )}
+                                            </div>
+
                                         </div>
 
                                         {/* Post Content - Scrollable */}
@@ -1956,23 +1979,9 @@ const DesktopFeed = ({
                                                 <div className="flex-1 overflow-y-auto scrollbar-none">
                                                     {/* Tag and Actions Header */}
                                                     <div className="flex items-center justify-between mb-2">
-                                                        <div className="flex-1">
-                                                            {feedGallery?.tag && (
-                                                                <button
-                                                                    onClick={() =>
-                                                                        navigateToHashtag(
-                                                                            feedGallery?.tag,
-                                                                        )
-                                                                    }
-                                                                    className="text-lg font-medium text-main-text-light hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-sub-text-dark"
-                                                                >
-                                                                    {feedGallery?.tag}
-                                                                </button>
-                                                            )}
-                                                        </div>
 
                                                         {/* Three Dot Menu */}
-                                                        <div className="relative">
+                                                        <div className="relative flex-1">
                                                             <button
                                                                 data-post-actions-button
                                                                 className="p-2 transition-colors rounded-full hover:bg-surface-1-light dark:hover:bg-surface-1-dark"
@@ -1981,22 +1990,29 @@ const DesktopFeed = ({
                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                     fill="none"
                                                                     viewBox="0 0 24 24"
-                                                                    strokeWidth={1.5}
+                                                                    strokeWidth={2.5}
                                                                     stroke="currentColor"
-                                                                    className="w-6 h-6 dark:text-white"
+                                                                    className="h-7 w-7 text-main-text-light dark:text-main-text-dark"
                                                                 >
                                                                     <path
                                                                         strokeLinecap="round"
                                                                         strokeLinejoin="round"
-                                                                        d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
+                                                                        d="
+      M3.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+      M12 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+      M20.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+    "
                                                                     />
                                                                 </svg>
                                                             </button>
 
+
+
+
                                                             {showPostDesktopActionsDropdown && (
                                                                 <div
                                                                     data-post-actions-dropdown
-                                                                    className="absolute right-0 z-50 w-56 border rounded-md top-full border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
+                                                                    className="absolute left-0 z-50 w-56 border rounded-md top-full border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
                                                                 >
                                                                     <div className="py-2">
                                                                         {/* QR Code */}
@@ -2157,6 +2173,22 @@ const DesktopFeed = ({
                                                                 </div>
                                                             )}
                                                         </div>
+
+                                                        <div>
+                                                            {feedGallery?.tag && (
+                                                                <button
+                                                                    onClick={() =>
+                                                                        navigateToHashtag(
+                                                                            feedGallery?.tag,
+                                                                        )
+                                                                    }
+                                                                    className="text-[18px] font-semibold text-main-text-light hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-sub-text-dark"
+                                                                >
+                                                                    {feedGallery?.tag}
+                                                                </button>
+                                                            )}
+                                                        </div>
+
                                                     </div>
 
                                                     {/* Post Content */}
@@ -2688,24 +2720,11 @@ const DesktopFeed = ({
                                                 >
                                                     {/* Tag and Actions Header */}
                                                     <div className="flex items-center justify-between mb-2">
-                                                        <div className="flex-1">
-                                                            {feedGallery?.tag && (
-                                                                <button
-                                                                    onClick={() =>
-                                                                        navigateToHashtag(
-                                                                            feedGallery?.tag,
-                                                                        )
-                                                                    }
-                                                                    className="text-lg font-medium text-main-text-light hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-sub-text-dark"
-                                                                >
-                                                                    {feedGallery?.tag}
-                                                                </button>
-                                                            )}
-                                                        </div>
+
 
                                                         {/* Three Dot Menu */}
                                                         <div
-                                                            className="relative"
+                                                            className="relative flex-1"
                                                             ref={
                                                                 smartphoneDesktopViewerActionDropdownRef
                                                             }
@@ -2718,14 +2737,18 @@ const DesktopFeed = ({
                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                     fill="none"
                                                                     viewBox="0 0 24 24"
-                                                                    strokeWidth={1.5}
+                                                                    strokeWidth={2.5}
                                                                     stroke="currentColor"
-                                                                    className="w-6 h-6 dark:text-white"
+                                                                    className="h-7 w-7 text-main-text-light dark:text-main-text-dark"
                                                                 >
                                                                     <path
                                                                         strokeLinecap="round"
                                                                         strokeLinejoin="round"
-                                                                        d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
+                                                                        d="
+      M3.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+      M12 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+      M20.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+    "
                                                                     />
                                                                 </svg>
                                                             </button>
@@ -2733,7 +2756,7 @@ const DesktopFeed = ({
                                                             {showSmartphoneDesktopActionsDropdown && (
                                                                 <div
                                                                     data-smartphone-actions-dropdown
-                                                                    className="absolute right-0 z-50 w-56 border rounded-md top-full border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
+                                                                    className="absolute left-0 z-50 w-56 border rounded-md top-full border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
                                                                 >
                                                                     <div className="py-2">
                                                                         {/* QR Code */}
@@ -2776,7 +2799,7 @@ const DesktopFeed = ({
                                                                                 const url =
                                                                                     route('home') +
                                                                                     '?m-slug=' +
-                                                                                    feedGallery?.slug;
+                                                                                    feedGallery?.slug + '&single_page=true&direct=true';
                                                                                 navigator.clipboard.writeText(
                                                                                     url.trim(),
                                                                                 );
@@ -2807,6 +2830,22 @@ const DesktopFeed = ({
                                                                         </button>
                                                                     </div>
                                                                 </div>
+                                                            )}
+                                                        </div>
+
+
+                                                        <div >
+                                                            {feedGallery?.tag && (
+                                                                <button
+                                                                    onClick={() =>
+                                                                        navigateToHashtag(
+                                                                            feedGallery?.tag,
+                                                                        )
+                                                                    }
+                                                                    className="text-[18px] font-semibold text-main-text-light hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-sub-text-dark"
+                                                                >
+                                                                    {feedGallery?.tag}
+                                                                </button>
                                                             )}
                                                         </div>
                                                     </div>

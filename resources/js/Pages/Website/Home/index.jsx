@@ -1,7 +1,7 @@
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, router, usePage } from '@inertiajs/react';
-import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import QRCode from 'react-qr-code';
 import { createPortal, flushSync } from 'react-dom';
 import axios from 'axios';
@@ -17,6 +17,8 @@ import MasonryFeedItem from './MasonryFeedItem';
 import DesktopFeed from './DesktopFeed';
 import { useTranslation } from '@/Hooks/useTranslation';
 import MobileFeedSinglePage from './MobileFeedSinglePage';
+import DesktopFeedSkeleton from '@/Components/DesktopFeedSkeleton';
+import MobileFeedSkeleton from '@/Components/MobileFeedSkeleton';
 
 
 const index = () => {
@@ -31,6 +33,22 @@ const index = () => {
         typeof window !== 'undefined' &&
         /Macintosh/i.test(navigator.userAgent) &&
         navigator.maxTouchPoints === 0;
+
+
+    // show Skeleton when directly opening Any Feed
+    const [showFeedSkeleton, setShowFeedSkeleton] = useState(() => {
+        if (typeof window === 'undefined') return false;
+
+        const params = new URLSearchParams(window.location.search);
+        return params.get('direct') === 'true';
+    });
+
+    useLayoutEffect(() => {
+        if (!showFeedSkeleton) return;
+
+        // Force browser to paint skeleton BEFORE heavy JS
+        requestAnimationFrame(() => { });
+    }, []);
 
 
     const [ErrorMessage, setErrorMessage] = useState(null);
@@ -59,6 +77,8 @@ const index = () => {
     const [nextPageUrl, setNextPageUrl] = useState(null);
 
     const nextPageUrlRef = useRef(null);
+
+
     // Initialize with first load
     useEffect(() => {
         nextPageUrlRef.current = nextPageUrl;
@@ -156,15 +176,26 @@ const index = () => {
         }
     };
 
+
     useEffect(() => {
-        fetchPostsAndProducts();
-        window.history.pushState({}, '', window.location.href);
+        if (showFeedSkeleton) {
+            // Let skeleton paint first
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    fetchPostsAndProducts();
+                    window.history.pushState({}, '', window.location.href);
+                }, 0);
+            });
+        } else {
+            fetchPostsAndProducts();
+            window.history.pushState({}, '', window.location.href);
+        }
     }, []);
 
     // POST UNIQUE URL GENERATION
     const generateURL = (post) => {
         return (
-            `?slug=${encodeURIComponent(post?.slug)}&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
+            `?slug=${encodeURIComponent(post?.slug)}&single_page=true&direct=true&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
             `${post?.longitude != null ? '&lng=' + encodeURIComponent(post?.longitude) : ''}` +
             `${post?.location_name != null ? '&location_name=' + encodeURIComponent(post?.location_name) : ''}` +
             `&timestamp=${encodeURIComponent(post?.created_at)}` +
@@ -187,6 +218,9 @@ const index = () => {
     };
 
     const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
+
+
+
 
     const loaderRef = useRef(null);
     const [showQrCode, setShowQrCode] = useState(false);
@@ -253,6 +287,7 @@ const index = () => {
                 setFeedGallery(feedItem);
                 setFeedOpen(true);
                 setFeedIndex(index);
+                setShowFeedSkeleton(false);
 
             }
 
@@ -366,6 +401,8 @@ const index = () => {
             setShowErrorMessage(true);
             setErrorMessage(__(err.response.data.message) || __('Something went wrong' + "!"));
             window.history.replaceState({}, '', window.location.pathname);
+        } finally {
+            setShowFeedSkeleton(false);
         }
     };
 
@@ -467,6 +504,8 @@ const index = () => {
             setShowErrorMessage(true);
             setErrorMessage(__(err.response.data.message) || __('Something went wrong' + "!"));
             window.history.replaceState({}, '', window.location.pathname);
+        } finally {
+            setShowFeedSkeleton(false);
         }
     };
 
@@ -976,7 +1015,7 @@ const index = () => {
                 />
             )}
 
-            {!isFeedLoaded && (
+            {!isFeedLoaded && !showFeedSkeleton && (
                 <div className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-[10px] text-gray-700 transition-all duration-100 dark:text-white/80 lg:text-[18px]">
                     <Spinner />
                     {__('Please Wait While We Load Data')}...
@@ -1183,6 +1222,12 @@ const index = () => {
                         </div>
                     </div>
 
+
+                    {/* PC FEED SKELETON */}
+                    {windowSize.width > 1024 && showFeedSkeleton && (
+                        <DesktopFeedSkeleton />
+                    )}
+
                     {/* PC Feed  */}
                     {windowSize.width > 1024 && feedOpen && feedGallery !== null && (
                         <>
@@ -1219,6 +1264,12 @@ const index = () => {
                                 />
                             )}
                         </>
+                    )}
+
+
+                    {/* Mobile Feed Skeleton */}
+                    {windowSize.width <= 1024 && showFeedSkeleton && (
+                        <MobileFeedSkeleton />
                     )}
 
                     {/* MOBILE FEED */}
@@ -1327,7 +1378,7 @@ const index = () => {
                                                         value:
                                                             route('home') +
                                                             '/?m-slug=' +
-                                                            feedGallery?.slug,
+                                                            feedGallery?.slug + '&single_page=true&direct=true',
                                                     })}
                                                     level="H"
                                                     includemargin="true"
@@ -1345,7 +1396,7 @@ const index = () => {
                                                     if (feedGallery.type === 'posts') {
                                                         url = route('home') + generateURL(feedGallery);
                                                     } else if (feedGallery.type === 'smartphones') {
-                                                        url = route('home') + '/?m-slug=' + feedGallery?.slug;
+                                                        url = route('home') + '/?m-slug=' + feedGallery?.slug + '&single_page=true&direct=true';
                                                     }
 
                                                     navigator.clipboard.writeText(url);

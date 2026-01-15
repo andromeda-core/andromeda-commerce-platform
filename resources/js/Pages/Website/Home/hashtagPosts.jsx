@@ -26,7 +26,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width, __,
 
                     const url = item.type === 'posts'
                         ? route('home') + generateURL(item)
-                        : route('home') + '?m-slug=' + item.slug + '&single_page=true';
+                        : route('home') + '?m-slug=' + item.slug + '&single_page=true&direct=true';
 
                     if (width > 1024) {
                         window.history.replaceState({}, '', route('home'));
@@ -94,7 +94,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width, __,
                             const url =
                                 item.type === 'posts'
                                     ? route('home') + generateURL(item)
-                                    : route('home') + '?m-slug=' + item.slug;
+                                    : route('home') + '?m-slug=' + item.slug + '&single_page=true&direct=true';
                             onCopyLink(url);
                         }}
                     >
@@ -125,7 +125,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width, __,
 
                 const url = item.type === 'posts'
                     ? route('home') + generateURL(item)
-                    : route('home') + '?m-slug=' + item.slug + '&single_page=true';
+                    : route('home') + '?m-slug=' + item.slug + '&single_page=true&direct=true';
 
                 if (width > 1024) {
                     window.history.replaceState({}, '', route('home'));
@@ -267,7 +267,7 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
 
     const generateURL = (post) => {
         return (
-            `?slug=${encodeURIComponent(post?.slug)}&single_page=true&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
+            `?slug=${encodeURIComponent(post?.slug)}&single_page=true&direct=true&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
             `${post?.longitude != null ? '&lng=' + encodeURIComponent(post?.longitude) : ''}` +
             `${post?.location_name != null ? '&location_name=' + encodeURIComponent(post?.location_name) : ''}` +
             `&timestamp=${encodeURIComponent(post?.timestamp)}` +

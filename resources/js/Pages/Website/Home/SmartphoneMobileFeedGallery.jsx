@@ -756,7 +756,7 @@ const SmartphoneMobileGalleryModal = ({
                                         <button
                                             onClick={() => {
                                                 const url =
-                                                    route('home') + '?m-slug=' + smartphone.slug;
+                                                    route('home') + '?m-slug=' + smartphone.slug + '&single_page=true&direct=true';
                                                 navigator.clipboard.writeText(url.trim());
                                                 setLinkCopied(true);
                                                 setActionDropdownOpen(null);

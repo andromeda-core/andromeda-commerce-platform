@@ -461,7 +461,7 @@ export default function OrderView({ order }) {
                                                         onClick={(e) => {
                                                             e.preventDefault();
                                                             e.stopPropagation();
-                                                            router.get(route('home') + '?m-slug=' + item?.smartphone?.slug + '&single_page=true');
+                                                            router.get(route('home') + '?m-slug=' + item?.smartphone?.slug + '&single_page=true&direct=true');
                                                         }}
                                                     >
                                                         <img

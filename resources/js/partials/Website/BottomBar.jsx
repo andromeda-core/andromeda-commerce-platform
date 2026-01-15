@@ -130,7 +130,7 @@ const BottomBar = ({
 
 
     return (
-        <div id="bottom-bar" ref={bottomBarRef} className="fixed bottom-0 left-0 right-0 z-[60]">
+        <div id="bottom-bar" ref={bottomBarRef} className="fixed bottom-0 left-0 right-0 z-[70]">
             {/* Navigation bar */}
             <nav className="rounded-sm shadow-md bg-backgroundLight backdrop-blur-lg dark:bg-backgroundDark">
                 <div className="flex items-center justify-around px-4 py-2">
