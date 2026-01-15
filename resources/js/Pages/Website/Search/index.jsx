@@ -38,7 +38,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, __, curren
                 className="flex flex-wrap items-center gap-4 p-1 py-4 transition-colors rounded-md cursor-pointer group no-touch-hover lg:hover:bg-surface-2-light lg:dark:hover:bg-surface-2-dark"
             >
                 {/* Thumbnail */}
-                <div className="flex-shrink-0 w-12 h-12 overflow-hidden rounded-lg bg-surface-1-light dark:bg-surface-1-dark">
+                <div className="flex-shrink-0 w-12 h-12 ml-3 overflow-hidden rounded-lg bg-surface-1-light dark:bg-surface-1-dark">
                     {item?.image || item?.video_thumbnail ? (
                         <img
                             src={item.image || item?.video_thumbnail || Placeholder}
