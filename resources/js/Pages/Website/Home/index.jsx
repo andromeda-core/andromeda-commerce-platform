@@ -1047,24 +1047,12 @@ const index = () => {
             )}
 
 
-            <div
-                className={`
-        fixed inset-0 z-[50]
-        transition-opacity duration-500 ease-in-out
-        ${shouldShowSkeleton
-                        ? 'opacity-100 pointer-events-auto'
-                        : 'opacity-0 pointer-events-none'}
-    `}
-                style={{
-                    transitionProperty: 'opacity',
-                    transitionDuration: '500ms',
-                    transitionTimingFunction: 'ease-in-out'
-                }}
-            >
-                {windowSize.width > 1024 && <DesktopFeedSkeleton />}
-                {windowSize.width <= 1024 && <MobileFeedSkeleton />}
-            </div>
-
+            {shouldShowSkeleton && (
+                <>
+                    {windowSize.width > 1024 && <DesktopFeedSkeleton />}
+                    {windowSize.width <= 1024 && <MobileFeedSkeleton />}
+                </>
+            )}
             {isFeedLoaded && (
                 <>
                     {/* Search Bar */}
