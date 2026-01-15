@@ -6,7 +6,7 @@ import useWindowSize from '@/Hooks/useWindowSize';
 import GlobalFilterModal from '@/Pages/Website/GlobalFilters/GlobalFilterModal';
 import BottomBar from '@/partials/Website/BottomBar';
 import Sidebar from '@/partials/Website/Sidebar';
-import { usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useFilterStore } from '@/Hooks/useFilterStore';
 import GlobalLanguageFilter from '@/Pages/Website/GlobalLanguageFilters/GlobalLanguageFilter';
@@ -160,7 +160,26 @@ export default function MainLayout({ children }) {
         };
 
         checkEmailVerification();
-    }, [auth?.user]);
+
+
+        const channel = window.Echo.private(`user.${auth?.user.id}`);
+
+        channel.listen('.email.verified', (event) => {
+            setShowEmailVerification(false);
+
+
+            router.reload({
+                only: ['auth'],
+                preserveScroll: true,
+                preserveState: true,
+            });
+        });
+
+
+        return () => {
+            window.Echo.leave(`user.${auth?.user.id}`);
+        };
+    }, [auth?.user?.id, auth?.user?.email_verified_at]);
 
     // Appending HISTORY WHEN FILTER OR LANGUAGE MODAL OPENS
     useEffect(() => {

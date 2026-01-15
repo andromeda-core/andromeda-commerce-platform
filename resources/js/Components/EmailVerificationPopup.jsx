@@ -31,7 +31,7 @@ export default function EmailVerificationPopup({ user }) {
 
     return (
         createPortal(
-            <div className="fixed bottom-12 left-0 right-0 lg:bottom-auto lg:top-4 lg:right-4 lg:left-auto z-[9999] animate-in slide-in-from-bottom lg:slide-in-from-top-5 fade-in duration-500 p-4 lg:p-0">
+            <div className="fixed inset-0 flex items-center justify-center lg:inset-auto lg:top-4 lg:right-4 lg:items-start lg:justify-end z-[9999] animate-in fade-in duration-500 p-4 lg:p-0 ">
                 <div className="w-full bg-white border rounded-md lg:w-80 dark:bg-surface-1-dark border-surface-2-light dark:border-surface-2-dark lg:rounded-md backdrop-blur-xl">
                     {/* Content */}
                     <div className="p-5">
