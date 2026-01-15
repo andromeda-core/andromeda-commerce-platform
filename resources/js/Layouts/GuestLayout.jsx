@@ -122,6 +122,27 @@ export default function GuestLayout({ children }) {
             <Toast flash={flash} />
 
             <div className="relative p-6 z-1 bg-slate-50 dark:bg-backgroundDark sm:p-0">
+
+                <div className="absolute top-0 left-0 right-0 z-30 hidden px-4 pt-3 pb-2 lg:flex lg:items-center lg:justify-between">
+                    <Link href={route('home')} data-sidebar-link="true" >
+                        <div
+                            className={`flex items-center gap-2 px-6 py-6 transition-all`}
+                        >
+                            {/* <div className="flex items-center justify-center w-12 h-12 rounded">
+                            <div className="block dark:hidden">
+                                <img src={light_logo} alt="Logo" />
+                            </div>
+                            <div className="hidden dark:block">
+                                <img src={dark_logo} alt="Logo" />
+                            </div>
+                        </div> */}
+                            <span className="text-2xl font-semibold text-main-text-light dark:text-main-text-dark">
+                                {generalSetting?.app_name || 'Andromeda'}
+                            </span>
+                        </div>
+                    </Link>
+                </div>
+
                 <div className="relative flex flex-col justify-center w-full min-h-screen overflow-y-auto dark:bg-backgroundDark sm:p-0 lg:flex-row">
                     {children}
 
