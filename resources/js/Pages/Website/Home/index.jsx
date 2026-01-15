@@ -1001,8 +1001,6 @@ const index = () => {
     );
 
 
-    const shouldShowSkeleton =
-        showFeedSkeleton && !feedOpen;
 
 
     useEffect(() => {
@@ -1047,7 +1045,7 @@ const index = () => {
             )}
 
 
-            {shouldShowSkeleton && (
+            {showFeedSkeleton && (
                 <>
                     {windowSize.width > 1024 && <DesktopFeedSkeleton />}
                     {windowSize.width <= 1024 && <MobileFeedSkeleton />}
