@@ -982,7 +982,7 @@ const SmartphoneMobileGalleryModal = ({
                         </div>
 
                         {/* Full Content - Scrollable, No Truncation */}
-                        <div className="mt-4 mb-10">
+                        <div className="mt-0 mb-10">
 
                             <div className="flex items-center justify-end mb-4">
                                 <div className="relative" ref={actionDropdownRef}>
