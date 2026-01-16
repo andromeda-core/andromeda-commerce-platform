@@ -1260,7 +1260,6 @@ const DesktopFeed = ({
     // CleanUp
     useEffect(() => {
         return () => {
-            window.history.replaceState({}, '', window.location.pathname);
             setCartProcessing(false);
             setBuyNowProcessing(false);
             setFeedGallery(null);
@@ -3542,8 +3541,8 @@ const DesktopFeed = ({
                                                                                             window
                                                                                                 .location
                                                                                                 .search,
-                                                                                    },
 
+                                                                                    },
                                                                                 )
                                                                             }
                                                                             className="flex-1 h-12 text-lg font-semibold transition bg-white border rounded-md border-main-text-light text-main-text-light hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80"

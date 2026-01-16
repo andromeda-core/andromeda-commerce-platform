@@ -1620,13 +1620,6 @@ const MobileFeed = ({
     // Cleanups
     useEffect(() => {
         return () => {
-
-            window.history.replaceState(
-                {},
-                '',
-                window.location.pathname,
-            );
-
             setFeedGallery(null);
             setFeedOpen(false);
             setIsScrollCompleted(false);
