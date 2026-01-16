@@ -724,6 +724,7 @@ const MobileFeedSinglePage = ({
                     setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
                     smartphone_addon_items={smartphone_addon_items}
                     setBookmarkStatusChanged={setBookmarkStatusChanged}
+                    isDarkMode={isDarkMode}
                     __={__}
                 />
             )}
