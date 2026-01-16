@@ -502,7 +502,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                                             setPostSpatiotempotalInfoModal(true);
                                                             setActionDropdownOpen(null);
                                                         }}
-                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
                                                     >
 
 
@@ -517,6 +517,18 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                                         </span>
                                                     </button>
                                                 )}
+
+                                                <span
+
+                                                    className="flex items-center w-full gap-3 px-4 py-3 text-xs transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
+                                                >
+
+                                                    <span>{__('Post Created')}:
+                                                        <p>
+                                                            {post?.added_at} {post?.created_at_time}
+                                                        </p>
+                                                    </span>
+                                                </span>
                                             </div>
                                         </div>
                                     )}

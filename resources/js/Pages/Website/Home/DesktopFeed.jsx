@@ -1688,6 +1688,18 @@ const DesktopFeed = ({
                                                                     </button>
                                                                 )}
 
+
+                                                                <span
+
+                                                                    className="flex items-center w-full gap-3 px-4 py-3 text-xs transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
+                                                                >
+
+                                                                    <span>{__('Post Created')}:
+                                                                        <p>
+                                                                            {feedGallery?.added_at} {feedGallery?.created_at_time}
+                                                                        </p>
+                                                                    </span>
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     )}
@@ -2403,6 +2415,18 @@ const DesktopFeed = ({
                                                                                     </span>
                                                                                 </button>
                                                                             )}
+
+                                                                            <span
+
+                                                                                className="flex items-center w-full gap-3 px-4 py-3 text-xs transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
+                                                                            >
+
+                                                                                <span>{__('Post Created')}:
+                                                                                    <p>
+                                                                                        {feedGallery?.added_at} {feedGallery?.created_at_time}
+                                                                                    </p>
+                                                                                </span>
+                                                                            </span>
                                                                         </div>
                                                                     </div>
                                                                 )}

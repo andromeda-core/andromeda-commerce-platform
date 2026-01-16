@@ -84,7 +84,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, generateSmartphoneURL,
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center flex-shrink-0 gap-2 mr-1 transition-opacity duration-200 opacity-100 lg:mr-5 lg:opacity-0 group-hover:opacity-100">
+                <div className="flex items-center flex-shrink-0 gap-2 -mr-5 transition-opacity duration-200 opacity-100 lg:mr-5 lg:opacity-0 group-hover:opacity-100">
                     <button
                         title={__('Copy Link')}
                         className="p-4 rounded-full lg:hover:bg-surface-3-light text-main-text-light dark:text-main-text-dark lg:dark:hover:bg-surface-3-dark"
