@@ -11,7 +11,7 @@ import Spinner from '@/Components/Spinner';
 import { useTranslation } from '@/Hooks/useTranslation';
 
 // Memoized result item component
-const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, __, currency }) => {
+const ResultItem = memo(({ item, onCopyLink, generateURL, generateSmartphoneURL, activeView, __, currency }) => {
     const { width } = useWindowSize();
 
     // List View

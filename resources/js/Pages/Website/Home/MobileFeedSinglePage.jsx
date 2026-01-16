@@ -662,11 +662,7 @@ const MobileFeedSinglePage = ({
     useEffect(() => {
 
         return () => {
-            window.history.replaceState(
-                {},
-                '',
-                window.location.pathname,
-            );
+
             setFeedGallery(null);
             setMediaItems([]);
             setFeedOpen(false);

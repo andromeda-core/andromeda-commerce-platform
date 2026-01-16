@@ -1053,21 +1053,14 @@ const index = () => {
             )}
 
 
-            <div
-                className={`
-        fixed inset-0 z-[50]
-        transition-opacity duration-200 ease-out
-        will-change-transform contain-layout
-        transform-gpu
-        ${showFeedSkeleton
-                        ? 'opacity-100'
-                        : 'opacity-0'}
-        pointer-events-none
-    `}
-            >
-                {windowSize.width > 1024 && <DesktopFeedSkeleton />}
-                {windowSize.width <= 1024 && <MobileFeedSkeleton />}
-            </div>
+
+            {showFeedSkeleton && (
+                <>
+                    {windowSize.width > 1024 && <DesktopFeedSkeleton />}
+                    {windowSize.width <= 1024 && <MobileFeedSkeleton />}
+
+                </>
+            )}
 
             {isFeedLoaded && (
                 <>
