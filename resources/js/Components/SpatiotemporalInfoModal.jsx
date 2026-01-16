@@ -164,7 +164,7 @@ export default function SpatiotemporalModal({ onClose, post }) {
                                 <div className="flex-1">
                                     <p className="font-semibold text-main-text-light dark:text-main-text-dark mb-0.5">{__('Vertical')}</p>
                                     <p className="text-sm text-sub-text-light dark:text-sub-text-dark">
-                                        {!post?.floor?.name ? 'N/A' : __('Floor') + post?.floor?.name}
+                                        {!post?.floor?.name ? 'N/A' : __('Floor') + " " + post?.floor?.name}
                                     </p>
 
                                 </div>
@@ -299,7 +299,7 @@ export default function SpatiotemporalModal({ onClose, post }) {
                                 <div className="flex-1">
                                     <p className="font-semibold text-main-text-light dark:text-main-text-dark mb-0.5">{__('Vertical')}</p>
                                     <p className="text-sm text-sub-text-light dark:text-sub-text-dark">
-                                        {!post?.floor?.name ? 'N/A' : __('Floor') + post?.floor?.name}
+                                        {!post?.floor?.name ? 'N/A' : __('Floor') + " " + post?.floor?.name}
                                     </p>
 
                                 </div>
