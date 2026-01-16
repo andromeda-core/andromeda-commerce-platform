@@ -214,7 +214,7 @@ export default function SpatiotemporalModal({ onClose, post }) {
                 {/* Bottom Sheet */}
                 <div
                     ref={modalRef}
-                    className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col transition-transform"
+                    className="fixed bottom-0 left-0 right-0 bg-main-text-dark dark:bg-main-text-light rounded-t-3xl shadow-2xl max-h-[85vh] flex flex-col transition-transform"
                     style={{
                         transform: `translateY(${translateY}px)`,
                         transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
@@ -227,12 +227,12 @@ export default function SpatiotemporalModal({ onClose, post }) {
                 >
                     {/* Drag Handle */}
                     <div className="flex justify-center pt-3 pb-2">
-                        <div className="w-10 h-1 bg-gray-300 rounded-full" />
+                        <div className="w-10 h-1 rounded-full bg-surface-3-light dark:bg-surface-3-dark" />
                     </div>
 
                     {/* Header */}
-                    <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
-                        <h3 className="text-base font-semibold text-gray-900">
+                    <div className="flex items-center justify-between px-5 py-3">
+                        <h3 className="text-base font-semibold text-main-text-light dark:text-main-text-dark">
                             {__('Spatiotemporal Information')}
                         </h3>
 
@@ -245,7 +245,7 @@ export default function SpatiotemporalModal({ onClose, post }) {
                         <div className="mb-5">
                             <div className="relative w-full h-56 overflow-hidden shadow-md rounded-2xl">
                                 {isMapLoading && (
-                                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-50 dark:bg-gray-800">
+                                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-surface-1-light dark:bg-surface-1-dark">
                                         <div className="flex flex-col items-center gap-3">
                                             <Spinner />
                                             <p className="text-sm text-gray-600 dark:text-gray-400">{__('Loading map')}...</p>
