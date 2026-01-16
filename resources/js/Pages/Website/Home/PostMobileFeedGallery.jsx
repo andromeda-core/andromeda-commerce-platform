@@ -466,7 +466,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                                 <button
                                                     onClick={() => {
                                                         const url =
-                                                            route('home') + generateURL(post);
+                                                            route('home') + generateURL(post, true, true);
                                                         navigator.clipboard.writeText(url.trim());
                                                         setLinkCopied(true);
                                                         setActionDropdownOpen(null);

@@ -36,6 +36,8 @@ const MobileFeedSinglePage = ({
     setFeedIndex,
     isSinglePageRef,
     smartphone_addon_items,
+    generateSmartphoneURL,
+    setBookmarkStatusChanged,
     __,
 }) => {
     useEffect(() => {
@@ -714,6 +716,7 @@ const MobileFeedSinglePage = ({
                     navigateToHashtag={navigateToHashtag}
                     placeholderImage={placeholderImage}
                     generateURL={generateURL}
+                    generateSmartphoneURL={generateSmartphoneURL}
                     showErrorMessage={showErrorMessage}
                     showInfoMessage={showInfoMessage}
                     ErrorMessage={ErrorMessage}
@@ -724,6 +727,7 @@ const MobileFeedSinglePage = ({
                     setShowErrorMessage={setShowErrorMessage}
                     setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
                     smartphone_addon_items={smartphone_addon_items}
+                    setBookmarkStatusChanged={setBookmarkStatusChanged}
                     __={__}
                 />
             )}

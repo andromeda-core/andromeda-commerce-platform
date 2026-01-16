@@ -26,7 +26,8 @@ const SmartphoneMobileGalleryModal = ({
     setErrorMessage,
     setShowErrorMessage,
     setMobileFeedGalleryOpen,
-    smartphone_addon_items
+    smartphone_addon_items,
+    generateSmartphoneURL,
 }) => {
 
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -1045,7 +1046,7 @@ const SmartphoneMobileGalleryModal = ({
                                                 <button
                                                     onClick={() => {
                                                         const url =
-                                                            route('home') + '?m-slug=' + smartphone.slug + '&single_page=true&direct=true';
+                                                            route('home') + generateSmartphoneURL(smartphone, true, true);
                                                         navigator.clipboard.writeText(url.trim());
                                                         setLinkCopied(true);
                                                         setActionDropdownOpen(null);

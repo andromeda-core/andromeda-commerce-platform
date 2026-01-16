@@ -29,9 +29,9 @@ export default function index() {
     const [showErrorMessage, setShowErrorMessage] = useState(false);
 
 
-    const generateURL = (post) => {
+    const generateURL = (post, isDirect = false, isSinglePage = false) => {
         return (
-            `?slug=${encodeURIComponent(post?.slug)}&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
+            `?slug=${encodeURIComponent(post?.slug)}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
             `${post?.longitude != null ? '&lng=' + encodeURIComponent(post?.longitude) : ''}` +
             `${post?.location_name != null ? '&location_name=' + encodeURIComponent(post?.location_name) : ''}` +
             `&timestamp=${encodeURIComponent(post?.created_at)}` +
@@ -139,7 +139,7 @@ export default function index() {
     }, [nextPageUrl]);
 
     const handleOpenPost = (post) => {
-        const url = generateURL(post);
+        const url = generateURL(post, true, true);
         window.history.replaceState(
             {},
             '',

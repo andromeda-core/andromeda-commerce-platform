@@ -38,6 +38,7 @@ const DesktopFeed = ({
     fetchMoreYAxis,
     fetchRelatedFeed,
     smartphone_addon_items,
+    generateSmartphoneURL,
     __,
 }) => {
     const isDarkMode = useDarkMode();
@@ -166,7 +167,7 @@ const DesktopFeed = ({
             const url = route('home') + generateURL(currentItem);
             window.history.replaceState({}, '', url);
         } else if (currentItem?.type === 'smartphones') {
-            const url = route('home') + '?m-slug=' + currentItem?.slug + '&single_page=true&direct=true';
+            const url = route('home') + generateSmartphoneURL(currentItem);
             window.history.replaceState({}, '', url);
         }
 
@@ -193,7 +194,7 @@ const DesktopFeed = ({
             const url = route('home') + generateURL(currentItem);
             window.history.replaceState({}, '', url);
         } else if (currentItem?.type === 'smartphones') {
-            const url = route('home') + '?m-slug=' + currentItem?.slug + '&single_page=true&direct=true';
+            const url = route('home') + generateSmartphoneURL(currentItem);
             window.history.replaceState({}, '', url);
         }
 
@@ -277,7 +278,7 @@ const DesktopFeed = ({
             const url = route('home') + generateURL(feedItem);
             window.history.replaceState({}, '', url);
         } else if (feedItem?.type === 'smartphones') {
-            const url = route('home') + '?m-slug=' + feedItem?.slug + '&single_page=true&direct=true';
+            const url = route('home') + generateSmartphoneURL(feedItem);
             window.history.replaceState({}, '', url);
         }
 
@@ -1614,6 +1615,8 @@ const DesktopFeed = ({
                                                                         route('home') +
                                                                         generateURL(
                                                                             feedGallery,
+                                                                            true,
+                                                                            true,
                                                                         );
                                                                     navigator.clipboard.writeText(
                                                                         url.trim(),
@@ -2352,6 +2355,8 @@ const DesktopFeed = ({
                                                                                     route('home') +
                                                                                     generateURL(
                                                                                         feedGallery,
+                                                                                        true,
+                                                                                        true
                                                                                     );
                                                                                 navigator.clipboard.writeText(
                                                                                     url.trim(),
@@ -3010,8 +3015,11 @@ const DesktopFeed = ({
                                                                             onClick={(e) => {
                                                                                 const url =
                                                                                     route('home') +
-                                                                                    '?m-slug=' +
-                                                                                    feedGallery?.slug + '&single_page=true&direct=true';
+                                                                                    generateSmartphoneURL(
+                                                                                        feedGallery,
+                                                                                        true,
+                                                                                        true,
+                                                                                    )
                                                                                 navigator.clipboard.writeText(
                                                                                     url.trim(),
                                                                                 );

@@ -701,6 +701,12 @@ function PaymentMethod({ paymentMethod, setPaymentMethod, __ }) {
 // Order Items Summary Component
 function OrderItemsSummary({ cart_items, currency, __, addon_items, calculateImportCost, calculateShippingCost }) {
 
+    const generateSmartphoneURL = (smartphone, isDirect = false, isSinglePage = false) => {
+        return (
+            `?m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`
+        );
+    }
+
     return (
         <div className="p-6 border rounded-md bg-surface-1-light border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
             <h2 className="flex items-center gap-2 mb-4 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
@@ -724,7 +730,7 @@ function OrderItemsSummary({ cart_items, currency, __, addon_items, calculateImp
                                 onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    router.get(route('home') + '?m-slug=' + item?.smartphone?.slug + '&single_page=true&direct=true');
+                                    router.get(route('home') + generateSmartphoneURL(item?.smartphone, true, true));
                                 }}
                             >
                                 <img

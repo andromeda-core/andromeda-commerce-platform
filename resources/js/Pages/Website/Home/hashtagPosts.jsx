@@ -15,7 +15,7 @@ import { useTranslation } from '@/Hooks/useTranslation';
 
 
 // Memoized result item component
-const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width, __, currency }) => {
+const ResultItem = memo(({ item, onCopyLink, generateURL, generateSmartphoneURL, activeView, width, __, currency }) => {
 
     // List View
     if (activeView === 'list') {
@@ -25,8 +25,8 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width, __,
                 onClick={() => {
 
                     const url = item.type === 'posts'
-                        ? route('home') + generateURL(item)
-                        : route('home') + '?m-slug=' + item.slug + '&single_page=true&direct=true';
+                        ? route('home') + generateURL(item, true, true)
+                        : route('home') + generateSmartphoneURL(item, true, true);
 
                     if (width > 1024) {
                         window.history.replaceState({}, '', route('home'));
@@ -93,8 +93,9 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width, __,
                             e.stopPropagation();
                             const url =
                                 item.type === 'posts'
-                                    ? route('home') + generateURL(item)
-                                    : route('home') + '?m-slug=' + item.slug + '&single_page=true&direct=true';
+                                    ? route('home') + generateURL(item, true, true)
+                                    : route('home') + generateSmartphoneURL(item, true, true);
+
                             onCopyLink(url);
                         }}
                     >
@@ -124,8 +125,9 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, width, __,
             onClick={() => {
 
                 const url = item.type === 'posts'
-                    ? route('home') + generateURL(item)
-                    : route('home') + '?m-slug=' + item.slug + '&single_page=true&direct=true';
+                    ? route('home') + generateURL(item, true, true)
+                    : route('home') + generateSmartphoneURL(item, true, true);
+
 
                 if (width > 1024) {
                     window.history.replaceState({}, '', route('home'));
@@ -265,15 +267,24 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
 
     const loaderRef = useRef(null);
 
-    const generateURL = (post) => {
+    const generateURL = (post, isDirect = false, isSinglePage = false) => {
         return (
-            `?slug=${encodeURIComponent(post?.slug)}&single_page=true&direct=true&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
+            `?slug=${encodeURIComponent(post?.slug)}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
             `${post?.longitude != null ? '&lng=' + encodeURIComponent(post?.longitude) : ''}` +
             `${post?.location_name != null ? '&location_name=' + encodeURIComponent(post?.location_name) : ''}` +
             `&timestamp=${encodeURIComponent(post?.timestamp)}` +
             `${post?.floor != null ? '&floor=' + encodeURIComponent(post?.floor) : ''}`
         );
     };
+
+    // Smartphone URL Generation
+    const generateSmartphoneURL = (smartphone, isDirect = false, isSinglePage = false) => {
+        return (
+            `?m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`
+        );
+    }
+
+
     const { width } = useWindowSize();
     const [isLoaded, setIsLoaded] = useState(false);
     const [isFetchingMore, setIsFetchingMore] = useState(false);
@@ -567,6 +578,7 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                                         item={item}
                                         onCopyLink={handleCopyLink}
                                         generateURL={generateURL}
+                                        generateSmartphoneURL={generateSmartphoneURL}
                                         activeView={activeView}
                                         width={width}
                                         __={__}

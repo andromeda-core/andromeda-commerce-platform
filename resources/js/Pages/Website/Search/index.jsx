@@ -22,8 +22,8 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, __, curren
                 onClick={() => {
 
                     const url = item.type === 'posts'
-                        ? route('home') + generateURL(item)
-                        : route('home') + '?m-slug=' + item.slug + '&single_page=true&direct=true';
+                        ? route('home') + generateURL(item, true, true)
+                        : route('home') + generateSmartphoneURL(item, true, true);
 
                     if (width > 1024) {
                         window.history.replaceState({}, '', route('home'));
@@ -90,8 +90,8 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, __, curren
                             e.stopPropagation();
                             const url =
                                 item.type === 'posts'
-                                    ? route('home') + generateURL(item)
-                                    : route('home') + '?m-slug=' + item.slug + '&single_page=true&direct=true';
+                                    ? route('home') + generateURL(item, true, true)
+                                    : route('home') + generateSmartphoneURL(item, true, true);
                             onCopyLink(url);
                         }}
                     >
@@ -123,8 +123,8 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, activeView, __, curren
             onClick={() => {
 
                 const url = item.type === 'posts'
-                    ? route('home') + generateURL(item)
-                    : route('home') + '?m-slug=' + item.slug + '&single_page=true&direct=true';
+                    ? route('home') + generateURL(item, true, true)
+                    : route('home') + generateSmartphoneURL(item, true, true);
 
                 if (width > 1024) {
                     window.history.replaceState({}, '', route('home'));
@@ -306,9 +306,9 @@ const Index = ({
         return false;
     }, [query, filters]);
 
-    const generateURL = useCallback((post) => {
+    const generateURL = useCallback((post, isDirect = false, isSinglePage = false) => {
         return (
-            `?slug=${encodeURIComponent(post?.slug)}&single_page=true&direct=true&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''
+            `?slug=${encodeURIComponent(post?.slug)}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''
             }` +
             `${post?.longitude != null ? '&lng=' + encodeURIComponent(post?.longitude) : ''}` +
             `${post?.location_name != null
@@ -319,6 +319,17 @@ const Index = ({
             `${post?.floor != null ? '&floor=' + encodeURIComponent(post?.floor) : ''}`
         );
     }, []);
+
+
+    // Smartphone URL Generation
+    const generateSmartphoneURL = useCallback((smartphone, isDirect = false, isSinglePage = false) => {
+        return (
+            `?m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`
+        );
+    }, []);
+
+
+
 
     // Batch state updates helper
     const updateState = useCallback((updates) => {
@@ -1209,6 +1220,7 @@ const Index = ({
                                     item={item}
                                     onCopyLink={handleCopyLink}
                                     generateURL={generateURL}
+                                    generateSmartphoneURL={generateSmartphoneURL}
                                     activeView={activeView}
                                     __={__}
                                     currency={currency}

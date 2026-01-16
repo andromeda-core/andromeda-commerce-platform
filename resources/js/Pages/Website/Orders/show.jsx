@@ -14,6 +14,11 @@ export default function OrderView({ order }) {
     const { currency } = usePage().props;
     const windowSize = useWindowSize();
 
+    const generateSmartphoneURL = (smartphone, isDirect = false, isSinglePage = false) => {
+        return (
+            `?m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`
+        );
+    }
 
     // Translation Hook
     const { __ } = useTranslation();
@@ -461,7 +466,7 @@ export default function OrderView({ order }) {
                                                         onClick={(e) => {
                                                             e.preventDefault();
                                                             e.stopPropagation();
-                                                            router.get(route('home') + '?m-slug=' + item?.smartphone?.slug + '&single_page=true&direct=true');
+                                                            router.get(route('home') + generateSmartphoneURL(item?.smartphone, true, true));
                                                         }}
                                                     >
                                                         <img

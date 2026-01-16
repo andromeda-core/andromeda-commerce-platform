@@ -25,6 +25,7 @@ const MobileFeedGallery = (
         isDarkMode,
         setMobileFeedGalleryOpen,
         smartphone_addon_items,
+        generateSmartphoneURL,
     }
 
 ) => {
@@ -51,6 +52,7 @@ const MobileFeedGallery = (
                     setShowErrorMessage={setShowErrorMessage}
                     setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
                     smartphone_addon_items={smartphone_addon_items}
+                    generateSmartphoneURL={generateSmartphoneURL}
                     __={__}
 
                 />

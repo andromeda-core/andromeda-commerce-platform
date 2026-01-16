@@ -45,6 +45,7 @@ const MobileFeed = ({
     setShowErrorMessage,
     windowSize,
     smartphone_addon_items,
+    generateSmartphoneURL,
     __,
 }) => {
     useEffect(() => {
@@ -1204,9 +1205,8 @@ const MobileFeed = ({
 
                 // URL updates
                 if (itemToUse.type === 'smartphones') {
-                    const url = new URL(window.location.origin + window.location.pathname);
-                    url.searchParams.set('m-slug', itemToUse.slug);
-                    window.history.replaceState({}, '', url.toString());
+                    const url = generateSmartphoneURL(itemToUse);
+                    window.history.replaceState({}, '', url);
                 } else if (itemToUse.type === 'posts') {
                     const fullUrl = route('home') + generateURL(itemToUse);
                     window.history.replaceState({}, '', fullUrl);
@@ -1376,9 +1376,8 @@ const MobileFeed = ({
 
                         // Update URL
                         if (firstItem.type === 'smartphones') {
-                            const url = new URL(window.location.origin + window.location.pathname);
-                            url.searchParams.set('m-slug', firstItem.slug);
-                            window.history.replaceState({}, '', url.toString());
+                            const url = generateSmartphoneURL(firstItem);
+                            window.history.replaceState({}, '', url);
                         } else {
                             const fullUrl = route('home') + generateURL(firstItem);
                             window.history.replaceState({}, '', fullUrl);
@@ -1453,9 +1452,8 @@ const MobileFeed = ({
 
                         // Update URL
                         if (lastItem.type === 'smartphones') {
-                            const url = new URL(window.location.origin + window.location.pathname);
-                            url.searchParams.set('m-slug', lastItem.slug);
-                            window.history.replaceState({}, '', url.toString());
+                            const url = generateSmartphoneURL(lastItem);
+                            window.history.replaceState({}, '', url);
                         } else {
                             const fullUrl = route('home') + generateURL(lastItem);
                             window.history.replaceState({}, '', fullUrl);
@@ -1523,9 +1521,8 @@ const MobileFeed = ({
 
                     preserveXAxisScrollRef.current[rowIndex] = currentScrollLeft;
                     if (newItem.type === 'smartphones') {
-                        const url = new URL(window.location.origin + window.location.pathname);
-                        url.searchParams.set('m-slug', newItem.slug);
-                        window.history.replaceState({}, '', url.toString());
+                        const url = generateSmartphoneURL(newItem);
+                        window.history.replaceState({}, '', url);
                     } else if (newItem.type === 'posts') {
                         const fullUrl = route('home') + generateURL(newItem);
                         window.history.replaceState({}, '', fullUrl);
@@ -1827,6 +1824,7 @@ const MobileFeed = ({
                     navigateToHashtag={navigateToHashtag}
                     placeholderImage={placeholderImage}
                     generateURL={generateURL}
+                    generateSmartphoneURL={generateSmartphoneURL}
                     showErrorMessage={showErrorMessage}
                     showInfoMessage={showInfoMessage}
                     ErrorMessage={ErrorMessage}

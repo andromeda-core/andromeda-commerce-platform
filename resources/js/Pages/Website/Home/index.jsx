@@ -204,15 +204,23 @@ const index = () => {
     }, []);
 
     // POST UNIQUE URL GENERATION
-    const generateURL = (post) => {
+    const generateURL = (post, isDirect = false, isSinglePage = false) => {
         return (
-            `?slug=${encodeURIComponent(post?.slug)}&single_page=true&direct=true&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
+            `?slug=${encodeURIComponent(post?.slug)}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
             `${post?.longitude != null ? '&lng=' + encodeURIComponent(post?.longitude) : ''}` +
             `${post?.location_name != null ? '&location_name=' + encodeURIComponent(post?.location_name) : ''}` +
             `&timestamp=${encodeURIComponent(post?.created_at)}` +
             `${post?.floor_id != null ? '&floor=' + encodeURIComponent(post?.floor?.name) : ''}`
         );
     };
+
+
+    // Smartphone URL Generation
+    const generateSmartphoneURL = (smartphone, isDirect = false, isSinglePage = false) => {
+        return (
+            `?m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`
+        );
+    }
 
     // NAVIGATING TO HASHTAG PAGE AFTER RECEIVING HASHTAG
     const navigateToHashtag = async (hashtag) => {
@@ -984,22 +992,20 @@ const index = () => {
                 } else {
                     window.history.pushState({}, '', url);
                 }
-            } else {
-                const url = new URL(window.location.href);
-                url.searchParams.set('m-slug', item.slug);
+            } else if (item.type === 'smartphones') {
+                const url = generateSmartphoneURL(item);
                 if (feedOpenCountRef.current === 1) {
-                    window.history.replaceState({}, '', url.toString());
-                    window.history.pushState({}, '', url.toString());
+                    window.history.replaceState({}, '', url);
+                    window.history.pushState({}, '', url);
                 } else {
-                    window.history.pushState({}, '', url.toString());
+                    window.history.pushState({}, '', url);
                 }
             }
 
             previousUrlRef.current = window.location.href;
         },
-        [generateURL],
+        [generateURL, generateSmartphoneURL],
     );
-
 
 
 
@@ -1065,16 +1071,6 @@ const index = () => {
 
             {isFeedLoaded && (
                 <>
-                    {/* Search Bar */}
-                    {/* {windowSize.width > 1024 && (
-                        <div className="w-1/2 m-auto mb-3">
-                            <GlobalSearch
-                                additional_filters={false}
-
-                            />
-                        </div>
-                    )} */}
-
                     {/* Masonry Layout */}
                     <div
                         className={`pb-20 pt-3 sm:pb-20 lg:pt-[75px]`}
@@ -1281,6 +1277,7 @@ const index = () => {
                                     mediaItems={mediaItems}
                                     auth={auth}
                                     generateURL={generateURL}
+                                    generateSmartphoneURL={generateSmartphoneURL}
                                     navigateToHashtag={navigateToHashtag}
                                     Placeholder={Placeholder}
                                     showQrCode={showQrCode}
@@ -1316,6 +1313,7 @@ const index = () => {
                             setBookmarkStatusChanged={setBookmarkStatusChanged}
                             auth={auth}
                             generateURL={generateURL}
+                            generateSmartphoneURL={generateSmartphoneURL}
                             navigateToHashtag={navigateToHashtag}
                             feedIndex={feedIndex}
                             setFeedIndex={setFeedIndex}
@@ -1356,6 +1354,7 @@ const index = () => {
                             isSinglePageRef={isSinglePageRef}
                             auth={auth}
                             generateURL={generateURL}
+                            generateSmartphoneURL={generateSmartphoneURL}
                             navigateToHashtag={navigateToHashtag}
                             setFeedIndex={setFeedIndex}
                             MobileFeedGalleryOpen={MobileFeedGalleryOpen}
@@ -1369,6 +1368,7 @@ const index = () => {
                             ErrorMessage={ErrorMessage}
                             InfoMessage={InfoMessage}
                             setInfoMessage={setInfoMessage}
+                            setBookmarkStatusChanged={setBookmarkStatusChanged}
                             setShowInfoMessage={setShowInfoMessage}
                             setErrorMessage={setErrorMessage}
                             windowSize={windowSize}
@@ -1406,13 +1406,11 @@ const index = () => {
                                                     {...(feedGallery.type === 'posts' && {
                                                         value:
                                                             route('home') +
-                                                            generateURL(feedGallery),
+                                                            generateURL(feedGallery, true, true),
                                                     })}
                                                     {...(feedGallery.type === 'smartphones' && {
                                                         value:
-                                                            route('home') +
-                                                            '/?m-slug=' +
-                                                            feedGallery?.slug + '&single_page=true&direct=true',
+                                                            route('home') + generateSmartphoneURL(feedGallery, true, true)
                                                     })}
                                                     level="H"
                                                     includemargin="true"
@@ -1428,9 +1426,9 @@ const index = () => {
                                                     let url = null;
 
                                                     if (feedGallery.type === 'posts') {
-                                                        url = route('home') + generateURL(feedGallery);
+                                                        url = route('home') + generateURL(feedGallery, true, true);
                                                     } else if (feedGallery.type === 'smartphones') {
-                                                        url = route('home') + '/?m-slug=' + feedGallery?.slug + '&single_page=true&direct=true';
+                                                        url = route('home') + generateSmartphoneURL(feedGallery, true, true);
                                                     }
 
                                                     navigator.clipboard.writeText(url);
