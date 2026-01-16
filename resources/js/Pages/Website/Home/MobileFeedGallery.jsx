@@ -26,6 +26,7 @@ const MobileFeedGallery = (
         setMobileFeedGalleryOpen,
         smartphone_addon_items,
         generateSmartphoneURL,
+        shouldCleanupBrowserHistoryRef,
     }
 
 ) => {
@@ -53,6 +54,7 @@ const MobileFeedGallery = (
                     setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
                     smartphone_addon_items={smartphone_addon_items}
                     generateSmartphoneURL={generateSmartphoneURL}
+                    shouldCleanupBrowserHistoryRef={shouldCleanupBrowserHistoryRef}
                     __={__}
 
                 />

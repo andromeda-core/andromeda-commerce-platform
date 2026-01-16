@@ -1286,6 +1286,7 @@ const index = () => {
                                     nextPageUrl={nextPageUrlRef.current}
                                     fetchRelatedFeed={fetchRelatedFeed}
                                     smartphone_addon_items={smartphone_addon_items}
+                                    isSinglePageRef={isSinglePageRef}
                                     __={__}
 
                                 />
@@ -1333,6 +1334,7 @@ const index = () => {
                             windowSize={windowSize}
                             setShowErrorMessage={setShowErrorMessage}
                             smartphone_addon_items={smartphone_addon_items}
+                            isSinglePageRef={isSinglePageRef}
                             __={__}
                         />
                     )}

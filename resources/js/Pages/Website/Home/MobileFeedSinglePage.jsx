@@ -46,6 +46,9 @@ const MobileFeedSinglePage = ({
     }, []);
 
 
+    const shouldCleanupBrowserHistoryRef = useRef(true);
+
+
     const containerRef = useRef(null);
     // Manually Passing Correct Feed To Feed Gallery To Open
     const [manualFeedGalleryItem, setManualFeedGalleryItem] = useState(null);
@@ -663,10 +666,15 @@ const MobileFeedSinglePage = ({
 
         return () => {
 
+            if (shouldCleanupBrowserHistoryRef.current) {
+                window.history.replaceState({}, '', window.location.pathname);
+            }
+
             setFeedGallery(null);
             setMediaItems([]);
             setFeedOpen(false);
             setFeedIndex(0);
+            isSinglePageRef.current = false;
 
         }
 
@@ -725,6 +733,7 @@ const MobileFeedSinglePage = ({
                     smartphone_addon_items={smartphone_addon_items}
                     setBookmarkStatusChanged={setBookmarkStatusChanged}
                     isDarkMode={isDarkMode}
+                    shouldCleanupBrowserHistoryRef={shouldCleanupBrowserHistoryRef}
                     __={__}
                 />
             )}

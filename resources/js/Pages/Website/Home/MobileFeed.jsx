@@ -46,6 +46,7 @@ const MobileFeed = ({
     windowSize,
     smartphone_addon_items,
     generateSmartphoneURL,
+    isSinglePageRef,
     __,
 }) => {
     useEffect(() => {
@@ -72,7 +73,7 @@ const MobileFeed = ({
     const isMobileFeedGalleryOpenRef = useRef(MobileFeedGalleryOpen);
     const hasUserInteractedRef = useRef(false);
 
-
+    const shouldCleanupBrowserHistoryRef = useRef(true);
 
 
     // its for FEED ITEMS To TRACK WHIHC ITEMS LOADED OR WHICH ARENT To SHOW SKELETON
@@ -1617,6 +1618,11 @@ const MobileFeed = ({
     // Cleanups
     useEffect(() => {
         return () => {
+
+            if (shouldCleanupBrowserHistoryRef.current) {
+                window.history.replaceState({}, '', window.location.pathname);
+            }
+
             setFeedGallery(null);
             setFeedOpen(false);
             setIsScrollCompleted(false);
@@ -1651,6 +1657,7 @@ const MobileFeed = ({
 
             parentFeedSlugRef.current = null;
             itemHeightRef.current = null;
+            isSinglePageRef.current = false;
 
 
 
@@ -1837,6 +1844,7 @@ const MobileFeed = ({
                     isDarkMode={isDarkMode}
                     setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
                     smartphone_addon_items={smartphone_addon_items}
+                    shouldCleanupBrowserHistoryRef={shouldCleanupBrowserHistoryRef}
 
                     __={__}
                 />

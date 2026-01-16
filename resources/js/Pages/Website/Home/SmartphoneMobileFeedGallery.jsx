@@ -28,6 +28,7 @@ const SmartphoneMobileGalleryModal = ({
     setMobileFeedGalleryOpen,
     smartphone_addon_items,
     generateSmartphoneURL,
+    shouldCleanupBrowserHistoryRef,
 }) => {
 
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -1438,6 +1439,7 @@ const SmartphoneMobileGalleryModal = ({
                                                 {/* Login */}
                                                 <button
                                                     onClick={() => {
+                                                        shouldCleanupBrowserHistoryRef.current = false;
                                                         const redirectUrl =
                                                             window.location.pathname + window.location.search;
                                                         router.get(route('login'), {
@@ -1454,6 +1456,7 @@ const SmartphoneMobileGalleryModal = ({
                                                 {/*Register*/}
                                                 <button
                                                     onClick={() => {
+                                                        shouldCleanupBrowserHistoryRef.current = false;
                                                         const redirectUrl =
                                                             window.location.pathname + window.location.search;
                                                         router.get(route('register'), {

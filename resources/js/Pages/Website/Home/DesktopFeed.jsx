@@ -39,6 +39,7 @@ const DesktopFeed = ({
     fetchRelatedFeed,
     smartphone_addon_items,
     generateSmartphoneURL,
+    isSinglePageRef,
     __,
 }) => {
     const isDarkMode = useDarkMode();
@@ -53,6 +54,7 @@ const DesktopFeed = ({
     const viewableFeedRef = useRef([]);
     const viewableFeedRefIndex = useRef(0);
     const productRightPanelScrollRef = useRef(null);
+    const shouldCleanupBrowserHistoryRef = useRef(true);
 
 
     // Zutsand Video AutoPlay State
@@ -1261,6 +1263,10 @@ const DesktopFeed = ({
     // CleanUp
     useEffect(() => {
         return () => {
+
+            if (shouldCleanupBrowserHistoryRef.current) {
+                window.history.replaceState({}, '', window.location.pathname);
+            }
             setCartProcessing(false);
             setBuyNowProcessing(false);
             setFeedGallery(null);
@@ -1280,6 +1286,7 @@ const DesktopFeed = ({
             setFeedOpen(false);
             smartphoneCartItemsRef.current = [];
             mediaThumbRefs.current = {};
+            isSinglePageRef.current = false;
         };
     }, []);
 
@@ -3537,7 +3544,8 @@ const DesktopFeed = ({
                                                                     <>
                                                                         {/* Login */}
                                                                         <button
-                                                                            onClick={() =>
+                                                                            onClick={() => {
+                                                                                shouldCleanupBrowserHistoryRef.current = false;
                                                                                 router.get(
                                                                                     route('login'),
                                                                                     {
@@ -3553,6 +3561,7 @@ const DesktopFeed = ({
                                                                                     },
                                                                                 )
                                                                             }
+                                                                            }
                                                                             className="flex-1 h-12 font-semibold transition bg-white border rounded-md text-md border-main-text-light text-main-text-light hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80"
                                                                         >
                                                                             {__('Login')}
@@ -3560,7 +3569,8 @@ const DesktopFeed = ({
 
                                                                         {/*Register*/}
                                                                         <button
-                                                                            onClick={() =>
+                                                                            onClick={() => {
+                                                                                shouldCleanupBrowserHistoryRef.current = false;
                                                                                 router.get(
                                                                                     route(
                                                                                         'register',
@@ -3575,6 +3585,7 @@ const DesktopFeed = ({
                                                                                                 .search,
                                                                                     },
                                                                                 )
+                                                                            }
                                                                             }
                                                                             className="flex-1 h-12 font-semibold transition border rounded-md text-md border-main-text-dark bg-main-text-light text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80"
                                                                         >
