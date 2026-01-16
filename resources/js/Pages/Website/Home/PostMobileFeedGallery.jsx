@@ -2,6 +2,7 @@ import InstagramStyledVideoPlayer from '@/Components/InstagramStyledVideoPlayer'
 import { router } from '@inertiajs/react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import SpatiotemporalInfoModal from '@/Components/SpatiotemporalInfoModal';
 
 const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToHashtag, placeholderImage, generateURL, __, auth, setBookmarkStatusChanged, isDarkMode, setMobileFeedGalleryOpen }) => {
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
@@ -9,6 +10,8 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
     const actionDropdownRef = useRef(null);
     const thumbnailContainerRef = useRef(null);
     const scrollContainerRef = useRef(null);
+
+    const [postSpatiotempotalInfoModal, setPostSpatiotempotalInfoModal] = useState(false);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -492,17 +495,28 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
 
 
 
-                                                <span
+                                                {/* Spatiotemporal Information */}
+                                                {(post?.latitude != null && post?.longitude != null) && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            setPostSpatiotempotalInfoModal(true);
+                                                            setActionDropdownOpen(null);
+                                                        }}
+                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                    >
 
-                                                    className="flex items-center w-full gap-3 px-4 py-3 text-xs transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
-                                                >
 
-                                                    <span>{__('Post Created')}:
-                                                        <p>
-                                                            {post?.added_at} {post?.created_at_time}
-                                                        </p>
-                                                    </span>
-                                                </span>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                                                        </svg>
+
+
+                                                        <span className="font-normal">
+                                                            {__('Spatiotemporal Info')}
+                                                        </span>
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     )}
@@ -520,71 +534,6 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                 )}
                             </div>
 
-                            <div className="py-4 shrink-0">
-                                <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600 dark:text-gray-400">
-                                    {/* User Info */}
-                                    <div className="flex gap-2 p-2 rounded-full text-sub-text-light bg-surface-1-light dark:bg-surface-2-dark dark:text-sub-text-dark">
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            strokeWidth={1.5}
-                                            stroke="currentColor"
-                                            className="w-4 h-4"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
-                                            />
-                                        </svg>
-                                        <span className="font-normal">
-                                            {post?.user?.name
-                                                ?.length > 10
-                                                ? post?.user?.name.substring(
-                                                    0,
-                                                    10,
-                                                ) + '...'
-                                                : post?.user?.name ||
-                                                'Unknown User'}
-                                        </span>
-                                    </div>
-
-                                    {/* Location */}
-                                    {post?.location_name && (
-                                        <div className="p-2 rounded-full text-sub-text-light bg-surface-1-light dark:bg-surface-2-dark dark:text-sub-text-dark">
-                                            <span className="font-normal">
-                                                {post?.location_name
-                                                    ?.length > 15
-                                                    ? post?.location_name.substring(
-                                                        0,
-                                                        15,
-                                                    ) + '...'
-                                                    : post?.location_name ||
-                                                    'Unknown Location'}
-                                            </span>
-                                        </div>
-                                    )}
-
-                                    {/* Date */}
-                                    <div className="p-2 rounded-full text-sub-text-light bg-surface-1-light dark:bg-surface-2-dark dark:text-sub-text-dark">
-                                        <span className="font-normal">
-                                            {formatDate(
-                                                post?.created_at,
-                                            )}
-                                        </span>
-                                    </div>
-
-                                    {/* Time */}
-                                    <div className="p-2 rounded-full text-sub-text-light bg-surface-1-light dark:bg-surface-2-dark dark:text-sub-text-dark">
-                                        <span className="font-normal">
-                                            {formatTime(
-                                                post?.created_at,
-                                            )}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
@@ -593,6 +542,16 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                 document.getElementById('modal-root') || document.body,
             )}
 
+            {
+                postSpatiotempotalInfoModal && (
+                    <SpatiotemporalInfoModal
+                        onClose={() => {
+                            setPostSpatiotempotalInfoModal(false);
+                        }}
+                        post={post}
+                    />
+                )
+            }
 
         </>
     );

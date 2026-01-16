@@ -287,6 +287,11 @@ const index = () => {
 
 
         isSinglePageRef.current = isSinglePage;
+
+        if (isSinglePage) {
+            setMobileFeedGalleryOpen(true);
+        }
+
         setIsFeedOpeningDirectly(true);
         let feedItem = null;
 
@@ -1357,7 +1362,6 @@ const index = () => {
                             cart_items={cart_items}
                             currency={currency}
                             placeholderImage={Placeholder}
-                            isFeedOpeningDirectly={isFeedOpeningDirectly}
                             showErrorMessage={showErrorMessage}
                             showInfoMessage={showInfoMessage}
                             ErrorMessage={ErrorMessage}
@@ -1366,7 +1370,6 @@ const index = () => {
                             setBookmarkStatusChanged={setBookmarkStatusChanged}
                             setShowInfoMessage={setShowInfoMessage}
                             setErrorMessage={setErrorMessage}
-                            windowSize={windowSize}
                             setShowErrorMessage={setShowErrorMessage}
                             setFeedOpen={setFeedOpen}
                             setMediaItems={setMediaItems}

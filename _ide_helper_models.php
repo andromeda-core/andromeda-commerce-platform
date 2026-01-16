@@ -1544,7 +1544,7 @@ namespace App\Models{
  * @property int $id
  * @property string $name
  * @property string $email
- * @property string $phone
+ * @property string|null $phone
  * @property \Illuminate\Support\Carbon|null $email_verified_at
  * @property string $password
  * @property string $language_locale

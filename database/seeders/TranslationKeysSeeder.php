@@ -494,6 +494,13 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Sent! Check your inbox.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Failed. Try again.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Post Created', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Spatiotemporal Information', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Spatiotemporal Info', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Vertical', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Time', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'at', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Floor', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Loading map', 'created_at' => $now, 'updated_at' => $now],
 
             // Backend
             ['key' => 'Profile Updated Successfully', 'created_at' => $now, 'updated_at' => $now],

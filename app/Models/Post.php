@@ -69,8 +69,8 @@ class Post extends Model
     public function getAddedAtAttribute()
     {
         return $this->created_at
-            ? Carbon::parse($this->created_at)->format('Y-m-d')
-            : null;
+    ? Carbon::parse($this->created_at)->format('F, d, Y')
+    : null;
     }
 
     public function getCreatedAtTimeAttribute()
