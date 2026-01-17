@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Cache;
 
 class ReturnPolicy extends Model
 {
@@ -26,6 +27,18 @@ class ReturnPolicy extends Model
     public function language(): BelongsTo
     {
         return $this->belongsTo(Language::class, 'language_id', 'id');
+    }
+
+    // Static Booting
+    protected static function booted()
+    {
+        static::saving(function () {
+            Cache::tags(['feed'])->flush();
+        });
+
+        static::deleted(function () {
+            Cache::tags(['feed'])->flush();
+        });
     }
 
     protected $casts = [

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Cache;
 
 class Addon extends Model
 {
@@ -28,5 +29,17 @@ class Addon extends Model
             'addon_id',
             'smartphone_id'
         );
+    }
+
+    // Static Booting
+    protected static function booted()
+    {
+        static::saving(function () {
+            Cache::tags(['feed'])->flush();
+        });
+
+        static::deleted(function () {
+            Cache::tags(['feed'])->flush();
+        });
     }
 }

@@ -281,14 +281,12 @@ const index = () => {
         const smartphone_slug = params.get('m-slug');
         const isSinglePage = params.get('single_page') === 'true';
 
-
-
         if ((!post_slug && !smartphone_slug) && !isSinglePage) return;
 
 
         isSinglePageRef.current = isSinglePage;
 
-        if (isSinglePage) {
+        if (isSinglePage && windowSize.width < 1024) {
             setMobileFeedGalleryOpen(true);
         }
 
@@ -323,7 +321,7 @@ const index = () => {
             window.history.replaceState({}, '', window.location.href);
         }
 
-    }, [isFeedLoaded, feed]);
+    }, [isFeedLoaded, feed, windowSize.width]);
 
     // Fetch Single Post Method
     const fetchSinglePost = async (slug) => {

@@ -2768,6 +2768,11 @@ class SettingRepository implements ISettingRepository
         try {
 
             $slug = Str::slug($validated_req['name']);
+
+            if (empty($slug)) {
+                $slug = 'return-policy-'.Str::random(8);
+            }
+
             $validated_req['slug'] = $slug;
 
             $created = $this->return_policy->create($validated_req);
@@ -2833,6 +2838,11 @@ class SettingRepository implements ISettingRepository
 
             if ($return_policy->isDirty('name')) {
                 $slug = Str::slug($validated_req['name']);
+
+                if (empty($slug)) {
+                    $slug = 'return-policy-'.Str::random(8);
+                }
+
                 $validated_req['slug'] = $slug;
             }
 

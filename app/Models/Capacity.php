@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 class Capacity extends Model
 {
@@ -21,5 +22,17 @@ class Capacity extends Model
     public function smartphone(): HasMany
     {
         return $this->hasMany(Smartphone::class, 'capacity_id', 'id');
+    }
+
+    // Static Booting
+    protected static function booted()
+    {
+        static::saving(function () {
+            Cache::tags(['feed'])->flush();
+        });
+
+        static::deleted(function () {
+            Cache::tags(['feed'])->flush();
+        });
     }
 }
