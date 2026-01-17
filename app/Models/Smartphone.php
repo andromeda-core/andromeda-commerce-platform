@@ -31,7 +31,7 @@ class Smartphone extends Model
 
     ];
 
-    protected $appends = ['added_at', 'colors', 'smartphone_image_urls'];
+    protected $appends = ['added_at', 'created_at_time', 'colors', 'smartphone_image_urls'];
 
     protected $with = ['addons'];
 
@@ -40,11 +40,19 @@ class Smartphone extends Model
         return Color::whereIn('id', $this->color_ids ?? [])->get();
     }
 
+    // Attributes
     public function getAddedAtAttribute()
     {
         return $this->created_at
-           ? Carbon::parse($this->created_at)->format('Y-m-d')
-           : null;
+    ? Carbon::parse($this->created_at)->format('F, d, Y')
+    : null;
+    }
+
+    public function getCreatedAtTimeAttribute()
+    {
+        return $this->created_at
+            ? Carbon::parse($this->created_at)->format('g:i A')
+            : null;
     }
 
     public function getSmartphoneImageUrlsAttribute()

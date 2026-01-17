@@ -1240,6 +1240,7 @@ namespace App\Models{
  * @property-read \App\Models\CourierCompany|null $courier_company
  * @property-read mixed $added_at
  * @property-read mixed $colors
+ * @property-read mixed $created_at_time
  * @property-read mixed $smartphone_image_urls
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Inventory> $inventory_items
  * @property-read int|null $inventory_items_count

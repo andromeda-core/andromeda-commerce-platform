@@ -81,6 +81,8 @@ class ProductsRepository implements IProductsRepository
                                     'tag' => $smartphone->tag,
                                     'content' => $smartphone->content,
                                     'type' => 'smartphones',
+                                    'added_at' => $smartphone->added_at,
+                                    'created_at_time' => $smartphone->created_at_time,
 
                                 ];
                             });
@@ -147,6 +149,8 @@ class ProductsRepository implements IProductsRepository
                             'tag' => $smartphone?->tag,
                             'content' => $smartphone?->content,
                             'type' => 'smartphones',
+                            'added_at' => $smartphone->added_at,
+                            'created_at_time' => $smartphone->created_at_time,
                             'related' => collect([...$related_posts, ...$related_smartphones])->shuffle(),
                         ];
                     });

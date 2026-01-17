@@ -1070,6 +1070,19 @@ const SmartphoneMobileGalleryModal = ({
                                                     </svg>
                                                     <span>{__('Copy Link')}</span>
                                                 </button>
+
+
+                                                <span
+
+                                                    className="flex items-center w-full gap-3 px-4 py-3 text-xs transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
+                                                >
+
+                                                    <span>{__('Post Created')}:
+                                                        <p>
+                                                            {smartphone?.added_at} {smartphone?.created_at_time}
+                                                        </p>
+                                                    </span>
+                                                </span>
                                             </div>
                                         </div>
                                     )}
@@ -1093,13 +1106,13 @@ const SmartphoneMobileGalleryModal = ({
 
                                     {smartphone?.addons?.length > 0 && (
                                         <ProductSelectInput
-                                            InputName={'Add-ons'}
+                                            InputName={__('Add-ons')}
                                             Name={'addons'}
                                             Id={'addons'}
                                             items={smartphone?.addons}
                                             Value={selectedAddon}
                                             itemKey={'name'}
-                                            Placeholder={'Addons'}
+                                            Placeholder={__('Addons')}
                                             Action={(value) => {
                                                 setSelectedAddon(value);
                                             }}

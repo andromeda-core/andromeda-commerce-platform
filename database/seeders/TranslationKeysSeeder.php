@@ -502,6 +502,9 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Floor', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Loading map', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Hide', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Delivery Time', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Within', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Days', 'created_at' => $now, 'updated_at' => $now],
 
             // Backend
             ['key' => 'Profile Updated Successfully', 'created_at' => $now, 'updated_at' => $now],

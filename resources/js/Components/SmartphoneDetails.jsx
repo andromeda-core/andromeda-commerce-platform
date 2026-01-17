@@ -53,24 +53,24 @@ const SmartphoneDetails = ({ currency, product, StockBadge }) => {
         return noTaxMessage;
     };
 
-    const calculateDeliveryEstimate = (deliveryDays) => {
-        if (!deliveryDays) return 'Dec 27 – Jan 2';
+    // const calculateDeliveryEstimate = (deliveryDays) => {
+    //     if (!deliveryDays) return 'Dec 27 – Jan 2';
 
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    //     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-        const formatDate = (date) => {
-            return `${months[date.getMonth()]} ${date.getDate()}`;
-        };
-
-
-        const fromDate = new Date();
+    //     const formatDate = (date) => {
+    //         return `${months[date.getMonth()]} ${date.getDate()}`;
+    //     };
 
 
-        const toDate = new Date();
-        toDate.setDate(fromDate.getDate() + deliveryDays);
+    //     const fromDate = new Date();
 
-        return `${formatDate(fromDate)} – ${formatDate(toDate)}`;
-    };
+
+    //     const toDate = new Date();
+    //     toDate.setDate(fromDate.getDate() + deliveryDays);
+
+    //     return `${formatDate(fromDate)} – ${formatDate(toDate)}`;
+    // };
 
     return (
         <div className="relative max-w-lg">
@@ -98,7 +98,7 @@ const SmartphoneDetails = ({ currency, product, StockBadge }) => {
                 <DetailRow label={__("Import fees") + ":"} value={calculateImportCost()} />
 
                 {/* Delivery */}
-                <DetailRow label={__("Delivery")} value={calculateDeliveryEstimate(product?.delivery_days)} isDelivery={true} deliveryInfo={generalSetting?.app_product_delivery_info} />
+                <DetailRow label={__("Delivery Time")} value={__('Within') + ' ' + product?.delivery_days + " " + __('Days')} isDelivery={true} deliveryInfo={generalSetting?.app_product_delivery_info} />
 
                 {/* Courier */}
                 <DetailRow label={__("Courier")} value={product?.courier_company?.courier_name || "N/A"} />

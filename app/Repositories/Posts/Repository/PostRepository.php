@@ -185,6 +185,8 @@ class PostRepository implements IPostRepository
                                 'tag' => $smartphone->tag,
                                 'content' => $smartphone->content,
                                 'type' => 'smartphones',
+                                'added_at' => $smartphone->added_at,
+                                'created_at_time' => $smartphone->created_at_time,
                             ];
                         });
                 }
@@ -819,6 +821,8 @@ class PostRepository implements IPostRepository
                                 'tag' => $smartphone->tag,
                                 'content' => $smartphone->content,
                                 'type' => 'smartphones',
+                                'added_at' => $smartphone->added_at,
+                                'created_at_time' => $smartphone->created_at_time,
                             ];
 
                         });
@@ -920,6 +924,8 @@ class PostRepository implements IPostRepository
                                 'tag' => $smartphone->tag,
                                 'content' => $smartphone->content,
                                 'type' => 'smartphones',
+                                'added_at' => $smartphone->added_at,
+                                'created_at_time' => $smartphone->created_at_time,
                             ];
                         });
                 }
@@ -1008,6 +1014,8 @@ class PostRepository implements IPostRepository
                         'tag' => $sp->tag,
                         'content' => $sp->content,
                         'type' => 'smartphones',
+                        'added_at' => $sp->added_at,
+                        'created_at_time' => $sp->created_at_time,
                         'related' => collect()
                             ->merge($spRelatedPosts->values())
                             ->merge($spRelatedSmartphones->values())
@@ -1208,6 +1216,8 @@ class PostRepository implements IPostRepository
                             'tag' => $smartphone->tag,
                             'content' => $smartphone->content,
                             'type' => 'smartphones',
+                            'added_at' => $smartphone->added_at,
+                            'created_at_time' => $smartphone->created_at_time,
 
                         ];
                     });
@@ -1371,6 +1381,8 @@ class PostRepository implements IPostRepository
                             'type' => 'smartphones',
                             'created_at' => $smartphone->created_at->format('Y-m-d g:i A '),
                             'timestamp' => $smartphone->created_at->timestamp,
+                            'added_at' => $smartphone->added_at,
+                            'created_at_time' => $smartphone->created_at_time,
 
                         ];
                     });
