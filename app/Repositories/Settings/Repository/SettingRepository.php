@@ -2767,13 +2767,19 @@ class SettingRepository implements ISettingRepository
 
         try {
 
-            $slug = Str::slug($validated_req['name']);
+            $existingPolicy = $this->return_policy->where('name', $validated_req['name'])->first();
 
-            if (empty($slug)) {
-                $slug = 'return-policy-'.Str::random(8);
+            if (! empty($existingPolicy)) {
+                $validated_req['slug'] = $existingPolicy->slug;
+            } else {
+                $slug = Str::slug($validated_req['name']);
+
+                if (empty($slug)) {
+                    $slug = 'return-policy-'.Str::random(8);
+                }
+
+                $validated_req['slug'] = $slug;
             }
-
-            $validated_req['slug'] = $slug;
 
             $created = $this->return_policy->create($validated_req);
 
@@ -2837,13 +2843,19 @@ class SettingRepository implements ISettingRepository
             $return_policy->fill($validated_req);
 
             if ($return_policy->isDirty('name')) {
-                $slug = Str::slug($validated_req['name']);
+                $existingPolicy = $this->return_policy->where('name', $validated_req['name'])->first();
 
-                if (empty($slug)) {
-                    $slug = 'return-policy-'.Str::random(8);
+                if (! empty($existingPolicy)) {
+                    $validated_req['slug'] = $existingPolicy->slug;
+                } else {
+                    $slug = Str::slug($validated_req['name']);
+
+                    if (empty($slug)) {
+                        $slug = 'return-policy-'.Str::random(8);
+                    }
+
+                    $validated_req['slug'] = $slug;
                 }
-
-                $validated_req['slug'] = $slug;
             }
 
             $updated = $return_policy->update($validated_req);
