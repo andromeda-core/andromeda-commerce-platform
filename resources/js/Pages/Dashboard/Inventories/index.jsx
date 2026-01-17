@@ -221,7 +221,7 @@ export default function index({ inventories, batches, storage_locations, smartph
                                             />
                                         </div>
 
-                                        <div className="relative mb-2">
+                                        <div className="relative mt-3">
                                             <PrimaryButton
                                                 Type={'button'}
                                                 Text={'Apply'}
