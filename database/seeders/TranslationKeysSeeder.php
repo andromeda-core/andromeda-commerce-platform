@@ -505,6 +505,7 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Delivery Time', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Within', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Days', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Product Details', 'created_at' => $now, 'updated_at' => $now],
 
             // Backend
             ['key' => 'Profile Updated Successfully', 'created_at' => $now, 'updated_at' => $now],

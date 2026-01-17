@@ -1,14 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-const Accordion = ({
-    label,
-    content,
-    isHtml = false,
+const SmartphoneDetailsAccordion = ({
+    label = "Product Details",
+    productDetails = [],
     defaultOpen = false,
     onToggle = null,
     scrollContainerRef = null,
 }) => {
     const [isOpen, setIsOpen] = useState(defaultOpen);
+    const accordionRef = useRef(null);
 
     const handleToggle = () => {
         const newState = !isOpen;
@@ -17,8 +17,6 @@ const Accordion = ({
             onToggle(newState);
         }
     };
-    const accordionRef = useRef(null);
-
 
     useEffect(() => {
         if (!isOpen) return;
@@ -45,8 +43,9 @@ const Accordion = ({
             });
         });
     }, [isOpen]);
+
     return (
-        <div className={isOpen ? 'w-full border-b border-[#c8c8c8] dark:border-surface-3-dark' : ''}>
+        <div className="w-full">
             {/* Accordion Header */}
             <button
                 onClick={handleToggle}
@@ -74,23 +73,41 @@ const Accordion = ({
                 </svg>
             </button>
 
-            {/* Accordion Content */}
+
+
+            {/* Accordion Content - Product Details Table */}
             {isOpen && (
-                <div className="pt-2 pb-6" ref={accordionRef}>
-                    {isHtml ? (
-                        <div
-                            className="text-sm leading-relaxed break-words break-all whitespace-pre-wrap text-sub-text-light dark:text-sub-text-dark"
-                            dangerouslySetInnerHTML={{ __html: content }}
-                        />
-                    ) : (
-                        <p className="text-sm leading-relaxed break-words whitespace-pre-wrap text-sub-text-light dark:text-sub-text-dark">
-                            {content}
-                        </p>
-                    )}
+                <div className="pt-2 pb-2" ref={accordionRef}>
+                    <div className="w-full">
+                        {productDetails.map((detail, index) => (
+                            <div key={index}>
+                                <div className="grid grid-cols-[40%_60%] py-2">
+                                    {/* Title Column */}
+                                    <div className="pr-4 text-sm font-medium break-words text-main-text-light dark:text-main-text-dark">
+                                        {detail.title}
+                                    </div>
+
+                                    {/* Value Column */}
+                                    <div className="text-sm break-words text-sub-text-light dark:text-sub-text-dark">
+                                        {detail.value}
+                                    </div>
+                                </div>
+
+                                {/* Border between items - show for all items */}
+                                {index !== productDetails.length - 1 && (
+                                    <div className="h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
+                                )}
+                            </div>
+                        ))}
+                    </div>
                 </div>
+
             )}
+
+            {/* Bottom Border */}
+            <div className="h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
         </div>
     );
 };
 
-export default Accordion;
+export default SmartphoneDetailsAccordion;

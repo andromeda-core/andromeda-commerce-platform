@@ -28,6 +28,7 @@ class Smartphone extends Model
         'tag',
         'slug',
         'content',
+        'product_details',
 
     ];
 
@@ -157,5 +158,6 @@ class Smartphone extends Model
     protected $casts = [
         'color_ids' => 'array',
         'images' => 'array',
+        'product_details' => 'array',
     ];
 }

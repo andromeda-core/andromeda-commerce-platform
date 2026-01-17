@@ -187,6 +187,7 @@ class PostRepository implements IPostRepository
                                 'type' => 'smartphones',
                                 'added_at' => $smartphone->added_at,
                                 'created_at_time' => $smartphone->created_at_time,
+                                'product_details' => $smartphone->product_details,
                             ];
                         });
                 }
@@ -823,6 +824,7 @@ class PostRepository implements IPostRepository
                                 'type' => 'smartphones',
                                 'added_at' => $smartphone->added_at,
                                 'created_at_time' => $smartphone->created_at_time,
+                                'product_details' => $smartphone->product_details,
                             ];
 
                         });
@@ -926,6 +928,7 @@ class PostRepository implements IPostRepository
                                 'type' => 'smartphones',
                                 'added_at' => $smartphone->added_at,
                                 'created_at_time' => $smartphone->created_at_time,
+                                'product_details' => $smartphone->product_details,
                             ];
                         });
                 }
@@ -1016,6 +1019,7 @@ class PostRepository implements IPostRepository
                         'type' => 'smartphones',
                         'added_at' => $sp->added_at,
                         'created_at_time' => $sp->created_at_time,
+                        'product_details' => $sp->product_details,
                         'related' => collect()
                             ->merge($spRelatedPosts->values())
                             ->merge($spRelatedSmartphones->values())
@@ -1218,6 +1222,7 @@ class PostRepository implements IPostRepository
                             'type' => 'smartphones',
                             'added_at' => $smartphone->added_at,
                             'created_at_time' => $smartphone->created_at_time,
+                            'product_details' => $smartphone->product_details,
 
                         ];
                     });
@@ -1383,6 +1388,7 @@ class PostRepository implements IPostRepository
                             'timestamp' => $smartphone->created_at->timestamp,
                             'added_at' => $smartphone->added_at,
                             'created_at_time' => $smartphone->created_at_time,
+                            'product_details' => $smartphone->product_details,
 
                         ];
                     });

@@ -5,11 +5,12 @@ import Spinner from '@/Components/Spinner';
 import VideoWithThumbnail from '@/Components/VideoWithThumbnail';
 import { AnimatePresence, motion } from 'framer-motion';
 import SmartphoneDetails from '@/Components/SmartphoneDetails';
-import Accordion from '@/Components/Accordian';
+import SmartphoneContentAccordion from '@/Components/SmartphoneContentAccordion';
 import ProductSelectInput from '@/Components/ProductSelectInput';
 import { useVideoStore } from '@/Hooks/useVideoStore';
 import CustomizedVideoPlayer from '@/Components/CustomizedVideoPlayer';
 import SpatiotemporalInfoModal from '@/Components/SpatiotemporalInfoModal';
+import SmartphoneDetailsAccordion from '@/Components/SmartphoneDetailsAccordion';
 
 const DesktopFeed = ({
     feedGallery,
@@ -1752,6 +1753,7 @@ const DesktopFeed = ({
             </>
         );
     }
+
     // Non Text POSTS
     if (feedGallery !== null && feedGallery?.type === 'posts') {
         return (
@@ -3591,18 +3593,30 @@ const DesktopFeed = ({
                                                                 )}
                                                             </div>
 
-                                                            {/* Accordian */}
-                                                            <div className="!mt-2">
-                                                                {/* Product Details */}
-                                                                <Accordion
-                                                                    content={feedGallery?.content}
-                                                                    label={__('About this product')}
-                                                                    isHtml={true}
-                                                                    onToggle={setToggleAccordion}
-                                                                    defaultOpen={toggleAccordion}
-                                                                    scrollContainerRef={productRightPanelScrollRef}
-                                                                />
-                                                            </div>
+                                                            {/* Accordion */}
+                                                            {/* Product Content */}
+                                                            <SmartphoneContentAccordion
+                                                                content={feedGallery?.content}
+                                                                label={__('About this product')}
+                                                                isHtml={true}
+                                                                onToggle={setToggleAccordion}
+                                                                defaultOpen={toggleAccordion}
+                                                                scrollContainerRef={productRightPanelScrollRef}
+                                                            />
+
+
+                                                            {feedGallery?.product_details && (
+                                                                <>
+                                                                    {/* Product Details */}
+                                                                    <SmartphoneDetailsAccordion
+                                                                        productDetails={feedGallery?.product_details}
+                                                                        label={__('Product Details')}
+                                                                        onToggle={setToggleAccordion}
+                                                                        defaultOpen={toggleAccordion}
+                                                                        scrollContainerRef={productRightPanelScrollRef}
+                                                                    />
+                                                                </>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>

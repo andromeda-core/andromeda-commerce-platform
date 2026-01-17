@@ -29,7 +29,7 @@ const index = () => {
         if (typeof window === 'undefined') return false;
 
         const params = new URLSearchParams(window.location.search);
-        const isDirect = params.get('direct') === 'true';
+        const isDirect = params.get('direct') === 'true' && (params.has('slug') || params.has('m-slug'));
 
         if (isDirect) {
             return true;
@@ -413,11 +413,15 @@ const index = () => {
                     setFeedIndex(newIndex);
                 }
             } else {
+                isSinglePageRef.current = false;
+                setShowFeedSkeleton(false);
                 setShowInfoMessage(true);
                 setInfoMessage(__('Post Not Found'));
                 window.history.replaceState({}, '', window.location.pathname);
             }
         } catch (err) {
+            isSinglePageRef.current = false;
+            setShowFeedSkeleton(false);
             setShowErrorMessage(true);
             setErrorMessage(__(err.response.data.message) || __('Something went wrong' + "!"));
             window.history.replaceState({}, '', window.location.pathname);
@@ -514,11 +518,15 @@ const index = () => {
                     setFeedIndex(newIndex);
                 }
             } else {
+                isSinglePageRef.current = false;
+                setShowFeedSkeleton(false);
                 setShowInfoMessage(true);
                 setInfoMessage(__('Smartphone Not Found'));
                 window.history.replaceState({}, '', window.location.pathname);
             }
         } catch (err) {
+            isSinglePageRef.current = false;
+            setShowFeedSkeleton(false);
             setShowErrorMessage(true);
             setErrorMessage(__(err.response.data.message) || __('Something went wrong' + "!"));
             window.history.replaceState({}, '', window.location.pathname);

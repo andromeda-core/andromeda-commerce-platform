@@ -1229,6 +1229,7 @@ namespace App\Models{
  * @property array<array-key, mixed>|null $images
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property array<array-key, mixed>|null $product_details
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Addon> $addons
  * @property-read int|null $addons_count
  * @property-read \App\Models\Capacity|null $capacity
@@ -1267,6 +1268,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereImages($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereModelNameId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereModelSearchableName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereProductDetails($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereReturnPolicyId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereTag($value)

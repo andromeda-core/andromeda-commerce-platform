@@ -1,4 +1,4 @@
-import Accordion from '@/Components/Accordian';
+import SmartphoneContentAccordion from '@/Components/SmartphoneContentAccordion';
 import ProductSelectInput from '@/Components/ProductSelectInput';
 import SmartphoneDetails from '@/Components/SmartphoneDetails';
 import Spinner from '@/Components/Spinner';
@@ -6,6 +6,7 @@ import Toast from '@/Components/Toast';
 import { router } from '@inertiajs/react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import SmartphoneDetailsAccordion from '@/Components/SmartphoneDetailsAccordion';
 
 const SmartphoneMobileGalleryModal = ({
     smartphone,
@@ -1487,17 +1488,29 @@ const SmartphoneMobileGalleryModal = ({
                                     </div>
 
                                     {/* Accordian */}
-                                    <div className="!mt-2">
-                                        {/* Product Details */}
-                                        <Accordion
-                                            content={smartphone?.content}
-                                            label={__('About this product')}
-                                            isHtml={true}
-                                            onToggle={setToggleAccordion}
-                                            defaultOpen={toggleAccordion}
-                                            scrollContainerRef={scrollContainerRef}
-                                        />
-                                    </div>
+                                    {/* Product Content */}
+                                    <SmartphoneContentAccordion
+                                        content={smartphone?.content}
+                                        label={__('About this product')}
+                                        isHtml={true}
+                                        onToggle={setToggleAccordion}
+                                        defaultOpen={toggleAccordion}
+                                        scrollContainerRef={scrollContainerRef}
+                                    />
+
+
+                                    {smartphone?.product_details && (
+                                        <>
+                                            {/* Product Details */}
+                                            <SmartphoneDetailsAccordion
+                                                productDetails={smartphone?.product_details}
+                                                label={__('Product Details')}
+                                                onToggle={setToggleAccordion}
+                                                defaultOpen={toggleAccordion}
+                                                scrollContainerRef={scrollContainerRef}
+                                            />
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>

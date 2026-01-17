@@ -75,6 +75,7 @@ class SmartphoneRepository implements ISmartphoneRepository
 
     public function storeSmartphone(Request $request)
     {
+
         $validated_req = $request->validate([
             'model_name_id' => ['required', 'exists:model_names,id'],
             'capacity_id' => ['required', 'exists:capacities,id'],
@@ -89,6 +90,7 @@ class SmartphoneRepository implements ISmartphoneRepository
             'condition_id' => ['required', 'exists:conditions,id'],
             'courier_company_id' => ['required', 'exists:courier_companies,id'],
             'return_policy_id' => ['required', 'exists:return_policies,id'],
+
             'images' => ['required', 'array', 'max:5'],
             'tag' => ['nullable', 'string', 'max:30', function ($attribute, $value, $fail) {
                 if (str_contains($value, ',')) {
@@ -106,6 +108,7 @@ class SmartphoneRepository implements ISmartphoneRepository
             'color_ids.*.exists' => 'Given Color Are incorrect',
             'category_id.required' => 'Category  Is Required',
             'category_id.exists' => 'Given Category  Is incorrect',
+
         ]);
 
         $validator = Validator::make($request->allFiles(), [
@@ -124,6 +127,27 @@ class SmartphoneRepository implements ISmartphoneRepository
         if ($validator->fails()) {
             throw ValidationException::withMessages([
                 'file_error' => $validator->errors()->first(),
+            ]);
+        }
+
+        $productDetailValidator = Validator::make($request->all(), [
+            'product_details' => ['nullable', 'array'],
+            'product_details.*.title' => ['required', 'string', 'max:255'],
+            'product_details.*.value' => ['required', 'string', 'max:255'],
+
+        ], [
+            'product_details.*.title.required' => 'Title Is Required',
+            'product_details.*.title.max' => 'Title Should Not Exceed 255 Characters',
+            'product_details.*.title.string' => 'Title Must Be A String',
+            'product_details.*.value.required' => 'Value Is Required',
+            'product_details.*.value.max' => 'Value Should Not Exceed 255 Characters',
+            'product_details.*.value.string' => 'Value Must Be A String',
+
+        ]);
+
+        if ($productDetailValidator->fails()) {
+            throw ValidationException::withMessages([
+                'file_error' => $productDetailValidator->errors()->first(),
             ]);
         }
 
@@ -151,6 +175,10 @@ class SmartphoneRepository implements ISmartphoneRepository
             // Detaching From Request To Let it Create First
             if ($request->has('addon_ids')) {
                 unset($validated_req['addon_ids']);
+            }
+
+            if (! blank($request->array('product_details'))) {
+                $validated_req['product_details'] = $request->array('product_details');
             }
 
             $smartphone = $this->smartphone->create($validated_req);
@@ -250,6 +278,27 @@ class SmartphoneRepository implements ISmartphoneRepository
             ]);
         }
 
+        $productDetailValidator = Validator::make($request->all(), [
+            'product_details' => ['nullable', 'array'],
+            'product_details.*.title' => ['required', 'string', 'max:255'],
+            'product_details.*.value' => ['required', 'string', 'max:255'],
+
+        ], [
+            'product_details.*.title.required' => 'Title Is Required',
+            'product_details.*.title.max' => 'Title Should Not Exceed 255 Characters',
+            'product_details.*.title.string' => 'Title Must Be A String',
+            'product_details.*.value.required' => 'Value Is Required',
+            'product_details.*.value.max' => 'Value Should Not Exceed 255 Characters',
+            'product_details.*.value.string' => 'Value Must Be A String',
+
+        ]);
+
+        if ($productDetailValidator->fails()) {
+            throw ValidationException::withMessages([
+                'file_error' => $productDetailValidator->errors()->first(),
+            ]);
+        }
+
         try {
             $validated_req = array_filter($validated_req, function ($value, $key) {
                 return ! in_array($key, ['images']);
@@ -288,6 +337,12 @@ class SmartphoneRepository implements ISmartphoneRepository
                 $remaining_images_array = array_values($remeaning_images);
 
                 $validated_req['images'] = $remaining_images_array;
+            }
+
+            if (! blank($request->array('product_details'))) {
+                $validated_req['product_details'] = $request->array('product_details');
+            } else {
+                $validated_req['product_details'] = null;
             }
 
             $updated = $smartphone->update($validated_req);
