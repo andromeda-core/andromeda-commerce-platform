@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Card from '@/Components/Card';
 import LinkButton from '@/Components/LinkButton';
 import PrimaryButton from '@/Components/PrimaryButton';
 import Input from '@/Components/Input';
 import Textarea from '@/Components/Textarea';
+import axios from 'axios';
 
 const Index = ({ selected_language_code, translations, translation_keys }) => {
     // Create a map of translation_key_id -> translation value for quick lookup
@@ -22,6 +23,23 @@ const Index = ({ selected_language_code, translations, translation_keys }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [hasChanges, setHasChanges] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+
+
+    // Export Translation CSV LOGIC
+    const [isExporting, setIsExporting] = useState(false);
+    const exportTranslations = () => {
+        setIsExporting(true);
+        window.location.href = route('dashboard.translation-system.translations.export', selected_language_code);
+        setTimeout(() => {
+            setIsExporting(false);
+        }, 500);
+    }
+
+
+
+    // Import Logic
+    const [isImporting, setIsImporting] = useState(false);
+
 
     // Filter translation keys based on search
     const filteredKeys = useMemo(() => {
@@ -93,6 +111,10 @@ const Index = ({ selected_language_code, translations, translation_keys }) => {
     ).length;
     const progress = totalKeys > 0 ? (translatedCount / totalKeys) * 100 : 0;
 
+
+
+
+
     return (
         <>
             <AuthenticatedLayout>
@@ -101,6 +123,75 @@ const Index = ({ selected_language_code, translations, translation_keys }) => {
                     Content={
                         <>
                             <div className="flex flex-wrap justify-end gap-4 my-3">
+
+                                <PrimaryButton
+                                    Action={exportTranslations}
+                                    Disabled={isExporting}
+                                    Text={"Export Translations CSV"}
+                                    Type={'button'}
+                                    Spinner={isExporting}
+                                    CustomClass={"w-[300px]"}
+                                    Id={'translation_export'}
+                                    Icon={
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                        </svg>
+
+                                    }
+                                />
+
+                                <PrimaryButton
+                                    Action={() => {
+                                        document.getElementById('import_file').click();
+
+                                    }}
+                                    Disabled={isImporting}
+                                    Text={"Import Translations"}
+                                    Type={'button'}
+                                    Spinner={isImporting}
+                                    CustomClass={"w-[300px]"}
+                                    Id={'translation_import'}
+                                    Icon={
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+                                        </svg>
+                                    }
+                                />
+
+                                <input
+                                    type="file"
+                                    accept=".xlsx,.csv"
+                                    id='import_file'
+                                    className='hidden'
+                                    disabled={isImporting}
+                                    onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (!file) return;
+                                        setIsImporting(true);
+                                        router.post(
+                                            route('dashboard.translation-system.translations.import'),
+                                            {
+                                                import_file: file,
+                                                language_code: selected_language_code,
+
+                                            },
+                                            {
+                                                forceFormData: true,
+
+                                                onSuccess: (page) => {
+                                                    if (page?.props?.flash?.success) {
+                                                        window.location.reload();
+                                                    }
+                                                },
+                                                onFinish: () => {
+                                                    setIsImporting(false);
+                                                    e.target.value = null;
+                                                },
+                                            }
+                                        );
+                                    }}
+                                />
+
                                 <LinkButton
                                     Text={'Back To Languages'}
                                     URL={route('dashboard.translation-system.languages.index')}
@@ -265,6 +356,9 @@ const Index = ({ selected_language_code, translations, translation_keys }) => {
                         </>
                     }
                 />
+
+
+
 
             </AuthenticatedLayout>
         </>

@@ -438,6 +438,8 @@ Route::middleware(['auth'])->group(function () {
             Route::controller(TranslationController::class)->prefix('/translations')->name('translations.')->group(function () {
                 Route::get('/translations/lang/{language_code?}', 'index')->name('index');
                 Route::put('/translations/{language_code?}', 'saveTranslations')->name('save');
+                Route::get('/translations-export/{language:code}', 'exportTranslations')->name('export');
+                Route::post('/translations-import', 'importTranslations')->name('import');
             });
         });
 

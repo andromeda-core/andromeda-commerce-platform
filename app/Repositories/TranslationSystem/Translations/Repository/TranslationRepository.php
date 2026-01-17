@@ -2,17 +2,22 @@
 
 namespace App\Repositories\TranslationSystem\Translations\Repository;
 
+use App\Imports\TranslationImport;
 use App\Models\Language;
 use App\Models\Translation;
+use App\Models\TranslationKey;
 use App\Repositories\TranslationSystem\Translations\Interface\ITranslationRepository;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TranslationRepository implements ITranslationRepository
 {
     public function __construct(
         private Translation $translation,
+        private TranslationKey $translation_key,
         private Language $language
     ) {}
 
@@ -125,5 +130,133 @@ class TranslationRepository implements ITranslationRepository
         }
 
         return $translations;
+    }
+
+    public function getAllKeysAndLanguageIDForExcelExport(?string $language_id = null)
+    {
+        try {
+            $language = $this->language->findOrFail($language_id);
+
+            $keys = $this->translation_key
+                ->with(['translations' => function ($q) use ($language_id) {
+                    $q->where('language_id', $language_id);
+                }])
+                ->orderBy('key')
+                ->get();
+
+            return $keys->map(function ($key) use ($language) {
+                $translation = $key->translations->first();
+
+                return [
+                    $language->code,
+                    $key->key,
+                    $translation?->value ?? '',
+                ];
+            })->toArray();
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function getExcelFileToImportTranslations(Request $request)
+    {
+
+        try {
+
+            $validated_req = $request->validate([
+                'language_code' => ['required', 'string', 'exists:languages,code'],
+                'import_file' => [
+                    'required',
+                    'file',
+                    'mimes:csv,xlsx',
+                ],
+            ]);
+
+            $language = $this->language->where('code', $validated_req['language_code'])->first();
+
+            if (empty($language)) {
+                throw new Exception('Language Not Found');
+            }
+
+            $file = $request->file('import_file');
+            if (! $file->isValid()) {
+                throw new \Exception('Invalid uploaded file');
+            }
+
+            Excel::import(
+                new TranslationImport($this, $language->id),
+                $file
+            );
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+
+    }
+
+    public function processTranslationImportExcelRows(
+        int $languageId,
+        Collection $rows
+    ): void {
+
+        if ($rows->isEmpty()) {
+            throw new \Exception('Excel file is empty');
+        }
+
+        //  Header validation
+        $required = ['translation_key', 'translation_value'];
+        $headers = array_keys($rows->first()->toArray());
+
+        if ($diff = array_diff($required, $headers)) {
+            throw new \Exception(
+                'Invalid Excel headers: '.implode(', ', $diff)
+            );
+        }
+
+        $keysMap = $this->translation_key
+            ->pluck('id', 'key')
+            ->toArray();
+
+        foreach ($rows as $index => $row) {
+
+            $rowNo = $index + 2;
+
+            if (empty($row['translation_key'])) {
+                throw new \Exception("Row {$rowNo}: translation_key missing");
+            }
+
+            if (! $this->translation_key->where(
+                'key',
+                $row['translation_key']
+            )->exists()) {
+                throw new \Exception(
+                    "Row {$rowNo}: invalid key {$row['translation_key']}"
+                );
+            }
+
+            $translationKeyId = $keysMap[$row['translation_key']];
+            if (! $translationKeyId) {
+                throw new \Exception(
+                    "Row {$rowNo}: invalid translation key ({$row['translation_key']})"
+                );
+            }
+
+            $this->translation->updateOrCreate(
+                [
+                    'language_id' => $languageId,
+                    'translation_key_id' => $translationKeyId,
+                ],
+                [
+                    'value' => trim((string) $row['translation_value']),
+                ]
+            );
+        }
     }
 }
