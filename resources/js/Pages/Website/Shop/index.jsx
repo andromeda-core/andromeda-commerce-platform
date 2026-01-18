@@ -354,7 +354,7 @@ const index = (
                                         className={
                                             index === 0
                                                 ? 'font-semibold text-2xl text-main-text-light dark:text-main-text-dark sm:text-xl lg:text-3xl '
-                                                : 'font-medium text-sub-text-light dark:text-sub-text-dark text-2xl sm:text-xl lg:text-3xl'
+                                                : 'font-medium text-surface-3-light dark:text-surface-3-dark text-2xl sm:text-xl lg:text-3xl'
                                         }
                                     >
                                         {category.name}
