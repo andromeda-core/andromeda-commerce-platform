@@ -962,3 +962,13 @@ Sounds good. We will keep the Storage Size module as it is.
 Regarding taxes, we will handle them through the Additional Fee List. All tax types will be created and managed in this module. The admin will then assign the required tax fee to a smartphone during product setup.
 This approach allows centralized tax management. Whenever the admin needs to update a tax value, they can simply update it in the Additional Fee List, and the system will automatically recalculate and update the total_price for all smartphones where that specific tax is assigned.
 This ensures consistency, reduces manual effort, and keeps pricing logic clean and maintainable.
+
+
+
+
+NEW PAGES (Remeaning)
+https://docs.google.com/document/d/1X9U--2BSjFL7-aKruAte17j6UZHRQc6gL7oGWYQKSAc/edit?usp=sharing Terms of service
+
+https://docs.google.com/document/d/1oA7T-ICq2eJGKK7DnH1gxWFR5xXPApp9jiLH8YlgBRk/edit?usp=sharing Global Refund & Return Policy
+
+https://docs.google.com/document/d/1OxFBnygAQO-C_IPxlPzvl_-x7bscGQYW9aObauVW5Qs/edit?usp=sharing Global Shipping policy

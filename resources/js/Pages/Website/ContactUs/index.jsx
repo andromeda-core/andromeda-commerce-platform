@@ -38,7 +38,7 @@ const Index = () => {
             <Head title={__("Contact Us", true)} />
 
             <div className="sm:px-6 lg:px-8">
-                <div className={` mx-auto ${windowSize.width > 1024 ? 'pb-0' : 'pb-24'} lg:max-w-6xl sm:max-w-3xl`}>
+                <div className={` mx-auto ${windowSize.width > 1024 ? 'pb-12' : 'pb-24'} lg:max-w-6xl sm:max-w-3xl`}>
 
 
                     {/* Hero Section */}
