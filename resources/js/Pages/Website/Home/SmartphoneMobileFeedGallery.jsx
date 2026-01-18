@@ -426,6 +426,10 @@ const SmartphoneMobileGalleryModal = ({
                     if (a.id === id) {
                         const addon = smartphone.addons.find((addon) => addon.id === id);
 
+                        if (a.quantity === 1) {
+                            return a;
+                        }
+
                         const unitPrice = Number(addon.price || 0);
                         const previousTotal = Number(a.price || 0);
 
@@ -439,8 +443,7 @@ const SmartphoneMobileGalleryModal = ({
                         };
                     }
                     return a;
-                })
-                .filter((a) => a.quantity > 0);
+                });
         });
     };
 
@@ -812,6 +815,12 @@ const SmartphoneMobileGalleryModal = ({
         }
     };
 
+    const handleAddonRemove = (id) => {
+        setCartItemAddons((prev) => {
+            return prev.filter((a) => a.id !== id);
+        });
+    };
+
     // Watching The Smartphone Cart Item If Smarpthone added Than enable Action Buttons
     useEffect(() => {
         if (
@@ -1134,6 +1143,7 @@ const SmartphoneMobileGalleryModal = ({
                                                 className="w-full p-4 rounded-sm bg-surface-1-light dark:bg-surface-2-dark"
                                                 key={index}
                                             >
+
                                                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                                                     <div className="flex flex-col items-start gap-3">
                                                         {/* Product Name */}
@@ -1221,9 +1231,33 @@ const SmartphoneMobileGalleryModal = ({
                                     {cartItemAddons?.length > 0 &&
                                         cartItemAddons?.map((addon, index) => (
                                             <div
-                                                className="w-full p-4 rounded-sm bg-surface-1-light dark:bg-surface-2-dark"
+                                                className="relative w-full p-4 rounded-sm bg-surface-1-light dark:bg-surface-2-dark"
                                                 key={index}
                                             >
+                                                {/* Remove Addon */}
+                                                <button
+                                                    onClick={() => {
+                                                        handleAddonRemove(addon?.id);
+                                                    }}
+                                                    className="absolute right-2 bottom-0 z-[90] rounded-full p-2 text-main-text-light transition dark:text-main-text-dark"
+                                                    aria-label="Close modal"
+                                                >
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        strokeWidth={2}
+                                                        stroke="currentColor"
+                                                        className="w-6 h-6"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            d="M6 18L18 6M6 6l12 12"
+                                                        />
+                                                    </svg>
+                                                </button>
+
                                                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                                                     <div className="flex flex-col items-start gap-3">
                                                         {/* Product Name */}

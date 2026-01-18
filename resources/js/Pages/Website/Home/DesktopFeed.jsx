@@ -852,6 +852,10 @@ const DesktopFeed = ({
 
                         const unitPrice = Number(addon.price || 0);
 
+                        if (a.quantity === 1) {
+                            return a;
+                        }
+
                         const newQty = a.quantity - 1;
 
                         return {
@@ -863,11 +867,22 @@ const DesktopFeed = ({
                         };
                     }
                     return a;
-                })
-                .filter((a) => a.quantity > 0);
+                });
         });
     };
 
+
+    const handleAddonRemove = (addonId) => {
+        setCartItemAddons((prev) => {
+            return prev.filter((a) => {
+
+                if (a.id === addonId && a.smartphone_id === feedGallery?.id) {
+                    return false;
+                }
+                return true;
+            });
+        });
+    };
     // Smartphone Quantity Increase Handling
     const handleSmartphoneIncrease = (id) => {
         setCartItemSmartphones((prev) => {
@@ -3230,9 +3245,33 @@ const DesktopFeed = ({
                                                                     )
                                                                     .map((addon, index) => (
                                                                         <div
-                                                                            className="w-full p-4 rounded-sm bg-surface-1-light dark:bg-surface-2-dark"
+                                                                            className="relative w-full p-4 rounded-sm bg-surface-1-light dark:bg-surface-2-dark"
                                                                             key={index}
                                                                         >
+                                                                            {/* Remove Addon */}
+                                                                            <button
+                                                                                onClick={() => {
+                                                                                    handleAddonRemove(addon?.id);
+                                                                                }}
+                                                                                className="absolute right-2 top-0 z-[90] rounded-full p-2 text-main-text-light transition dark:text-main-text-dark"
+                                                                                aria-label="Close modal"
+                                                                            >
+                                                                                <svg
+                                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                                    fill="none"
+                                                                                    viewBox="0 0 24 24"
+                                                                                    strokeWidth={2}
+                                                                                    stroke="currentColor"
+                                                                                    className="w-4 h-4"
+                                                                                >
+                                                                                    <path
+                                                                                        strokeLinecap="round"
+                                                                                        strokeLinejoin="round"
+                                                                                        d="M6 18L18 6M6 6l12 12"
+                                                                                    />
+                                                                                </svg>
+                                                                            </button>
+
                                                                             <div className="flex flex-wrap items-center justify-between gap-4">
                                                                                 <div className="flex flex-col items-start gap-3">
                                                                                     {/* Addon Name */}
