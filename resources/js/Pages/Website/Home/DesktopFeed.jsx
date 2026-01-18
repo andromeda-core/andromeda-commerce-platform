@@ -42,12 +42,14 @@ const DesktopFeed = ({
     smartphone_addon_items,
     generateSmartphoneURL,
     isSinglePageRef,
+    setSpatiotemporalInfoModal,
+    spatiotemporalInfoModal,
     __,
 }) => {
     const isDarkMode = useDarkMode();
     const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
     const [showPostDesktopActionsDropdown, setShowPostDesktopActionsDropdown] = useState(false);
-    const [postSpatiotempotalInfoModal, setPostSpatiotempotalInfoModal] = useState(false);
+
     const [currentFeedIndex, setCurrentFeedIndex] = useState(feedIndex || 0);
 
 
@@ -88,7 +90,6 @@ const DesktopFeed = ({
         // Cleanup timeout if feedGallery changes again quickly
         return () => clearTimeout(timeoutId);
     }, [feedGallery, setActiveVideo]);
-
 
 
     useEffect(() => {
@@ -230,6 +231,10 @@ const DesktopFeed = ({
         updateArrowStates();
     };
 
+
+
+
+
     // Syncing Related Feeds When Related Feed Changes
     useEffect(() => {
         relatedFeedRef.current = relatedFeed;
@@ -240,7 +245,7 @@ const DesktopFeed = ({
         if (!feedGallery) return;
 
         const handleKeyDown = (e) => {
-            if (postSpatiotempotalInfoModal) return;
+            if (spatiotemporalInfoModal) return;
             switch (e.key) {
                 case 'ArrowUp':
                     e.preventDefault();
@@ -270,7 +275,7 @@ const DesktopFeed = ({
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [feedGallery, currentFeedIndex, feedItems, postSpatiotempotalInfoModal]);
+    }, [feedGallery, currentFeedIndex, feedItems, spatiotemporalInfoModal]);
 
     // updating the viewable Feed Object when Current Feed Index changes
     useEffect(() => {
@@ -1275,7 +1280,7 @@ const DesktopFeed = ({
                 window.history.replaceState({}, '', window.location.pathname);
             }
             setCartProcessing(false);
-            setPostSpatiotempotalInfoModal(false);
+            setSpatiotemporalInfoModal(false);
             setBuyNowProcessing(false);
             setFeedGallery(null);
             setCanActionOnSmartphone(false);
@@ -1297,32 +1302,6 @@ const DesktopFeed = ({
             isSinglePageRef.current = false;
         };
     }, []);
-
-    // Format Date For POST AND PRODUCTS TAGS
-    function formatDate(dateInput) {
-        const date = new Date(dateInput);
-
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-
-        return `${year}. ${month}. ${day}.`;
-    }
-
-    // Format Time For POST AND PRODUCTS TAGS
-    function formatTime(dateInput) {
-        const date = new Date(dateInput);
-
-        let hours = date.getHours();
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-
-        const period = hours >= 12 ? 'PM' : 'AM';
-
-        hours = hours % 12;
-        hours = hours === 0 ? 12 : hours;
-
-        return `${period} ${hours}:${minutes}`;
-    }
 
     // Arrows Destructuring From Arrow State
     const { isLeftDisabled, isRightDisabled, isTopDisabled, isBottomDisabled } = arrowStates;
@@ -1668,7 +1647,7 @@ const DesktopFeed = ({
                                                                 {(feedGallery?.latitude != null && feedGallery?.longitude != null) && (
                                                                     <button
                                                                         onClick={(e) => {
-                                                                            setPostSpatiotempotalInfoModal(true);
+                                                                            setSpatiotemporalInfoModal(true);
                                                                             setShowPostDesktopActionsDropdown(
                                                                                 false,
                                                                             );
@@ -1741,10 +1720,10 @@ const DesktopFeed = ({
                 </div>
 
                 {
-                    postSpatiotempotalInfoModal && (
+                    spatiotemporalInfoModal && (
                         <SpatiotemporalInfoModal
                             onClose={() => {
-                                setPostSpatiotempotalInfoModal(false);
+                                setSpatiotemporalInfoModal(false);
                             }}
                             post={feedGallery}
                         />
@@ -2397,7 +2376,7 @@ const DesktopFeed = ({
                                                                             {(feedGallery?.latitude != null && feedGallery?.longitude != null) && (
                                                                                 <button
                                                                                     onClick={(e) => {
-                                                                                        setPostSpatiotempotalInfoModal(true);
+                                                                                        setSpatiotemporalInfoModal(true);
                                                                                         setShowPostDesktopActionsDropdown(
                                                                                             false,
                                                                                         );
@@ -2472,10 +2451,10 @@ const DesktopFeed = ({
                 </div>
 
                 {
-                    postSpatiotempotalInfoModal && (
+                    spatiotemporalInfoModal && (
                         <SpatiotemporalInfoModal
                             onClose={() => {
-                                setPostSpatiotempotalInfoModal(false);
+                                setSpatiotemporalInfoModal(false);
                             }}
                             post={feedGallery}
                         />

@@ -47,6 +47,8 @@ const MobileFeed = ({
     smartphone_addon_items,
     generateSmartphoneURL,
     isSinglePageRef,
+    setSpatiotemporalInfoModal,
+    spatiotemporalInfoModal,
     __,
 }) => {
     useEffect(() => {
@@ -1845,6 +1847,8 @@ const MobileFeed = ({
                     setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
                     smartphone_addon_items={smartphone_addon_items}
                     shouldCleanupBrowserHistoryRef={shouldCleanupBrowserHistoryRef}
+                    spatiotemporalInfoModal={spatiotemporalInfoModal}
+                    setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
 
                     __={__}
                 />

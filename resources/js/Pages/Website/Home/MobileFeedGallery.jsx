@@ -27,6 +27,8 @@ const MobileFeedGallery = (
         smartphone_addon_items,
         generateSmartphoneURL,
         shouldCleanupBrowserHistoryRef,
+          setSpatiotemporalInfoModal,
+    spatiotemporalInfoModal,
     }
 
 ) => {
@@ -75,6 +77,8 @@ const MobileFeedGallery = (
                     auth={auth}
                     __={__}
                     setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
+                    spatiotemporalInfoModal={spatiotemporalInfoModal}
+                                    setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
                 />
             )}
         </>

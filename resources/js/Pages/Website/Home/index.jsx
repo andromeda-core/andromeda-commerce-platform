@@ -79,6 +79,8 @@ const index = () => {
     const [relatedFeed, setRelatedFeed] = useState({});
     const relatedFeedNextUrlsRef = useRef({});
     const [MobileFeedGalleryOpen, setMobileFeedGalleryOpen] = useState(false);
+    const [spatiotemporalInfoModal, setSpatiotemporalInfoModal] = useState(false);
+    const isSpatiotemporalModalOpenRef = useRef(false);
 
     // This State is For Tracking If The FEED ITEM Is Opening After refresh or FROM URL DIRECTLY
     const [isFeedOpeningDirectly, setIsFeedOpeningDirectly] = useState(false);
@@ -88,6 +90,9 @@ const index = () => {
     const [nextPageUrl, setNextPageUrl] = useState(null);
 
     const nextPageUrlRef = useRef(null);
+
+
+
 
 
     // Initialize with first load
@@ -781,6 +786,24 @@ const index = () => {
         }, 100);
     };
 
+
+    // Wathcing Spatiotemporal Info Modal
+    useEffect(() => {
+        const url = new URL(window.location.href);
+
+        if (spatiotemporalInfoModal) {
+            isSpatiotemporalModalOpenRef.current = true;
+            url.searchParams.set('modal', 'spatiotempotal-info');
+            window.history.pushState({}, '', url.toString());
+            document.body.style.overflow = 'hidden';
+        } else {
+            isSpatiotemporalModalOpenRef.current = false;
+            url.searchParams.delete('modal');
+            window.history.replaceState({}, '', url.toString());
+            document.body.style.overflow = 'unset';
+        }
+    }, [spatiotemporalInfoModal]);
+
     // Infinite Scroll Observer
     useEffect(() => {
         if (!loaderRef.current || !nextPageUrl) return;
@@ -876,7 +899,15 @@ const index = () => {
             const wasOnMobileGallery = previousParams.has('mobile-feed-gallery');
 
 
-            // Priority 1: Mobile gallery is currently open OR we just came from mobile gallery
+            // SpatiotemporalInfo Modal Open
+            if (isSpatiotemporalModalOpenRef.current) {
+                setSpatiotemporalInfoModal(false);
+                isSpatiotemporalModalOpenRef.current = false;
+                return;
+            }
+
+
+            //  Mobile gallery is currently open OR we just came from mobile gallery
             if (MobileFeedGalleryOpenRef.current || wasOnMobileGallery) {
                 // console.log('🔙 Closing mobile gallery');
                 isClosingMobileGalleryRef.current = true;
@@ -892,7 +923,7 @@ const index = () => {
                 return;
             }
 
-            // Priority 2: Main feed is open, close it completely
+            //  Main feed is open, close it completely
             if (feedGalleryRef.current !== null) {
                 // console.log('🔙 Closing main feed');
                 e.preventDefault();
@@ -929,23 +960,28 @@ const index = () => {
             }
 
 
+
+
             // Block if we just closed mobile gallery
+            if (isSpatiotemporalModalOpenRef.current && pathname === '/' && !isSidebarClickActive) {
+                event.preventDefault();
+                return;
+            }
+
+
             if (isClosingMobileGalleryRef.current && pathname === '/' && !isSidebarClickActive) {
-                // console.log('🛑 Blocked - Just closed mobile gallery');
                 event.preventDefault();
                 return;
             }
 
             // Block if mobile gallery is open
             if (MobileFeedGalleryOpenRef.current && pathname === '/' && !isSidebarClickActive) {
-                // console.log('🛑 Blocked - Mobile gallery open');
                 event.preventDefault();
                 return;
             }
 
             // Block if feed is open
             if (feedGalleryRef.current !== null && pathname === '/' && !isSidebarClickActive) {
-                // console.log('🛑 Blocked - Feed open');
                 event.preventDefault();
                 return;
             }
@@ -1298,6 +1334,8 @@ const index = () => {
                                     fetchRelatedFeed={fetchRelatedFeed}
                                     smartphone_addon_items={smartphone_addon_items}
                                     isSinglePageRef={isSinglePageRef}
+                                    spatiotemporalInfoModal={spatiotemporalInfoModal}
+                                    setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
                                     __={__}
 
                                 />
@@ -1346,6 +1384,8 @@ const index = () => {
                             setShowErrorMessage={setShowErrorMessage}
                             smartphone_addon_items={smartphone_addon_items}
                             isSinglePageRef={isSinglePageRef}
+                            spatiotemporalInfoModal={spatiotemporalInfoModal}
+                            setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
                             __={__}
                         />
                     )}
@@ -1380,6 +1420,8 @@ const index = () => {
                             setFeedOpen={setFeedOpen}
                             setMediaItems={setMediaItems}
                             smartphone_addon_items={smartphone_addon_items}
+                            spatiotemporalInfoModal={spatiotemporalInfoModal}
+                            setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
                             __={__}
                         />
                     )}

@@ -4,14 +4,17 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import SpatiotemporalInfoModal from '@/Components/SpatiotemporalInfoModal';
 
-const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToHashtag, placeholderImage, generateURL, __, auth, setBookmarkStatusChanged, isDarkMode, setMobileFeedGalleryOpen }) => {
+const PostMobileFeedGallery = (
+    { post, setShowQrCode, setLinkCopied, navigateToHashtag, placeholderImage, generateURL, __, auth, setBookmarkStatusChanged, isDarkMode, setMobileFeedGalleryOpen,
+        setSpatiotemporalInfoModal,
+        spatiotemporalInfoModal,
+    }) => {
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [actionDropdownOpen, setActionDropdownOpen] = useState(null);
     const actionDropdownRef = useRef(null);
     const thumbnailContainerRef = useRef(null);
     const scrollContainerRef = useRef(null);
 
-    const [postSpatiotempotalInfoModal, setPostSpatiotempotalInfoModal] = useState(false);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -88,33 +91,6 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
     };
 
 
-    // Format Date For POST AND PRODUCTS TAGS
-    function formatDate(dateInput) {
-        const date = new Date(dateInput);
-
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-
-        return `${year}. ${month}. ${day}.`;
-    }
-
-    // Format Time For POST AND PRODUCTS TAGS
-    function formatTime(dateInput) {
-        const date = new Date(dateInput);
-
-        let hours = date.getHours();
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-
-        const period = hours >= 12 ? 'PM' : 'AM';
-
-        hours = hours % 12;
-        hours = hours === 0 ? 12 : hours;
-
-        return `${period} ${hours}:${minutes}`;
-    }
-
-
     const mediaItems = useMemo(() => {
         const images =
             post?.images?.map((img) => ({
@@ -131,8 +107,6 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
 
         return [...images, ...videos];
     }, [post]);
-
-
 
 
 
@@ -499,7 +473,7 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
                                                 {(post?.latitude != null && post?.longitude != null) && (
                                                     <button
                                                         onClick={(e) => {
-                                                            setPostSpatiotempotalInfoModal(true);
+                                                            setSpatiotemporalInfoModal(true);
                                                             setActionDropdownOpen(null);
                                                         }}
                                                         className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
@@ -555,10 +529,10 @@ const PostMobileFeedGallery = ({ post, setShowQrCode, setLinkCopied, navigateToH
             )}
 
             {
-                postSpatiotempotalInfoModal && (
+                spatiotemporalInfoModal && (
                     <SpatiotemporalInfoModal
                         onClose={() => {
-                            setPostSpatiotempotalInfoModal(false);
+                            setSpatiotemporalInfoModal(false);
                         }}
                         post={post}
                     />

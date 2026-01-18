@@ -30,6 +30,8 @@ const MobileFeedSinglePage = ({
     smartphone_addon_items,
     generateSmartphoneURL,
     setBookmarkStatusChanged,
+    setSpatiotemporalInfoModal,
+    spatiotemporalInfoModal,
     __,
 }) => {
     useEffect(() => {
@@ -85,6 +87,8 @@ const MobileFeedSinglePage = ({
                     setBookmarkStatusChanged={setBookmarkStatusChanged}
                     isDarkMode={isDarkMode}
                     shouldCleanupBrowserHistoryRef={shouldCleanupBrowserHistoryRef}
+                    spatiotemporalInfoModal={spatiotemporalInfoModal}
+                    setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
                     __={__}
                 />
             )}
