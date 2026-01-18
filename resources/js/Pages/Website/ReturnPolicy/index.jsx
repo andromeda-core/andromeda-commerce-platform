@@ -2,7 +2,7 @@ import { useTranslation } from '@/Hooks/useTranslation';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, Link } from '@inertiajs/react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Fragment, useEffect, useRef, useState } from 'react';
 
 const index = ({ return_policy }) => {
     const [activeSection, setActiveSection] = useState(null);
@@ -13,11 +13,15 @@ const index = ({ return_policy }) => {
     // Translation Hook
     const { __ } = useTranslation();
 
-    const makeId = (title) =>
-        title
+    const makeId = (title) => {
+        const slug = title
             .toLowerCase()
             .trim()
-            .replace(/[^a-z0-9]+/g, '_');
+            .replace(/[^a-z0-9]+/g, '_')
+            .replace(/^_+|_+$/g, '');
+
+        return `${slug}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    };
 
     const sections = return_policy?.content?.map(section => ({
         id: makeId(section.title),
@@ -166,7 +170,7 @@ const index = ({ return_policy }) => {
                                     const id = makeId(section.title);
 
                                     return (
-                                        <>
+                                        <Fragment key={index}>
                                             <div
                                                 key={id}
                                                 id={id}
@@ -200,7 +204,7 @@ const index = ({ return_policy }) => {
                                             </div>
 
                                             {index == sections.length - 1 && (
-                                                <>
+                                                <Fragment key={sections.length - 1}>
                                                     {/* 10. Data Protection Officer */}
                                                     <div
                                                         id="data_protection_officer"
@@ -236,9 +240,9 @@ const index = ({ return_policy }) => {
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </>
+                                                </Fragment>
                                             )}
-                                        </>
+                                        </Fragment>
                                     );
                                 })}
 
