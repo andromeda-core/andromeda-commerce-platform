@@ -1,10 +1,10 @@
 import { useTranslation } from '@/Hooks/useTranslation';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import React, { Fragment, useEffect, useRef, useState } from 'react';
 
-const index = ({ return_policy }) => {
+const index = ({ return_policy, smartphone_slug }) => {
     const [activeSection, setActiveSection] = useState(null);
     const isProgrammaticScroll = useRef(false);
     const windowSize = useWindowSize();
@@ -77,15 +77,44 @@ const index = ({ return_policy }) => {
     };
 
 
+    // Smartphone URL Generation
+    const generateSmartphoneURL = (isDirect = false, isSinglePage = false) => {
+        return (
+            `?m-slug=${smartphone_slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`
+        );
+    }
+
+
 
     return (
         <MainLayout>
             <Head title={__('Return Policy', true)} />
             <div className="sm:px-6 lg:px-8">
                 <div className={`px-6  mx-auto ${windowSize.width > 1024 ? 'pb-10' : 'pb-24'} lg:max-w-6xl sm:max-w-3xl`}>
+
+
+
                     {/* Hero Section */}
                     <div className="relative overflow-hidden text-main-text-dark dark:text-main-text-light ">
                         <div className="absolute inset-0" />
+
+                        <div className="absolute flex items-center justify-start lg:hidden -left-1 top-3">
+                            <button
+                                onClick={() => {
+                                    router.get(route('home') + generateSmartphoneURL(true, true));
+
+                                }}
+                                className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                                </svg>
+
+                            </button>
+
+                        </div>
+
+
 
                         <div className="relative mx-auto my-10 lg:max-w-6xl sm:max-w-3xl ">
 

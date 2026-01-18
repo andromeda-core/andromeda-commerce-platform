@@ -108,7 +108,7 @@ const SmartphoneDetails = ({ currency, product, StockBadge }) => {
                 <DetailRow label={__("Stock")} value={StockBadge || "N/A"} />
 
                 {/* Returns */}
-                {product?.return_policy && <DetailRow label={__("Returns")} value={__("View Return Policy") + " >"} isLink={true} policy_slug={product?.return_policy?.slug} />}
+                {product?.return_policy && <DetailRow label={__("Returns")} value={__("View Return Policy") + " >"} isLink={true} smartphone_slug={product?.slug} policy_slug={product?.return_policy?.slug} />}
 
                 {/* Payments */}
                 <DetailRow label={__("Payments")} value={
@@ -150,7 +150,7 @@ const SmartphoneDetails = ({ currency, product, StockBadge }) => {
 };
 
 
-const DetailRow = ({ label, value, isLink = false, policy_slug, isDelivery, deliveryInfo }) => (
+const DetailRow = ({ label, value, isLink = false, policy_slug, isDelivery, deliveryInfo, smartphone_slug }) => (
     <div className="flex items-start gap-10 xl:gap-12 sm:gap-10 md:gap-10">
         <span className="flex-shrink-0 w-20 text-sm font-normal sm:w-24 md:w-28 text-main-text-light dark:text-main-text-dark">
             {label}
@@ -158,7 +158,10 @@ const DetailRow = ({ label, value, isLink = false, policy_slug, isDelivery, deli
         <div className="flex-1 min-w-0">
             {isLink ? (
                 <Link
-                    href={route('website.return-policy.index', encodeURIComponent(policy_slug))}
+                    href={route('website.return-policy.index', {
+                        slug: policy_slug,
+                        smartphone_slug: smartphone_slug,
+                    })}
                     className="block overflow-hidden text-sm text-sub-text-light dark:text-sub-text-dark hover:underline"
                 >
                     {value}

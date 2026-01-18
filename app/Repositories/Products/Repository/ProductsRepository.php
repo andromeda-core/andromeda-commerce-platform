@@ -190,7 +190,7 @@ class ProductsRepository implements IProductsRepository
         $filters = $request->array('filters');
         // dd($filters);
         $smartphones = $this->smartphone
-            ->with(['condition', 'capacity', 'selling_info'])
+            ->with(['condition', 'capacity', 'selling_info', 'model_name'])
             ->whereHas('selling_info')
             ->whereNotNull('slug')
             ->when(! empty($request->input('tag')), function ($query) use ($request) {
@@ -253,7 +253,7 @@ class ProductsRepository implements IProductsRepository
         $smartphones->getCollection()->transform(function ($smartphone) {
             return [
                 'id' => $smartphone->id,
-                'tag' => $smartphone?->tag,
+                'name' => $smartphone?->model_name->name,
                 'image' => $smartphone?->smartphone_image_urls[0],
                 'condition' => $smartphone?->condition?->name,
                 'capacity' => $smartphone?->capacity?->name,

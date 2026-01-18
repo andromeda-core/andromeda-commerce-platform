@@ -484,7 +484,7 @@ const index = (
                                 <div className="flex items-center justify-center w-full p-2 transition-transform duration-500 aspect-square no-touch-hover lg:group-hover:scale-105">
                                     <img
                                         src={product?.image}
-                                        alt={product?.tag}
+                                        alt={product?.name}
                                         className="object-cover w-full h-full rounded-md "
                                     />
                                 </div>
@@ -495,7 +495,7 @@ const index = (
                                         className="mb-0.5 sm:mb-1 text-xs sm:text-sm font-medium text-main-text-light dark:text-main-text-dark line-clamp-1"
                                         style={{ fontSize: 'clamp(14px, 2vw, 14px)' }}
                                     >
-                                        {product?.tag}
+                                        {product?.name}
                                     </h3>
                                     <p
                                         className="mb-1.5 sm:mb-2 lg:mb-3 text-[10px] sm:text-xs font-medium text-sub-text-light dark:text-sub-text-dark line-clamp-1"

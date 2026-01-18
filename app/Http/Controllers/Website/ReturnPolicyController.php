@@ -10,14 +10,18 @@ class ReturnPolicyController extends Controller
 {
     public function __construct(private IReturnPolicyRepository $return_policy) {}
 
-    public function __invoke(?string $slug = null)
+    public function __invoke(?string $slug = null, ?string $smartphone_slug = null)
     {
         $return_policy = $this->return_policy->getReturnPolicy($slug);
+
+        if (empty($smartphone_slug)) {
+            return to_route('home')->with('error', 'Wrong Smartphone Selected');
+        }
 
         if (empty($return_policy)) {
             return to_route('home')->with('error', 'Return Policy Not Found');
         }
 
-        return Inertia::render('Website/ReturnPolicy/index', compact('return_policy'));
+        return Inertia::render('Website/ReturnPolicy/index', compact('return_policy', 'smartphone_slug'));
     }
 }

@@ -169,7 +169,7 @@ Route::group(['as' => 'website.'], function () {
     Route::post('/shipping-address-store-from-profile', [ShippingAddressController::class, 'storeShippingAddressFromProfile'])->name('shipping-addresses.store.from-profile');
 
     // Return Policy Routes
-    Route::get('/return-policy/{slug?}', WebsiteReturnPolicyController::class)->name('return-policy.index');
+    Route::get('/return-policy/{slug?}/{smartphone_slug?}', WebsiteReturnPolicyController::class)->name('return-policy.index');
 
     // Shop Routes
     Route::match(['get', 'post'], '/shop', ShopController::class)->name('shop.index');
