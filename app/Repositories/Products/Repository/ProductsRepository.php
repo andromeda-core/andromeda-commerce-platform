@@ -253,13 +253,13 @@ class ProductsRepository implements IProductsRepository
         $smartphones->getCollection()->transform(function ($smartphone) {
             return [
                 'id' => $smartphone->id,
-                'tag' => $smartphone->tag,
-                'image' => $smartphone->smartphone_image_urls[0],
-                'condition' => $smartphone->condition->name,
-                'capacity' => $smartphone->capacity->name,
-                'total_price' => $smartphone->selling_info->total_price,
-                'color' => $smartphone->colors[0]?->name,
-                'slug' => $smartphone->slug,
+                'tag' => $smartphone?->tag,
+                'image' => $smartphone?->smartphone_image_urls[0],
+                'condition' => $smartphone?->condition?->name,
+                'capacity' => $smartphone?->capacity?->name,
+                'total_price' => $smartphone?->selling_info?->total_price,
+                'color' => $smartphone?->colors[0]?->name,
+                'slug' => $smartphone?->slug,
             ];
 
         });
@@ -297,8 +297,8 @@ class ProductsRepository implements IProductsRepository
             return $this->color->where('is_active', true)->get(['name', 'id'])
                 ->map(function ($color) {
                     return [
-                        'key' => $color->id,
-                        'label' => $color->name,
+                        'key' => $color?->id,
+                        'label' => $color?->name,
                     ];
                 })
                 ->toArray();
@@ -313,8 +313,8 @@ class ProductsRepository implements IProductsRepository
             return $this->capacity->where('is_active', true)->get(['name', 'id'])
                 ->map(function ($capacity) {
                     return [
-                        'key' => $capacity->id,
-                        'label' => $capacity->name,
+                        'key' => $capacity?->id,
+                        'label' => $capacity?->name,
                     ];
                 })
                 ->toArray();
@@ -329,8 +329,8 @@ class ProductsRepository implements IProductsRepository
             return $this->condition->where('is_active', true)->get(['name', 'id'])
                 ->map(function ($condition) {
                     return [
-                        'key' => $condition->id,
-                        'label' => $condition->name,
+                        'key' => $condition?->id,
+                        'label' => $condition?->name,
                     ];
                 })
                 ->toArray();
@@ -352,39 +352,35 @@ class ProductsRepository implements IProductsRepository
 
     public function filterCategories()
     {
+        $price_ranges = $this->getPriceRanges();
+        $capacities = $this->getCapacities();
+        $colors = $this->getColors();
+        $conditions = $this->getConditions();
+
         return [
             [
                 'id' => 'price_range',
                 'label' => Trans::get('Price Range'),
-                'options' => [
-                    ...$this->getPriceRanges(),
-                ],
+                'options' => $price_ranges,
             ],
 
-            [
+            ...(! blank($capacities) ? [[
                 'id' => 'storage',
                 'label' => Trans::get('Storage'),
-                'options' => [
-                    ...$this->getCapacities(),
-                ],
-            ],
+                'options' => $capacities,
+            ]] : []),
 
-            [
+            ...(! blank($colors) ? [[
                 'id' => 'color',
                 'label' => Trans::get('Color'),
-                'options' => [
-                    ...$this->getColors(),
-                ],
-            ],
+                'options' => $colors,
+            ]] : []),
 
-            [
+            ...(! blank($conditions) ? [[
                 'id' => 'condition',
                 'label' => Trans::get('Condition'),
-                'options' => [
-                    ...$this->getConditions(),
-                ],
-            ],
-
+                'options' => $conditions,
+            ]] : []),
         ];
     }
 }
