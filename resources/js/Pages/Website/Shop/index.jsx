@@ -44,6 +44,7 @@ const index = (
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isFilterApplying, setIsFilterApplying] = useState(false);
     const [isFilterResetting, setIsFilterResetting] = useState(false);
+    const [isFilterClearing, setIsFilterClearing] = useState(false);
 
     const tabsContainerRef = useRef(null);
     const tabRefs = useRef({});
@@ -101,7 +102,7 @@ const index = (
         const container = tabsContainerRef.current;
         const tabEl = tabRefs.current[tabKey];
 
-        if (!container || !tabEl) return;
+        if (!container || !tabEl || windowSize.width <= 1024) return;
 
         const tabLeft = tabEl.offsetLeft;
         const tabRight = tabLeft + tabEl.offsetWidth;
@@ -325,7 +326,7 @@ const index = (
             <Head title={__('Shop', true)} />
 
             {/* Main Container*/}
-            <div className="w-full px-4 py-6 sm:px-6 lg:px-8">
+            <div className="w-full px-2 py-6 sm:px-2 lg:px-8">
                 <div className={`w-full mx-auto ${windowSize.width > 1024 ? 'pb-10' : 'pb-24'} max-w-[1400px]`}>
 
                     {/* Navigation Tabs */}
@@ -339,7 +340,7 @@ const index = (
                                         <span
                                             className={
                                                 index === 1
-                                                    ? 'mx-3 text-main-text-light dark:text-main-text-dark font-semibold text-md sm:text-xl lg:text-3xl  inline-block'
+                                                    ? 'mx-3 text-main-text-light dark:text-main-text-dark font-semibold text-xl sm:text-xl lg:text-3xl  inline-block'
                                                     : 'mx-3 text-sub-text-light dark:text-sub-text-dark font-semibold text-md sm:text-xl lg:text-3xl'
                                             }
                                         >
@@ -352,8 +353,8 @@ const index = (
                                     <h2
                                         className={
                                             index === 0
-                                                ? 'font-semibold text-md text-main-text-light dark:text-main-text-dark sm:text-xl lg:text-3xl '
-                                                : 'font-medium text-sub-text-light dark:text-sub-text-dark text-md sm:text-xl lg:text-3xl'
+                                                ? 'font-semibold text-2xl text-main-text-light dark:text-main-text-dark sm:text-xl lg:text-3xl '
+                                                : 'font-medium text-sub-text-light dark:text-sub-text-dark text-2xl sm:text-xl lg:text-3xl'
                                         }
                                     >
                                         {category.name}
@@ -393,8 +394,8 @@ const index = (
                                                 className={`relative flex items-center gap-4 flex-shrink-0 px-4 py-2 text-sm transition-all rounded-full whitespace-nowrap bg-surface-1-light text-main-text-light dark:bg-surface-1-dark dark:text-main-text-dark`}
                                             >
                                                 <span>{__('Filter')}</span>
-                                                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                <svg className="w-5 h-5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
                                                 </svg>
                                             </button>
 
@@ -445,6 +446,7 @@ const index = (
                             {hasAppliedFilters() && (
                                 <button
                                     onClick={() => {
+                                        setIsFilterClearing(true);
                                         setFilters({
                                             price_range: [],
                                             storage: [],
@@ -452,11 +454,16 @@ const index = (
                                             condition: [],
                                         });
 
-                                        router.reload(['products', 'nextPageUrl']);
+                                        router.reload({
+                                            only: ['products', 'nextPageUrl'],
+                                            onFinish: () => {
+                                                setIsFilterClearing(false);
+                                            }
+                                        });
                                     }}
-                                    className="mt-5 text-sm font-semibold underline text-main-text-light dark:text-main-text-dark"
+                                    className="flex items-center justify-center mt-5 text-sm font-semibold text-center underline text-main-text-light dark:text-main-text-dark"
                                 >
-                                    {__('Clear all filters')}
+                                    {isFilterClearing ? <Spinner /> : __('Clear all filters')}
                                 </button>
                             )}
                         </div>
@@ -474,7 +481,7 @@ const index = (
                                 )}
                             >
                                 {/* Product Image Container */}
-                                <div className="flex items-center justify-center w-full p-3 transition-transform duration-500 aspect-square no-touch-hover lg:group-hover:scale-105">
+                                <div className="flex items-center justify-center w-full p-2 transition-transform duration-500 aspect-square no-touch-hover lg:group-hover:scale-105">
                                     <img
                                         src={product?.image}
                                         alt={product?.tag}
@@ -544,7 +551,7 @@ const index = (
                         }}
                         className="border rounded-md shadow-md bg-surface-1-light dark:bg-surface-1-dark border-surface-3-light dark:border-surface-3-dark"
                     >
-                        <div className="p-3 space-y-4 max-h-[50vh] overflow-y-auto">
+                        <div className="p-3 space-y-4 max-h-[50vh] scrollbar overflow-y-auto">
                             {filterCategories.map((category) => (
                                 <div key={category.id}>
                                     <h4 className="mx-2 mb-2 text-sm font-semibold text-main-text-light dark:text-main-text-dark">
@@ -610,11 +617,11 @@ const index = (
                                     </div>
                                 </div>
                             ))}
-                            <div className="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <div className="flex gap-2 pt-4 border-t border-surface-1-light dark:border-surface-1-dark">
                                 <button
                                     disabled={!hasAppliedFilters()}
                                     onClick={() => resetFilters()}
-                                    className={`h-10 px-2 flex-1 rounded-md border border-main-text-light bg-white text-center text-md font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80 ${!hasAppliedFilters() && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
+                                    className={`h-10 px-2 flex-1 flex justify-center items-center rounded-md border border-main-text-light bg-white text-center text-md font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80 ${!hasAppliedFilters() && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
                                 >
 
                                     {isFilterResetting ? <Spinner /> : __('Reset')}
@@ -622,7 +629,7 @@ const index = (
                                 <button
                                     disabled={!hasAppliedFilters()}
                                     onClick={() => applyFilter()}
-                                    className={`flex-1 h-10 px-2 font-semibold transition border rounded-md text-md border-main-text-dark bg-main-text-light text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80 ${!hasAppliedFilters() && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
+                                    className={`flex-1 h-10 px-2 flex justify-center items-center font-semibold text-center transition border rounded-md text-md border-main-text-dark bg-main-text-light text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80 ${!hasAppliedFilters() && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
                                 >
                                     {isFilterApplying ? <Spinner /> : __('Apply')}
 
