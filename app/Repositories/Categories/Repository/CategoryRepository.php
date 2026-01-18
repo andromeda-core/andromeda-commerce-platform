@@ -278,4 +278,9 @@ class CategoryRepository implements ICategoryRepository
                 ];
             });
     }
+
+    public function getAllCategoryNames()
+    {
+        return $this->category->select('id', 'name')->get();
+    }
 }

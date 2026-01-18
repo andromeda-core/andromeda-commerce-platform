@@ -501,7 +501,16 @@ class SmartphoneRepository implements ISmartphoneRepository
 
     public function getReturnPolicies()
     {
-        return $this->return_policy->where('is_active', true)->get();
+        return $this->return_policy
+            ->where('is_active', true)
+            ->with('language')
+            ->get()
+            ->map(function ($return_policy) {
+                return [
+                    'id' => $return_policy->id,
+                    'name' => $return_policy->name.' ('.$return_policy->language->name.')',
+                ];
+            });
     }
 
     public function getAddons()

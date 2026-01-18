@@ -222,6 +222,9 @@ class TranslationRepository implements ITranslationRepository
 
         $keysMap = $this->translation_key
             ->pluck('id', 'key')
+            ->mapWithKeys(fn ($id, $key) => [
+                $this->normalizeKey($key) => $id,
+            ])
             ->toArray();
 
         foreach ($rows as $index => $row) {
@@ -232,31 +235,38 @@ class TranslationRepository implements ITranslationRepository
                 throw new \Exception("Row {$rowNo}: translation_key missing");
             }
 
-            if (! $this->translation_key->where(
-                'key',
-                $row['translation_key']
-            )->exists()) {
-                throw new \Exception(
-                    "Row {$rowNo}: invalid key {$row['translation_key']}"
-                );
-            }
+            $key = $this->normalizeKey((string) $row['translation_key']);
 
-            $translationKeyId = $keysMap[$row['translation_key']];
-            if (! $translationKeyId) {
+            if (! isset($keysMap[$key])) {
                 throw new \Exception(
-                    "Row {$rowNo}: invalid translation key ({$row['translation_key']})"
+                    "Row {$rowNo}: invalid translation key ({$key})"
                 );
             }
 
             $this->translation->updateOrCreate(
                 [
                     'language_id' => $languageId,
-                    'translation_key_id' => $translationKeyId,
+                    'translation_key_id' => $keysMap[$key],
                 ],
                 [
                     'value' => trim((string) $row['translation_value']),
                 ]
             );
         }
+    }
+
+    private function normalizeKey(string $value): string
+    {
+
+        $value = preg_replace('/^\xEF\xBB\xBF/u', '', $value);
+
+        if (class_exists(\Normalizer::class)) {
+            $value = \Normalizer::normalize($value, \Normalizer::FORM_C);
+        }
+        $value = preg_replace('/[\p{Cc}\p{Cf}]/u', '', $value);
+
+        $value = preg_replace('/[\p{Z}\s]+/u', ' ', $value);
+
+        return trim($value);
     }
 }

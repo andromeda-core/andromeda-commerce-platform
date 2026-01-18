@@ -6,7 +6,7 @@
     font-style: normal;
     font-weight: 300;
     font-display: swap;
-    src: url('https://cdn.andromeda.blue/fonts/DMSans-Light.ttf') format('truetype');
+    src: url('https://cdn.andromeda.blue/fonts/Dev/DMSans-Light.ttf') format('truetype');
 }
 
 /* Open Sans Regular */
@@ -15,7 +15,7 @@
     font-style: normal;
     font-weight: 400;
     font-display: swap;
-    src: url('https://cdn.andromeda.blue/fonts/DMSans-Regular.ttf') format('truetype');
+    src: url('https://cdn.andromeda.blue/fonts/Dev/DMSans-Regular.ttf') format('truetype');
 }
 
 /* Open Sans Medium */
@@ -24,7 +24,7 @@
     font-style: normal;
     font-weight: 500;
     font-display: swap;
-    src: url('https://cdn.andromeda.blue/fonts/DMSans-Medium.ttf') format('truetype');
+    src: url('https://cdn.andromeda.blue/fonts/Dev/DMSans-Medium.ttf') format('truetype');
 }
 
 /* Open Sans SemiBold */
@@ -33,7 +33,7 @@
     font-style: normal;
     font-weight: 600;
     font-display: swap;
-    src: url('https://cdn.andromeda.blue/fonts/DMSans-SemiBold.ttf') format('truetype');
+    src: url('https://cdn.andromeda.blue/fonts/Dev/DMSans-SemiBold.ttf') format('truetype');
 }
 
 /* Open Sans Bold */
@@ -42,7 +42,7 @@
     font-style: normal;
     font-weight: 700;
     font-display: swap;
-    src: url('https://cdn.andromeda.blue/fonts/DMSans-Bold.ttf') format('truetype');
+    src: url('https://cdn.andromeda.blue/fonts/Dev/DMSans-Bold.ttf') format('truetype');
 }
 
 /* Open Sans ExtraBold */
@@ -51,7 +51,7 @@
     font-style: normal;
     font-weight: 800;
     font-display: swap;
-    src: url('https://cdn.andromeda.blue/fonts/DMSans-ExtraBold.ttf') format('truetype');
+    src: url('https://cdn.andromeda.blue/fonts/Dev/DMSans-ExtraBold.ttf') format('truetype');
 }
 
 /* global.css */
@@ -112,7 +112,7 @@
     }
 
     ::-webkit-scrollbar-track {
-        @apply bg-gray-200 dark:bg-zinc-900; /* Light: gray-200, Dark: zinc-900 (matches your deepcharcoal) */
+        @apply bg-gray-200 dark:bg-zinc-900;
     }
 
     ::-webkit-scrollbar-thumb {
@@ -126,7 +126,7 @@
     /* Firefox */
     * {
         scrollbar-width: thin;
-        scrollbar-color: #9ca3af #e5e7eb; /* thumb | track for light mode */
+        scrollbar-color: #9ca3af #e5e7eb;
     }
 
     /* Safari masonry fix - critical */
@@ -148,7 +148,7 @@
     }
 
     .dark * {
-        scrollbar-color: #52525b #18181b; /* thumb: zinc-600 | track: zinc-900 for dark mode */
+        scrollbar-color: #1e1e1e #3a3a3a;
     }
 }
 

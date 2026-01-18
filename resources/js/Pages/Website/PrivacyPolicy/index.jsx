@@ -17,63 +17,48 @@ const index = () => {
         const handleScroll = () => {
             if (isProgrammaticScroll.current) return;
 
-            if (scrollTimeout.current) {
-                clearTimeout(scrollTimeout.current);
+            const sections = document.querySelectorAll('[data-section]');
+            let current = null;
+
+            for (let i = 0; i < sections.length; i++) {
+                const section = sections[i];
+                const rect = section.getBoundingClientRect();
+
+                if (rect.top <= 160 && rect.bottom > 160) {
+                    current = section.dataset.section;
+                    break;
+                }
             }
 
-            scrollTimeout.current = setTimeout(() => {
-                const sections = document.querySelectorAll('[data-section]');
-                let current = activeSection;
+            if (!current && sections.length > 0) {
+                current = sections[0].dataset.section;
+            }
 
-                sections.forEach((section) => {
-                    const rect = section.getBoundingClientRect();
-                    if (rect.top <= 150 && rect.bottom > 150) {
-                        current = section.dataset.section;
-                    }
-                });
-
-                const scrollBottom =
-                    window.innerHeight + window.scrollY >=
-                    document.documentElement.scrollHeight - 5;
-
-                if (scrollBottom) {
-                    const lastSection = sections[sections.length - 1];
-                    current = lastSection.dataset.section;
-                }
-
-                setActiveSection(current);
-            }, 120);
+            setActiveSection(prev => (prev === current ? prev : current));
         };
 
-        window.addEventListener('scroll', handleScroll, { passive: true });
+        // IMPORTANT: capture phase use karo
+        document.addEventListener('scroll', handleScroll, true);
+
         return () => {
-            window.removeEventListener('scroll', handleScroll);
-            if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+            document.removeEventListener('scroll', handleScroll, true);
         };
     }, []);
 
 
     const scrollToSection = (id) => {
-        const element = document.getElementById(id);
-        if (!element) return;
-
         isProgrammaticScroll.current = true;
 
-        const yOffset = -120;
-        const y =
-            element.getBoundingClientRect().top +
-            window.pageYOffset +
-            yOffset;
+        document.getElementById(id)?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+        });
 
-        window.scrollTo({ top: y, behavior: 'smooth' });
-
-        // Immediately highlight clicked item
         setActiveSection(id);
 
-        // unlock after animation time
         setTimeout(() => {
             isProgrammaticScroll.current = false;
-        }, 600); // smooth scroll duration approx
+        }, 600);
     };
 
 
@@ -251,7 +236,7 @@ const index = () => {
                                 <div
                                     id="collect"
                                     data-section="collect"
-                                    className='mb-8'
+                                    className="mb-8 scroll-mt-32"
                                 >
                                     <div
 
@@ -285,7 +270,7 @@ const index = () => {
                                 <div
                                     id="use"
                                     data-section="use"
-                                    className='mb-8'
+                                    className="mb-8 scroll-mt-32"
                                 >
                                     <div
                                         className="flex items-center gap-4 mb-3">
@@ -322,7 +307,7 @@ const index = () => {
                                 <div
                                     id="legal"
                                     data-section="legal"
-                                    className='mb-8'
+                                    className="mb-8 scroll-mt-32"
                                 >
                                     <div
                                         className="flex items-center gap-4 mb-3">
@@ -346,7 +331,7 @@ const index = () => {
                                 <div
                                     id="retention"
                                     data-section="retention"
-                                    className='mb-8'
+                                    className="mb-8 scroll-mt-32"
                                 >
                                     <div
                                         className="flex items-center gap-4 mb-3">
@@ -369,7 +354,7 @@ const index = () => {
                                 <div
                                     id="sharing"
                                     data-section="sharing"
-                                    className='mb-8'
+                                    className="mb-8 scroll-mt-32"
                                 >
                                     <div
                                         className="flex items-center gap-4 mb-3">
@@ -404,7 +389,7 @@ const index = () => {
                                 <div
                                     id="rights"
                                     data-section="rights"
-                                    className='mb-8'
+                                    className="mb-8 scroll-mt-32"
                                 >
                                     <div
                                         className="flex items-center gap-4 mb-3">
@@ -428,7 +413,7 @@ const index = () => {
                                 <div
                                     id="cookies"
                                     data-section="cookies"
-                                    className='mb-8'
+                                    className="mb-8 scroll-mt-32"
                                 >
                                     <div
                                         className="flex items-center gap-4 mb-3">
@@ -453,7 +438,7 @@ const index = () => {
                                 <div
                                     id="data_transfer"
                                     data-section="data_transfer"
-                                    className='mb-8'
+                                    className="mb-8 scroll-mt-32"
                                 >
                                     <div
                                         className="flex items-center gap-4 mb-3">
@@ -477,7 +462,7 @@ const index = () => {
                                 <div
                                     id="data_security"
                                     data-section="data_security"
-                                    className='mb-8'
+                                    className="mb-8 scroll-mt-32"
                                 >
                                     <div
                                         className="flex items-center gap-4 mb-3">
@@ -501,7 +486,7 @@ const index = () => {
                                 <div
                                     id="data_protection_officer"
                                     data-section="data_protection_officer"
-                                    className='mb-8'
+                                    className="mb-8 scroll-mt-32"
                                 >
                                     <div
                                         className="flex items-center gap-4 mb-3">
@@ -542,7 +527,7 @@ const index = () => {
                             <section
                                 id="deletion"
                                 data-section="deletion"
-                                className="p-8 rounded-md scroll-mt-24 bg-surface-1-light dark:bg-surface-1-dark dark:backdrop-blur-xl"
+                                className="p-8 rounded-md scroll-mt-32 bg-surface-1-light dark:bg-surface-1-dark dark:backdrop-blur-xl"
                             >
                                 <div className="flex items-center gap-4 mb-6">
                                     <h2

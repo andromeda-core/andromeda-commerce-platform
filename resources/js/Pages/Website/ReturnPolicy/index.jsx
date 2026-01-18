@@ -25,71 +25,52 @@ const index = ({ return_policy }) => {
     }));
 
     useEffect(() => {
-        // Auto Selecting First Section
-        if (sections.length === 0) return;
-        setActiveSection(sections[0]?.id);
         const handleScroll = () => {
             if (isProgrammaticScroll.current) return;
 
-            if (scrollTimeout.current) {
-                clearTimeout(scrollTimeout.current);
+            const sections = document.querySelectorAll('[data-section]');
+            let current = null;
+
+            for (let i = 0; i < sections.length; i++) {
+                const section = sections[i];
+                const rect = section.getBoundingClientRect();
+
+                if (rect.top <= 160 && rect.bottom > 160) {
+                    current = section.dataset.section;
+                    break;
+                }
             }
 
-            scrollTimeout.current = setTimeout(() => {
-                const sections = document.querySelectorAll('[data-section]');
-                let current = activeSection;
+            if (!current && sections.length > 0) {
+                current = sections[0].dataset.section;
+            }
 
-                sections.forEach((section) => {
-                    const rect = section.getBoundingClientRect();
-                    if (rect.top <= 150 && rect.bottom > 150) {
-                        current = section.dataset.section;
-                    }
-                });
-
-                const scrollBottom =
-                    window.innerHeight + window.scrollY >=
-                    document.documentElement.scrollHeight - 5;
-
-                if (scrollBottom) {
-                    const lastSection = sections[sections.length - 1];
-                    current = lastSection.dataset.section;
-                }
-
-                setActiveSection(current);
-            }, 120);
+            setActiveSection(prev => (prev === current ? prev : current));
         };
 
-        window.addEventListener('scroll', handleScroll, { passive: true });
+        // IMPORTANT: capture phase use karo
+        document.addEventListener('scroll', handleScroll, true);
+
         return () => {
-            window.removeEventListener('scroll', handleScroll);
-            if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+            document.removeEventListener('scroll', handleScroll, true);
         };
     }, []);
 
 
     const scrollToSection = (id) => {
-        const element = document.getElementById(id);
-        if (!element) return;
-
         isProgrammaticScroll.current = true;
 
-        const yOffset = -120;
-        const y =
-            element.getBoundingClientRect().top +
-            window.pageYOffset +
-            yOffset;
+        document.getElementById(id)?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+        });
 
-        window.scrollTo({ top: y, behavior: 'smooth' });
-
-        // Immediately highlight clicked item
         setActiveSection(id);
 
-        // unlock after animation time
         setTimeout(() => {
             isProgrammaticScroll.current = false;
-        }, 600); // smooth scroll duration approx
+        }, 600);
     };
-
 
 
 
@@ -190,7 +171,7 @@ const index = ({ return_policy }) => {
                                                 key={id}
                                                 id={id}
                                                 data-section={id}
-                                                className="mb-8"
+                                                className="mb-8 break-words break-all scroll-mt-32"
                                             >
                                                 <h2 className="mb-3 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
                                                     {index + 1}. {section.title}

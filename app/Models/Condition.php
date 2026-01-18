@@ -25,10 +25,12 @@ class Condition extends Model
     {
         static::saving(function () {
             Cache::tags(['feed'])->flush();
+            Cache::forget('conditions');
         });
 
         static::deleted(function () {
             Cache::tags(['feed'])->flush();
+            Cache::forget('conditions');
         });
     }
 }

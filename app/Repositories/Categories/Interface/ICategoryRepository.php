@@ -19,4 +19,6 @@ interface ICategoryRepository
     public function destroyCategoryBySelection(Request $request);
 
     public function getDistributors();
+
+    public function getAllCategoryNames();
 }

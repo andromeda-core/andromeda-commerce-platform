@@ -29,10 +29,12 @@ class Capacity extends Model
     {
         static::saving(function () {
             Cache::tags(['feed'])->flush();
+            Cache::forget('capacities');
         });
 
         static::deleted(function () {
             Cache::tags(['feed'])->flush();
+            Cache::forget('capacities');
         });
     }
 }

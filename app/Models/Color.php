@@ -25,10 +25,12 @@ class Color extends Model
     {
         static::saving(function () {
             Cache::tags(['feed'])->flush();
+            Cache::forget('colors');
         });
 
         static::deleted(function () {
             Cache::tags(['feed'])->flush();
+            Cache::forget('colors');
         });
     }
 }

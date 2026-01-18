@@ -184,7 +184,7 @@ const BottomBar = ({
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
-                            strokeWidth={1.5}
+                            strokeWidth={2}
                             stroke="currentColor"
                             className="text-black size-7 dark:text-white"
                         >
@@ -195,6 +195,26 @@ const BottomBar = ({
                             />
                         </svg>
                     </Link>
+
+
+                    {/* Shop */}
+                    <Link
+                        href={route('website.shop.index')}
+                        className={`relative flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${route().current() === 'website.shop.index'
+                            ? 'menu-item-active'
+                            : 'menu-item-inactive'
+                            }`}
+
+
+                    >
+
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="text-black size-7 dark:text-white">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" />
+                        </svg>
+
+
+                    </Link>
+
 
                     {user && (
                         <Link
@@ -209,7 +229,7 @@ const BottomBar = ({
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
                                 viewBox="0 0 24 24"
-                                strokeWidth={1.5}
+                                strokeWidth={2}
                                 stroke="currentColor"
                                 className="text-black size-7 dark:text-white"
                             >
@@ -238,7 +258,7 @@ const BottomBar = ({
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
-                            strokeWidth={1.5}
+                            strokeWidth={2}
                             stroke="currentColor"
                             className="size-7"
                         >
@@ -276,7 +296,7 @@ const BottomBar = ({
                                                             xmlns="http://www.w3.org/2000/svg"
                                                             fill="none"
                                                             viewBox="0 0 24 24"
-                                                            strokeWidth={1.5}
+                                                            strokeWidth={2}
                                                             stroke="currentColor"
                                                             className={`size-4`}
                                                         >
@@ -307,7 +327,7 @@ const BottomBar = ({
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         fill="none"
                                                         viewBox="0 0 24 24"
-                                                        strokeWidth={1.5}
+                                                        strokeWidth={1}
                                                         stroke="currentColor"
                                                         className={`size-4`}
                                                     >
@@ -340,7 +360,7 @@ const BottomBar = ({
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         fill="none"
                                                         viewBox="0 0 24 24"
-                                                        strokeWidth={1.5}
+                                                        strokeWidth={2}
                                                         stroke="currentColor"
                                                         className={`size-4`}
                                                     >
@@ -364,7 +384,7 @@ const BottomBar = ({
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         fill="none"
                                                         viewBox="0 0 24 24"
-                                                        strokeWidth={1.5}
+                                                        strokeWidth={2}
                                                         stroke="currentColor"
                                                         className={`size-4`}
                                                     >
@@ -388,7 +408,7 @@ const BottomBar = ({
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         fill="none"
                                                         viewBox="0 0 24 24"
-                                                        strokeWidth={1.5}
+                                                        strokeWidth={2}
                                                         stroke="currentColor"
                                                         className={`size-4`}
                                                     >
@@ -414,7 +434,7 @@ const BottomBar = ({
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     fill="none"
                                                     viewBox="0 0 24 24"
-                                                    strokeWidth={1.5}
+                                                    strokeWidth={2}
                                                     stroke="currentColor"
                                                     className={`size-4`}
                                                 >
@@ -448,7 +468,7 @@ const BottomBar = ({
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
+                                                strokeWidth={2}
                                                 stroke="currentColor"
                                                 className={`size-4`}
                                             >
@@ -475,7 +495,7 @@ const BottomBar = ({
                                                 setMoreDropdown(false);
                                             }}
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
                                                 className={`size-4`}>
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="m10.5 21 5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 0 1 6-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 0 1-3.827-5.802" />
                                             </svg>
@@ -498,7 +518,7 @@ const BottomBar = ({
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
+                                                strokeWidth={2}
                                                 stroke="currentColor"
                                                 className={`size-4`}
                                             >
@@ -521,7 +541,7 @@ const BottomBar = ({
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
+                                                strokeWidth={2}
                                                 stroke="currentColor"
                                                 className={`size-4`}
                                             >
@@ -551,6 +571,7 @@ const BottomBar = ({
                                                 className={`block size-4 dark:hidden`}
                                                 viewBox="0 0 20 20"
                                                 fill="none"
+                                                strokeWidth={2}
                                                 xmlns="http://www.w3.org/2000/svg"
                                             >
                                                 <path
@@ -564,6 +585,7 @@ const BottomBar = ({
                                                 className={`hidden size-4 dark:block`}
                                                 viewBox="0 0 20 20"
                                                 fill="none"
+                                                strokeWidth={2}
                                                 xmlns="http://www.w3.org/2000/svg"
                                             >
                                                 <path
@@ -609,7 +631,7 @@ const BottomBar = ({
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     fill="none"
                                                     viewBox="0 0 24 24"
-                                                    strokeWidth={1.5}
+                                                    strokeWidth={2}
                                                     stroke="currentColor"
                                                     className={`size-4`}
                                                 >

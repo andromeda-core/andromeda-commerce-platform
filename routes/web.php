@@ -43,6 +43,7 @@ use App\Http\Controllers\Website\ProductController;
 use App\Http\Controllers\Website\ProfileController as WebsiteProfileController;
 use App\Http\Controllers\Website\ReturnPolicyController as WebsiteReturnPolicyController;
 use App\Http\Controllers\Website\ShippingAddressController;
+use App\Http\Controllers\Website\ShopController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 
@@ -169,6 +170,10 @@ Route::group(['as' => 'website.'], function () {
 
     // Return Policy Routes
     Route::get('/return-policy/{slug?}', WebsiteReturnPolicyController::class)->name('return-policy.index');
+
+    // Shop Routes
+    Route::match(['get', 'post'], '/shop', ShopController::class)->name('shop.index');
+    Route::get('/shop/loadMore', [ShopController::class, 'loadMore'])->name('shop.loadMore');
 
 });
 
