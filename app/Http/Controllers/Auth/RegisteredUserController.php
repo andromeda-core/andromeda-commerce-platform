@@ -72,8 +72,23 @@ class RegisteredUserController extends Controller
         $user->sendEmailVerificationNotification();
 
         $redirect = request()->input('redirect');
-        if ($redirect && str_starts_with($redirect, '/')) {
-            return redirect()->to($redirect);
+        $parsedUrl = parse_url($redirect);
+
+        if (isset($parsedUrl['query'])) {
+            parse_str($parsedUrl['query'], $query);
+        }
+
+        $query['direct'] = 'true';
+        $query['single_page'] = 'true';
+
+        $newQuery = http_build_query($query);
+
+        $finalRedirect =
+    ($parsedUrl['scheme'] ?? '').($parsedUrl['host'] ?? '').
+    ($parsedUrl['path'] ?? '').
+    '?'.$newQuery;
+        if ($finalRedirect && str_starts_with($finalRedirect, '/')) {
+            return redirect()->to($finalRedirect);
         }
 
         return redirect()->intended(route('home'));

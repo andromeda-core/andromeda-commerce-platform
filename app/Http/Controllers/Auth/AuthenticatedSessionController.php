@@ -31,6 +31,21 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $redirect = request()->input('redirect');
+        $parsedUrl = parse_url($redirect);
+
+        if (isset($parsedUrl['query'])) {
+            parse_str($parsedUrl['query'], $query);
+        }
+
+        $query['direct'] = 'true';
+        $query['single_page'] = 'true';
+
+        $newQuery = http_build_query($query);
+
+        $finalRedirect =
+    ($parsedUrl['scheme'] ?? '').($parsedUrl['host'] ?? '').
+    ($parsedUrl['path'] ?? '').
+    '?'.$newQuery;
 
         $request->authenticate();
 
@@ -38,8 +53,8 @@ class AuthenticatedSessionController extends Controller
 
         if ($request->user()->hasRole('Customer')) {
 
-            if ($redirect && str_starts_with($redirect, '/')) {
-                return redirect()->to($redirect);
+            if ($finalRedirect && str_starts_with($finalRedirect, '/')) {
+                return redirect()->to($finalRedirect);
             }
 
             return redirect()->intended(route('home'));

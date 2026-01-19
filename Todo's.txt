@@ -966,9 +966,58 @@ This ensures consistency, reduces manual effort, and keeps pricing logic clean a
 
 
 
+
+Additional Work:
+0: Bulk Translation Add via Excel CSV in Dashboard ✅
+1: Shop Page With Backend Complete Setup ✅
+2: smartphone related modules: (
+    Conditions Module,
+    colors module,
+    return policy module,
+    addons module + (cart + order Flow Logic Update)
+    Courier Companies Module,
+    Additional Fee list Module -> Re-arrange
+) ✅
+
+3: Privacy Policy
+4: Terms Of Service Module
+5: Global Refund & Return Policy
+6: Global Shipping Policy
+7: Smartphone New Columns Addition ✅
+8: Spatiotemporal Infomation Setup In Smartphone
+9: Support For All Type Smartphones -> [text,images,videos]
+10: Filters Syncing With Smartphone with all types Just Like Posts
+11: Global Search Logic Update For Searching Smartphones as well with spatiotemporal info
+
+
+ <- Review Remeaning ->
+(
+Joseph Kim
+4:51 PM
+Upon review, I noticed that there is no basic functionality for administrators to manage user accounts.
+The following management features are mandatory and must be implemented:
+1 Dormant account management
+2 Shipping address modification (upon user request)
+3 Order status–related metadata management
+4 bRefund / return–related status values
+5 Account status flags (e.g., active / suspended / under dispute / under investigation, etc.)
+6 Customer internal notes (for admin use only)
+7 User account deactivation / suspension / withdrawal handling
+8 Duplicate account and unsettled (non-settled) account handling
+*Additionally, please verify whether email notification functionality is implemented for users when the following actions occur:
+1 Account suspension / reactivation
+2 Email or address changes
+3 Status changes resulting from administrative intervention
+)
+ <- Review Remeaning ->
+
+
 NEW PAGES (Remeaning)
 https://docs.google.com/document/d/1X9U--2BSjFL7-aKruAte17j6UZHRQc6gL7oGWYQKSAc/edit?usp=sharing Terms of service
 
 https://docs.google.com/document/d/1oA7T-ICq2eJGKK7DnH1gxWFR5xXPApp9jiLH8YlgBRk/edit?usp=sharing Global Refund & Return Policy
 
 https://docs.google.com/document/d/1OxFBnygAQO-C_IPxlPzvl_-x7bscGQYW9aObauVW5Qs/edit?usp=sharing Global Shipping policy
+
+spatiotemporal information is added to products, then when searching by spatiotemporal info.,
+all types of posts and products will appear together in the search results.
