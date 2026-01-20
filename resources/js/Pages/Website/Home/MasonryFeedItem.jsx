@@ -24,7 +24,7 @@ const MasonryFeedItem = memo(
         if (item.type === 'posts') {
             return (
                 <article
-                    className="relative mb-2 overflow-hidden transition-all duration-300 rounded-md cursor-pointer no-touch-hover group break-inside-avoid"
+                    className="relative mb-2 overflow-hidden transition-all duration-300 rounded-md cursor-pointer group break-inside-avoid"
                     style={{
                         WebkitColumnBreakInside: 'avoid',
                         pageBreakInside: 'avoid',
@@ -34,7 +34,7 @@ const MasonryFeedItem = memo(
                 >
                     {item?.images ? (
                         <div className="relative">
-                            <div className="transition-transform duration-500 no-touch-hover group-hover:scale-105">
+                            <div className="transition-transform duration-500 lg:group-hover:scale-105">
                                 {/* Top gradient */}
                                 <div
                                     className="pointer-events-none absolute inset-x-0 top-0 h-[40%]"
@@ -166,7 +166,7 @@ const MasonryFeedItem = memo(
                         </div>
                     ) : !item?.images && item?.videos ? (
                         <div className="relative">
-                            <div className="transition-transform duration-500 no-touch-hover group-hover:scale-105">
+                            <div className="transition-transform duration-500 lg:group-hover:scale-105">
                                 {/* Top gradient */}
                                 <div
                                     className="pointer-events-none absolute inset-x-0 top-0 h-[40%]"
@@ -299,7 +299,7 @@ const MasonryFeedItem = memo(
                             )}
                         </div>
                     ) : (
-                        <div className={`relative flex flex-col bg-surface-2-light dark:bg-surface-2-dark p-[18px] text-black dark:text-white w-full ${windowSize.width > 1024 ? ' min-h-[clamp(300px,100%,100%)]' : ''}`}>
+                        <div className={`relative flex flex-col bg-surface-2-light lg:group-hover:scale-[1.02] transition-all duration-500 dark:bg-surface-2-dark p-[18px] text-black dark:text-white w-full ${windowSize.width > 1024 ? ' min-h-[clamp(300px,100%,100%)]' : ''}`}>
 
                             <div className="absolute left-4 top-3">
                                 <span className=" text-black dark:text-white font-semibold text-[14px]">
@@ -393,83 +393,192 @@ const MasonryFeedItem = memo(
                 }}
                 onClick={onClick}
             >
-                <div className="relative">
-                    <div className="transition-transform duration-500 no-touch-hover group-hover:scale-105">
-                        {/* Top gradient */}
-                        <div
-                            className="pointer-events-none absolute inset-x-0 top-0 h-[40%]"
-                            style={{
-                                background:
-                                    'linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0))',
-                                mixBlendMode: 'multiply',
-                            }}
-                        />
-
-                        {/* Bottom gradient */}
-                        <div
-                            className="pointer-events-none absolute inset-x-0 bottom-0 h-[40%]"
-                            style={{
-                                background:
-                                    'linear-gradient(to top, rgba(0,0,0,0.4), rgba(0,0,0,0))',
-                                mixBlendMode: 'multiply',
-                            }}
-                        />
-
-                        {!loaded && (
+                {item?.images ? (
+                    <div className="relative">
+                        <div className="transition-transform duration-500 lg:group-hover:scale-105">
+                            {/* Top gradient */}
                             <div
-                                className="relative w-full overflow-hidden"
-                                style={{ paddingBottom: '100%' }}
-                            >
-                                <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-surface-1-light via-surface-2-light to-surface-3-light dark:from-surface-1-dark dark:via-surface-2-dark dark:to-surface-3-dark" />
-                            </div>
+                                className="pointer-events-none absolute inset-x-0 top-0 h-[40%]"
+                                style={{
+                                    background:
+                                        'linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0))',
+                                    mixBlendMode: 'multiply',
+                                }}
+                            />
+
+                            {/* Bottom gradient */}
+                            <div
+                                className="pointer-events-none absolute inset-x-0 bottom-0 h-[40%]"
+                                style={{
+                                    background:
+                                        'linear-gradient(to top, rgba(0,0,0,0.4), rgba(0,0,0,0))',
+                                    mixBlendMode: 'multiply',
+                                }}
+                            />
+
+                            {!loaded && (
+                                <div
+                                    className="relative w-full overflow-hidden"
+                                    style={{ paddingBottom: '100%' }}
+                                >
+                                    <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-surface-1-light via-surface-2-light to-surface-3-light dark:from-surface-1-dark dark:via-surface-2-dark dark:to-surface-3-dark" />
+                                </div>
+                            )}
+
+                            <img
+                                src={item.images[0]?.url || Placeholder}
+                                alt={item.name}
+                                loading={loadingStrategy}
+                                decoding="async"
+                                onLoad={() => {
+                                    setLoaded(true);
+                                }}
+                                onError={(e) => {
+                                    e.target.src = Placeholder;
+                                    setLoaded(true);
+                                }}
+                                style={{
+                                    display: loaded ? 'block' : 'none',
+                                    width: '100%',
+                                    height: 'auto',
+                                }}
+                                className="object-cover text-[10px] text-black dark:text-white"
+                            />
+                        </div>
+
+                        {loaded && (
+                            <>
+                                <div className="absolute left-3 top-3">
+                                    <span className="font-semibold text-white  text-[14px]">
+                                        {item?.tag}
+                                    </span>
+                                </div>
+
+                                <div className="absolute inset-x-0 bottom-0 p-3 bg-transparent">
+                                    <div className="mt-2 flex flex-col font-semibold items-start text-[14px] w-full">
+                                        <p className="w-full text-white truncate">
+                                            {item.selling_info?.total_price
+                                                ? `${currency?.symbol}${item.selling_info.total_price}`
+                                                : ''}
+                                        </p>
+
+                                        <p className="w-full text-white truncate">
+                                            {item.name} ({item.capacity})
+                                        </p>
+                                    </div>
+                                </div>
+
+                            </>
                         )}
-
-                        <img
-                            src={item.images?.[0] || Placeholder}
-                            alt={item.name}
-                            loading={loadingStrategy}
-                            decoding="async"
-                            onLoad={() => {
-                                setLoaded(true);
-                            }}
-                            onError={(e) => {
-                                e.target.src = Placeholder;
-                                setLoaded(true);
-                            }}
-                            style={{
-                                display: loaded ? 'block' : 'none',
-                                width: '100%',
-                                height: 'auto',
-                            }}
-                            className="object-cover text-[10px] text-black dark:text-white"
-                        />
                     </div>
+                ) : !item?.images && item?.videos ? (
+                    <div className="relative">
+                        <div className="transition-transform duration-500 lg:group-hover:scale-105">
+                            {/* Top gradient */}
+                            <div
+                                className="pointer-events-none absolute inset-x-0 top-0 h-[40%]"
+                                style={{
+                                    background:
+                                        'linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0))',
+                                    mixBlendMode: 'multiply',
+                                }}
+                            />
 
-                    {loaded && (
-                        <>
-                            <div className="absolute left-3 top-3">
-                                <span className="font-semibold text-white  text-[14px]">
-                                    {item?.tag}
-                                </span>
-                            </div>
+                            {/* Bottom gradient */}
+                            <div
+                                className="pointer-events-none absolute inset-x-0 bottom-0 h-[40%]"
+                                style={{
+                                    background:
+                                        'linear-gradient(to top, rgba(0,0,0,0.4), rgba(0,0,0,0))',
+                                    mixBlendMode: 'multiply',
+                                }}
+                            />
 
-                            <div className="absolute inset-x-0 bottom-0 p-3 bg-transparent">
-                                <div className="mt-2 flex flex-col font-semibold items-start text-[14px] w-full">
-                                    <p className="w-full text-white truncate">
+                            {!loaded && (
+                                <div
+                                    className="relative w-full overflow-hidden"
+                                    style={{ paddingBottom: '100%' }}
+                                >
+                                    <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-surface-1-light via-surface-2-light to-surface-3-light dark:from-surface-1-dark dark:via-surface-2-dark dark:to-surface-3-dark" />
+                                </div>
+                            )}
+
+                            <img
+                                src={item?.videos[0]?.thumbnail_url || Placeholder}
+                                alt={item?.title}
+                                loading={loadingStrategy}
+                                decoding="async"
+                                onLoad={() => {
+                                    setLoaded(true);
+                                }}
+                                onError={(e) => {
+                                    e.target.src = Placeholder;
+                                    setLoaded(true);
+                                }}
+                                style={{
+                                    display: loaded ? 'block' : 'none',
+                                    width: '100%',
+                                    height: 'auto',
+                                }}
+                                className="object-cover text-[10px] text-black dark:text-white"
+                            />
+                        </div>
+
+                        {loaded && (
+                            <>
+                                <div className="absolute inset-x-0 bottom-0 p-3 bg-transparent">
+                                    <div className="mt-2 flex flex-col font-semibold items-start text-[14px] w-full">
+                                        <p className="w-full text-white truncate">
+                                            {item.selling_info?.total_price
+                                                ? `${currency?.symbol}${item.selling_info.total_price}`
+                                                : ''}
+                                        </p>
+
+                                        <p className="w-full text-white truncate">
+                                            {item.name} ({item.capacity})
+                                        </p>
+                                    </div>
+                                </div>
+
+                            </>
+                        )}
+                    </div>
+                ) : (
+                    <div className={`relative flex flex-col bg-surface-2-light dark:bg-surface-2-dark p-[18px] text-black lg:group-hover:scale-[1.02] transition-all duration-500 dark:text-white w-full ${windowSize.width > 1024 ? ' min-h-[clamp(300px,100%,100%)]' : ''}`}>
+
+                        <div className="absolute left-4 top-3">
+                            <span className=" text-black dark:text-white font-semibold text-[14px]">
+                                {item?.tag}
+                            </span>
+                        </div>
+
+
+
+                        <div className="relative mt-10 pb-[42px]">
+                            <p className="xl:line-clamp-[20] lg:line-clamp-[16] line-clamp-6 md:line-clamp-[12] sm:line-clamp-[10] whitespace-pre-line break-all opacity-90 text-[14px]">
+                                <span
+                                    dangerouslySetInnerHTML={{
+                                        __html: item?.content.trim(),
+                                    }}
+                                ></span>
+                            </p>
+
+                            {/* PRICE bottom bar */}
+                            <div className="absolute inset-x-0 bottom-0 bg-transparent text-main-text-light dark:text-main-text-dark">
+                                <div className="flex flex-col font-semibold items-start text-[14px] w-full">
+                                    <p className="w-full truncate">
                                         {item.selling_info?.total_price
                                             ? `${currency?.symbol}${item.selling_info.total_price}`
                                             : ''}
                                     </p>
-
-                                    <p className="w-full text-white truncate">
-                                        {item.name} ({item.capacity})
-                                    </p>
                                 </div>
                             </div>
+                        </div>
 
-                        </>
-                    )}
-                </div>
+
+                    </div>
+                )}
+
             </article>
         );
     },

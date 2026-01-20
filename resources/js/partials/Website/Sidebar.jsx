@@ -113,25 +113,8 @@ const Sidebar = ({
                                     }`}
 
                             >
-                                <svg
-                                    className={`size-6 text-main-text-light dark:text-main-text-dark`}
-                                    viewBox="0 0 24 24"
-                                    fill="currentColor"
-                                    stroke="none"
-                                    strokeWidth="1"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <g id="Compass">
-                                        <path
-                                            d="M16.1011 7.89894C16.3154 8.11321 16.3903 8.43045 16.2944 8.71791L14.5267 14.0212C14.447 14.2598 14.2598 14.447 14.0212 14.5267L8.7179 16.2945C8.43043 16.3903 8.11319 16.3154 7.89893 16.1011C7.68466 15.8868 7.60975 15.5696 7.70558 15.2821L9.47334 9.97883C9.553 9.74028 9.74027 9.55302 9.97882 9.47336L15.2821 7.70559C15.5696 7.60977 15.8868 7.68468 16.1011 7.89894ZM10.8648 10.8648L9.72953 14.2705L13.1352 13.1353L14.2705 9.72955L10.8648 10.8648Z"
-                                            fill="currentColor"
-                                        ></path>
-                                        <path
-                                            d="M19.834 12C19.834 7.6734 16.3266 4.16602 12 4.16602C7.6734 4.16602 4.16602 7.6734 4.16602 12C4.16602 16.3266 7.6734 19.834 12 19.834V21.5C6.75329 21.5 2.5 17.2467 2.5 12C2.5 6.75329 6.75329 2.5 12 2.5C17.2467 2.5 21.5 6.75329 21.5 12C21.5 17.2467 17.2467 21.5 12 21.5V19.834C16.3266 19.834 19.834 16.3266 19.834 12Z"
-                                            fill="currentColor"
-                                        ></path>
-                                    </g>
-                                </svg>
+
+                                <svg xmlns="http://www.w3.org/2000/svg" className={`size-6 text-main-text-light dark:text-main-text-dark`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"><path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z" /><circle cx="12" cy="12" r="10" /></svg>
 
                                 <span>{__('Explore')}</span>
                             </Link>
@@ -152,9 +135,7 @@ const Sidebar = ({
 
                             >
 
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`size-6 text-main-text-light dark:text-main-text-dark`}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" />
-                                </svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" className={`size-6 text-main-text-light dark:text-main-text-dark`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
 
 
                                 <span>{__('Shop')}</span>
@@ -175,20 +156,9 @@ const Sidebar = ({
                                     }`}
 
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth={1.5}
-                                    stroke="currentColor"
-                                    className={`size-6 text-main-text-light dark:text-main-text-dark`}
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-                                    />
-                                </svg>
+
+
+                                <svg xmlns="http://www.w3.org/2000/svg" className={`size-6 text-main-text-light dark:text-main-text-dark`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"><path d="m21 21-4.34-4.34" /><circle cx="11" cy="11" r="8" /></svg>
                                 <span>{__('Search')}</span>
                             </Link>
                         </li>
@@ -212,21 +182,41 @@ const Sidebar = ({
                                     }
                                 }}
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth={1.5}
-                                    stroke="currentColor"
-                                    className={`size-6 text-main-text-light dark:text-main-text-dark`}
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
-                                    />
-                                </svg>
+
+
+
+                                <svg xmlns="http://www.w3.org/2000/svg" className={`size-6 text-main-text-light dark:text-main-text-dark`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"><path d="M10 5H3" /><path d="M12 19H3" /><path d="M14 3v4" /><path d="M16 17v4" /><path d="M21 12h-9" /><path d="M21 19h-5" /><path d="M21 5h-7" /><path d="M8 10v4" /><path d="M8 12H3" /></svg>
                                 <span>{__('Filter')}</span>
+                            </button>
+                        </li>
+
+                        {/* Languages */}
+                        <li>
+                            <button
+                                data-sidebar-link="true"
+                                title={__('Language')}
+
+                                className={`flex w-full items-center gap-3 px-4 rounded-md py-2.5 text-md transition-colors ${activeModal === 'language-filters'
+                                    ? 'menu-item-active'
+                                    : 'menu-item-inactive'
+                                    }`}
+
+                                onClick={(e) => {
+                                    if (activeModal === 'language-filters') {
+                                        setActiveModal(null);
+                                    } else {
+                                        setActiveModal('language-filters');
+                                    }
+                                }}
+                            >
+
+
+
+
+
+                                <svg xmlns="http://www.w3.org/2000/svg" className={`size-6 text-main-text-light dark:text-main-text-dark`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20" /><path d="m8 13 4-7 4 7" /><path d="M9.1 11h5.7" /></svg>
+
+                                <span>{__('Language')}</span>
                             </button>
                         </li>
 
@@ -239,9 +229,8 @@ const Sidebar = ({
                                 setSelected={setSelectedNavLink}
 
                                 icon={
-                                    <svg xmlns="http://www.w3.org/2000/svg" className={`size-6 text-main-text-light dark:text-main-text-dark`} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                                    </svg>
+
+                                    <svg xmlns="http://www.w3.org/2000/svg" className={`size-6 text-main-text-light dark:text-main-text-dark`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
 
                                 }
                                 items={[
@@ -303,11 +292,7 @@ const Sidebar = ({
                             setSelected={setSelectedNavLink}
 
                             icon={
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={"size-6 text-main-text-light dark:text-main-text-dark"}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                </svg>
-
+                                <svg xmlns="http://www.w3.org/2000/svg" className={"size-6 text-main-text-light dark:text-main-text-dark"} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" /><circle cx="12" cy="12" r="3" /></svg>
 
 
                             }
@@ -351,18 +336,7 @@ const Sidebar = ({
 
                                 },
 
-                                {
-                                    label: __('Language'),
-                                    type: 'button',
-                                    onClick: () => {
-                                        if (activeModal === 'language-filters') {
-                                            setActiveModal(null);
-                                        } else {
-                                            setActiveModal('language-filters');
-                                        }
-                                    }
 
-                                },
 
                                 {
                                     label: __('Contact Us'),

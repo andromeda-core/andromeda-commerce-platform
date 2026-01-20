@@ -14,7 +14,7 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 import { Loader } from '@googlemaps/js-api-loader';
 
-export default function create({ floors, googleMapSetting }) {
+export default function create({ floors, googleMapSettings }) {
     // Create Data Form Data
     const { data, setData, post, processing, errors, reset } = useForm({
         title: '',
@@ -232,7 +232,7 @@ export default function create({ floors, googleMapSetting }) {
         }
 
         const loader = new Loader({
-            apiKey: 'AIzaSyCoMU6iAYNgCGUJfVpPJsEVvg6rBwj4yaU',
+            apiKey: googleMapSettings?.google_map_api_key,
             version: 'weekly',
             libraries: ['places', 'marker'],
         });
@@ -263,7 +263,7 @@ export default function create({ floors, googleMapSetting }) {
             const map = new google.maps.Map(mapRef.current, {
                 center: { lat, lng },
                 zoom: 12,
-                mapId: googleMapSetting?.google_map_id || 'd57c9f8663e69c6fcacbee1f',
+                mapId: googleMapSettings?.google_map_id,
             });
 
             let marker = new AdvancedMarkerElement({

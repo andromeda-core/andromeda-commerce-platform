@@ -27,8 +27,8 @@ const MobileFeedGallery = (
         smartphone_addon_items,
         generateSmartphoneURL,
         shouldCleanupBrowserHistoryRef,
-          setSpatiotemporalInfoModal,
-    spatiotemporalInfoModal,
+        setSpatiotemporalInfoModal,
+        spatiotemporalInfoModal,
     }
 
 ) => {
@@ -57,6 +57,8 @@ const MobileFeedGallery = (
                     smartphone_addon_items={smartphone_addon_items}
                     generateSmartphoneURL={generateSmartphoneURL}
                     shouldCleanupBrowserHistoryRef={shouldCleanupBrowserHistoryRef}
+                    spatiotemporalInfoModal={spatiotemporalInfoModal}
+                    setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
                     __={__}
 
                 />
@@ -78,7 +80,7 @@ const MobileFeedGallery = (
                     __={__}
                     setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
                     spatiotemporalInfoModal={spatiotemporalInfoModal}
-                                    setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
+                    setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
                 />
             )}
         </>

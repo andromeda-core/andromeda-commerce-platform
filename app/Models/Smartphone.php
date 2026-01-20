@@ -29,10 +29,15 @@ class Smartphone extends Model
         'slug',
         'content',
         'product_details',
+        'floor_id',
+        'videos',
+        'latitude',
+        'longitude',
+        'location_name',
 
     ];
 
-    protected $appends = ['added_at', 'created_at_time', 'colors', 'smartphone_image_urls'];
+    protected $appends = ['added_at', 'created_at_time', 'colors', 'smartphone_image_urls', 'smartphone_video_urls'];
 
     protected $with = ['addons'];
 
@@ -63,10 +68,25 @@ class Smartphone extends Model
         }, $this->images ?? []);
     }
 
+    public function getSmartphoneVideoUrlsAttribute()
+    {
+        return array_map(function ($video) {
+            return [
+                'url' => $video['url'],
+                'thumbnail_url' => $video['thumbnail_url'],
+            ];
+        }, $this->videos ?? []);
+    }
+
     // RelationShip
     public function model_name(): BelongsTo
     {
         return $this->belongsTo(ModelName::class, 'model_name_id', 'id');
+    }
+
+    public function floor(): BelongsTo
+    {
+        return $this->belongsTo(Floor::class, 'floor_id', 'id');
     }
 
     public function capacity(): BelongsTo
@@ -160,6 +180,7 @@ class Smartphone extends Model
     protected $casts = [
         'color_ids' => 'array',
         'images' => 'array',
+        'videos' => 'array',
         'product_details' => 'array',
     ];
 }

@@ -262,6 +262,7 @@ export default function OrderView({ order }) {
         }
     }, [selectedPackageVideoID]);
 
+
     return (
         <MainLayout>
             <Head title={`${__('Order', true)} #${order.order_no}`} />
@@ -461,25 +462,28 @@ export default function OrderView({ order }) {
                                                 >
 
                                                     {/* IMAGE */}
-                                                    <div className="relative w-24 h-24 overflow-hidden transition-all border-2 rounded-md cursor-pointer border-trasparent bg-surface-1-light group/img aspect-square dark:bg-surface-1-dark dark:hover:border-surface-3-dark"
+                                                    {(item?.smartphone?.smartphone_image_urls.length > 0 || item?.smartphone?.smartphone_video_urls?.length > 0) && (
+                                                        <div className="relative w-24 h-24 overflow-hidden transition-all border-2 rounded-md cursor-pointer border-trasparent bg-surface-1-light group/img aspect-square dark:bg-surface-1-dark dark:hover:border-surface-3-dark"
 
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            e.stopPropagation();
-                                                            router.get(route('home') + generateSmartphoneURL(item?.smartphone, true, true));
-                                                        }}
-                                                    >
-                                                        <img
-                                                            src={
-                                                                item?.smartphone?.smartphone_image_urls?.[0] ||
-                                                                Placeholder
-                                                            }
-                                                            alt={item?.smartphone?.model_name?.name}
-                                                            className="object-cover w-full h-full transition-transform duration-300 group-hover/img:scale-110"
-                                                            loading="lazy"
-                                                            onError={(e) => (e.target.src = Placeholder)}
-                                                        />
-                                                    </div>
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                router.get(route('home') + generateSmartphoneURL(item?.smartphone, true, true));
+                                                            }}
+                                                        >
+                                                            <img
+                                                                src={
+                                                                    item?.smartphone?.smartphone_image_urls?.[0] ||
+                                                                    item?.smartphone?.smartphone_video_urls[0]?.thumbnail_url ||
+                                                                    Placeholder
+                                                                }
+                                                                alt={item?.smartphone?.model_name?.name}
+                                                                className="object-cover w-full h-full transition-transform duration-300 group-hover/img:scale-110"
+                                                                loading="lazy"
+                                                                onError={(e) => (e.target.src = Placeholder)}
+                                                            />
+                                                        </div>
+                                                    )}
 
                                                     {/* DETAILS */}
                                                     <div className="flex-1 space-y-3">

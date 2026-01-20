@@ -42,7 +42,7 @@ class PostRepository implements IPostRepository
     public function getSinglePostBySlug(string $slug, ?Request $request = null)
     {
 
-        $from_backend = ! empty($request) ? ($request->has('from_backend') ? $request->boolean('from_backend') : false) : false;
+        // $from_backend = ! empty($request) ? ($request->has('from_backend') ? $request->boolean('from_backend') : false) : false;
         $images = ! empty($request) ? ($request->has('images') ? $request->boolean('images') : true) : null;
         $videos = ! empty($request) ? ($request->has('videos') ? $request->boolean('videos') : true) : null;
         $text = ! empty($request) ? ($request->has('text') ? $request->boolean('text') : true) : null;
@@ -144,9 +144,33 @@ class PostRepository implements IPostRepository
 
                 if ($show_products) {
                     $related_smartphones = $this->smartphone
+                        ->where(function ($q) use ($images, $videos, $text) {
+                            if ($text) {
+
+                                $q->orWhere(function ($sub) {
+                                    $sub->whereNull('images')
+                                        ->whereNull('videos');
+                                });
+                            }
+
+                            if ($images) {
+
+                                $q->orWhere(function ($sub) {
+                                    $sub->whereNotNull('images')
+                                        ->whereNull('videos');
+                                });
+                            }
+
+                            if ($videos) {
+
+                                $q->orWhere(function ($sub) {
+                                    $sub->whereNotNull('videos');
+                                });
+                            }
+                        })
                         ->whereHas('selling_info')
                         ->whereNotNull('slug')
-                        ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug'])
+                        ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug'])
                         ->where(function ($query) use ($post) {
                             $query->where('tag', 'like', '%'.$post->tag.'%')
                                 ->orWhere('content', 'like', '%'.$post->content.'%')
@@ -161,6 +185,7 @@ class PostRepository implements IPostRepository
                                 $query->where('status', 'in_stock');
                             },
                         ])
+
                         ->latest()
                         ->limit(5)
                         ->get()
@@ -170,8 +195,15 @@ class PostRepository implements IPostRepository
                                 'id' => $smartphone->id,
                                 'name' => $smartphone->model_searchable_name,
                                 'capacity' => $smartphone->capacity->name,
-                                'images' => $smartphone->smartphone_image_urls,
+                                'images' => $smartphone->images,
+                                'smartphone_image_urls' => $smartphone->smartphone_image_urls,
+                                'videos' => $smartphone->videos,
+                                'smartphone_video_urls' => $smartphone->smartphone_video_urls,
+                                'location_name' => $smartphone->location_name,
+                                'latitude' => $smartphone->latitude,
+                                'longitude' => $smartphone->longitude,
                                 'colors' => $smartphone->colors,
+                                'floor' => $smartphone->floor,
                                 'upc' => $smartphone->upc,
                                 'selling_info' => $smartphone->selling_info,
                                 'country' => $smartphone?->country,
@@ -330,9 +362,18 @@ class PostRepository implements IPostRepository
                 dispatch(new CompressPostVideoWithFFMPEG($tempPaths, $post, 'store'))->onQueue('video');
             }
 
+            $hasMedia = ($request->hasFile('videos') || $request->hasFile('images'));
+
+            $message = 'Post Created Successfully';
+
+            if ($hasMedia) {
+                $message .= ' Please Wait While We Upload Your Files On Server';
+            }
+
             return [
                 'status' => true,
-                'message' => 'Post Created Successfully'.$request->hasFile('images') && $request->hasFile('videos') ? 'Please Wait While We Upload Your Files On Server' : '',
+                'message' => $message,
+
                 'post' => $post,
             ];
         } catch (Exception $e) {
@@ -460,6 +501,14 @@ class PostRepository implements IPostRepository
                 $validated_req['videos'] = $remaining_videos_array;
             }
 
+            if (array_key_exists('images', $validated_req) && empty($validated_req['images'])) {
+                $validated_req['images'] = null;
+            }
+
+            if (array_key_exists('videos', $validated_req) && empty($validated_req['videos'])) {
+                $validated_req['videos'] = null;
+            }
+
             $updated = $post->update($validated_req);
 
             if (! $updated) {
@@ -500,9 +549,18 @@ class PostRepository implements IPostRepository
 
             $post->refresh();
 
+            $hasMedia = ($request->hasFile('new_videos') || $request->hasFile('new_images'));
+
+            $message = 'Post Updated Successfully';
+
+            if ($hasMedia) {
+                $message .= ' Please Wait While We Upload Your Files On Server';
+            }
+
             return [
                 'status' => true,
-                'message' => 'Post Updated Successfully '.$request->hasFile('images') && $request->hasFile('videos') ? 'Please Wait While We Upload Your Files On Server' : '',
+                'message' => $message,
+
                 'post' => $post,
             ];
         } catch (Exception $e) {
@@ -787,17 +845,42 @@ class PostRepository implements IPostRepository
 
                 $relatedSmartphones = collect();
 
-                if ($show_products && ! blank($allHashtags) && $images) {
+                if ($show_products && ! blank($allHashtags)) {
                     $relatedSmartphones = $this->smartphone
+                        ->where(function ($q) use ($images, $videos, $text) {
+                            if ($text) {
+
+                                $q->orWhere(function ($sub) {
+                                    $sub->whereNull('images')
+                                        ->whereNull('videos');
+                                });
+                            }
+
+                            if ($images) {
+
+                                $q->orWhere(function ($sub) {
+                                    $sub->whereNotNull('images')
+                                        ->whereNull('videos');
+                                });
+                            }
+
+                            if ($videos) {
+
+                                $q->orWhere(function ($sub) {
+                                    $sub->whereNotNull('videos');
+                                });
+                            }
+                        })
                         ->whereNotNull('slug')
                         ->whereHas('selling_info')
                         ->whereIn('tag', $allHashtags)
-                        ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug'])
+                        ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug'])
                         ->withCount([
                             'inventory_items' => function ($query) {
                                 $query->where('status', 'in_stock');
                             },
                         ])
+
                         ->limit(50)
                         ->get()
                         ->map(function ($smartphone) {
@@ -807,8 +890,15 @@ class PostRepository implements IPostRepository
                                 'id' => $smartphone->id,
                                 'name' => $smartphone->model_searchable_name,
                                 'capacity' => $smartphone->capacity->name,
-                                'images' => $smartphone->smartphone_image_urls,
+                                'images' => $smartphone->images,
+                                'smartphone_image_urls' => $smartphone->smartphone_image_urls,
+                                'videos' => $smartphone->videos,
+                                'smartphone_video_urls' => $smartphone->smartphone_video_urls,
+                                'location_name' => $smartphone->location_name,
+                                'latitude' => $smartphone->latitude,
+                                'longitude' => $smartphone->longitude,
                                 'colors' => $smartphone->colors,
+                                'floor' => $smartphone->floor,
                                 'upc' => $smartphone->upc,
                                 'selling_info' => $smartphone->selling_info,
                                 'country' => $smartphone?->country,
@@ -861,13 +951,36 @@ class PostRepository implements IPostRepository
 
             }
 
-            if ($show_products && $images) {
+            if ($show_products) {
                 $smartphones = $this->smartphone
+                    ->where(function ($q) use ($images, $videos, $text) {
+                        if ($text) {
+
+                            $q->orWhere(function ($sub) {
+                                $sub->whereNull('images')
+                                    ->whereNull('videos');
+                            });
+                        }
+
+                        if ($images) {
+
+                            $q->orWhere(function ($sub) {
+                                $sub->whereNotNull('images')
+                                    ->whereNull('videos');
+                            });
+                        }
+
+                        if ($videos) {
+                            $q->orWhere(function ($sub) {
+                                $sub->whereNotNull('videos');
+                            });
+                        }
+                    })
                     ->with([
                         'model_name:id,name',
                         'capacity:id,name',
                         'selling_info',
-                        'selling_info.shipping_fee', 'selling_info.import_tax',
+                        'selling_info.shipping_fee', 'selling_info.import_tax', 'floor',
                         'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug',
                     ])
                     ->withCount([
@@ -875,6 +988,7 @@ class PostRepository implements IPostRepository
                             $query->where('status', 'in_stock');
                         },
                     ])
+
                     ->whereHas('selling_info')
                     ->whereNotNull('slug')
                     ->orderBy('id', 'desc')
@@ -894,15 +1008,40 @@ class PostRepository implements IPostRepository
 
                 if (! blank($allHashtags)) {
                     $relatedSmartphones = $this->smartphone
+                        ->where(function ($q) use ($images, $videos, $text) {
+                            if ($text) {
+
+                                $q->orWhere(function ($sub) {
+                                    $sub->whereNull('images')
+                                        ->whereNull('videos');
+                                });
+                            }
+
+                            if ($images) {
+
+                                $q->orWhere(function ($sub) {
+                                    $sub->whereNotNull('images')
+                                        ->whereNull('videos');
+                                });
+                            }
+
+                            if ($videos) {
+
+                                $q->orWhere(function ($sub) {
+                                    $sub->whereNotNull('videos');
+                                });
+                            }
+                        })
                         ->whereNotNull('slug')
                         ->whereHas('selling_info')
                         ->whereIn('tag', $allHashtags)
-                        ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug'])
+                        ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug'])
                         ->withCount([
                             'inventory_items' => function ($query) {
                                 $query->where('status', 'in_stock');
                             },
                         ])
+
                         ->limit(50)
                         ->get()
                         ->map(function ($smartphone) {
@@ -911,7 +1050,14 @@ class PostRepository implements IPostRepository
                                 'id' => $smartphone->id,
                                 'name' => $smartphone->model_searchable_name,
                                 'capacity' => $smartphone->capacity->name,
-                                'images' => $smartphone->smartphone_image_urls,
+                                'images' => $smartphone->images,
+                                'smartphone_image_urls' => $smartphone->smartphone_image_urls,
+                                'videos' => $smartphone->videos,
+                                'smartphone_video_urls' => $smartphone->smartphone_video_urls,
+                                'location_name' => $smartphone->location_name,
+                                'latitude' => $smartphone->latitude,
+                                'longitude' => $smartphone->longitude,
+                                'floor' => $smartphone->floor,
                                 'colors' => $smartphone->colors,
                                 'upc' => $smartphone->upc,
                                 'selling_info' => $smartphone->selling_info,
@@ -1002,7 +1148,13 @@ class PostRepository implements IPostRepository
                         'id' => $sp->id,
                         'name' => $sp->model_searchable_name,
                         'capacity' => $sp->capacity->name,
-                        'images' => $sp->smartphone_image_urls,
+                        'images' => $sp->images,
+                        'smartphone_image_urls' => $sp->smartphone_image_urls,
+                        'videos' => $sp->videos,
+                        'smartphone_video_urls' => $sp->smartphone_video_urls,
+                        'location_name' => $sp->location_name,
+                        'latitude' => $sp->latitude,
+                        'longitude' => $sp->longitude,
                         'colors' => $sp->colors,
                         'upc' => $sp->upc,
                         'selling_info' => $sp->selling_info,
@@ -1012,6 +1164,7 @@ class PostRepository implements IPostRepository
                         'courier_company' => $sp->courier_company,
                         'return_policy' => $sp->return_policy,
                         'delivery_days' => $sp?->delivery_days,
+                        'floor' => $sp->floor,
                         'addons' => $sp?->addons,
                         'slug' => $sp->slug,
                         'tag' => $sp->tag,
@@ -1074,11 +1227,21 @@ class PostRepository implements IPostRepository
 
     public function getGoogleMapSettings()
     {
-        return Cache::get('google_map_settings');
+        return Cache::get('google_map_setting');
     }
 
     public function getRelated(Request $request, ?string $slug = null)
     {
+
+        $images = $request->boolean('images', true);
+        $text = $request->boolean('text', false);
+        $videos = $request->boolean('videos', true);
+        $show_posts = $request->boolean('show_posts', true);
+        $show_products = $request->boolean('show_products', true);
+
+        $hasMore = false;
+        $related_posts = [];
+        $related_smartphones = [];
 
         try {
             $hashtag = null;
@@ -1095,13 +1258,38 @@ class PostRepository implements IPostRepository
                 $hashtag = $post->tag;
             } else {
                 $smartphone = $this->smartphone
+                    ->where(function ($q) use ($images, $videos, $text) {
+                        if ($text) {
+
+                            $q->orWhere(function ($sub) {
+                                $sub->whereNull('images')
+                                    ->whereNull('videos');
+                            });
+                        }
+
+                        if ($images) {
+
+                            $q->orWhere(function ($sub) {
+                                $sub->whereNotNull('images')
+                                    ->whereNull('videos');
+                            });
+                        }
+
+                        if ($videos) {
+
+                            $q->orWhere(function ($sub) {
+                                $sub->whereNotNull('videos');
+                            });
+                        }
+                    })
                     ->where('slug', $slug)
-                    ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug'])
+                    ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug'])
                     ->withCount([
                         'inventory_items' => function ($query) {
                             $query->where('status', 'in_stock');
                         },
                     ])
+
                     ->whereHas('selling_info')
                     ->whereNotNull('slug')
                     ->latest()
@@ -1117,16 +1305,6 @@ class PostRepository implements IPostRepository
 
                 $hashtag = $smartphone->tag;
             }
-
-            $images = $request->boolean('images', true);
-            $text = $request->boolean('text', false);
-            $videos = $request->boolean('videos', true);
-            $show_posts = $request->boolean('show_posts', true);
-            $show_products = $request->boolean('show_products', true);
-
-            $hasMore = false;
-            $related_posts = [];
-            $related_smartphones = [];
 
             if ($show_posts && ! empty($hashtag)) {
                 $related_posts = $this->post
@@ -1180,8 +1358,32 @@ class PostRepository implements IPostRepository
                 $hasMore = $hasMore || ($related_posts->count() === $perPage);
             }
 
-            if ($show_products && ! empty($hashtag) && $images) {
+            if ($show_products && ! empty($hashtag)) {
                 $related_smartphones = $this->smartphone
+                    ->where(function ($q) use ($images, $videos, $text) {
+                        if ($text) {
+
+                            $q->orWhere(function ($sub) {
+                                $sub->whereNull('images')
+                                    ->whereNull('videos');
+                            });
+                        }
+
+                        if ($images) {
+
+                            $q->orWhere(function ($sub) {
+                                $sub->whereNotNull('images')
+                                    ->whereNull('videos');
+                            });
+                        }
+
+                        if ($videos) {
+
+                            $q->orWhere(function ($sub) {
+                                $sub->whereNotNull('videos');
+                            });
+                        }
+                    })
                     ->when(! empty($smartphone), function ($subQuery) use ($smartphone) {
                         $subQuery->where('id', '!=', $smartphone->id);
                     })
@@ -1190,12 +1392,13 @@ class PostRepository implements IPostRepository
                     })
                     ->whereHas('selling_info')
                     ->whereNotNull('slug')
-                    ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug'])
+                    ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug'])
                     ->withCount([
                         'inventory_items' => function ($query) {
                             $query->where('status', 'in_stock');
                         },
                     ])
+
                     ->where('tag', $hashtag)
                     ->forPage($page, $perPage)
                     ->latest()
@@ -1205,10 +1408,17 @@ class PostRepository implements IPostRepository
                             'id' => $smartphone->id,
                             'name' => $smartphone->model_searchable_name,
                             'capacity' => $smartphone->capacity->name,
-                            'images' => $smartphone->smartphone_image_urls,
+                            'images' => $smartphone->images,
+                            'smartphone_image_urls' => $smartphone->smartphone_image_urls,
+                            'videos' => $smartphone->videos,
+                            'smartphone_video_urls' => $smartphone->smartphone_video_urls,
+                            'location_name' => $smartphone->location_name,
+                            'latitude' => $smartphone->latitude,
+                            'longitude' => $smartphone->longitude,
                             'colors' => $smartphone->colors,
                             'upc' => $smartphone->upc,
                             'selling_info' => $smartphone->selling_info,
+                            'floor' => $smartphone->floor,
                             'country' => $smartphone?->country,
                             'condition' => $smartphone?->condition,
                             'delivery_days' => $smartphone?->delivery_days,
@@ -1350,15 +1560,40 @@ class PostRepository implements IPostRepository
                 $hasMore = $hasMore || ($posts->count() === $perPage);
             }
 
-            if ($show_products && $images) {
+            if ($show_products) {
                 $smartphones = $this->smartphone
+                    ->where(function ($q) use ($images, $videos, $text) {
+                        if ($text) {
+
+                            $q->orWhere(function ($sub) {
+                                $sub->whereNull('images')
+                                    ->whereNull('videos');
+                            });
+                        }
+
+                        if ($images) {
+
+                            $q->orWhere(function ($sub) {
+                                $sub->whereNotNull('images')
+                                    ->whereNull('videos');
+                            });
+                        }
+
+                        if ($videos) {
+
+                            $q->orWhere(function ($sub) {
+                                $sub->whereNotNull('videos');
+                            });
+                        }
+                    })
                     ->where('tag', $hashtag)
-                    ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug'])
+                    ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug'])
                     ->withCount([
                         'inventory_items' => function ($query) {
                             $query->where('status', 'in_stock');
                         },
                     ])
+
                     ->whereHas('selling_info')
                     ->whereNotNull('slug')
                     ->latest()
@@ -1369,9 +1604,14 @@ class PostRepository implements IPostRepository
                             'id' => $smartphone->id,
                             'name' => $smartphone->model_searchable_name,
                             'capacity' => $smartphone->capacity->name,
-                            'image' => $smartphone->smartphone_image_urls[0],
+                            'image' => $smartphone->smartphone_image_urls && count($smartphone->smartphone_image_urls) > 0 ? $smartphone->smartphone_image_urls[0] : null,
+                            'video_thumbnail' => $smartphone->smartphone_video_urls && count($smartphone->smartphone_video_urls) > 0 ? $smartphone->smartphone_video_urls[0]['thumbnail_url'] : null,
+                            'location_name' => $smartphone->location_name,
+                            'latitude' => $smartphone->latitude,
+                            'longitude' => $smartphone->longitude,
                             'colors' => $smartphone->colors,
                             'upc' => $smartphone->upc,
+                            'floor' => $smartphone->floor,
                             'selling_info' => $smartphone->selling_info,
                             'inventory_items_count' => $smartphone->inventory_items_count,
                             'country' => $smartphone?->country,

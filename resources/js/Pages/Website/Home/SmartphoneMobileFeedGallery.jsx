@@ -7,6 +7,8 @@ import { router } from '@inertiajs/react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import SmartphoneDetailsAccordion from '@/Components/SmartphoneDetailsAccordion';
+import SpatiotemporalInfoModal from '@/Components/SpatiotemporalInfoModal';
+import InstagramStyledVideoPlayer from '@/Components/InstagramStyledVideoPlayer';
 
 const SmartphoneMobileGalleryModal = ({
     smartphone,
@@ -30,9 +32,11 @@ const SmartphoneMobileGalleryModal = ({
     smartphone_addon_items,
     generateSmartphoneURL,
     shouldCleanupBrowserHistoryRef,
+    setSpatiotemporalInfoModal,
+    spatiotemporalInfoModal,
 }) => {
 
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [actionDropdownOpen, setActionDropdownOpen] = useState(null);
     const actionDropdownRef = useRef(null);
     const thumbnailContainerRef = useRef(null);
@@ -46,8 +50,8 @@ const SmartphoneMobileGalleryModal = ({
         const itemWidth = container.offsetWidth;
         const newIndex = Math.round(scrollLeft / itemWidth);
 
-        if (newIndex !== currentImageIndex) {
-            setCurrentImageIndex(newIndex);
+        if (newIndex !== currentMediaIndex) {
+            setCurrentMediaIndex(newIndex);
 
             const activeThumb = thumbnailContainerRef.current?.children[newIndex];
             activeThumb?.scrollIntoView({
@@ -59,7 +63,7 @@ const SmartphoneMobileGalleryModal = ({
     };
 
     const handleThumbnailClick = (index) => {
-        setCurrentImageIndex(index);
+        setCurrentMediaIndex(index);
         const targetMainItem = ThumbScrollContainerRef.current?.children[index];
         targetMainItem?.scrollIntoView({
             behavior: 'instant',
@@ -105,6 +109,25 @@ const SmartphoneMobileGalleryModal = ({
 
     // Checking Cart State
     const [isInCart, setIsInCart] = useState(false);
+
+
+    const mediaItems = useMemo(() => {
+        const images =
+            smartphone?.images?.map((img) => ({
+                type: 'image',
+                url: img.url,
+            })) || [];
+
+        const videos =
+            smartphone?.videos?.map((vid) => ({
+                type: 'video',
+                url: vid.url,
+                thumbnail_url: vid?.thumbnail_url
+            })) || [];
+
+        return [...images, ...videos];
+    }, [smartphone]);
+
 
 
     // Initialize cartItemSmartphones from backend cart_items on mount/smartphone change
@@ -915,8 +938,9 @@ const SmartphoneMobileGalleryModal = ({
                     <div className="flex-1 px-8 overflow-y-auto scrollbar-none"
                         ref={scrollContainerRef}
                     >
-                        {smartphone?.images?.length > 0 && (
-                            <div className="relative mb-4 overflow-hidden">
+
+                        {mediaItems?.length > 0 && (
+                            <div className="relative">
                                 {/* Horizontal Scroll Container - Swipeable */}
                                 <div
                                     ref={ThumbScrollContainerRef}
@@ -927,72 +951,164 @@ const SmartphoneMobileGalleryModal = ({
                                         msOverflowStyle: 'none',
                                         WebkitOverflowScrolling: 'touch',
                                         scrollSnapType: 'x mandatory',
-                                        height: 'calc(100vh - 180px)',
+                                        height: 'calc(100vh - 180px)'
                                     }}
                                 >
-                                    {smartphone.images.map((image, index) => (
+                                    {mediaItems.map((item, index) => (
                                         <div
                                             key={index}
                                             className="flex items-center justify-center w-full h-full shrink-0 snap-center snap-always"
                                         >
-                                            <img
-                                                src={image || placeholderImage}
-                                                alt={`${smartphone.name} ${index + 1}`}
-                                                className="object-cover w-full h-full max-w-full max-h-full rounded-md"
-                                                loading={'eager'}
-                                                fetchpriority={'high'}
-                                                decoding="async"
-                                                onError={(e) => (e.target.src = placeholderImage)}
-                                            />
+                                            {item.type === 'image' ? (
+                                                <img
+                                                    src={item.url || placeholderImage}
+                                                    alt={`Media ${index}`}
+                                                    className="object-cover w-full h-full max-w-full max-h-full rounded-md"
+                                                    loading="eager"
+                                                    fetchpriority="high"
+                                                    decoding="async"
+                                                    onError={(e) => (e.target.src = placeholderImage)}
+                                                />
+                                            ) : (
+                                                <div className="flex items-center justify-center w-full h-full">
+                                                    <InstagramStyledVideoPlayer
+                                                        thumbnail={item?.thumbnail_url || placeholderImage}
+                                                        className="object-cover w-full h-full"
+                                                        videoUrl={item.url}
+                                                        Preload='metadata'
+                                                        slug={item?.slug}
+                                                        timelinePadding={2}
+
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
+
+
+
+
                             </div>
                         )}
 
                         {/* Thumbnail Refs */}
+
                         <div className="flex items-center justify-start gap-0 pt-4">
                             {/* Thumbnails */}
-                            {smartphone.images.length > 1 && (
-                                <div
-                                    ref={thumbnailContainerRef}
-                                    className="flex items-center gap-3 overflow-x-auto scrollbar-none"
-                                    style={{ scrollBehavior: 'smooth' }}
-                                >
-                                    {/* Render thumbnails */}
-                                    {smartphone.images.map((mediaItem, index) => {
-                                        return (
-                                            <button
-                                                key={index}
-                                                onClick={() => handleThumbnailClick(index)}
-                                                className={`aspect-square ${currentImageIndex === index ? 'border-[3px] border-main-text-light dark:border-main-text-dark' : ''} w-[clamp(70px,5vw,70px)] flex-shrink-0 overflow-hidden rounded-md transition-all`}
-                                            >
-                                                <img
-                                                    src={mediaItem || placeholderImage}
-                                                    alt={`Thumbnail ${index + 1}`}
-                                                    className="object-cover w-full h-full"
-                                                    loading={
-                                                        currentImageIndex === index
-                                                            ? 'eager'
-                                                            : 'lazy'
-                                                    }
-                                                    decoding="async"
-                                                    fetchpriority={
-                                                        currentImageIndex === index ? 'high' : 'low'
-                                                    }
-                                                    onError={(e) =>
-                                                        (e.target.src = placeholderImage)
-                                                    }
-                                                />
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            )}
+                            {((Array.isArray(
+                                smartphone?.smartphone_video_urls,
+                            ) &&
+                                smartphone.smartphone_video_urls.length > 1) ||
+                                (Array.isArray(
+                                    smartphone?.smartphone_image_urls,
+                                ) &&
+                                    smartphone.smartphone_image_urls.length >
+                                    1)) && (
+                                    <div
+                                        ref={thumbnailContainerRef}
+                                        className="flex items-center gap-3 overflow-x-auto scrollbar-none"
+                                        style={{ scrollBehavior: 'smooth' }}
+                                    >
+                                        {/* Render thumbnails */}
+                                        {mediaItems.map(
+                                            (mediaItem, index) => {
+
+                                                return (
+                                                    <button
+                                                        key={index}
+
+                                                        onClick={() => handleThumbnailClick(index)}
+                                                        className={`aspect-square ${currentMediaIndex === index ? 'border-[3px] border-main-text-light dark:border-main-text-dark' : ''} w-[clamp(70px,5vw,70px)] flex-shrink-0 overflow-hidden rounded-md  transition-all`}
+                                                    >
+                                                        {mediaItem?.type ===
+                                                            'image' ? (
+                                                            <img
+                                                                src={
+                                                                    mediaItem?.url ||
+                                                                    placeholderImage
+                                                                }
+                                                                alt={`Thumbnail ${index + 1}`}
+                                                                className="object-cover w-full h-full"
+                                                                loading={
+                                                                    currentMediaIndex ===
+                                                                        index
+                                                                        ? 'eager'
+                                                                        : 'lazy'
+                                                                }
+                                                                decoding="async"
+                                                                fetchpriority={
+                                                                    currentMediaIndex ===
+                                                                        index
+                                                                        ? 'high'
+                                                                        : 'low'
+                                                                }
+                                                                onError={(
+                                                                    e,
+                                                                ) =>
+                                                                (e.target.src =
+                                                                    placeholderImage)
+                                                                }
+                                                            />
+                                                        ) : (
+                                                            <img
+                                                                src={
+                                                                    mediaItem?.thumbnail_url ||
+                                                                    placeholderImage
+                                                                }
+                                                                alt={`Thumbnail ${index + 1}`}
+                                                                className="object-cover w-full h-full"
+                                                                loading={
+                                                                    currentMediaIndex ===
+                                                                        index
+                                                                        ? 'eager'
+                                                                        : 'lazy'
+                                                                }
+                                                                decoding="async"
+                                                                fetchpriority={
+                                                                    currentMediaIndex ===
+                                                                        index
+                                                                        ? 'high'
+                                                                        : 'low'
+                                                                }
+                                                                onError={(
+                                                                    e,
+                                                                ) =>
+                                                                (e.target.src =
+                                                                    placeholderImage)
+                                                                }
+                                                            />
+                                                        )}
+                                                    </button>
+                                                );
+                                            },
+                                        )}
+                                    </div>
+                                )}
+
+
                         </div>
+
 
                         {/* Full Content - Scrollable, No Truncation */}
                         <div className="mt-0 mb-10">
+
+
+
+                            {mediaItems?.length === 0 && (
+
+                                <div className="mb-4">
+                                    {smartphone?.content && (
+                                        <div
+                                            className="text-[16px] font-medium leading-[22px] prose break-words text-main-text-light dark:text-main-text-dark"
+                                            dangerouslySetInnerHTML={{
+                                                __html: smartphone?.content,
+                                            }}
+                                        />
+                                    )}
+                                </div>
+                            )}
+
 
                             <div className="flex items-center justify-end mb-4">
                                 <div className="relative" ref={actionDropdownRef}>
@@ -1014,16 +1130,16 @@ const SmartphoneMobileGalleryModal = ({
                                                 strokeLinecap="round"
                                                 strokeLinejoin="round"
                                                 d="
-      M3.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
-      M12 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
-      M20.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
-    "
+                             M3.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+                             M12 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+                             M20.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+                           "
                                             />
                                         </svg>
                                     </button>
 
                                     {actionDropdownOpen && (
-                                        <div className="absolute right-0 z-50 w-56 border rounded-md top-full border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark">
+                                        <div className="absolute right-0 z-50 w-56 border rounded-md border-surface-3-light bg-backgroundLight dark:border-surface-3-dark top-full dark:bg-surface-1-dark">
                                             <div className="py-1">
                                                 <button
                                                     onClick={() => {
@@ -1054,6 +1170,8 @@ const SmartphoneMobileGalleryModal = ({
                                                     <span>{__('QR Code')}</span>
                                                 </button>
 
+
+
                                                 <button
                                                     onClick={() => {
                                                         const url =
@@ -1081,6 +1199,30 @@ const SmartphoneMobileGalleryModal = ({
                                                     <span>{__('Copy Link')}</span>
                                                 </button>
 
+
+
+                                                {/* Spatiotemporal Information */}
+                                                {(smartphone?.latitude != null && smartphone?.longitude != null) && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            setSpatiotemporalInfoModal(true);
+                                                            setActionDropdownOpen(null);
+                                                        }}
+                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
+                                                    >
+
+
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                                                        </svg>
+
+
+                                                        <span className="font-normal">
+                                                            {__('Spatiotemporal Info')}
+                                                        </span>
+                                                    </button>
+                                                )}
 
                                                 <span
 
@@ -1523,14 +1665,16 @@ const SmartphoneMobileGalleryModal = ({
 
                                     {/* Accordian */}
                                     {/* Product Content */}
-                                    <SmartphoneContentAccordion
-                                        content={smartphone?.content}
-                                        label={__('About this product')}
-                                        isHtml={true}
-                                        onToggle={setToggleAccordion}
-                                        defaultOpen={toggleAccordion}
-                                        scrollContainerRef={scrollContainerRef}
-                                    />
+                                    {mediaItems?.length > 0 && (
+                                        <SmartphoneContentAccordion
+                                            content={smartphone?.content}
+                                            label={__('About this product')}
+                                            isHtml={true}
+                                            onToggle={setToggleAccordion}
+                                            defaultOpen={toggleAccordion}
+                                            scrollContainerRef={scrollContainerRef}
+                                        />
+                                    )}
 
 
                                     {smartphone?.product_details && (
@@ -1547,11 +1691,24 @@ const SmartphoneMobileGalleryModal = ({
                                     )}
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </div>,
                 document.getElementById('modal-root') || document.body,
             )}
+
+
+            {
+                spatiotemporalInfoModal && (
+                    <SpatiotemporalInfoModal
+                        onClose={() => {
+                            setSpatiotemporalInfoModal(false);
+                        }}
+                        post={smartphone}
+                    />
+                )
+            }
         </>
     );
 };

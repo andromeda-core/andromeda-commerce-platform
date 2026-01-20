@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Repositories\Floors\Interface\IFloorRepostitory;
+use App\Repositories\Posts\Interface\IPostRepository;
 use App\Repositories\Smartphones\Interface\ISmartphoneRepository;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -27,7 +29,9 @@ class SmartphoneController extends Controller implements HasMiddleware
     }
 
     public function __construct(
-        private ISmartphoneRepository $smartphone
+        private ISmartphoneRepository $smartphone,
+        private IFloorRepostitory $floor,
+        private IPostRepository $post,
     ) {}
 
     public function index(Request $request)
@@ -51,8 +55,10 @@ class SmartphoneController extends Controller implements HasMiddleware
         $courier_companies = $this->smartphone->getCourierCompanies();
         $return_policies = $this->smartphone->getReturnPolicies();
         $addons = $this->smartphone->getAddons();
+        $floors = $this->floor->getAllWithoutPaginateFloors();
+        $googleMapSettings = $this->post->getGoogleMapSettings();
 
-        return Inertia::render('Dashboard/Smartphones/create', compact('colors', 'model_names', 'capacities', 'categories', 'countries', 'conditions', 'courier_companies', 'return_policies', 'addons'));
+        return Inertia::render('Dashboard/Smartphones/create', compact('colors', 'model_names', 'capacities', 'categories', 'countries', 'floors', 'conditions', 'googleMapSettings', 'courier_companies', 'return_policies', 'addons'));
     }
 
     public function store(Request $request)

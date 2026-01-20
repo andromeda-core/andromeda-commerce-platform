@@ -31,6 +31,7 @@ export default function edit({ colors, model_names, capacities, categories, cond
         addon_ids: smartphone?.addon_ids || [],
         upc: smartphone?.upc || '',
         images: [],
+        videos: [],
         tag: smartphone?.tag || '',
         content: smartphone?.content || '',
         product_details: smartphone?.product_details || [],
@@ -81,12 +82,15 @@ export default function edit({ colors, model_names, capacities, categories, cond
         e.preventDefault();
 
         const deletedImages = getDeletedFiles(smartphone.images, data.images || []);
+        const deletedVideos = getDeletedFiles(smartphone.videos, data.videos || []);
         const newImages = (data.images || []).filter((f) => f.isNew).map((f) => f.file);
-
+        const newVideos = (data.videos || []).filter((f) => f.isNew).map((f) => f.file);
         const formData = {
             ...data,
             deleted_images: deletedImages,
+            deleted_videos: deletedVideos,
             new_images: newImages,
+            new_videos: newVideos,
         };
 
         setProcessing(true);
@@ -133,7 +137,7 @@ export default function edit({ colors, model_names, capacities, categories, cond
     }, [errors]);
 
     const [scannerOpen, setScannerOpen] = useState(false);
-
+    const video_urls = smartphone?.smartphone_video_urls?.map(video => video.url) || [];
     return (
         <>
             <AuthenticatedLayout>
@@ -414,7 +418,6 @@ export default function edit({ colors, model_names, capacities, categories, cond
                                                     Label={
                                                         'Drag & Drop your Smart Phone Images or <span class="filepond--label-action">Browse</span>'
                                                     }
-                                                    Required={true}
                                                     Multiple={true}
                                                     acceptedFileTypes={['image/*']}
                                                     MaxFiles={5}
@@ -432,6 +435,33 @@ export default function edit({ colors, model_names, capacities, categories, cond
                                                     DefaultFile={smartphone?.smartphone_image_urls}
                                                 />
                                             </div>
+
+
+
+                                            <div className="grid grid-cols-1 col-span-2 gap-4 mt-10 md:grid-cols-1">
+                                                <FileUploaderInput
+                                                    Label={
+                                                        'Drag & Drop your Smart Phone Video or <span class="filepond--label-action">Browse</span>'
+                                                    }
+                                                    Error={errors.video_error}
+                                                    Id={'videos'}
+                                                    InputName={'Smart Phone Videos'}
+                                                    acceptedFileTypes={['video/*']}
+                                                    MaxFileSize={'1000MB'}
+                                                    onUpdate={(files) => {
+                                                        if (files.length > 0) {
+                                                            setData('videos', files);
+                                                        } else {
+                                                            setData('videos', null);
+                                                        }
+                                                        setFileChanged(true);
+                                                    }}
+                                                    MaxFiles={5}
+                                                    Multiple={true}
+                                                    DefaultFile={video_urls}
+                                                />
+                                            </div>
+
 
                                             <div className="grid grid-cols-1 gap-4">
                                                 <TipTapEditor
@@ -601,7 +631,6 @@ export default function edit({ colors, model_names, capacities, categories, cond
                                                     data.capacity_id === '' ||
                                                     data.color_ids.length === 0 ||
                                                     data.upc.trim() === '' ||
-                                                    data?.images?.length === 0 ||
                                                     data.category_id === '' ||
                                                     data.content.trim() === '' ||
                                                     data.country_id === '' ||
@@ -712,8 +741,7 @@ export default function edit({ colors, model_names, capacities, categories, cond
                                     <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
                                         <div className="text-center">
                                             <h2 className="text-lg font-medium text-gray-800 dark:text-white">
-                                                Please Wait While We Are Uploading Smart Phone
-                                                Images
+                                                Please Wait While We Are Uploading Your Files
                                             </h2>
 
                                             <div className="flex items-center justify-center mt-5">

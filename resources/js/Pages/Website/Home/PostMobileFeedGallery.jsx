@@ -512,7 +512,8 @@ const PostMobileFeedGallery = (
                             <div className="mb-4">
                                 {post?.content && (
                                     <div
-                                        className="text-sm leading-relaxed prose break-words text-main-text-light dark:text-main-text-dark"
+                                        className="text-[16px] font-medium  leading-[22px] prose break-words text-main-text-light dark:text-main-text-dark"
+
                                         dangerouslySetInnerHTML={{
                                             __html: post?.content,
                                         }}

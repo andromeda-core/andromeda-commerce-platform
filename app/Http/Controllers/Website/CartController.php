@@ -17,6 +17,7 @@ class CartController extends Controller
     {
         $data = $this->cart->getCartItems($request);
         $cart_items = $data['cart_items'];
+
         $addon_items = $data['addon_items'];
         $total_summary = $data['total_summary'];
         $refferalSessionData = session()->get('referal_data');

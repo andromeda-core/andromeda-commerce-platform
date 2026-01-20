@@ -984,10 +984,12 @@ Additional Work:
 5: Global Refund & Return Policy
 6: Global Shipping Policy
 7: Smartphone New Columns Addition ✅
-8: Spatiotemporal Infomation Setup In Smartphone
-9: Support For All Type Smartphones -> [text,images,videos]
-10: Filters Syncing With Smartphone with all types Just Like Posts
-11: Global Search Logic Update For Searching Smartphones as well with spatiotemporal info
+8: Spatiotemporal Infomation Setup In Smartphone  ✅
+9: Support For All Type Smartphones -> [text,images,videos]  ✅
+10: Filters Syncing With Smartphone with all types Just Like Posts  ✅
+11: Global Search Logic Update For Searching Smartphones as well with spatiotemporal info  ✅
+12: Shop Page Logic Updated For handling All Types Of Smartphones  ✅
+13: Desktop Feed And Mobile Feed Updated To Handle all types of smartphones  and New Ui Added ✅
 
 
  <- Review Remeaning ->

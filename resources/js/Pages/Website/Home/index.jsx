@@ -92,9 +92,6 @@ const index = () => {
     const nextPageUrlRef = useRef(null);
 
 
-
-
-
     // Initialize with first load
     useEffect(() => {
         nextPageUrlRef.current = nextPageUrl;
@@ -838,12 +835,12 @@ const index = () => {
     // Setting Media Items
     useEffect(() => {
         if (feedGallery) {
-            const images = Array.isArray(feedGallery.post_image_urls)
+            const images = Array.isArray(feedGallery.post_image_urls) && feedGallery.type === 'posts'
                 ? feedGallery.post_image_urls.map((url) => ({ type: 'image', url }))
-                : (feedGallery?.images.map((image) => ({
-                    type: 'image',
-                    url: image,
-                })) || []);
+                : (
+                    Array.isArray(feedGallery.smartphone_image_urls) && feedGallery.type === 'smartphones'
+                        ? feedGallery.smartphone_image_urls.map((url) => ({ type: 'image', url }))
+                        : []);
             const videos =
                 Array.isArray(feedGallery.post_video_urls) && feedGallery.type === 'posts'
                     ? feedGallery.post_video_urls.map((url) => ({
@@ -851,7 +848,15 @@ const index = () => {
                         url: url.url,
                         thumbnail_url: url.thumbnail_url,
                     }))
-                    : [];
+                    : (
+                        Array.isArray(feedGallery.smartphone_video_urls) && feedGallery.type === 'smartphones'
+                            ? feedGallery.smartphone_video_urls.map((url) => ({
+                                type: 'video',
+                                url: url.url,
+                                thumbnail_url: url.thumbnail_url,
+                            }))
+                            : []
+                    );
 
             const allMedia = [...images, ...videos];
             setMediaItems(allMedia);

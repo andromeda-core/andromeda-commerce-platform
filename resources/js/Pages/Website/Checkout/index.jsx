@@ -725,23 +725,29 @@ function OrderItemsSummary({ cart_items, currency, __, addon_items, calculateImp
                             key={item.id}
                             className="flex gap-3 p-3 border rounded-md border-surface-3-light bg-surface-2-light dark:border-surface-3-dark dark:bg-surface-2-dark"
                         >
-                            <div className="relative flex w-20 h-20 overflow-hidden transition-all border-2 rounded-md cursor-pointer itesm-center border-trasparent bg-surface-1-light group/img aspect-square dark:bg-surface-1-dark dark:hover:border-surface-3-dark"
+                            {/* IMAGE */}
+                            {(item?.smartphone?.smartphone_image_urls.length > 0 || item?.smartphone?.smartphone_video_urls?.length > 0) && (
+                                <div className="relative w-24 h-24 overflow-hidden transition-all border-2 rounded-md cursor-pointer border-trasparent bg-surface-1-light group/img aspect-square dark:bg-surface-1-dark dark:hover:border-surface-3-dark"
 
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    router.get(route('home') + generateSmartphoneURL(item?.smartphone, true, true));
-                                }}
-                            >
-                                <img
-                                    src={item?.smartphone?.smartphone_image_urls?.[0] || Placeholder}
-                                    alt={item?.smartphone?.model_name?.name || __('Product')}
-                                    className="object-cover w-full h-full transition-transform duration-300 group-hover/img:scale-110"
-
-                                    loading="lazy"
-                                    onError={(e) => (e.target.src = Placeholder)}
-                                />
-                            </div>
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        router.get(route('home') + generateSmartphoneURL(item?.smartphone, true, true));
+                                    }}
+                                >
+                                    <img
+                                        src={
+                                            item?.smartphone?.smartphone_image_urls?.[0] ||
+                                            item?.smartphone?.smartphone_video_urls[0]?.thumbnail_url ||
+                                            Placeholder
+                                        }
+                                        alt={item?.smartphone?.model_name?.name}
+                                        className="object-cover w-full h-full transition-transform duration-300 group-hover/img:scale-110"
+                                        loading="lazy"
+                                        onError={(e) => (e.target.src = Placeholder)}
+                                    />
+                                </div>
+                            )}
                             <div className="flex-1">
                                 <h3 className="mb-1 text-sm font-semibold text-main-text-light dark:text-main-text-dark">
                                     {item?.smartphone?.model_name?.name || 'N/A'}

@@ -22,7 +22,7 @@ class PackageVideoUpdateOnAWS implements ShouldQueue
         private ?string $file,
         private PackageRecording $package_recording,
         private $package_recording_dir = 'PackageRecording/Videos/',
-        private $package_recording_thumbnails_dir = 'PackageRecording/Videos/Thumbnail',
+        private $package_recording_thumbnails_dir = 'PackageRecording/Videos/Thumbnails/',
     ) {}
 
     public function handle(): void

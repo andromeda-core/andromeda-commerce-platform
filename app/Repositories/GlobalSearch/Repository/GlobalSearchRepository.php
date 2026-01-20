@@ -236,8 +236,6 @@ class GlobalSearchRepository implements IGlobalSearchRepository
         try {
             $request->validate([
                 'filters' => ['required', 'array'],
-                'filters' => ['required', 'array'],
-
                 'post_preferences.text' => ['required'],
                 'post_preferences.images' => ['required'],
                 'post_preferences.videos' => ['required'],
@@ -423,66 +421,145 @@ class GlobalSearchRepository implements IGlobalSearchRepository
 
             }
 
-            if (isset($post_preferences['show_products']) && $post_preferences['show_products'] == true && ! empty($query) && isset($post_preferences['images']) && $post_preferences['images'] == true) {
-                if (isset($post_filters['address']) && blank($post_filters['address']['lat']) && blank($post_filters['address']['lng'])) {
-                    $smartphones = $this->smartphone::query();
+            if (isset($post_preferences['show_products']) && $post_preferences['show_products'] == true && (! empty($query) || (isset($post_filters['address']) && ! empty($post_filters['address']['lat']) && ! empty($post_filters['address']['lng']) && ! empty($post_filters['radius'])))) {
+                $smartphones = $this->smartphone::query();
 
-                    if ($request->filled('query')) {
+                $hasGeo =
+                        isset($post_filters['address']) &&
+                        isset($post_filters['address']['lat'], $post_filters['address']['lng']) &&
+                        is_numeric($post_filters['address']['lat']) &&
+                        is_numeric($post_filters['address']['lng']) &&
+                        isset($post_filters['radius']) &&
+                        (float) $post_filters['radius'] > 0;
 
-                        $searchQuery = $request->input('query');
+                if ($hasGeo) {
 
-                        $smartphones = $smartphones->where(function ($query) use ($searchQuery) {
+                    $lat = (float) $post_filters['address']['lat'];
+                    $lng = (float) $post_filters['address']['lng'];
+                    $radius = (float) $post_filters['radius'];
+                    $from_floor_id = $post_filters['from_floor_id'];
+                    $to_floor_id = $post_filters['to_floor_id'];
+                    $date_range = $post_filters['date_range'];
 
-                            $query->where('model_searchable_name', 'LIKE', '%'.$searchQuery.'%')
-                                ->orWhere('content', 'LIKE', '%'.$searchQuery.'%')
-                                ->orWhereHas('capacity', function ($subQQ) use ($searchQuery) {
-                                    $subQQ->where('name', 'LIKE', '%'.$searchQuery.'%');
-                                })
-                                ->orWhere('tag', '=', $searchQuery);
+                    $smartphones = $smartphones->where('floor_id', '!=', null);
+
+                    if (! empty($from_floor_id) && ! empty($to_floor_id)) {
+                        $smartphones = $smartphones->whereBetween('floor_id', [$from_floor_id, $to_floor_id]);
+                    }
+
+                    if (! empty($date_range)) {
+                        $from_date = Carbon::parse($date_range[0]);
+                        $to_date = Carbon::parse($date_range[1]);
+                        $smartphones = $smartphones->whereBetween('created_at', [$from_date, $to_date]);
+                    }
+
+                    $smartphones = $smartphones->select('*')
+                        ->selectRaw('
+                (6371000 * acos(
+                    cos(radians(?)) *
+                    cos(radians(latitude)) *
+                    cos(radians(longitude) - radians(?)) +
+                    sin(radians(?)) *
+                    sin(radians(latitude))
+                )) AS distance
+              ', [$lat, $lng, $lat])
+                        ->having('distance', '<', $radius)
+                        ->orderBy('distance', 'asc');
+
+                }
+                if (blank($post_filters) || blank($post_preferences)) {
+                    return $results;
+                }
+
+                $text = filter_var($post_preferences['text'], FILTER_VALIDATE_BOOLEAN);
+                $images = filter_var($post_preferences['images'], FILTER_VALIDATE_BOOLEAN);
+                $videos = filter_var($post_preferences['videos'], FILTER_VALIDATE_BOOLEAN);
+
+                if ($request->filled('query')) {
+
+                    $searchQuery = $request->input('query');
+
+                    $smartphones = $smartphones->where(function ($query) use ($searchQuery) {
+
+                        $query->where('model_searchable_name', 'LIKE', '%'.$searchQuery.'%')
+                            ->orWhere('content', 'LIKE', '%'.$searchQuery.'%')
+                            ->orWhereHas('capacity', function ($subQQ) use ($searchQuery) {
+                                $subQQ->where('name', 'LIKE', '%'.$searchQuery.'%');
+                            })
+                            ->orWhere('tag', '=', $searchQuery);
+                    });
+                }
+
+                $smartphones = $smartphones->where(function ($q) use ($images, $videos, $text) {
+
+                    if ($text) {
+
+                        $q->orWhere(function ($sub) {
+                            $sub->whereNull('images')
+                                ->whereNull('videos');
                         });
                     }
 
-                    $smartphones = $smartphones->with(['capacity', 'selling_info'])
-                        ->whereHas('selling_info')
-                        ->whereNotNull('slug')
-                        ->latest()
-                        ->forPage($page, $perPage)
-                        ->get()
-                        ->map(function ($smartphone) use ($query) {
+                    if ($images) {
 
-                            $matchType = null;
-                            if (! empty($query)) {
-                                if (Str::startsWith($query, '#')) {
-                                    $matchType = 'hashtag';
-                                } elseif (Str::startsWith($query, 'http://') || Str::startsWith($query, 'https://')) {
-                                    $matchType = 'url';
-                                } else {
-                                    $matchType = 'search_terms';
-                                }
-                            }
-
-                            return [
-                                'id' => $smartphone->id,
-                                'name' => $smartphone->model_searchable_name,
-                                'capacity' => $smartphone->capacity->name,
-                                'image' => $smartphone->smartphone_image_urls && count($smartphone->smartphone_image_urls) > 0 ? $smartphone->smartphone_image_urls[0] : null,
-                                'tag' => $smartphone->tag,
-                                'type' => 'smartphones',
-                                'content' => $smartphone->content,
-                                'selling_info' => $smartphone->selling_info,
-                                'slug' => $smartphone->slug,
-                                'created_at' => $smartphone->created_at->format('Y-m-d g:i A'),
-                                'timestamp' => $smartphone->created_at->timestamp,
-                                'matchType' => $matchType,
-                            ];
+                        $q->orWhere(function ($sub) {
+                            $sub->whereNotNull('images')
+                                ->whereNull('videos');
                         });
+                    }
 
-                    $results = $results->merge($smartphones)
-                        ->sortByDesc('timestamp')
-                        ->values();
-                }
+                    if ($videos) {
+
+                        $q->orWhere(function ($sub) {
+                            $sub->whereNotNull('videos');
+                        });
+                    }
+                });
+
+                $smartphones = $smartphones->with(['capacity', 'selling_info', 'floor'])
+                    ->whereHas('selling_info')
+                    ->whereNotNull('slug')
+                    ->latest()
+                    ->forPage($page, $perPage)
+                    ->get()
+                    ->map(function ($smartphone) use ($query) {
+
+                        $matchType = null;
+                        if (! empty($query)) {
+                            if (Str::startsWith($query, '#')) {
+                                $matchType = 'hashtag';
+                            } elseif (Str::startsWith($query, 'http://') || Str::startsWith($query, 'https://')) {
+                                $matchType = 'url';
+                            } else {
+                                $matchType = 'search_terms';
+                            }
+                        }
+
+                        return [
+                            'id' => $smartphone->id,
+                            'name' => $smartphone->model_searchable_name,
+                            'capacity' => $smartphone->capacity->name,
+                            'image' => $smartphone->smartphone_image_urls && count($smartphone->smartphone_image_urls) > 0 ? $smartphone->smartphone_image_urls[0] : null,
+                            'video_thumbnail' => $smartphone->smartphone_video_urls && count($smartphone->smartphone_video_urls) > 0 ? $smartphone->smartphone_video_urls[0]['thumbnail_url'] : null,
+                            'tag' => $smartphone->tag,
+                            'type' => 'smartphones',
+                            'floor' => $smartphone->floor,
+                            'content' => $smartphone->content,
+                            'selling_info' => $smartphone->selling_info,
+                            'slug' => $smartphone->slug,
+                            'created_at' => $smartphone->created_at->format('Y-m-d g:i A'),
+                            'timestamp' => $smartphone->created_at->timestamp,
+                            'matchType' => $matchType,
+                        ];
+                    });
+
+                $results = $results->merge($smartphones)
+                    ->sortByDesc('timestamp')
+                    ->values();
+
             }
 
+            // dd($results);
             // Storing Search History
             if ($request->user() && (! empty($query) || (! empty($post_filters['address']['lat']) && ! empty($post_filters['address']['lng'])))) {
 
@@ -527,24 +604,6 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                     ]);
                 }
             }
-
-            // $this->searchHistory->refresh();
-            // $histories = $this->searchHistory->where('user_id', $request->user()?->id)
-            //     ->latest('created_at')
-            //     ->limit(10)
-            //     ->get()
-            //     ->map(function ($history) {
-
-            //         if (! empty($history->filters)) {
-            //             $history->filters = json_decode($history->filters);
-            //         }
-
-            //         if (! empty($history->results)) {
-            //             $history->results = json_decode($history->results);
-            //         }
-
-            //         return $history;
-            //     });
 
             $hasMore = ($results->where('type', 'posts')->count() === $perPage) || ($results->where('type', 'smartphones')->count() === $perPage);
             $queryParams = [

@@ -34,9 +34,33 @@ class ProductsRepository implements IProductsRepository
             $images = $request->boolean('images', true);
             $videos = $request->boolean('videos', true);
 
-            if ($show_products && $images) {
+            if ($show_products) {
                 $smartphone = $this->smartphone
-                    ->with(['model_name', 'capacity', 'selling_info', 'selling_info.shipping_fee', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug'])
+                    ->where(function ($q) use ($text, $images, $videos) {
+                        if ($text) {
+
+                            $q->orWhere(function ($sub) {
+                                $sub->whereNull('images')
+                                    ->whereNull('videos');
+                            });
+                        }
+
+                        if ($images) {
+
+                            $q->orWhere(function ($sub) {
+                                $sub->whereNotNull('images')
+                                    ->whereNull('videos');
+                            });
+                        }
+
+                        if ($videos) {
+
+                            $q->orWhere(function ($sub) {
+                                $sub->whereNotNull('videos');
+                            });
+                        }
+                    })
+                    ->with(['model_name', 'capacity', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug'])
                     ->withCount([
                         'inventory_items' => function ($query) {
                             $query->where('status', 'in_stock');
@@ -52,7 +76,32 @@ class ProductsRepository implements IProductsRepository
                             ->where('id', '!=', $smartphone->id)
                             ->whereHas('selling_info')
                             ->whereNotNull('slug')
-                            ->with(['model_name', 'capacity', 'selling_info', 'selling_info.shipping_fee', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug'])
+                            ->where(function ($q) use ($text, $images, $videos) {
+                                if ($text) {
+
+                                    $q->orWhere(function ($sub) {
+                                        $sub->whereNull('images')
+                                            ->whereNull('videos');
+                                    });
+                                }
+
+                                if ($images) {
+
+                                    $q->orWhere(function ($sub) {
+                                        $sub->whereNotNull('images')
+                                            ->whereNull('videos');
+                                    });
+                                }
+
+                                if ($videos) {
+
+                                    $q->orWhere(function ($sub) {
+                                        $sub->whereNotNull('videos');
+                                    });
+                                }
+                            })
+
+                            ->with(['model_name', 'capacity', 'selling_info', 'floor', 'selling_info.shipping_fee', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug'])
                             ->where(function ($query) use ($smartphone) {
                                 $query->where('tag', 'like', '%'.$smartphone->tag.'%')
                                     ->orWhere('content', 'like', '%'.$smartphone->content.'%')
@@ -75,9 +124,13 @@ class ProductsRepository implements IProductsRepository
                                     'id' => $smartphone->id,
                                     'name' => $smartphone?->model_name->name,
                                     'capacity' => $smartphone?->capacity->name,
-                                    'images' => $smartphone?->smartphone_image_urls,
+                                    'images' => $smartphone->images,
+                                    'smartphone_image_urls' => $smartphone->smartphone_image_urls,
+                                    'videos' => $smartphone->videos,
+                                    'smartphone_video_urls' => $smartphone->smartphone_video_urls,
                                     'colors' => $smartphone?->colors,
                                     'upc' => $smartphone?->upc,
+                                    'floor' => $smartphone->floor,
                                     'selling_info' => $smartphone?->selling_info,
                                     'country' => $smartphone?->country,
                                     'condition' => $smartphone?->condition,
@@ -143,13 +196,18 @@ class ProductsRepository implements IProductsRepository
                             'id' => $smartphone?->id,
                             'name' => $smartphone?->model_name?->name,
                             'capacity' => $smartphone?->capacity->name,
-                            'images' => $smartphone?->smartphone_image_urls,
+                            'images' => $smartphone->images,
+                            'smartphone_image_urls' => $smartphone->smartphone_image_urls,
+                            'videos' => $smartphone->videos,
+                            'smartphone_video_urls' => $smartphone->smartphone_video_urls,
                             'colors' => $smartphone->colors,
                             'upc' => $smartphone?->upc,
+                            'floor' => $smartphone->floor,
                             'selling_info' => $smartphone?->selling_info,
                             'inventory_items_count' => $smartphone?->inventory_items_count,
                             'country' => $smartphone?->country,
                             'condition' => $smartphone?->condition,
+                            'delivery_days' => $smartphone?->delivery_days,
                             'courier_company' => $smartphone?->courier_company,
                             'return_policy' => $smartphone?->return_policy,
                             'addons' => $smartphone?->addons,
@@ -188,13 +246,19 @@ class ProductsRepository implements IProductsRepository
     public function getSmartphonesForShop(Request $request)
     {
         $filters = $request->array('filters');
-        // dd($filters);
+        $category_id = $request->query('category_id');
+
         $smartphones = $this->smartphone
-            ->with(['condition', 'capacity', 'selling_info', 'model_name'])
+            ->with(['condition', 'capacity', 'selling_info', 'model_name', 'category'])
             ->whereHas('selling_info')
             ->whereNotNull('slug')
             ->when(! empty($request->input('tag')), function ($query) use ($request) {
                 $query->where('tag', $request->input('tag'));
+            })
+            ->when(! empty($category_id), function ($query) use ($category_id) {
+                $query->whereHas('category', function ($query) use ($category_id) {
+                    $query->where('id', $category_id);
+                });
             })
             ->when(! blank($filters), function ($query) use ($filters) {
                 $storage = isset($filters['storage']) ? $filters['storage'] : [];
@@ -254,8 +318,10 @@ class ProductsRepository implements IProductsRepository
             return [
                 'id' => $smartphone->id,
                 'name' => $smartphone?->model_name->name,
-                'image' => $smartphone?->smartphone_image_urls[0],
+                'image' => $smartphone->smartphone_image_urls && count($smartphone->smartphone_image_urls) > 0 ? $smartphone->smartphone_image_urls[0] : null,
+                'video_thumbnail' => $smartphone->smartphone_video_urls && count($smartphone->smartphone_video_urls) > 0 ? $smartphone->smartphone_video_urls[0]['thumbnail_url'] : null,
                 'condition' => $smartphone?->condition?->name,
+                'content' => $smartphone?->content,
                 'capacity' => $smartphone?->capacity?->name,
                 'total_price' => $smartphone?->selling_info?->total_price,
                 'color' => $smartphone?->colors[0]?->name,

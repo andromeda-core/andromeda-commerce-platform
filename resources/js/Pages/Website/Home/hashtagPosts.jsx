@@ -122,11 +122,9 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, generateSmartphoneURL,
         <div
             role={'button'}
             onClick={() => {
-
                 const url = item.type === 'posts'
                     ? route('home') + generateURL(item, true, true)
                     : route('home') + generateSmartphoneURL(item, true, true);
-
 
                 if (width > 1024) {
                     window.history.replaceState({}, '', route('home'));
@@ -136,21 +134,17 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, generateSmartphoneURL,
                         replace: true,
                     });
                 }
-            }
-            }
-            // Removed grid-cols to allow for vertical card stacking in a parent grid
-            className="relative overflow-hidden transition-all duration-300 rounded-md cursor-pointer no-touch-hover group break-inside-avoid"
+            }}
+            className="relative overflow-hidden transition-all duration-300 rounded-md cursor-pointer group break-inside-avoid"
         >
-
             {item?.image || item?.video_thumbnail ? (
                 <div className="relative">
-                    <div className="transition-transform duration-500 group-hover:scale-105 no-touch-hover aspect-[2/3]">
+                    <div className="transition-transform  duration-500 lg:group-hover:scale-105 aspect-[2/3]">
                         {/* Top gradient */}
                         <div
                             className="pointer-events-none absolute inset-x-0 top-0 h-[40%]"
                             style={{
-                                background:
-                                    'linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0))',
+                                background: 'linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0))',
                                 mixBlendMode: 'multiply',
                             }}
                         />
@@ -159,8 +153,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, generateSmartphoneURL,
                         <div
                             className="pointer-events-none absolute inset-x-0 bottom-0 h-[40%]"
                             style={{
-                                background:
-                                    'linear-gradient(to top, rgba(0,0,0,0.4), rgba(0,0,0,0))',
+                                background: 'linear-gradient(to top, rgba(0,0,0,0.4), rgba(0,0,0,0))',
                                 mixBlendMode: 'multiply',
                             }}
                         />
@@ -182,35 +175,26 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, generateSmartphoneURL,
                     </div>
 
                     <div className="absolute inset-x-0 bottom-0 p-4">
-
                         {item?.type === 'smartphones' && (
-                            <div className="mt-2 flex flex-col font-semibold items-start justify-between text-[14px]">
-                                <p className="block overflow-hidden text-white text-ellipsis whitespace-nowrap">
+                            <div className="flex flex-col items-start font-semibold text-[14px] space-y-1">
+                                <p className="w-full overflow-hidden text-white truncate">
                                     {item.selling_info?.total_price
                                         ? `${currency?.symbol}${item.selling_info.total_price}`
                                         : ''}
                                 </p>
-                                <p className="block overflow-hidden text-white text-ellipsis whitespace-nowrap">
-                                    {item.name.length > 20
-                                        ? item.name.slice(0, 20) + '...'
-                                        : item.name}{' '}
-                                    (
-                                    {item.capacity.length > 10
-                                        ? item.capacity.slice(0, 10) + '...'
-                                        : item.capacity}
-                                    )
+                                <p className="w-full overflow-hidden text-white truncate">
+                                    {item.name.length > 20 ? item.name.slice(0, 20) + '...' : item.name}
+                                    {' '}
+                                    ({item.capacity.length > 10 ? item.capacity.slice(0, 10) + '...' : item.capacity})
                                 </p>
-
-
                             </div>
                         )}
 
-
                         {item?.type === 'posts' && (
-                            <div className="mt-1 flex items-center justify-between text-[14px]">
-                                <p className="flex-1 min-w-0 font-semibold leading-relaxed text-main-text-dark">
+                            <div className="flex items-center justify-between text-[14px]">
+                                <p className="flex-1 min-w-0 font-semibold leading-relaxed text-white">
                                     <span
-                                        className="line-clamp-2 break-all !display-['-webkit-box'] [&_*]:inline"
+                                        className="break-words line-clamp-2"
                                         dangerouslySetInnerHTML={{
                                             __html: item?.content?.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(),
                                         }}
@@ -218,28 +202,57 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, generateSmartphoneURL,
                                 </p>
                             </div>
                         )}
-
                     </div>
                 </div>
             ) : (
-                <div className="relative flex flex-col bg-surface-2-light dark:bg-surface-2-dark p-[18px] text-black dark:text-white w-full min-h-[clamp(300px,100%,100%)]">
-
-                    <div className="absolute left-4 top-3">
+                <div className="relative flex flex-col bg-surface-2-light dark:bg-surface-2-dark transition-transform duration-500 lg:group-hover:scale-[1.02] text-black dark:text-white w-full aspect-[2/3]">
+                    {/* Tag - Top Left */}
+                    <div className="absolute z-10 left-4 top-3">
                         <span className="text-black dark:text-white font-semibold text-[14px]">
                             {item?.tag}
                         </span>
                     </div>
 
+                    {/* Content Area */}
+                    <div className="relative flex flex-col h-full p-4 pt-12 overflow-hidden">
+                        {item?.type === 'posts' ? (
+                            // Posts - Simple text display
+                            <div className="flex-1 overflow-hidden">
+                                <p className="line-clamp-[12] whitespace-pre-line break-words opacity-90 text-[14px] leading-relaxed">
+                                    <span
+                                        dangerouslySetInnerHTML={{
+                                            __html: item?.content.trim(),
+                                        }}
+                                    ></span>
+                                </p>
+                            </div>
+                        ) : (
+                            // Smartphones - Text with bottom price
+                            <>
+                                {/* Text Content */}
+                                <div className="flex-1 pb-12 overflow-hidden">
+                                    <p className="line-clamp-[10] whitespace-pre-line break-words opacity-90 text-[14px] leading-relaxed">
+                                        <span
+                                            dangerouslySetInnerHTML={{
+                                                __html: item?.content.trim(),
+                                            }}
+                                        ></span>
+                                    </p>
+                                </div>
 
+                                {/* Price Bar  */}
+                                <div className="absolute inset-x-0 bottom-0 p-4 pt-6 ">
+                                    <div className="flex flex-col items-start space-y-1 font-semibold">
+                                        <p className="w-full text-[14px] text-main-text-light dark:text-main-text-dark truncate">
+                                            {item.selling_info?.total_price
+                                                ? `${currency?.symbol}${item.selling_info.total_price}`
+                                                : ''}
+                                        </p>
 
-                    <div className="mt-10">
-                        <p className="line-clamp-[10] whitespace-pre-line break-all opacity-90 text-[14px]">
-                            <span
-                                dangerouslySetInnerHTML={{
-                                    __html: item?.content.trim(),
-                                }}
-                            ></span>
-                        </p>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             )}

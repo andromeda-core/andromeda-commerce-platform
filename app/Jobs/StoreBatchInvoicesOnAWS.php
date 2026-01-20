@@ -21,7 +21,7 @@ class StoreBatchInvoicesOnAWS implements ShouldQueue
     public function __construct(
         private array $files,
         private Batch $batch,
-        private string $batch_invoices_dir = 'Batch/Invoices'
+        private string $batch_invoices_dir = 'Batch/Invoices/'
     ) {
         //
     }

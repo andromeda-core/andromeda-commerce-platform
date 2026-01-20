@@ -68,6 +68,8 @@ const MobileFeed = ({
     // Local feed state for seamless looping
     const [localFeed, setLocalFeed] = useState([]);
 
+
+
     // Manually Passing Correct Feed To Feed Gallery To Open
     const [manualFeedGalleryItem, setManualFeedGalleryItem] = useState(null);
 
@@ -310,6 +312,7 @@ const MobileFeed = ({
         };
     }, [localRelatedFeedRef.current]);
 
+
     // Helper function to render a single feed item (used for both main and related items)
     const renderFeedItem = useCallback(
         (item, isRelated = false, index) => {
@@ -340,10 +343,15 @@ const MobileFeed = ({
                 : '';
 
             // Text Post Logic Starts
-            const isTextPost =
-                item.type === 'posts' &&
-                item.post_image_urls?.length === 0 &&
-                item.post_video_urls?.length === 0;
+            const isText =
+                (item.type === 'posts' &&
+                    item.post_image_urls?.length === 0 &&
+                    item.post_video_urls?.length === 0) ||
+                (item.type === 'smartphones' &&
+                    item.smartphone_image_urls?.length === 0 &&
+                    item.smartphone_video_urls?.length === 0);
+
+
 
 
             // View More Button Height
@@ -360,14 +368,16 @@ const MobileFeed = ({
             const maxLines = Math.floor(maxHeightPx / lineHeightPx);
 
             // average characters per line
-            const avgCharsPerLine = windowSize.width < 480 ? 28 : 40;
+            // const avgCharsPerLine = windowSize.width < 480 ? 28 : 40;
 
             // total characters allowed in visible area
-            const maxCharsAllowed = maxLines * avgCharsPerLine;
+            // const maxCharsAllowed = maxLines * avgCharsPerLine;
 
             // should we show "View More"?
-            const shouldShowMore =
-                isTextPost && plain.length > maxCharsAllowed;
+            // const shouldShowMore =
+            //     isText && plain.length > maxCharsAllowed;
+
+            const shouldShowMore = true;
             // Text Post Logic Ends
 
             const isCurrent = item?.slug === manualFeedGalleryItem?.slug;
@@ -378,12 +388,26 @@ const MobileFeed = ({
 
             const shouldEagerLoad = isCurrent || isAdjacent;
 
-            const hasVideo = item.type === 'posts' && item.post_video_urls?.length > 0;
-            const hasPoster = hasVideo && item.post_video_urls[0]?.thumbnail_url;
+            const hasVideo =
+                item.type === 'posts'
+                    ? (item.post_video_urls?.length > 0 && !item?.post_image_urls?.[0])
+                    : item.type === 'smartphones'
+                        ? (item.smartphone_video_urls?.length > 0 && !item?.smartphone_image_urls?.[0])
+                        : false;
+
+            const hasPoster =
+                hasVideo &&
+                (
+                    item.type === 'posts'
+                        ? item.post_video_urls?.[0]?.thumbnail_url
+                        : item.type === 'smartphones'
+                            ? item.smartphone_video_urls?.[0]?.thumbnail_url
+                            : null
+                );
 
             const BottomOffset = hasVideo ? 105 : 70;
 
-            const isLoaded = isTextPost || loadedItems.has(item?.slug) || hasPoster;
+            const isLoaded = isText || loadedItems.has(item?.slug) || hasPoster;
 
 
 
@@ -419,7 +443,7 @@ const MobileFeed = ({
                 >
                     {/* Header: Tag + Three Dots */}
                     <div
-                        className={`absolute left-0 right-0 top-2 z-20 flex items-center justify-between px-4 pt-4 ${isTextPost ? 'text-main-text-light dark:text-main-text-dark' : 'text-main-text-dark'}`}
+                        className={`absolute left-0 right-0 top-2 z-20 flex items-center justify-between px-4 pt-4 ${isText ? 'text-main-text-light dark:text-main-text-dark' : 'text-main-text-dark'}`}
                     >
 
                         <button
@@ -456,7 +480,7 @@ const MobileFeed = ({
                             overflow: 'hidden',
                         }}
                     >
-                        {!isTextPost && (
+                        {!isText && (
                             <>
                                 {/* Top gradient */}
                                 <div
@@ -482,11 +506,11 @@ const MobileFeed = ({
 
                         {item.type === 'smartphones' && (
                             <>
-                                {item?.images?.length > 0 && (
+                                {item?.smartphone_image_urls?.length > 0 ? (
                                     <img
                                         key={item.id}
-                                        src={item.images[0] || placeholderImage}
-                                        alt={item.name}
+                                        src={item.smartphone_image_urls[0] || placeholderImage}
+                                        alt={item.title}
                                         className="object-cover object-center w-full h-full rounded-none"
                                         loading={shouldEagerLoad ? 'eager' : 'lazy'}
                                         fetchpriority={shouldEagerLoad ? 'high' : 'low'}
@@ -503,6 +527,42 @@ const MobileFeed = ({
                                             }
                                         }}
                                     />
+                                ) : item.smartphone_video_urls.length > 0 ? (
+                                    <InstagramStyledVideoPlayer
+                                        slug={item.slug}
+                                        videoUrl={item.smartphone_video_urls[0].url}
+                                        thumbnail={item.smartphone_video_urls[0]?.thumbnail_url}
+                                        className="object-cover object-center w-full h-full"
+                                        OnLoadedMetaData={() => {
+                                            if (item.slug)
+                                                setLoadedItems((prev) =>
+                                                    new Set(prev).add(item.slug),
+                                                );
+                                        }}
+                                        Preload={shouldEagerLoad ? 'metadata' : 'none'}
+                                        timelinePadding={70}
+                                        isMainFeed={true}
+                                    />
+                                ) : (
+                                    isText && (
+                                        <div className="absolute inset-0 px-4 pt-20 pb-40 overflow-hidden">
+                                            <div
+                                                className="
+                whitespace-pre-line
+                break-words
+                text-sm
+                leading-relaxed
+                text-main-text-light
+                dark:text-main-text-dark
+                line-clamp-[var(--text-lines)]
+            "
+                                                style={{ '--text-lines': maxLines }}
+                                                dangerouslySetInnerHTML={{
+                                                    __html: plain,
+                                                }}
+                                            />
+                                        </div>
+                                    )
                                 )}
                             </>
                         )}
@@ -547,7 +607,7 @@ const MobileFeed = ({
                                         isMainFeed={true}
                                     />
                                 ) : (
-                                    isTextPost && (
+                                    isText && (
                                         <div className="absolute inset-0 px-4 pt-20 pb-40 overflow-hidden">
                                             <div
                                                 className="
@@ -577,60 +637,116 @@ const MobileFeed = ({
                             className={`absolute left-0 right-0 z-20 px-5 pt-3 text-main-text-dark`}
                             style={{ bottom: `${BottomOffset}px` }}
                         >
-                            <div className="mb-1 flex items-center justify-between text-[14px] font-semibold">
-                                <span className="text-[20px]">
-                                    {currency?.symbol}
-                                    {item.selling_info?.total_price}
-                                </span>
 
-                                <button
-                                    onClick={() => {
-                                        setManualFeedGalleryItem(item);
-                                        setMobileFeedGalleryOpening(true);
+                            <div className="w-full ">
+                                {isText ? (
+                                    shouldShowMore && (
+                                        <div className='flex items-center justify-between'>
+                                            <span className="text-[20px] text-main-text-light font-semibold dark:text-main-text-dark ">
+                                                {currency?.symbol}
+                                                {item.selling_info?.total_price}
+                                            </span>
+                                            <button
+                                                onClick={() => {
+                                                    setManualFeedGalleryItem(item);
+                                                    setMobileFeedGalleryOpening(true);
 
-                                        setTimeout(() => {
-                                            setMobileFeedGalleryOpen(true);
-                                            setMobileFeedGalleryOpening(false);
-                                        }, 500);
-                                    }}
-                                    className="flex h-[30px] shrink-0 items-center justify-center gap-2 rounded-full bg-transparent text-[14px] font-semibold text-main-text-dark transition-colors"
-                                >
-                                    {mobileFeedGalleryOpening ? (
-                                        <Spinner customSize={'size-3'} />
-                                    ) : (
-                                        <>
-                                            <div className="flex items-center gap-1">
-                                                <span>{__('Shop Now')}</span>
+                                                    setTimeout(() => {
+                                                        setMobileFeedGalleryOpen(true);
+                                                        setMobileFeedGalleryOpening(false);
+                                                    }, 500);
+                                                }}
+                                                className="flex h-[30px] shrink-0 items-center justify-center gap-2 rounded-full bg-transparent text-[14px] font-semibold dark:text-main-text-dark text-main-text-light transition-colors"
+                                            >
+                                                {mobileFeedGalleryOpening ? (
+                                                    <Spinner customSize={'size-3'} />
+                                                ) : (
+                                                    <>
+                                                        <div className="flex items-center gap-1">
+                                                            <span>{__('View More')}</span>
 
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    strokeWidth={1.5}
-                                                    stroke="currentColor"
-                                                    className="w-4 h-4"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
-                                                    />
-                                                </svg>
-                                            </div>
-                                        </>
-                                    )}
-                                </button>
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                strokeWidth={1.5}
+                                                                stroke="currentColor"
+                                                                className="w-4 h-4"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+                                                                />
+                                                            </svg>
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
+                                    )
+                                ) : (
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[20px] font-semibold ">
+                                            {currency?.symbol}
+                                            {item.selling_info?.total_price}
+                                        </span>
+                                        <button
+                                            onClick={() => {
+                                                setManualFeedGalleryItem(item);
+                                                setMobileFeedGalleryOpening(true);
+
+                                                setTimeout(() => {
+                                                    setMobileFeedGalleryOpen(true);
+                                                    setMobileFeedGalleryOpening(false);
+                                                }, 500);
+                                            }}
+                                            className="flex h-[30px] shrink-0 items-center justify-center gap-2 rounded-full bg-transparent text-[14px] font-semibold text-main-text-dark transition-colors"
+                                        >
+                                            {mobileFeedGalleryOpening ? (
+                                                <Spinner customSize={'size-3'} />
+                                            ) : (
+                                                <>
+                                                    <div className="flex items-center gap-1">
+                                                        <span>{__('View More')}</span>
+
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            strokeWidth={1.5}
+                                                            stroke="currentColor"
+                                                            className="w-4 h-4"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+                                                            />
+                                                        </svg>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+                                )}
                             </div>
 
-                            <div className="flex items-center justify-between gap-3 mb-1">
-                                <p className="min-w-0 flex-1 text-[15px] font-semibold leading-relaxed text-main-text-dark">
-                                    <span
-                                        className="!display-['-webkit-box'] line-clamp-2 break-all [&_*]:inline"
-                                        dangerouslySetInnerHTML={{
-                                            __html: plain
-                                        }}
-                                    />
-                                </p>
+                            <div className={`mb-1 flex items-center justify-between gap-3`}>
+                                {/* CHECKING IF MEDIA IS EMPTY THAN ITS TEXT ONLY SMARTPHONE SO THIS WONT SHOW BECAUSE WE ALREADY SHOWED In CONTENT */}
+                                {item?.smartphone_image_urls?.length === 0 &&
+                                    item?.smartphone_video_urls?.length === 0 ? (
+                                    <p></p>
+                                ) : (
+                                    <p className="] min-w-0 flex-1 text-[15px] font-medium leading-relaxed text-main-text-dark">
+                                        <span
+                                            className="!display-['-webkit-box'] line-clamp-2 break-all [&_*]:inline"
+                                            dangerouslySetInnerHTML={{
+                                                __html: plain
+                                            }}
+                                        />
+                                    </p>
+                                )}
                             </div>
                         </div>
                     )}
@@ -641,7 +757,7 @@ const MobileFeed = ({
                             style={{ bottom: `${BottomOffset}px` }}
                         >
                             <div className="flex items-center justify-end">
-                                {isTextPost ? (
+                                {isText ? (
                                     shouldShowMore && (
                                         <button
                                             onClick={() => {

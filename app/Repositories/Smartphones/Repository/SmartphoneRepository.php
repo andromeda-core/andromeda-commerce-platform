@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Smartphones\Repository;
 
+use App\Jobs\CompressSmartphoneVideoWithFFMEG;
 use App\Jobs\SmartphoneDestroyOnAWS;
 use App\Jobs\SmartphoneStoreOnAWS;
 use App\Jobs\SmartphoneUpdateOnAWS;
@@ -17,6 +18,7 @@ use App\Models\ReturnPolicy;
 use App\Models\Smartphone;
 use App\Models\SmartphoneForSale;
 use App\Repositories\Smartphones\Interface\ISmartphoneRepository;
+use App\Services\GoogleGeoCoderService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -40,6 +42,7 @@ class SmartphoneRepository implements ISmartphoneRepository
         private CourierCompany $courier_company,
         private ReturnPolicy $return_policy,
         private Addon $addon,
+        private GoogleGeoCoderService $googleGeoCoderService,
     ) {}
 
     public function getAllSmartphones(Request $request)
@@ -90,8 +93,13 @@ class SmartphoneRepository implements ISmartphoneRepository
             'condition_id' => ['required', 'exists:conditions,id'],
             'courier_company_id' => ['required', 'exists:courier_companies,id'],
             'return_policy_id' => ['required', 'exists:return_policies,id'],
+            'floor_id' => ['nullable', 'exists:floors,id'],
+            'latitude' => ['nullable', 'numeric'],
+            'longitude' => ['nullable', 'numeric'],
+            'location_name' => ['nullable', 'string'],
 
-            'images' => ['required', 'array', 'max:5'],
+            'videos' => ['nullable', 'array', 'max:5'],
+            'images' => ['nullable', 'array', 'max:5'],
             'tag' => ['nullable', 'string', 'max:30', function ($attribute, $value, $fail) {
                 if (str_contains($value, ',')) {
                     $fail('Only One Tag Allowed In The Smartphone');
@@ -117,16 +125,26 @@ class SmartphoneRepository implements ISmartphoneRepository
                 'max:5048',
             ],
 
+            'videos.*' => [
+                'mimes:mp4,mov,avi,webp,webm',
+                'max:1048576',
+            ],
+
         ], [
             'images.*.mimes' => 'Only JPG, JPEG, PNG, WEBP images are allowed.',
             'images.*.max' => 'Each image must not exceed 5MB.',
+            'videos.*.mimes' => 'Only MP4, MOV, WEBP, WEBM and AVI videos are allowed.',
+            'videos.*.max' => 'Each video must not exceed 1GB.',
 
         ], [
-            'images.*' => 'image']);
+            'images.*' => 'image',
+            'videos.*' => 'video',
+
+        ]);
 
         if ($validator->fails()) {
             throw ValidationException::withMessages([
-                'file_error' => $validator->errors()->first(),
+                ...($validator->errors()->keys() == 'images.*' ? ['file_error' => $validator->errors()->first()] : ['video_error' => $validator->errors()->first()]),
             ]);
         }
 
@@ -154,7 +172,7 @@ class SmartphoneRepository implements ISmartphoneRepository
         try {
 
             $validated_req = array_filter($validated_req, function ($value, $key) {
-                return ! in_array($key, ['images']);
+                return ! in_array($key, ['images', 'videos']);
             }, ARRAY_FILTER_USE_BOTH);
 
             if (! empty($validated_req['tag']) && ! str_starts_with($validated_req['tag'], '#')) {
@@ -171,6 +189,16 @@ class SmartphoneRepository implements ISmartphoneRepository
             $cleanSlug = preg_replace('/[^A-Za-z0-9\- ]/', '', $cleanSlug);
             $cleanSlug = preg_replace('/\s+/u', '-', trim($cleanSlug));
             $validated_req['slug'] = strtolower($cleanSlug);
+
+            // Get Location Name  From Google Api Behalf Of Lat/lng
+            if (empty($validated_req['location_name']) && ! empty($validated_req['latitude']) && ! empty($validated_req['longitude'])) {
+                $response = $this->googleGeoCoderService->getLocationNameFromLatLng($validated_req['latitude'], $validated_req['longitude']);
+                if ($response['status'] === false) {
+                    throw new Exception($response['message']);
+                }
+
+                $validated_req['location_name'] = $response['place_name'] ?? 'No Location Name Found';
+            }
 
             // Detaching From Request To Let it Create First
             if ($request->has('addon_ids')) {
@@ -210,9 +238,28 @@ class SmartphoneRepository implements ISmartphoneRepository
                 dispatch(new SmartphoneStoreOnAWS(['images' => $paths], $smartphone));
             }
 
+            if ($request->hasFile('videos')) {
+                $tempPaths = [];
+
+                foreach ($request->file('videos') as $video) {
+                    $originalName = time().uniqid().'-'.Str::random(8).'.'.$video->getClientOriginalExtension();
+                    $tempPaths[] = $video->storeAs('temp/uploads', $originalName, 'local');
+                }
+
+                dispatch(new CompressSmartphoneVideoWithFFMEG($tempPaths, $smartphone, 'store'))->onQueue('video');
+            }
+
+            $hasMedia = ($request->hasFile('videos') || $request->hasFile('images'));
+
+            $message = 'Smartphone Created Successfully';
+
+            if ($hasMedia) {
+                $message .= ' Please Wait While We Upload Your Files On Server';
+            }
+
             return [
                 'status' => true,
-                'message' => 'Smartphone Created Successfully',
+                'message' => $message,
             ];
 
         } catch (Exception $e) {
@@ -225,6 +272,7 @@ class SmartphoneRepository implements ISmartphoneRepository
 
     public function updateSmartphone(Request $request, string $id)
     {
+
         $validated_req = $request->validate([
             'model_name_id' => ['required', 'exists:model_names,id'],
             'capacity_id' => ['required', 'exists:capacities,id'],
@@ -239,7 +287,8 @@ class SmartphoneRepository implements ISmartphoneRepository
             'courier_company_id' => ['required', 'exists:courier_companies,id'],
             'return_policy_id' => ['required', 'exists:return_policies,id'],
             'upc' => ['required', 'max:255', 'unique:smartphones,upc,'.$id],
-            'images' => ['required', 'array', 'max:5'],
+            'images' => ['nullable', 'array', 'max:5'],
+            'videos' => ['nullable', 'array', 'max:5'],
             'tag' => ['nullable', 'string', 'max:30', function ($attribute, $value, $fail) {
                 if (str_contains($value, ',')) {
                     $fail('Only One Tag Allowed In The Smartphone');
@@ -263,18 +312,24 @@ class SmartphoneRepository implements ISmartphoneRepository
                 'max:10240',
             ],
 
+            'new_videos.*' => [
+                'mimes:mp4,mov,avi,webp,webm',
+                'max:1048576',
+            ],
         ], [
             'new_images.*.mimes' => 'Only JPG, JPEG, PNG, WEBP images are allowed.',
             'new_images.*.max' => 'Each image must not exceed 10MB.',
+            'new_videos.*.mimes' => 'Only MP4, MOV, WEBP, WEBM and AVI videos are allowed.',
+            'new_videos.*.max' => 'Each video must not exceed 1GB.',
 
         ], [
             'images.*' => 'image',
-
+            'videos.*' => 'video',
         ]);
 
         if ($validator->fails()) {
             throw ValidationException::withMessages([
-                'file_error' => $validator->errors()->first(),
+                ...($validator->errors()->keys() == 'images.*' ? ['file_error' => $validator->errors()->first()] : ['video_error' => $validator->errors()->first()]),
             ]);
         }
 
@@ -301,7 +356,7 @@ class SmartphoneRepository implements ISmartphoneRepository
 
         try {
             $validated_req = array_filter($validated_req, function ($value, $key) {
-                return ! in_array($key, ['images']);
+                return ! in_array($key, ['images', 'videos']);
             }, ARRAY_FILTER_USE_BOTH);
 
             if (! empty($validated_req['tag']) && ! str_starts_with($validated_req['tag'], '#')) {
@@ -339,10 +394,34 @@ class SmartphoneRepository implements ISmartphoneRepository
                 $validated_req['images'] = $remaining_images_array;
             }
 
+            if ($request->filled('deleted_videos')) {
+                $deleted = $request->array('deleted_videos');
+
+                dispatch(new SmartphoneDestroyOnAWS(['videos' => $deleted]));
+
+                $old_videos = $smartphone->videos ?? [];
+
+                $remeaning_videos = array_filter($old_videos, function ($video) use ($deleted) {
+                    return ! in_array($video, $deleted);
+                });
+
+                $remaining_videos_array = array_values($remeaning_videos);
+
+                $validated_req['videos'] = $remaining_videos_array;
+            }
+
             if (! blank($request->array('product_details'))) {
                 $validated_req['product_details'] = $request->array('product_details');
             } else {
                 $validated_req['product_details'] = null;
+            }
+
+            if (array_key_exists('images', $validated_req) && empty($validated_req['images'])) {
+                $validated_req['images'] = null;
+            }
+
+            if (array_key_exists('videos', $validated_req) && empty($validated_req['videos'])) {
+                $validated_req['videos'] = null;
             }
 
             $updated = $smartphone->update($validated_req);
@@ -370,9 +449,28 @@ class SmartphoneRepository implements ISmartphoneRepository
                 dispatch(new SmartphoneUpdateOnAWS(['images' => $paths], $smartphone));
             }
 
+            if ($request->hasFile('new_videos')) {
+                $tempPaths = [];
+
+                foreach ($request->file('new_videos') as $video) {
+                    $originalName = time().uniqid().'-'.Str::random(8).'.'.$video->getClientOriginalExtension();
+                    $tempPaths[] = $video->storeAs('temp/uploads', $originalName, 'local');
+                }
+
+                dispatch(new CompressSmartphoneVideoWithFFMEG($tempPaths, $smartphone, 'update'))->onQueue('video');
+            }
+
+            $hasMedia = ($request->hasFile('new_videos') || $request->hasFile('new_images'));
+
+            $message = 'Smartphone Updated Successfully';
+
+            if ($hasMedia) {
+                $message .= ' Please Wait While We Upload Your Files On Server';
+            }
+
             return [
                 'status' => true,
-                'message' => 'Smartphone Updated Successfully',
+                'message' => $message,
             ];
         } catch (Exception $e) {
             return [
@@ -393,6 +491,10 @@ class SmartphoneRepository implements ISmartphoneRepository
 
             if (! blank($smartphone->smartphone_image_urls)) {
                 dispatch(new SmartphoneDestroyOnAWS(['images' => $smartphone->smartphone_image_urls]));
+            }
+
+            if (! blank($smartphone->smartphone_video_urls)) {
+                dispatch(new SmartphoneDestroyOnAWS(['videos' => $smartphone->smartphone_video_urls]));
             }
 
             $deleted = $smartphone->delete();

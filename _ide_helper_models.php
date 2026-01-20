@@ -1217,6 +1217,7 @@ namespace App\Models{
  * @property string|null $model_searchable_name
  * @property int|null $capacity_id
  * @property int|null $category_id
+ * @property int|null $floor_id
  * @property int|null $country_id
  * @property int|null $condition_id
  * @property int|null $delivery_days
@@ -1227,6 +1228,10 @@ namespace App\Models{
  * @property string|null $tag
  * @property string|null $slug
  * @property array<array-key, mixed>|null $images
+ * @property array<array-key, mixed>|null $videos
+ * @property numeric|null $latitude
+ * @property numeric|null $longitude
+ * @property string|null $location_name
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property array<array-key, mixed>|null $product_details
@@ -1239,10 +1244,12 @@ namespace App\Models{
  * @property-read \App\Models\Condition|null $condition
  * @property-read \App\Models\Country|null $country
  * @property-read \App\Models\CourierCompany|null $courier_company
+ * @property-read \App\Models\Floor|null $floor
  * @property-read mixed $added_at
  * @property-read mixed $colors
  * @property-read mixed $created_at_time
  * @property-read mixed $smartphone_image_urls
+ * @property-read mixed $smartphone_video_urls
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Inventory> $inventory_items
  * @property-read int|null $inventory_items_count
  * @property-read \App\Models\ModelName|null $model_name
@@ -1264,8 +1271,12 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereCourierCompanyId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereDeliveryDays($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereFloorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereImages($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereLatitude($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereLocationName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereLongitude($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereModelNameId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereModelSearchableName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereProductDetails($value)
@@ -1274,6 +1285,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereTag($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereUpc($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereVideos($value)
  */
 	class Smartphone extends \Eloquent {}
 }

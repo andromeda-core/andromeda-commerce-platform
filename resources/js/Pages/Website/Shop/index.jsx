@@ -5,6 +5,7 @@ import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, router, usePage } from '@inertiajs/react';
 import React, { useRef, useState, useEffect, Fragment, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
+import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 
 const index = (
     { categories,
@@ -18,7 +19,9 @@ const index = (
     const windowSize = useWindowSize();
     const { __ } = useTranslation();
 
+
     const [activeTab, setActiveTab] = useState('all');
+    const [activeCategory, setActiveCategory] = useState(null);
     const [activeHashtag, setActiveHashtag] = useState(null);
     const [filters, setFilters] = useState(applied_filters || {
         price_range: [],
@@ -250,6 +253,37 @@ const index = (
         filters[categoryId]?.includes(optionKey);
 
 
+    const handleCategoryClick = async (category) => {
+        if (activeCategory === category.id) return;
+
+        setActiveCategory(category.id);
+
+
+        setActiveTab('all');
+        setActiveHashtag(null);
+        setProductsData([]);
+        setNextPageUrlData(null);
+        setIsLoadingMore(true);
+
+        try {
+            const response = await axios.get(
+                route('website.shop.loadMore'),
+                {
+                    params: {
+                        category_id: category.id,
+                        filters,
+                    }
+                }
+            );
+
+            setProductsData(response.data.products);
+            setNextPageUrlData(response.data.nextPageUrl);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsLoadingMore(false);
+        }
+    };
     // Close filter dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -339,26 +373,31 @@ const index = (
                                     {index > 0 && (
                                         <span
                                             className={
-                                                index === 1
-                                                    ? 'mx-3 text-main-text-light dark:text-main-text-dark font-semibold text-xl sm:text-xl lg:text-3xl  inline-block'
-                                                    : 'mx-3 text-sub-text-light dark:text-sub-text-dark font-semibold text-md sm:text-xl lg:text-3xl'
+                                                activeCategory &&
+                                                    categories[index - 1]?.id === activeCategory
+                                                    ? 'mx-3 text-main-text-light dark:text-main-text-dark font-semibold text-xl sm:text-xl lg:text-3xl inline-block'
+                                                    : 'mx-3 font-medium text-surface-3-light dark:text-surface-3-dark text-2xl sm:text-xl lg:text-3xl'
                                             }
                                         >
                                             |
                                         </span>
-
                                     )}
 
                                     {/* Category name */}
-                                    <h2
-                                        className={
-                                            index === 0
+
+
+                                    <button
+                                        onClick={() => handleCategoryClick(category)}
+                                        className={`
+    font-medium
+    ${activeCategory === category.id
                                                 ? 'font-semibold text-2xl text-main-text-light dark:text-main-text-dark sm:text-xl lg:text-3xl '
                                                 : 'font-medium text-surface-3-light dark:text-surface-3-dark text-2xl sm:text-xl lg:text-3xl'
-                                        }
+                                            }
+  `}
                                     >
                                         {category.name}
-                                    </h2>
+                                    </button>
                                 </Fragment>
                             ))}
                         </div>
@@ -480,34 +519,51 @@ const index = (
                                     route('home') + generateSmartphoneURL(product, true, true)
                                 )}
                             >
-                                {/* Product Image Container */}
-                                <div className="flex items-center justify-center w-full p-2 transition-transform duration-500 aspect-square no-touch-hover lg:group-hover:scale-105">
-                                    <img
-                                        src={product?.image}
-                                        alt={product?.name}
-                                        className="object-cover w-full h-full rounded-md "
-                                    />
+                                {/* Product Image / Text Container - */}
+                                <div className="relative w-full overflow-hidden transition-all duration-500 rounded-md text-main-text-light dark:text-main-text-dark aspect-square bg-surface-2-light dark:bg-surface-2-dark lg:group-hover:scale-105">
+                                    {product?.image || product?.video_thumbnail ? (
+                                        <img
+                                            src={product?.image || product?.video_thumbnail || Placeholder}
+                                            alt={product?.name}
+                                            className="object-cover w-full h-full"
+                                            onError={(e) => {
+                                                e.target.src = Placeholder;
+                                            }}
+                                        />
+                                    ) : (
+                                        <div className="flex items-start justify-center w-full h-full p-3 overflow-hidden sm:p-4">
+                                            <div
+                                                className="
+                                text-[14px]
+                                opacity-90
+                                leading-relaxed
+                                break-words
+                                overflow-hidden
+                                text-ellipsis
+                                line-clamp-[10]
+                                text-left
+                                w-full
+                            "
+                                                dangerouslySetInnerHTML={{
+                                                    __html: product?.content?.trim(),
+                                                }}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Product Info */}
-                                <div className="w-full p-2.5 sm:p-3 lg:p-4">
-                                    <h3
-                                        className="mb-0.5 sm:mb-1 text-xs sm:text-sm font-medium text-main-text-light dark:text-main-text-dark line-clamp-1"
-                                        style={{ fontSize: 'clamp(14px, 2vw, 14px)' }}
-                                    >
+                                <div className="w-full p-2.5 sm:p-3 lg:p-4 space-y-1">
+                                    <h3 className="text-sm font-medium text-main-text-light dark:text-main-text-dark line-clamp-1">
                                         {product?.name}
                                     </h3>
-                                    <p
-                                        className="mb-1.5 sm:mb-2 lg:mb-3 text-[10px] sm:text-xs font-medium text-sub-text-light dark:text-sub-text-dark line-clamp-1"
-                                        style={{ fontSize: 'clamp(12px, 1.8vw, 12px)' }}
-                                    >
+
+                                    <p className="text-xs font-medium text-sub-text-light dark:text-sub-text-dark line-clamp-1">
                                         {product?.condition}, {product?.capacity}, {product.color}
                                     </p>
-                                    <p
-                                        className="text-xs font-semibold text-main-text-light sm:text-sm lg:text-base dark:text-main-text-dark"
-                                        style={{ fontSize: 'clamp(16px, 2.2vw, 16px)' }}
-                                    >
-                                        {currency?.name}  {currency?.symbol}{product?.total_price}
+
+                                    <p className="text-base font-semibold text-main-text-light dark:text-main-text-dark">
+                                        {currency?.name} {currency?.symbol}{product?.total_price}
                                     </p>
                                 </div>
                             </div>
