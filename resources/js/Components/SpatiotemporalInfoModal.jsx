@@ -109,7 +109,7 @@ export default function SpatiotemporalModal({ onClose, post }) {
                             <div className="relative w-full h-56 overflow-hidden rounded-md">
 
                                 {isMapLoading && (
-                                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-50 dark:bg-gray-800">
+                                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-surface-1-light dark:bg-surface-1-dark">
                                         <div className="flex flex-col items-center gap-3">
                                             <Spinner />
                                             <p className="text-sm text-gray-600 dark:text-gray-400">{__('Loading map')}...</p>

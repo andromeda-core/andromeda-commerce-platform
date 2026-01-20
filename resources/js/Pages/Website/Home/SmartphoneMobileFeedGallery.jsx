@@ -971,6 +971,7 @@ const SmartphoneMobileGalleryModal = ({
                                                 />
                                             ) : (
                                                 <div className="flex items-center justify-center w-full h-full">
+
                                                     <InstagramStyledVideoPlayer
                                                         thumbnail={item?.thumbnail_url || placeholderImage}
                                                         className="object-cover w-full h-full"

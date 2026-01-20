@@ -191,6 +191,7 @@ const PostMobileFeedGallery = (
                                                 />
                                             ) : (
                                                 <div className="flex items-center justify-center w-full h-full">
+
                                                     <InstagramStyledVideoPlayer
                                                         thumbnail={item?.thumbnail_url || placeholderImage}
                                                         className="object-cover w-full h-full"
@@ -312,202 +313,206 @@ const PostMobileFeedGallery = (
 
                         {/* Full Content - Scrollable, No Truncation */}
                         <div className="mt-0 mb-10">
-
-                            <div className="flex items-center justify-end mb-4">
-                                <div className="relative" ref={actionDropdownRef}>
+                            {mediaItems.length > 0 && (
 
 
-                                    <button
-                                        className="text-main-text-light dark:text-main-text-dark"
-                                        onClick={() => setActionDropdownOpen(!actionDropdownOpen)}
-                                    >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            strokeWidth={2.5}
-                                            stroke="currentColor"
-                                            className="h-7 w-7"
+                                <div className="flex items-center justify-end mb-4">
+                                    <div className="relative" ref={actionDropdownRef}>
+
+
+                                        <button
+                                            className="text-main-text-light dark:text-main-text-dark"
+                                            onClick={() => setActionDropdownOpen(!actionDropdownOpen)}
                                         >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                d="
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={2.5}
+                                                stroke="currentColor"
+                                                className="h-7 w-7"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="
       M3.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
       M12 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
       M20.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
     "
-                                            />
-                                        </svg>
-                                    </button>
+                                                />
+                                            </svg>
+                                        </button>
 
-                                    {actionDropdownOpen && (
-                                        <div className="absolute right-0 z-50 w-56 border rounded-md border-surface-3-light bg-backgroundLight dark:border-surface-3-dark top-full dark:bg-surface-1-dark">
-                                            <div className="py-1">
-                                                <button
-                                                    onClick={() => {
-                                                        setShowQrCode(true);
-                                                        setActionDropdownOpen(null);
-                                                    }}
-                                                    className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        strokeWidth={1.5}
-                                                        stroke="currentColor"
-                                                        className="w-5 h-5"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z"
-                                                        />
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z"
-                                                        />
-                                                    </svg>
-                                                    <span>{__('QR Code')}</span>
-                                                </button>
-
-                                                {auth?.user && (
+                                        {actionDropdownOpen && (
+                                            <div className="absolute right-0 z-50 w-56 border rounded-md border-surface-3-light bg-backgroundLight dark:border-surface-3-dark top-full dark:bg-surface-1-dark">
+                                                <div className="py-1">
                                                     <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            router.put(
-                                                                route(
-                                                                    'website.posts.bookmark',
-                                                                    post?.id,
-                                                                ),
-
-                                                                {
-                                                                    post_id: post?.id,
-                                                                },
-                                                                {
-                                                                    preserveScroll: true,
-                                                                    preserveUrl: true,
-                                                                    onSuccess: () => {
-                                                                        post.is_bookmarked =
-                                                                            !post.is_bookmarked;
-
-                                                                        setBookmarkStatusChanged(
-                                                                            true,
-                                                                        );
-                                                                    },
-                                                                    onError: (e) => {
-                                                                        setShowErrorMessage(true);
-                                                                        setErrorMessage(e.message);
-                                                                    },
-                                                                },
-                                                            );
-                                                        }}
-                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark "
-                                                    >
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            fill={
-                                                                post?.is_bookmarked
-                                                                    ? isDarkMode
-                                                                        ? '#fff'
-                                                                        : '#222'
-                                                                    : 'none'
-                                                            }
-                                                            stroke={
-                                                                post?.is_bookmarked
-                                                                    ? isDarkMode
-                                                                        ? '#fff'
-                                                                        : '#222'
-                                                                    : 'currentColor'
-                                                            }
-                                                            strokeWidth={1.5}
-                                                            viewBox="0 0 24 24"
-                                                            className="size-5"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"
-                                                            />
-                                                        </svg>
-                                                        <span>
-                                                            {post?.is_bookmarked
-                                                                ? __('Remove Bookmarker')
-                                                                : __('Bookmarker')}
-                                                        </span>
-                                                    </button>
-                                                )}
-
-                                                <button
-                                                    onClick={() => {
-                                                        const url =
-                                                            route('home') + generateURL(post, true, true);
-                                                        navigator.clipboard.writeText(url.trim());
-                                                        setLinkCopied(true);
-                                                        setActionDropdownOpen(null);
-                                                    }}
-                                                    className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        strokeWidth={1.5}
-                                                        stroke="currentColor"
-                                                        className="w-5 h-5"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75"
-                                                        />
-                                                    </svg>
-                                                    <span>{__('Copy Link')}</span>
-                                                </button>
-
-
-
-                                                {/* Spatiotemporal Information */}
-                                                {(post?.latitude != null && post?.longitude != null) && (
-                                                    <button
-                                                        onClick={(e) => {
-                                                            setSpatiotemporalInfoModal(true);
+                                                        onClick={() => {
+                                                            setShowQrCode(true);
                                                             setActionDropdownOpen(null);
                                                         }}
                                                         className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
                                                     >
-
-
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            strokeWidth={1.5}
+                                                            stroke="currentColor"
+                                                            className="w-5 h-5"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z"
+                                                            />
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z"
+                                                            />
                                                         </svg>
-
-
-                                                        <span className="font-normal">
-                                                            {__('Spatiotemporal Info')}
-                                                        </span>
+                                                        <span>{__('QR Code')}</span>
                                                     </button>
-                                                )}
 
-                                                <span
+                                                    {auth?.user && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                router.put(
+                                                                    route(
+                                                                        'website.posts.bookmark',
+                                                                        post?.id,
+                                                                    ),
 
-                                                    className="flex items-center w-full gap-3 px-4 py-3 text-xs transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
-                                                >
+                                                                    {
+                                                                        post_id: post?.id,
+                                                                    },
+                                                                    {
+                                                                        preserveScroll: true,
+                                                                        preserveUrl: true,
+                                                                        onSuccess: () => {
+                                                                            post.is_bookmarked =
+                                                                                !post.is_bookmarked;
 
-                                                    <span>{__('Post Created')}:
-                                                        <p>
-                                                            {post?.added_at} {post?.created_at_time}
-                                                        </p>
+                                                                            setBookmarkStatusChanged(
+                                                                                true,
+                                                                            );
+                                                                        },
+                                                                        onError: (e) => {
+                                                                            setShowErrorMessage(true);
+                                                                            setErrorMessage(e.message);
+                                                                        },
+                                                                    },
+                                                                );
+                                                            }}
+                                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark "
+                                                        >
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                fill={
+                                                                    post?.is_bookmarked
+                                                                        ? isDarkMode
+                                                                            ? '#fff'
+                                                                            : '#222'
+                                                                        : 'none'
+                                                                }
+                                                                stroke={
+                                                                    post?.is_bookmarked
+                                                                        ? isDarkMode
+                                                                            ? '#fff'
+                                                                            : '#222'
+                                                                        : 'currentColor'
+                                                                }
+                                                                strokeWidth={1.5}
+                                                                viewBox="0 0 24 24"
+                                                                className="size-5"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"
+                                                                />
+                                                            </svg>
+                                                            <span>
+                                                                {post?.is_bookmarked
+                                                                    ? __('Remove Bookmarker')
+                                                                    : __('Bookmarker')}
+                                                            </span>
+                                                        </button>
+                                                    )}
+
+                                                    <button
+                                                        onClick={() => {
+                                                            const url =
+                                                                route('home') + generateURL(post, true, true);
+                                                            navigator.clipboard.writeText(url.trim());
+                                                            setLinkCopied(true);
+                                                            setActionDropdownOpen(null);
+                                                        }}
+                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            strokeWidth={1.5}
+                                                            stroke="currentColor"
+                                                            className="w-5 h-5"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75"
+                                                            />
+                                                        </svg>
+                                                        <span>{__('Copy Link')}</span>
+                                                    </button>
+
+
+
+                                                    {/* Spatiotemporal Information */}
+                                                    {(post?.latitude != null && post?.longitude != null) && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                setSpatiotemporalInfoModal(true);
+                                                                setActionDropdownOpen(null);
+                                                            }}
+                                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
+                                                        >
+
+
+                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                                                            </svg>
+
+
+                                                            <span className="font-normal">
+                                                                {__('Spatiotemporal Info')}
+                                                            </span>
+                                                        </button>
+                                                    )}
+
+                                                    <span
+
+                                                        className="flex items-center w-full gap-3 px-4 py-3 text-xs transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
+                                                    >
+
+                                                        <span>{__('Post Created')}:
+                                                            <p>
+                                                                {post?.added_at} {post?.created_at_time}
+                                                            </p>
+                                                        </span>
                                                     </span>
-                                                </span>
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
+
+                            )}
 
                             <div className="mb-4">
                                 {post?.content && (
@@ -520,6 +525,208 @@ const PostMobileFeedGallery = (
                                     />
                                 )}
                             </div>
+
+
+                            {mediaItems.length === 0 && (
+
+
+                                <div className="flex items-center justify-end mb-4">
+                                    <div className="relative" ref={actionDropdownRef}>
+
+
+                                        <button
+                                            className="text-main-text-light dark:text-main-text-dark"
+                                            onClick={() => setActionDropdownOpen(!actionDropdownOpen)}
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={2.5}
+                                                stroke="currentColor"
+                                                className="h-7 w-7"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="
+      M3.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+      M12 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+      M20.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+    "
+                                                />
+                                            </svg>
+                                        </button>
+
+                                        {actionDropdownOpen && (
+                                            <div className="absolute right-0 z-50 w-56 border rounded-md border-surface-3-light bg-backgroundLight dark:border-surface-3-dark top-full dark:bg-surface-1-dark">
+                                                <div className="py-1">
+                                                    <button
+                                                        onClick={() => {
+                                                            setShowQrCode(true);
+                                                            setActionDropdownOpen(null);
+                                                        }}
+                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            strokeWidth={1.5}
+                                                            stroke="currentColor"
+                                                            className="w-5 h-5"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z"
+                                                            />
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z"
+                                                            />
+                                                        </svg>
+                                                        <span>{__('QR Code')}</span>
+                                                    </button>
+
+                                                    {auth?.user && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                router.put(
+                                                                    route(
+                                                                        'website.posts.bookmark',
+                                                                        post?.id,
+                                                                    ),
+
+                                                                    {
+                                                                        post_id: post?.id,
+                                                                    },
+                                                                    {
+                                                                        preserveScroll: true,
+                                                                        preserveUrl: true,
+                                                                        onSuccess: () => {
+                                                                            post.is_bookmarked =
+                                                                                !post.is_bookmarked;
+
+                                                                            setBookmarkStatusChanged(
+                                                                                true,
+                                                                            );
+                                                                        },
+                                                                        onError: (e) => {
+                                                                            setShowErrorMessage(true);
+                                                                            setErrorMessage(e.message);
+                                                                        },
+                                                                    },
+                                                                );
+                                                            }}
+                                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark "
+                                                        >
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                fill={
+                                                                    post?.is_bookmarked
+                                                                        ? isDarkMode
+                                                                            ? '#fff'
+                                                                            : '#222'
+                                                                        : 'none'
+                                                                }
+                                                                stroke={
+                                                                    post?.is_bookmarked
+                                                                        ? isDarkMode
+                                                                            ? '#fff'
+                                                                            : '#222'
+                                                                        : 'currentColor'
+                                                                }
+                                                                strokeWidth={1.5}
+                                                                viewBox="0 0 24 24"
+                                                                className="size-5"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"
+                                                                />
+                                                            </svg>
+                                                            <span>
+                                                                {post?.is_bookmarked
+                                                                    ? __('Remove Bookmarker')
+                                                                    : __('Bookmarker')}
+                                                            </span>
+                                                        </button>
+                                                    )}
+
+                                                    <button
+                                                        onClick={() => {
+                                                            const url =
+                                                                route('home') + generateURL(post, true, true);
+                                                            navigator.clipboard.writeText(url.trim());
+                                                            setLinkCopied(true);
+                                                            setActionDropdownOpen(null);
+                                                        }}
+                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            strokeWidth={1.5}
+                                                            stroke="currentColor"
+                                                            className="w-5 h-5"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75"
+                                                            />
+                                                        </svg>
+                                                        <span>{__('Copy Link')}</span>
+                                                    </button>
+
+
+
+                                                    {/* Spatiotemporal Information */}
+                                                    {(post?.latitude != null && post?.longitude != null) && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                setSpatiotemporalInfoModal(true);
+                                                                setActionDropdownOpen(null);
+                                                            }}
+                                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
+                                                        >
+
+
+                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                                                            </svg>
+
+
+                                                            <span className="font-normal">
+                                                                {__('Spatiotemporal Info')}
+                                                            </span>
+                                                        </button>
+                                                    )}
+
+                                                    <span
+
+                                                        className="flex items-center w-full gap-3 px-4 py-3 text-xs transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
+                                                    >
+
+                                                        <span>{__('Post Created')}:
+                                                            <p>
+                                                                {post?.added_at} {post?.created_at_time}
+                                                            </p>
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                            )}
 
                         </div>
                     </div>

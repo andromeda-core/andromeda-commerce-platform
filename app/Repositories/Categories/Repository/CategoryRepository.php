@@ -281,6 +281,6 @@ class CategoryRepository implements ICategoryRepository
 
     public function getAllCategoryNames()
     {
-        return $this->category->select('id', 'name')->get();
+        return $this->category->select('id', 'name')->orderBy('created_at', 'asc')->get();
     }
 }
