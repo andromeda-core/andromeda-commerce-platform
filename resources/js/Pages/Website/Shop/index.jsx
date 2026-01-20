@@ -52,7 +52,7 @@ const index = (
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isFilterApplying, setIsFilterApplying] = useState(false);
     const [isFilterResetting, setIsFilterResetting] = useState(false);
-    const [isFilterClearing, setIsFilterClearing] = useState(false);
+
 
     const tabsContainerRef = useRef(null);
     const tabRefs = useRef({});
@@ -597,7 +597,7 @@ const index = (
                                     onClick={() => resetFilters()}
                                     className="flex items-center justify-center mt-5 text-sm font-semibold text-center underline text-main-text-light dark:text-main-text-dark"
                                 >
-                                    {isFilterClearing ? <Spinner /> : __('Clear all filters')}
+                                    {isFilterResetting ? <Spinner /> : __('Clear all filters')}
                                 </button>
                             )}
                         </div>
