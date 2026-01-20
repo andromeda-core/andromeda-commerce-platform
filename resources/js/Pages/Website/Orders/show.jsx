@@ -828,53 +828,63 @@ export default function OrderView({ order }) {
                                 </div>
                             )}
 
-                            {/* Shipping Address */}
-                            {order?.shipping_address && (
-                                <div className="p-6 border rounded-md bg-surface-1-light border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
-                                    <h2 className="flex items-center gap-2 mb-4 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
 
-                                        {__('Shipping Address')}
-                                    </h2>
-                                    <div className="p-4 border rounded-md bg-surface-2-light border-surface-3-light dark:bg-surface-2-dark dark:border-surface-3-dark">
-                                        <address className="text-sm not-italic text-sub-text-light dark:text-sub-text-dark">
-                                            <p className="font-semibold">
-                                                {order.shipping_address?.name}
-                                            </p>
-                                            <p className="mt-2">
-                                                {order.shipping_address?.address_line1}
-                                                {order.shipping_address?.address_line2 && (
-                                                    <>, {order.shipping_address.address_line2}</>
-                                                )}
-                                            </p>
-                                            <p>
-                                                {order.shipping_address?.city}, {order.shipping_address?.state}{' '}
-                                                {order.shipping_address?.postal_code}
-                                            </p>
-                                            <p>{order.shipping_address?.country?.name}</p>
-                                            {order.shipping_address?.phone && (
-                                                <p className="flex items-center gap-2 mt-2">
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        strokeWidth={2}
-                                                        stroke="currentColor"
-                                                        className="w-4 h-4"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"
-                                                        />
-                                                    </svg>
-                                                    {order.shipping_address?.phone}
-                                                </p>
-                                            )}
-                                        </address>
-                                    </div>
+
+                            <div className="p-6 border rounded-md bg-surface-1-light border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+                                <h2 className="flex items-center gap-2 mb-4 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
+
+                                    {__('Shipping Address')}
+                                </h2>
+                                <div className="p-4 border rounded-md bg-surface-2-light border-surface-3-light dark:bg-surface-2-dark dark:border-surface-3-dark">
+                                    <address className="text-sm not-italic text-sub-text-light dark:text-sub-text-dark">
+
+                                        <p className="font-semibold break-words">
+                                            {order?.shipping_address?.name || order?.customer?.active_shipping_address?.name || order?.customer?.user?.name || ''}
+                                        </p>
+
+                                        <p className="mt-2 text-sm break-words">
+                                            {order?.shipping_address?.address_line1 || order?.customer?.active_shipping_address?.address_line1 || order?.customer?.address_line1 || ''}
+                                            {', '}
+                                            {order?.shipping_address?.address_line2 != null
+                                                ? order?.shipping_address?.address_line2
+                                                : (order?.customer?.active_shipping_address?.address_line2 !== null ? order?.customer?.active_shipping_address?.address_line2 : (order?.customer?.address_line2 != null
+                                                    ? order?.customer?.address_line2
+                                                    : ''))}
+                                        </p>
+                                        <p className="break-words ">
+                                            {order?.shipping_address?.city || order?.customer?.active_shipping_address?.city || order?.customer?.city || ''}
+                                        </p>
+
+                                        <p className="break-words">
+                                            {order?.shipping_address?.state || order?.customer?.active_shipping_address?.state || order?.customer?.state || ''}
+                                        </p>
+
+                                        <p className="break-words">
+                                            {order?.shipping_address?.postal_code || order?.customer?.active_shipping_address?.postal_code || order?.customer?.postal_code || ''}
+                                        </p>
+
+                                        <p className="flex items-center gap-2 mt-2 break-all ">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={2}
+                                                stroke="currentColor"
+                                                className="w-4 h-4"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"
+                                                />
+                                            </svg>
+                                            {order?.shipping_address?.phone || order?.customer?.active_shipping_address?.phone || order?.customer?.user?.phone || ''}
+
+                                        </p>
+
+                                    </address>
                                 </div>
-
-                            )}
+                            </div>
                             {/* Courier Details */}
                             {order?.status != 'paid' && order?.status != 'pending' && (
                                 <div className="p-6 border rounded-md border-surface-3-light bg-surface-1-light dark:border-surface-3-dark dark:bg-surface-1-dark">
@@ -1111,7 +1121,7 @@ export default function OrderView({ order }) {
                         <div
                             role="dialog"
                             aria-modal="true"
-                            className="relative z-[101] my-auto w-[500px] animate-scale-in overflow-hidden rounded-2xl"
+                            className="relative z-[101] my-auto w-[500px] animate-scale-in overflow-hidden rounded-2xl bg-backgroundLight dark:bg-backgroundDark"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <VideoWithThumbnail

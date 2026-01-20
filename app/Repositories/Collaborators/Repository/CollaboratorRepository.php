@@ -57,7 +57,7 @@ class CollaboratorRepository implements ICollaboratorRepository
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'max:50', 'confirmed'],
-            'phone' => ['required', 'regex:/^\+\d+$/', 'unique:users,phone', 'max:50'],
+            'phone' => ['required', 'unique:users,phone', 'max:50'],
             'address' => ['required', 'string', 'max:255'],
             'bank_account_no' => ['required', 'string', 'max:255'],
             'bank_name' => ['required', 'string', 'max:255'],
@@ -68,7 +68,6 @@ class CollaboratorRepository implements ICollaboratorRepository
             'commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'is_active' => ['required', 'boolean'],
         ], [
-            'phone.regex' => 'The Number Accepted With + Country Code - Example: +8801xxxxxxxxx',
             'type.required' => 'The Collaborator Type Field Is Required.',
             'type.in' => 'The Collaborator Type Must Be Company Or Indivisual.',
         ]);
@@ -174,7 +173,7 @@ class CollaboratorRepository implements ICollaboratorRepository
                 :
                 []
             ),
-            'phone' => ['required', 'regex:/^\+\d+$/', 'max:50', 'unique:users,phone,'.$user->id],
+            'phone' => ['required', 'max:50', 'unique:users,phone,'.$user->id],
             'address' => ['required', 'string', 'max:255'],
             'bank_account_no' => ['required', 'string', 'max:255'],
             'bank_name' => ['required', 'string', 'max:255'],
@@ -185,7 +184,6 @@ class CollaboratorRepository implements ICollaboratorRepository
             'commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'is_active' => ['required', 'boolean'],
         ], [
-            'phone.regex' => 'The Number Accepted With + Country Code - Example: +8801xxxxxxxxx',
             'type.required' => 'The Collaborator Type Field Is Required.',
             'type.in' => 'The Collaborator Type Must Be Company Or Indivisual.',
         ]);

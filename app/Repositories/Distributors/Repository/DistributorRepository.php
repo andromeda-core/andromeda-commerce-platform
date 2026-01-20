@@ -52,7 +52,7 @@ class DistributorRepository implements IDistributorRepository
         $validated_req = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
-            'phone' => 'required|regex:/^\+\d+$/|unique:users,phone',
+            'phone' => 'required|unique:users,phone',
             'password' => ['required', 'string', 'min:8', 'max:50', 'confirmed'],
             'address' => ['required', 'string', 'max:255'],
             'bank_account_no' => ['required', 'string', 'max:255'],
@@ -63,7 +63,6 @@ class DistributorRepository implements IDistributorRepository
             'commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'is_active' => ['required', 'boolean'],
         ], [
-            'phone.regex' => 'The Number Accepted With + Country Code - Example: +8801xxxxxxxxx',
             'is_active.required' => 'The Distributor Status Field Is Required.',
             'is_active.boolean' => 'The Distributor Status Must Be Active Or In-Active.',
         ]);
@@ -146,7 +145,7 @@ class DistributorRepository implements IDistributorRepository
         $validated_req = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
-            'phone' => 'required|regex:/^\+\d+$/|unique:users,phone,'.$user->id,
+            'phone' => 'required|unique:users,phone,'.$user->id,
             ...(($request->filled('password') || $request->filled('password_confirmation')) ? ['password' => ['required', 'string', 'min:8', 'confirmed', 'max:50']] : []),
             'address' => ['required', 'string', 'max:255'],
             'bank_account_no' => ['required', 'string', 'max:255'],
@@ -157,7 +156,6 @@ class DistributorRepository implements IDistributorRepository
             'commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'is_active' => ['required', 'boolean'],
         ], [
-            'phone.regex' => 'The Number Accepted With + Country Code - Example: +8801xxxxxxxxx',
             'is_active.required' => 'The Distributor Status Field Is Required.',
             'is_active.boolean' => 'The Distributor Status Must Be Active Or In-Active.',
         ]);

@@ -17,7 +17,7 @@ class OrderController extends Controller implements HasMiddleware
         return [
             new Middleware('permission:Orders View', ['only' => 'index']),
             new Middleware('permission:Orders View', ['only' => 'show']),
-            new Middleware('permission:Orders Create', ['only' => 'create']),
+            // new Middleware('permission:Orders Create', ['only' => 'create']),
             new Middleware('permission:Orders Create', ['only' => 'store']),
             new Middleware('permission:Orders Edit', ['only' => 'edit']),
             new Middleware('permission:Orders Edit', ['only' => 'update']),
@@ -42,6 +42,8 @@ class OrderController extends Controller implements HasMiddleware
 
     public function create()
     {
+        return back();
+
         $smartphones = $this->order->getSmartphones();
         $customers = $this->order->getCustomers();
 

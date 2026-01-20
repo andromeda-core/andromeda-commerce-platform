@@ -60,7 +60,7 @@ class CustomerRepository implements ICustomerRepository
         $validated_req = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'unique:users,email', 'max:255'],
-            'phone' => ['required', 'regex:/^\+\d+$/', 'max:50', 'unique:users,phone'],
+            'phone' => ['required', 'max:50', 'unique:users,phone'],
             'password' => ['required', 'min:8', 'max:50', 'confirmed'],
             'country_id' => ['required', 'exists:countries,id'],
             'state' => ['required', 'string', 'max:255'],
@@ -70,7 +70,6 @@ class CustomerRepository implements ICustomerRepository
             'address_line2' => ['nullable', 'string'],
             'is_active' => ['required', 'boolean'],
         ], [
-            'phone.regex' => 'The Number Accepted With + Country Code - Example: +8801xxxxxxxxx',
             'is_active.required ' => 'Customer Status Is Required',
             'is_active.boolean' => 'Customer Status Must Be in Active Or In-Active',
             'country_id.required' => 'Country Is Required',
@@ -142,7 +141,7 @@ class CustomerRepository implements ICustomerRepository
         $validated_req = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'unique:users,email,'.$customer->user_id, 'max:255'],
-            'phone' => ['required', 'regex:/^\+\d+$/', 'unique:users,phone,'.$customer->user_id, 'max:50'],
+            'phone' => ['required', 'unique:users,phone,'.$customer->user_id, 'max:50'],
             ...(($request->filled('password') || $request->filled('password_confirmation')) ? ['password' => ['required', 'min:8', 'max:50', 'confirmed']] : []),
             'country_id' => ['required', 'exists:countries,id'],
             'state' => ['required', 'string', 'max:255'],
@@ -152,7 +151,6 @@ class CustomerRepository implements ICustomerRepository
             'address_line2' => ['nullable', 'string'],
             'is_active' => ['required', 'boolean'],
         ], [
-            'phone.regex' => 'The Number Accepted With + Country Code - Example: +8801xxxxxxxxx',
             'is_active.required ' => 'Customer Status Is Required',
             'is_active.boolean' => 'Customer Status Must Be in Active Or In-Active',
             'country_id.required' => 'Country Is Required',
@@ -307,15 +305,13 @@ class CustomerRepository implements ICustomerRepository
         $validated_req = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$id],
-            'phone' => ['required', 'regex:/^\+\d+$/', 'unique:users,phone,'.$id, 'max:50'],
+            'phone' => ['required', 'unique:users,phone,'.$id, 'max:50'],
             'country_id' => ['required', 'exists:countries,id'],
             'state' => ['required', 'string', 'max:255'],
             'city' => ['required', 'string', 'max:255'],
             'postal_code' => ['required', 'string', 'max:255'],
             'address_line1' => ['required', 'required', 'string'],
             'address_line2' => ['nullable', 'string'],
-        ], [
-            'phone.regex' => $this->trans::get('The Number Accepted With + Country Code - Example: +8801xxxxxxxxx'),
         ]);
 
         DB::beginTransaction();

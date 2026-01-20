@@ -530,19 +530,26 @@ export default function show({ order }) {
                                                         Content={
                                                             <div className="flex flex-col gap-4 p-4 rounded-md sm:flex-row sm:items-start">
 
+
                                                                 {/* IMAGE */}
-                                                                <div className="flex items-center justify-center flex-shrink-0 w-24 h-24 overflow-hidden rounded-md bg-surface-3-light dark:bg-surface-3-dark">
-                                                                    <img
-                                                                        src={
-                                                                            item?.smartphone?.smartphone_image_urls?.[0] ||
-                                                                            Placeholder
-                                                                        }
-                                                                        alt={item?.smartphone?.model_name?.name}
-                                                                        className="object-cover w-full h-full"
-                                                                        loading="lazy"
-                                                                        onError={(e) => (e.target.src = Placeholder)}
-                                                                    />
-                                                                </div>
+                                                                {(item?.smartphone?.smartphone_image_urls.length > 0 || item?.smartphone?.smartphone_video_urls?.length > 0) && (
+                                                                    <div className="relative w-24 h-24 overflow-hidden transition-all border-2 rounded-md cursor-pointer border-trasparent bg-surface-1-light aspect-square dark:bg-surface-1-dark dark:hover:border-surface-3-dark"
+
+
+                                                                    >
+                                                                        <img
+                                                                            src={
+                                                                                item?.smartphone?.smartphone_image_urls?.[0] ||
+                                                                                item?.smartphone?.smartphone_video_urls[0]?.thumbnail_url ||
+                                                                                Placeholder
+                                                                            }
+                                                                            alt={item?.smartphone?.model_name?.name}
+                                                                            className="object-cover w-full h-full"
+                                                                            loading="lazy"
+                                                                            onError={(e) => (e.target.src = Placeholder)}
+                                                                        />
+                                                                    </div>
+                                                                )}
 
                                                                 {/* DETAILS */}
                                                                 <div className="flex-1 space-y-3">

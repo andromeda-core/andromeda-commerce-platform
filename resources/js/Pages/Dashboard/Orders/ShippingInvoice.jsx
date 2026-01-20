@@ -158,23 +158,61 @@ export default function ShippingInvoice({ order }) {
                         <h3 className="pb-2 mb-4 text-lg font-bold text-gray-800 border-b">
                             📥 RECEIVER DETAILS
                         </h3>
-                        <p className="text-sm font-medium">{order.shipping_address?.name}</p>
+
+                        {/* Name */}
+                        <p className="text-sm font-medium">
+                            {order?.shipping_address?.name ||
+                                order?.customer?.active_shipping_address?.name ||
+                                order?.customer?.user?.name ||
+                                ''}
+                        </p>
+
+                        {/* Address */}
                         <p className="text-sm">
-                            {order?.shipping_address?.address_line1}
+                            {order?.shipping_address?.address_line1 ||
+                                order?.customer?.active_shipping_address?.address_line1 ||
+                                order?.customer?.address_line1 ||
+                                ''}
                             {', '}
                             {order?.shipping_address?.address_line2 != null
                                 ? order?.shipping_address?.address_line2
-                                : ''}
+                                : order?.customer?.active_shipping_address?.address_line2 != null
+                                    ? order?.customer?.active_shipping_address?.address_line2
+                                    : order?.customer?.address_line2 != null
+                                        ? order?.customer?.address_line2
+                                        : ''}
                         </p>
+
+                        {/* City / State / Postal */}
                         <p className="text-sm">
-                            {order.shipping_address?.city}, {order.shipping_address?.state}{' '}
-                            {order.shipping_address?.postal_code}
+                            {order?.shipping_address?.city ||
+                                order?.customer?.active_shipping_address?.city ||
+                                order?.customer?.city ||
+                                ''}
+                            {', '}
+                            {order?.shipping_address?.state ||
+                                order?.customer?.active_shipping_address?.state ||
+                                order?.customer?.state ||
+                                ''}{' '}
+                            {order?.shipping_address?.postal_code ||
+                                order?.customer?.active_shipping_address?.postal_code ||
+                                order?.customer?.postal_code ||
+                                ''}
                         </p>
+
+                        {/* Phone */}
                         <div className="grid grid-cols-2 gap-4 mt-2">
-                            <p className="text-sm">📞 {order.shipping_address?.phone}</p>
+                            <p className="text-sm">
+                                📞{' '}
+                                {order?.shipping_address?.phone ||
+                                    order?.customer?.active_shipping_address?.phone ||
+                                    order?.customer?.user?.phone ||
+                                    ''}
+                            </p>
                         </div>
                     </div>
                 </div>
+
 
                 {/* Shipment Info */}
                 <div className="grid items-center grid-cols-1 gap-6 p-4 border-b border-gray-200 sm:p-6 md:grid-cols-3 lg:p-8">

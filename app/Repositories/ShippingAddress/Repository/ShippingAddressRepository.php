@@ -50,7 +50,7 @@ class ShippingAddressRepository implements IShippingAddressRepository
     {
         $validated_req = $request->validate([
             'name' => ['required', 'max:255', 'string'],
-            'phone' => ['required', 'regex:/^\+\d+$/', 'max:50'],
+            'phone' => ['required', 'max:50'],
             'country_id' => ['required', 'exists:countries,id'],
             'state' => ['required', 'max:255', 'string'],
             'city' => ['required', 'max:255', 'string'],
@@ -103,7 +103,7 @@ class ShippingAddressRepository implements IShippingAddressRepository
     {
         $validated_req = $request->validate([
             'name' => ['required', 'max:255', 'string'],
-            'phone' => ['required', 'regex:/^\+\d+$/', 'max:50'],
+            'phone' => ['required', 'max:50'],
             'country_id' => ['required', 'exists:countries,id'],
             'state' => ['required', 'max:255', 'string'],
             'city' => ['required', 'max:255', 'string'],
@@ -246,7 +246,7 @@ class ShippingAddressRepository implements IShippingAddressRepository
 
         $validated_req = $request->validate([
             'name' => ['required', 'max:255', 'string'],
-            'phone' => ['required', 'regex:/^\+\d+$/', 'max:50'],
+            'phone' => ['required', 'max:50'],
             'country_id' => ['required', 'exists:countries,id'],
             'state' => ['required', 'max:255', 'string'],
             'city' => ['required', 'max:255', 'string'],

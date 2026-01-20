@@ -36,9 +36,7 @@ class UserRepository implements IUserRepository
         $validated_req = $request->validate([
             'name' => 'required|max:255',
             'email' => 'required|email|max:255|unique:users,email,'.$request->user()->id,
-            'phone' => 'required|regex:/^\+\d+$/|max:50|unique:users,phone,'.$request->user()->id,
-        ], [
-            'phone.regex' => 'The Number Accepted With + Country Code - Example: +8801xxxxxxxxx',
+            'phone' => 'required|max:50|unique:users,phone,'.$request->user()->id,
         ]);
 
         try {
@@ -178,12 +176,11 @@ class UserRepository implements IUserRepository
         $validated_req = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'phone' => ['required', 'regex:/^\+\d+$/', 'unique:users,phone', 'max:50'],
+            'phone' => ['required', 'unique:users,phone', 'max:50'],
             'password' => ['required', 'string', 'min:8', 'max:50', 'confirmed'],
             'role_id' => ['required', 'exists:roles,id'],
             'is_active' => ['required', 'boolean'],
         ], [
-            'phone.regex' => 'The Number Accepted With + Country Code - Example: +8801xxxxxxxxx',
             'role_id.exists' => 'The selected role is invalid.',
             'role_id.required' => 'The Role Field Is Required.',
 
@@ -315,7 +312,7 @@ class UserRepository implements IUserRepository
         $validated_req = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$id],
-            'phone' => ['required', 'regex:/^\+\d+$/', 'max:50', 'unique:users,phone,'.$id],
+            'phone' => ['required', 'max:50', 'unique:users,phone,'.$id],
             ...(
                 $request->filled('password')
                 ||
@@ -327,7 +324,6 @@ class UserRepository implements IUserRepository
             'role_id' => ['required', 'exists:roles,id'],
             'is_active' => ['required', 'boolean'],
         ], [
-            'phone.regex' => 'The Number Accepted With + Country Code - Example: +8801xxxxxxxxx',
             'role_id.exists' => 'The selected role is invalid.',
             'role_id.required' => 'The Role Field Is Required.',
 

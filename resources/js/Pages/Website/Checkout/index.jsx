@@ -12,11 +12,14 @@ import WebInput from '@/Components/WebInput';
 import WebTextArea from '@/Components/WebTextArea';
 import PrimaryButton from '@/Components/PrimaryButton';
 import { useTranslation } from '@/Hooks/useTranslation';
+import WebSelectInput from '@/Components/WebSelectInput';
 
 
-export default function Checkout({ cart_items, refferalSessionData, shipping_address, total_summary, meta_usernames, is_eligible_for_social_message, addon_items }) {
+export default function Checkout({ cart_items, refferalSessionData, shipping_address, total_summary, meta_usernames, is_eligible_for_social_message, addon_items, countries }) {
     const { currency, auth } = usePage().props;
     const windowSize = useWindowSize();
+
+
 
     // Translation Hook
     const { __ } = useTranslation();
@@ -31,6 +34,7 @@ export default function Checkout({ cart_items, refferalSessionData, shipping_add
     const [processingOrder, setProcessingOrder] = useState(false);
     const [applyingReferalProcessing, setApplyingReferalProcessing] = useState(false);
     const [removingReferalProcessing, setRemovingReferalProcessing] = useState(false);
+    const [addingShippingAddress, setAddingShippingAddress] = useState(false);
 
     const [error, setError] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState('bank_transfer');
@@ -44,15 +48,58 @@ export default function Checkout({ cart_items, refferalSessionData, shipping_add
     const [referalCode, setReferalCode] = useState('');
 
     const [shippingInfo, setShippingInfo] = useState({
-        full_name: shipping_address?.name || '',
-        email: shipping_address?.email || '',
+        name: shipping_address?.name || '',
         phone: shipping_address?.phone || '',
-        address: shipping_address?.address_line1.concat(shipping_address?.address_line2 !== null ? " " + shipping_address?.address_line2 : '') || '',
+        address_line1: shipping_address?.address_line1 || '',
+        address_line2: shipping_address?.address_line2 || '',
         city: shipping_address?.city || '',
         state: shipping_address?.state || '',
         postal_code: shipping_address?.postal_code || '',
-        country: shipping_address?.country_id || '',
+        country_id: shipping_address?.country_id || '',
     });
+
+
+
+    const hasSavedShippingAddress = !!shipping_address;
+
+    const isShippingFormComplete = () => {
+        return (
+            shippingInfo.name.trim() !== '' &&
+            shippingInfo.phone.trim() !== '' &&
+            shippingInfo.address_line1.trim() !== '' &&
+            shippingInfo.city.trim() !== '' &&
+            shippingInfo.postal_code.trim() !== '' &&
+            shippingInfo.country_id !== '' &&
+            shippingInfo.state.trim() !== ''
+        );
+    };
+
+
+    const handleShippingInfoChange = (e) => {
+        if (hasSavedShippingAddress) return;
+
+        const { name, value } = e.target;
+        setShippingInfo((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+
+    const handleAddShippingAddress = (e) => {
+        e.preventDefault();
+        setAddingShippingAddress(true);
+        router.post(route('website.shipping-addresses.store'), shippingInfo, {
+            preserveScroll: true,
+            preserveState: true,
+            onFinish: () => {
+                setAddingShippingAddress(false);
+            },
+
+        });
+    };
+
+
 
     const [showConfetti, setShowConfetti] = useState(false);
     const [confettiFading, setConfettiFading] = useState(false);
@@ -167,8 +214,10 @@ export default function Checkout({ cart_items, refferalSessionData, shipping_add
 
     const handlePlaceOrder = async () => {
         // Validate shipping info
-        const requiredFields = ['full_name', 'phone', 'address', 'city', 'country'];
+        const requiredFields = ['name', 'phone', 'address_line1', 'city', 'country_id', 'state', 'postal_code'];
         const emptyFields = requiredFields.filter((field) => !shippingInfo[field]);
+
+
 
         if (emptyFields.length > 0) {
             setInfoMessage(__('Please Complete Your Profile Before Placing An Order'));
@@ -258,6 +307,10 @@ export default function Checkout({ cart_items, refferalSessionData, shipping_add
 
         return noTaxMessage;
     };
+
+
+
+
 
     return (
         <MainLayout>
@@ -354,7 +407,15 @@ export default function Checkout({ cart_items, refferalSessionData, shipping_add
                         <div className="space-y-6 lg:col-span-2">
                             {/* Shipping Information */}
                             <ShippingForm
+                                isShippingFormComplete={isShippingFormComplete}
+                                setShippingInfo={setShippingInfo}
                                 shippingInfo={shippingInfo}
+                                hasSavedShippingAddress={hasSavedShippingAddress}
+                                handleShippingInfoChange={handleShippingInfoChange}
+                                countries={countries}
+                                handleAddShippingAddress={handleAddShippingAddress}
+                                addingShippingAddress={addingShippingAddress}
+
                                 __={__}
                             />
 
@@ -430,7 +491,19 @@ export default function Checkout({ cart_items, refferalSessionData, shipping_add
 }
 
 // Shipping Form Component
-function ShippingForm({ shippingInfo, __ }) {
+function ShippingForm(
+    { setShippingInfo,
+        shippingInfo,
+        __,
+        isShippingFormComplete,
+        hasSavedShippingAddress,
+        handleShippingInfoChange,
+        countries,
+        handleAddShippingAddress,
+        addingShippingAddress
+
+    }
+) {
     return (
         <div className="p-6 border rounded-md bg-main-text-dark border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
             <div className="flex items-center justify-between">
@@ -447,17 +520,19 @@ function ShippingForm({ shippingInfo, __ }) {
                 </Link>
             </div>
 
-            <div className="space-y-4">
+            <form onSubmit={handleAddShippingAddress} className="space-y-4">
+
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
 
                         <WebInput
                             InputName={__('Full Name')}
                             Id={'full_name'}
-                            Name={'full_name'}
-                            Disabled={true}
+                            Name={'name'}
+                            Disabled={hasSavedShippingAddress}
+                            Action={handleShippingInfoChange}
                             Placeholder={"John Doe"}
-                            Value={shippingInfo.full_name}
+                            Value={shippingInfo.name}
                             Required={true}
                             Type={'text'}
                             ClassName={"dark:bg-surface-2-dark dark:border-surface-3-dark"}
@@ -470,8 +545,9 @@ function ShippingForm({ shippingInfo, __ }) {
                             InputName={__("Phone Number")}
                             Id={'phone'}
                             Name={'phone'}
-                            Disabled={true}
+                            Disabled={hasSavedShippingAddress}
                             Placeholder={"+1 (555) 000-0000"}
+                            Action={handleShippingInfoChange}
                             Type={"tel"}
                             Value={shippingInfo.phone}
                             Required={true}
@@ -481,19 +557,15 @@ function ShippingForm({ shippingInfo, __ }) {
                 </div>
 
 
-
-
-
-
                 <div>
-
                     <WebTextArea
-                        InputName={__("Address")}
-                        Id={'address'}
-                        Name={'address'}
-                        Disabled={true}
+                        InputName={__("Address 1")}
+                        Id={'address_line1'}
+                        Name={'address_line1'}
+                        Disabled={hasSavedShippingAddress}
+                        Action={handleShippingInfoChange}
                         Placeholder={"123 Main Street, Apt 4B"}
-                        Value={shippingInfo.address}
+                        Value={shippingInfo.address_line1}
                         Required={true}
                         Rows={1}
                         ClassName={"dark:bg-surface-2-dark dark:border-surface-3-dark"}
@@ -501,13 +573,31 @@ function ShippingForm({ shippingInfo, __ }) {
                     />
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+
+                <div>
+                    <WebTextArea
+                        InputName={__("Address 2")}
+                        Id={'address_line2'}
+                        Name={'address_line2'}
+                        Disabled={hasSavedShippingAddress}
+                        Action={handleShippingInfoChange}
+                        Placeholder={"123 Main Street, Apt 4B"}
+                        Value={shippingInfo.address_line2}
+                        Required={false}
+                        Rows={1}
+                        ClassName={"dark:bg-surface-2-dark dark:border-surface-3-dark"}
+
+                    />
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
                         <WebInput
                             InputName={__("City")}
                             Id={'city'}
                             Name={'city'}
-                            Disabled={true}
+                            Disabled={hasSavedShippingAddress}
+                            Action={handleShippingInfoChange}
                             Placeholder={"New York"}
                             Type={"text"}
                             Value={shippingInfo.city}
@@ -522,7 +612,8 @@ function ShippingForm({ shippingInfo, __ }) {
                             InputName={__("Postal Code")}
                             Id={'postal_code'}
                             Name={'postal_code'}
-                            Disabled={true}
+                            Disabled={hasSavedShippingAddress}
+                            Action={handleShippingInfoChange}
                             Placeholder={"10001"}
                             Type={"text"}
                             Value={shippingInfo.postal_code}
@@ -530,24 +621,89 @@ function ShippingForm({ shippingInfo, __ }) {
                             ClassName={"dark:bg-surface-2-dark dark:border-surface-3-dark"}
                         />
                     </div>
+                </div>
 
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
 
-
                         <WebInput
-                            InputName={__("Country")}
-                            Id={'country'}
-                            Name={'country'}
-                            Disabled={true}
-                            Placeholder={"United States"}
-                            Type={"tel"}
-                            Value={shippingInfo.country}
+                            InputName={__("State")}
+                            Id={'state'}
+                            Name={'state'}
+                            Disabled={hasSavedShippingAddress}
+                            Action={handleShippingInfoChange}
+                            Placeholder={"New York"}
+                            Type={"text"}
+                            Value={shippingInfo.state}
                             Required={true}
                             ClassName={"dark:bg-surface-2-dark dark:border-surface-3-dark"}
                         />
                     </div>
+
+                    {hasSavedShippingAddress ? (
+                        <div>
+                            <WebInput
+                                InputName={__("Country")}
+                                Id={'country'}
+                                Name={'country'}
+                                Disabled={hasSavedShippingAddress}
+                                Placeholder={"United States"}
+                                Type={"text"}
+                                Value={
+                                    countries.find(
+                                        (country) => country.id === Number(shippingInfo.country_id)
+                                    )?.name || ''
+                                }
+                                Required={true}
+                                ClassName={"dark:bg-surface-2-dark dark:border-surface-3-dark"}
+                            />
+                        </div>
+                    ) : (
+                        <div>
+                            <WebSelectInput
+                                InputName={__('Country')}
+                                Id={'country_id'}
+                                Name={'country_id'}
+                                Value={shippingInfo.country_id}
+                                isDisabled={hasSavedShippingAddress}
+                                Required={true}
+                                Action={(value) =>
+                                    setShippingInfo((prevInfo) => ({
+                                        ...prevInfo,
+                                        country_id: value,
+                                    }))
+                                }
+                                items={countries}
+                                itemKey={'name'}
+                                Placeholder={__('Select Country')}
+                                customPlaceHolder={true}
+                            />
+                        </div>
+                    )}
+
+
                 </div>
-            </div>
+
+                {!hasSavedShippingAddress && isShippingFormComplete() && (
+                    <div className="flex items-center justify-end gap-3">
+
+
+                        <button
+                            type="submit"
+                            disabled={
+                                (hasSavedShippingAddress && isShippingFormComplete) || (addingShippingAddress)
+                            }
+                            className={`text-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md bg-main-text-light font-semibold text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80 ${(hasSavedShippingAddress && isShippingFormComplete) || (addingShippingAddress) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
+                        >
+                            {addingShippingAddress && (
+                                <Spinner customSize={'size-5'} />
+                            )}
+                            {__('Save Changes')}
+                        </button>
+                    </div>
+                )}
+
+            </form>
         </div>
     );
 }
@@ -756,7 +912,7 @@ function OrderItemsSummary({ cart_items, currency, __, addon_items, calculateImp
                                 {item?.smartphone?.capacity && (
                                     <div className="flex flex-wrap gap-2 mb-3">
                                         <span
-                                            className={`inline-flex items-center rounded-md bg-surface-2-light px-2.5 py-0.5 text-xs font-medium text-sub-text-light dark:bg-surface-3-dark dark:text-sub-text-dark`}
+                                            className={`inline-flex items-center rounded-md bg-surface-2-light py-0.5 text-xs font-medium text-sub-text-light dark:bg-surface-3-dark dark:text-sub-text-dark`}
                                         >
                                             {__('Capacity') + ': ' + item?.smartphone?.capacity?.name || 'N/A'}
                                         </span>

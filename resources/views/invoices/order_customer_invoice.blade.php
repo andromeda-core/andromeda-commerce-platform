@@ -91,140 +91,190 @@
 
             <div
                 style="
-            background:#f9fafb;
-            padding:16px;
-            border-radius:8px;
-            font-size:14px;
-            color:#374151;
-        ">
-                <strong>{{ $order->shippingAddress->name }}</strong><br>
-                {{ $order->shippingAddress->address_line1 }},
-                {{ $order->shippingAddress->address_line2 }}<br>
-                {{ $order->shippingAddress->city }}<br><br>
-                {{ $order->shippingAddress->phone }}
+        background:#f9fafb;
+        padding:16px;
+        border-radius:8px;
+        font-size:14px;
+        color:#374151;
+        line-height:1.5;
+        word-break:break-word;
+    ">
+                {{-- Name --}}
+                <strong>
+                    {{ $order?->shippingAddress?->name ?:
+                        $order?->customer?->activeShippingAddress?->name ?:
+                        $order?->customer?->user?->name ?:
+                        '' }}
+                </strong>
+                <br>
+
+                {{-- Address line 1 + line 2 --}}
+                {{ $order?->shippingAddress?->address_line1 ?:
+                    $order?->customer?->activeShippingAddress?->address_line1 ?:
+                    $order?->customer?->address_line1 ?:
+                    '' }}
+                @php
+                    $addressLine2 =
+                        $order?->shippingAddress?->address_line2 ?:
+                        $order?->customer?->activeShippingAddress?->address_line2 ?:
+                        $order?->customer?->address_line2;
+                @endphp
+
+                @if ($addressLine2)
+                    , {{ $addressLine2 }}
+                @endif
+                <br>
+
+                {{-- City --}}
+                {{ $order?->shippingAddress?->city ?:
+                    $order?->customer?->activeShippingAddress?->city ?:
+                    $order?->customer?->city ?:
+                    '' }}
+                <br>
+
+                {{-- State --}}
+                {{ $order?->shippingAddress?->state ?:
+                    $order?->customer?->activeShippingAddress?->state ?:
+                    $order?->customer?->state ?:
+                    '' }}
+                <br>
+
+                {{-- Postal Code --}}
+                {{ $order?->shippingAddress?->postal_code ?:
+                    $order?->customer?->activeShippingAddress?->postal_code ?:
+                    $order?->customer?->postal_code ?:
+                    '' }}
+                <br><br>
+
+                {{-- Phone --}}
+                {{ $order?->shippingAddress?->phone ?:
+                    $order?->customer?->activeShippingAddress?->phone ?:
+                    $order?->customer?->user?->phone ?:
+                    '' }}
             </div>
-        </div>
 
-        <div style="padding:24px;">
-            <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
-                <thead>
-                    <tr style="border-bottom:2px solid #d1d5db;">
-                        <th align="left" style="padding:10px; font-size:14px;">Product</th>
-                        <th align="left" style="padding:10px; font-size:14px;">Capacity</th>
-                        <th align="right" style="padding:10px; font-size:14px;">Price</th>
-                        <th align="center" style="padding:10px; font-size:14px;">Qty</th>
-                        <th align="right" style="padding:10px; font-size:14px;">Total</th>
-                    </tr>
-                </thead>
 
-                <tbody>
-                    @foreach ($order->orderItems as $item)
-                        @php
-                            $addonsTotal = $item->smartphoneAddons->sum('total_price');
-                            $itemGrandTotal = $item->sub_total + $addonsTotal;
-                        @endphp
-
-                        {{-- MAIN ROW --}}
-                        <tr style="border-bottom:1px solid #e5e7eb;">
-                            <td style="padding:14px; font-weight:600;">
-                                {{ $item->smartphone->model_name->name }}
-                            </td>
-                            <td style="padding:14px; color:#6b7280;">
-                                {{ $item->smartphone->capacity->name }}
-                            </td>
-                            <td align="right" style="padding:14px;">
-                                {{ $currency->symbol }}{{ number_format($item->unit_price, 2) }}
-                            </td>
-                            <td align="center" style="padding:14px;">
-                                {{ $item->quantity }}
-                            </td>
-                            <td align="right" style="padding:14px; font-weight:700;">
-                                {{ $currency->symbol }}{{ number_format($itemGrandTotal, 2) }}
-                            </td>
+            <div style="padding:24px;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:2px solid #d1d5db;">
+                            <th align="left" style="padding:10px; font-size:14px;">Product</th>
+                            <th align="left" style="padding:10px; font-size:14px;">Capacity</th>
+                            <th align="right" style="padding:10px; font-size:14px;">Price</th>
+                            <th align="center" style="padding:10px; font-size:14px;">Qty</th>
+                            <th align="right" style="padding:10px; font-size:14px;">Total</th>
                         </tr>
+                    </thead>
 
-                        {{-- BREAKDOWN --}}
-                        <tr style="background:#f9fafb;">
-                            <td colspan="5" style="padding:14px; font-size:13px; color:#4b5563;">
-                                <table width="100%">
-                                    <tr>
-                                        <td>Product ({{ number_format($item->unit_price, 2) }} ×
-                                            {{ $item->quantity }})
-                                        </td>
-                                        <td align="right">
-                                            {{ $currency->symbol }}{{ number_format($item->unit_price * $item->quantity, 2) }}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Shipping</td>
-                                        <td align="right">
-                                            {{ $currency->symbol }}{{ number_format($item->shipping_cost, 2) }}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Import Tax</td>
-                                        <td align="right">
-                                            {{ $currency->symbol }}{{ number_format($item->import_cost, 2) }}
-                                        </td>
-                                    </tr>
+                    <tbody>
+                        @foreach ($order->orderItems as $item)
+                            @php
+                                $addonsTotal = $item->smartphoneAddons->sum('total_price');
+                                $itemGrandTotal = $item->sub_total + $addonsTotal;
+                            @endphp
 
-                                    @if ($item->smartphoneAddons->count())
+                            {{-- MAIN ROW --}}
+                            <tr style="border-bottom:1px solid #e5e7eb;">
+                                <td style="padding:14px; font-weight:600;">
+                                    {{ $item->smartphone->model_name->name }}
+                                </td>
+                                <td style="padding:14px; color:#6b7280;">
+                                    {{ $item->smartphone->capacity->name }}
+                                </td>
+                                <td align="right" style="padding:14px;">
+                                    {{ $currency->symbol }}{{ number_format($item->unit_price, 2) }}
+                                </td>
+                                <td align="center" style="padding:14px;">
+                                    {{ $item->quantity }}
+                                </td>
+                                <td align="right" style="padding:14px; font-weight:700;">
+                                    {{ $currency->symbol }}{{ number_format($itemGrandTotal, 2) }}
+                                </td>
+                            </tr>
+
+                            {{-- BREAKDOWN --}}
+                            <tr style="background:#f9fafb;">
+                                <td colspan="5" style="padding:14px; font-size:13px; color:#4b5563;">
+                                    <table width="100%">
                                         <tr>
-                                            <td colspan="2">
-                                                <hr style="border:none;border-top:1px dashed #d1d5db;">
+                                            <td>Product ({{ number_format($item->unit_price, 2) }} ×
+                                                {{ $item->quantity }})
+                                            </td>
+                                            <td align="right">
+                                                {{ $currency->symbol }}{{ number_format($item->unit_price * $item->quantity, 2) }}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Shipping</td>
+                                            <td align="right">
+                                                {{ $currency->symbol }}{{ number_format($item->shipping_cost, 2) }}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Import Tax</td>
+                                            <td align="right">
+                                                {{ $currency->symbol }}{{ number_format($item->import_cost, 2) }}
                                             </td>
                                         </tr>
 
-                                        <tr>
-                                            <td colspan="2" style="font-size:12px; font-weight:600;">Add-ons</td>
-                                        </tr>
-
-                                        @foreach ($item->smartphoneAddons as $addon)
+                                        @if ($item->smartphoneAddons->count())
                                             <tr>
-                                                <td>{{ $addon?->name ?? 'N/A' }} × {{ $addon?->quantity ?? 'N/A' }}
-                                                </td>
-                                                <td align="right">
-                                                    {{ $currency->symbol }}{{ number_format($addon?->total_price, 2) }}
+                                                <td colspan="2">
+                                                    <hr style="border:none;border-top:1px dashed #d1d5db;">
                                                 </td>
                                             </tr>
-                                        @endforeach
 
-                                        <tr style="font-weight:600;">
-                                            <td>Add-ons total</td>
-                                            <td align="right">
-                                                {{ $currency->symbol }}{{ number_format($addonsTotal, 2) }}
-                                            </td>
-                                        </tr>
-                                    @endif
-                                </table>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                                            <tr>
+                                                <td colspan="2" style="font-size:12px; font-weight:600;">Add-ons</td>
+                                            </tr>
 
-            {{-- TOTAL --}}
-            <div style="margin-top:24px; text-align:right;">
-                <strong style="font-size:18px;">
-                    Total:
-                    <span style="color:#2563eb;">
-                        {{ $currency->symbol }}{{ number_format($order->amount, 2) }}
-                    </span>
-                </strong>
+                                            @foreach ($item->smartphoneAddons as $addon)
+                                                <tr>
+                                                    <td>{{ $addon?->name ?? 'N/A' }} ×
+                                                        {{ $addon?->quantity ?? 'N/A' }}
+                                                    </td>
+                                                    <td align="right">
+                                                        {{ $currency->symbol }}{{ number_format($addon?->total_price, 2) }}
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+
+                                            <tr style="font-weight:600;">
+                                                <td>Add-ons total</td>
+                                                <td align="right">
+                                                    {{ $currency->symbol }}{{ number_format($addonsTotal, 2) }}
+                                                </td>
+                                            </tr>
+                                        @endif
+                                    </table>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+
+                {{-- TOTAL --}}
+                <div style="margin-top:24px; text-align:right;">
+                    <strong style="font-size:18px;">
+                        Total:
+                        <span style="color:#2563eb;">
+                            {{ $currency->symbol }}{{ number_format($order->amount, 2) }}
+                        </span>
+                    </strong>
+                </div>
             </div>
+
+
+            <div style="padding:24px; text-align:center; border-top:1px solid #e5e7eb;">
+                <img src="data:image/png;base64,{!! base64_encode(
+                    QrCode::format('png')->size(120)->generate(route('orders.customer-order-invoice', $order->order_no)),
+                ) !!}">
+                <p style="font-size:12px; color:#6b7280; margin-top:8px;">
+                    Scan To Verify Invoice
+                </p>
+            </div>
+
         </div>
-
-
-        <div style="padding:24px; text-align:center; border-top:1px solid #e5e7eb;">
-            <img src="data:image/png;base64,{!! base64_encode(
-                QrCode::format('png')->size(120)->generate(route('orders.customer-order-invoice', $order->order_no)),
-            ) !!}">
-            <p style="font-size:12px; color:#6b7280; margin-top:8px;">
-                Scan To Verify Invoice
-            </p>
-        </div>
-
-    </div>
 </body>
 
 </html>

@@ -1047,6 +1047,7 @@ class OrderRepository implements IOrderRepository
         $order = $this->order->with(
             [
                 'collaborator',
+                'customer.user',
                 'shippingAddress',
                 'shippingAddress.country',
                 'orderPackageRecordings',

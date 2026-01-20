@@ -220,7 +220,7 @@ export default function index({ orders }) {
                 <Card
                     Content={
                         <>
-                            {can('Orders Create') && (
+                            {/* {can('Orders Create') && (
                                 <div className="flex flex-wrap justify-end my-3">
                                     <LinkButton
                                         Text={'Create Order'}
@@ -243,7 +243,7 @@ export default function index({ orders }) {
                                         }
                                     />
                                 </div>
-                            )}
+                            )} */}
 
                             <Table
                                 setBulkSelectedIds={setBulkSelectedIds}

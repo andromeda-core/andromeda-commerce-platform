@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Website;
 
 use App\Http\Controllers\Controller;
 use App\Repositories\Cart\Interface\ICartRepository;
+use App\Repositories\Customers\Interface\ICustomerRepository;
 use App\Repositories\Orders\Interface\IOrderRepository;
 use App\Repositories\Users\Interface\IUserRepository;
 use Illuminate\Http\Request;
@@ -16,6 +17,7 @@ class CheckoutController extends Controller
         private ICartRepository $cart,
         private IUserRepository $user,
         private IOrderRepository $order,
+        private ICustomerRepository $customer
     ) {}
 
     public function index(Request $request)
@@ -51,7 +53,9 @@ class CheckoutController extends Controller
 
         $is_eligible_for_social_message = $this->user->isCustomerEligableForSocialMessageSendOrReceive($request->user()->id);
 
-        return Inertia::render('Website/Checkout/index', compact('cart_items', 'total_summary', 'refferalSessionData', 'shipping_address', 'meta_usernames', 'addon_items', 'is_eligible_for_social_message'));
+        $countries = $this->customer->getCountries();
+
+        return Inertia::render('Website/Checkout/index', compact('cart_items', 'total_summary', 'refferalSessionData', 'countries', 'shipping_address', 'meta_usernames', 'addon_items', 'is_eligible_for_social_message'));
     }
 
     public function store(Request $request)
