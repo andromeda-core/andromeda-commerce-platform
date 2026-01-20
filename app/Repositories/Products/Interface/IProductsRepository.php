@@ -11,7 +11,7 @@ interface IProductsRepository
 
     public function getSmartphonesForShop(Request $request);
 
-    public function getAllSmartphoneTags();
+    public function getAllSmartphoneTags(Request $request);
 
     public function filterCategories();
 }

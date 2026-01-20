@@ -8,6 +8,7 @@ use App\Models\Color;
 use App\Models\Condition;
 use App\Models\Post;
 use App\Models\Smartphone;
+use App\Repositories\Categories\Interface\ICategoryRepository;
 use App\Repositories\Products\Interface\IProductsRepository;
 use Exception;
 use Illuminate\Http\Request;
@@ -21,6 +22,7 @@ class ProductsRepository implements IProductsRepository
         private Color $color,
         private Capacity $capacity,
         private Condition $condition,
+        private ICategoryRepository $category
     ) {}
 
     // Smartphone
@@ -246,7 +248,15 @@ class ProductsRepository implements IProductsRepository
     public function getSmartphonesForShop(Request $request)
     {
         $filters = $request->array('filters');
-        $category_id = $request->query('category_id');
+        $category_id = $request->query('category_id') ?? $request->input('category_id');
+        $category_id = is_numeric($category_id) ? (int) $category_id : null;
+
+        $categories = $this->category->getAllCategoryNames();
+        $first_category = $categories->first();
+
+        if (! empty($first_category) && empty($category_id)) {
+            $category_id = $first_category->id;
+        }
 
         $smartphones = $this->smartphone
             ->with(['condition', 'capacity', 'selling_info', 'model_name', 'category'])
@@ -312,7 +322,7 @@ class ProductsRepository implements IProductsRepository
             })
             ->latest()
             ->paginate(10)
-            ->withPath(route('website.shop.loadMore', ['filters' => $filters]));
+            ->withPath(route('website.shop.loadMore', ['filters' => $filters, 'tag' => $request->input('tag'), 'category_id' => $category_id]));
 
         $smartphones->getCollection()->transform(function ($smartphone) {
             return [
@@ -333,28 +343,104 @@ class ProductsRepository implements IProductsRepository
         return [
             'smartphones' => $smartphones->items(),
             'nextPageUrl' => $smartphones->nextPageUrl(),
+            'categories' => $categories,
         ];
     }
 
-    public function getAllSmartphoneTags()
+    public function getAllSmartphoneTags(Request $request)
     {
-        $smartphone_tags = Cache::rememberForever('smartphone_tags', function () {
-            return \DB::table('smartphones')
-                ->whereNotNull('tag')
-                ->where('tag', '!=', '')
-                ->selectRaw('tag')
-                ->distinct()
-                ->orderBy('tag')
-                ->get()
-                ->map(fn ($row) => [
-                    'key' => $row->tag,
-                    'label' => ucfirst($row->tag),
-                ])
-                ->values();
-        });
+        $filters = $request->array('filters');
+        $category_id = $request->query('category_id') ?? $request->input('category_id');
+        $category_id = is_numeric($category_id) ? (int) $category_id : null;
 
-        return $smartphone_tags;
+        $categories = $this->category->getAllCategoryNames();
+        $first_category = $categories->first();
 
+        if (! empty($first_category) && empty($category_id)) {
+            $category_id = $first_category->id;
+        }
+
+        $query = \DB::table('smartphones')
+            ->distinct()
+            ->select('smartphones.tag')
+            ->whereNotNull('smartphones.tag')
+            ->where('smartphones.tag', '!=', '')
+            ->join(
+                'smartphone_for_sales',
+                'smartphone_for_sales.smartphone_id',
+                '=',
+                'smartphones.id'
+            );
+
+        // CATEGORY
+        if (! empty($category_id)) {
+            $query->where('smartphones.category_id', $category_id);
+        }
+
+        // FILTERS
+        if (! empty($filters)) {
+
+            // STORAGE
+            if (! empty($filters['storage'] ?? [])) {
+                $query->whereIn('smartphones.capacity_id', $filters['storage']);
+            }
+
+            // CONDITION
+            if (! empty($filters['condition'] ?? [])) {
+                $query->whereIn('smartphones.condition_id', $filters['condition']);
+            }
+
+            // COLOR (JSON)
+            if (! empty($filters['color'] ?? [])) {
+                $query->where(function ($q) use ($filters) {
+                    foreach ($filters['color'] as $c) {
+                        $q->orWhereJsonContains('smartphones.color_ids', (string) $c);
+                    }
+                });
+            }
+
+            // PRICE RANGE (IMPORTANT FIX)
+            if (! empty($filters['price_range'] ?? [])) {
+                $query->where(function ($priceQuery) use ($filters) {
+
+                    foreach ($filters['price_range'] as $range) {
+
+                        if ($range === 'under_500') {
+                            $priceQuery->orWhere(
+                                'smartphone_for_sales.total_price',
+                                '<=',
+                                500
+                            );
+                        }
+
+                        if ($range === 'under_1000') {
+                            $priceQuery->orWhere(
+                                'smartphone_for_sales.total_price',
+                                '<=',
+                                1000
+                            );
+                        }
+
+                        if ($range === 'over_1000') {
+                            $priceQuery->orWhere(
+                                'smartphone_for_sales.total_price',
+                                '>=',
+                                1000
+                            );
+                        }
+                    }
+                });
+            }
+        }
+
+        return $query
+            ->orderBy('smartphones.tag')
+            ->get()
+            ->map(fn ($row) => [
+                'key' => $row->tag,
+                'label' => ucfirst($row->tag),
+            ])
+            ->values();
     }
 
     private function getColors()

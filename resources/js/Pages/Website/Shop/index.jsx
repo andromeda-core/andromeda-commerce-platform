@@ -3,7 +3,7 @@ import { useTranslation } from '@/Hooks/useTranslation';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, router, usePage } from '@inertiajs/react';
-import React, { useRef, useState, useEffect, Fragment, useLayoutEffect } from 'react';
+import React, { useRef, useState, useEffect, Fragment, useLayoutEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 
@@ -23,6 +23,14 @@ const index = (
     const [activeTab, setActiveTab] = useState('all');
     const [activeCategory, setActiveCategory] = useState(null);
     const [activeHashtag, setActiveHashtag] = useState(null);
+
+
+
+    const [tabScrollState, setTabScrollState] = useState({
+        canScrollLeft: false,
+        canScrollRight: false,
+    });
+
     const [filters, setFilters] = useState(applied_filters || {
         price_range: [],
         storage: [],
@@ -30,13 +38,10 @@ const index = (
         condition: [],
     });
 
-    const tabs = [
-        {
-            key: 'all', label: __('All')
-        },
-        ...smartphone_tags,
-    ];
-
+    const [tabsData, setTabsData] = useState([
+        { key: 'all', label: __('All') },
+        ...(smartphone_tags || []),
+    ]);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
 
     const [productsData, setProductsData] = useState(products || []);
@@ -78,6 +83,7 @@ const index = (
                 {
                     params: {
                         ...(tabKey !== 'all' && { tag: tabKey }),
+                        category_id: activeCategory,
                         filters,
                     }
 
@@ -139,9 +145,7 @@ const index = (
         setIsLoadingMore(true);
 
         try {
-            const response = await axios.get(nextPageUrlData, {
-                params: activeHashtag ? { tag: activeHashtag } : {},
-            });
+            const response = await axios.get(nextPageUrlData);
 
             setProductsData(prev =>
                 mergeUniqueProducts(prev, response.data.products)
@@ -219,9 +223,14 @@ const index = (
 
         setIsFilterApplying(true);
         router.post(route('website.shop.index'),
-            { filters }, {
+            {
+                filters,
+                category_id: activeCategory
+            }, {
             preserveScroll: true,
+            preserveUrl: true,
             onFinish: () => {
+
                 setIsFilterApplying(false);
                 setIsFilterOpen(false);
             }
@@ -240,11 +249,14 @@ const index = (
         });
 
 
+
         router.reload({
-            only: ['products', 'nextPageUrl', 'applied_filters'],
+            only: ['products', 'nextPageUrl', 'applied_filters', 'smartphone_tags'],
+            preserveUrl: true,
             onFinish: () => {
                 setIsFilterResetting(false);
                 setIsFilterOpen(false);
+
             },
         });
     };
@@ -265,6 +277,7 @@ const index = (
         setNextPageUrlData(null);
         setIsLoadingMore(true);
 
+        window.history.replaceState({}, '', route('website.shop.index', { category_id: category.id }));
         try {
             const response = await axios.get(
                 route('website.shop.loadMore'),
@@ -277,6 +290,10 @@ const index = (
             );
 
             setProductsData(response.data.products);
+            setTabsData([
+                { key: 'all', label: __('All') },
+                ...(response.data.smartphone_tags || []),
+            ]);
             setNextPageUrlData(response.data.nextPageUrl);
         } catch (e) {
             console.error(e);
@@ -284,6 +301,66 @@ const index = (
             setIsLoadingMore(false);
         }
     };
+
+    // Scroll handlers
+    const scrollLeft = useCallback(() => {
+        tabsContainerRef.current?.scrollBy({ left: -200, behavior: 'smooth' });
+    }, []);
+
+    const scrollRight = useCallback(() => {
+        tabsContainerRef.current?.scrollBy({ left: 200, behavior: 'smooth' });
+    }, []);
+
+    // Optimized scroll button update with debouncing
+    const updateScrollButtons = useCallback(() => {
+        if (tabsContainerRef.current) {
+            const { scrollLeft, scrollWidth, clientWidth } = tabsContainerRef.current;
+            const newCanScrollLeft = scrollLeft > 0;
+            const newCanScrollRight = scrollLeft < scrollWidth - clientWidth - 20;
+
+            // Only update if values changed
+            if (newCanScrollLeft !== tabScrollState.canScrollLeft || newCanScrollRight !== tabScrollState.canScrollRight) {
+                setTabScrollState({
+                    canScrollLeft: newCanScrollLeft,
+                    canScrollRight: newCanScrollRight
+                });
+            }
+        }
+    }, [tabScrollState.canScrollLeft, tabScrollState.canScrollRight]);
+
+
+    // Update TabScrollState Buttons
+    useEffect(() => {
+        const container = tabsContainerRef.current;
+        if (container) {
+            updateScrollButtons();
+            container.addEventListener('scroll', updateScrollButtons);
+            window.addEventListener('resize', updateScrollButtons);
+
+            return () => {
+                container.removeEventListener('scroll', updateScrollButtons);
+                window.removeEventListener('resize', updateScrollButtons);
+            };
+        }
+    }, [tabsData, updateScrollButtons]);
+
+
+    useEffect(() => {
+        if (!categories?.length) return;
+
+
+        if (!activeCategory) {
+            const params = new URLSearchParams(window.location.search);
+            const category_id = params.get('category_id');
+
+
+
+            const firstCategory = categories[0];
+
+            setActiveCategory(Number(category_id) || firstCategory.id);
+        }
+    }, [categories]);
+
     // Close filter dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -301,6 +378,15 @@ const index = (
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+
+    useEffect(() => {
+        setTabsData([
+            { key: 'all', label: __('All') },
+            ...(smartphone_tags || []),
+        ]);
+
+    }, [smartphone_tags]);
 
     useEffect(() => {
         setProductsData(products || []);
@@ -355,6 +441,10 @@ const index = (
         observer.observe(loadMoreRef.current);
         return () => observer.disconnect();
     }, [nextPageUrlData, activeHashtag]);
+
+
+
+
     return (
         <MainLayout>
             <Head title={__('Shop', true)} />
@@ -410,6 +500,16 @@ const index = (
                             <div className="relative grid w-full grid-cols-1 overflow-hidden">
                                 <div className="relative flex items-center w-full">
 
+                                    {/* Left Arrow */}
+                                    {(tabScrollState.canScrollLeft && windowSize.width <= 1024) && (
+                                        <button
+                                            onClick={scrollLeft}
+                                            className="absolute left-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-2-light hover:scale-110 dark:bg-surface-3-dark md:flex"
+                                            style={{ left: '0px' }}
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="text-gray-600 size-4 dark:text-sub-text-dark"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+                                        </button>
+                                    )}
 
                                     {/* Scrollable Container */}
                                     <div className="flex items-center w-full gap-3 overflow-x-auto flex-nowrap scrollbar-none scroll-smooth"
@@ -442,7 +542,7 @@ const index = (
                                         </div>
 
                                         {/* Tabs */}
-                                        {tabs.map((tab) => (
+                                        {tabsData.map((tab) => (
                                             <button
                                                 key={tab.key}
                                                 ref={(el) => (tabRefs.current[tab.key] = el)}
@@ -461,6 +561,16 @@ const index = (
                                         ))}
                                     </div>
 
+
+                                    {/* Right Arrow */}
+                                    {(tabScrollState.canScrollRight && windowSize.width <= 1024) && (
+                                        <button
+                                            onClick={scrollRight}
+                                            className="absolute right-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-2-light hover:scale-110 dark:bg-surface-3-dark md:flex"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="text-black size-4 dark:text-sub-text-dark"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+                                        </button>
+                                    )}
 
 
 
@@ -484,22 +594,7 @@ const index = (
 
                             {hasAppliedFilters() && (
                                 <button
-                                    onClick={() => {
-                                        setIsFilterClearing(true);
-                                        setFilters({
-                                            price_range: [],
-                                            storage: [],
-                                            color: [],
-                                            condition: [],
-                                        });
-
-                                        router.reload({
-                                            only: ['products', 'nextPageUrl'],
-                                            onFinish: () => {
-                                                setIsFilterClearing(false);
-                                            }
-                                        });
-                                    }}
+                                    onClick={() => resetFilters()}
                                     className="flex items-center justify-center mt-5 text-sm font-semibold text-center underline text-main-text-light dark:text-main-text-dark"
                                 >
                                     {isFilterClearing ? <Spinner /> : __('Clear all filters')}
