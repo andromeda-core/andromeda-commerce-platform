@@ -1561,6 +1561,7 @@ namespace App\Models{
  * @property string $email
  * @property string|null $phone
  * @property \Illuminate\Support\Carbon|null $email_verified_at
+ * @property int $is_email_verification_sent
  * @property string $password
  * @property string $language_locale
  * @property int $language_id
@@ -1605,6 +1606,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereEmailVerifiedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereIsEmailVerificationSent($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereLanguageId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereLanguageLocale($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereName($value)

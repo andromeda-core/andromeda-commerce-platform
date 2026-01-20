@@ -22,6 +22,9 @@ export default function EmailVerificationPopup({ user }) {
                 onSuccess: () => {
                     setResendMessage(__('Sent! Check your inbox.'));
                     setIsResending(false);
+                    router.reload({
+                        only: ['user'],
+                    })
                 },
                 onError: () => {
                     setResendMessage(__('Failed. Try again.'));
@@ -142,10 +145,23 @@ export default function EmailVerificationPopup({ user }) {
                                 </>
                             ) : (
                                 <>
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                                    </svg>
-                                    {__('Resend Verification')}
+                                    {user?.is_email_verification_sent ? (
+                                        <>
+                                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                                            </svg>
+                                            {__('Resend Verification')}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                                            </svg>
+                                            {__('Send Verification')}
+                                        </>
+                                    )}
+
+
                                 </>
                             )}
                         </button>

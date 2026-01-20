@@ -36,6 +36,7 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Copy', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Download', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'All', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Send Verification', 'created_at' => $now, 'updated_at' => $now],
 
             ['key' => 'pending', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'paid', 'created_at' => $now, 'updated_at' => $now],
