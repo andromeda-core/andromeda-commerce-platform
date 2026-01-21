@@ -87,7 +87,7 @@ const MasonryFeedItem = memo(
                             {loaded && (
                                 <>
                                     <div className="absolute left-3 top-3">
-                                        <span className=" text-white font-semibold text-[14px]">
+                                        <span className=" text-white font-semibold text-[13px] lg:text-[14px] leading-[17px]">
                                             {item?.tag}
                                         </span>
                                     </div>
@@ -150,8 +150,8 @@ const MasonryFeedItem = memo(
                                     )}
 
                                     <div className="absolute inset-x-0 bottom-0 p-4">
-                                        <div className="mt-1 flex items-center justify-between text-[14px]">
-                                            <p className="flex-1 min-w-0 font-semibold leading-relaxed text-main-text-dark">
+                                        <div className="mt-1 flex items-center justify-between text-[13px] lg:text-[14px] leading-[17px]">
+                                            <p className="flex-1 min-w-0 font-semibold text-main-text-dark">
                                                 <span
                                                     className="line-clamp-2 break-all !display-['-webkit-box'] [&_*]:inline "
                                                     dangerouslySetInnerHTML={{
@@ -220,7 +220,7 @@ const MasonryFeedItem = memo(
                             {loaded && (
                                 <>
                                     <div className="absolute left-3 top-3">
-                                        <span className=" text-white  font-semibold text-[14px]">
+                                        <span className=" text-white  font-semibold text-[13px] lg:text-[14px] leading-[17px]">
                                             {item?.tag}
                                         </span>
                                     </div>
@@ -284,8 +284,8 @@ const MasonryFeedItem = memo(
                                     )}
 
                                     <div className="absolute inset-x-0 bottom-0 p-4">
-                                        <div className="mt-1 flex items-center justify-betwee text-[14px]">
-                                            <p className="flex-1 min-w-0 font-semibold leading-relaxed text-main-text-dark">
+                                        <div className="mt-1 flex items-center justify-between text-[13px] lg:text-[14px] leading-[17px]">
+                                            <p className="flex-1 min-w-0 font-semibold text-main-text-dark">
                                                 <span
                                                     className="line-clamp-2 break-all !display-['-webkit-box'] [&_*]:inline"
                                                     dangerouslySetInnerHTML={{
@@ -302,7 +302,7 @@ const MasonryFeedItem = memo(
                         <div className={`relative flex flex-col bg-surface-2-light lg:group-hover:scale-[1.02] transition-all duration-500 dark:bg-surface-2-dark p-[18px] text-black dark:text-white w-full ${windowSize.width > 1024 ? ' min-h-[clamp(300px,100%,100%)]' : ''}`}>
 
                             <div className="absolute left-4 top-3">
-                                <span className=" text-black dark:text-white font-semibold text-[14px]">
+                                <span className=" text-black dark:text-white font-semibold text-[13px] lg:text-[14px] leading-[17px]">
                                     {item?.tag}
                                 </span>
                             </div>
@@ -365,7 +365,7 @@ const MasonryFeedItem = memo(
                             )}
 
                             <div className="mt-10">
-                                <p className="xl:line-clamp-[20] lg:line-clamp-[16] line-clamp-6 md:line-clamp-[12] sm:line-clamp-[10] whitespace-pre-line break-all opacity-90 text-[14px]">
+                                <p className="xl:line-clamp-[20] lg:line-clamp-[16] line-clamp-6 md:line-clamp-[12] sm:line-clamp-[10] whitespace-pre-line break-all opacity-90  text-[13px] lg:text-[14px] leading-[17px]">
                                     <span
                                         dangerouslySetInnerHTML={{
                                             __html: item?.content.trim(),
@@ -449,13 +449,13 @@ const MasonryFeedItem = memo(
                         {loaded && (
                             <>
                                 <div className="absolute left-3 top-3">
-                                    <span className="font-semibold text-white  text-[14px]">
+                                    <span className="font-semibold text-white  text-[13px] lg:text-[14px] leading-[17px]">
                                         {item?.tag}
                                     </span>
                                 </div>
 
                                 <div className="absolute inset-x-0 bottom-0 p-3 bg-transparent">
-                                    <div className="mt-2 flex flex-col font-semibold items-start text-[14px] w-full">
+                                    <div className="mt-2 flex flex-col font-semibold items-start text-[13px] lg:text-[14px] leading-[17px] w-full">
                                         <p className="w-full text-white truncate">
                                             {item.selling_info?.total_price
                                                 ? `${currency?.symbol}${item.selling_info.total_price}`
@@ -527,7 +527,7 @@ const MasonryFeedItem = memo(
                         {loaded && (
                             <>
                                 <div className="absolute inset-x-0 bottom-0 p-3 bg-transparent">
-                                    <div className="mt-2 flex flex-col font-semibold items-start text-[14px] w-full">
+                                    <div className="mt-2 flex flex-col font-semibold items-start text-[13px] lg:text-[14px] leading-[17px] w-full">
                                         <p className="w-full text-white truncate">
                                             {item.selling_info?.total_price
                                                 ? `${currency?.symbol}${item.selling_info.total_price}`
@@ -547,7 +547,7 @@ const MasonryFeedItem = memo(
                     <div className={`relative flex flex-col bg-surface-2-light dark:bg-surface-2-dark p-[18px] text-black lg:group-hover:scale-[1.02] transition-all duration-500 dark:text-white w-full ${windowSize.width > 1024 ? ' min-h-[clamp(300px,100%,100%)]' : ''}`}>
 
                         <div className="absolute left-4 top-3">
-                            <span className=" text-black dark:text-white font-semibold text-[14px]">
+                            <span className=" text-black dark:text-white font-semibold text-[13px] lg:text-[14px] leading-[17px]">
                                 {item?.tag}
                             </span>
                         </div>
@@ -555,7 +555,7 @@ const MasonryFeedItem = memo(
 
 
                         <div className="relative mt-10 pb-[42px]">
-                            <p className="xl:line-clamp-[20] lg:line-clamp-[16] line-clamp-6 md:line-clamp-[12] sm:line-clamp-[10] whitespace-pre-line break-all opacity-90 text-[14px]">
+                            <p className="xl:line-clamp-[20] lg:line-clamp-[16] line-clamp-6 md:line-clamp-[12] sm:line-clamp-[10] whitespace-pre-line break-all opacity-90 text-[13px] lg:text-[14px] leading-[17px]]">
                                 <span
                                     dangerouslySetInnerHTML={{
                                         __html: item?.content.trim(),
@@ -565,7 +565,7 @@ const MasonryFeedItem = memo(
 
                             {/* PRICE bottom bar */}
                             <div className="absolute inset-x-0 bottom-0 bg-transparent text-main-text-light dark:text-main-text-dark">
-                                <div className="flex flex-col font-semibold items-start text-[14px] w-full">
+                                <div className="flex flex-col font-semibold items-start text-[13px] lg:text-[14px] leading-[17px] w-full">
                                     <p className="w-full truncate">
                                         {item.selling_info?.total_price
                                             ? `${currency?.symbol}${item.selling_info.total_price}`

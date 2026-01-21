@@ -15,6 +15,7 @@ use App\Models\Country;
 use App\Models\CourierCompany;
 use App\Models\ModelName;
 use App\Models\ReturnPolicy;
+use App\Models\ShippingPolicy;
 use App\Models\Smartphone;
 use App\Models\SmartphoneForSale;
 use App\Repositories\Smartphones\Interface\ISmartphoneRepository;
@@ -41,6 +42,7 @@ class SmartphoneRepository implements ISmartphoneRepository
         private Condition $condition,
         private CourierCompany $courier_company,
         private ReturnPolicy $return_policy,
+        private ShippingPolicy $shipping_policy,
         private Addon $addon,
         private GoogleGeoCoderService $googleGeoCoderService,
     ) {}
@@ -93,6 +95,7 @@ class SmartphoneRepository implements ISmartphoneRepository
             'condition_id' => ['required', 'exists:conditions,id'],
             'courier_company_id' => ['required', 'exists:courier_companies,id'],
             'return_policy_id' => ['required', 'exists:return_policies,id'],
+            'shipping_policy_id' => ['required', 'exists:shipping_policies,id'],
             'floor_id' => ['nullable', 'exists:floors,id'],
             'latitude' => ['nullable', 'numeric'],
             'longitude' => ['nullable', 'numeric'],
@@ -286,6 +289,7 @@ class SmartphoneRepository implements ISmartphoneRepository
             'condition_id' => ['required', 'exists:conditions,id'],
             'courier_company_id' => ['required', 'exists:courier_companies,id'],
             'return_policy_id' => ['required', 'exists:return_policies,id'],
+            'shipping_policy_id' => ['required', 'exists:shipping_policies,id'],
             'upc' => ['required', 'max:255', 'unique:smartphones,upc,'.$id],
             'images' => ['nullable', 'array', 'max:5'],
             'videos' => ['nullable', 'array', 'max:5'],
@@ -611,6 +615,20 @@ class SmartphoneRepository implements ISmartphoneRepository
                 return [
                     'id' => $return_policy->id,
                     'name' => $return_policy->name.' ('.$return_policy->language->name.')',
+                ];
+            });
+    }
+
+    public function getShippingPolicies()
+    {
+        return $this->shipping_policy
+            ->where('is_active', true)
+            ->with('language')
+            ->get()
+            ->map(function ($shipping_policy) {
+                return [
+                    'id' => $shipping_policy->id,
+                    'name' => $shipping_policy->name.' ('.$shipping_policy->language->name.')',
                 ];
             });
     }

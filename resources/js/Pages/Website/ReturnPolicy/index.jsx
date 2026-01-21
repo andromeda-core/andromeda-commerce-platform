@@ -2,13 +2,12 @@ import { useTranslation } from '@/Hooks/useTranslation';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import React, { Fragment, useEffect, useRef, useState } from 'react';
+import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 
 const index = ({ return_policy, smartphone_slug }) => {
     const [activeSection, setActiveSection] = useState(null);
     const isProgrammaticScroll = useRef(false);
     const windowSize = useWindowSize();
-    const scrollTimeout = useRef(null);
 
     // Translation Hook
     const { __ } = useTranslation();
@@ -23,10 +22,19 @@ const index = ({ return_policy, smartphone_slug }) => {
         return `${slug}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
     };
 
-    const sections = return_policy?.content?.map(section => ({
-        id: makeId(section.title),
-        title: section.title,
-    }));
+    const dynamicSections = useMemo(() => {
+        return return_policy?.content?.map(section => ({
+            id: makeId(section.title),
+            title: section.title,
+            content: section.content,
+        })) || [];
+    }, [return_policy]);
+
+
+    const sections = [
+        ...dynamicSections.map(s => ({ id: s.id, title: s.title })),
+        { id: 'data_protection_officer', title: __('Data Protection Officer') },
+    ];
 
     useEffect(() => {
         const handleScroll = () => {
@@ -124,7 +132,7 @@ const index = ({ return_policy, smartphone_slug }) => {
                             </h1>
 
                             <p className="max-w-3xl mt-1 text-sm text-sub-text-light dark:sub-text-dark">
-                                {__('We ship internationally. Please review the terms below before placing an order, as return eligibility and fees may vary by destination.')}
+                                {__('This Policy defines the conditions, limitations, and procedures for returns, refunds, and cancellations.')}
                             </p>
 
                             <div className="flex flex-wrap gap-4 mt-5">
@@ -184,10 +192,23 @@ const index = ({ return_policy, smartphone_slug }) => {
 
                         {/* Content */}
                         <main className="flex-1 space-y-6 ">
-                            {/* Company Info */}
+                            {/* Info */}
                             <section className="p-8 rounded-md bg-surface-1-light dark:bg-surface-1-dark dark:backdrop-blur-xl">
                                 <p className="leading-relaxed text-sub-text-light dark:text-sub-text-dark">
-                                    {__("This Privacy Policy explains how 30 Centuries Inc. collects, uses, and protects your personal information when you use andromeda.blue and its features, including Facebook Login and delivery notifications via Messenger, Instagram Direct Messages, and Threads Direct Messages.")}
+                                    {__('This Global Refund & Return Policy')} (“{__('Global Policy')}”)
+                                    {__("governs all return, refund, cancellation, and related requests for products purchased from")}
+                                    {return_policy?.company_name} {" "} ({__('“Company,” “we,” “us,” or “our”')}).
+                                    {__("This Global Policy applies across the entire website and forms an integral and binding part of our")}:
+                                </p>
+
+                                <ul className="mt-3 ml-5 space-y-1 list-disc text-sub-text-light dark:text-sub-text-dark">
+                                    <li>{__('Terms of Service')}</li>
+                                    <li>{__('Shipping Policy')}</li>
+                                    <li>{__('Compliance & Regulatory Disclosures')}</li>
+                                </ul>
+
+                                <p className="mt-3 leading-relaxed text-sub-text-light dark:text-sub-text-dark">
+                                    {__('These documents must be read together, not in isolation.')}
                                 </p>
                             </section>
 
@@ -195,15 +216,14 @@ const index = ({ return_policy, smartphone_slug }) => {
                                 className="w-auto p-8 rounded-md bg-surface-1-light dark:bg-surface-1-dark dark:backdrop-blur-xl"
                             >
 
-                                {return_policy?.content?.map((section, index) => {
-                                    const id = makeId(section.title);
+                                {dynamicSections?.map((section, index) => {
 
                                     return (
                                         <Fragment key={index}>
                                             <div
-                                                key={id}
-                                                id={id}
-                                                data-section={id}
+                                                key={section?.id}
+                                                id={section?.id}
+                                                data-section={section?.id}
                                                 className="mb-8 break-words break-all scroll-mt-32"
                                             >
                                                 <h2 className="mb-3 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
@@ -232,13 +252,13 @@ const index = ({ return_policy, smartphone_slug }) => {
 
                                             </div>
 
-                                            {index == sections.length - 1 && (
+                                            {index == dynamicSections.length - 1 && (
                                                 <Fragment key={sections.length - 1}>
                                                     {/* 10. Data Protection Officer */}
                                                     <div
                                                         id="data_protection_officer"
                                                         data-section="data_protection_officer"
-                                                        className='mb-8'
+                                                        className='scroll-mt-10'
                                                     >
                                                         <div
                                                             className="flex items-center gap-4 mb-3">
@@ -251,21 +271,28 @@ const index = ({ return_policy, smartphone_slug }) => {
 
                                                         <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
                                                             <div className="px-4 py-3 break-words rounded-md bg-backgroundLight dark:bg-surface-2-dark">
-                                                                <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">{__('Email Address')}</p>
-                                                                <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">contact@andromeda.blue</p>
+                                                                <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">{__('Name')}</p>
+                                                                <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">{return_policy?.dpo_name}</p>
                                                             </div>
 
                                                             <div className="px-4 py-3 break-words rounded-md bg-backgroundLight dark:bg-surface-2-dark">
-                                                                <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">{__('Phone Number')}</p>
-                                                                <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">+1 (516) 518 3469 447</p>
+                                                                <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">{__('Email Address')}</p>
+                                                                <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">{return_policy?.dpo_email}</p>
                                                             </div>
+
+
+                                                            <div className="px-4 py-3 break-words rounded-md bg-backgroundLight dark:bg-surface-2-dark">
+                                                                <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">{__('Phone Number')}</p>
+                                                                <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">{return_policy?.dpo_phone}</p>
+                                                            </div>
+
 
                                                         </div>
 
                                                         <div className="grid grid-cols-1 gap-3 mt-3">
                                                             <div className="px-4 py-3 break-words rounded-md bg-backgroundLight dark:bg-surface-2-dark">
                                                                 <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">{__('Address')}</p>
-                                                                <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">BROADWAY 2ND FL 2144 NEW YORK NY 10013</p>
+                                                                <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">{return_policy?.dpo_address}</p>
                                                             </div>
                                                         </div>
                                                     </div>

@@ -38,6 +38,8 @@ use App\Repositories\PackageRecordings\Interface\IPackageRecordingsRepository;
 use App\Repositories\PackageRecordings\Repository\PackageRecordingsRepository;
 use App\Repositories\Posts\Interface\IPostRepository;
 use App\Repositories\Posts\Repository\PostRepository;
+use App\Repositories\PrivacyPolicy\Interface\IPrivacyPolicyRepository;
+use App\Repositories\PrivacyPolicy\Repository\PrivacyPolicyRepository;
 use App\Repositories\Products\Interface\IProductsRepository;
 use App\Repositories\Products\Repository\ProductsRepository;
 use App\Repositories\ReturnPolicy\Interface\IReturnPolicyRepository;
@@ -50,12 +52,16 @@ use App\Repositories\Settings\Interface\ISettingRepository;
 use App\Repositories\Settings\Repository\SettingRepository;
 use App\Repositories\ShippingAddress\Interface\IShippingAddressRepository;
 use App\Repositories\ShippingAddress\Repository\ShippingAddressRepository;
+use App\Repositories\ShippingPolicy\Interface\IShippingPolicyRepository;
+use App\Repositories\ShippingPolicy\Repository\ShippingPolicyRepository;
 use App\Repositories\SmartphoneForSales\Interface\ISmartphoneForSaleRepository;
 use App\Repositories\SmartphoneForSales\Repository\SmartphoneForSaleRepository;
 use App\Repositories\Smartphones\Interface\ISmartphoneRepository;
 use App\Repositories\Smartphones\Repository\SmartphoneRepository;
 use App\Repositories\Suppliers\Interface\ISupplierRepository;
 use App\Repositories\Suppliers\Repository\SupplierRepository;
+use App\Repositories\TermsOfService\Interface\ITermsOfServiceRepository;
+use App\Repositories\TermsOfService\Repository\TermsOfServiceRepository;
 use App\Repositories\TranslationSystem\Language\Interface\ILanguageRepository;
 use App\Repositories\TranslationSystem\Language\Repository\LanguageRepository;
 use App\Repositories\TranslationSystem\TranslationKey\Interface\ITranslationKeyRepository;
@@ -104,6 +110,9 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(ITranslationRepository::class, TranslationRepository::class);
         $this->app->bind(IShippingAddressRepository::class, ShippingAddressRepository::class);
         $this->app->bind(IReturnPolicyRepository::class, ReturnPolicyRepository::class);
+        $this->app->bind(ITermsOfServiceRepository::class, TermsOfServiceRepository::class);
+        $this->app->bind(IPrivacyPolicyRepository::class, PrivacyPolicyRepository::class);
+        $this->app->bind(IShippingPolicyRepository::class, ShippingPolicyRepository::class);
 
     }
 

@@ -1469,6 +1469,303 @@ class SettingController extends Controller
         return back()->with('success', $deleted['message']);
     }
 
+    // Shipping Policy Methods
+    public function shippingPolicyIndex()
+    {
+        $shipping_policies = $this->setting->getAllShippingPolicies();
+
+        return Inertia::render('Dashboard/Settings/ShippingPolicy/index', compact('shipping_policies'));
+
+    }
+
+    public function shippingPolicyCreate()
+    {
+        $languages = $this->language->getAllLanguagesWithoutPagination();
+
+        return Inertia::render('Dashboard/Settings/ShippingPolicy/create', compact('languages'));
+    }
+
+    public function shippingPolicyEdit(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.shipping-policy-settings.index')->with('error', 'Shipping Policy ID not found');
+        }
+
+        $shipping_policy = $this->setting->getSingleShippingPolicy($id);
+
+        if (empty($shipping_policy)) {
+            return to_route('dashboard.settings.shipping-policy-settings.index')->with('error', 'Shipping Policy Not Found');
+        }
+
+        $languages = $this->language->getAllLanguagesWithoutPagination();
+
+        return Inertia::render('Dashboard/Settings/ShippingPolicy/edit', compact('shipping_policy', 'languages'));
+    }
+
+    public function shippingPolicyStore(Request $request)
+    {
+        $created = $this->setting->storeShippingPolicy($request);
+
+        if ($created['status'] === false) {
+            return back()->with('error', $created['message']);
+        }
+
+        return to_route('dashboard.settings.shipping-policy-settings.index')->with('success', $created['message']);
+    }
+
+    public function shippingPolicyUpdate(Request $request, ?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.shipping-policy-settings.index')->with('error', 'Shipping Policy ID not found');
+        }
+
+        $updated = $this->setting->updateShippingPolicy($request, $id);
+
+        if ($updated['status'] === false) {
+            return back()->with('error', $updated['message']);
+        }
+
+        return to_route('dashboard.settings.shipping-policy-settings.index')->with('success', $updated['message']);
+    }
+
+    public function shippingPolicyToggleStatus(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.shipping-policy-settings.index')->with('error', 'Shipping Policy ID not found');
+        }
+
+        $response = $this->setting->toggleShippingPolicyStatus($id);
+        if ($response['status'] === false) {
+            return back()->with('error', $response['message']);
+        }
+
+        return back()->with('success', $response['message']);
+    }
+
+    public function shippingPolicyDestroy(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.shipping-policy-settings.index')->with('error', 'Shipping Policy ID not found');
+        }
+
+        $deleted = $this->setting->destroyShippingPolicy($id);
+
+        if ($deleted['status'] === false) {
+            return back()->with('error', $deleted['message']);
+        }
+
+        return back()->with('success', $deleted['message']);
+    }
+
+    public function shippingPolicyDestroyBySelection(Request $request)
+    {
+        $deleted = $this->setting->destroyShippingPolicyBySelection($request);
+
+        if ($deleted['status'] === false) {
+            return back()->with('error', $deleted['message']);
+        }
+
+        return back()->with('success', $deleted['message']);
+    }
+
+    // Terms Of Service Methods
+    public function termsOfServiceIndex()
+    {
+        $terms_of_services = $this->setting->getAllTermsOfServices();
+
+        return Inertia::render('Dashboard/Settings/TermsOfService/index', compact('terms_of_services'));
+
+    }
+
+    public function termsOfServiceCreate()
+    {
+        $languages = $this->language->getAllLanguagesWithoutPagination();
+
+        return Inertia::render('Dashboard/Settings/TermsOfService/create', compact('languages'));
+    }
+
+    public function termsOfServiceEdit(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.terms-of-service-settings.index')->with('error', 'Terms Of Service ID not found');
+        }
+
+        $terms_of_service = $this->setting->getSingleTermsOfService($id);
+
+        if (empty($terms_of_service)) {
+            return to_route('dashboard.settings.terms-of-service-settings.index')->with('error', 'Terms Of Service Not Found');
+        }
+
+        $languages = $this->language->getAllLanguagesWithoutPagination();
+
+        return Inertia::render('Dashboard/Settings/TermsOfService/edit', compact('terms_of_service', 'languages'));
+    }
+
+    public function termsOfServiceStore(Request $request)
+    {
+        $created = $this->setting->storeTermsOfService($request);
+
+        if ($created['status'] === false) {
+            return back()->with('error', $created['message']);
+        }
+
+        return to_route('dashboard.settings.terms-of-service-settings.index')->with('success', $created['message']);
+    }
+
+    public function termsOfServiceUpdate(Request $request, ?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.terms-of-service-settings.index')->with('error', 'Terms Of Service ID not found');
+        }
+
+        $updated = $this->setting->updateTermsOfService($request, $id);
+
+        if ($updated['status'] === false) {
+            return back()->with('error', $updated['message']);
+        }
+
+        return to_route('dashboard.settings.terms-of-service-settings.index')->with('success', $updated['message']);
+    }
+
+    public function termsOfServiceToggleStatus(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.terms-of-service-settings.index')->with('error', 'Terms Of Service ID not found');
+        }
+
+        $response = $this->setting->toggleTermsOfServiceStatus($id);
+        if ($response['status'] === false) {
+            return back()->with('error', $response['message']);
+        }
+
+        return back()->with('success', $response['message']);
+    }
+
+    public function termsOfServiceDestroy(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.terms-of-service-settings.index')->with('error', 'Terms Of Service ID not found');
+        }
+
+        $deleted = $this->setting->destroyTermsOfService($id);
+
+        if ($deleted['status'] === false) {
+            return back()->with('error', $deleted['message']);
+        }
+
+        return back()->with('success', $deleted['message']);
+    }
+
+    public function termsOfServiceDestroyBySelection(Request $request)
+    {
+        $deleted = $this->setting->destroyTermsOfServiceBySelection($request);
+
+        if ($deleted['status'] === false) {
+            return back()->with('error', $deleted['message']);
+        }
+
+        return back()->with('success', $deleted['message']);
+    }
+
+    // Privacy Policy Methods
+    public function privacyPolicyIndex()
+    {
+        $privacy_policies = $this->setting->getAllPrivacyPolicy();
+
+        return Inertia::render('Dashboard/Settings/PrivacyPolicy/index', compact('privacy_policies'));
+
+    }
+
+    public function privacyPolicyCreate()
+    {
+        $languages = $this->language->getAllLanguagesWithoutPagination();
+
+        return Inertia::render('Dashboard/Settings/PrivacyPolicy/create', compact('languages'));
+    }
+
+    public function privacyPolicyEdit(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.privacy-policy-settings.index')->with('error', 'Privacy Policy ID not found');
+        }
+
+        $privacy_policy = $this->setting->getSinglePrivacyPolicy($id);
+
+        if (empty($privacy_policy)) {
+            return to_route('dashboard.settings.privacy-policy-settings.index')->with('error', 'Privacy Policy Not Found');
+        }
+
+        $languages = $this->language->getAllLanguagesWithoutPagination();
+
+        return Inertia::render('Dashboard/Settings/PrivacyPolicy/edit', compact('privacy_policy', 'languages'));
+    }
+
+    public function privacyPolicyStore(Request $request)
+    {
+        $created = $this->setting->storePrivacyPolicy($request);
+
+        if ($created['status'] === false) {
+            return back()->with('error', $created['message']);
+        }
+
+        return to_route('dashboard.settings.privacy-policy-settings.index')->with('success', $created['message']);
+    }
+
+    public function privacyPolicyUpdate(Request $request, ?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.privacy-policy-settings.index')->with('error', 'Privacy Policy ID not found');
+        }
+
+        $updated = $this->setting->updatePrivacyPolicy($request, $id);
+
+        if ($updated['status'] === false) {
+            return back()->with('error', $updated['message']);
+        }
+
+        return to_route('dashboard.settings.privacy-policy-settings.index')->with('success', $updated['message']);
+    }
+
+    public function privacyPolicyToggleStatus(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.privacy-policy-settings.index')->with('error', 'Privacy Policy ID not found');
+        }
+
+        $response = $this->setting->togglePrivacyPolicyStatus($id);
+        if ($response['status'] === false) {
+            return back()->with('error', $response['message']);
+        }
+
+        return back()->with('success', $response['message']);
+    }
+
+    public function privacyPolicyDestroy(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.settings.privacy-policy-settings.index')->with('error', 'Privacy Policy ID not found');
+        }
+
+        $deleted = $this->setting->destroyPrivacyPolicy($id);
+
+        if ($deleted['status'] === false) {
+            return back()->with('error', $deleted['message']);
+        }
+
+        return back()->with('success', $deleted['message']);
+    }
+
+    public function privacyPolicyDestroyBySelection(Request $request)
+    {
+        $deleted = $this->setting->destroyPrivacyPolicyBySelection($request);
+
+        if ($deleted['status'] === false) {
+            return back()->with('error', $deleted['message']);
+        }
+
+        return back()->with('success', $deleted['message']);
+    }
+
     // Courier Company Methods
     public function courierCompanyIndex()
     {

@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Cache;
 
 class ReturnPolicy extends Model
 {
-    protected $fillable = ['name', 'content', 'slug', 'language_id', 'is_active'];
+    protected $fillable = ['name', 'content', 'slug', 'company_name',  'dpo_name', 'dpo_email', 'dpo_phone', 'dpo_address', 'country', 'state', 'language_id', 'is_active'];
 
     protected $appends = ['added_at', 'human_updated_at'];
 

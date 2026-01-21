@@ -26,12 +26,15 @@ use App\Models\MetaSetting;
 use App\Models\ModelName;
 use App\Models\NowPayment;
 use App\Models\Permission;
+use App\Models\PrivacyPolicy;
 use App\Models\ReturnPolicy;
 use App\Models\RewardSetting;
 use App\Models\Role;
+use App\Models\ShippingPolicy;
 use App\Models\SmtpSetting;
 use App\Models\SpecialCountry;
 use App\Models\StorageLocation;
+use App\Models\TermsOfService;
 use App\Repositories\Settings\Interface\ISettingRepository;
 use Exception;
 use Illuminate\Http\Request;
@@ -66,6 +69,9 @@ class SettingRepository implements ISettingRepository
         private CourierCompany $courier_company,
         private Condition $condition,
         private Addon $addon,
+        private ShippingPolicy $shipping_policy,
+        private TermsOfService $terms_of_service,
+        private PrivacyPolicy $privacy_policy
 
     ) {}
 
@@ -2738,6 +2744,13 @@ class SettingRepository implements ISettingRepository
             'content' => ['required', 'array', 'min:1'],
             'content.*.title' => ['required', 'string', 'max:255'],
             'content.*.content' => ['required', 'string'],
+            'company_name' => ['required', 'string', 'max:255'],
+            'country' => ['required', 'string', 'max:255'],
+            'state' => ['required', 'string', 'max:255'],
+            'dpo_name' => ['required', 'string', 'max:255'],
+            'dpo_email' => ['required', 'string', 'email', 'max:255'],
+            'dpo_phone' => ['required', 'string', 'max:255'],
+            'dpo_address' => ['required', 'string'],
             'language_id' => ['required', 'exists:languages,id'],
         ], [
             'content.*.title.required' => 'title is required',
@@ -2804,6 +2817,13 @@ class SettingRepository implements ISettingRepository
             'content' => ['required', 'array', 'min:1'],
             'content.*.title' => ['required', 'string', 'max:255'],
             'content.*.content' => ['required', 'string'],
+            'company_name' => ['required', 'string', 'max:255'],
+            'country' => ['required', 'string', 'max:255'],
+            'state' => ['required', 'string', 'max:255'],
+            'dpo_name' => ['required', 'string', 'max:255'],
+            'dpo_email' => ['required', 'string', 'email', 'max:255'],
+            'dpo_phone' => ['required', 'string', 'max:255'],
+            'dpo_address' => ['required', 'string'],
             'language_id' => ['required', 'exists:languages,id'],
         ], [
             'content.*.title.required' => 'title is required',
@@ -2944,6 +2964,766 @@ class SettingRepository implements ISettingRepository
             return [
                 'status' => true,
                 'message' => 'Return Policy Deleted Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    // Shipping Policy Settings
+    public function getAllShippingPolicies()
+    {
+        $shipping_policies = $this->shipping_policy->with(['language'])->latest()->paginate(10);
+
+        return $shipping_policies;
+    }
+
+    public function getSingleShippingPolicy(string $id)
+    {
+        $shipping_policy = $this->shipping_policy->find($id);
+
+        return $shipping_policy;
+    }
+
+    public function storeShippingPolicy(Request $request)
+    {
+        $validated_req = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'content' => ['required', 'array', 'min:1'],
+            'content.*.title' => ['required', 'string', 'max:255'],
+            'content.*.content' => ['required', 'string'],
+            'company_name' => ['required', 'string', 'max:255'],
+            'country' => ['required', 'string', 'max:255'],
+            'state' => ['required', 'string', 'max:255'],
+            'dpo_name' => ['required', 'string', 'max:255'],
+            'dpo_email' => ['required', 'string', 'email', 'max:255'],
+            'dpo_phone' => ['required', 'string', 'max:255'],
+            'dpo_address' => ['required', 'string'],
+            'language_id' => ['required', 'exists:languages,id'],
+        ], [
+            'content.*.title.required' => 'title is required',
+            'content.*.content.required' => 'content is required',
+        ]);
+
+        // Check each content item for empty HTML
+        foreach ($validated_req['content'] as $index => $section) {
+
+            if (empty($section['title'])) {
+                throw ValidationException::withMessages([
+                    "content.{$index}.title" => 'Section '.($index + 1).' title is required',
+                ]);
+            }
+
+            $cleanContent = trim($section['content']);
+            if (in_array($cleanContent, ['<p><br></p>', '<p></p>', ''])) {
+                throw ValidationException::withMessages([
+                    "content.{$index}.content" => 'Section '.($index + 1).' content is required',
+                ]);
+            }
+
+        }
+
+        try {
+
+            $existingPolicy = $this->shipping_policy->where('name', $validated_req['name'])->first();
+
+            if (! empty($existingPolicy)) {
+                $validated_req['slug'] = $existingPolicy->slug;
+            } else {
+                $slug = Str::slug($validated_req['name']);
+
+                if (empty($slug)) {
+                    $slug = 'shipping-policy-'.Str::random(8);
+                }
+
+                $validated_req['slug'] = $slug;
+            }
+
+            $created = $this->shipping_policy->create($validated_req);
+
+            if (empty($created)) {
+                throw new Exception('Something went wrong while creating Shipping Policy');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Shipping Policy Created Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function updateShippingPolicy(Request $request, string $id)
+    {
+        $validated_req = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'content' => ['required', 'array', 'min:1'],
+            'content.*.title' => ['required', 'string', 'max:255'],
+            'content.*.content' => ['required', 'string'],
+            'company_name' => ['required', 'string', 'max:255'],
+            'country' => ['required', 'string', 'max:255'],
+            'state' => ['required', 'string', 'max:255'],
+            'dpo_name' => ['required', 'string', 'max:255'],
+            'dpo_email' => ['required', 'string', 'email', 'max:255'],
+            'dpo_phone' => ['required', 'string', 'max:255'],
+            'dpo_address' => ['required', 'string'],
+            'language_id' => ['required', 'exists:languages,id'],
+        ], [
+            'content.*.title.required' => 'title is required',
+            'content.*.content.required' => 'content is required',
+
+        ]);
+
+        // Check each content item for empty HTML
+        foreach ($validated_req['content'] as $index => $section) {
+
+            if (empty($section['title'])) {
+                throw ValidationException::withMessages([
+                    "content.{$index}.title" => 'Section '.($index + 1).' title is required',
+                ]);
+            }
+
+            $cleanContent = trim($section['content']);
+            if (in_array($cleanContent, ['<p><br></p>', '<p></p>', ''])) {
+                throw ValidationException::withMessages([
+                    "content.{$index}.content" => 'Section '.($index + 1).' content is required',
+                ]);
+            }
+
+        }
+
+        try {
+
+            $shipping_policy = $this->getSingleShippingPolicy($id);
+
+            if (empty($shipping_policy)) {
+                throw new Exception('Shipping Policy Not Found');
+            }
+
+            $shipping_policy->fill($validated_req);
+
+            if ($shipping_policy->isDirty('name')) {
+                $existingPolicy = $this->shipping_policy->where('name', $validated_req['name'])->first();
+
+                if (! empty($existingPolicy)) {
+                    $validated_req['slug'] = $existingPolicy->slug;
+                } else {
+                    $slug = Str::slug($validated_req['name']);
+
+                    if (empty($slug)) {
+                        $slug = 'shipping-policy-'.Str::random(8);
+                    }
+
+                    $validated_req['slug'] = $slug;
+                }
+            }
+
+            $updated = $shipping_policy->update($validated_req);
+
+            if (! $updated) {
+                throw new Exception('Something went wrong while updating Shipping policy');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Shipping Policy Updated Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+
+    }
+
+    public function toggleShippingPolicyStatus(string $id)
+    {
+        try {
+            $shipping_policy = $this->getSingleShippingPolicy($id);
+            if (empty($shipping_policy)) {
+                throw new Exception('Shipping Policy Not Found');
+            }
+
+            $shipping_policy->update(['is_active' => ! $shipping_policy->is_active]);
+
+            return [
+                'status' => true,
+                'message' => 'Shipping Policy Status Toggled Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function destroyShippingPolicy(string $id)
+    {
+        try {
+            $shipping_policy = $this->getSingleShippingPolicy($id);
+            if (empty($shipping_policy)) {
+                throw new Exception('Shipping Policy Not Found');
+            }
+
+            $deleted = $shipping_policy->delete();
+
+            if (! $deleted) {
+                throw new Exception('Something went wrong while deleting Shipping policy');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Shipping Policy Deleted Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function destroyShippingPolicyBySelection(Request $request)
+    {
+        try {
+
+            $ids = $request->array('ids');
+
+            if (blank($ids)) {
+                throw new Exception('Please Select Atleast One Shipping Policy');
+            }
+
+            $deleted = $this->shipping_policy->destroy($ids);
+
+            if ($deleted !== count($ids)) {
+                throw new Exception('Something went wrong while deleting Shipping policy');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Shipping Policy Deleted Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    // Terms Of Service Settings
+    public function getAllTermsOfServices()
+    {
+        $terms_of_services = $this->terms_of_service->with(['language'])->latest()->paginate(10);
+
+        return $terms_of_services;
+    }
+
+    public function getSingleTermsOfService(string $id)
+    {
+        $terms_of_service = $this->terms_of_service->find($id);
+
+        return $terms_of_service;
+    }
+
+    public function storeTermsOfService(Request $request)
+    {
+
+        $validated_req = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'content' => ['required', 'array', 'min:1'],
+            'content.*.title' => ['required', 'string', 'max:255'],
+            'content.*.content' => ['required', 'string'],
+            'company_name' => ['required', 'string', 'max:255'],
+            'country' => ['required', 'string', 'max:255'],
+            'state' => ['required', 'string', 'max:255'],
+            'dpo_name' => ['required', 'string', 'max:255'],
+            'dpo_email' => ['required', 'string', 'email', 'max:255'],
+            'dpo_phone' => ['required', 'string', 'max:255'],
+            'dpo_address' => ['required', 'string'],
+            'language_id' => ['required', 'exists:languages,id'],
+        ], [
+            'content.*.title.required' => 'title is required',
+            'content.*.content.required' => 'content is required',
+        ]);
+
+        // Check each content item for empty HTML
+        foreach ($validated_req['content'] as $index => $section) {
+
+            if (empty($section['title'])) {
+                throw ValidationException::withMessages([
+                    "content.{$index}.title" => 'Section '.($index + 1).' title is required',
+                ]);
+            }
+
+            $cleanContent = trim($section['content']);
+            if (in_array($cleanContent, ['<p><br></p>', '<p></p>', ''])) {
+                throw ValidationException::withMessages([
+                    "content.{$index}.content" => 'Section '.($index + 1).' content is required',
+                ]);
+            }
+
+        }
+
+        try {
+
+            $existingPolicy = $this->terms_of_service->where('name', $validated_req['name'])->first();
+
+            if (! empty($existingPolicy)) {
+                $validated_req['slug'] = $existingPolicy->slug;
+            } else {
+                $slug = Str::slug($validated_req['name']);
+
+                if (empty($slug)) {
+                    $slug = 'terms_of_service-'.Str::random(8);
+                }
+
+                $validated_req['slug'] = $slug;
+            }
+
+            $created = $this->terms_of_service->create($validated_req);
+
+            if (empty($created)) {
+                throw new Exception('Something went wrong while creating Terms Of Service');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Terms Of Service Created Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+
+    }
+
+    public function updateTermsOfService(Request $request, string $id)
+    {
+        $validated_req = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'content' => ['required', 'array', 'min:1'],
+            'content.*.title' => ['required', 'string', 'max:255'],
+            'content.*.content' => ['required', 'string'],
+            'company_name' => ['required', 'string', 'max:255'],
+            'country' => ['required', 'string', 'max:255'],
+            'state' => ['required', 'string', 'max:255'],
+            'dpo_name' => ['required', 'string', 'max:255'],
+            'dpo_email' => ['required', 'string', 'email', 'max:255'],
+            'dpo_phone' => ['required', 'string', 'max:255'],
+            'dpo_address' => ['required', 'string'],
+            'language_id' => ['required', 'exists:languages,id'],
+        ], [
+            'content.*.title.required' => 'title is required',
+            'content.*.content.required' => 'content is required',
+
+        ]);
+
+        // Check each content item for empty HTML
+        foreach ($validated_req['content'] as $index => $section) {
+
+            if (empty($section['title'])) {
+                throw ValidationException::withMessages([
+                    "content.{$index}.title" => 'Section '.($index + 1).' title is required',
+                ]);
+            }
+
+            $cleanContent = trim($section['content']);
+            if (in_array($cleanContent, ['<p><br></p>', '<p></p>', ''])) {
+                throw ValidationException::withMessages([
+                    "content.{$index}.content" => 'Section '.($index + 1).' content is required',
+                ]);
+            }
+
+        }
+
+        try {
+
+            $terms_of_service = $this->getSingleTermsOfService($id);
+
+            if (empty($terms_of_service)) {
+                throw new Exception('Terms Of Service Not Found');
+            }
+
+            $terms_of_service->fill($validated_req);
+
+            if ($terms_of_service->isDirty('name')) {
+                $existingPolicy = $this->terms_of_service->where('name', $validated_req['name'])->first();
+
+                if (! empty($existingPolicy)) {
+                    $validated_req['slug'] = $existingPolicy->slug;
+                } else {
+                    $slug = Str::slug($validated_req['name']);
+
+                    if (empty($slug)) {
+                        $slug = 'terms_of_service-'.Str::random(8);
+                    }
+
+                    $validated_req['slug'] = $slug;
+                }
+            }
+
+            $updated = $terms_of_service->update($validated_req);
+
+            if (! $updated) {
+                throw new Exception('Something went wrong while updating Terms Of Service');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Terms Of Service Updated Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+
+    }
+
+    public function toggleTermsOfServiceStatus(string $id)
+    {
+        try {
+            $terms_of_service = $this->getSingleTermsOfService($id);
+            if (empty($terms_of_service)) {
+                throw new Exception('Terms Of Service Not Found');
+            }
+
+            $terms_of_service->update(['is_active' => ! $terms_of_service->is_active]);
+
+            return [
+                'status' => true,
+                'message' => 'Terms Of Service Status Toggled Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function destroyTermsOfService(string $id)
+    {
+        try {
+            $terms_of_service = $this->getSingleTermsOfService($id);
+            if (empty($terms_of_service)) {
+                throw new Exception('Terms Of Service Not Found');
+            }
+
+            $deleted = $terms_of_service->delete();
+
+            if (! $deleted) {
+                throw new Exception('Something went wrong while deleting Terms of Service');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Terms Of Service Deleted Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function destroyTermsOfServiceBySelection(Request $request)
+    {
+        try {
+
+            $ids = $request->array('ids');
+
+            if (blank($ids)) {
+                throw new Exception('Please Select Atleast One Terms Of Service');
+            }
+
+            $deleted = $this->terms_of_service->destroy($ids);
+
+            if ($deleted !== count($ids)) {
+                throw new Exception('Something went wrong while deleting Terms Of Service');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Terms Of Service Deleted Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    // Privacy Policy Settings
+    public function getAllPrivacyPolicy()
+    {
+        $privacy_policy = $this->privacy_policy->with(['language'])->latest()->paginate(10);
+
+        return $privacy_policy;
+    }
+
+    public function getSinglePrivacyPolicy(string $id)
+    {
+        $privacy_policy = $this->privacy_policy->find($id);
+
+        return $privacy_policy;
+    }
+
+    public function storePrivacyPolicy(Request $request)
+    {
+
+        $validated_req = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'content' => ['required', 'array', 'min:1'],
+            'content.*.title' => ['required', 'string', 'max:255'],
+            'content.*.content' => ['required', 'string'],
+            'company_name' => ['required', 'string', 'max:255'],
+            'country' => ['required', 'string', 'max:255'],
+            'state' => ['required', 'string', 'max:255'],
+            'dpo_name' => ['required', 'string', 'max:255'],
+            'dpo_email' => ['required', 'string', 'email', 'max:255'],
+            'dpo_phone' => ['required', 'string', 'max:255'],
+            'dpo_address' => ['required', 'string'],
+            'language_id' => ['required', 'exists:languages,id'],
+        ], [
+            'content.*.title.required' => 'title is required',
+            'content.*.content.required' => 'content is required',
+        ]);
+
+        // Check each content item for empty HTML
+        foreach ($validated_req['content'] as $index => $section) {
+
+            if (empty($section['title'])) {
+                throw ValidationException::withMessages([
+                    "content.{$index}.title" => 'Section '.($index + 1).' title is required',
+                ]);
+            }
+
+            $cleanContent = trim($section['content']);
+            if (in_array($cleanContent, ['<p><br></p>', '<p></p>', ''])) {
+                throw ValidationException::withMessages([
+                    "content.{$index}.content" => 'Section '.($index + 1).' content is required',
+                ]);
+            }
+
+        }
+
+        try {
+
+            $existingPolicy = $this->privacy_policy->where('name', $validated_req['name'])->first();
+
+            if (! empty($existingPolicy)) {
+                $validated_req['slug'] = $existingPolicy->slug;
+            } else {
+                $slug = Str::slug($validated_req['name']);
+
+                if (empty($slug)) {
+                    $slug = 'privacy_policy-'.Str::random(8);
+                }
+
+                $validated_req['slug'] = $slug;
+            }
+
+            $created = $this->privacy_policy->create($validated_req);
+
+            if (empty($created)) {
+                throw new Exception('Something went wrong while creating Privacy Policy');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Privacy Policy Created Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+
+    }
+
+    public function updatePrivacyPolicy(Request $request, string $id)
+    {
+        $validated_req = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'content' => ['required', 'array', 'min:1'],
+            'content.*.title' => ['required', 'string', 'max:255'],
+            'content.*.content' => ['required', 'string'],
+            'company_name' => ['required', 'string', 'max:255'],
+            'country' => ['required', 'string', 'max:255'],
+            'state' => ['required', 'string', 'max:255'],
+            'dpo_name' => ['required', 'string', 'max:255'],
+            'dpo_email' => ['required', 'string', 'email', 'max:255'],
+            'dpo_phone' => ['required', 'string', 'max:255'],
+            'dpo_address' => ['required', 'string'],
+            'language_id' => ['required', 'exists:languages,id'],
+        ], [
+            'content.*.title.required' => 'title is required',
+            'content.*.content.required' => 'content is required',
+
+        ]);
+
+        // Check each content item for empty HTML
+        foreach ($validated_req['content'] as $index => $section) {
+
+            if (empty($section['title'])) {
+                throw ValidationException::withMessages([
+                    "content.{$index}.title" => 'Section '.($index + 1).' title is required',
+                ]);
+            }
+
+            $cleanContent = trim($section['content']);
+            if (in_array($cleanContent, ['<p><br></p>', '<p></p>', ''])) {
+                throw ValidationException::withMessages([
+                    "content.{$index}.content" => 'Section '.($index + 1).' content is required',
+                ]);
+            }
+
+        }
+
+        try {
+
+            $privacy_policy = $this->getSinglePrivacyPolicy($id);
+
+            if (empty($privacy_policy)) {
+                throw new Exception('Privacy Policy Not Found');
+            }
+
+            $privacy_policy->fill($validated_req);
+
+            if ($privacy_policy->isDirty('name')) {
+                $existingPolicy = $this->privacy_policy->where('name', $validated_req['name'])->first();
+
+                if (! empty($existingPolicy)) {
+                    $validated_req['slug'] = $existingPolicy->slug;
+                } else {
+                    $slug = Str::slug($validated_req['name']);
+
+                    if (empty($slug)) {
+                        $slug = 'privacy_policy-'.Str::random(8);
+                    }
+
+                    $validated_req['slug'] = $slug;
+                }
+            }
+
+            $updated = $privacy_policy->update($validated_req);
+
+            if (! $updated) {
+                throw new Exception('Something went wrong while updating Privacy Policy');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Privacy Policy Updated Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+
+    }
+
+    public function togglePrivacyPolicyStatus(string $id)
+    {
+        try {
+            $privacy_policy = $this->getSinglePrivacyPolicy($id);
+            if (empty($privacy_policy)) {
+                throw new Exception('Privacy Policy Not Found');
+            }
+
+            $privacy_policy->update(['is_active' => ! $privacy_policy->is_active]);
+
+            return [
+                'status' => true,
+                'message' => 'Privacy Policy Status Toggled Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function destroyPrivacyPolicy(string $id)
+    {
+        try {
+            $privacy_policy = $this->getSinglePrivacyPolicy($id);
+            if (empty($privacy_policy)) {
+                throw new Exception('Privacy Policy Not Found');
+            }
+
+            $deleted = $privacy_policy->delete();
+
+            if (! $deleted) {
+                throw new Exception('Something went wrong while deleting Privacy Policy');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Privacy Policy Deleted Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function destroyPrivacyPolicyBySelection(Request $request)
+    {
+        try {
+
+            $ids = $request->array('ids');
+
+            if (blank($ids)) {
+                throw new Exception('Please Select Atleast One Privacy Policy');
+            }
+
+            $deleted = $this->privacy_policy->destroy($ids);
+
+            if ($deleted !== count($ids)) {
+                throw new Exception('Something went wrong while deleting Privacy Policy');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Privacy Policy Deleted Successfully',
             ];
 
         } catch (Exception $e) {

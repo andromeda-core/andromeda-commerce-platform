@@ -1050,6 +1050,55 @@ namespace App\Models{
  * @property string $name
  * @property array<array-key, mixed> $content
  * @property string $slug
+ * @property string $company_name
+ * @property string $country
+ * @property string $state
+ * @property string $dpo_name
+ * @property string $dpo_email
+ * @property string $dpo_phone
+ * @property string $dpo_address
+ * @property int|null $language_id
+ * @property int $is_active
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read mixed $added_at
+ * @property-read mixed $human_updated_at
+ * @property-read \App\Models\Language|null $language
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PrivacyPolicy newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PrivacyPolicy newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PrivacyPolicy query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PrivacyPolicy whereCompanyName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PrivacyPolicy whereContent($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PrivacyPolicy whereCountry($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PrivacyPolicy whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PrivacyPolicy whereDpoAddress($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PrivacyPolicy whereDpoEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PrivacyPolicy whereDpoName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PrivacyPolicy whereDpoPhone($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PrivacyPolicy whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PrivacyPolicy whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PrivacyPolicy whereLanguageId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PrivacyPolicy whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PrivacyPolicy whereSlug($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PrivacyPolicy whereState($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PrivacyPolicy whereUpdatedAt($value)
+ */
+	class PrivacyPolicy extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $company_name
+ * @property string $country
+ * @property string $state
+ * @property string $dpo_name
+ * @property string $dpo_email
+ * @property string $dpo_phone
+ * @property string $dpo_address
+ * @property array<array-key, mixed> $content
+ * @property string $slug
  * @property int|null $language_id
  * @property int $is_active
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -1060,13 +1109,20 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnPolicy newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnPolicy newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnPolicy query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnPolicy whereCompanyName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnPolicy whereContent($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnPolicy whereCountry($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnPolicy whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnPolicy whereDpoAddress($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnPolicy whereDpoEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnPolicy whereDpoName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnPolicy whereDpoPhone($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnPolicy whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnPolicy whereIsActive($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnPolicy whereLanguageId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnPolicy whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnPolicy whereSlug($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnPolicy whereState($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReturnPolicy whereUpdatedAt($value)
  */
 	class ReturnPolicy extends \Eloquent {}
@@ -1212,6 +1268,48 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
+ * @property string $name
+ * @property array<array-key, mixed> $content
+ * @property string $slug
+ * @property string $company_name
+ * @property string $country
+ * @property string $dpo_name
+ * @property string $dpo_email
+ * @property string $dpo_phone
+ * @property string $dpo_address
+ * @property string $state
+ * @property int|null $language_id
+ * @property int $is_active
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read mixed $added_at
+ * @property-read mixed $human_updated_at
+ * @property-read \App\Models\Language|null $language
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingPolicy newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingPolicy newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingPolicy query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingPolicy whereCompanyName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingPolicy whereContent($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingPolicy whereCountry($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingPolicy whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingPolicy whereDpoAddress($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingPolicy whereDpoEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingPolicy whereDpoName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingPolicy whereDpoPhone($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingPolicy whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingPolicy whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingPolicy whereLanguageId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingPolicy whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingPolicy whereSlug($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingPolicy whereState($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingPolicy whereUpdatedAt($value)
+ */
+	class ShippingPolicy extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
  * @property array<array-key, mixed> $color_ids
  * @property int|null $model_name_id
  * @property string|null $model_searchable_name
@@ -1223,6 +1321,7 @@ namespace App\Models{
  * @property int|null $delivery_days
  * @property int|null $courier_company_id
  * @property int|null $return_policy_id
+ * @property int|null $shipping_policy_id
  * @property string $upc
  * @property string|null $content
  * @property string|null $tag
@@ -1257,6 +1356,7 @@ namespace App\Models{
  * @property-read int|null $orders_count
  * @property-read \App\Models\ReturnPolicy|null $return_policy
  * @property-read \App\Models\SmartphoneForSale|null $selling_info
+ * @property-read \App\Models\ShippingPolicy|null $shipping_policy
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SmartphoneCartAddon> $smartphoneAddons
  * @property-read int|null $smartphone_addons_count
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone newModelQuery()
@@ -1281,6 +1381,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereModelSearchableName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereProductDetails($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereReturnPolicyId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereShippingPolicyId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereTag($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereUpc($value)
@@ -1514,6 +1615,48 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
+ * @property string $name
+ * @property array<array-key, mixed> $content
+ * @property string $slug
+ * @property string $company_name
+ * @property string $country
+ * @property string $state
+ * @property string $dpo_name
+ * @property string $dpo_email
+ * @property string $dpo_phone
+ * @property string $dpo_address
+ * @property int|null $language_id
+ * @property int $is_active
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read mixed $added_at
+ * @property-read mixed $human_updated_at
+ * @property-read \App\Models\Language|null $language
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TermsOfService newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TermsOfService newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TermsOfService query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TermsOfService whereCompanyName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TermsOfService whereContent($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TermsOfService whereCountry($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TermsOfService whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TermsOfService whereDpoAddress($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TermsOfService whereDpoEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TermsOfService whereDpoName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TermsOfService whereDpoPhone($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TermsOfService whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TermsOfService whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TermsOfService whereLanguageId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TermsOfService whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TermsOfService whereSlug($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TermsOfService whereState($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|TermsOfService whereUpdatedAt($value)
+ */
+	class TermsOfService extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
  * @property int $language_id
  * @property int $translation_key_id
  * @property string $value
@@ -1570,6 +1713,7 @@ namespace App\Models{
  * @property string|null $remember_token
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int $is_agreed_to_terms
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Post> $bookMarkedPosts
  * @property-read int|null $book_marked_posts_count
  * @property-read \App\Models\Collaborator|null $collaborator
@@ -1606,6 +1750,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereEmailVerifiedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereIsAgreedToTerms($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereIsEmailVerificationSent($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereLanguageId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereLanguageLocale($value)

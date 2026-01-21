@@ -43,7 +43,9 @@ use App\Http\Controllers\Website\ProductController;
 use App\Http\Controllers\Website\ProfileController as WebsiteProfileController;
 use App\Http\Controllers\Website\ReturnPolicyController as WebsiteReturnPolicyController;
 use App\Http\Controllers\Website\ShippingAddressController;
+use App\Http\Controllers\Website\ShippingPolicyController;
 use App\Http\Controllers\Website\ShopController;
+use App\Http\Controllers\Website\TermsOfServiceController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 
@@ -170,6 +172,12 @@ Route::group(['as' => 'website.'], function () {
 
     // Return Policy Routes
     Route::get('/return-policy/{slug?}/{smartphone_slug?}', WebsiteReturnPolicyController::class)->name('return-policy.index');
+
+    // Shipping Policy
+    Route::get('/shipping-policy/{slug?}/{smartphone_slug?}', ShippingPolicyController::class)->name('shipping-policy.index');
+
+    // Terms Of Service Route
+    Route::get('/terms-of-service', TermsOfServiceController::class)->name('terms-of-service.index');
 
     // Shop Routes
     Route::match(['get', 'post'], '/shop', ShopController::class)->name('shop.index');
@@ -626,6 +634,36 @@ Route::middleware(['auth'])->group(function () {
                     Route::put('/return-policy-settings-toggle-status/{id?}', 'returnPolicyToggleStatus')->name('return-policy-settings.toggle-status');
                     Route::delete('/return-policy-settings-destroy/{id?}', 'returnPolicyDestroy')->name('return-policy-settings.destroy');
                     Route::delete('/return-policy-settings-destroy-by-selection', 'returnPolicyDestroyBySelection')->name('return-policy-settings.destroybyselection');
+
+                    // Shipping Policy Routes
+                    Route::get('/shipping-policy-settings', 'shippingPolicyIndex')->name('shipping-policy-settings.index');
+                    Route::get('/shipping-policy-settings-create', 'shippingPolicyCreate')->name('shipping-policy-settings.create');
+                    Route::post('/shipping-policy-settings-store', 'shippingPolicyStore')->name('shipping-policy-settings.store');
+                    Route::get('/shipping-policy-settings-edit/{id?}', 'shippingPolicyEdit')->name('shipping-policy-settings.edit');
+                    Route::put('/shipping-policy-settings-update/{id?}', 'shippingPolicyUpdate')->name('shipping-policy-settings.update');
+                    Route::put('/shipping-policy-settings-toggle-status/{id?}', 'shippingPolicyToggleStatus')->name('shipping-policy-settings.toggle-status');
+                    Route::delete('/shipping-policy-settings-destroy/{id?}', 'shippingPolicyDestroy')->name('shipping-policy-settings.destroy');
+                    Route::delete('/shipping-policy-settings-destroy-by-selection', 'shippingPolicyDestroyBySelection')->name('shipping-policy-settings.destroybyselection');
+
+                    // Terms Of Service Routes
+                    Route::get('/terms-of-service-settings', 'termsOfServiceIndex')->name('terms-of-service-settings.index');
+                    Route::get('/terms-of-service-settings-create', 'termsOfServiceCreate')->name('terms-of-service-settings.create');
+                    Route::post('/terms-of-service-settings-store', 'termsOfServiceStore')->name('terms-of-service-settings.store');
+                    Route::get('/terms-of-service-settings-edit/{id?}', 'termsOfServiceEdit')->name('terms-of-service-settings.edit');
+                    Route::put('/terms-of-service-settings-update/{id?}', 'termsOfServiceUpdate')->name('terms-of-service-settings.update');
+                    Route::put('/terms-of-service-settings-toggle-status/{id?}', 'termsOfServiceToggleStatus')->name('terms-of-service-settings.toggle-status');
+                    Route::delete('/terms-of-service-settings-destroy/{id?}', 'termsOfServiceDestroy')->name('terms-of-service-settings.destroy');
+                    Route::delete('/terms-of-service-settings-destroy-by-selection', 'termsOfServiceDestroyBySelection')->name('terms-of-service-settings.destroybyselection');
+
+                    // Privacy Policy Routes
+                    Route::get('/privacy-policy-settings', 'privacyPolicyIndex')->name('privacy-policy-settings.index');
+                    Route::get('/privacy-policy-settings-create', 'privacyPolicyCreate')->name('privacy-policy-settings.create');
+                    Route::post('/privacy-policy-settings-store', 'privacyPolicyStore')->name('privacy-policy-settings.store');
+                    Route::get('/privacy-policy-settings-edit/{id?}', 'privacyPolicyEdit')->name('privacy-policy-settings.edit');
+                    Route::put('/privacy-policy-settings-update/{id?}', 'privacyPolicyUpdate')->name('privacy-policy-settings.update');
+                    Route::put('/privacy-policy-settings-toggle-status/{id?}', 'privacyPolicyToggleStatus')->name('privacy-policy-settings.toggle-status');
+                    Route::delete('/privacy-policy-settings-destroy/{id?}', 'privacyPolicyDestroy')->name('privacy-policy-settings.destroy');
+                    Route::delete('/privacy-policy-settings-destroy-by-selection', 'privacyPolicyDestroyBySelection')->name('privacy-policy-settings.destroybyselection');
 
                     // Courier Company  Routes
                     Route::get('/courier-company-settings', 'courierCompanyIndex')->name('courier-company-settings.index');

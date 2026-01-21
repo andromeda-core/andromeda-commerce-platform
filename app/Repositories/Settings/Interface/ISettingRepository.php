@@ -249,6 +249,51 @@ interface ISettingRepository
 
     public function destroyReturnPolicyBySelection(Request $request);
 
+    // Shipping Policy Settings
+    public function getAllShippingPolicies();
+
+    public function getSingleShippingPolicy(string $id);
+
+    public function storeShippingPolicy(Request $request);
+
+    public function updateShippingPolicy(Request $request, string $id);
+
+    public function toggleShippingPolicyStatus(string $id);
+
+    public function destroyShippingPolicy(string $id);
+
+    public function destroyShippingPolicyBySelection(Request $request);
+
+    // Terms Of Service Settings
+    public function getAllTermsOfServices();
+
+    public function getSingleTermsOfService(string $id);
+
+    public function storeTermsOfService(Request $request);
+
+    public function updateTermsOfService(Request $request, string $id);
+
+    public function toggleTermsOfServiceStatus(string $id);
+
+    public function destroyTermsOfService(string $id);
+
+    public function destroyTermsOfServiceBySelection(Request $request);
+
+    // Privacy Policy Settings
+    public function getAllPrivacyPolicy();
+
+    public function getSinglePrivacyPolicy(string $id);
+
+    public function storePrivacyPolicy(Request $request);
+
+    public function updatePrivacyPolicy(Request $request, string $id);
+
+    public function togglePrivacyPolicyStatus(string $id);
+
+    public function destroyPrivacyPolicy(string $id);
+
+    public function destroyPrivacyPolicyBySelection(Request $request);
+
     // Courier Company Settings
     public function getAllCourierCompanies();
 

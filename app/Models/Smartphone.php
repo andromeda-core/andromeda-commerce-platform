@@ -23,6 +23,7 @@ class Smartphone extends Model
         'delivery_days',
         'courier_company_id',
         'return_policy_id',
+        'shipping_policy_id',
         'upc',
         'images',
         'tag',
@@ -137,6 +138,11 @@ class Smartphone extends Model
     public function return_policy(): BelongsTo
     {
         return $this->belongsTo(ReturnPolicy::class, 'return_policy_id', 'id');
+    }
+
+    public function shipping_policy(): BelongsTo
+    {
+        return $this->belongsTo(ShippingPolicy::class, 'shipping_policy_id', 'id');
     }
 
     public function smartphoneAddons(): HasMany

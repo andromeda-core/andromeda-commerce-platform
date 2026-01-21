@@ -349,31 +349,31 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                     });
                 }
 
-                $posts = $posts->where(function ($q) use ($images, $videos, $text) {
+                // $posts = $posts->where(function ($q) use ($images, $videos, $text) {
 
-                    if ($text) {
+                //     if ($text) {
 
-                        $q->orWhere(function ($sub) {
-                            $sub->whereNull('images')
-                                ->whereNull('videos');
-                        });
-                    }
+                //         $q->orWhere(function ($sub) {
+                //             $sub->whereNull('images')
+                //                 ->whereNull('videos');
+                //         });
+                //     }
 
-                    if ($images) {
+                //     if ($images) {
 
-                        $q->orWhere(function ($sub) {
-                            $sub->whereNotNull('images')
-                                ->whereNull('videos');
-                        });
-                    }
+                //         $q->orWhere(function ($sub) {
+                //             $sub->whereNotNull('images')
+                //                 ->whereNull('videos');
+                //         });
+                //     }
 
-                    if ($videos) {
+                //     if ($videos) {
 
-                        $q->orWhere(function ($sub) {
-                            $sub->whereNotNull('videos');
-                        });
-                    }
-                });
+                //         $q->orWhere(function ($sub) {
+                //             $sub->whereNotNull('videos');
+                //         });
+                //     }
+                // });
 
                 // info(json_encode($posts->get()->toArray()));
                 $posts = $posts->with(['floor'])
@@ -490,31 +490,31 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                     });
                 }
 
-                $smartphones = $smartphones->where(function ($q) use ($images, $videos, $text) {
+                // $smartphones = $smartphones->where(function ($q) use ($images, $videos, $text) {
 
-                    if ($text) {
+                //     if ($text) {
 
-                        $q->orWhere(function ($sub) {
-                            $sub->whereNull('images')
-                                ->whereNull('videos');
-                        });
-                    }
+                //         $q->orWhere(function ($sub) {
+                //             $sub->whereNull('images')
+                //                 ->whereNull('videos');
+                //         });
+                //     }
 
-                    if ($images) {
+                //     if ($images) {
 
-                        $q->orWhere(function ($sub) {
-                            $sub->whereNotNull('images')
-                                ->whereNull('videos');
-                        });
-                    }
+                //         $q->orWhere(function ($sub) {
+                //             $sub->whereNotNull('images')
+                //                 ->whereNull('videos');
+                //         });
+                //     }
 
-                    if ($videos) {
+                //     if ($videos) {
 
-                        $q->orWhere(function ($sub) {
-                            $sub->whereNotNull('videos');
-                        });
-                    }
-                });
+                //         $q->orWhere(function ($sub) {
+                //             $sub->whereNotNull('videos');
+                //         });
+                //     }
+                // });
 
                 $smartphones = $smartphones->with(['capacity', 'selling_info', 'floor'])
                     ->whereHas('selling_info')

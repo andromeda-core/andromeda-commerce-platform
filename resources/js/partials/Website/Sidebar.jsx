@@ -317,6 +317,15 @@ const Sidebar = ({
 
                                 },
 
+
+                                {
+                                    label: __('Terms Of Service'),
+                                    href: route('website.terms-of-service.index'),
+                                    routeName: 'website.terms-of-service.index',
+                                    type: 'link',
+
+                                },
+
                                 user &&
                                 {
                                     label: __('Data Deletion'),

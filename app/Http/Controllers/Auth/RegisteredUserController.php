@@ -39,6 +39,7 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'min:8', 'max:50', 'confirmed', Rules\Password::defaults()],
+            'is_agreed_to_terms' => ['accepted'],
         ],
             [
                 'name.required' => Trans::get('Please enter your full name.'),
@@ -55,6 +56,8 @@ class RegisteredUserController extends Controller
                 'password.min' => Trans::get('Your password must be at least 8 characters long.'),
                 'password.max' => Trans::get('Password cannot exceed 50 characters.'),
                 'password.confirmed' => Trans::get('The password confirmation does not match.'),
+
+                'is_agreed_to_terms.accepted' => Trans::get('Please accept the terms and conditions.'),
             ]);
 
         $user = User::create([
@@ -69,7 +72,7 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
         $user->notify(new SendEmailToUserAfterRegistration($user));
-        $user->sendEmailVerificationNotification();
+        // $user->sendEmailVerificationNotification();
 
         $redirect = request()->input('redirect');
         $parsedUrl = parse_url($redirect);

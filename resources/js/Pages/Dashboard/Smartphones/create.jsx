@@ -14,7 +14,7 @@ import TipTapEditor from '@/Components/TipTapEditor';
 import { Loader } from '@googlemaps/js-api-loader';
 import Swal from 'sweetalert2';
 
-export default function create({ colors, model_names, capacities, categories, conditions, countries, return_policies, courier_companies, addons, floors, googleMapSettings }) {
+export default function create({ colors, model_names, capacities, shipping_policies, categories, conditions, countries, return_policies, courier_companies, addons, floors, googleMapSettings }) {
     // Create Data Form Data
     const { data, setData, post, processing, errors } = useForm({
         model_name_id: '',
@@ -26,6 +26,7 @@ export default function create({ colors, model_names, capacities, categories, co
         condition_id: '',
         courier_company_id: '',
         return_policy_id: '',
+        shipping_policy_id: '',
         addon_ids: [],
         upc: '',
         images: [],
@@ -607,6 +608,24 @@ export default function create({ colors, model_names, capacities, categories, co
 
 
                                                 <SelectInput
+                                                    InputName={'Shipping Policy'}
+                                                    Id={'shipping_policy_id'}
+                                                    Name={'shipping_policy_id'}
+                                                    Error={errors.shipping_policy_id}
+                                                    Value={data.shipping_policy_id}
+                                                    items={shipping_policies}
+                                                    itemKey={'name'}
+                                                    Placeholder={'Select Shipping Policy'}
+                                                    customPlaceHolder={true}
+                                                    Required={true}
+                                                    Multiple={false}
+                                                    Action={(value) => {
+                                                        setData('shipping_policy_id', value);
+                                                    }}
+                                                />
+
+
+                                                <SelectInput
                                                     InputName={'Courier Company'}
                                                     Id={'courier_company_id'}
                                                     Name={'courier_company_id'}
@@ -899,6 +918,7 @@ export default function create({ colors, model_names, capacities, categories, co
                                                     data.condition_id === '' ||
                                                     data.courier_company_id === '' ||
                                                     data.return_policy_id === '' ||
+                                                    data.shipping_policy_id === '' ||
                                                     data.delivery_days === '' ||
                                                     (productDetails.length > 0 &&
                                                         productDetails.some(

@@ -979,10 +979,10 @@ Additional Work:
     Additional Fee list Module -> Re-arrange
 ) ✅
 
-3: Privacy Policy
-4: Terms Of Service Module
-5: Global Refund & Return Policy
-6: Global Shipping Policy
+3: Privacy Policy ✅
+4: Terms Of Service Module ✅
+5: Global Refund & Return Policy ✅
+6: Global Shipping Policy ✅
 7: Smartphone New Columns Addition ✅
 8: Spatiotemporal Infomation Setup In Smartphone  ✅
 9: Support For All Type Smartphones -> [text,images,videos]  ✅
@@ -990,6 +990,14 @@ Additional Work:
 11: Global Search Logic Update For Searching Smartphones as well with spatiotemporal info  ✅
 12: Shop Page Logic Updated For handling All Types Of Smartphones  ✅
 13: Desktop Feed And Mobile Feed Updated To Handle all types of smartphones  and New Ui Added ✅
+14: Added New I agree Terms Checkbox On Register Page and Tracking also added with backend And Storign in Database Checked Status ✅
+16: Added Line Height 17 PX And Fixed Mobile Version Of Masonary Feed ✅
+17: Move Data Deletion FromSidebar And Place on User Profile After Manage Shipping Address Link -> remeaning
+18: Added SHipping Policy View In Smartphone Detials  ✅
+19: Main Feed Fecthing When Redirects And To Home page from want to Open any Feed and Post needed to open but filter is false so now
+    it will still open And Not restrict To Open Because Of Filter, Filters Are only For main Feed Normal Loading and Viewing Not For Redirections That wants to open any Feed Regardless Of Filters ✅
+20: Related Feed Fecthing Logic Updated and Fixed
+
 
 
  <- Review Remeaning ->
@@ -1021,5 +1029,122 @@ https://docs.google.com/document/d/1oA7T-ICq2eJGKK7DnH1gxWFR5xXPApp9jiLH8YlgBRk/
 
 https://docs.google.com/document/d/1OxFBnygAQO-C_IPxlPzvl_-x7bscGQYW9aObauVW5Qs/edit?usp=sharing Global Shipping policy
 
+https://docs.google.com/document/d/1V3av7aMOuhvzSWi2em7wBbVYYJn03h6mpPUKlKzRajI/edit?usp=sharing Final version of Privacy policy
+
 spatiotemporal information is added to products, then when searching by spatiotemporal info.,
 all types of posts and products will appear together in the search results.
+
+
+change payment icon's color to mono tone on the product single page. and also change bitcoin icon to US tether icon
+
+US tether icon svg: <svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+<path d="M128 0C57.3 0 0 57.3 0 128s57.3 128 128 128 128-57.3 128-128S198.7 0 128 0zm62 91h-46v24.3c37.6 1.9 66 10 66 19.7 0 9.7-28.4 17.8-66 19.7V201h-32v-46.3c-37.6-1.9-66-10-66-19.7 0-9.7 28.4-17.8 66-19.7V91H66V63h124v28zm-78 35.2v25.2c-33.6-1.6-58-6.6-58-12.6 0-6 24.4-11 58-12.6zm32 25.2v-25.2c33.6 1.6 58 6.6 58 12.6 0 6-24.4 11-58 12.6z"
+fill="#000000"/>
+</svg>
+
+
+DATADELETION PAGE CONTENT
+Please add the “Terms of Service” menu above the “Privacy Policy” menu.
+Also, change the current location where the “Data Deletion” menu is displayed.
+Update the page title to “Deactivate Account.”
+Finally, please include the content below on that page.
+
+image.png
+image.png
+# Deactivate Account
+
+
+
+This page allows you to deactivate your account.
+
+
+
+Once your account is deactivated, access to the service will be immediately suspended, and you will no longer be able to log in or use any account-based features.
+
+
+
+---
+
+
+
+## Account Deactivation & Data Deletion Policy
+
+
+
+When you deactivate your account, *all personal data associated with your account will be permanently deleted after a 30-day retention period**, starting from the date of deactivation.
+* This includes account information, activity records, order history, and other personal data generated through your use of the service.
+* During the 30-day period, account recovery is possible. After this period expires, your account and data cannot be restored.
+
+
+
+---
+
+
+
+## Information That May Be Retained (Important)
+
+
+
+Certain information may be retained only to the extent required for legal compliance, security, system integrity, and account lifecycle management, including:
+
+
+
+* Account creation and deactivation history
+* Internal system identifiers
+* Minimal records required for legal, security, audit, or compliance purposes
+
+
+
+This retained metadata is not used to provide services or identify you for marketing purposes and is stored strictly in accordance with applicable laws and regulations.
+
+
+
+---
+
+
+
+## Important Notes
+
+
+
+* Deactivating your account will immediately suspend access to all services.
+* After 30 days, all personal data will be permanently deleted and cannot be recovered.
+* Account deactivation may be an irreversible action. Please proceed carefully.
+
+
+
+---
+
+
+
+## Confirmation
+
+
+
+☐ I understand that deactivating my account will immediately suspend my access to the service and that my personal data will be deleted after 30 days.
+☐ I understand that once the 30-day period has passed, my account and data cannot be recovered.
+
+
+
+---
+
+
+
+### Action Button
+
+
+
+[ Request Account Deactivation ]
+
+
+
+---
+
+
+
+## Additional Information
+
+
+
+For more details about how we process and retain personal data, please refer to our
+Privacy Policy and related legal disclosures.

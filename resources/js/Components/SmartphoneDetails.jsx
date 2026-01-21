@@ -92,7 +92,7 @@ const SmartphoneDetails = ({ currency, product, StockBadge }) => {
                 <DetailRow label={__("Condition")} value={product?.condition?.name || "N/A"} />
 
                 {/* Shipping */}
-                <DetailRow label={__("Shipping")} value={calculateShippingCost()} />
+                <DetailRow label={__("Shipping")} value={calculateShippingCost()} shipping_policy={!!product?.shipping_policy} LinkText={__("View Shipping Policy") + " >"} isLink={true} smartphone_slug={product?.slug} policy_slug={product?.shipping_policy?.slug} />
 
                 {/* Import fees */}
                 <DetailRow label={__("Import fees") + ":"} value={calculateImportCost()} />
@@ -108,7 +108,7 @@ const SmartphoneDetails = ({ currency, product, StockBadge }) => {
                 <DetailRow label={__("Stock")} value={StockBadge || "N/A"} />
 
                 {/* Returns */}
-                {product?.return_policy && <DetailRow label={__("Returns")} value={__("View Return Policy") + " >"} isLink={true} smartphone_slug={product?.slug} policy_slug={product?.return_policy?.slug} />}
+                {product?.return_policy && <DetailRow label={__("Returns")} value={__("View Return Policy") + " >"} isLink={true} smartphone_slug={product?.slug} policy_slug={product?.return_policy?.slug} return_policy={!!product?.return_policy} />}
 
                 {/* Payments */}
                 <DetailRow label={__("Payments")} value={
@@ -150,22 +150,43 @@ const SmartphoneDetails = ({ currency, product, StockBadge }) => {
 };
 
 
-const DetailRow = ({ label, value, isLink = false, policy_slug, isDelivery, deliveryInfo, smartphone_slug }) => (
+const DetailRow = ({ label, value, isLink = false, policy_slug, isDelivery, return_policy, LinkText, deliveryInfo, smartphone_slug, shipping_policy }) => (
     <div className="flex items-start gap-10 xl:gap-12 sm:gap-10 md:gap-10">
         <span className="flex-shrink-0 w-20 text-sm font-normal sm:w-24 md:w-28 text-main-text-light dark:text-main-text-dark">
             {label}
         </span>
         <div className="flex-1 min-w-0">
-            {isLink ? (
-                <Link
-                    href={route('website.return-policy.index', {
-                        slug: policy_slug,
-                        smartphone_slug: smartphone_slug,
-                    })}
-                    className="block overflow-hidden text-sm text-sub-text-light dark:text-sub-text-dark hover:underline"
-                >
-                    {value}
-                </Link>
+            {(isLink) ? (
+                (return_policy ? (
+                    <Link
+                        href={route('website.return-policy.index', {
+                            slug: policy_slug,
+                            smartphone_slug: smartphone_slug,
+                        })}
+                        className="block overflow-hidden text-sm text-sub-text-light dark:text-sub-text-dark hover:underline"
+                    >
+                        {value}
+                    </Link>
+                ) : (shipping_policy ? (
+                    <div className='flex items-center gap-2'>
+                        <span className="block overflow-hidden text-sm text-sub-text-light dark:text-sub-text-dark">
+                            {value}
+                        </span>
+                        <Link
+                            href={route('website.shipping-policy.index', {
+                                slug: policy_slug,
+                                smartphone_slug: smartphone_slug,
+                            })}
+                            className="block overflow-hidden text-sm text-sub-text-light dark:text-sub-text-dark hover:underline"
+                        >
+                            {LinkText}
+                        </Link>
+                    </div>
+                ) : (
+                    <span className="block overflow-hidden text-sm text-sub-text-light dark:text-sub-text-dark">
+                        {value}
+                    </span>
+                )))
             ) : (
                 (isDelivery ?
                     (

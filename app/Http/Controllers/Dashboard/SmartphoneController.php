@@ -54,11 +54,12 @@ class SmartphoneController extends Controller implements HasMiddleware
         $conditions = $this->smartphone->getConditions();
         $courier_companies = $this->smartphone->getCourierCompanies();
         $return_policies = $this->smartphone->getReturnPolicies();
+        $shipping_policies = $this->smartphone->getShippingPolicies();
         $addons = $this->smartphone->getAddons();
         $floors = $this->floor->getAllWithoutPaginateFloors();
         $googleMapSettings = $this->post->getGoogleMapSettings();
 
-        return Inertia::render('Dashboard/Smartphones/create', compact('colors', 'model_names', 'capacities', 'categories', 'countries', 'floors', 'conditions', 'googleMapSettings', 'courier_companies', 'return_policies', 'addons'));
+        return Inertia::render('Dashboard/Smartphones/create', compact('colors', 'model_names', 'capacities', 'shipping_policies', 'categories', 'countries', 'floors', 'conditions', 'googleMapSettings', 'courier_companies', 'return_policies', 'addons'));
     }
 
     public function store(Request $request)
@@ -108,10 +109,11 @@ class SmartphoneController extends Controller implements HasMiddleware
         $countries = $this->smartphone->getCountries();
         $conditions = $this->smartphone->getConditions();
         $courier_companies = $this->smartphone->getCourierCompanies();
+        $shipping_policies = $this->smartphone->getShippingPolicies();
         $return_policies = $this->smartphone->getReturnPolicies();
         $addons = $this->smartphone->getAddons();
 
-        return Inertia::render('Dashboard/Smartphones/edit', compact('colors', 'model_names', 'capacities', 'categories', 'countries', 'conditions', 'courier_companies', 'return_policies', 'smartphone', 'addons'));
+        return Inertia::render('Dashboard/Smartphones/edit', compact('colors', 'model_names', 'capacities', 'shipping_policies', 'categories', 'countries', 'conditions', 'courier_companies', 'return_policies', 'smartphone', 'addons'));
     }
 
     public function update(Request $request, ?string $id = null)

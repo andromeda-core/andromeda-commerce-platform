@@ -12,7 +12,7 @@ import BarcodeScannerComponent from 'react-qr-barcode-scanner';
 import Toast from '@/Components/Toast';
 import TipTapEditor from '@/Components/TipTapEditor';
 
-export default function edit({ colors, model_names, capacities, categories, conditions, countries, return_policies, courier_companies, smartphone, addons }) {
+export default function edit({ colors, model_names, capacities, categories, shipping_policies, conditions, countries, return_policies, courier_companies, smartphone, addons }) {
 
 
 
@@ -30,6 +30,7 @@ export default function edit({ colors, model_names, capacities, categories, cond
         return_policy_id: smartphone?.return_policy_id || '',
         addon_ids: smartphone?.addon_ids || [],
         upc: smartphone?.upc || '',
+        shipping_policy_id: smartphone?.shipping_policy_id || '',
         images: [],
         videos: [],
         tag: smartphone?.tag || '',
@@ -373,6 +374,23 @@ export default function edit({ colors, model_names, capacities, categories, cond
                                                     }}
                                                 />
 
+                                                <SelectInput
+                                                    InputName={'Shipping Policy'}
+                                                    Id={'shipping_policy_id'}
+                                                    Name={'shipping_policy_id'}
+                                                    Error={errors.shipping_policy_id}
+                                                    Value={data.shipping_policy_id}
+                                                    items={shipping_policies}
+                                                    itemKey={'name'}
+                                                    Placeholder={'Select Shipping Policy'}
+                                                    customPlaceHolder={true}
+                                                    Required={true}
+                                                    Multiple={false}
+                                                    Action={(value) => {
+                                                        setData('shipping_policy_id', value);
+                                                    }}
+                                                />
+
 
                                                 <SelectInput
                                                     InputName={'Courier Company'}
@@ -637,6 +655,7 @@ export default function edit({ colors, model_names, capacities, categories, cond
                                                     data.condition_id === '' ||
                                                     data.courier_company_id === '' ||
                                                     data.return_policy_id === '' ||
+                                                    data.shipping_policy_id === '' ||
                                                     data.delivery_days === '' ||
                                                     (productDetails.length > 0 &&
                                                         productDetails.some(

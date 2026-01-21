@@ -8,11 +8,21 @@ import { Head, useForm } from '@inertiajs/react';
 import React from 'react';
 import TipTapEditor from '@/Components/TipTapEditor';
 import SelectInput from '@/Components/SelectInput';
+import Textarea from '@/Components/Textarea';
 
 export default function create({ languages }) {
     // Create Data Form Data
     const { data, setData, post, processing, errors } = useForm({
         name: '',
+        company_name: '',
+        country: '',
+        state: '',
+
+        dpo_name: '',
+        dpo_email: '',
+        dpo_phone: '',
+        dpo_address: '',
+
         content: [
             { title: '', content: '' }
         ],
@@ -126,6 +136,137 @@ export default function create({ languages }) {
                                                     itemKey={'name'}
                                                     Required={true}
                                                 />
+
+
+
+
+                                                <Input
+                                                    InputName={'Company Name'}
+                                                    Error={errors.company_name}
+                                                    Value={data.company_name}
+                                                    Action={(e) =>
+                                                        setData(
+                                                            'company_name',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    Placeholder={'Enter Company Name'}
+                                                    Id={'company_name'}
+                                                    Name={'company_name'}
+                                                    Type={'text'}
+                                                    Required={true}
+                                                />
+
+
+                                                <Input
+                                                    InputName={'Country Name'}
+                                                    Error={errors.country}
+                                                    Value={data.country}
+                                                    Action={(e) =>
+                                                        setData(
+                                                            'country',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    Placeholder={'Enter Country Name'}
+                                                    Id={'country'}
+                                                    Name={'country'}
+                                                    Type={'text'}
+                                                    Required={true}
+                                                />
+
+
+
+                                                <Input
+                                                    InputName={'State Name'}
+                                                    Error={errors.state}
+                                                    Value={data.state}
+                                                    Action={(e) =>
+                                                        setData(
+                                                            'state',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    Placeholder={'Enter State Name'}
+                                                    Id={'state'}
+                                                    Name={'state'}
+                                                    Type={'text'}
+                                                    Required={true}
+                                                />
+
+
+
+                                                <Input
+                                                    InputName={'DOP Name'}
+                                                    Error={errors.dpo_name}
+                                                    Value={data.dpo_name}
+                                                    Action={(e) =>
+                                                        setData(
+                                                            'dpo_name',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    Placeholder={'Enter DOP Name'}
+                                                    Id={'dpo_name'}
+                                                    Name={'dpo_name'}
+                                                    Type={'text'}
+                                                    Required={true}
+                                                />
+
+
+                                                <Input
+                                                    InputName={'DOP Email'}
+                                                    Error={errors.dpo_email}
+                                                    Value={data.dpo_email}
+                                                    Action={(e) =>
+                                                        setData(
+                                                            'dpo_email',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    Placeholder={'Enter DOP Email'}
+                                                    Id={'dpo_email'}
+                                                    Name={'dpo_email'}
+                                                    Type={'email'}
+                                                    Required={true}
+                                                />
+
+
+
+                                                <Input
+                                                    InputName={'DOP Phone'}
+                                                    Error={errors.dpo_phone}
+                                                    Value={data.dpo_phone}
+                                                    Action={(e) =>
+                                                        setData(
+                                                            'dpo_phone',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    Placeholder={'Enter DOP Phone'}
+                                                    Id={'dpo_phone'}
+                                                    Name={'dpo_phone'}
+                                                    Type={'text'}
+                                                    Required={true}
+                                                />
+
+
+                                                <Textarea
+                                                    InputName={'DOP Address'}
+                                                    Error={errors.dpo_address}
+                                                    Value={data.dpo_address}
+                                                    Action={(e) =>
+                                                        setData(
+                                                            'dpo_address',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    Placeholder={'Enter DOP Address'}
+                                                    Id={'dpo_address'}
+                                                    Name={'dpo_address'}
+                                                    Required={true}
+
+                                                />
                                             </div>
                                             <div className="mb-6">
                                                 <div className="flex items-center justify-between mb-4">
@@ -228,7 +369,15 @@ export default function create({ languages }) {
                                                         section.title.trim() === '' ||
                                                         (section.content.trim() === '' || section.content === '<p><br></p>' || section.content === '<p></p>')
                                                     ) ||
-                                                    data.language_id === ''
+                                                    data.language_id === '' ||
+                                                    data.state.trim() === '' ||
+                                                    data.country.trim() === '' ||
+                                                    data.company_name.trim() === '' ||
+                                                    data.dpo_name.trim() === '' ||
+                                                    data.dpo_email.trim() === '' ||
+                                                    data.dpo_phone.trim() === '' ||
+                                                    data.dpo_address.trim() === ''
+
                                                 }
                                                 Spinner={processing}
                                                 Icon={

@@ -20,6 +20,7 @@ export default function Register({ countries, redirect }) {
         password: '',
         password_confirmation: '',
         redirect: new URLSearchParams(window.location.search).get('redirect') || redirect || '',
+        is_agreed_to_terms: false,
     });
 
     // Register User Form Request
@@ -131,6 +132,77 @@ export default function Register({ countries, redirect }) {
                                         Required={true}
                                     />
 
+                                    <div className="flex items-start">
+                                        <div>
+                                            <label
+                                                htmlFor="is_agreed_to_terms"
+                                                className="flex items-center text-[13px] font-normal cursor-pointer select-none text-main-text-light dark:text-main-text-dark"
+                                            >
+                                                <div className="relative">
+                                                    <input
+                                                        type="checkbox"
+                                                        id="is_agreed_to_terms"
+                                                        className="sr-only"
+                                                        value={data.is_agreed_to_terms}
+                                                        onChange={() =>
+                                                            setData('is_agreed_to_terms', !data.is_agreed_to_terms)
+                                                        }
+                                                    />
+                                                    <div
+                                                        className={
+                                                            data.is_agreed_to_terms === true
+                                                                ? 'mr-3 flex h-4 w-4 items-center justify-center rounded-sm border-[1.25px] border-black dark:border-surafce-3-dark bg-black dark:bg-surface-1-dark dark:border-gray-700'
+                                                                : 'mr-3 flex h-4 w-4 items-center justify-center rounded-sm border-[1.25px] border-gray-300 bg-transparent'
+                                                        }
+                                                    >
+                                                        <span
+                                                            className={
+                                                                data.is_agreed_to_terms ? '' : 'opacity-0'
+                                                            }
+                                                        >
+                                                            <svg
+                                                                width="14"
+                                                                height="14"
+                                                                viewBox="0 0 14 14"
+                                                                fill="none"
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                            >
+                                                                <path
+                                                                    d="M11.6666 3.5L5.24992 9.91667L2.33325 7"
+                                                                    stroke="white"
+                                                                    strokeWidth="1.94437"
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                />
+                                                            </svg>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <span className="text-[13px] text-main-text-light leading-5 dark:text-main-text-dark">
+                                                    {__('I agree to the')}{' '}
+                                                    <Link
+                                                        href={route('website.terms-of-service.index')}
+                                                        className="text-[13px] font-medium text-[#003aa5] underline underline-offset-[3px] decoration-[#003aa5]"
+                                                    >
+                                                        {__('Terms of Service')}
+                                                    </Link>{' '}
+                                                    {__('and related policies and acknowledge the')}{' '}
+                                                    <Link
+                                                        href={route('website.privacy-policy.index')}
+                                                        className="text-[13px] font-medium text-[#003aa5] underline underline-offset-[3px] decoration-[#003aa5]"
+                                                    >
+                                                        {__('Privacy Notice')}
+                                                    </Link>.
+                                                </span>
+                                            </label>
+                                        </div>
+
+
+                                    </div>
+                                    <p className="text-sm text-red-500">
+                                        {errors.is_agreed_to_terms}
+                                    </p>
+
                                     <div>
                                         <PrimaryButton
                                             Text={__('Register')}
@@ -140,7 +212,8 @@ export default function Register({ countries, redirect }) {
                                                 data.email == '' ||
                                                 data.password == '' ||
                                                 data.password_confirmation == '' ||
-                                                data.password != data.password_confirmation
+                                                data.password != data.password_confirmation ||
+                                                !data.is_agreed_to_terms
                                             }
                                             Type={'submit'}
 

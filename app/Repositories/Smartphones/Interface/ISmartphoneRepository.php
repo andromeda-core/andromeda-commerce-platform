@@ -36,5 +36,7 @@ interface ISmartphoneRepository
 
     public function getReturnPolicies();
 
+    public function getShippingPolicies();
+
     public function getAddons();
 }

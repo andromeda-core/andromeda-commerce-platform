@@ -1,17 +1,45 @@
+
 import { useTranslation } from '@/Hooks/useTranslation';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
-import { Head, Link } from '@inertiajs/react';
-import React, { useEffect, useRef, useState } from 'react';
+import { Head, Link, usePage } from '@inertiajs/react';
+import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 
-const index = () => {
-    const [activeSection, setActiveSection] = useState('collect');
+const index = ({ privacy_policy }) => {
+    const [activeSection, setActiveSection] = useState(null);
     const isProgrammaticScroll = useRef(false);
     const windowSize = useWindowSize();
-    const scrollTimeout = useRef(null);
+    const { generalSetting } = usePage().props;
 
     // Translation Hook
     const { __ } = useTranslation();
+
+    const makeId = (title) => {
+        const slug = title
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9]+/g, '_')
+            .replace(/^_+|_+$/g, '');
+
+        return `${slug}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    };
+
+    const dynamicSections = useMemo(() => {
+        return privacy_policy?.content?.map(section => ({
+            id: makeId(section.title),
+            title: section.title,
+            content: section.content,
+        })) || [];
+    }, [privacy_policy]);
+
+
+    const sections = [
+        ...dynamicSections.map(s => ({ id: s.id, title: s.title })),
+        { id: 'data_protection_officer', title: __('Data Protection Officer') },
+        { id: 'deletion', title: __('Data Deletion') },
+    ];
+
+
 
     useEffect(() => {
         const handleScroll = () => {
@@ -37,7 +65,6 @@ const index = () => {
             setActiveSection(prev => (prev === current ? prev : current));
         };
 
-        // IMPORTANT: capture phase use karo
         document.addEventListener('scroll', handleScroll, true);
 
         return () => {
@@ -48,7 +75,6 @@ const index = () => {
 
     const scrollToSection = (id) => {
         isProgrammaticScroll.current = true;
-
         document.getElementById(id)?.scrollIntoView({
             behavior: 'smooth',
             block: 'start',
@@ -62,75 +88,17 @@ const index = () => {
     };
 
 
-    const sections = [
-        {
-            id: 'collect',
-            title: __('Information We Collect'),
-
-        },
-        {
-            id: 'use',
-            title: __('How We Use Information'),
-
-        },
-        {
-            id: 'legal',
-            title: __('Legal Basis'),
-
-        },
-        {
-            id: 'retention',
-            title: __('Data Retention'),
-
-        },
-        {
-            id: 'sharing',
-            title: __('Data Sharing'),
-
-        },
-        {
-            id: 'rights',
-            title: __('User Rights'),
-
-        },
-        {
-            id: 'cookies',
-            title: __('Cookies & Tracking'),
-
-        },
-
-        {
-            id: 'data_transfer',
-            title: __('Data Transfer'),
-
-        },
-
-        {
-            id: 'data_security',
-            title: __('Data Security'),
-
-        },
-
-        {
-            id: 'data_protection_officer',
-            title: __('Data Protection Officer'),
-
-        },
-        {
-            id: 'deletion',
-            title: __('Data Deletion'),
-
-        },
-    ];
 
     return (
         <MainLayout>
-            <Head title={__('Privacy Policy', true)} />
+            <Head title={__('Terms Of Service', true)} />
             <div className="sm:px-6 lg:px-8">
                 <div className={`px-6  mx-auto ${windowSize.width > 1024 ? 'pb-10' : 'pb-24'} lg:max-w-6xl sm:max-w-3xl`}>
+
                     {/* Hero Section */}
                     <div className="relative overflow-hidden text-main-text-dark dark:text-main-text-light ">
                         <div className="absolute inset-0" />
+
 
                         <div className="relative mx-auto my-10 lg:max-w-6xl sm:max-w-3xl ">
 
@@ -140,7 +108,7 @@ const index = () => {
                             </h1>
 
                             <p className="max-w-3xl mt-1 text-sm text-sub-text-light dark:sub-text-dark">
-                                {__('Your privacy matters to us. Learn how 30 Centuries Inc., the operator of Andromeda Blue, protects and manages your personal information.')}
+                                {__('This Policy explains how we collect, use, store, and protect your personal information when you use our services.')}
                             </p>
 
                             <div className="flex flex-wrap gap-4 mt-5">
@@ -149,7 +117,7 @@ const index = () => {
                                     <div className="w-2 h-2 bg-green-500 rounded-full" />
 
                                     <span className="text-sm font-medium text-sub-text-light dark:text-sub-text-dark">
-                                        {__('Last Updated')}: October 22, 2025
+                                        {__('Last Updated')}: {privacy_policy?.human_updated_at}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2 rounded-full  bg-surface-1-light dark:bg-surface-1-dark px-3 py-1.5">
@@ -189,7 +157,7 @@ const index = () => {
                                         {__('Contents')}
                                     </h3>
                                     <nav className="space-y-1">
-                                        {sections.map((section, idx) => (
+                                        {sections.map((section) => (
                                             <button
                                                 key={section.id}
                                                 onClick={() => scrollToSection(section.id)}
@@ -225,303 +193,110 @@ const index = () => {
                             {/* Company Info */}
                             <section className="p-8 rounded-md bg-surface-1-light dark:bg-surface-1-dark dark:backdrop-blur-xl">
                                 <p className="leading-relaxed text-sub-text-light dark:text-sub-text-dark">
-                                    {__("This Privacy Policy explains how 30 Centuries Inc. collects, uses, and protects your personal information when you use andromeda.blue and its features, including Facebook Login and delivery notifications via Messenger, Instagram Direct Messages, and Threads Direct Messages.")}
+                                    {__("This Privacy Policy explains how")}  {privacy_policy?.company_name} {" "} ({__('“Company,” “we,” “us,” or “our”')}). {__("collects, uses, stores, shares, and protects personal information in connection with the operation of our international e-commerce platform for mobile device sales (the “Service”).")}
                                 </p>
+
+
+                                <p className="mt-2 leading-relaxed text-sub-text-light dark:text-sub-text-dark">
+                                    {__("This Privacy Policy is an integral part of, and must be read together with, our Terms of Service, Shipping Policy, and Return & Refund Policy.")}
+                                </p>
+
+
                             </section>
 
                             <section
                                 className="w-auto p-8 rounded-md bg-surface-1-light dark:bg-surface-1-dark dark:backdrop-blur-xl"
                             >
-                                {/* Information We Collect */}
-                                <div
-                                    id="collect"
-                                    data-section="collect"
-                                    className="mb-8 scroll-mt-32"
-                                >
-                                    <div
 
-                                        className="flex items-center gap-4 mb-3">
+                                {dynamicSections?.map((section, index) => {
 
-                                        <h2
-                                            className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
-                                            1. {__('Information We Collect')}
-                                        </h2>
-                                    </div>
+                                    return (
+                                        <Fragment key={index}>
+                                            <div
+                                                key={section?.id}
+                                                id={section?.id}
+                                                data-section={section?.id}
+                                                className="mb-8 break-words break-all scroll-mt-32"
+                                            >
+                                                <h2 className="mb-3 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
+                                                    {index + 1}. {section.title}
+                                                </h2>
 
-                                    <div className="space-y-4">
-                                        <ul className="pl-5 space-y-2 text-sm text-sub-text-light list-[lower-alpha] dark:text-sub-text-dark">
-                                            <li>
-                                                {__('Information from Facebook Login: Name, email, profile picture, Messenger/Instagram ID (if authorized).')}
-                                            </li>
+                                                {/* Content as List */}
+                                                {Array.isArray(section.content) && (
+                                                    <ul className="pl-5 space-y-2 text-sm list-[lower-alpha] text-sub-text-light dark:text-sub-text-dark">
+                                                        {section.content.map((item, idx) => (
+                                                            <li key={idx}>{item}</li>
+                                                        ))}
+                                                    </ul>
+                                                )}
 
-                                            <li>
-                                                {__('Order & Delivery Info: Shipping address, contact details, order history, payment status.')}
-                                            </li>
+                                                {/* Content as Paragraph */}
+                                                {typeof section.content === 'string' && (
+                                                    <p className="leading-relaxed text-sub-text-light dark:text-sub-text-dark"
+                                                        dangerouslySetInnerHTML={{ __html: section.content }}
+                                                    >
 
-                                            <li>
-                                                {__('Technical Data: IP address, browser type, cookies, device information, and activity logs.')}
-                                            </li>
-                                        </ul>
-
-                                    </div>
-                                </div>
-
-                                {/* How We Use the Information      */}
-                                <div
-                                    id="use"
-                                    data-section="use"
-                                    className="mb-8 scroll-mt-32"
-                                >
-                                    <div
-                                        className="flex items-center gap-4 mb-3">
-
-                                        <h2
-                                            className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
-                                            2. {__('How We Use the Information')}
-                                        </h2>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <ul className="pl-4 space-y-2 text-sm text-sub-text-light list-[lower-alpha] dark:text-sub-text-dark">
-                                            <li>
-                                                {__('To enable Facebook Login authentication and secure user identiﬁcation')}
-                                            </li>
-
-                                            <li>
-                                                {__('To process orders, payments, and deliveries')}
-                                            </li>
-
-                                            <li>
-                                                {__('To send delivery updates via Facebook Messenger, Instagram Direct, and Threads DMs')}
-                                            </li>
-
-                                            <li>
-                                                {__(' To provide customer support and improve services')}
-                                            </li>
-                                        </ul>
-
-                                    </div>
-                                </div>
-
-                                {/* Legal Basis for Processing */}
-                                <div
-                                    id="legal"
-                                    data-section="legal"
-                                    className="mb-8 scroll-mt-32"
-                                >
-                                    <div
-                                        className="flex items-center gap-4 mb-3">
-
-                                        <h2
-                                            className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
-                                            3. {__('Legal Basis for Processing')}
-                                        </h2>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <p className="leading-relaxed text-sub-text-light dark:text-sub-text-dark">
-                                            {__("Data is processed based on user consent, contract fulfillment, and legal compliance (e.g., fraud prevention, tax reporting).")}
-                                        </p>
-
-                                    </div>
-                                </div>
-
-
-                                {/* Data Retention */}
-                                <div
-                                    id="retention"
-                                    data-section="retention"
-                                    className="mb-8 scroll-mt-32"
-                                >
-                                    <div
-                                        className="flex items-center gap-4 mb-3">
-
-                                        <h2
-                                            className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
-                                            4. {__('Data Retention')}
-                                        </h2>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <p className="leading-relaxed text-sub-text-light dark:text-sub-text-dark">
-                                            {__('Data is retained only as long as necessary for the stated purposes. Facebook Login data is deleted upon account deletion or permission revocation.')}
-                                        </p>
-
-                                    </div>
-                                </div>
-
-                                {/* Data Sharing & Third Parties */}
-                                <div
-                                    id="sharing"
-                                    data-section="sharing"
-                                    className="mb-8 scroll-mt-32"
-                                >
-                                    <div
-                                        className="flex items-center gap-4 mb-3">
-
-                                        <h2
-                                            className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
-                                            5. {__('Data Sharing & Third Parties')}
-                                        </h2>
-                                    </div>
-
-                                    <div>
-                                        <p className="leading-relaxed text-sub-text-light dark:text-sub-text-dark">
-                                            . {__('We do not sell or rent personal data')}
-                                        </p>
-                                        <p className="leading-relaxed text-sub-text-light dark:text-sub-text-dark">
-                                            . {__('Shared only with service providers (payments, shipping, IT)')}
-                                        </p>
-
-                                        <p className="leading-relaxed text-sub-text-light dark:text-sub-text-dark">
-                                            . {__('Shared with Meta Platforms, Inc. for Facebook Login and messaging API usage')}
-                                        </p>
-
-                                        <p className="leading-relaxed text-sub-text-light dark:text-sub-text-dark">
-                                            . {__('May be disclosed to authorities when required by law')}
-                                        </p>
-
-                                    </div>
-                                </div>
-
-
-                                {/* User Rights & Data Deletion */}
-                                <div
-                                    id="rights"
-                                    data-section="rights"
-                                    className="mb-8 scroll-mt-32"
-                                >
-                                    <div
-                                        className="flex items-center gap-4 mb-3">
-
-                                        <h2
-                                            className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
-                                            6. {__('User Rights & Data Deletion')}
-                                        </h2>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <p className="leading-relaxed text-sub-text-light dark:text-sub-text-dark">
-                                            {__('Users can request account and data deletion anytime via our Data Deletion Policy or by revoking Facebook Login permissions through their Facebook settings.')}
-                                        </p>
-
-                                    </div>
-                                </div>
-
-
-                                {/*Cookies & Tracking */}
-                                <div
-                                    id="cookies"
-                                    data-section="cookies"
-                                    className="mb-8 scroll-mt-32"
-                                >
-                                    <div
-                                        className="flex items-center gap-4 mb-3">
-
-                                        <h2
-                                            className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
-                                            7. {__('Cookies & Tracking')}
-                                        </h2>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <p className="leading-relaxed text-sub-text-light dark:text-sub-text-dark">
-                                            {__('andromeda.blue uses cookies for personalization. Disabling cookies may limit certain features.')}
-                                        </p>
-
-                                    </div>
-                                </div>
+                                                    </p>
+                                                )}
 
 
 
-                                {/* International Data Transfers */}
-                                <div
-                                    id="data_transfer"
-                                    data-section="data_transfer"
-                                    className="mb-8 scroll-mt-32"
-                                >
-                                    <div
-                                        className="flex items-center gap-4 mb-3">
+                                            </div>
 
-                                        <h2
-                                            className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
-                                            8. {__('International Data Transfers')}
-                                        </h2>
-                                    </div>
+                                            {index == dynamicSections.length - 1 && (
+                                                <Fragment key={sections.length - 1}>
+                                                    {/* 10. Data Protection Officer */}
+                                                    <div
+                                                        id="data_protection_officer"
+                                                        data-section="data_protection_officer"
+                                                        className='scroll-mt-10'
+                                                    >
+                                                        <div
+                                                            className="flex items-center gap-4 mb-3">
 
-                                    <div className="space-y-4">
-                                        <p className="leading-relaxed text-sub-text-light dark:text-sub-text-dark">
-                                            {__('Data may be stored outside your country. We ensure legal safeguards for all international transfers.')}
-                                        </p>
+                                                            <h2
+                                                                className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
+                                                                {index + 2}. {__('Data Protection Officer (DPO)')}
+                                                            </h2>
+                                                        </div>
 
-                                    </div>
-                                </div>
+                                                        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                                                            <div className="px-4 py-3 break-words rounded-md bg-backgroundLight dark:bg-surface-2-dark">
+                                                                <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">{__('Name')}</p>
+                                                                <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">{privacy_policy?.dpo_name}</p>
+                                                            </div>
 
-
-                                {/* Data Security */}
-                                <div
-                                    id="data_security"
-                                    data-section="data_security"
-                                    className="mb-8 scroll-mt-32"
-                                >
-                                    <div
-                                        className="flex items-center gap-4 mb-3">
-
-                                        <h2
-                                            className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
-                                            9. {__('Data Security')}
-                                        </h2>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <p className="leading-relaxed text-sub-text-light dark:text-sub-text-dark">
-                                            {__('All data is protected with SSL/TLS encryption and strict access control for authorized personnel only.')}
-                                        </p>
-
-                                    </div>
-                                </div>
+                                                            <div className="px-4 py-3 break-words rounded-md bg-backgroundLight dark:bg-surface-2-dark">
+                                                                <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">{__('Email Address')}</p>
+                                                                <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">{privacy_policy?.dpo_email}</p>
+                                                            </div>
 
 
-                                {/* 10. Data Protection Officer */}
-                                <div
-                                    id="data_protection_officer"
-                                    data-section="data_protection_officer"
-                                    className="mb-8 scroll-mt-32"
-                                >
-                                    <div
-                                        className="flex items-center gap-4 mb-3">
+                                                            <div className="px-4 py-3 break-words rounded-md bg-backgroundLight dark:bg-surface-2-dark">
+                                                                <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">{__('Phone Number')}</p>
+                                                                <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">{privacy_policy?.dpo_phone}</p>
+                                                            </div>
 
-                                        <h2
-                                            className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
-                                            10. {__('Data Protection Officer (DPO)')}
-                                        </h2>
-                                    </div>
 
-                                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                                        <div className="px-4 py-3 break-words rounded-md bg-backgroundLight dark:bg-surface-2-dark">
-                                            <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">{__('Email Address')}</p>
-                                            <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">contact@andromeda.blue</p>
-                                        </div>
+                                                        </div>
 
-                                        <div className="px-4 py-3 break-words rounded-md bg-backgroundLight dark:bg-surface-2-dark">
-                                            <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">{__('Phone Number')}</p>
-                                            <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">+1 (516) 518 3469 447</p>
-                                        </div>
+                                                        <div className="grid grid-cols-1 gap-3 mt-3">
+                                                            <div className="px-4 py-3 break-words rounded-md bg-backgroundLight dark:bg-surface-2-dark">
+                                                                <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">{__('Address')}</p>
+                                                                <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">{privacy_policy?.dpo_address}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </Fragment>
+                                            )}
+                                        </Fragment>
+                                    );
+                                })}
 
-                                    </div>
 
-                                    <div className="grid grid-cols-1 gap-3 mt-3">
-                                        <div className="px-4 py-3 break-words rounded-md bg-backgroundLight dark:bg-surface-2-dark">
-                                            <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">{__('Address')}</p>
-                                            <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">BROADWAY 2ND FL 2144 NEW YORK NY 10013</p>
-                                        </div>
-                                    </div>
-                                </div>
+
                             </section>
-
-
-
-
 
                             {/* Data Deletion Policy */}
                             <section
@@ -600,30 +375,30 @@ const index = () => {
 
                                 <div className="pb-8">
                                     <p className="leading-relaxed text-sub-text-light dark:text-sub-text-dark">
-                                        {__('This website')} (<Link className='font-semibold hover:underline text-main-text-light dark:text-main-text-dark' href={route('home')}>{route('home')}</Link>) {__('is operated by')} <strong>30 Centuries Inc.</strong>
+                                        {__('This website')} (<Link className='font-semibold hover:underline text-main-text-light dark:text-main-text-dark' href={route('home')}>{route('home')}</Link>) {__('is operated by')} <strong>{privacy_policy?.company_name}</strong>
                                     </p>
 
                                     <div className="mt-2 space-y-2 text-sub-text-light dark:text-sub-text-dark">
 
                                         <div className='flex flex-col gap-0 lg:gap-2 lg:flex-row'>
                                             <strong className="block text-main-text-light dark:text-main-text-dark">
-                                                {__('Legal Entity Name')}
+                                                {__('Legal Entity Name')}:
                                             </strong>
-                                            <span>30 Centuries Inc.</span>
+                                            <span>{privacy_policy?.company_name}</span>
                                         </div>
 
                                         <div className='flex flex-col gap-0 lg:gap-2 lg:flex-row'>
                                             <strong className="block text-main-text-light dark:text-main-text-dark">
-                                                {__('Operating Brand')}
+                                                {__('Operating Brand')}:
                                             </strong>
-                                            <span>Andromeda Blue</span>
+                                            <span>{generalSetting?.app_name}</span>
                                         </div>
 
                                         <div className='flex flex-col gap-0 lg:gap-2 lg:flex-row'>
                                             <strong className="block text-main-text-light dark:text-main-text-dark">
-                                                {__('Contact Email')}
+                                                {__('Contact Email')}:
                                             </strong>
-                                            <span>contact@andromeda.blue</span>
+                                            <span>{generalSetting?.contact_email}</span>
                                         </div>
 
                                     </div>
@@ -632,6 +407,8 @@ const index = () => {
 
 
                             </section>
+
+
 
                             {/* Footer CTA */}
                             <section className="p-8 rounded-md bg-surface-1-light backdrop-blur-xl dark:bg-surface-1-dark">
