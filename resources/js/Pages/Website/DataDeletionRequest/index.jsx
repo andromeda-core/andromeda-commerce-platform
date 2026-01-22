@@ -58,7 +58,7 @@ const DataDeletion = () => {
 
     return (
         <MainLayout>
-            <Head title={__("Data Deletion", true)} />
+            <Head title={__("Deactivate Account", true)} />
             <ConfirmDialog />
 
 
@@ -74,11 +74,11 @@ const DataDeletion = () => {
 
 
                             <h1 className="text-2xl font-semibold text-main-text-light dark:text-main-text-dark">
-                                {__('Data Deletion')}
+                                {__('Deactivate Account')}
                             </h1>
 
                             <p className="max-w-3xl mt-1 text-sm text-sub-text-light dark:sub-text-dark">
-                                {__('We respect your right to privacy. Submit a request to permanently delete your account and all associated data.')}
+                                {__('This page allows you to deactivate your account. Once your account is deactivated, access to the service will be immediately suspended, and you will no longer be able to log in or use any account-based features.')}
                             </p>
 
                             <div className="flex flex-wrap gap-4 mt-5 ">

@@ -224,8 +224,8 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Data Security', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Data Protection Officer', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Data Deletion', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'This page allows you to deactivate your account. Once your account is deactivated, access to the service will be immediately suspended, and you will no longer be able to log in or use any account-based features.', 'created_at' => $now, 'updated_at' => $now],
 
-            ['key' => 'We respect your right to privacy. Submit a request to permanently delete your account and all associated data.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'This action is permanent', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Instant Deletion', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Submit Deletion', 'created_at' => $now, 'updated_at' => $now],
