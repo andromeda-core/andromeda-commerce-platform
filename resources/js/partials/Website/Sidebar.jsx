@@ -304,18 +304,8 @@ const Sidebar = ({
                                     href: route('dashboard'),
                                     routeName: 'dashboard',
                                     type: 'link',
-                                }
-                                ,
-
-
-
-                                {
-                                    label: __('Privacy Policy'),
-                                    href: route('website.privacy-policy.index'),
-                                    routeName: 'website.privacy-policy.index',
-                                    type: 'link',
-
                                 },
+
 
 
                                 {
@@ -326,14 +316,15 @@ const Sidebar = ({
 
                                 },
 
-                                user &&
+
                                 {
-                                    label: __('Data Deletion'),
-                                    href: route('website.data-deletion.index'),
-                                    routeName: 'website.data-deletion.index',
+                                    label: __('Privacy Policy'),
+                                    href: route('website.privacy-policy.index'),
+                                    routeName: 'website.privacy-policy.index',
                                     type: 'link',
 
                                 },
+
 
                                 {
                                     label: isDarkMode ? __('Light Mode') : __('Dark Mode'),

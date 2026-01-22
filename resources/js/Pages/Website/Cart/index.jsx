@@ -11,6 +11,7 @@ import { createPortal } from 'react-dom';
 import WebInput from '@/Components/WebInput';
 import PrimaryButton from '@/Components/PrimaryButton';
 import { useTranslation } from '@/Hooks/useTranslation';
+import { BuildingLibraryIcon } from '@heroicons/react/24/solid';
 export default function index({ cart_items, refferalSessionData, addon_items, total_summary }) {
     const [quantities, setQuantities] = useState(
         cart_items.reduce((acc, item) => ({ ...acc, [item.id]: item.quantity }), {}),
@@ -1082,45 +1083,19 @@ function OrderSummary({
                     {__('We accept')}
                 </p>
                 <div className="flex items-center justify-center gap-4">
-                    <div className="flex items-center justify-center w-8 h-8 text-xs font-bold text-white bg-orange-500 rounded-full">
-                        <svg
-                            className="size-10"
-                            viewBox="0.004 0 64 64"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                        >
-                            <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-                            <g
-                                id="SVGRepo_tracerCarrier"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            ></g>
-                            <g id="SVGRepo_iconCarrier">
-                                <path
-                                    d="M63.04 39.741c-4.274 17.143-21.638 27.575-38.783 23.301C7.12 58.768-3.313 41.404.962 24.262 5.234 7.117 22.597-3.317 39.737.957c17.144 4.274 27.576 21.64 23.302 38.784z"
-                                    fill="none"
-                                ></path>
-                                <path
-                                    d="M46.11 27.441c.636-4.258-2.606-6.547-7.039-8.074l1.438-5.768-3.512-.875-1.4 5.616c-.922-.23-1.87-.447-2.812-.662l1.41-5.653-3.509-.875-1.439 5.766c-.764-.174-1.514-.346-2.242-.527l.004-.018-4.842-1.209-.934 3.75s2.605.597 2.55.634c1.422.355 1.68 1.296 1.636 2.042l-1.638 6.571c.098.025.225.061.365.117l-.37-.092-2.297 9.205c-.174.432-.615 1.08-1.609.834.035.051-2.552-.637-2.552-.637l-1.743 4.02 4.57 1.139c.85.213 1.683.436 2.502.646l-1.453 5.835 3.507.875 1.44-5.772c.957.26 1.887.5 2.797.726L27.504 50.8l3.511.875 1.453-5.823c5.987 1.133 10.49.676 12.383-4.738 1.527-4.36-.075-6.875-3.225-8.516 2.294-.531 4.022-2.04 4.483-5.157zM38.087 38.69c-1.086 4.36-8.426 2.004-10.807 1.412l1.928-7.729c2.38.594 10.011 1.77 8.88 6.317zm1.085-11.312c-.99 3.966-7.1 1.951-9.083 1.457l1.748-7.01c1.983.494 8.367 1.416 7.335 5.553z"
-                                    fill="#ffffff"
-                                ></path>
-                            </g>
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-2-light dark:bg-surface-3-dark">
+                        <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 fill-main-text-light dark:fill-main-text-dark">
+                            <path d="M128 0C57.3 0 0 57.3 0 128s57.3 128 128 128 128-57.3 128-128S198.7 0 128 0zm62 91h-46v24.3c37.6 1.9 66 10 66 19.7 0 9.7-28.4 17.8-66 19.7V201h-32v-46.3c-37.6-1.9-66-10-66-19.7 0-9.7 28.4-17.8 66-19.7V91H66V63h124v28zm-78 35.2v25.2c-33.6-1.6-58-6.6-58-12.6 0-6 24.4-11 58-12.6zm32 25.2v-25.2c33.6 1.6 58 6.6 58 12.6 0 6-24.4 11-58 12.6z"
+                                fill="#000000" />
                         </svg>
                     </div>
-                    <div className="flex items-center justify-center w-8 h-8 text-xs font-bold text-white bg-orange-500 rounded-full">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="size-6"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z"
-                            />
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-2-light dark:bg-surface-3-dark">
+                        <BuildingLibraryIcon className="w-6 h-6 fill-main-text-light dark:fill-main-text-dark" />
+                    </div>
+
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-2-light dark:bg-surface-3-dark">
+                        <svg className="w-6 h-6 fill-main-text-light dark:fill-main-text-dark" viewBox="0 0 24 24">
+                            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27z" />
                         </svg>
                     </div>
                 </div>

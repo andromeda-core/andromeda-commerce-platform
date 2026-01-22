@@ -996,7 +996,9 @@ Additional Work:
 18: Added SHipping Policy View In Smartphone Detials  ✅
 19: Main Feed Fecthing When Redirects And To Home page from want to Open any Feed and Post needed to open but filter is false so now
     it will still open And Not restrict To Open Because Of Filter, Filters Are only For main Feed Normal Loading and Viewing Not For Redirections That wants to open any Feed Regardless Of Filters ✅
-20: Related Feed Fecthing Logic Updated and Fixed
+20: Related Feed Fecthing Logic Updated and Fixed  ✅
+21: Mobile And Desktop Feed Modal Layout Changed  And Updated  ✅ -> (Multiple Times)
+22: Data Deletion Page Link Moved From Sidebar To Profile Page ✅
 
 
 
