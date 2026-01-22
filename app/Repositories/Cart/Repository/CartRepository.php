@@ -2,8 +2,10 @@
 
 namespace App\Repositories\Cart\Repository;
 
+use App\Models\Addon;
 use App\Models\CartItem;
 use App\Models\Collaborator;
+use App\Models\Color;
 use App\Models\RewardSetting;
 use App\Models\Smartphone;
 use App\Models\SmartphoneCartAddon;
@@ -21,7 +23,9 @@ class CartRepository implements ICartRepository
         private Collaborator $collaborator,
         private RewardSetting $reward_setting,
         private SmartphoneCartAddon $smartphone_cart_addon,
-        private CartPriceCalculator $price_calculator
+        private CartPriceCalculator $price_calculator,
+        private Addon $addon,
+        private Color $color,
     ) {}
 
     public function getCartItems(Request $request)
@@ -711,6 +715,7 @@ class CartRepository implements ICartRepository
     {
         try {
             $code = $request->input('code');
+
             if (empty($code)) {
                 return [
                     'status' => false,
@@ -736,9 +741,22 @@ class CartRepository implements ICartRepository
                 ];
             }
 
-            $cart = $this->cart->where('customer_id', $customer->id)
-                ->with(['smartphone', 'smartphone.selling_info', 'smartphone.selling_info.shipping_fee', 'smartphone.selling_info.import_tax'])
-                ->get();
+            $buy_now = (bool) $request->has('buy_now');
+            $sessionKey = 'single_product_checkout_'.$user->id;
+            $sessionData = session()->get($sessionKey);
+
+            $cart = collect();
+            $smartphone_addon_cart_item = collect();
+
+            if ($buy_now && ! blank($sessionData)) {
+                $cart = collect($sessionData['cart_items']);
+                $smartphone_addon_cart_item = collect($sessionData['addon_items']);
+            } else {
+                $cart = $this->cart->where('customer_id', $customer->id)
+                    ->with(['smartphone', 'smartphone.selling_info', 'smartphone.selling_info.shipping_fee', 'smartphone.selling_info.import_tax'])
+                    ->get();
+                $smartphone_addon_cart_item = $this->smartphone_cart_addon->where('customer_id', $customer->id)->get();
+            }
 
             if ($cart->isEmpty()) {
                 return [
@@ -747,7 +765,6 @@ class CartRepository implements ICartRepository
                 ];
             }
 
-            $smartphone_addon_cart_item = $this->smartphone_cart_addon->where('customer_id', $customer->id)->get();
             $collaborator = $this->collaborator->where('referral_code', $code)->first();
             if (empty($collaborator)) {
                 return [
@@ -836,5 +853,96 @@ class CartRepository implements ICartRepository
         session()->put('referal_data', $new_session_data);
 
         return $new_session_data;
+    }
+
+    public function singleProductCheckoutSessionStore(Request $request)
+    {
+
+        try {
+            $user = $request->user();
+            session()->forget('single_product_checkout_'.$user->id);
+
+            $data = $request->input('smartphone');
+
+            $addons = json_decode($data['addons'], true) ?? [];
+
+            $smartphoneModel = $this->smartphone->with([
+                'selling_info',
+                'selling_info.shipping_fee',
+                'selling_info.import_tax',
+                'addons',
+                'model_name',
+                'capacity',
+
+            ])->findOrFail($data['smartphone_id']);
+
+            $cartItem = new CartItem([
+                'customer_id' => $request->user()->customer->id,
+                'smartphone_id' => $smartphoneModel->id,
+                'type' => 'smartphone',
+                'quantity' => $data['quantity'],
+                'color_id' => $data['color_id'],
+                'color_name' => $data['color_name'],
+                'capacity' => $data['capacity'],
+                'unit_price' => $smartphoneModel->selling_info->total_price,
+                'total_price' => bcmul(
+                    $smartphoneModel->selling_info->total_price,
+                    $data['quantity'],
+                    2
+                ),
+            ]);
+
+            $cartItem->setRelation('smartphone', $smartphoneModel);
+
+            $colorModel = $this->color->findOrFail($data['color_id']);
+            $cartItem->setRelation('color', $colorModel);
+
+            $addonItems = collect();
+
+            foreach ($addons as $addon) {
+
+                $addonModel = $this->addon->findOrFail($addon['id']);
+
+                $addonItem = new SmartphoneCartAddon([
+                    'addon_id' => $addonModel->id,
+                    'name' => $addonModel->name,
+                    'customer_id' => $request->user()->customer->id,
+                    'smartphone_id' => $smartphoneModel->id,
+                    'quantity' => $addon['quantity'],
+                    'unit_price' => $addonModel->price,
+                    'total_price' => bcmul(
+                        $addonModel->price,
+                        $addon['quantity'],
+                        2
+                    ),
+                ]);
+
+                $addonItem->setRelation('addon', $addonModel);
+                $addonItems->push($addonItem);
+            }
+
+            $total_summary = $this->price_calculator->calculate(
+                collect([$cartItem]),
+                $addonItems
+            );
+
+            session()->put('single_product_checkout_'.$user->id, [
+                'cart_items' => collect([$cartItem]),
+                'addon_items' => $addonItems,
+                'total_summary' => $total_summary,
+                'created_at' => now(),
+            ]);
+
+            return [
+                'status' => true,
+                'message' => 'Session Created Successfully You will be Redirected To Checkout Shortly..! ',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
     }
 }

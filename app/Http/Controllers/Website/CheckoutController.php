@@ -27,7 +27,22 @@ class CheckoutController extends Controller
             return to_route('login');
         }
 
-        $data = $this->cart->getCartItems($request);
+        $buy_now = $request->has('buy_now');
+
+        $data = [];
+
+        if ($buy_now) {
+            $data = session()->get('single_product_checkout_'.$request->user()->id);
+        } else {
+            $data = $this->cart->getCartItems($request);
+        }
+
+        if (blank($data)) {
+            return to_route('home');
+        }
+
+        // dd($data);
+
         $cart_items = $data['cart_items'];
         $addon_items = $data['addon_items'];
         $total_summary = $data['total_summary'];
@@ -55,7 +70,7 @@ class CheckoutController extends Controller
 
         $countries = $this->customer->getCountries();
 
-        return Inertia::render('Website/Checkout/index', compact('cart_items', 'total_summary', 'refferalSessionData', 'countries', 'shipping_address', 'meta_usernames', 'addon_items', 'is_eligible_for_social_message'));
+        return Inertia::render('Website/Checkout/index', compact('cart_items', 'total_summary', 'refferalSessionData', 'buy_now', 'countries', 'shipping_address', 'meta_usernames', 'addon_items', 'is_eligible_for_social_message'));
     }
 
     public function store(Request $request)
@@ -105,5 +120,15 @@ class CheckoutController extends Controller
         $this->cart->removeReferal($request);
 
         return to_route('website.orders.order-view', ['order_no' => $request->order_no])->with('success', 'Thank you! Your payment has been submitted. We’ll confirm it automatically once the blockchain confirms your transaction.');
+    }
+
+    public function singleProductCheckoutSessionStore(Request $request)
+    {
+        $response = $this->cart->singleProductCheckoutSessionStore($request);
+        if ($response['status'] === false) {
+            return response()->json(['status' => false, 'message' => $response['message']], 400);
+        }
+
+        return response()->json(['status' => true, 'message' => $response['message']], 200);
     }
 }

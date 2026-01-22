@@ -118,9 +118,9 @@ const SmartphoneDetails = ({ currency, product, StockBadge }) => {
                                 {/* Bitcoin */}
                                 <div className="flex items-center gap-1.5">
                                     <div className="flex items-center justify-center w-8 h-8 rounded-full bg-surface-2-light dark:bg-surface-3-dark">
-                                        <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 fill-main-text-light dark:fill-main-text-dark">
+                                        <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 fill-main-text-light dark:fill-main-text-dark">
                                             <path d="M128 0C57.3 0 0 57.3 0 128s57.3 128 128 128 128-57.3 128-128S198.7 0 128 0zm62 91h-46v24.3c37.6 1.9 66 10 66 19.7 0 9.7-28.4 17.8-66 19.7V201h-32v-46.3c-37.6-1.9-66-10-66-19.7 0-9.7 28.4-17.8 66-19.7V91H66V63h124v28zm-78 35.2v25.2c-33.6-1.6-58-6.6-58-12.6 0-6 24.4-11 58-12.6zm32 25.2v-25.2c33.6 1.6 58 6.6 58 12.6 0 6-24.4 11-58 12.6z"
-                                                fill="#000000" />
+                                            />
                                         </svg>
                                     </div>
                                     <span className="text-xs font-normal text-sub-text-light dark:text-sub-text-dark">{__('Bitcoin')}</span>

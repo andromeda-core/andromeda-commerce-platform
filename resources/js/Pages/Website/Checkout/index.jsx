@@ -16,10 +16,9 @@ import WebSelectInput from '@/Components/WebSelectInput';
 import { BuildingLibraryIcon } from '@heroicons/react/24/solid';
 
 
-export default function Checkout({ cart_items, refferalSessionData, shipping_address, total_summary, meta_usernames, is_eligible_for_social_message, addon_items, countries }) {
+export default function Checkout({ cart_items, refferalSessionData, shipping_address, total_summary, meta_usernames, buy_now, is_eligible_for_social_message, addon_items, countries }) {
     const { currency, auth } = usePage().props;
     const windowSize = useWindowSize();
-
 
 
     // Translation Hook
@@ -123,11 +122,11 @@ export default function Checkout({ cart_items, refferalSessionData, shipping_add
         }
     }, [showConfetti]);
 
-    const applyReferal = async (referalCode) => {
+    const applyReferal = async (referalCode, buy_now) => {
         setError(null);
         setApplyingReferalProcessing(true);
         const request_response = await axios
-            .post(route('website.carts.referal-code'), { code: referalCode })
+            .post(route('website.carts.referal-code'), { code: referalCode, buy_now: buy_now })
             .then((res) => {
                 const response = res.data;
 
@@ -239,6 +238,7 @@ export default function Checkout({ cart_items, refferalSessionData, shipping_add
                 shipping_info: shippingInfo,
                 payment_method: paymentMethod,
                 referal_code: referalData.referal_code,
+                buy_now: buy_now,
             })
             .then((res) => {
                 const response = res.data;
@@ -769,9 +769,9 @@ function PaymentMethod({ paymentMethod, setPaymentMethod, __ }) {
                     <div className="flex items-center justify-between flex-1">
                         <div className="flex items-center gap-3">
                             <div className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-2-light dark:bg-surface-3-dark">
-                                <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 fill-main-text-light dark:fill-main-text-dark">
+                                <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 fill-main-text-light dark:fill-main-text-dark">
                                     <path d="M128 0C57.3 0 0 57.3 0 128s57.3 128 128 128 128-57.3 128-128S198.7 0 128 0zm62 91h-46v24.3c37.6 1.9 66 10 66 19.7 0 9.7-28.4 17.8-66 19.7V201h-32v-46.3c-37.6-1.9-66-10-66-19.7 0-9.7 28.4-17.8 66-19.7V91H66V63h124v28zm-78 35.2v25.2c-33.6-1.6-58-6.6-58-12.6 0-6 24.4-11 58-12.6zm32 25.2v-25.2c33.6 1.6 58 6.6 58 12.6 0 6-24.4 11-58 12.6z"
-                                        fill="#000000" />
+                                    />
                                 </svg>
                             </div>
                             <div>
@@ -840,7 +840,7 @@ function OrderItemsSummary({ cart_items, currency, __, addon_items, calculateImp
             </h2>
 
             <div className="pr-2 space-y-4 overflow-y-auto max-h-96">
-                {cart_items.map((item) => {
+                {cart_items.map((item, index) => {
                     const shipping_fee = calculateShippingCost(item?.smartphone?.selling_info?.shipping_fee, item?.smartphone, item?.quantity);
                     const import_tax = calculateImportCost(item?.smartphone?.selling_info?.import_tax, item?.smartphone);
                     const relatedAddons = addon_items.filter(
@@ -848,7 +848,7 @@ function OrderItemsSummary({ cart_items, currency, __, addon_items, calculateImp
                     );
                     return (
                         <div
-                            key={item.id}
+                            key={index}
                             className="flex gap-3 p-3 border rounded-md border-surface-3-light bg-surface-2-light dark:border-surface-3-dark dark:bg-surface-2-dark"
                         >
                             {/* IMAGE */}
@@ -882,7 +882,7 @@ function OrderItemsSummary({ cart_items, currency, __, addon_items, calculateImp
                                 {item?.smartphone?.capacity && (
                                     <div className="flex flex-wrap gap-2 mb-3">
                                         <span
-                                            className={`inline-flex items-center rounded-md bg-surface-2-light py-0.5 text-xs font-medium text-sub-text-light dark:bg-surface-3-dark dark:text-sub-text-dark`}
+                                            className={`inline-flex items-center rounded-md bg-surface-2-light  py-0.5 px-2 text-xs font-medium text-sub-text-light dark:bg-surface-3-dark dark:text-sub-text-dark`}
                                         >
                                             {__('Capacity') + ': ' + item?.smartphone?.capacity?.name || 'N/A'}
                                         </span>

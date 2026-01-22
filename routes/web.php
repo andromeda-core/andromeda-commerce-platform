@@ -135,6 +135,7 @@ Route::group(['as' => 'website.'], function () {
 
     // Checkout Routes
     Route::controller(CheckoutController::class)->middleware('auth')->name('checkout.')->group(function () {
+        Route::post('/checkout/single-product-checkout-sesson-store', 'singleProductCheckoutSessionStore')->name('single-product-checkout-session_store');
         Route::get('/checkout', 'index')->name('index');
         Route::post('/checkout', 'store')->name('store');
         Route::get('/checkout/crypto/success', 'cryptoPaymentSuccess')->name('crypto-payment-success');

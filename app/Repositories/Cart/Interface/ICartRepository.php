@@ -26,5 +26,7 @@ interface ICartRepository
 
     public function removeReferal(Request $request);
 
+    public function singleProductCheckoutSessionStore(Request $request);
+
     public function updateCartRefferalSession(?array $session_data, $cart_items, $addon_items);
 }

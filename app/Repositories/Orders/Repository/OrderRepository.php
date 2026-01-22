@@ -651,6 +651,7 @@ class OrderRepository implements IOrderRepository
     {
         DB::beginTransaction();
         try {
+
             $payment_method = $request->input('payment_method');
             if (empty($payment_method)) {
                 return response()->json(['message' => $this->trans::get('Please Select A Payment Method')], 400);
@@ -676,7 +677,23 @@ class OrderRepository implements IOrderRepository
                 throw new Exception($this->trans::get('Please Add Shipping Address First'));
             }
 
-            $cart_items = $this->cart->where('customer_id', $customer->id)->get();
+            $buy_now = (bool) $request->has('buy_now');
+            $sessionKey = 'single_product_checkout_'.$user->id;
+            $sessionData = session()->get($sessionKey);
+
+            $cart_items = collect();
+            $smartphone_addon_cart_items = collect();
+
+            if ($buy_now && ! blank($sessionData)) {
+
+                $cart_items = collect($sessionData['cart_items']);
+                $smartphone_addon_cart_items = collect($sessionData['addon_items']);
+            } else {
+
+                $cart_items = $this->cart->where('customer_id', $customer->id)->get();
+                $smartphone_addon_cart_items = $this->smartphone_cart_addon->where('customer_id', $customer->id)->get();
+            }
+
             if ($cart_items->isEmpty()) {
                 throw new Exception($this->trans::get('Cart Is Empty'));
             }
@@ -707,7 +724,6 @@ class OrderRepository implements IOrderRepository
                 }
             }
 
-            $smartphone_addon_cart_items = $this->smartphone_cart_addon->where('customer_id', $customer->id)->get();
             if ($smartphone_addon_cart_items->isNotEmpty()) {
                 foreach ($smartphone_addon_cart_items as $item) {
                     $smartphone_addon_order_items[] = [
@@ -803,8 +819,12 @@ class OrderRepository implements IOrderRepository
                     throw new Exception($order['message']);
                 }
 
-                $this->clearCartExistingItems($customer->id);
-                $this->clearExistingAddonItems($customer->id, $this->smartphone_cart_addon);
+                if (blank($sessionData)) {
+                    $this->clearCartExistingItems($customer->id);
+                    $this->clearExistingAddonItems($customer->id, $this->smartphone_cart_addon);
+                } else {
+                    session()->forget('single_product_checkout_'.$user->id);
+                }
 
                 DB::commit();
 
@@ -825,8 +845,12 @@ class OrderRepository implements IOrderRepository
                     throw new Exception($response['message']);
                 }
 
-                $this->clearCartExistingItems($customer->id);
-                $this->clearExistingAddonItems($customer->id, $this->smartphone_cart_addon);
+                if (blank($sessionData)) {
+                    $this->clearCartExistingItems($customer->id);
+                    $this->clearExistingAddonItems($customer->id, $this->smartphone_cart_addon);
+                } else {
+                    session()->forget('single_product_checkout_'.$user->id);
+                }
                 DB::commit();
 
                 return [
@@ -849,8 +873,12 @@ class OrderRepository implements IOrderRepository
                     throw new Exception($order['message']);
                 }
 
-                $this->clearCartExistingItems($customer->id);
-                $this->clearExistingAddonItems($customer->id, $this->smartphone_cart_addon);
+                if (blank($sessionData)) {
+                    $this->clearCartExistingItems($customer->id);
+                    $this->clearExistingAddonItems($customer->id, $this->smartphone_cart_addon);
+                } else {
+                    session()->forget('single_product_checkout_'.$user->id);
+                }
                 DB::commit();
 
                 return [
@@ -897,33 +925,30 @@ class OrderRepository implements IOrderRepository
                 throw new Exception($this->trans::get('Something Went Wrong While Placing An Order'));
             }
 
-            DB::transaction(function () use ($order, $order_items, $order_item_addons) {
-                $order->orderItems()->createMany($order_items);
+            $order->orderItems()->createMany($order_items);
 
-                $orderItems = $order->orderItems()
-                    ->get()
-                    ->keyBy('smartphone_id');
+            $orderItems = $order->orderItems()
+                ->get()
+                ->keyBy('smartphone_id');
 
-                $addonsToInsert = [];
+            $addonsToInsert = [];
 
-                foreach ($order_item_addons as $addon) {
+            foreach ($order_item_addons as $addon) {
 
-                    if (! isset($orderItems[$addon['smartphone_id']])) {
-                        continue;
-                    }
-
-                    $addonsToInsert[] = array_merge($addon, [
-                        'order_item_id' => $orderItems[$addon['smartphone_id']]->id,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
+                if (! isset($orderItems[$addon['smartphone_id']])) {
+                    continue;
                 }
 
-                if (! blank($addonsToInsert)) {
-                    $this->smartphone_order_item_addon->insert($addonsToInsert);
-                }
+                $addonsToInsert[] = array_merge($addon, [
+                    'order_item_id' => $orderItems[$addon['smartphone_id']]->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
 
-            });
+            if (! blank($addonsToInsert)) {
+                $this->smartphone_order_item_addon->insert($addonsToInsert);
+            }
 
             return [
                 'status' => true,

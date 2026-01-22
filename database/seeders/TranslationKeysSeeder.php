@@ -545,6 +545,7 @@ class TranslationKeysSeeder extends Seeder
 
             // Backend
             ['key' => 'Profile Updated Successfully', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Buy now session expired', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Please Select A Payment Method', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Please Login First', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Only Customers Can Place Order', 'created_at' => $now, 'updated_at' => $now],

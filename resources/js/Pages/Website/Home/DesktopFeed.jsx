@@ -11,6 +11,7 @@ import { useVideoStore } from '@/Hooks/useVideoStore';
 import CustomizedVideoPlayer from '@/Components/CustomizedVideoPlayer';
 import SpatiotemporalInfoModal from '@/Components/SpatiotemporalInfoModal';
 import SmartphoneDetailsAccordion from '@/Components/SmartphoneDetailsAccordion';
+import axios from 'axios';
 
 const DesktopFeed = ({
     feedGallery,
@@ -1084,17 +1085,6 @@ const DesktopFeed = ({
     const handleBuyNow = async (smartphones, addons, item_id, total_stock) => {
         try {
             setBuyNowProcessing(true);
-            const alreadyExists = cart_items.some((item) => item.smartphone_id === item_id);
-
-            if (alreadyExists) {
-                router.visit(route('website.checkout.index'), {
-                    onFinish: () => {
-                        setBuyNowProcessing(false);
-                    },
-                });
-                setBuyNowProcessing(false);
-                return;
-            }
 
             if (smartphones.length === 0 && addons.length === 0) {
                 setInfoMessage(__('Please select any Item First'));
@@ -1126,46 +1116,51 @@ const DesktopFeed = ({
                 return;
             }
 
-            let data = {
-                smartphones: [],
-                addons: [],
+            const smartphoneFragments = smartphones.filter(
+                s => s.smartphone_id === item_id
+            );
+
+            const addonFragments = addons.filter(
+                s => s.smartphone_id === item_id
+            );
+
+            const smartphone = smartphoneFragments.reduce(
+                (acc, curr) => ({
+                    ...acc,
+                    ...curr,
+                }),
+                {}
+            );
+
+            const structuredAddons = addonFragments.map(addon => ({
+                id: addon.id,
+                name: addon.name,
+                quantity: addon.quantity,
+                unit_price: addon.unit_price,
+                price: addon.price,
+                smartphone_id: addon.smartphone_id,
+            }));
+            const payload = {
+                smartphone: {
+                    ...smartphone,
+                    addons: JSON.stringify(structuredAddons),
+                },
+                buy_now: true,
             };
 
-            smartphones
-                .filter((smartphone) => smartphone.smartphone_id === item_id)
-                .forEach((smartphone) => {
-                    data = {
-                        ...data,
-                        smartphones: [...data.smartphones, smartphone],
-                    };
-                });
 
-            addons
-                .filter((smartphone) => smartphone.smartphone_id === item_id)
-                .forEach((addon) => {
-                    data = {
-                        ...data,
-                        addons: [...data.addons, addon],
-                    };
-                });
+            const res = await axios.post(route('website.checkout.single-product-checkout-session_store'), { ...payload });
 
-            router.post(
-                route('website.carts.add-item'),
-                { ...data },
-                {
-                    onSuccess: (page) => {
-                        if (page.props.flash?.success) {
-                            setTimeout(() => {
-                                router.visit(route('website.checkout.index'));
-                            }, 500);
-                        }
-                    },
-                    onFinish: () => setBuyNowProcessing(false),
-                    preserveScroll: true,
-                    preserveUrl: true,
-                    preserveState: true,
-                },
-            );
+            if (res.data.status === true) {
+                shouldCleanupBrowserHistoryRef.current = false;
+                router.get(route('website.checkout.index', { buy_now: true }))
+            } else {
+                setBuyNowProcessing(false);
+                setErrorMessage(res.data.message);
+                setShowErrorMessage(true);
+            }
+
+
         } catch (error) {
             setBuyNowProcessing(false);
             setShowErrorMessage(true);
@@ -1288,35 +1283,35 @@ const DesktopFeed = ({
     }, [feedGallery?.id]);
 
     // CleanUp
-    // useEffect(() => {
-    //     return () => {
+    useEffect(() => {
+        return () => {
 
-    //         if (shouldCleanupBrowserHistoryRef.current) {
-    //             window.history.replaceState({}, '', window.location.pathname);
-    //         }
-    //         setCartProcessing(false);
-    //         setSpatiotemporalInfoModal(false);
-    //         setBuyNowProcessing(false);
-    //         setFeedGallery(null);
-    //         setCanActionOnSmartphone(false);
-    //         setCartItemAddons([]);
-    //         setCartItemSmartphones([]);
-    //         setOriginalCartSmartphones([]);
-    //         setOriginalCartAddons([]);
-    //         setCurrentFeedIndex(0);
-    //         setFeedItems([]);
-    //         setIsInCart(false);
-    //         setMediaItems([]);
-    //         setSelectedAddon('');
-    //         setSelectedColor('');
-    //         setSelectedMediaIndex(0);
-    //         setFeedGallery(null);
-    //         setFeedOpen(false);
-    //         smartphoneCartItemsRef.current = [];
-    //         mediaThumbRefs.current = {};
-    //         isSinglePageRef.current = false;
-    //     };
-    // }, []);
+            if (shouldCleanupBrowserHistoryRef.current) {
+                window.history.replaceState({}, '', window.location.pathname);
+            }
+            setCartProcessing(false);
+            setSpatiotemporalInfoModal(false);
+            setBuyNowProcessing(false);
+            setFeedGallery(null);
+            setCanActionOnSmartphone(false);
+            setCartItemAddons([]);
+            setCartItemSmartphones([]);
+            setOriginalCartSmartphones([]);
+            setOriginalCartAddons([]);
+            setCurrentFeedIndex(0);
+            setFeedItems([]);
+            setIsInCart(false);
+            setMediaItems([]);
+            setSelectedAddon('');
+            setSelectedColor('');
+            setSelectedMediaIndex(0);
+            setFeedGallery(null);
+            setFeedOpen(false);
+            smartphoneCartItemsRef.current = [];
+            mediaThumbRefs.current = {};
+            isSinglePageRef.current = false;
+        };
+    }, []);
 
     // Arrows Destructuring From Arrow State
     const { isLeftDisabled, isRightDisabled, isTopDisabled, isBottomDisabled } = arrowStates;
