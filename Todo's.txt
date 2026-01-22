@@ -999,6 +999,7 @@ Additional Work:
 20: Related Feed Fecthing Logic Updated and Fixed  ✅
 21: Mobile And Desktop Feed Modal Layout Changed  And Updated  ✅ -> (Multiple Times)
 22: Data Deletion Page Link Moved From Sidebar To Profile Page ✅
+23: Chcekout And Cart And Order Pages Icon Of Payment method updated ✅
 
 
 
