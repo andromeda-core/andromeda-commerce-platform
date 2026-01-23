@@ -1333,7 +1333,7 @@ const DesktopFeed = ({
                             <button
                                 onClick={handleLeftPrevious}
                                 disabled={isLeftDisabled}
-                                className={`absolute left-[clamp(7px,2vw,0px)] top-1/2 z-[60] -translate-y-1/2 rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isLeftDisabled ? 'cursor-not-allowed opacity-20' : ''}`}
+                                className={`absolute left-[clamp(20px,2vw,0px)] top-1/2 z-[60] -translate-y-1/2 rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isLeftDisabled ? 'cursor-not-allowed opacity-20' : ''}`}
                                 aria-label="Previous item"
                             >
                                 <svg
@@ -1770,7 +1770,7 @@ const DesktopFeed = ({
                             <button
                                 onClick={handleLeftPrevious}
                                 disabled={isLeftDisabled}
-                                className={`absolute left-[clamp(7px,2vw,0px)] top-1/2 z-[60] -translate-y-1/2 rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isLeftDisabled ? 'cursor-not-allowed opacity-20' : ''}`}
+                                className={`absolute left-[clamp(20px,2vw,0px)] top-1/2 z-[60] -translate-y-1/2 rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isLeftDisabled ? 'cursor-not-allowed opacity-20' : ''}`}
                                 aria-label="Previous item"
                             >
                                 <svg
@@ -2864,7 +2864,7 @@ const DesktopFeed = ({
                             <button
                                 onClick={handleLeftPrevious}
                                 disabled={isLeftDisabled}
-                                className={`absolute left-[clamp(7px,2vw,0px)] top-1/2 z-[60] -translate-y-1/2 rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isLeftDisabled ? 'cursor-not-allowed opacity-20' : ''}`}
+                                className={`absolute left-[clamp(20px,2vw,0px)] top-1/2 z-[60] -translate-y-1/2 rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isLeftDisabled ? 'cursor-not-allowed opacity-20' : ''}`}
                                 aria-label="Previous item"
                             >
                                 <svg
@@ -3590,7 +3590,7 @@ const DesktopFeed = ({
                             <button
                                 onClick={handleLeftPrevious}
                                 disabled={isLeftDisabled}
-                                className={`absolute left-[clamp(7px,2vw,0px)] top-1/2 z-[60] -translate-y-1/2 rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isLeftDisabled ? 'cursor-not-allowed opacity-20' : ''}`}
+                                className={`absolute left-[clamp(20px,2vw,0px)] top-1/2 z-[60] -translate-y-1/2 rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isLeftDisabled ? 'cursor-not-allowed opacity-20' : ''}`}
                                 aria-label="Previous item"
                             >
                                 <svg
