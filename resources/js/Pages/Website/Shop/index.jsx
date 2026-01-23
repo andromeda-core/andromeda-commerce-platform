@@ -584,11 +584,11 @@ const index = (
                         <div className="flex flex-col items-center justify-center w-full py-16 text-center">
 
 
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                            <h3 className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
                                 {__('No products found')}
                             </h3>
 
-                            <p className="max-w-md mt-2 text-sm text-gray-500 dark:text-gray-400">
+                            <p className="max-w-md mt-2 text-sm text-sub-text-light dark:text-sub-text-dark">
                                 {__('Try adjusting your filters or removing some selections to see more results.')}
                             </p>
 
