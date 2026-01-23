@@ -125,8 +125,17 @@ export default function Checkout({ cart_items, refferalSessionData, shipping_add
     const applyReferal = async (referalCode, buy_now) => {
         setError(null);
         setApplyingReferalProcessing(true);
+
+        const payload = {
+            code: referalCode,
+        };
+
+        if (buy_now) {
+            payload.buy_now = true;
+        }
+
         const request_response = await axios
-            .post(route('website.carts.referal-code'), { code: referalCode, buy_now: buy_now })
+            .post(route('website.carts.referal-code'), { ...payload })
             .then((res) => {
                 const response = res.data;
 
@@ -194,7 +203,7 @@ export default function Checkout({ cart_items, refferalSessionData, shipping_add
         }
 
         if (referalCode.trim()) {
-            const response = await applyReferal(referalCode);
+            const response = await applyReferal(referalCode, buy_now);
             if (response) {
                 setShowReferalInput(false);
                 setReferalCode('');
@@ -232,13 +241,22 @@ export default function Checkout({ cart_items, refferalSessionData, shipping_add
         // });
         setProcessingOrder(true);
 
+        const payload = {
+            shipping_info: shippingInfo,
+            payment_method: paymentMethod,
+            referal_code: referalData.referal_code,
+
+        };
+
+
+        if (buy_now) {
+            payload.buy_now = true;
+        }
+
         // Your order processing logic here
         await axios
             .post(route('website.checkout.store'), {
-                shipping_info: shippingInfo,
-                payment_method: paymentMethod,
-                referal_code: referalData.referal_code,
-                buy_now: buy_now,
+                ...payload
             })
             .then((res) => {
                 const response = res.data;

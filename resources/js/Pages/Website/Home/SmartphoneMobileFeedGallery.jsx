@@ -745,7 +745,7 @@ const SmartphoneMobileGalleryModal = ({
         } catch (error) {
             setBuyNowProcessing(false);
             setShowErrorMessage(true);
-            setErrorMessage(error.message);
+            setErrorMessage(error?.response?.data?.message || error);
         }
     };
 

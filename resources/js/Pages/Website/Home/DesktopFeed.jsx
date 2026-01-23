@@ -1150,7 +1150,6 @@ const DesktopFeed = ({
 
 
             const res = await axios.post(route('website.checkout.single-product-checkout-session_store'), { ...payload });
-
             if (res.data.status === true) {
                 shouldCleanupBrowserHistoryRef.current = false;
                 router.get(route('website.checkout.index', { buy_now: true }))
@@ -1164,7 +1163,7 @@ const DesktopFeed = ({
         } catch (error) {
             setBuyNowProcessing(false);
             setShowErrorMessage(true);
-            setErrorMessage(error.message);
+            setErrorMessage(error?.response?.data?.message || error);
         }
     };
 

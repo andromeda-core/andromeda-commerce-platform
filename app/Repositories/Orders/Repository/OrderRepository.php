@@ -678,6 +678,7 @@ class OrderRepository implements IOrderRepository
             }
 
             $buy_now = (bool) $request->has('buy_now');
+
             $sessionKey = 'single_product_checkout_'.$user->id;
             $sessionData = session()->get($sessionKey);
 
@@ -685,7 +686,6 @@ class OrderRepository implements IOrderRepository
             $smartphone_addon_cart_items = collect();
 
             if ($buy_now && ! blank($sessionData)) {
-
                 $cart_items = collect($sessionData['cart_items']);
                 $smartphone_addon_cart_items = collect($sessionData['addon_items']);
             } else {

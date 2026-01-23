@@ -860,6 +860,21 @@ class CartRepository implements ICartRepository
 
         try {
             $user = $request->user();
+
+            if (empty($user)) {
+                throw new Exception('Please login first');
+            }
+
+            if (! $user->hasRole('Customer')) {
+                throw new Exception('Only Customers Can Add items In Cart');
+            }
+
+            $customer = $user->customer;
+
+            if (empty($customer)) {
+                throw new Exception('Only Customers Can Add items To Cart And Purchase');
+            }
+
             session()->forget('single_product_checkout_'.$user->id);
 
             $data = $request->input('smartphone');
