@@ -5,7 +5,7 @@ import { useConfirm } from '@/Hooks/useConfirm';
 import { useTranslation } from '@/Hooks/useTranslation';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import React, { useEffect, useState } from 'react';
 
 
@@ -185,6 +185,12 @@ const DataDeletion = () => {
                                                 />
                                                 <span className="text-sm text-black dark:text-sub-text-dark">
                                                     {__('I understand that this action is permanent and irreversible. All my data will be permanently deleted and cannot be recovered.')}
+                                                    <Link
+                                                        href={route('website.privacy-policy.index')}
+                                                        className="text-[13px] mx-1 font-medium text-red-700 underline underline-offset-[3px] decoration-red-700"
+                                                    >
+                                                        {__('Please review our Privacy Policy.')}
+                                                    </Link>.
                                                 </span>
                                             </label>
                                         </div>

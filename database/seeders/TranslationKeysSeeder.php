@@ -542,6 +542,7 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'collects, uses, stores, shares, and protects personal information in connection with the operation of our international e-commerce platform for mobile device sales (the “Service”).', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'This Privacy Policy is an integral part of, and must be read together with, our Terms of Service, Shipping Policy, and Return & Refund Policy.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Deactivate Account', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Please review our Privacy Policy.', 'created_at' => $now, 'updated_at' => $now],
 
             // Backend
             ['key' => 'Profile Updated Successfully', 'created_at' => $now, 'updated_at' => $now],
