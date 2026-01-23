@@ -266,7 +266,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
 
             $new_search_history = null;
 
-            if (isset($post_preferences['show_posts']) && $post_preferences['show_posts'] == true && (! empty($query) || (isset($post_filters['address']) && ! empty($post_filters['address']['lat']) && ! empty($post_filters['address']['lng']) && ! empty($post_filters['radius'])))) {
+            if ((! empty($query) || (isset($post_filters['address']) && ! empty($post_filters['address']['lat']) && ! empty($post_filters['address']['lng']) && ! empty($post_filters['radius'])))) {
                 $posts = $this->post::query();
 
                 if (isset($post_filters['address']) && ! empty($post_filters['address']['lat']) && ! empty($post_filters['address']['lng']) && ! empty($post_filters['radius'])) {
@@ -308,9 +308,9 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                     return $results;
                 }
 
-                $text = filter_var($post_preferences['text'], FILTER_VALIDATE_BOOLEAN);
-                $images = filter_var($post_preferences['images'], FILTER_VALIDATE_BOOLEAN);
-                $videos = filter_var($post_preferences['videos'], FILTER_VALIDATE_BOOLEAN);
+                // $text = filter_var($post_preferences['text'], FILTER_VALIDATE_BOOLEAN);
+                // $images = filter_var($post_preferences['images'], FILTER_VALIDATE_BOOLEAN);
+                // $videos = filter_var($post_preferences['videos'], FILTER_VALIDATE_BOOLEAN);
 
                 if ($request->filled('query')) {
 
@@ -421,7 +421,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
 
             }
 
-            if (isset($post_preferences['show_products']) && $post_preferences['show_products'] == true && (! empty($query) || (isset($post_filters['address']) && ! empty($post_filters['address']['lat']) && ! empty($post_filters['address']['lng']) && ! empty($post_filters['radius'])))) {
+            if ((! empty($query) || (isset($post_filters['address']) && ! empty($post_filters['address']['lat']) && ! empty($post_filters['address']['lng']) && ! empty($post_filters['radius'])))) {
                 $smartphones = $this->smartphone::query();
 
                 $hasGeo =
@@ -471,9 +471,9 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                     return $results;
                 }
 
-                $text = filter_var($post_preferences['text'], FILTER_VALIDATE_BOOLEAN);
-                $images = filter_var($post_preferences['images'], FILTER_VALIDATE_BOOLEAN);
-                $videos = filter_var($post_preferences['videos'], FILTER_VALIDATE_BOOLEAN);
+                // $text = filter_var($post_preferences['text'], FILTER_VALIDATE_BOOLEAN);
+                // $images = filter_var($post_preferences['images'], FILTER_VALIDATE_BOOLEAN);
+                // $videos = filter_var($post_preferences['videos'], FILTER_VALIDATE_BOOLEAN);
 
                 if ($request->filled('query')) {
 
@@ -582,7 +582,6 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                         }
                     })
                     ->first();
-
                 // info([
                 //     'query' => $query,
                 //     'filtersHash' => $filtersHash,
