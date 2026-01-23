@@ -552,7 +552,7 @@ const index = (
                                                 }}
 
                                                 className={`relative flex-shrink-0 px-4 py-2 text-sm transition-all rounded-full whitespace-nowrap ${activeTab === tab.key
-                                                    ? 'bg-main-text-light text-main-text-dark dark:bg-main-text-dark dark:text-main-text-light font-semibold'
+                                                    ? 'bg-main-text-light text-main-text-dark dark:bg-main-text-dark dark:text-main-text-light '
                                                     : 'bg-surface-1-light text-main-text-light dark:bg-surface-1-dark dark:text-main-text-dark'
                                                     }`}
                                             >
