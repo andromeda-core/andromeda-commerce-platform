@@ -14,7 +14,7 @@ const DropdownMenuItem = ({
     return (
         <li>
             {/* Dropdown Trigger */}
-            <button
+            <div
                 onClick={() => {
                     if (selected === label) {
                         setSelected(null);
@@ -31,7 +31,7 @@ const DropdownMenuItem = ({
 
                 {/* Label */}
                 <span className="mx-1 font-medium text-main-text-light dark:text-main-text-dark">{label}</span>
-            </button>
+            </div>
 
             {/* Dropdown Items */}
             {isOpen && (
@@ -64,9 +64,9 @@ const DropdownMenuItem = ({
 
                                     {item.type === 'button' && (
                                         <li key={index}>
-                                            <button
+                                            <div
                                                 onClick={item.onClick}
-                                                className={`flex items-center gap-3 w-full  text-sm rounded-md px-4 py-2 transition-colors ${item?.isLogout ? 'logout-menu-item-button' : 'menu-sub-item-inactive'}`}
+                                                className={`flex items-center gap-3 w-full cursor-pointer  text-sm rounded-md px-4 py-2 transition-colors ${item?.isLogout ? 'logout-menu-item-button' : 'menu-sub-item-inactive'}`}
                                             >
 
                                                 <span className='font-normal'>{item.label}</span>
@@ -74,7 +74,7 @@ const DropdownMenuItem = ({
 
                                                     <Spinner Color={"fill-black dark:fill-white"} />
                                                 )}
-                                            </button>
+                                            </div>
                                         </li>
                                     )}
                                 </Fragment>

@@ -216,7 +216,9 @@ export default function MainLayout({ children }) {
 
     return (
         <>
-            <div className="relative flex w-full h-screen overflow-hidden bg-backgroundLight dark:bg-backgroundDark">
+            <div className="relative flex w-full h-screen overflow-hidden scrollbar-none bg-backgroundLight dark:bg-backgroundDark"
+                style={{ '--sidebar-w': 'clamp(200px,15vw,256px)' }}
+            >
                 <Preloader loaded={loaded} setLoaded={setLoaded} />
                 <AppStatusManager />
 
@@ -238,7 +240,14 @@ export default function MainLayout({ children }) {
 
                 {/* Sidebar */}
                 {windowSize.width > 1024 && (
-                    <div className={`fixed left-0 top-0 z-40 h-screen transition-all duration-300 'w-[240px]`}>
+                    <aside
+                        className="
+    hidden lg:flex
+    w-[var(--sidebar-w)]
+    shrink-0
+    h-screen
+  "
+                    >
                         <Sidebar
                             light_logo={ApplicationLogoLight}
                             dark_logo={ApplicationLogoDark}
@@ -250,30 +259,15 @@ export default function MainLayout({ children }) {
                             __={__}
                         />
 
-                    </div>
+                    </aside>
 
                 )}
 
                 {/* Main Content Area */}
-                <div
-                    className={`flex-1 min-h-screen transition-all  duration-300 ${windowSize.width > 1024
-                        ? 'ml-[240px]'
-                        : 'ml-0'
-                        }`}
-                >
-                    {/* Main Content */}
-                    <main
-                        className="h-full px-3 pt-2 overflow-y-auto scrollbar-none bg-backgroundLight dark:bg-backgroundDark lg:px-6 xl:px-8">
-
-                        {/* Activation Navigation Prompt Modal */}
-                        {/* {needsActivation &&
-                            <ActivateNavigationPrompt setNeedsActivation={setNeedsActivation} />
-                        } */}
-
-                        {children ? (
-                            children
-                        ) : (
-                            <div className="flex h-[80vh] items-center justify-center text-sub-text-light dark:text-sub-text-dark">
+                <div className="flex-1 min-h-screen overflow-hidden">
+                    <main className="h-full px-3 pt-2 overflow-y-auto scrollbar-none lg:px-6 xl:px-8">
+                        {children ?? (
+                            <div className="flex h-[80vh] items-center justify-center">
                                 {__('No content available.')}
                             </div>
                         )}

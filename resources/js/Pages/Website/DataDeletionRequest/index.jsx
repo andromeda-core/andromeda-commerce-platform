@@ -124,20 +124,16 @@ const DataDeletion = () => {
                     </div>
 
                     {/* Main Content */}
-                    <div className={`px-6 mx-auto  lg:max-w-6xl sm:max-w-3xl mt-10`}>
+                    <div className={`mx-auto mt-10 px-6 sm:max-w-3xl lg:max-w-6xl`}>
                         <div className="grid gap-8 lg:grid-cols-3">
-
                             {/* Form */}
-                            <div className="lg:col-span-2">
-                                <form
-                                    onSubmit={submit}
-                                    className="p-2"
-                                >
-                                    <h2 className="mb-6 text-xl font-semibold text-main-text-light dark:text-main-text-dark ">
+                            <div className="lg:col-span-2 lg:mb-5">
+                                <form onSubmit={submit}>
+                                    <h2 className="mb-6 text-xl font-semibold text-main-text-light dark:text-main-text-dark">
                                         {__('Submit Deletion')}
                                     </h2>
 
-                                    <div className="space-y-1">
+                                    <div className="space-y-6">
                                         {/* Password Field */}
                                         <div>
                                             <WebInput
@@ -178,29 +174,28 @@ const DataDeletion = () => {
                                                 <input
                                                     type="checkbox"
                                                     required
-                                                    onChange={(e) =>
-                                                        setData('consent', e.target.checked)
-                                                    }
-                                                    className="w-6 h-6 mt-1 text-red-600 border-gray-300 rounded shrink-0 focus:ring-0 dark:border-gray-600 focus:ring-offset-0"
+                                                    onChange={(e) => setData('consent', e.target.checked)}
+                                                    className="w-6 h-6 mt-1 text-red-600 border-gray-300 rounded shrink-0 focus:ring-0 focus:ring-offset-0 dark:border-gray-600"
                                                 />
                                                 <span className="text-sm text-black dark:text-sub-text-dark">
                                                     {__('I understand that this action is permanent and irreversible. All my data will be permanently deleted and cannot be recovered.')}
                                                     <Link
                                                         href={route('website.privacy-policy.index')}
-                                                        className="text-[13px] mx-1 font-medium text-red-700 underline underline-offset-[3px] decoration-red-700"
+                                                        className="mx-1 text-[13px] font-medium text-red-700 underline decoration-red-700 underline-offset-[3px]"
                                                     >
                                                         {__('Please review our Privacy Policy.')}
-                                                    </Link>.
+                                                    </Link>
+                                                    .
                                                 </span>
                                             </label>
                                         </div>
 
                                         {/* Submit Button */}
-                                        <div className="flex gap-4 pt-3">
+                                        <div className="pt-2">
                                             <button
                                                 disabled={processing || isDisabled}
                                                 type="submit"
-                                                className={`flex-1 ${isDisabled && 'pointer-events-none cursor-not-allowed opacity-25 dark:opacity-40'} rounded-md bg-red-600  px-6 py-4 font-semibold text-white shadow-lg transition-all text-md  hover:bg-red-600/80  dark:bg-red-600 dark:hover:bg-red-600/80`}
+                                                className={`w-full rounded-md bg-red-600 px-6 py-4 text-md font-semibold text-white shadow-lg transition-all hover:bg-red-600/80 dark:bg-red-600 dark:hover:bg-red-600/80 ${isDisabled && 'pointer-events-none cursor-not-allowed opacity-25 dark:opacity-40'}`}
                                             >
                                                 <div className="flex items-center justify-center gap-2">
                                                     {processing && (
@@ -233,64 +228,57 @@ const DataDeletion = () => {
                             </div>
 
                             {/* Info Sidebar */}
-                            <div className="xl:mt-[26%] lg:mt-[42%] mt-0 space-y-10 lg:col-span-1">
-                                <div className="p-6  rounded-md bg-surface-1-light  dark:bg-surface-1-dark  xl:w-[330px] w-auto">
-                                    <h3 className="mb-4 text-lg font-semibold text-main-text-light dark:text-main-text-dark ">{__('What Gets Deleted')}?</h3>
-                                    <ul className="space-y-1 text-sm text-sub-text-light dark:text-sub-text-dark ">
-                                        <li className="flex items-start gap-2">
-                                            -
-                                            <span>{__('Your account credentials')}</span>
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            -
-                                            <span>{__('Personal information')}</span>
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            -
-                                            <span>{__('Order history')}</span>
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            -
-                                            <span>{__('Delivery addresses')}</span>
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            -
-                                            <span>{__('Facebook Login data')}</span>
-                                        </li>
-                                    </ul>
-                                </div>
-
-
-                                <div className="p-6 rounded-md bg-surface-1-light  dark:bg-surface-1-dark xl:w-[330px] w-auto">
-
-
-
-                                    <div className="flex items-center gap-2 mb-3">
-
-                                        <h3 className="font-semibold text-main-text-light dark:text-main-text-dark">
-                                            {__('Need Help')}?
+                            <div className="lg:col-span-1">
+                                {/* Add top margin to align with first input field */}
+                                <div className="space-y-6 lg:mt-[52px]">
+                                    <div className="w-auto rounded-md bg-surface-1-light p-6 dark:bg-surface-1-dark xl:w-[330px]">
+                                        <h3 className="mb-4 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
+                                            {__('What Gets Deleted')}?
                                         </h3>
+                                        <ul className="space-y-2 text-sm text-sub-text-light dark:text-sub-text-dark">
+                                            <li className="flex items-start gap-2">
+                                                <span>-</span>
+                                                <span>{__('Your account credentials')}</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span>-</span>
+                                                <span>{__('Personal information')}</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span>-</span>
+                                                <span>{__('Order history')}</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span>-</span>
+                                                <span>{__('Delivery addresses')}</span>
+                                            </li>
+                                            <li className="flex items-start gap-2">
+                                                <span>-</span>
+                                                <span>{__('Facebook Login data')}</span>
+                                            </li>
+                                        </ul>
                                     </div>
 
+                                    <div className="w-auto rounded-md bg-surface-1-light p-6 dark:bg-surface-1-dark xl:w-[330px]">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <h3 className="font-semibold text-main-text-light dark:text-main-text-dark">
+                                                {__('Need Help')}?
+                                            </h3>
+                                        </div>
 
-                                    <p className="mb-5 text-sm text-sub-text-light dark:text-sub-text-dark ">
-                                        {__('Contact our support team if you have questions about data deletion.')}
-                                    </p>
+                                        <p className="mb-5 text-sm text-sub-text-light dark:text-sub-text-dark">
+                                            {__('Contact our support team if you have questions about data deletion.')}
+                                        </p>
 
-
-                                    <a
-                                        href="mailto:privacy@windoublespace.com"
-                                        className="text-sm font-semibold break-words text-sub-text-light dark:text-sub-text-dark hover:text-sub-text-light/80 dark:hover:text-sub-text-dark/80"
-                                    >
-                                        privacy@andromeda.blue
-                                    </a>
-
+                                        <a
+                                            href="mailto:privacy@andromeda.blue"
+                                            className="text-sm font-semibold break-words text-sub-text-light hover:text-sub-text-light/80 dark:text-sub-text-dark dark:hover:text-sub-text-dark/80"
+                                        >
+                                            privacy@andromeda.blue
+                                        </a>
+                                    </div>
                                 </div>
-
-
                             </div>
-
-
                         </div>
                     </div>
 

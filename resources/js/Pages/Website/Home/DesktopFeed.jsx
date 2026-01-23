@@ -1322,18 +1322,26 @@ const DesktopFeed = ({
             <>
 
                 <div
-                    className="fixed inset-0 z-[80] h-full bg-backgroundLight dark:bg-backgroundDark"
+                    className="
+    absolute
+    inset-y-0
+    left-[var(--sidebar-w)]
+    right-0
+    z-[60]
+    bg-backgroundLight
+    dark:bg-backgroundDark
+  "
                 >
                     {/* Modal Container */}
 
                     <div className="flex items-center justify-center w-full h-full overflow-hidden">
                         <div className="relative mx-auto w-full max-w-[1300px] px-6 lg:px-[96px] xl:px-[120px]">
-                            {/* Navigation Arrows */}
+                            {/* Navigation Arrows + Close Button Starts */}
                             {/* Left Arrow */}
                             <button
                                 onClick={handleLeftPrevious}
                                 disabled={isLeftDisabled}
-                                className={`absolute left-[clamp(20px,2vw,0px)] top-1/2 z-[60] -translate-y-1/2 rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isLeftDisabled ? 'cursor-not-allowed opacity-20' : ''}`}
+                                className={`absolute left-[clamp(0px,2vw,0px)] top-1/2 z-[60] -translate-y-1/2 rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isLeftDisabled ? 'cursor-not-allowed opacity-20' : ''}`}
                                 aria-label="Previous item"
                             >
                                 <svg
@@ -1361,7 +1369,7 @@ const DesktopFeed = ({
                                     mediaThumbRefs.current = {};
                                     window.history.replaceState({}, '', window.location.pathname);
                                 }}
-                                className="absolute right-[clamp(20px,2vw,10px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-surface-1-light  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
+                                className="absolute right-[clamp(35px,2vw,20px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-surface-1-light  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
                                 aria-label="Close modal"
                             >
                                 <svg
@@ -1380,7 +1388,7 @@ const DesktopFeed = ({
                                 </svg>
                             </button>
 
-                            <div className="absolute right-[clamp(20px,2vw,10px)] top-1/2 z-[60] flex -translate-y-1/2 flex-col items-center gap-8">
+                            <div className="absolute right-[clamp(30px,2vw,20px)] top-1/2 z-[60] flex -translate-y-1/2 flex-col items-center gap-8">
                                 {/* Up Arrow */}
                                 <button
                                     onClick={handleTopPrevious}
@@ -1450,6 +1458,7 @@ const DesktopFeed = ({
                                     </svg>
                                 </button>
                             </div>
+                            {/* Navigation Arrows + Close Button Ends */}
 
                             <div
                                 className={`bg-backgroundLight transition-all duration-300 dark:bg-backgroundDark`}
@@ -1760,17 +1769,25 @@ const DesktopFeed = ({
         return (
             <>
                 <div
-                    className="fixed inset-0 z-[80] bg-backgroundLight dark:bg-backgroundDark"
+                    className="
+    absolute
+    inset-y-0
+    left-[var(--sidebar-w)]
+    right-0
+    z-[60]
+    bg-backgroundLight
+    dark:bg-backgroundDark
+  "
                 >
 
                     <div className="flex items-center justify-center w-full h-full overflow-hidden">
                         <div className="relative mx-auto w-full max-w-[1300px] px-6 lg:px-[96px] xl:px-[120px]">
-                            {/* Navigation Arrows */}
+                            {/* Navigation Arrows + Close Button Starts */}
                             {/* Left Arrow */}
                             <button
                                 onClick={handleLeftPrevious}
                                 disabled={isLeftDisabled}
-                                className={`absolute left-[clamp(20px,2vw,0px)] top-1/2 z-[60] -translate-y-1/2 rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isLeftDisabled ? 'cursor-not-allowed opacity-20' : ''}`}
+                                className={`absolute left-[clamp(0px,2vw,0px)] top-1/2 z-[60] -translate-y-1/2 rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isLeftDisabled ? 'cursor-not-allowed opacity-20' : ''}`}
                                 aria-label="Previous item"
                             >
                                 <svg
@@ -1798,7 +1815,7 @@ const DesktopFeed = ({
                                     mediaThumbRefs.current = {};
                                     window.history.replaceState({}, '', window.location.pathname);
                                 }}
-                                className="absolute right-[clamp(20px,2vw,10px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-surface-1-light  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
+                                className="absolute right-[clamp(35px,2vw,20px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-surface-1-light  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
                                 aria-label="Close modal"
                             >
                                 <svg
@@ -1817,7 +1834,7 @@ const DesktopFeed = ({
                                 </svg>
                             </button>
 
-                            <div className="absolute right-[clamp(20px,2vw,10px)] top-1/2 z-[60] flex -translate-y-1/2 flex-col items-center gap-8">
+                            <div className="absolute right-[clamp(30px,2vw,20px)] top-1/2 z-[60] flex -translate-y-1/2 flex-col items-center gap-8">
                                 {/* Up Arrow */}
                                 <button
                                     onClick={handleTopPrevious}
@@ -1887,6 +1904,7 @@ const DesktopFeed = ({
                                     </svg>
                                 </button>
                             </div>
+                            {/* Navigation Arrows + Close Button Ends */}
 
                             <div
                                 className={`bg-backgroundLight transition-all duration-300 dark:bg-backgroundDark`}
@@ -2853,18 +2871,26 @@ const DesktopFeed = ({
             <>
 
                 <div
-                    className="fixed inset-0 z-[80] h-full bg-backgroundLight dark:bg-backgroundDark"
+                    className="
+    absolute
+    inset-y-0
+    left-[var(--sidebar-w)]
+    right-0
+    z-[60]
+    bg-backgroundLight
+    dark:bg-backgroundDark
+  "
                 >
                     {/* Modal Container */}
 
                     <div className="flex items-center justify-center w-full h-full overflow-hidden">
                         <div className="relative mx-auto w-full max-w-[1300px] px-6 lg:px-[96px] xl:px-[120px]">
-                            {/* Navigation Arrows */}
+                            {/* Navigation Arrows + Close Button Starts */}
                             {/* Left Arrow */}
                             <button
                                 onClick={handleLeftPrevious}
                                 disabled={isLeftDisabled}
-                                className={`absolute left-[clamp(20px,2vw,0px)] top-1/2 z-[60] -translate-y-1/2 rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isLeftDisabled ? 'cursor-not-allowed opacity-20' : ''}`}
+                                className={`absolute left-[clamp(0px,2vw,0px)] top-1/2 z-[60] -translate-y-1/2 rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isLeftDisabled ? 'cursor-not-allowed opacity-20' : ''}`}
                                 aria-label="Previous item"
                             >
                                 <svg
@@ -2892,7 +2918,7 @@ const DesktopFeed = ({
                                     mediaThumbRefs.current = {};
                                     window.history.replaceState({}, '', window.location.pathname);
                                 }}
-                                className="absolute right-[clamp(20px,2vw,10px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-surface-1-light  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
+                                className="absolute right-[clamp(35px,2vw,20px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-surface-1-light  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
                                 aria-label="Close modal"
                             >
                                 <svg
@@ -2911,7 +2937,7 @@ const DesktopFeed = ({
                                 </svg>
                             </button>
 
-                            <div className="absolute right-[clamp(20px,2vw,10px)] top-1/2 z-[60] flex -translate-y-1/2 flex-col items-center gap-8">
+                            <div className="absolute right-[clamp(30px,2vw,20px)] top-1/2 z-[60] flex -translate-y-1/2 flex-col items-center gap-8">
                                 {/* Up Arrow */}
                                 <button
                                     onClick={handleTopPrevious}
@@ -2981,6 +3007,7 @@ const DesktopFeed = ({
                                     </svg>
                                 </button>
                             </div>
+                            {/* Navigation Arrows + Close Button Ends */}
 
                             <div
                                 className={`bg-backgroundLight transition-all duration-300 dark:bg-backgroundDark`}
@@ -3580,17 +3607,25 @@ const DesktopFeed = ({
         return (
             <>
                 <div
-                    className="fixed inset-0 z-[80] bg-backgroundLight dark:bg-backgroundDark"
+                    className="
+    absolute
+    inset-y-0
+    left-[var(--sidebar-w)]
+    right-0
+    z-[60]
+    bg-backgroundLight
+    dark:bg-backgroundDark
+  "
                 >
 
                     <div className="flex items-center justify-center w-full h-full overflow-hidden">
                         <div className="relative mx-auto w-full max-w-[1300px] px-6 lg:px-[96px] xl:px-[120px]">
-                            {/* Navigation Arrows */}
+                            {/* Navigation Arrows + Close Button Starts */}
                             {/* Left Arrow */}
                             <button
                                 onClick={handleLeftPrevious}
                                 disabled={isLeftDisabled}
-                                className={`absolute left-[clamp(20px,2vw,0px)] top-1/2 z-[60] -translate-y-1/2 rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isLeftDisabled ? 'cursor-not-allowed opacity-20' : ''}`}
+                                className={`absolute left-[clamp(0px,2vw,0px)] top-1/2 z-[60] -translate-y-1/2 rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isLeftDisabled ? 'cursor-not-allowed opacity-20' : ''}`}
                                 aria-label="Previous item"
                             >
                                 <svg
@@ -3618,7 +3653,7 @@ const DesktopFeed = ({
                                     mediaThumbRefs.current = {};
                                     window.history.replaceState({}, '', window.location.pathname);
                                 }}
-                                className="absolute right-[clamp(20px,2vw,10px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-surface-1-light  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
+                                className="absolute right-[clamp(35px,2vw,20px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-surface-1-light  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
                                 aria-label="Close modal"
                             >
                                 <svg
@@ -3637,7 +3672,7 @@ const DesktopFeed = ({
                                 </svg>
                             </button>
 
-                            <div className="absolute right-[clamp(20px,2vw,10px)] top-1/2 z-[60] flex -translate-y-1/2 flex-col items-center gap-8">
+                            <div className="absolute right-[clamp(30px,2vw,20px)] top-1/2 z-[60] flex -translate-y-1/2 flex-col items-center gap-8">
                                 {/* Up Arrow */}
                                 <button
                                     onClick={handleTopPrevious}
@@ -3707,6 +3742,7 @@ const DesktopFeed = ({
                                     </svg>
                                 </button>
                             </div>
+                            {/* Navigation Arrows + Close Button Ends */}
 
                             <div
                                 className={`bg-backgroundLight transition-all duration-300 dark:bg-backgroundDark`}
