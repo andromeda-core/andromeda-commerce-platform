@@ -1361,7 +1361,7 @@ const DesktopFeed = ({
                                     mediaThumbRefs.current = {};
                                     window.history.replaceState({}, '', window.location.pathname);
                                 }}
-                                className="absolute right-[clamp(7px,2vw,0px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-surface-1-light  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
+                                className="absolute right-[clamp(20px,2vw,10px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-surface-1-light  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
                                 aria-label="Close modal"
                             >
                                 <svg
@@ -1380,7 +1380,7 @@ const DesktopFeed = ({
                                 </svg>
                             </button>
 
-                            <div className="absolute right-[clamp(7px,2vw,0px)] top-1/2 z-[60] flex -translate-y-1/2 flex-col items-center gap-8">
+                            <div className="absolute right-[clamp(20px,2vw,10px)] top-1/2 z-[60] flex -translate-y-1/2 flex-col items-center gap-8">
                                 {/* Up Arrow */}
                                 <button
                                     onClick={handleTopPrevious}
@@ -1798,7 +1798,7 @@ const DesktopFeed = ({
                                     mediaThumbRefs.current = {};
                                     window.history.replaceState({}, '', window.location.pathname);
                                 }}
-                                className="absolute right-[clamp(7px,2vw,0px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-surface-1-light  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
+                                className="absolute right-[clamp(20px,2vw,10px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-surface-1-light  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
                                 aria-label="Close modal"
                             >
                                 <svg
@@ -1817,7 +1817,7 @@ const DesktopFeed = ({
                                 </svg>
                             </button>
 
-                            <div className="absolute right-[clamp(7px,2vw,0px)] top-1/2 z-[60] flex -translate-y-1/2 flex-col items-center gap-8">
+                            <div className="absolute right-[clamp(20px,2vw,10px)] top-1/2 z-[60] flex -translate-y-1/2 flex-col items-center gap-8">
                                 {/* Up Arrow */}
                                 <button
                                     onClick={handleTopPrevious}
@@ -2892,7 +2892,7 @@ const DesktopFeed = ({
                                     mediaThumbRefs.current = {};
                                     window.history.replaceState({}, '', window.location.pathname);
                                 }}
-                                className="absolute right-[clamp(7px,2vw,0px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-surface-1-light  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
+                                className="absolute right-[clamp(20px,2vw,10px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-surface-1-light  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
                                 aria-label="Close modal"
                             >
                                 <svg
@@ -2911,7 +2911,7 @@ const DesktopFeed = ({
                                 </svg>
                             </button>
 
-                            <div className="absolute right-[clamp(7px,2vw,0px)] top-1/2 z-[60] flex -translate-y-1/2 flex-col items-center gap-8">
+                            <div className="absolute right-[clamp(20px,2vw,10px)] top-1/2 z-[60] flex -translate-y-1/2 flex-col items-center gap-8">
                                 {/* Up Arrow */}
                                 <button
                                     onClick={handleTopPrevious}
@@ -3618,7 +3618,7 @@ const DesktopFeed = ({
                                     mediaThumbRefs.current = {};
                                     window.history.replaceState({}, '', window.location.pathname);
                                 }}
-                                className="absolute right-[clamp(7px,2vw,0px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-surface-1-light  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
+                                className="absolute right-[clamp(20px,2vw,10px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-surface-1-light  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
                                 aria-label="Close modal"
                             >
                                 <svg
@@ -3637,7 +3637,7 @@ const DesktopFeed = ({
                                 </svg>
                             </button>
 
-                            <div className="absolute right-[clamp(7px,2vw,0px)] top-1/2 z-[60] flex -translate-y-1/2 flex-col items-center gap-8">
+                            <div className="absolute right-[clamp(20px,2vw,10px)] top-1/2 z-[60] flex -translate-y-1/2 flex-col items-center gap-8">
                                 {/* Up Arrow */}
                                 <button
                                     onClick={handleTopPrevious}

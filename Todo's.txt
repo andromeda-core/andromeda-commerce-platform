@@ -1003,7 +1003,7 @@ Additional Work:
 24: Single Product Purchase When Clicks On BuyNow Logic Added, When User Clicks On BuyNow Button it redirects Diretcly User to checkout page wihtout adding that item in the cart so user can purchase only that product instantly
     Also Frontend Logics (Desktop,Mobile) Data Passing and Structing + Backend (Order Flow, Cart Flow, Refferal Flow, Checkout Flow) UPDATED And Checked ✅
 25: change payment icon's color to mono tone on the ( product single page,  Checkout, cart, orders, order single page) and also change bitcoin icon to US tether icon ✅
-
+26: Fixed Right Side Arrows Spacing For Desktop Feed  ✅
 
  <- Review Remeaning ->
 (
