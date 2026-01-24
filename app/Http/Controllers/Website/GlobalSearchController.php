@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Website;
 
+use App\Helpers\Trans;
 use App\Http\Controllers\Controller;
 use App\Repositories\Floors\Interface\IFloorRepostitory;
 use App\Repositories\GlobalSearch\Interface\IGlobalSearchRepository;
@@ -91,7 +92,7 @@ class GlobalSearchController extends Controller
     {
 
         if (empty($request->input('place_id'))) {
-            return response()->json(['status' => false, 'message' => 'Place ID Not Found'], 400);
+            return response()->json(['status' => false, 'message' => Trans::get('Place ID Not Found')], 400);
         }
 
         $response = $this->post->placeDetails($request->input('place_id'));

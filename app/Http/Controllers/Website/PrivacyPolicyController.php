@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Website;
 
+use App\Helpers\Trans;
 use App\Http\Controllers\Controller;
 use App\Repositories\PrivacyPolicy\Interface\IPrivacyPolicyRepository;
 use Illuminate\Http\Request;
@@ -19,7 +20,7 @@ class PrivacyPolicyController extends Controller
         $privacy_policy = $this->privacy_policy->getPrivacyPolicy();
 
         if (empty($privacy_policy)) {
-            return to_route('home')->with('info', 'Privacy Policy Not Found');
+            return to_route('home')->with('info', Trans::get('Privacy Policy Not Found'));
         }
 
         return Inertia::render('Website/PrivacyPolicy/index', compact('privacy_policy'));

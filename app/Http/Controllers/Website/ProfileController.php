@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Website;
 
+use App\Helpers\Trans;
 use App\Http\Controllers\Controller;
 use App\Repositories\Customers\Interface\ICustomerRepository;
 use App\Repositories\Users\Interface\IUserRepository;
@@ -34,7 +35,7 @@ class ProfileController extends Controller
     {
 
         if (empty($id)) {
-            return back()->with('error', 'User ID Not Found');
+            return back()->with('error', Trans::get('User ID Not Found'));
         }
 
         $response = $this->customer->updateCustomerProfile($request, $id);
@@ -52,7 +53,7 @@ class ProfileController extends Controller
     {
 
         if (empty($id)) {
-            return back()->with('error', 'User ID Not Found');
+            return back()->with('error', Trans::get('User ID Not Found'));
         }
 
         $response = $this->customer->changeCustomerPassword($request, $id);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Website;
 
+use App\Helpers\Trans;
 use App\Http\Controllers\Controller;
 use App\Repositories\Cart\Interface\ICartRepository;
 use Illuminate\Http\Request;
@@ -66,7 +67,7 @@ class CartController extends Controller
         if (empty($request->user())) {
             return response()->json([
                 'status' => false,
-                'message' => 'Please login first',
+                'message' => Trans::get('Please login first'),
             ], 404);
         }
 

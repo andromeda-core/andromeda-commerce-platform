@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Website;
 
+use App\Helpers\Trans;
 use App\Http\Controllers\Controller;
 use App\Repositories\ShippingPolicy\Interface\IShippingPolicyRepository;
 use Inertia\Inertia;
@@ -17,11 +18,11 @@ class ShippingPolicyController extends Controller
         $shipping_policy = $this->shipping_policy->getShippingPolicy($slug);
 
         if (empty($smartphone_slug)) {
-            return to_route('home')->with('error', 'Wrong Smartphone Selected');
+            return to_route('home')->with('error', Trans::get('Wrong Smartphone Selected'));
         }
 
         if (empty($shipping_policy)) {
-            return to_route('home')->with('error', 'Shipping Policy Not Found');
+            return to_route('home')->with('error', Trans::get('Shipping Policy Not Found'));
         }
 
         return Inertia::render('Website/ShippingPolicy/index', compact('shipping_policy', 'smartphone_slug'));

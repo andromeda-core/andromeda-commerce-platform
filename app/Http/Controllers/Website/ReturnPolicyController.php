@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Website;
 
+use App\Helpers\Trans;
 use App\Http\Controllers\Controller;
 use App\Repositories\ReturnPolicy\Interface\IReturnPolicyRepository;
 use Inertia\Inertia;
@@ -15,11 +16,11 @@ class ReturnPolicyController extends Controller
         $return_policy = $this->return_policy->getReturnPolicy($slug);
 
         if (empty($smartphone_slug)) {
-            return to_route('home')->with('error', 'Wrong Smartphone Selected');
+            return to_route('home')->with('error', Trans::get('Wrong Smartphone Selected'));
         }
 
         if (empty($return_policy)) {
-            return to_route('home')->with('error', 'Return Policy Not Found');
+            return to_route('home')->with('error', Trans::get('Return Policy Not Found'));
         }
 
         return Inertia::render('Website/ReturnPolicy/index', compact('return_policy', 'smartphone_slug'));

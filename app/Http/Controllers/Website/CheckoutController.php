@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Website;
 
+use App\Helpers\Trans;
 use App\Http\Controllers\Controller;
 use App\Repositories\Cart\Interface\ICartRepository;
 use App\Repositories\Customers\Interface\ICustomerRepository;
@@ -79,7 +80,7 @@ class CheckoutController extends Controller
         $is_profile_completed = $this->user->profileCompletionCheck($request);
 
         if (! $is_profile_completed) {
-            return response()->json(['message' => 'Please Complete Your Profile Before Placing An Order'], 400);
+            return response()->json(['message' => Trans::get('Please Complete Your Profile Before Placing An Order')], 400);
         }
 
         $is_email_verified = $this->user->hasVerifiedEmail($request);
@@ -89,7 +90,7 @@ class CheckoutController extends Controller
         }
 
         if (! $is_email_verified['hasVerifiedEmail']) {
-            return response()->json(['message' => 'Please Verify Your Email Before Placing An Order'], 400);
+            return response()->json(['message' => Trans::get('Please Verify Your Email Before Placing An Order')], 400);
         }
 
         $response = $this->order->placeOrderFromWebsite($request);
@@ -119,7 +120,7 @@ class CheckoutController extends Controller
 
         $this->cart->removeReferal($request);
 
-        return to_route('website.orders.order-view', ['order_no' => $request->order_no])->with('success', 'Thank you! Your payment has been submitted. We’ll confirm it automatically once the blockchain confirms your transaction.');
+        return to_route('website.orders.order-view', ['order_no' => $request->order_no])->with('success', Trans::get('Thank you! Your payment has been submitted. We’ll confirm it automatically once the blockchain confirms your transaction.'));
     }
 
     public function singleProductCheckoutSessionStore(Request $request)

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Website;
 
+use App\Helpers\Trans;
 use App\Http\Controllers\Controller;
 use App\Repositories\Products\Interface\IProductsRepository;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ class ProductController extends Controller
         if (empty($slug)) {
             return response()->json([
                 'status' => false,
-                'message' => 'Slug Not Found',
+                'message' => Trans::get('Slug Not Found'),
             ], 404);
         }
 
@@ -31,7 +32,7 @@ class ProductController extends Controller
         if ($data['smartphone'] === null) {
             return response()->json([
                 'status' => false,
-                'message' => 'Smartphone Not Found',
+                'message' => Trans::get('Smartphone Not Found'),
             ], 404);
         }
 

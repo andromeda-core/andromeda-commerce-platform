@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Events\EmailVerified;
+use App\Helpers\Trans;
 use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -15,19 +16,26 @@ class VerifyEmailController extends Controller
      */
     public function __invoke(EmailVerificationRequest $request): RedirectResponse
     {
-        if ($request->user()->hasVerifiedEmail()) {
-            return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
+
+        $user = $request->user();
+        if ($user->hasVerifiedEmail()) {
+            if (! $user->hasRole('Customer')) {
+                return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
+            } else {
+                return redirect()->intended(route('home', absolute: false).'?verified=1');
+            }
         }
 
-        if ($request->user()->markEmailAsVerified()) {
-            event(new Verified($request->user()));
-            broadcast(new EmailVerified($request->user()));
+        if ($user->markEmailAsVerified()) {
+            event(new Verified($user));
+            broadcast(new EmailVerified($user));
         }
 
-        if ($request->user()->hasRole('Customer')) {
-            return redirect()->intended(route('home', absolute: false).'?verified=1')->with('success', 'Your email address has been successfully verified.');
+        if ($user->hasRole('Customer')) {
+            return redirect()->intended(route('home', absolute: false).'?verified=1')->with('success', Trans::get('Your email address has been successfully verified.'));
         }
 
-        return redirect()->intended(route('dashboard', absolute: false).'?verified=1')->with('success', 'Your email address has been successfully verified.');
+        return redirect()->intended(route('dashboard', absolute: false).'?verified=1')->with('success', Trans::get('Your email address has been successfully verified.'));
+
     }
 }

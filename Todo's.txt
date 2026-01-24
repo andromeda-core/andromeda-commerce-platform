@@ -1006,6 +1006,8 @@ Additional Work:
 26: Fixed Right Side Arrows Spacing For Desktop Feed  ✅
 27: FIXED The Network ERROR it was Occuring On SLow Internet Connection Devices (So i have added Global Interseptor to intercept the Request and dont Execute when Offline or Connection Slow )✅
 
+28: Website Controllers all Messages Translated Into Locale Of Requested User And EmailVerification backend Redirection FIXED ✅
+
  <- Review Remeaning ->
 (
 Joseph Kim

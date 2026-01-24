@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Website;
 
+use App\Helpers\Trans;
 use App\Http\Controllers\Controller;
 use App\Repositories\GlobalSearch\Interface\IGlobalSearchRepository;
 use App\Repositories\Posts\Interface\IPostRepository;
@@ -95,7 +96,7 @@ class PostController extends Controller
         $slug = $slug ?? $request->query('slug');
 
         if (empty($slug)) {
-            return response()->json(['status' => false, 'message' => 'Post Not Found'], 400);
+            return response()->json(['status' => false, 'message' => Trans::get('Post Not Found')], 400);
 
         }
 
@@ -147,7 +148,7 @@ class PostController extends Controller
         $hashtag = $request->input('hashtag');
 
         if (empty($hashtag)) {
-            return response()->json(['status' => false, 'message' => 'Hashtag Not Found'], 400);
+            return response()->json(['status' => false, 'message' => Trans::get('Hashtag Not Found')], 400);
         }
 
         $data = $this->post->hashtagResults($request, $hashtag, $preferences);
