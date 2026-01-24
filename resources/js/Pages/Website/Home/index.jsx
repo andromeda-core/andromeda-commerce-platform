@@ -92,12 +92,22 @@ const index = () => {
     const nextPageUrlRef = useRef(null);
 
 
+    // Preventing Un-nesseary NetWork Erros So Adding The Ref That Only Allows On Fecthing at a Time And Re-try Mechanism
+    const mainFeedInFlightRef = useRef(false);
+    const mainFeedRetryRef = useRef(0);
+
+
     // Initialize with first load
     useEffect(() => {
         nextPageUrlRef.current = nextPageUrl;
     }, [nextPageUrl]);
 
     const fetchPostsAndProducts = async () => {
+
+        if (mainFeedInFlightRef.current) return;
+
+        mainFeedInFlightRef.current = true;
+
         const cookieValue = getCookie('post_preferences');
         let parsed = null;
 
@@ -182,10 +192,29 @@ const index = () => {
                 setIsFeedLoaded(true);
             });
         } catch (error) {
-            console.error(error.message);
 
+
+            if (
+                error?.message === 'Network Error' &&
+                mainFeedRetryRef.current < 1
+            ) {
+                mainFeedRetryRef.current++;
+                mainFeedInFlightRef.current = false;
+
+
+                setTimeout(() => {
+                    fetchPostsAndProducts();
+                }, 300);
+
+                return;
+            }
+
+            setIsFeedLoaded(true);
             setShowErrorMessage(true);
             setErrorMessage(__('Failed to Fetch Feed Please try again later.'));
+        } finally {
+
+            mainFeedInFlightRef.current = false;
         }
     };
 

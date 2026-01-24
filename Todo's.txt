@@ -1004,6 +1004,7 @@ Additional Work:
     Also Frontend Logics (Desktop,Mobile) Data Passing and Structing + Backend (Order Flow, Cart Flow, Refferal Flow, Checkout Flow) UPDATED And Checked ✅
 25: change payment icon's color to mono tone on the ( product single page,  Checkout, cart, orders, order single page) and also change bitcoin icon to US tether icon ✅
 26: Fixed Right Side Arrows Spacing For Desktop Feed  ✅
+27: FIXED The Network ERROR it was Occuring On SLow Internet Connection Devices (So i have added Global Interseptor to intercept the Request and dont Execute when Offline or Connection Slow )✅
 
  <- Review Remeaning ->
 (
