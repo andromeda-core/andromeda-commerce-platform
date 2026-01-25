@@ -185,7 +185,6 @@ const DataDeletion = () => {
                                                     >
                                                         {__('Please review our Privacy Policy.')}
                                                     </Link>
-                                                    .
                                                 </span>
                                             </label>
                                         </div>
