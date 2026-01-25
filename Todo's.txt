@@ -1022,6 +1022,9 @@ Additional Work:
     9: at Login or Register Updating user last_activity logic added
 )✅
 
+32: Account Deactivation Logic Completes  And Now It just deactivates user Account When anyone deactivates and shows a link to
+activate on profile in the palce of deactive account and backend + frontend Logic + Email Notifications Setup   ✅
+
  <- Review Remeaning ->
 (
 Joseph Kim

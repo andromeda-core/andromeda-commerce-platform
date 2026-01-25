@@ -8,5 +8,5 @@ interface IDataDeletionRequestRepository
 {
     public function getAllDataDeletionRequests(Request $request);
 
-    public function storeRequestAndDestroyAccount(Request $request);
+    public function storeRequestAndDeactiveAccount(Request $request);
 }

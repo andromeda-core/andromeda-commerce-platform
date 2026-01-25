@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Helpers\Trans;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -45,9 +46,20 @@ class TrackUserActivity
         }
 
         if ($shouldTrack) {
+
             if ($isWriteAction) {
+
+                if ($user->is_deactivated && ! $request->routeIs('website.profile.activate-deactive-account.active')) {
+                    return back()->with('error', Trans::get('Your account is deactivated. Please activate your account to continue.'));
+                }
+
                 $track = true;
             } else {
+
+                if ($user->is_deactivated) {
+                    return $next($request);
+                }
+
                 if (is_null($user->last_activity_at)) {
                     $track = true;
                 } else {

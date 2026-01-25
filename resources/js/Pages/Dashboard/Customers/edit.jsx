@@ -23,6 +23,7 @@ export default function edit({ customer, countries }) {
         postal_code: customer?.postal_code || '',
         address_line1: customer?.address_line1 || '',
         address_line2: customer?.address_line2 || '',
+        is_deactivated: customer?.user?.is_deactivated ?? 0,
     });
 
     const [togglePassword, setTogglePassword] = useState(false);
@@ -49,7 +50,7 @@ export default function edit({ customer, countries }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Customers'}
                                     URL={route('dashboard.customers.index')}
@@ -280,6 +281,29 @@ export default function edit({ customer, countries }) {
                                                     itemKey={'name'}
                                                     Action={(value) => setData('is_active', value)}
                                                 />
+
+
+                                                <SelectInput
+                                                    InputName={'Account Status'}
+                                                    Id={'is_deactivated'}
+                                                    Name={'is_deactivated'}
+                                                    Value={data.is_deactivated}
+                                                    items={[
+                                                        {
+                                                            id: 0,
+                                                            name: 'Active',
+                                                        },
+                                                        {
+                                                            id: 1,
+                                                            name: 'Deactive',
+                                                        },
+                                                    ]}
+                                                    Error={errors.is_deactivated}
+                                                    Placeholder={'Select Account Status'}
+                                                    Required={true}
+                                                    itemKey={'name'}
+                                                    Action={(value) => setData('is_deactivated', value)}
+                                                />
                                             </div>
 
                                             <PrimaryButton
@@ -292,6 +316,7 @@ export default function edit({ customer, countries }) {
                                                     data.email.trim() === '' ||
                                                     data.phone.trim() === '' ||
                                                     data.is_active === '' ||
+                                                    data.is_deactivated === '' ||
                                                     data.country_id === '' ||
                                                     data.state.trim() === '' ||
                                                     data.city.trim() === '' ||
@@ -304,7 +329,7 @@ export default function edit({ customer, countries }) {
                                                     (data.password.trim() !== '' &&
                                                         data.password_confirmation.trim() !== '' &&
                                                         data.password.trim() !==
-                                                            data.password_confirmation.trim())
+                                                        data.password_confirmation.trim())
                                                 }
                                                 Spinner={processing}
                                                 Icon={

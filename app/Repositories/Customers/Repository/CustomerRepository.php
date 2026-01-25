@@ -6,6 +6,7 @@ use App\Helpers\Trans;
 use App\Models\Country;
 use App\Models\Customer;
 use App\Models\User;
+use App\Notifications\AccountDeactiveOrActiveNotification;
 use App\Repositories\Customers\Interface\ICustomerRepository;
 use Exception;
 use Illuminate\Http\Request;
@@ -150,6 +151,7 @@ class CustomerRepository implements ICustomerRepository
             'address_line1' => ['required', 'string'],
             'address_line2' => ['nullable', 'string'],
             'is_active' => ['required', 'boolean'],
+            'is_deactivated' => ['required', 'boolean'],
         ], [
             'is_active.required ' => 'Customer Status Is Required',
             'is_active.boolean' => 'Customer Status Must Be in Active Or In-Active',
@@ -166,12 +168,43 @@ class CustomerRepository implements ICustomerRepository
                 throw new Exception('Something Went Wrong While Finding Linked User To Customer');
             }
 
+            if (! empty($validated_req['is_deactivated']) && $validated_req['is_deactivated'] == 1) {
+                $validated_req['deactivated_at'] = now();
+            }
+
+            if (array_key_exists('is_deactivated', $validated_req)) {
+
+                $wasDeactivated = (int) $user->is_deactivated;
+                $currentStatus = (int) $validated_req['is_deactivated'];
+
+                if ($wasDeactivated !== $currentStatus) {
+
+                    if ($currentStatus === 0) {
+                        // account activated
+                        $user->notify(
+                            new AccountDeactiveOrActiveNotification('activated')
+                        );
+
+                        $validated_req['deactivated_at'] = null;
+                    }
+
+                    if ($currentStatus === 1) {
+                        // account deactivated
+                        $user->notify(
+                            new AccountDeactiveOrActiveNotification('deactivated')
+                        );
+                    }
+                }
+            }
+
             $user_updated = $user->update([
                 'name' => $validated_req['name'],
                 'email' => $validated_req['email'],
                 'phone' => $validated_req['phone'],
                 ...(! empty($validated_req['password']) ? ['password' => bcrypt($validated_req['password'])] : []),
                 'is_active' => $validated_req['is_active'],
+                'is_deactivated' => $validated_req['is_deactivated'],
+                'deactivated_at' => $validated_req['deactivated_at'] ?? null,
             ]);
 
             if (! $user_updated) {

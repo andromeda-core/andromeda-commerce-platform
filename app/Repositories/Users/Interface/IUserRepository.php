@@ -37,4 +37,6 @@ interface IUserRepository
     public function uploadProfilePicture(Request $request);
 
     public function activateDormantAccount(Request $request);
+
+    public function activateDeactiveAccount(Request $request);
 }

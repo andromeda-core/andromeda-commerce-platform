@@ -80,12 +80,28 @@ class ProfileController extends Controller
 
     public function activateDormantAccountIndex()
     {
-        return Inertia::render('Dashboard/Profile/ActivateDormantAccount');
+        return Inertia::render('Website/Profile/ActivateDormantAccount');
     }
 
     public function activateDormantAccountActive(Request $request)
     {
         $activated = $this->user->activateDormantAccount($request);
+
+        if ($activated['status'] === false) {
+            return response()->json(['status' => false, 'message' => $activated['message']], 400);
+        }
+
+        return response()->json(['status' => true, 'message' => $activated['message']], 200);
+    }
+
+    public function activateDeactiveAccountIndex()
+    {
+        return Inertia::render('Website/Profile/ActivateDeactiveAccount');
+    }
+
+    public function activateDeactiveAccountActive(Request $request)
+    {
+        $activated = $this->user->activateDeactiveAccount($request);
 
         if ($activated['status'] === false) {
             return response()->json(['status' => false, 'message' => $activated['message']], 400);

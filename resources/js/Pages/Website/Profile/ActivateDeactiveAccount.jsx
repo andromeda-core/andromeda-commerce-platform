@@ -1,18 +1,20 @@
 import Spinner from '@/Components/Spinner';
+import { useTranslation } from '@/Hooks/useTranslation';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, router } from '@inertiajs/react';
 import React, { useState } from 'react';
-const ActivateDormantAccount = () => {
+const ActivateDeactiveAccount = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [isError, setIsError] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
-    const handleDeactivateDormancy = async () => {
+    const { __ } = useTranslation();
+    const handleActiveDeactivatedAccount = async () => {
         setIsLoading(true);
 
         try {
             const response = await axios.put(
-                route('website.profile.activate-dormant-account.active')
+                route('website.profile.activate-deactive-account.active')
             );
 
             if (response.data.status === false) {
@@ -33,7 +35,7 @@ const ActivateDormantAccount = () => {
 
             setErrorMessage(
                 error.response?.data?.message ||
-                'Something went wrong. Please try again.'
+                __('Something went wrong. Please try again.')
             );
         }
 
@@ -42,7 +44,7 @@ const ActivateDormantAccount = () => {
     return (
         <GuestLayout>
 
-            <Head title='Deactive Dormancy' />
+            <Head title={__('Activate Account', true)} />
 
             <div className="flex items-center justify-center min-h-screen p-4 ">
                 <div className="w-full max-w-md">
@@ -59,30 +61,29 @@ const ActivateDormantAccount = () => {
 
                             {/* Title */}
                             <h1 className="mb-3 text-2xl font-semibold text-center text-main-text-light dark:text-main-text-dark">
-                                Account Dormant
+                                {__('Reactivate Your Account')}
                             </h1>
 
-                            {/* Description */}
                             <p className="mb-8 leading-relaxed text-center text-sub-text-light dark:text-sub-text-dark">
-                                Your account has been marked as dormant due to inactivity. To continue using our services, please reactivate your account by clicking the button below.
+                                {__('Your account has been marked as Deactivated as Per Your Request. This does not affect your data or account security. To continue using our services, please reactivate your account by clicking the button below.')}
                             </p>
 
                             {/* Action Button */}
                             <button
-                                onClick={handleDeactivateDormancy}
+                                onClick={handleActiveDeactivatedAccount}
                                 disabled={isLoading}
                                 className={`text-md flex h-[50px] w-full items-center justify-center gap-2 rounded-md bg-main-text-light font-semibold text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80`}
                             >
                                 {isLoading ? (
                                     <Spinner />
                                 ) : (
-                                    'Deactivate Dormancy'
+                                    __('Activate Account')
                                 )}
                             </button>
 
                             {/* Footer Note */}
                             <p className="mt-6 text-xs text-center text-sub-text-light dark:text-sub-text-dark">
-                                By reactivating, you agree to our terms of service and privacy policy.
+                                {__('By reactivating, you agree to our terms of service and privacy policy.')}
                             </p>
 
 
@@ -107,12 +108,12 @@ const ActivateDormantAccount = () => {
 
                             {/* Success Title */}
                             <h1 className="mb-3 text-2xl font-semibold text-center text-main-text-light dark:text-main-text-dark">
-                                Account Reactivated!
+                                {__('Account Reactivated!')}
                             </h1>
 
                             {/* Success Message */}
                             <p className="mb-8 leading-relaxed text-center text-sub-text-light dark:text-sub-text-dark">
-                                Your account has been successfully reactivated. You can now access all features and services.
+                                {__('Your account has been successfully reactivated. You can now access all features and services.')}
                             </p>
 
                             {/* Continue Button */}
@@ -130,7 +131,7 @@ const ActivateDormantAccount = () => {
                                 {isLoading ? (
                                     <Spinner />
                                 ) : (
-                                    'Visit Site'
+                                    __('Visit Site')
                                 )}
                             </button>
                         </div>
@@ -141,4 +142,4 @@ const ActivateDormantAccount = () => {
     );
 };
 
-export default ActivateDormantAccount;
+export default ActivateDeactiveAccount;

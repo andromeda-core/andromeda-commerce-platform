@@ -103,6 +103,19 @@ export default function index({ customers }) {
             },
 
             {
+                label: 'Account Status',
+                render: (item) => {
+                    if (item.user.is_deactivated === 1) {
+                        return (
+                            <span className="p-2 text-white bg-red-500 rounded-lg">Deactive</span>
+                        );
+                    }
+
+                    return <span className="p-2 text-white bg-green-500 rounded-lg">Active</span>;
+                },
+            },
+
+            {
                 label: 'Customer Status',
                 render: (item) => {
                     if (item.user.is_active != 1) {

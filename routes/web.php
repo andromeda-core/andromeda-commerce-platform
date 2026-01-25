@@ -163,6 +163,10 @@ Route::group(['as' => 'website.'], function () {
         Route::get('/activate-dormant-account', 'activateDormantAccountIndex')->name('activate-dormant-account.index');
         Route::put('/activate-dormant-account', 'activateDormantAccountActive')->name('activate-dormant-account.active');
 
+        // Active Deactivated Account Routes
+        Route::get('/activate-deactive-account', 'activateDeactiveAccountIndex')->name('activate-deactive-account.index');
+        Route::put('/activate-deactive-account', 'activateDeactiveAccountActive')->name('activate-deactive-account.active');
+
     });
 
     // Contact Us Routes

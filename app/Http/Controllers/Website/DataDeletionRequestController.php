@@ -20,7 +20,7 @@ class DataDeletionRequestController extends Controller
 
     public function store(Request $request)
     {
-        $response = $this->data_deletion->storeRequestAndDestroyAccount($request);
+        $response = $this->data_deletion->storeRequestAndDeactiveAccount($request);
 
         if ($response['status'] === false) {
             return back()->with('error', $response['message']);

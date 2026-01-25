@@ -35,6 +35,11 @@ class EmailVerificationNotificationController extends Controller
         }
 
         $user = $request->user();
+
+        if ($user->is_deactivated || $user->is_dormant) {
+            return back()->withErrors(['error' => 'Your account is deactivated. Please Activate Your Account. First']);
+        }
+
         $user->is_email_verification_sent = true;
         $user->save();
         $user->sendEmailVerificationNotification();

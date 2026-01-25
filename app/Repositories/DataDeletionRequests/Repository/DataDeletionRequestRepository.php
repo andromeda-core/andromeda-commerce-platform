@@ -4,6 +4,7 @@ namespace App\Repositories\DataDeletionRequests\Repository;
 
 use App\Helpers\Trans;
 use App\Models\DataDeletionRequest;
+use App\Notifications\AccountDeactiveOrActiveNotification;
 use App\Repositories\DataDeletionRequests\Interface\IDataDeletionRequestRepository;
 use Exception;
 use Illuminate\Http\Request;
@@ -32,7 +33,7 @@ class DataDeletionRequestRepository implements IDataDeletionRequestRepository
             ->withQueryString();
     }
 
-    public function storeRequestAndDestroyAccount(Request $request)
+    public function storeRequestAndDeactiveAccount(Request $request)
     {
         $validated_req = $request->validate([
             'reason' => ['required', 'max:255', 'min:20'],
@@ -59,21 +60,26 @@ class DataDeletionRequestRepository implements IDataDeletionRequestRepository
             if (! $user->hasRole('Customer')) {
                 throw new Exception($this->trans->get('Only Customers Can Delete Thier Account'));
             }
-            $validated_req['name'] = $user->name;
-            $validated_req['email'] = $user->email;
-            $validated_req['phone'] = $user->phone;
+            $validated_req['name'] = $user?->name;
+            $validated_req['email'] = $user?->email;
+            $validated_req['phone'] = $user?->phone;
             $validated_req['ip_address'] = $request->ip();
 
             unset($validated_req['password']);
 
             $this->dataDeletionRequest->create($validated_req);
 
-            $user->delete();
+            $user->is_deactivated = true;
+            $user->deactivated_at = now();
+            $user->save();
+
+            $user->notify(new AccountDeactiveOrActiveNotification('deactivated'));
+
             DB::commit();
 
             return [
                 'status' => true,
-                'message' => $this->trans->get('Account Deletion Successful'),
+                'message' => $this->trans->get('Account Deactivation Successful'),
             ];
 
         } catch (Exception $e) {

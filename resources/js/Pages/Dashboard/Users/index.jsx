@@ -58,6 +58,8 @@ export default function index({ users }) {
                     );
                 },
             },
+
+
             {
                 label: 'Status',
                 render: (item) => {

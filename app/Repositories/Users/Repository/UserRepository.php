@@ -2,10 +2,12 @@
 
 namespace App\Repositories\Users\Repository;
 
+use App\Helpers\Trans;
 use App\Jobs\DestroyUserProfileOnAWS;
 use App\Models\Role;
 use App\Models\SpecialCountry;
 use App\Models\User;
+use App\Notifications\AccountDeactiveOrActiveNotification;
 use App\Notifications\DormantAccountNotification;
 use App\Repositories\Users\Interface\IUserRepository;
 use Exception;
@@ -22,7 +24,8 @@ class UserRepository implements IUserRepository
     public function __construct(
         private User $user,
         private Role $role,
-        private SpecialCountry $special_country
+        private SpecialCountry $special_country,
+        private Trans $trans,
     ) {}
 
     public function getSingleUser(string $id)
@@ -748,7 +751,7 @@ class UserRepository implements IUserRepository
 
         try {
             if (empty($user)) {
-                throw new Exception('User not Found');
+                throw new Exception($this->trans->get('User not Found'));
             }
 
             return [
@@ -771,7 +774,7 @@ class UserRepository implements IUserRepository
             $user = $request->user();
 
             if (empty($user) || ! $user->is_dormant || ! $user->hasRole('Customer')) {
-                throw new Exception('User not Found');
+                throw new Exception($this->trans->get('User not Found'));
             }
 
             $user->is_dormant = false;
@@ -784,7 +787,37 @@ class UserRepository implements IUserRepository
 
             return [
                 'status' => true,
-                'message' => 'Account Activated Successfully',
+                'message' => $this->trans->get('Account Activated Successfully'),
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function activateDeactiveAccount(Request $request)
+    {
+        try {
+            $user = $request->user();
+
+            if (empty($user) || ! $user->is_deactivated) {
+                throw new Exception($this->trans->get('User not Found'));
+            }
+
+            $user->is_deactivated = false;
+            $user->deactivated_at = null;
+            $user->last_activity_at = now();
+            $user->save();
+
+            // Notify User
+            $user->notify(new AccountDeactiveOrActiveNotification('activated'));
+
+            return [
+                'status' => true,
+                'message' => $this->trans->get('Account Activated Successfully'),
             ];
 
         } catch (Exception $e) {

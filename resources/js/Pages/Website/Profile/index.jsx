@@ -556,12 +556,21 @@ const Index = ({ user, countries }) => {
                     {/* Data Deletion */}
                     <div className="my-4">
                         <div className="flex items-center gap-1 text-main-text-light dark:text-main-text-dark">
-                            <Link
-                                href={route('website.data-deletion.index')}
-                                className="text-sm font-semibold lg:text-md "
-                            >
-                                {__('Deactivate Account')}
-                            </Link>
+                            {!user?.is_deactivated ? (
+                                <Link
+                                    href={route('website.data-deletion.index')}
+                                    className="text-sm font-semibold lg:text-md "
+                                >
+                                    {__('Deactivate Account')}
+                                </Link>
+                            ) : (
+                                <Link
+                                    href={route('website.profile.activate-deactive-account.index')}
+                                    className="text-sm font-semibold lg:text-md "
+                                >
+                                    {__('Activate Account')}
+                                </Link>
+                            )}
 
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
