@@ -338,4 +338,9 @@ interface ISettingRepository
     public function destroyAddon(string $id);
 
     public function destroyAddonBySelection(Request $request);
+
+    // Dormancy Setting
+    public function getDormancySetting();
+
+    public function saveDormancySetting(Request $request);
 }

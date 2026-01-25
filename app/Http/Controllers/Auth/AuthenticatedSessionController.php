@@ -51,7 +51,15 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        if ($request->user()->hasRole('Customer')) {
+        $user = $request->user();
+
+        if (! $user->is_dormant) {
+            $user->updateQuietly([
+                'last_activity_at' => now(),
+            ]);
+        }
+
+        if ($user->hasRole('Customer')) {
 
             if ($finalRedirect && str_starts_with($finalRedirect, '/')) {
                 return redirect()->to($finalRedirect);

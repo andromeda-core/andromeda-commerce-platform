@@ -158,6 +158,11 @@ Route::group(['as' => 'website.'], function () {
         Route::put('/profile/details/update/{id?}', 'update')->name('update-profile');
         Route::put('profile/change-password/{id?}', 'changePassword')->name('change-password');
         Route::put('/profile/upload-profile', 'uploadProfilePicture')->name('upload-profile-picture');
+
+        // Active Dormant Account Routes
+        Route::get('/activate-dormant-account', 'activateDormantAccountIndex')->name('activate-dormant-account.index');
+        Route::put('/activate-dormant-account', 'activateDormantAccountActive')->name('activate-dormant-account.active');
+
     });
 
     // Contact Us Routes
@@ -695,6 +700,10 @@ Route::middleware(['auth'])->group(function () {
                     Route::put('/addon-settings-toggle-status/{id?}', 'addonToggleStatus')->name('addon-settings.toggle-status');
                     Route::delete('/addon-settings-destroy/{id?}', 'addonDestroy')->name('addon-settings.destroy');
                     Route::delete('/addon-settings-destroy-by-selection', 'addonDestroyBySelection')->name('addon-settings.destroybyselection');
+
+                    // Dormancy Setting Routes
+                    Route::get('/dormancy-settings', 'dormancySettingIndex')->name('dormancy-setting.index');
+                    Route::put('/dormancy-settings-save', 'dormancySettingSave')->name('dormancy-setting.save');
 
                 });
 

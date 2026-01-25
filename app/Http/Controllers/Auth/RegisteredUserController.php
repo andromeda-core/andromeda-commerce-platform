@@ -65,6 +65,8 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
+            'is_agreed_to_terms' => $request->is_agreed_to_terms,
+            'last_activity_at' => now(),
         ]);
 
         $user->syncRoles('Customer');
@@ -72,6 +74,7 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
         $user->notify(new SendEmailToUserAfterRegistration($user));
+
         // $user->sendEmailVerificationNotification();
 
         $redirect = request()->input('redirect');

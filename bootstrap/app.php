@@ -19,6 +19,8 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\EnsureUserIsActive::class,
             \App\Http\Middleware\CustomerNotAllowedToVisitDashboard::class,
             \App\Http\Middleware\SetAppLocale::class,
+            \App\Http\Middleware\TrackUserActivity::class,
+            \App\Http\Middleware\AskUserToActiveDormantAccount::class,
         ]);
 
         $middleware->encryptCookies(except: [

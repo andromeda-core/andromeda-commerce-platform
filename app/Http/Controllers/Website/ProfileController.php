@@ -77,4 +77,20 @@ class ProfileController extends Controller
 
         return response()->json(['status' => true, 'message' => $response['message'], 'profile' => $response['profile']], 200);
     }
+
+    public function activateDormantAccountIndex()
+    {
+        return Inertia::render('Dashboard/Profile/ActivateDormantAccount');
+    }
+
+    public function activateDormantAccountActive(Request $request)
+    {
+        $activated = $this->user->activateDormantAccount($request);
+
+        if ($activated['status'] === false) {
+            return response()->json(['status' => false, 'message' => $activated['message']], 400);
+        }
+
+        return response()->json(['status' => true, 'message' => $activated['message']], 200);
+    }
 }

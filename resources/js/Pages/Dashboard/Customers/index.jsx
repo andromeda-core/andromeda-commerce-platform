@@ -90,6 +90,19 @@ export default function index({ customers }) {
             },
 
             {
+                label: 'Dormancy Activated',
+                render: (item) => {
+                    if (item.user.is_dormant === 1) {
+                        return (
+                            <span className="p-2 text-white bg-red-500 rounded-lg">Yes</span>
+                        );
+                    }
+
+                    return <span className="p-2 text-white bg-green-500 rounded-lg">No</span>;
+                },
+            },
+
+            {
                 label: 'Customer Status',
                 render: (item) => {
                     if (item.user.is_active != 1) {

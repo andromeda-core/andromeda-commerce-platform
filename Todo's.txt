@@ -1009,6 +1009,18 @@ Additional Work:
 28: Website Controllers all Messages Translated Into Locale Of Requested User And EmailVerification backend Redirection FIXED ✅
 29: All TEXT Are Tracnlated and made dybnamic accorss the website even backend of the website and website it self and all its keys are added To Seeder✅
 30: TERMS OF SERVICE  LI ADDED In BOTTOMBAR It was Missing ✅
+31: Dormancy: (
+    1: User Table Updated and Added 3 New Columns (last_activity_at, is_dormant, dormant_at) For Proper Tracking Of Dormancy
+    2: Last Activity Tracking Of User Logic Added Using Middleware
+    3: Dormancy Marking Of User Command Added To Mark Accurately Dormancy To Users
+    4: Email Notifications Added FOr Both Events Marking Dormancy, and Deactivating Dormancy
+    5: Frontend Page Added To SHow When is_dormant = true User Loggs in Or Uses The Site
+    6: One More Middleware added FOr Identifying dormant user using the site and normal user, if dormant user uses the site it will
+        rediretc to Deactive Dormancy Page so user can de-active dormancy from there and than continue using the site
+    7: Dormancy Status Tracking From Customers Module In backend Added
+    8: Dormancy Thres Hold Setting Added in The Dashboard Settings Module + Its all Backend Logics For Setup + Caching To fetch Instantly
+    9: at Login or Register Updating user last_activity logic added
+)
 
  <- Review Remeaning ->
 (
@@ -1158,3 +1170,82 @@ This retained metadata is not used to provide services or identify you for marke
 
 For more details about how we process and retain personal data, please refer to our
 Privacy Policy and related legal disclosures.
+
+
+
+
+-------------------------------------------------------------------------------
+
+### Dormant Account Policy
+
+
+
+1. Dormancy Threshold & Configuration
+
+
+
+If there is no user activity for *1 year**, the account is automatically marked as dormant.
+This inactivity period *must be dynamically configurable** via admin/settings (not hard-coded).
+
+
+
+2. Login Behavior for Dormant Users
+
+
+
+Dormant users are *allowed to log in**.
+Upon login, they are redirected to a *dedicated single page**.
+This page displays a *simple informational message** and provides a button to request dormancy reactivation.
+
+
+
+3. Reactivation Policy
+
+
+
+Once an account becomes dormant, *automatic reactivation is not allowed**.
+Reactivation must be performed *explicitly by the user** via the provided flow.
+
+
+
+4. Notifications
+
+
+
+When an account is transitioned to the *dormant state**, a notification (e.g., email) must be sent to the user.
+
+
+
+---
+
+
+
+### Account Deactivation Policy
+
+
+
+1. UI Text Change
+
+
+
+In the user’s *Personal Information / Account Settings** menu,
+the “Deactivate Account” text is automatically changed to “Activate Account” once the account is deactivated.
+
+
+
+2. Data Deletion After Deactivation
+
+
+
+After clicking *Deactivate Account**,
+if the user does not click “Activate Account” within 30 days,
+all account data will be permanently deleted.
+
+
+
+3. Reactivation Flow
+
+
+
+When *Activate Account** is clicked, the user is redirected to a dedicated single page.
+This page contains a *simple informational message** and a button to proceed with account reactivation.

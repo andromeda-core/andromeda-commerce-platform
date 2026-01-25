@@ -2050,4 +2050,23 @@ class SettingController extends Controller
 
         return back()->with('success', $deleted['message']);
     }
+
+    // Dormancy Setting
+    public function dormancySettingIndex()
+    {
+        $dormancy_setting = $this->setting->getDormancySetting();
+
+        return Inertia::render('Dashboard/Settings/DormancySetting/index', compact('dormancy_setting'));
+    }
+
+    public function dormancySettingSave(Request $request)
+    {
+        $saved = $this->setting->saveDormancySetting($request);
+
+        if ($saved['status'] === false) {
+            return back()->with('error', $saved['message']);
+        }
+
+        return to_route('dashboard.settings.dormancy-setting.index')->with('success', $saved['message']);
+    }
 }

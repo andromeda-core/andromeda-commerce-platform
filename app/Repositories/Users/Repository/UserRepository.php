@@ -6,6 +6,7 @@ use App\Jobs\DestroyUserProfileOnAWS;
 use App\Models\Role;
 use App\Models\SpecialCountry;
 use App\Models\User;
+use App\Notifications\DormantAccountNotification;
 use App\Repositories\Users\Interface\IUserRepository;
 use Exception;
 use Illuminate\Http\Request;
@@ -754,6 +755,36 @@ class UserRepository implements IUserRepository
                 'status' => true,
                 'message' => 'User Found',
                 'hasVerifiedEmail' => $user->hasVerifiedEmail(),
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function activateDormantAccount(Request $request)
+    {
+        try {
+            $user = $request->user();
+
+            if (empty($user) || ! $user->is_dormant || ! $user->hasRole('Customer')) {
+                throw new Exception('User not Found');
+            }
+
+            $user->is_dormant = false;
+            $user->dormant_at = null;
+            $user->last_activity_at = now();
+            $user->save();
+
+            // Notify User
+            $user->notify(new DormantAccountNotification('reactivated'));
+
+            return [
+                'status' => true,
+                'message' => 'Account Activated Successfully',
             ];
 
         } catch (Exception $e) {

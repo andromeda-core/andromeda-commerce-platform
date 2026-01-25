@@ -575,6 +575,25 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
+ * @property string $dormancy_threshold_type
+ * @property int $dormancy_threshold_value
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DormancySetting newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DormancySetting newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DormancySetting query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DormancySetting whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DormancySetting whereDormancyThresholdType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DormancySetting whereDormancyThresholdValue($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DormancySetting whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DormancySetting whereUpdatedAt($value)
+ */
+	class DormancySetting extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
  * @property string $name
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -1706,6 +1725,7 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $email_verified_at
  * @property int $is_email_verification_sent
  * @property string $password
+ * @property int $is_agreed_to_terms
  * @property string $language_locale
  * @property int $language_id
  * @property string|null $profile
@@ -1713,7 +1733,6 @@ namespace App\Models{
  * @property string|null $remember_token
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property int $is_agreed_to_terms
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Post> $bookMarkedPosts
  * @property-read int|null $book_marked_posts_count
  * @property-read \App\Models\Collaborator|null $collaborator

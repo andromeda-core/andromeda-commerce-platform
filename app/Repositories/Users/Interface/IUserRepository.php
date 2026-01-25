@@ -35,4 +35,6 @@ interface IUserRepository
     public function isCustomerEligableForSocialMessageSendOrReceive(string $user_id);
 
     public function uploadProfilePicture(Request $request);
+
+    public function activateDormantAccount(Request $request);
 }

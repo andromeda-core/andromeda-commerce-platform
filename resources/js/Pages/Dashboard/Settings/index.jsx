@@ -529,6 +529,45 @@ export default function index() {
                                 }
                             />
 
+
+                            <Card
+                                CustomCss={
+                                    'flex justify-center items-center flex-col max-w-lg mx-auto min-h-[400px]'
+                                }
+                                Content={
+                                    <>
+                                        <div className="flex items-center justify-center w-20 h-20 mb-3 bg-gray-100 rounded-full">
+
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`size-9 dark:border-white`}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                            </svg>
+
+                                        </div>
+
+                                        <h2 className="mb-2 text-xl font-semibold text-center text-gray-800 dark:text-white">
+                                            Dormancy Settings
+                                        </h2>
+
+                                        <p className="mb-6 leading-relaxed text-center text-gray-600 dark:text-white">
+                                            Easily manage and configure and Dormancy Setting  across your
+                                            application to control User Dormancy Threshold.
+                                        </p>
+
+                                        <LinkButton
+                                            URL={route('dashboard.settings.dormancy-setting.index')}
+                                            Text={'Manage Dormancy Setting'}
+                                            CustomClass="w-full md:w-[280px] mt-10 "
+                                            Icon={
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                                </svg>
+
+                                            }
+                                        />
+                                    </>
+                                }
+                            />
+
                             <Card
                                 CustomCss={
                                     'flex justify-center items-center flex-col max-w-lg mx-auto min-h-[400px]'

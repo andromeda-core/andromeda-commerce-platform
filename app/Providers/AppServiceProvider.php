@@ -133,6 +133,10 @@ class AppServiceProvider extends ServiceProvider
                 Cache::rememberForever('countries', fn () => Country::where('is_active', true)->get());
             }
 
+            if (Schema::hasTable('dormancy_settings')) {
+                Cache::rememberForever('dormancy_setting', fn () => DB::table('dormancy_settings')->first());
+            }
+
         } catch (Exception $e) {
             info($e->getMessage());
         }

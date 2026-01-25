@@ -20,6 +20,7 @@ use App\Models\Condition;
 use App\Models\Country;
 use App\Models\CourierCompany;
 use App\Models\Currency;
+use App\Models\DormancySetting;
 use App\Models\GeneralSetting;
 use App\Models\GoogleMapSetting;
 use App\Models\MetaSetting;
@@ -71,7 +72,8 @@ class SettingRepository implements ISettingRepository
         private Addon $addon,
         private ShippingPolicy $shipping_policy,
         private TermsOfService $terms_of_service,
-        private PrivacyPolicy $privacy_policy
+        private PrivacyPolicy $privacy_policy,
+        private DormancySetting $dormancy_setting,
 
     ) {}
 
@@ -4191,6 +4193,42 @@ class SettingRepository implements ISettingRepository
             return [
                 'status' => true,
                 'message' => 'Addon Deleted Successfully',
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    // Dormancy Setting
+    public function getDormancySetting()
+    {
+        $dormancy_setting = $this->dormancy_setting->first();
+
+        return $dormancy_setting;
+    }
+
+    public function saveDormancySetting(Request $request)
+    {
+        try {
+            $validated_req = $request->validate([
+                'dormancy_threshold_type' => ['required', 'in:minutes,days,months,years'],
+                'dormancy_threshold_value' => ['required', 'integer', 'min:1'],
+            ]);
+
+            $dormancy_setting = $this->getDormancySetting();
+
+            if (empty($dormancy_setting)) {
+                $dormancy_setting = $this->dormancy_setting->create($validated_req);
+            } else {
+                $dormancy_setting->update($validated_req);
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Dormancy Setting Saved Successfully',
             ];
         } catch (Exception $e) {
             return [

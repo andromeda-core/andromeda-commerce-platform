@@ -36,6 +36,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'language_locale',
         'profile',
         'is_active',
+        'last_activity_at',
+        'is_dormant',
+        'dormant_at',
 
     ];
 
