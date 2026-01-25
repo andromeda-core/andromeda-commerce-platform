@@ -10,7 +10,8 @@ use Inertia\Inertia;
 class TermsOfServiceController extends Controller
 {
     public function __construct(
-        private ITermsOfServiceRepository $terms_of_service
+        private ITermsOfServiceRepository $terms_of_service,
+        private Trans $trans
     ) {}
 
     public function __invoke()
@@ -18,7 +19,7 @@ class TermsOfServiceController extends Controller
         $terms_of_service = $this->terms_of_service->getTermsOfService();
 
         if (empty($terms_of_service)) {
-            return to_route('home')->with('info', Trans::get('Terms Of Service Not Found'));
+            return to_route('home')->with('info', $this->trans->get('Terms Of Service Not Found'));
         }
 
         return Inertia::render('Website/TermsOfService/index', compact('terms_of_service'));

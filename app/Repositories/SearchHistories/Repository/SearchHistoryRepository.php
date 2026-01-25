@@ -2,6 +2,7 @@
 
 namespace App\Repositories\SearchHistories\Repository;
 
+use App\Helpers\Trans;
 use App\Models\SearchHistory;
 use App\Repositories\SearchHistories\Interface\ISearchHistoryRepository;
 use Exception;
@@ -10,7 +11,8 @@ use Illuminate\Http\Request;
 class SearchHistoryRepository implements ISearchHistoryRepository
 {
     public function __construct(
-        private SearchHistory $searchHistory
+        private SearchHistory $searchHistory,
+        private Trans $trans
     ) {}
 
     public function getHistory(Request $request)
@@ -83,18 +85,18 @@ class SearchHistoryRepository implements ISearchHistoryRepository
     {
         try {
             if (empty($id)) {
-                throw new Exception('Somehting Went Wrong While Deleting Search History');
+                throw new Exception($this->trans->get('Something Went Wrong While Deleting Search History'));
             }
 
             $deleted = $this->searchHistory->where('user_id', $request->user()?->id)->where('id', $id)->delete();
 
             if (! $deleted) {
-                throw new Exception('Something Went Wrong While Deleting Search History');
+                throw new Exception($this->trans->get('Something Went Wrong While Deleting Search History'));
             }
 
             return [
                 'status' => true,
-                'message' => 'Search History Deleted Successfully',
+                'message' => $this->trans->get('Search History Deleted Successfully'),
                 'data' => $this->getHistory($request),
             ];
 

@@ -2,6 +2,7 @@
 
 namespace App\Repositories\DataDeletionRequests\Repository;
 
+use App\Helpers\Trans;
 use App\Models\DataDeletionRequest;
 use App\Repositories\DataDeletionRequests\Interface\IDataDeletionRequestRepository;
 use Exception;
@@ -12,7 +13,8 @@ use Illuminate\Support\Facades\Hash;
 class DataDeletionRequestRepository implements IDataDeletionRequestRepository
 {
     public function __construct(
-        private DataDeletionRequest $dataDeletionRequest
+        private DataDeletionRequest $dataDeletionRequest,
+        private Trans $trans,
     ) {}
 
     public function getAllDataDeletionRequests(Request $request)
@@ -36,8 +38,13 @@ class DataDeletionRequestRepository implements IDataDeletionRequestRepository
             'reason' => ['required', 'max:255', 'min:20'],
             'password' => ['required', 'min:8'],
         ], [
-            'phone.regex' => 'The Number Accepted With + Country Code - Example: +8801xxxxxxxxx',
-            'reason.min' => 'Reason Must Be At Least 20 Characters',
+
+            'reason.required' => $this->trans->get('Reason Must Not Be Empty'),
+            'reason.min' => $this->trans->get('Reason Must Be At Least 20 Characters'),
+            'reason.max' => $this->trans->get('Reason Must Be Less Than 255 Characters'),
+
+            'password.required' => $this->trans->get('Password Must Not Be Empty'),
+            'password.min' => $this->trans->get('Password Must Be At Least 8 Characters'),
         ]);
 
         DB::beginTransaction();
@@ -46,11 +53,11 @@ class DataDeletionRequestRepository implements IDataDeletionRequestRepository
             $user = $request->user();
 
             if (empty($user) || ! Hash::check($validated_req['password'], $user->password)) {
-                throw new Exception('Please check your credentials again.');
+                throw new Exception($this->trans->get('Please check your credentials again.'));
             }
 
             if (! $user->hasRole('Customer')) {
-                throw new Exception('Only Customers Can Delete Thier Account');
+                throw new Exception($this->trans->get('Only Customers Can Delete Thier Account'));
             }
             $validated_req['name'] = $user->name;
             $validated_req['email'] = $user->email;
@@ -66,7 +73,7 @@ class DataDeletionRequestRepository implements IDataDeletionRequestRepository
 
             return [
                 'status' => true,
-                'message' => 'Account Deletion Successful',
+                'message' => $this->trans->get('Account Deletion Successful'),
             ];
 
         } catch (Exception $e) {

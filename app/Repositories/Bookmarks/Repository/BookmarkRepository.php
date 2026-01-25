@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Bookmarks\Repository;
 
+use App\Helpers\Trans;
 use App\Models\Bookmark;
 use App\Repositories\Bookmarks\Interface\IBookmarkRepository;
 use Exception;
@@ -10,7 +11,8 @@ use Illuminate\Http\Request;
 class BookmarkRepository implements IBookmarkRepository
 {
     public function __construct(
-        private Bookmark $bookmark
+        private Bookmark $bookmark,
+        private Trans $trans
     ) {}
 
     public function getAllBookmarks()
@@ -36,7 +38,7 @@ class BookmarkRepository implements IBookmarkRepository
 
                 return [
                     'status' => true,
-                    'message' => 'Post Removed Successfully from bookmarks',
+                    'message' => $this->trans->get('Post Removed Successfully from bookmarks'),
                 ];
             }
 
@@ -44,7 +46,7 @@ class BookmarkRepository implements IBookmarkRepository
 
             return [
                 'status' => true,
-                'message' => 'Post Added Successfully to bookmarks',
+                'message' => $this->trans->get('Post Added Successfully to bookmarks'),
             ];
 
         } catch (Exception $e) {
@@ -62,17 +64,17 @@ class BookmarkRepository implements IBookmarkRepository
 
             $bookmark = $this->bookmark->find($id);
             if (empty($bookmark)) {
-                throw new Exception('Bookmark not found');
+                throw new Exception($this->trans->get('Bookmark not found'));
             }
 
             $deleted = $bookmark->delete();
             if (! $deleted) {
-                throw new Exception('Something Went Wrong While Deleting Bookmark');
+                throw new Exception($this->trans->get('Something Went Wrong While Deleting Bookmark'));
             }
 
             return [
                 'status' => true,
-                'message' => 'Bookmark deleted successfully',
+                'message' => $this->trans->get('Bookmark deleted successfully'),
             ];
 
         } catch (Exception $e) {
@@ -91,18 +93,18 @@ class BookmarkRepository implements IBookmarkRepository
             $ids = $request->array('ids');
 
             if (blank($ids)) {
-                throw new Exception('Please select at least one bookmark');
+                throw new Exception($this->trans->get('Please select at least one bookmark'));
             }
 
             $deleted = $this->bookmark->destroy($ids);
 
             if ($deleted !== count($ids)) {
-                throw new Exception('Something Went Wrong While Deleting Bookmark');
+                throw new Exception($this->trans->get('Something Went Wrong While Deleting Bookmark'));
             }
 
             return [
                 'status' => true,
-                'message' => 'Bookmark deleted successfully',
+                'message' => $this->trans->get('Bookmark deleted successfully'),
             ];
 
         } catch (Exception $e) {
@@ -120,48 +122,49 @@ class BookmarkRepository implements IBookmarkRepository
         if (empty($user)) {
             return [
                 'status' => false,
-                'message' => 'User Not Found',
+                'message' => $this->trans->get('User Not Found'),
             ];
         }
 
-        $images = $request->boolean('images', true);
-        $text = $request->boolean('text', true);
-        $videos = $request->boolean('videos', true);
-        $show_posts = $request->boolean('show_posts', true);
+        // $images = $request->boolean('images', true);
+        // $text = $request->boolean('text', true);
+        // $videos = $request->boolean('videos', true);
+        // $show_posts = $request->boolean('show_posts', true);
 
-        if (! $show_posts) {
-            return [
-                'status' => true,
-                'bookmarks' => [],
-                'next_page_url' => null,
-            ];
-        }
+        // if (! $show_posts) {
+        //     return [
+        //         'status' => true,
+        //         'bookmarks' => [],
+        //         'next_page_url' => null,
+        //     ];
+        // }
 
         $bookmarks = $user->bookMarkedPosts()
-            ->where(function ($q) use ($text, $images, $videos) {
-                if ($text) {
 
-                    $q->orWhere(function ($sub) {
-                        $sub->whereNull('images')
-                            ->whereNull('videos');
-                    });
-                }
+            // ->where(function ($q) use ($text, $images, $videos) {
+            //     if ($text) {
 
-                if ($images) {
+            //         $q->orWhere(function ($sub) {
+            //             $sub->whereNull('images')
+            //                 ->whereNull('videos');
+            //         });
+            //     }
 
-                    $q->orWhere(function ($sub) {
-                        $sub->whereNotNull('images')
-                            ->whereNull('videos');
-                    });
-                }
+            //     if ($images) {
 
-                if ($videos) {
+            //         $q->orWhere(function ($sub) {
+            //             $sub->whereNotNull('images')
+            //                 ->whereNull('videos');
+            //         });
+            //     }
 
-                    $q->orWhere(function ($sub) {
-                        $sub->whereNotNull('videos');
-                    });
-                }
-            })
+            //     if ($videos) {
+
+            //         $q->orWhere(function ($sub) {
+            //             $sub->whereNotNull('videos');
+            //         });
+            //     }
+            // })
             ->with(['floor'])
             ->latest()
             ->paginate(10);

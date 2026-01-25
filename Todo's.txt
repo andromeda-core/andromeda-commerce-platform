@@ -1007,6 +1007,8 @@ Additional Work:
 27: FIXED The Network ERROR it was Occuring On SLow Internet Connection Devices (So i have added Global Interseptor to intercept the Request and dont Execute when Offline or Connection Slow )✅
 
 28: Website Controllers all Messages Translated Into Locale Of Requested User And EmailVerification backend Redirection FIXED ✅
+29: All TEXT Are Tracnlated and made dybnamic accorss the website even backend of the website and website it self and all its keys are added To Seeder✅
+30: TERMS OF SERVICE  LI ADDED In BOTTOMBAR It was Missing ✅
 
  <- Review Remeaning ->
 (

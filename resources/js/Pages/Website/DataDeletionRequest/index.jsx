@@ -124,7 +124,7 @@ const DataDeletion = () => {
                     </div>
 
                     {/* Main Content */}
-                    <div className={`mx-auto mt-10 px-6 sm:max-w-3xl lg:max-w-6xl`}>
+                    <div className={`mx-auto  mt-10 px-6 sm:max-w-3xl lg:max-w-6xl`}>
                         <div className="grid gap-8 lg:grid-cols-3">
                             {/* Form */}
                             <div className="lg:col-span-2 lg:mb-5">
@@ -133,7 +133,7 @@ const DataDeletion = () => {
                                         {__('Submit Deletion')}
                                     </h2>
 
-                                    <div className="space-y-6">
+                                    <div className="space-y-3">
                                         {/* Password Field */}
                                         <div>
                                             <WebInput
@@ -230,7 +230,7 @@ const DataDeletion = () => {
                             {/* Info Sidebar */}
                             <div className="lg:col-span-1">
                                 {/* Add top margin to align with first input field */}
-                                <div className="space-y-6 lg:mt-[52px]">
+                                <div className="space-y-6 lg:mt-[80px]">
                                     <div className="w-auto rounded-md bg-surface-1-light p-6 dark:bg-surface-1-dark xl:w-[330px]">
                                         <h3 className="mb-4 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
                                             {__('What Gets Deleted')}?

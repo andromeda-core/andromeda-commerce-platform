@@ -2,6 +2,7 @@
 
 namespace App\Repositories\GlobalSearch\Repository;
 
+use App\Helpers\Trans;
 use App\Models\Post;
 use App\Models\SearchHistory;
 use App\Models\Smartphone;
@@ -17,7 +18,8 @@ class GlobalSearchRepository implements IGlobalSearchRepository
     public function __construct(
         private Post $post,
         private Smartphone $smartphone,
-        private SearchHistory $searchHistory
+        private SearchHistory $searchHistory,
+        private Trans $trans,
 
     ) {}
 
@@ -241,15 +243,15 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                 'post_preferences.videos' => ['required'],
                 'query' => ['nullable', 'string'],
             ], [
-                'filters.required' => 'Please select at least one filter before searching.',
-                'filters.array' => 'Invalid filter format. Please refresh the page and try again.',
+                'filters.required' => $this->trans->get('Please select at least one filter before searching.'),
+                'filters.array' => $this->trans->get('Invalid filter format. Please refresh the page and try again.'),
 
-                'post_preferences.required' => 'Please choose your content preferences before searching.',
-                'post_preferences.array' => 'Invalid preferences data. Please refresh and try again.',
+                'post_preferences.required' => $this->trans->get('Please choose your content preferences before searching.'),
+                'post_preferences.array' => $this->trans->get('Invalid preferences data. Please refresh and try again.'),
 
-                'post_preferences.text.required' => 'Please specify whether to include text-only posts.',
-                'post_preferences.images.required' => 'Please specify whether to include image posts.',
-                'post_preferences.videos.required' => 'Please specify whether to include video posts.',
+                'post_preferences.text.required' => $this->trans->get('Please specify whether to include text-only posts.'),
+                'post_preferences.images.required' => $this->trans->get('Please specify whether to include image posts.'),
+                'post_preferences.videos.required' => $this->trans->get('Please specify whether to include video posts.'),
             ]);
 
             $page = $request->input('page', 1);

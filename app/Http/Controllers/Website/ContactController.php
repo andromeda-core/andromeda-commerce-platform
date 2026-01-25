@@ -10,6 +10,10 @@ use Inertia\Inertia;
 
 class ContactController extends Controller
 {
+    public function __construct(
+        private Trans $trans
+    ) {}
+
     public function index()
     {
         return Inertia::render('Website/ContactUs/index');
@@ -25,33 +29,33 @@ class ContactController extends Controller
             'message' => ['required', 'string', 'max:255', 'min:30'],
 
         ], [
-            'name.required' => Trans::get('Please enter your full name.'),
-            'name.string' => Trans::Get('Name must be a valid text.'),
-            'name.min' => Trans::get('Name must be at least 3 characters long.'),
-            'name.max' => Trans::get('Name cannot exceed 255 characters.'),
+            'name.required' => $this->trans->get('Please enter your full name.'),
+            'name.string' => $this->trans->Get('Name must be a valid text.'),
+            'name.min' => $this->trans->get('Name must be at least 3 characters long.'),
+            'name.max' => $this->trans->get('Name cannot exceed 255 characters.'),
 
-            'email.required' => Trans::get('Please enter your email address.'),
-            'email.string' => Trans::get('Email must be a valid text.'),
-            'email.email' => Trans::get('Please enter a valid email address.'),
-            'email.max' => Trans::get('Email address cannot exceed 255 characters.'),
+            'email.required' => $this->trans->get('Please enter your email address.'),
+            'email.string' => $this->trans->get('Email must be a valid text.'),
+            'email.email' => $this->trans->get('Please enter a valid email address.'),
+            'email.max' => $this->trans->get('Email address cannot exceed 255 characters.'),
 
-            'phone.required' => Trans::get('Please enter your phone number.'),
-            'phone.regex' => Trans::get('Phone number must include country code. Example: +8801XXXXXXXXX'),
-            'phone.max' => Trans::get('Phone number cannot exceed 50 characters.'),
+            'phone.required' => $this->trans->get('Please enter your phone number.'),
+            'phone.regex' => $this->trans->get('Phone number must include country code. Example: +8801XXXXXXXXX'),
+            'phone.max' => $this->trans->get('Phone number cannot exceed 50 characters.'),
 
-            'subject.required' => Trans::get('Please enter a subject.'),
-            'subject.string' => Trans::get('Subject must be valid text.'),
-            'subject.min' => Trans::get('Subject must be at least 10 characters long.'),
-            'subject.max' => Trans::get('Subject cannot exceed 255 characters.'),
+            'subject.required' => $this->trans->get('Please enter a subject.'),
+            'subject.string' => $this->trans->get('Subject must be valid text.'),
+            'subject.min' => $this->trans->get('Subject must be at least 10 characters long.'),
+            'subject.max' => $this->trans->get('Subject cannot exceed 255 characters.'),
 
-            'message.required' => Trans::get('Please enter your message.'),
-            'message.string' => Trans::get('Message must be valid text.'),
-            'message.min' => Trans::get('Message must be at least 30 characters long.'),
-            'message.max' => Trans::get('Message cannot exceed 255 characters.'),
+            'message.required' => $this->trans->get('Please enter your message.'),
+            'message.string' => $this->trans->get('Message must be valid text.'),
+            'message.min' => $this->trans->get('Message must be at least 30 characters long.'),
+            'message.max' => $this->trans->get('Message cannot exceed 255 characters.'),
         ]);
 
         dispatch(new ContactFormSubmissionJob($validated_req));
 
-        return back()->with('success', Trans::get('Message Sent Successfully'));
+        return back()->with('success', $this->trans->get('Message Sent Successfully'));
     }
 }

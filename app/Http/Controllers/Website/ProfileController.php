@@ -15,6 +15,7 @@ class ProfileController extends Controller
     public function __construct(
         private IUserRepository $user,
         private ICustomerRepository $customer,
+        private Trans $trans,
     ) {}
 
     public function index(Request $request)
@@ -35,7 +36,7 @@ class ProfileController extends Controller
     {
 
         if (empty($id)) {
-            return back()->with('error', Trans::get('User ID Not Found'));
+            return back()->with('error', $this->trans->get('User ID Not Found'));
         }
 
         $response = $this->customer->updateCustomerProfile($request, $id);
@@ -53,7 +54,7 @@ class ProfileController extends Controller
     {
 
         if (empty($id)) {
-            return back()->with('error', Trans::get('User ID Not Found'));
+            return back()->with('error', $this->trans->get('User ID Not Found'));
         }
 
         $response = $this->customer->changeCustomerPassword($request, $id);

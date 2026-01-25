@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    public function __construct(private IProductsRepository $product) {}
+    public function __construct(private IProductsRepository $product, private Trans $trans) {}
 
     public function getSingleSmartphone(Request $request, ?string $slug = null)
     {
@@ -17,7 +17,7 @@ class ProductController extends Controller
         if (empty($slug)) {
             return response()->json([
                 'status' => false,
-                'message' => Trans::get('Slug Not Found'),
+                'message' => $this->trans->get('Slug Not Found'),
             ], 404);
         }
 
@@ -32,7 +32,7 @@ class ProductController extends Controller
         if ($data['smartphone'] === null) {
             return response()->json([
                 'status' => false,
-                'message' => Trans::get('Smartphone Not Found'),
+                'message' => $this->trans->get('Smartphone Not Found'),
             ], 404);
         }
 

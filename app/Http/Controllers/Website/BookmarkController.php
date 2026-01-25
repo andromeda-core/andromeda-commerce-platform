@@ -10,7 +10,7 @@ use Inertia\Inertia;
 class BookmarkController extends Controller
 {
     public function __construct(
-        private IBookmarkRepository $bookmark
+        private IBookmarkRepository $bookmark,
     ) {}
 
     public function index()

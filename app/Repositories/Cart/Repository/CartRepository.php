@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Cart\Repository;
 
+use App\Helpers\Trans;
 use App\Models\Addon;
 use App\Models\CartItem;
 use App\Models\Collaborator;
@@ -26,6 +27,7 @@ class CartRepository implements ICartRepository
         private CartPriceCalculator $price_calculator,
         private Addon $addon,
         private Color $color,
+        private Trans $trans,
     ) {}
 
     public function getCartItems(Request $request)
@@ -36,7 +38,7 @@ class CartRepository implements ICartRepository
         if (empty($user)) {
             return [
                 'status' => false,
-                'message' => 'Please login first',
+                'message' => $this->trans->get('Please Login First'),
             ];
         }
 
@@ -101,7 +103,7 @@ class CartRepository implements ICartRepository
         if (empty($user)) {
             return [
                 'status' => false,
-                'message' => 'Please login first',
+                'message' => $this->trans->get('Please Login First'),
             ];
         }
 
@@ -130,23 +132,23 @@ class CartRepository implements ICartRepository
             $user = $request->user();
 
             if (empty($user)) {
-                throw new Exception('Please login first');
+                throw new Exception($this->trans->get('Please Login First'));
             }
 
             if (! $user->hasRole('Customer')) {
-                throw new Exception('Only Customers Can Add items In Cart');
+                throw new Exception($this->trans->get('Only Customers Can Add items In Cart'));
             }
 
             $customer = $user->customer;
 
             if (empty($customer)) {
-                throw new Exception('Only Customers Can Add items To Cart And Purchase');
+                throw new Exception($this->trans->get('Only Customers Can Add items To Cart And Purchase'));
             }
 
             $smartphones = $request->array('smartphones');
 
             if (blank($smartphones)) {
-                throw new Exception('Please Select Atleast One Smartphone');
+                throw new Exception($this->trans->get('Please Select Atleast One Smartphone'));
             }
 
             $addons = $request->array('addons');
@@ -167,19 +169,19 @@ class CartRepository implements ICartRepository
                         ->first();
 
                     if ($smartphone->inventory_items_count < $cart_smartphone['quantity']) {
-                        throw new Exception('Out Of Stock');
+                        throw new Exception($this->trans->get('Out Of Stock'));
                     }
 
                     if ($already_items_in_cart->isNotEmpty()) {
                         $is_same_distributor = $this->checkIsSameDistributor($already_items_in_cart, $smartphone);
 
                         if (! $is_same_distributor) {
-                            throw new Exception('You Cannot Add Product From Different Distributor');
+                            throw new Exception($this->trans->get('You Cannot Add Product From Different Distributor'));
                         }
                     }
 
                     if (empty($smartphone)) {
-                        throw new Exception('Wrong Product Selected Please Select Valid Product');
+                        throw new Exception($this->trans->get('Wrong Product Selected Please Select Valid Product'));
                     }
 
                     $exists = $this->cart->where('customer_id', $customer->id)->where('smartphone_id', $smartphone->id)
@@ -199,7 +201,7 @@ class CartRepository implements ICartRepository
                         $total_quantity = $exists->quantity + $cart_smartphone['quantity'];
 
                         if ($exists->smartphone->inventory_items_count < $total_quantity) {
-                            throw new Exception('Product Out Of Stock Please Adjust Quantity');
+                            throw new Exception($this->trans->get('Product Out Of Stock Please Adjust Quantity'));
                         }
 
                         if ($exists->smartphone) {
@@ -263,7 +265,7 @@ class CartRepository implements ICartRepository
 
             return [
                 'status' => true,
-                'message' => 'Added Succesfully To Cart',
+                'message' => $this->trans->get('Added Succesfully To Cart'),
             ];
         } catch (Exception $e) {
             DB::rollBack();
@@ -282,29 +284,29 @@ class CartRepository implements ICartRepository
         try {
 
             if (empty($smartphone_id)) {
-                throw new Exception('Wrong Product Selected Please Select Valid Product');
+                throw new Exception($this->trans->get('Wrong Product Selected Please Select Valid Product'));
             }
 
             $user = $request->user();
 
             if (empty($user)) {
-                throw new Exception('Please login first');
+                throw new Exception($this->trans->get('Please Login First'));
             }
 
             if (! $user->hasRole('Customer')) {
-                throw new Exception('Only Customers Can Add items In Cart');
+                throw new Exception($this->trans->get('Only Customers Can Add items In Cart'));
             }
 
             $customer = $user->customer;
 
             if (empty($customer)) {
-                throw new Exception('Only Customers Can Add items To Cart And Purchase');
+                throw new Exception($this->trans->get('Only Customers Can Add items To Cart And Purchase'));
             }
 
             $smartphones = $request->array('smartphones');
 
             if (blank($smartphones)) {
-                throw new Exception('Please Select Atleast One Smartphone');
+                throw new Exception($this->trans->get('Please Select Atleast One Smartphone'));
             }
 
             $this->cart->where('customer_id', $customer->id)
@@ -333,19 +335,19 @@ class CartRepository implements ICartRepository
                         ->first();
 
                     if ($smartphone->inventory_items_count < $cart_smartphone['quantity']) {
-                        throw new Exception('Out Of Stock');
+                        throw new Exception($this->trans->get('Out Of Stock'));
                     }
 
                     if ($already_items_in_cart->isNotEmpty()) {
                         $is_same_distributor = $this->checkIsSameDistributor($already_items_in_cart, $smartphone);
 
                         if (! $is_same_distributor) {
-                            throw new Exception('You Cannot Add Product From Different Distributor');
+                            throw new Exception($this->trans->get('You Cannot Add Product From Different Distributor'));
                         }
                     }
 
                     if (empty($smartphone)) {
-                        throw new Exception('Wrong Product Selected Please Select Valid Product');
+                        throw new Exception($this->trans->get('Wrong Product Selected Please Select Valid Product'));
                     }
 
                     $exists = $this->cart->where('customer_id', $customer->id)->where('smartphone_id', $smartphone->id)
@@ -365,7 +367,7 @@ class CartRepository implements ICartRepository
                         $total_quantity = $exists->quantity + $cart_smartphone['quantity'];
 
                         if ($exists->smartphone->inventory_items_count < $total_quantity) {
-                            throw new Exception('Product Out Of Stock Please Adjust Quantity');
+                            throw new Exception($this->trans->get('Product Out Of Stock Please Adjust Quantity'));
                         }
 
                         if ($exists->smartphone) {
@@ -431,7 +433,7 @@ class CartRepository implements ICartRepository
 
             return [
                 'status' => true,
-                'message' => 'Updated Succesfully',
+                'message' => $this->trans->get('Updated Succesfully'),
             ];
         } catch (Exception $e) {
             DB::rollback();
@@ -448,17 +450,17 @@ class CartRepository implements ICartRepository
         try {
             $user = $request->user();
             if (empty($user)) {
-                throw new Exception('Please login first');
+                throw new Exception($this->trans->get('Please Login First'));
             }
 
             if (! $user->hasRole('Customer')) {
-                throw new Exception('Only Customers Can Remove items In Cart');
+                throw new Exception($this->trans->get('Only Customers Can Remove items In Cart'));
             }
 
             $customer = $user->customer;
 
             if (empty($customer)) {
-                throw new Exception('Only Customers Can Remove items From Cart');
+                throw new Exception($this->trans->get('Only Customers Can Remove items From Cart'));
             }
 
             $item_type = $request->input('type');
@@ -468,12 +470,12 @@ class CartRepository implements ICartRepository
                 $smartphone = $this->smartphone->where('id', $item_id)->first();
 
                 if (empty($smartphone)) {
-                    throw new Exception('Wrong Product Selected Please Select Valid Product');
+                    throw new Exception($this->trans->get('Wrong Product Selected Please Select Valid Product'));
                 }
 
                 $item = $this->cart->where('customer_id', $customer->id)->where('smartphone_id', $item_id)->with(['smartphone'])->first();
                 if (empty($item)) {
-                    throw new Exception('Something Went Wrong While Removing Product From Cart');
+                    throw new Exception($this->trans->get('Something Went Wrong While Removing Product From Cart'));
                 }
 
                 DB::transaction(function () use ($item) {
@@ -485,7 +487,7 @@ class CartRepository implements ICartRepository
                     }
                     $deleted = $item->delete();
                     if (! $deleted) {
-                        throw new Exception('Something Went Wrong While Removing Product From Cart');
+                        throw new Exception($this->trans->get('Something Went Wrong While Removing Product From Cart'));
                     }
                 });
 
@@ -500,7 +502,7 @@ class CartRepository implements ICartRepository
 
                 return [
                     'status' => true,
-                    'message' => 'Removed Succesfully From Cart',
+                    'message' => $this->trans->get('Removed Succesfully From Cart'),
                     'total_summary' => $total_summary,
                 ];
 
@@ -531,17 +533,17 @@ class CartRepository implements ICartRepository
         try {
             $user = $request->user();
             if (empty($user)) {
-                throw new Exception('Please login first');
+                throw new Exception($this->trans->get('Please Login First'));
             }
 
             if (! $user->hasRole('Customer')) {
-                throw new Exception('Only Customers Can Update items From Cart');
+                throw new Exception($this->trans->get('Only Customers Can Update items From Cart'));
             }
 
             $customer = $user->customer;
 
             if (empty($customer)) {
-                throw new Exception('Only Customers Can Remove items From Cart');
+                throw new Exception($this->trans->get('Only Customers Can Remove items From Cart'));
             }
 
             $item_type = $request->input('type');
@@ -555,7 +557,7 @@ class CartRepository implements ICartRepository
                 ->get();
 
             if ($cart_item->isEmpty()) {
-                throw new Exception('Wrong Product Selected Please Select Valid Product');
+                throw new Exception($this->trans->get('Wrong Product Selected Please Select Valid Product'));
             }
 
             if ($item_type === 'smartphone') {
@@ -563,7 +565,7 @@ class CartRepository implements ICartRepository
                 $smartphone = $this->smartphone->where('id', $cart_item->first()->smartphone_id)->first();
 
                 if (empty($smartphone)) {
-                    throw new Exception('Wrong Product Selected Please Select Valid Product');
+                    throw new Exception($this->trans->get('Wrong Product Selected Please Select Valid Product'));
                 }
 
                 $cart_item->first()->update([
@@ -583,7 +585,7 @@ class CartRepository implements ICartRepository
 
                 return [
                     'status' => true,
-                    'message' => 'Product Updated Succesfully From Cart',
+                    'message' => $this->trans->get('Product Updated Succesfully From Cart'),
                     'total_summary' => $total_summary,
                 ];
             }
@@ -601,17 +603,17 @@ class CartRepository implements ICartRepository
         try {
             $user = $request->user();
             if (empty($user)) {
-                throw new Exception('Please login first');
+                throw new Exception($this->trans->get('Please Login First'));
             }
 
             if (! $user->hasRole('Customer')) {
-                throw new Exception('Only Customers Can Update items From Cart');
+                throw new Exception($this->trans->get('Only Customers Can Update items From Cart'));
             }
 
             $customer = $user->customer;
 
             if (empty($customer)) {
-                throw new Exception('Only Customers Can Remove items From Cart');
+                throw new Exception($this->trans->get('Only Customers Can Remove items From Cart'));
             }
 
             $item_id = $request->integer('item_id');
@@ -620,13 +622,13 @@ class CartRepository implements ICartRepository
             $cart_item = $this->smartphone_cart_addon->where('customer_id', $customer->id)->where('id', $item_id)->first();
 
             if (empty($cart_item)) {
-                throw new Exception('Wrong Product Selected Please Select Valid Product');
+                throw new Exception($this->trans->get('Wrong Product Selected Please Select Valid Product'));
             }
 
             $smartphone = $this->smartphone->where('id', $cart_item->smartphone_id)->first();
 
             if (empty($smartphone)) {
-                throw new Exception('Wrong Product Selected Please Select Valid Product');
+                throw new Exception($this->trans->get('Wrong Product Selected Please Select Valid Product'));
             }
 
             $cart_item->update([
@@ -646,7 +648,7 @@ class CartRepository implements ICartRepository
 
             return [
                 'status' => true,
-                'message' => 'Updated Succesfully',
+                'message' => $this->trans->get('Updated Succesfully'),
                 'total_summary' => $total_summary,
             ];
 
@@ -664,29 +666,29 @@ class CartRepository implements ICartRepository
 
             $user = $request->user();
             if (empty($user)) {
-                throw new Exception('Please login first');
+                throw new Exception($this->trans->get('Please Login First'));
             }
 
             if (! $user->hasRole('Customer')) {
-                throw new Exception('Only Customers Can Remove items In Cart');
+                throw new Exception($this->trans->get('Only Customers Can Remove items In Cart'));
             }
 
             $customer = $user->customer;
 
             if (empty($customer)) {
-                throw new Exception('Only Customers Can Remove items From Cart');
+                throw new Exception($this->trans->get('Only Customers Can Remove items From Cart'));
             }
 
             $item_id = $request->integer('item_id');
 
             $item = $this->smartphone_cart_addon->where('customer_id', $customer->id)->where('id', $item_id)->first();
             if (empty($item)) {
-                throw new Exception('Something Went Wrong While Removing Product From Cart');
+                throw new Exception($this->trans->get('Something Went Wrong While Removing Product From Cart'));
             }
 
             $deleted = $item->delete();
             if (! $deleted) {
-                throw new Exception('Something Went Wrong While Removing Product From Cart');
+                throw new Exception($this->trans->get('Something Went Wrong While Removing Product From Cart'));
             }
 
             $all_cart_items = $this->cart->where('customer_id', $customer->id)->with(['smartphone', 'smartphone.selling_info', 'smartphone.selling_info.shipping_fee', 'smartphone.selling_info.import_tax'])->get();
@@ -700,7 +702,7 @@ class CartRepository implements ICartRepository
 
             return [
                 'status' => true,
-                'message' => 'Removed Succesfully From Cart',
+                'message' => $this->trans->get('Removed Succesfully From Cart'),
                 'total_summary' => $total_summary,
             ];
         } catch (Exception $e) {
@@ -719,7 +721,7 @@ class CartRepository implements ICartRepository
             if (empty($code)) {
                 return [
                     'status' => false,
-                    'message' => 'Please Enter Coupon Code',
+                    'message' => $this->trans->get('Please Enter Coupon Code'),
                 ];
             }
 
@@ -728,7 +730,7 @@ class CartRepository implements ICartRepository
             if (empty($user)) {
                 return [
                     'status' => false,
-                    'message' => 'Please login first',
+                    'message' => $this->trans->get('Please Login First'),
                 ];
             }
 
@@ -737,7 +739,7 @@ class CartRepository implements ICartRepository
             if (empty($customer)) {
                 return [
                     'status' => false,
-                    'message' => 'Only Customers Can Perform This Action',
+                    'message' => $this->trans->get('Only Customers Can Perform This Action'),
                 ];
             }
 
@@ -761,7 +763,7 @@ class CartRepository implements ICartRepository
             if ($cart->isEmpty()) {
                 return [
                     'status' => false,
-                    'message' => 'Cart Is Empty',
+                    'message' => $this->trans->get('Cart Is Empty'),
                 ];
             }
 
@@ -769,7 +771,7 @@ class CartRepository implements ICartRepository
             if (empty($collaborator)) {
                 return [
                     'status' => false,
-                    'message' => 'Invalid Coupon Code',
+                    'message' => $this->trans->get('Invalid Coupon Code'),
                 ];
             }
 
@@ -815,7 +817,7 @@ class CartRepository implements ICartRepository
 
             return [
                 'status' => true,
-                'message' => 'Referal Removed Successfully',
+                'message' => $this->trans->get('Referal Removed Successfully'),
             ];
         } catch (Exception $e) {
             return [
@@ -862,17 +864,17 @@ class CartRepository implements ICartRepository
             $user = $request->user();
 
             if (empty($user)) {
-                throw new Exception('Please login first');
+                throw new Exception($this->trans->get('Please Login First'));
             }
 
             if (! $user->hasRole('Customer')) {
-                throw new Exception('Only Customers Can Add items In Cart');
+                throw new Exception($this->trans->get('Only Customers Can Add items In Cart'));
             }
 
             $customer = $user->customer;
 
             if (empty($customer)) {
-                throw new Exception('Only Customers Can Add items To Cart And Purchase');
+                throw new Exception($this->trans->get('Only Customers Can Add items To Cart And Purchase'));
             }
 
             session()->forget('single_product_checkout_'.$user->id);
@@ -950,7 +952,7 @@ class CartRepository implements ICartRepository
 
             return [
                 'status' => true,
-                'message' => 'Session Created Successfully You will be Redirected To Checkout Shortly..! ',
+                'message' => $this->trans->get('Session Created Successfully You will be Redirected To Checkout Shortly..! '),
             ];
 
         } catch (Exception $e) {

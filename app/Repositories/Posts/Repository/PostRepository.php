@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Posts\Repository;
 
+use App\Helpers\Trans;
 use App\Jobs\CompressPostVideoWithFFMPEG;
 use App\Jobs\PostDestroyOnAWSJob;
 use App\Jobs\PostStoreOnAWSJob;
@@ -27,6 +28,7 @@ class PostRepository implements IPostRepository
         private Post $post,
         private GoogleGeoCoderService $googleGeoCoderService,
         private Smartphone $smartphone,
+        private Trans $trans,
     ) {}
 
     public function getAllPosts(Request $request)
@@ -688,7 +690,7 @@ class PostRepository implements IPostRepository
 
                 return [
                     'status' => true,
-                    'message' => 'Post Removed Successfully from bookmarks',
+                    'message' => $this->trans->get('Post Removed Successfully from bookmarks'),
                 ];
             }
 
@@ -696,7 +698,7 @@ class PostRepository implements IPostRepository
 
             return [
                 'status' => true,
-                'message' => 'Post Added Successfully to bookmarks',
+                'message' => $this->trans->get('Post Added Successfully to bookmarks'),
             ];
         } catch (Exception $e) {
             return [

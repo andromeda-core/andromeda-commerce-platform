@@ -22,7 +22,8 @@ class ProductsRepository implements IProductsRepository
         private Color $color,
         private Capacity $capacity,
         private Condition $condition,
-        private ICategoryRepository $category
+        private ICategoryRepository $category,
+        private Trans $trans,
     ) {}
 
     // Smartphone
@@ -213,7 +214,7 @@ class ProductsRepository implements IProductsRepository
                 });
 
             if ($smartphone->isEmpty()) {
-                throw new Exception('Smartphone Not Found');
+                throw new Exception($this->trans->get('Smartphone Not Found'));
             }
 
             return [

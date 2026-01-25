@@ -11,7 +11,8 @@ use Inertia\Inertia;
 class PrivacyPolicyController extends Controller
 {
     public function __construct(
-        private IPrivacyPolicyRepository $privacy_policy
+        private IPrivacyPolicyRepository $privacy_policy,
+        private Trans $trans
     ) {}
 
     public function __invoke(Request $request)
@@ -20,7 +21,7 @@ class PrivacyPolicyController extends Controller
         $privacy_policy = $this->privacy_policy->getPrivacyPolicy();
 
         if (empty($privacy_policy)) {
-            return to_route('home')->with('info', Trans::get('Privacy Policy Not Found'));
+            return to_route('home')->with('info', $this->trans->get('Privacy Policy Not Found'));
         }
 
         return Inertia::render('Website/PrivacyPolicy/index', compact('privacy_policy'));

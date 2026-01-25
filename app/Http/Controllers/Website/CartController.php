@@ -11,7 +11,8 @@ use Inertia\Inertia;
 class CartController extends Controller
 {
     public function __construct(
-        private ICartRepository $cart
+        private ICartRepository $cart,
+        private Trans $trans
     ) {}
 
     public function index(Request $request)
@@ -36,7 +37,7 @@ class CartController extends Controller
         if (empty($request->user())) {
             return response()->json([
                 'status' => false,
-                'message' => 'Please login first',
+                'message' => $this->trans->get('Please Login First'),
             ], 404);
         }
 
@@ -67,7 +68,7 @@ class CartController extends Controller
         if (empty($request->user())) {
             return response()->json([
                 'status' => false,
-                'message' => Trans::get('Please login first'),
+                'message' => $this->trans->get('Please Login First'),
             ], 404);
         }
 

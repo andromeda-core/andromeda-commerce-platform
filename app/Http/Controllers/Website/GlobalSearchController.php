@@ -13,7 +13,13 @@ use Inertia\Inertia;
 
 class GlobalSearchController extends Controller
 {
-    public function __construct(private IPostRepository $post, private IGlobalSearchRepository $globalSearch, private IFloorRepostitory $floor, private ISearchHistoryRepository $searchHistory) {}
+    public function __construct(
+        private IPostRepository $post,
+        private IGlobalSearchRepository $globalSearch,
+        private IFloorRepostitory $floor,
+        private ISearchHistoryRepository $searchHistory,
+        private Trans $trans
+    ) {}
 
     /**
      * @Perfect But Joseph Changed The Filter Logic
@@ -92,7 +98,7 @@ class GlobalSearchController extends Controller
     {
 
         if (empty($request->input('place_id'))) {
-            return response()->json(['status' => false, 'message' => Trans::get('Place ID Not Found')], 400);
+            return response()->json(['status' => false, 'message' => $this->trans->get('Place ID Not Found')], 400);
         }
 
         $response = $this->post->placeDetails($request->input('place_id'));

@@ -18,7 +18,8 @@ class CheckoutController extends Controller
         private ICartRepository $cart,
         private IUserRepository $user,
         private IOrderRepository $order,
-        private ICustomerRepository $customer
+        private ICustomerRepository $customer,
+        private Trans $trans
     ) {}
 
     public function index(Request $request)
@@ -80,7 +81,7 @@ class CheckoutController extends Controller
         $is_profile_completed = $this->user->profileCompletionCheck($request);
 
         if (! $is_profile_completed) {
-            return response()->json(['message' => Trans::get('Please Complete Your Profile Before Placing An Order')], 400);
+            return response()->json(['message' => $this->trans->get('Please Complete Your Profile Before Placing An Order')], 400);
         }
 
         $is_email_verified = $this->user->hasVerifiedEmail($request);
@@ -90,7 +91,7 @@ class CheckoutController extends Controller
         }
 
         if (! $is_email_verified['hasVerifiedEmail']) {
-            return response()->json(['message' => Trans::get('Please Verify Your Email Before Placing An Order')], 400);
+            return response()->json(['message' => $this->trans->get('Please Verify Your Email Before Placing An Order')], 400);
         }
 
         $response = $this->order->placeOrderFromWebsite($request);
@@ -120,7 +121,7 @@ class CheckoutController extends Controller
 
         $this->cart->removeReferal($request);
 
-        return to_route('website.orders.order-view', ['order_no' => $request->order_no])->with('success', Trans::get('Thank you! Your payment has been submitted. We’ll confirm it automatically once the blockchain confirms your transaction.'));
+        return to_route('website.orders.order-view', ['order_no' => $request->order_no])->with('success', $this->trans->get('Thank you! Your payment has been submitted. We’ll confirm it automatically once the blockchain confirms your transaction.'));
     }
 
     public function singleProductCheckoutSessionStore(Request $request)
