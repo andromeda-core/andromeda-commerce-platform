@@ -1,4 +1,5 @@
 import Spinner from '@/Components/Spinner';
+import { useTranslation } from '@/Hooks/useTranslation';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, router } from '@inertiajs/react';
 import React, { useState } from 'react';

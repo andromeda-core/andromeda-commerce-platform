@@ -5,7 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, useForm } from '@inertiajs/react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import SelectInput from '@/Components/SelectInput';
 
 export default function edit({ user, roles }) {
@@ -17,37 +17,6 @@ export default function edit({ user, roles }) {
         password: '',
         password_confirmation: '',
         role_id: user?.roles[0]?.id ?? '',
-        is_active: user.is_active ?? 1,
-        company_name: user.supplier?.company_name || '',
-        type: user?.collaborator?.type || '',
-        address:
-            (user?.collaborator && user?.collaborator?.address) ||
-            (user?.distributor && user?.distributor?.address) ||
-            '',
-        bank_name:
-            (user?.collaborator && user?.collaborator?.bank_name) ||
-            (user?.distributor && user?.distributor?.bank_name) ||
-            '',
-
-        bank_account_name:
-            (user?.collaborator && user?.collaborator?.bank_account_name) ||
-            (user?.distributor && user?.distributor?.bank_account_name) ||
-            '',
-
-        bank_account_no:
-            (user?.collaborator && user?.collaborator?.bank_account_no) ||
-            (user?.distributor && user?.distributor?.bank_account_no) ||
-            '',
-
-        iban:
-            (user?.collaborator && user?.collaborator?.iban) ||
-            (user?.distributor && user?.distributor?.iban) ||
-            '',
-
-        swift_code:
-            (user?.collaborator && user?.collaborator?.swift_code) ||
-            (user?.distributor && user?.distributor?.swift_code) ||
-            '',
     });
 
     const [togglePassword, setTogglePassword] = useState(false);
@@ -58,12 +27,6 @@ export default function edit({ user, roles }) {
         e.preventDefault();
         put(route('dashboard.users.update', user.id));
     };
-
-    useEffect(() => {
-        if (data.role_id != user.roles[0]?.id) {
-            setData('company_name', '');
-        }
-    }, [data.role_id]);
 
     return (
         <>
@@ -199,286 +162,9 @@ export default function edit({ user, roles }) {
                                                     }}
                                                 />
 
-                                                {data.role_id === 4 && (
-                                                    <Input
-                                                        InputName={'Company Name'}
-                                                        Error={errors.company_name}
-                                                        Value={data.company_name}
-                                                        Action={(e) =>
-                                                            setData('company_name', e.target.value)
-                                                        }
-                                                        Placeholder={'Enter Company Name'}
-                                                        Id={'company_name'}
-                                                        Name={'company_name'}
-                                                        Type={'text'}
-                                                        Required={data.role_id === 4}
-                                                    />
-                                                )}
 
-                                                {data.role_id === 3 && (
-                                                    <>
-                                                        <SelectInput
-                                                            InputName={'Collaborator Type'}
-                                                            Id={'type'}
-                                                            Name={'type'}
-                                                            Value={data.type}
-                                                            items={[
-                                                                { name: 'Company' },
-                                                                { name: 'Indivisual' },
-                                                            ]}
-                                                            Error={errors.type}
-                                                            Placeholder={'Select Collaborator Type'}
-                                                            Required={data.role_id === 3}
-                                                            itemKey={'name'}
-                                                            Action={(value) =>
-                                                                setData('type', value)
-                                                            }
-                                                        />
 
-                                                        <Input
-                                                            InputName={'Collaborator Bank Name'}
-                                                            Error={errors.bank_name}
-                                                            Value={data.bank_name}
-                                                            Action={(e) =>
-                                                                setData('bank_name', e.target.value)
-                                                            }
-                                                            Placeholder={
-                                                                'Enter Collaborator Bank Name'
-                                                            }
-                                                            Id={'bank_name'}
-                                                            Name={'bank_name'}
-                                                            Type={'text'}
-                                                            Required={true}
-                                                        />
 
-                                                        <Input
-                                                            InputName={
-                                                                'Collaborator Bank Account Name'
-                                                            }
-                                                            Error={errors.bank_account_name}
-                                                            Value={data.bank_account_name}
-                                                            Action={(e) =>
-                                                                setData(
-                                                                    'bank_account_name',
-                                                                    e.target.value,
-                                                                )
-                                                            }
-                                                            Placeholder={
-                                                                'Enter Collaborator Bank Account Name'
-                                                            }
-                                                            Id={'bank_account_name'}
-                                                            Name={'bank_account_name'}
-                                                            Type={'text'}
-                                                            Required={true}
-                                                        />
-
-                                                        <Input
-                                                            InputName={
-                                                                'Collaborator Bank Account No'
-                                                            }
-                                                            Error={errors.bank_account_no}
-                                                            Value={data.bank_account_no}
-                                                            Action={(e) =>
-                                                                setData(
-                                                                    'bank_account_no',
-                                                                    e.target.value,
-                                                                )
-                                                            }
-                                                            Placeholder={
-                                                                'Enter Collaborator Bank Account No'
-                                                            }
-                                                            Id={'bank_account_no'}
-                                                            Name={'bank_account_no'}
-                                                            Type={'text'}
-                                                            Required={true}
-                                                        />
-
-                                                        <Input
-                                                            InputName={'IBAN'}
-                                                            Error={errors.iban}
-                                                            Value={data.iban}
-                                                            Action={(e) =>
-                                                                setData('iban', e.target.value)
-                                                            }
-                                                            Placeholder={'Enter IBAN'}
-                                                            Id={'iban'}
-                                                            Name={'iban'}
-                                                            Type={'text'}
-                                                            Required={true}
-                                                        />
-
-                                                        <Input
-                                                            InputName={'SWIFT CODE'}
-                                                            Error={errors.swift_code}
-                                                            Value={data.swift_code}
-                                                            Action={(e) =>
-                                                                setData(
-                                                                    'swift_code',
-                                                                    e.target.value,
-                                                                )
-                                                            }
-                                                            Placeholder={'Enter SWIFT CODE'}
-                                                            Id={'swift_code'}
-                                                            Name={'swift_code'}
-                                                            Type={'text'}
-                                                            Required={true}
-                                                        />
-                                                    </>
-                                                )}
-
-                                                {data.role_id === 5 && (
-                                                    <>
-                                                        <div>
-                                                            <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
-                                                                Address{' '}
-                                                                <span className="text-red-500 dark:text-white">
-                                                                    *
-                                                                </span>
-                                                            </label>
-                                                            <textarea
-                                                                rows={3}
-                                                                value={data?.address}
-                                                                placeholder="Enter Address"
-                                                                className={`dark:bg-dark-900 shadow-theme-xs focus:ring-3 focus:outline-hidden $ mb-2 w-full min-w-0 max-w-full rounded-lg border border-gray-300 bg-transparent py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-blue-300 focus:ring-blue-500/10 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-blue-800`}
-                                                                onChange={(e) =>
-                                                                    setData(
-                                                                        'address',
-                                                                        e.target.value,
-                                                                    )
-                                                                }
-                                                            />
-                                                        </div>
-
-                                                        <Input
-                                                            InputName={'Distributor Bank Name'}
-                                                            Error={errors.bank_name}
-                                                            Value={data.bank_name}
-                                                            Action={(e) =>
-                                                                setData('bank_name', e.target.value)
-                                                            }
-                                                            Placeholder={
-                                                                'Enter Distributor Bank Name'
-                                                            }
-                                                            Id={'bank_name'}
-                                                            Name={'bank_name'}
-                                                            Type={'text'}
-                                                            Required={true}
-                                                        />
-
-                                                        <Input
-                                                            InputName={
-                                                                'Distributor Bank Account Name'
-                                                            }
-                                                            Error={errors.bank_account_name}
-                                                            Value={data.bank_account_name}
-                                                            Action={(e) =>
-                                                                setData(
-                                                                    'bank_account_name',
-                                                                    e.target.value,
-                                                                )
-                                                            }
-                                                            Placeholder={
-                                                                'Enter Distributor Bank Account Name'
-                                                            }
-                                                            Id={'bank_account_name'}
-                                                            Name={'bank_account_name'}
-                                                            Type={'text'}
-                                                            Required={true}
-                                                        />
-
-                                                        <Input
-                                                            InputName={
-                                                                'Distributor Bank Account No'
-                                                            }
-                                                            Error={errors.bank_account_no}
-                                                            Value={data.bank_account_no}
-                                                            Action={(e) =>
-                                                                setData(
-                                                                    'bank_account_no',
-                                                                    e.target.value,
-                                                                )
-                                                            }
-                                                            Placeholder={
-                                                                'Enter Distributor Bank Account No'
-                                                            }
-                                                            Id={'bank_account_no'}
-                                                            Name={'bank_account_no'}
-                                                            Type={'text'}
-                                                            Required={true}
-                                                        />
-
-                                                        <Input
-                                                            InputName={'IBAN'}
-                                                            Error={errors.iban}
-                                                            Value={data.iban}
-                                                            Action={(e) =>
-                                                                setData('iban', e.target.value)
-                                                            }
-                                                            Placeholder={'Enter IBAN'}
-                                                            Id={'iban'}
-                                                            Name={'iban'}
-                                                            Type={'text'}
-                                                            Required={true}
-                                                        />
-
-                                                        <Input
-                                                            InputName={'SWIFT CODE'}
-                                                            Error={errors.swift_code}
-                                                            Value={data.swift_code}
-                                                            Action={(e) =>
-                                                                setData(
-                                                                    'swift_code',
-                                                                    e.target.value,
-                                                                )
-                                                            }
-                                                            Placeholder={'Enter SWIFT CODE'}
-                                                            Id={'swift_code'}
-                                                            Name={'swift_code'}
-                                                            Type={'text'}
-                                                            Required={true}
-                                                        />
-                                                    </>
-                                                )}
-
-                                                <div>
-                                                    <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
-                                                        Address{' '}
-                                                        <span className="text-red-500 dark:text-white">
-                                                            *
-                                                        </span>
-                                                    </label>
-                                                    <textarea
-                                                        rows={3}
-                                                        value={data?.address}
-                                                        placeholder="Enter Address"
-                                                        className={`dark:bg-dark-900 shadow-theme-xs focus:ring-3 focus:outline-hidden $ mb-2 w-full min-w-0 max-w-full rounded-lg border border-gray-300 bg-transparent py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-blue-300 focus:ring-blue-500/10 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-blue-800`}
-                                                        onChange={(e) =>
-                                                            setData('address', e.target.value)
-                                                        }
-                                                    />
-                                                </div>
-
-                                                <SelectInput
-                                                    InputName={'Active Status'}
-                                                    Id={'is_active'}
-                                                    Name={'is_active'}
-                                                    Value={data.is_active}
-                                                    items={[
-                                                        {
-                                                            id: 1,
-                                                            name: 'Active',
-                                                        },
-                                                        {
-                                                            id: 0,
-                                                            name: 'In-Active',
-                                                        },
-                                                    ]}
-                                                    Error={errors.is_active}
-                                                    Placeholder={'Select Active Status'}
-                                                    Required={true}
-                                                    itemKey={'name'}
-                                                    Action={(value) => setData('is_active', value)}
-                                                />
                                             </div>
 
                                             <PrimaryButton
@@ -491,22 +177,6 @@ export default function edit({ user, roles }) {
                                                     data.email.trim() === '' ||
                                                     data.phone.trim() === '' ||
                                                     data.role_id === '' ||
-                                                    data.is_active === '' ||
-                                                    (data.role_id === 4 &&
-                                                        data.company_name.trim() === '') ||
-                                                    (data.role_id === 3 &&
-                                                        data.type.trim() === '') ||
-                                                    (data.role_id === 3 &&
-                                                        data.address.trim() === '') ||
-                                                    (data.role_id === 3 &&
-                                                        data.bank_account_no.trim() === '') ||
-                                                    (data.role_id === 5 &&
-                                                        data.address.trim() === '') ||
-                                                    (data.role_id === 5 &&
-                                                        data.bank_account_no.trim() === '') ||
-                                                    (data.role_id === 5 &&
-                                                        data.address.trim() === '' &&
-                                                        data.bank_account_no.trim() === '') ||
                                                     (data.password.trim() !== '' &&
                                                         data.password_confirmation.trim() === '') ||
                                                     (data.password.trim() === '' &&

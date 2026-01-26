@@ -7,6 +7,7 @@ import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, useForm } from '@inertiajs/react';
 import React, { useState } from 'react';
 import SelectInput from '@/Components/SelectInput';
+import Textarea from '@/Components/Textarea';
 
 export default function edit({ customer, countries }) {
     // Create Data Form Data
@@ -16,7 +17,7 @@ export default function edit({ customer, countries }) {
         phone: customer?.user?.phone || '',
         password: '',
         password_confirmation: '',
-        is_active: customer?.user?.is_active ?? 1,
+        status: customer?.user?.status || '',
         country_id: customer?.country_id || '',
         state: customer?.state || '',
         city: customer?.city || '',
@@ -24,6 +25,7 @@ export default function edit({ customer, countries }) {
         address_line1: customer?.address_line1 || '',
         address_line2: customer?.address_line2 || '',
         is_deactivated: customer?.user?.is_deactivated ?? 0,
+        note: customer?.note || '',
     });
 
     const [togglePassword, setTogglePassword] = useState(false);
@@ -260,49 +262,57 @@ export default function edit({ customer, countries }) {
                                                     }
                                                 />
 
-                                                <SelectInput
-                                                    InputName={'Active Status'}
-                                                    Id={'is_active'}
-                                                    Name={'is_active'}
-                                                    Value={data.is_active}
-                                                    items={[
-                                                        {
-                                                            id: 1,
-                                                            name: 'Active',
-                                                        },
-                                                        {
-                                                            id: 0,
-                                                            name: 'In-Active',
-                                                        },
-                                                    ]}
-                                                    Error={errors.is_active}
-                                                    Placeholder={'Select Active Status'}
-                                                    Required={true}
-                                                    itemKey={'name'}
-                                                    Action={(value) => setData('is_active', value)}
-                                                />
-
 
                                                 <SelectInput
                                                     InputName={'Account Status'}
-                                                    Id={'is_deactivated'}
-                                                    Name={'is_deactivated'}
-                                                    Value={data.is_deactivated}
+                                                    Id={'status'}
+                                                    Name={'status'}
+                                                    Value={data.status}
                                                     items={[
                                                         {
-                                                            id: 0,
+                                                            id: 'active',
                                                             name: 'Active',
                                                         },
                                                         {
-                                                            id: 1,
-                                                            name: 'Deactive',
+                                                            id: 'deactivated',
+                                                            name: 'Deactivated',
+                                                        },
+                                                        {
+                                                            id: 'suspended',
+                                                            name: 'Suspended',
+                                                        },
+                                                        {
+                                                            id: 'under_dispute',
+                                                            name: 'Under Dispute',
+                                                        },
+                                                        {
+                                                            id: 'under_investigation',
+                                                            name: 'Under Investigation',
                                                         },
                                                     ]}
-                                                    Error={errors.is_deactivated}
+                                                    Error={errors.status}
                                                     Placeholder={'Select Account Status'}
                                                     Required={true}
                                                     itemKey={'name'}
-                                                    Action={(value) => setData('is_deactivated', value)}
+                                                    Action={(value) => setData('status', value)}
+                                                />
+
+                                                <Textarea
+                                                    InputName={'Note'}
+                                                    Error={errors.note}
+                                                    Value={data.note}
+                                                    Action={(e) =>
+                                                        setData(
+                                                            'note',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    Placeholder={
+                                                        'Enter Note'
+                                                    }
+                                                    Id={'note'}
+                                                    Name={'note'}
+                                                    Required={false}
                                                 />
                                             </div>
 
@@ -315,7 +325,7 @@ export default function edit({ customer, countries }) {
                                                     data.name.trim() === '' ||
                                                     data.email.trim() === '' ||
                                                     data.phone.trim() === '' ||
-                                                    data.is_active === '' ||
+                                                    data.status === '' ||
                                                     data.is_deactivated === '' ||
                                                     data.country_id === '' ||
                                                     data.state.trim() === '' ||

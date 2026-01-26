@@ -7,6 +7,9 @@ use App\Models\Country;
 use App\Models\Customer;
 use App\Models\User;
 use App\Notifications\AccountDeactiveOrActiveNotification;
+use App\Notifications\AccountSuspendNotification;
+use App\Notifications\AccountUnderDisputeNotification;
+use App\Notifications\AccountUnderInvestigationNotification;
 use App\Repositories\Customers\Interface\ICustomerRepository;
 use Exception;
 use Illuminate\Http\Request;
@@ -69,10 +72,7 @@ class CustomerRepository implements ICustomerRepository
             'postal_code' => ['required', 'string', 'max:255'],
             'address_line1' => ['required', 'string'],
             'address_line2' => ['nullable', 'string'],
-            'is_active' => ['required', 'boolean'],
         ], [
-            'is_active.required ' => 'Customer Status Is Required',
-            'is_active.boolean' => 'Customer Status Must Be in Active Or In-Active',
             'country_id.required' => 'Country Is Required',
             'country_id.exists' => 'Selected Country Is Not Exists',
         ]);
@@ -86,7 +86,6 @@ class CustomerRepository implements ICustomerRepository
                 'email' => $validated_req['email'],
                 'phone' => $validated_req['phone'],
                 'password' => bcrypt($validated_req['password']),
-                'is_active' => $validated_req['is_active'],
             ]);
 
             if (empty($user_created)) {
@@ -150,11 +149,9 @@ class CustomerRepository implements ICustomerRepository
             'postal_code' => ['required', 'string', 'max:255'],
             'address_line1' => ['required', 'string'],
             'address_line2' => ['nullable', 'string'],
-            'is_active' => ['required', 'boolean'],
-            'is_deactivated' => ['required', 'boolean'],
+            'status' => ['required', 'in:active,deactivated,suspended,under_dispute,under_investigation'],
+            'note' => ['nullable', 'string', 'max:100000'],
         ], [
-            'is_active.required ' => 'Customer Status Is Required',
-            'is_active.boolean' => 'Customer Status Must Be in Active Or In-Active',
             'country_id.required' => 'Country Is Required',
             'country_id.exists' => 'Selected Country Is Not Exists',
         ]);
@@ -163,48 +160,26 @@ class CustomerRepository implements ICustomerRepository
 
             DB::beginTransaction();
 
-            $user = $this->user->find($customer->user_id);
-            if (empty($user)) {
-                throw new Exception('Something Went Wrong While Finding Linked User To Customer');
-            }
-
-            if (! empty($validated_req['is_deactivated']) && $validated_req['is_deactivated'] == 1) {
-                $validated_req['deactivated_at'] = now();
-            }
-
-            if (array_key_exists('is_deactivated', $validated_req)) {
-
-                $wasDeactivated = (int) $user->is_deactivated;
-                $currentStatus = (int) $validated_req['is_deactivated'];
-
-                if ($wasDeactivated !== $currentStatus) {
-
-                    if ($currentStatus === 0) {
-                        // account activated
-                        $user->notify(
-                            new AccountDeactiveOrActiveNotification('activated')
-                        );
-
-                        $validated_req['deactivated_at'] = null;
-                    }
-
-                    if ($currentStatus === 1) {
-                        // account deactivated
-                        $user->notify(
-                            new AccountDeactiveOrActiveNotification('deactivated')
-                        );
-                    }
-                }
-            }
+            $user = User::findOrFail($customer->user_id);
 
             $user_updated = $user->update([
                 'name' => $validated_req['name'],
                 'email' => $validated_req['email'],
                 'phone' => $validated_req['phone'],
                 ...(! empty($validated_req['password']) ? ['password' => bcrypt($validated_req['password'])] : []),
-                'is_active' => $validated_req['is_active'],
-                'is_deactivated' => $validated_req['is_deactivated'],
-                'deactivated_at' => $validated_req['deactivated_at'] ?? null,
+                'status' => $validated_req['status'],
+                'deactivated_at' => null,
+                'suspended_at' => null,
+                'under_dispute_at' => null,
+                'under_investigation_at' => null,
+
+                ...match ($validated_req['status']) {
+                    'deactivated' => ['deactivated_at' => now()],
+                    'suspended' => ['suspended_at' => now()],
+                    'under_dispute' => ['under_dispute_at' => now()],
+                    'under_investigation' => ['under_investigation_at' => now()],
+                    default => [],
+                },
             ]);
 
             if (! $user_updated) {
@@ -218,10 +193,35 @@ class CustomerRepository implements ICustomerRepository
                 'postal_code' => $validated_req['postal_code'],
                 'address_line1' => $validated_req['address_line1'],
                 'address_line2' => $validated_req['address_line2'],
+                'note' => $validated_req['note'] ?? null,
             ]);
 
             if (! $customer_updated) {
                 throw new Exception('Something Went Wrong While Updating Customer');
+            }
+
+            if ($user->wasChanged('status')) {
+                match ($user->status) {
+                    'active' => $user->notify(
+                        new AccountDeactiveOrActiveNotification('activated')
+                    ),
+
+                    'deactivated' => $user->notify(
+                        new AccountDeactiveOrActiveNotification('deactivated')
+                    ),
+
+                    'suspended' => $user->notify(
+                        new AccountSuspendNotification
+                    ),
+
+                    'under_dispute' => $user->notify(
+                        new AccountUnderDisputeNotification
+                    ),
+
+                    'under_investigation' => $user->notify(
+                        new AccountUnderInvestigationNotification
+                    ),
+                };
             }
 
             DB::commit();

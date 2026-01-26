@@ -109,4 +109,9 @@ class ProfileController extends Controller
 
         return response()->json(['status' => true, 'message' => $activated['message']], 200);
     }
+
+    public function suspendAccountIndex()
+    {
+        return Inertia::render('Website/Profile/SuspendAccount');
+    }
 }

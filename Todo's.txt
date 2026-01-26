@@ -1025,6 +1025,102 @@ Additional Work:
 32: Account Deactivation Logic Completes  And Now It just deactivates user Account When anyone deactivates and shows a link to
 activate on profile in the palce of deactive account and backend + frontend Logic + Email Notifications Setup   ✅
 
+33: Internal Admin Notes For Customer Added  ✅
+
+34. Backend: Users, Customers, Distributors, Collaborators, Suppliers – Logic Refactor & Strengthening
+Backend me har user type ke liye separate aur clear business logic implement ki gayi:
+Customers
+Suppliers
+Distributors
+Collaborators
+Admin / Staff
+Har module ka apna responsibility scope define kiya gaya, taake:
+roles mix na hon
+permissions clean rahen
+future scaling easy ho
+Validation, relationships, aur update flows ko strong aur predictable banaya gaya.
+Duplicate handling, status handling, aur edge cases ko dhyan me rakh kar logic ko defensive + stable banaya.
+
+35. Dashboard Restructure: “Users” → “Admin / Staff” Module
+Dashboard ka generic “Users” module remove kiya gaya kyun ke:
+Customers, Suppliers, etc already apne dedicated modules me exist karte hain
+“Users” ka concept ambiguous aur confusing ho raha tha
+“Users” module ko Admin / Staff me convert kiya:
+Yahan sirf Admin role aur other internal/custom roles ke users show hote hain
+Customers, suppliers, etc yahan duplicate form me show nahi hote
+Is change se:
+UX clear ho gaya
+Permission management simple ho gayi
+Admin ke liye mental model improve hua
+Ye structure enterprise-grade dashboards ke bilkul aligned hai.
+
+
+36. User Account Status System – Frontend + Backend (Complete Lifecycle)
+Is point me sab se zyada critical aur complex work complete hua:
+
+🔹 Account Statuses Implemented
+    active
+    deactivated (user-initiated)
+    dormant (inactivity-based)
+    suspended (admin-enforced)
+    under_dispute
+    under_investigation
+    Har status ka:
+    clear meaning
+    clear priority
+    clear access rules
+    define kiye gaye.
+
+🔹 Backend Logic
+    User status update ke liye event-driven approach use ki:
+    pehle DB update
+    phir wasChanged('status') ke through exact status-change detect
+    Har status ke sath:
+    relevant timestamp (*_at) manage
+    old states properly reset
+    Notifications sirf tab fire hoti hain jab actual status change hota hai, random updates par nahi.
+
+
+🔹 Notifications System
+    Har important status ke liye separate professional email notifications banayi:
+    Activated
+    Deactivated
+    Suspended
+    Under Dispute
+    Under Investigation
+    Tone har status ke according adjust ki:
+    Suspension → firm
+    Dispute → cooperative
+    Investigation → neutral
+    Deletion aur sensitive cases ke liye safe notification patterns use kiye (queue + routing issues consider kar ke).
+
+🔹 Frontend Handling
+    Frontend me:
+    Status badges
+    Proper labels (Title Case)
+    Status-specific messages
+    Restricted actions
+    implement kiye.
+    Axios requests ke liye JSON-aware responses handle kiye.
+    UI aur backend messaging fully aligned rakhi.
+
+🔹 Middleware Setup (Core Achievement)
+    Multiple middlewares ke through:
+    account access control
+    status-based restrictions
+    write-action vs read-action separation
+    implement ki.
+    Important points:
+    Suspended user → full block + dedicated page
+    Under investigation → write actions restricted
+    Under dispute → context-specific restriction (e.g checkout)
+    Dormant user → activity tracking + reactivation flow
+    Sensitive routes (like data deletion) ko GET level par bhi secure kiya, taake URL hopping possible na ho.
+    Middleware ko API-aware banaya:
+    Web requests → redirect / flash
+    Axios requests → proper JSON response
+
+
  <- Review Remeaning ->
 (
 Joseph Kim

@@ -158,6 +158,9 @@ class UserRepository implements IUserRepository
     {
         $users = $this->user
             ->with(['roles'])
+            ->whereHas('roles', function ($query) {
+                $query->whereNotIn('name', ['Customer', 'Supplier', 'Collaborator', 'Distributor']);
+            })
             ->when(! empty($request->input('search')), function ($query) use ($request) {
                 $query->where(function ($query) use ($request) {
                     $query->where('name', 'like', '%'.$request->input('search').'%')
@@ -183,7 +186,6 @@ class UserRepository implements IUserRepository
             'phone' => ['required', 'unique:users,phone', 'max:50'],
             'password' => ['required', 'string', 'min:8', 'max:50', 'confirmed'],
             'role_id' => ['required', 'exists:roles,id'],
-            'is_active' => ['required', 'boolean'],
         ], [
             'role_id.exists' => 'The selected role is invalid.',
             'role_id.required' => 'The Role Field Is Required.',
@@ -199,95 +201,10 @@ class UserRepository implements IUserRepository
                 throw new Exception('Something Went Wrong While Creating New User');
             }
 
-            // Supplier Logic
-            if ($role->name === 'Supplier') {
-                $request->validate([
-                    'company_name' => ['required', 'max:255'],
-                ]);
-            }
-            // Supplier Logic
-
-            // Collaborator Logic
-            if ($role->name === 'Collaborator') {
-                $request->validate([
-                    'type' => ['required', 'in:Company,Indivisual'],
-                    'address' => ['required', 'max:255'],
-                    'bank_account_no' => ['required', 'string', 'max:255'],
-                    'bank_name' => ['required', 'string', 'max:255'],
-                    'bank_account_name' => ['required', 'string', 'max:255'],
-                    'iban' => ['required', 'string', 'max:255'],
-                    'swift_code' => ['required', 'string', 'max:255'],
-                ], [
-                    'type.required' => 'The Collaborator Type Field Is Required.',
-                    'type.in' => 'The Collaborator Type Must Be Company Or Indivisual.',
-                ]);
-            }
-            // Collaborator Logic
-
-            // Distributor Logic
-            if ($role->name === 'Distributor') {
-                $request->validate([
-                    'address' => ['required', 'max:255', 'string'],
-                    'bank_account_no' => ['required', 'string', 'max:255'],
-                    'bank_name' => ['required', 'string', 'max:255'],
-                    'bank_account_name' => ['required', 'string', 'max:255'],
-                    'iban' => ['required', 'string', 'max:255'],
-                    'swift_code' => ['required', 'string', 'max:255'],
-                ]);
-            }
-            // Distributor Logic
-
             $created = $this->user->create($validated_req);
             if (empty($created)) {
                 throw new Exception('Something Went Wrong While Creating New User');
             }
-
-            // Supplier Logic
-            if ($role->name === 'Supplier') {
-                $created->supplier()->create(['company_name' => $request->input('company_name')]);
-            }
-            // Supplier Logic
-
-            // Collaborator Logic
-            if ($role->name === 'Collaborator') {
-                $referral_code = 'Ref-'.Str::random(12);
-                $created->collaborator()->create(
-                    [
-                        'type' => $request->input('type'),
-                        'referral_code' => $referral_code,
-                        'bank_account_no' => $request->input('bank_account_no'),
-                        'bank_name' => $request->input('bank_name'),
-                        'bank_account_name' => $request->input('bank_account_name'),
-                        'iban' => $request->input('iban'),
-                        'swift_code' => $request->input('swift_code'),
-                        'address' => $request->input('address'),
-                    ]
-                );
-            }
-            // Collaborator Logic
-
-            // Distributor Logic
-            if ($role->name === 'Distributor') {
-                $created->distributor()->create(
-                    [
-                        'bank_account_no' => $request->input('bank_account_no'),
-                        'bank_name' => $request->input('bank_name'),
-                        'bank_account_name' => $request->input('bank_account_name'),
-                        'iban' => $request->input('iban'),
-                        'swift_code' => $request->input('swift_code'),
-                        'address' => $request->input('address'),
-                    ]
-                );
-            }
-            // Distributor Logic
-
-            // Customer Logic
-
-            if ($role->name === 'Customer') {
-                $created->customer()->create();
-            }
-
-            // Customer Logic
 
             $created->syncRoles($role->name);
 
@@ -311,7 +228,6 @@ class UserRepository implements IUserRepository
 
     public function updateUser(Request $request, string $id)
     {
-        // dd($request->all());
 
         $validated_req = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -326,11 +242,9 @@ class UserRepository implements IUserRepository
                 []
             ),
             'role_id' => ['required', 'exists:roles,id'],
-            'is_active' => ['required', 'boolean'],
         ], [
             'role_id.exists' => 'The selected role is invalid.',
             'role_id.required' => 'The Role Field Is Required.',
-
         ]);
 
         try {
@@ -347,150 +261,6 @@ class UserRepository implements IUserRepository
             if (empty($role)) {
                 throw new Exception('Something Went Wrong While Updating  User');
             }
-
-            // Supplier Logic
-            if ($role->name === 'Supplier') {
-                $request->validate([
-                    'company_name' => ['required', 'max:255'],
-                ]);
-            }
-            // Supplier Logic
-
-            // Collaborator Logic
-            if ($role->name === 'Collaborator') {
-                $request->validate([
-                    'type' => ['required', 'in:Company,Indivisual'],
-                    'address' => ['required', 'max:255'],
-                    'bank_account_no' => ['required', 'string', 'max:255'],
-                    'bank_name' => ['required', 'string', 'max:255'],
-                    'bank_account_name' => ['required', 'string', 'max:255'],
-                    'iban' => ['required', 'string', 'max:255'],
-                    'swift_code' => ['required', 'string', 'max:255'],
-                ], [
-                    'type.required' => 'The Collaborator Type Field Is Required.',
-                    'type.in' => 'The Collaborator Type Must Be Company Or Indivisual.',
-                ]);
-            }
-            // Collaborator Logic
-
-            // Distributor Logic
-            if ($role->name === 'Distributor') {
-                $request->validate([
-                    'address' => ['required', 'max:255', 'string'],
-                    'bank_account_no' => ['required', 'string', 'max:255'],
-                    'bank_name' => ['required', 'string', 'max:255'],
-                    'bank_account_name' => ['required', 'string', 'max:255'],
-                    'iban' => ['required', 'string', 'max:255'],
-                    'swift_code' => ['required', 'string', 'max:255'],
-                ]);
-            }
-            // Distributor Logic
-
-            // Supplier Logic
-            if ($role->name !== 'Supplier' && $user->supplier()->exists()) {
-
-                $supplier = $user->supplier;
-                $createdAt = $supplier->created_at instanceof \Carbon\Carbon
-                    ? $supplier->created_at
-                    : \Carbon\Carbon::parse($supplier->created_at);
-
-                $yearsPassed = (int) $createdAt->diffInYears(now());
-                if ($yearsPassed < 5) {
-                    throw new Exception('Supplier Can Not Be Changed Before 5 Years And Currently '.$yearsPassed.' Years Passed');
-                }
-
-                $user->supplier()->delete();
-            }
-
-            if ($role->name === 'Supplier' && ! $user->supplier()->exists()) {
-                $user->supplier()->create(['company_name' => $request->input('company_name')]);
-            }
-
-            if ($role->name === 'Supplier' && $user->supplier()->exists()) {
-                $user->supplier()->update(['company_name' => $request->input('company_name')]);
-            }
-            // Supplier Logic
-
-            // Collaborator Logic
-            if ($role->name !== 'Collaborator' && $user->collaborator()->exists()) {
-                $user->collaborator()->delete();
-            }
-
-            if ($role->name === 'Collaborator' && ! $user->collaborator()->exists()) {
-                $referral_code = 'Ref-'.Str::random(12);
-                $user->collaborator()->create(
-                    [
-                        'type' => $request->input('type'),
-                        'referral_code' => $referral_code,
-                        'address' => $request->input('address'),
-                        'bank_account_no' => $request->input('bank_account_no'),
-                        'bank_name' => $request->input('bank_name'),
-                        'bank_account_name' => $request->input('bank_account_name'),
-                        'iban' => $request->input('iban'),
-                        'swift_code' => $request->input('swift_code'),
-                    ]
-                );
-            }
-
-            if ($role->name === 'Collaborator' && $user->collaborator()->exists()) {
-                $user->collaborator()->update(
-                    [
-                        'type' => $request->input('type'),
-                        'address' => $request->input('address'),
-                        'bank_account_no' => $request->input('bank_account_no'),
-                        'bank_name' => $request->input('bank_name'),
-                        'bank_account_name' => $request->input('bank_account_name'),
-                        'iban' => $request->input('iban'),
-                        'swift_code' => $request->input('swift_code'),
-                    ]);
-            }
-            // Collaborator Logic
-
-            // Distributor Logic
-            if ($role->name !== 'Distributor' && $user->distributor()->exists()) {
-                $user->distributor()->delete();
-            }
-
-            if ($role->name === 'Distributor' && ! $user->distributor()->exists()) {
-                $user->distributor()->create(
-                    [
-                        'address' => $request->input('address'),
-                        'bank_account_no' => $request->input('bank_account_no'),
-                        'bank_name' => $request->input('bank_name'),
-                        'bank_account_name' => $request->input('bank_account_name'),
-                        'iban' => $request->input('iban'),
-                        'swift_code' => $request->input('swift_code'),
-
-                    ]
-                );
-            }
-
-            if ($role->name === 'Distributor' && $user->distributor()->exists()) {
-                $user->distributor()->update(
-                    [
-                        'address' => $request->input('address'),
-                        'bank_account_no' => $request->input('bank_account_no'),
-                        'bank_name' => $request->input('bank_name'),
-                        'bank_account_name' => $request->input('bank_account_name'),
-                        'iban' => $request->input('iban'),
-                        'swift_code' => $request->input('swift_code'),
-
-                    ]
-                );
-            }
-            // Distributor Logic
-
-            // Customer Logic
-
-            if ($role->name !== 'Customer' && $user->customer()->exists()) {
-                $user->customer()->delete();
-            }
-
-            if ($role->name === 'Customer' && ! $user->customer()->exists()) {
-                $user->customer()->create();
-            }
-
-            // Customer Logic
 
             $updated = $user->update($validated_req);
 
@@ -610,7 +380,7 @@ class UserRepository implements IUserRepository
 
     public function getAllRoles()
     {
-        return $this->role->all();
+        return $this->role->whereNotIn('name', ['Customer', 'Supplier', 'Collaborator', 'Distributor'])->get();
     }
 
     public function getSingleCustomer(string $user_id)
@@ -803,11 +573,11 @@ class UserRepository implements IUserRepository
         try {
             $user = $request->user();
 
-            if (empty($user) || ! $user->is_deactivated) {
+            if (empty($user) || ! $user->status === 'deactivated' || ! $user->hasRole('Customer')) {
                 throw new Exception($this->trans->get('User not Found'));
             }
 
-            $user->is_deactivated = false;
+            $user->status = 'active';
             $user->deactivated_at = null;
             $user->last_activity_at = now();
             $user->save();

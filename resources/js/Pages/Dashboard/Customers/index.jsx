@@ -105,28 +105,44 @@ export default function index({ customers }) {
             {
                 label: 'Account Status',
                 render: (item) => {
-                    if (item.user.is_deactivated === 1) {
-                        return (
-                            <span className="p-2 text-white bg-red-500 rounded-lg">Deactive</span>
-                        );
-                    }
+                    const statusMap = {
+                        active: {
+                            label: 'Active',
+                            className: 'bg-green-500 text-white',
+                        },
+                        deactivated: {
+                            label: 'Deactivated',
+                            className: 'bg-gray-500 text-white',
+                        },
+                        suspended: {
+                            label: 'Suspended',
+                            className: 'bg-red-600 text-white',
+                        },
+                        under_dispute: {
+                            label: 'Under Dispute',
+                            className: 'bg-yellow-500 text-black',
+                        },
+                        under_investigation: {
+                            label: 'Under Investigation',
+                            className: 'bg-orange-500 text-white',
+                        },
+                    };
 
-                    return <span className="p-2 text-white bg-green-500 rounded-lg">Active</span>;
+                    const status = item.user.status;
+
+                    const statusConfig = statusMap[status] || {
+                        label: 'Unknown',
+                        className: 'bg-gray-300 text-black',
+                    };
+
+                    return (
+                        <span className={`p-2 rounded-lg text-sm font-medium ${statusConfig.className}`}>
+                            {statusConfig.label}
+                        </span>
+                    );
                 },
             },
 
-            {
-                label: 'Customer Status',
-                render: (item) => {
-                    if (item.user.is_active != 1) {
-                        return (
-                            <span className="p-2 text-white bg-red-500 rounded-lg">In-Active</span>
-                        );
-                    }
-
-                    return <span className="p-2 text-white bg-green-500 rounded-lg">Active</span>;
-                },
-            },
             { key: 'added_at', label: 'Added At' },
         ];
 

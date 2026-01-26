@@ -69,7 +69,8 @@ class DataDeletionRequestRepository implements IDataDeletionRequestRepository
 
             $this->dataDeletionRequest->create($validated_req);
 
-            $user->is_deactivated = true;
+            $user->status = 'deactivated';
+            $user->last_activity_at = now();
             $user->deactivated_at = now();
             $user->save();
 

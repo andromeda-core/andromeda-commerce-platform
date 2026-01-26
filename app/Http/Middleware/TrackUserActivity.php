@@ -49,14 +49,23 @@ class TrackUserActivity
 
             if ($isWriteAction) {
 
-                if ($user->is_deactivated && ! $request->routeIs('website.profile.activate-deactive-account.active')) {
+                if ($user->status === 'deactivated' && ! $request->routeIs('website.profile.activate-deactive-account.active')) {
+
+                    if ($request->expectsJson()) {
+                        return response()->json([
+                            'status' => false,
+                            'code' => 'ACCOUNT_DEACTIVATED',
+                            'message' => Trans::get('Your account is deactivated. Please activate your account to continue.'),
+                        ], 403);
+                    }
+
                     return back()->with('error', Trans::get('Your account is deactivated. Please activate your account to continue.'));
                 }
 
                 $track = true;
             } else {
 
-                if ($user->is_deactivated) {
+                if ($user->status === 'deactivated') {
                     return $next($request);
                 }
 

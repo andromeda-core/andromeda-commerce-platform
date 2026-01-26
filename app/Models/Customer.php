@@ -16,6 +16,7 @@ class Customer extends Model
         'postal_code',
         'address_line1',
         'address_line2',
+        'note',
     ];
 
     // Attributes

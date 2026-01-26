@@ -16,7 +16,6 @@ export default function create({ countries }) {
         phone: '',
         password: '',
         password_confirmation: '',
-        is_active: 1,
         country_id: '',
         state: '',
         city: '',
@@ -49,7 +48,7 @@ export default function create({ countries }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Customers'}
                                     URL={route('dashboard.customers.index')}
@@ -259,27 +258,7 @@ export default function create({ countries }) {
                                                     }
                                                 />
 
-                                                <SelectInput
-                                                    InputName={'Active Status'}
-                                                    Id={'is_active'}
-                                                    Name={'is_active'}
-                                                    Value={data.is_active}
-                                                    items={[
-                                                        {
-                                                            id: 1,
-                                                            name: 'Active',
-                                                        },
-                                                        {
-                                                            id: 0,
-                                                            name: 'In-Active',
-                                                        },
-                                                    ]}
-                                                    Error={errors.is_active}
-                                                    Placeholder={'Select Active Status'}
-                                                    Required={true}
-                                                    itemKey={'name'}
-                                                    Action={(value) => setData('is_active', value)}
-                                                />
+
                                             </div>
 
                                             <PrimaryButton
@@ -293,9 +272,8 @@ export default function create({ countries }) {
                                                     data.phone.trim() === '' ||
                                                     data.password.trim() === '' ||
                                                     data.password_confirmation.trim() === '' ||
-                                                    data.is_active === '' ||
                                                     data.password.trim() !==
-                                                        data.password_confirmation.trim() ||
+                                                    data.password_confirmation.trim() ||
                                                     data.country_id === '' ||
                                                     data.state.trim() === '' ||
                                                     data.city.trim() === '' ||

@@ -16,7 +16,6 @@ export default function edit({ distributor }) {
         phone: distributor?.user?.phone || '',
         password: '',
         password_confirmation: '',
-        is_active: distributor?.user?.is_active ?? 1,
         address: distributor?.address || '',
         commission_rate: distributor?.commission_rate ?? '',
         bank_name: distributor?.bank_name || '',
@@ -50,7 +49,7 @@ export default function edit({ distributor }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Distributors'}
                                     URL={route('dashboard.distributors.index')}
@@ -281,27 +280,7 @@ export default function edit({ distributor }) {
                                                     )}
                                                 </div>
 
-                                                <SelectInput
-                                                    InputName={'Active Status'}
-                                                    Id={'is_active'}
-                                                    Name={'is_active'}
-                                                    Value={data.is_active}
-                                                    items={[
-                                                        {
-                                                            id: 1,
-                                                            name: 'Active',
-                                                        },
-                                                        {
-                                                            id: 0,
-                                                            name: 'In-Active',
-                                                        },
-                                                    ]}
-                                                    Error={errors.is_active}
-                                                    Placeholder={'Select Active Status'}
-                                                    Required={true}
-                                                    itemKey={'name'}
-                                                    Action={(value) => setData('is_active', value)}
-                                                />
+
                                             </div>
 
                                             <PrimaryButton
@@ -312,7 +291,6 @@ export default function edit({ distributor }) {
                                                     processing ||
                                                     data.name.trim() === '' ||
                                                     data.email.trim() === '' ||
-                                                    data.is_active === '' ||
                                                     data.phone.trim() === '' ||
                                                     data.address.trim() === '' ||
                                                     data.bank_account_no.trim() === '' ||
@@ -327,7 +305,7 @@ export default function edit({ distributor }) {
                                                     (data.password.trim() !== '' &&
                                                         data.password_confirmation.trim() !== '' &&
                                                         data.password.trim() !==
-                                                            data.password_confirmation.trim())
+                                                        data.password_confirmation.trim())
                                                 }
                                                 Spinner={processing}
                                                 Icon={

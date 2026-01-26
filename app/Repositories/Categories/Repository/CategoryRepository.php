@@ -267,9 +267,7 @@ class CategoryRepository implements ICategoryRepository
 
     public function getDistributors()
     {
-        return $this->distributor->whereHas('user', function ($query) {
-            $query->where('is_active', true);
-        })->with('user')->latest()
+        return $this->distributor->with('user')->latest()
             ->get()
             ->map(function ($distributor) {
                 return [

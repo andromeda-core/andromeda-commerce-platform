@@ -16,7 +16,6 @@ export default function create() {
         phone: '',
         password: '',
         password_confirmation: '',
-        is_active: 1,
         company_name: '',
     });
 
@@ -165,27 +164,7 @@ export default function create() {
                                                     }
                                                 />
 
-                                                <SelectInput
-                                                    InputName={'Active Status'}
-                                                    Id={'is_active'}
-                                                    Name={'is_active'}
-                                                    Value={data.is_active}
-                                                    items={[
-                                                        {
-                                                            id: 1,
-                                                            name: 'Active',
-                                                        },
-                                                        {
-                                                            id: 0,
-                                                            name: 'In-Active',
-                                                        },
-                                                    ]}
-                                                    Error={errors.is_active}
-                                                    Placeholder={'Select Active Status'}
-                                                    Required={true}
-                                                    itemKey={'name'}
-                                                    Action={(value) => setData('is_active', value)}
-                                                />
+
                                             </div>
 
                                             <PrimaryButton
@@ -199,7 +178,6 @@ export default function create() {
                                                     data.phone.trim() === '' ||
                                                     data.password.trim() === '' ||
                                                     data.password_confirmation.trim() === '' ||
-                                                    data.is_active === '' ||
                                                     data.password.trim() !==
                                                     data.password_confirmation.trim() ||
                                                     data.company_name.trim() === ''

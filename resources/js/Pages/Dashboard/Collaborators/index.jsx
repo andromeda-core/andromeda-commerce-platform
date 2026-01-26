@@ -40,7 +40,7 @@ export default function index({ collaborators }) {
                     return (
                         <Link
                             href={route('dashboard.collaborators.show', item?.id)}
-                            className="cursor-pointer text-blue-500 underline"
+                            className="text-blue-500 underline cursor-pointer"
                         >
                             {item.user.name}
                         </Link>
@@ -54,7 +54,7 @@ export default function index({ collaborators }) {
                 render: (item) => {
                     if (item.point_accumulation_rate) {
                         return (
-                            <span className="rounded-lg bg-blue-500 p-2 text-white">
+                            <span className="p-2 text-white bg-blue-500 rounded-lg">
                                 {item.point_accumulation_rate}%
                             </span>
                         );
@@ -69,7 +69,7 @@ export default function index({ collaborators }) {
                 render: (item) => {
                     if (item.commission_rate) {
                         return (
-                            <span className="rounded-lg bg-blue-500 p-2 text-white">
+                            <span className="p-2 text-white bg-blue-500 rounded-lg">
                                 {item.commission_rate}%
                             </span>
                         );
@@ -125,18 +125,7 @@ export default function index({ collaborators }) {
                 label: 'Distributor Bank SWIFT Code',
             },
 
-            {
-                label: 'Collaborator Status',
-                render: (item) => {
-                    if (item.user.is_active != 1) {
-                        return (
-                            <span className="rounded-lg bg-red-500 p-2 text-white">In-Active</span>
-                        );
-                    }
 
-                    return <span className="rounded-lg bg-green-500 p-2 text-white">Active</span>;
-                },
-            },
             { key: 'added_at', label: 'Added At' },
         ];
 
@@ -168,7 +157,7 @@ export default function index({ collaborators }) {
                     Content={
                         <>
                             {can('Collaborators Create') && (
-                                <div className="my-3 flex flex-wrap justify-end">
+                                <div className="flex flex-wrap justify-end my-3">
                                     <LinkButton
                                         Text={'Create Collaborator'}
                                         URL={route('dashboard.collaborators.create')}

@@ -484,17 +484,17 @@ export default function Sidebar({
                                     </li>
                                 )}
 
-                                {can(['Users View', 'Users Create']) && (
+                                {can(['Admin/Staff View', 'Admin/Staff Create']) && (
                                     <li>
                                         <a
                                             onClick={() => {
-                                                if (selected === 'Users') {
+                                                if (selected === 'Admin/Staff') {
                                                     setSelected(null);
                                                 } else {
-                                                    setSelected('Users');
+                                                    setSelected('Admin/Staff');
                                                 }
                                             }}
-                                            className={`menu-item group cursor-pointer ${route().current().includes('dashboard.users.') || selected === 'Users' ? 'menu-item-active' : 'menu-item-inactive'} `}
+                                            className={`menu-item group cursor-pointer ${route().current().includes('dashboard.users.') || selected === 'Admin/Staff' ? 'menu-item-active' : 'menu-item-inactive'} `}
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -514,7 +514,7 @@ export default function Sidebar({
                                             <span
                                                 className={`menu-item-text ${sidebarToggle ? 'lg:hidden' : ''}`}
                                             >
-                                                Users
+                                                Admin/Staff
                                             </span>
 
                                             <svg
@@ -536,29 +536,29 @@ export default function Sidebar({
                                         </a>
 
                                         <div
-                                            className={`translate transform overflow-hidden ${selected === 'Users' ? 'block' : 'hidden'}`}
+                                            className={`translate transform overflow-hidden ${selected === 'Admin/Staff' ? 'block' : 'hidden'}`}
                                         >
                                             <ul
                                                 className={`menu-dropdown mt-2 flex flex-col gap-1 pl-9 ${sidebarToggle ? 'lg:hidden' : 'flex'} `}
                                             >
-                                                {can('Users View') && (
+                                                {can('Admin/Staff View') && (
                                                     <li>
                                                         <Link
                                                             href={route('dashboard.users.index')}
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.users.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
-                                                            Users List
+                                                            Admin/Staff List
                                                         </Link>
                                                     </li>
                                                 )}
 
-                                                {can('Users Create') && (
+                                                {can('Admin/Staff Create') && (
                                                     <li>
                                                         <Link
                                                             href={route('dashboard.users.create')}
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.users.create' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
-                                                            Create User
+                                                            Create Admin/Staff
                                                         </Link>
                                                     </li>
                                                 )}

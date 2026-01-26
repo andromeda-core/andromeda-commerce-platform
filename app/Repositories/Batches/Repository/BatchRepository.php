@@ -591,7 +591,7 @@ class BatchRepository implements IBatchRepository
 
     public function getSuppliers()
     {
-        return $this->supplier->whereHas('user', fn ($query) => $query->where('is_active', 1))->with(['user'])->get()->map(function ($supplier) {
+        return $this->supplier->with(['user'])->get()->map(function ($supplier) {
             return [
                 'id' => $supplier->id,
                 'name' => $supplier->user->name,

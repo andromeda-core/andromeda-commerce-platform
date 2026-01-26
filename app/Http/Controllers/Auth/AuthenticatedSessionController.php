@@ -53,11 +53,9 @@ class AuthenticatedSessionController extends Controller
 
         $user = $request->user();
 
-        if (! $user->is_dormant && ! $user->is_deactivated) {
-            $user->updateQuietly([
-                'last_activity_at' => now(),
-            ]);
-        }
+        $user->updateQuietly([
+            'last_activity_at' => now(),
+        ]);
 
         if ($user->hasRole('Customer')) {
 

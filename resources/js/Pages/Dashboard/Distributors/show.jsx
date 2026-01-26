@@ -21,7 +21,7 @@ export default function edit({ distributor }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end gap-4">
+                            <div className="flex flex-wrap justify-end gap-4 my-3">
                                 <LinkButton
                                     Text={'Edit Distributor'}
                                     URL={route('dashboard.distributors.edit', distributor.id)}
@@ -65,12 +65,12 @@ export default function edit({ distributor }) {
                                 />
                             </div>
 
-                            <div className="mx-auto mt-10 max-w-3xl px-4">
-                                <div className="rounded-2xl bg-white p-8 shadow-xl dark:bg-deepcharcoal dark:text-white/80">
+                            <div className="max-w-3xl px-4 mx-auto mt-10">
+                                <div className="p-8 bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal dark:text-white/80">
                                     <div className="flex flex-col items-center justify-center md:flex-row md:items-start md:space-x-8">
                                         {/* Avatar */}
-                                        <div className="mb-6 flex-shrink-0 text-center md:mb-0">
-                                            <div className="flex h-36 w-36 items-center justify-center rounded-full border-4 border-blue-500 bg-blue-100 text-5xl font-bold text-blue-800 dark:border-white dark:bg-white/10 dark:text-white">
+                                        <div className="flex-shrink-0 mb-6 text-center md:mb-0">
+                                            <div className="flex items-center justify-center text-5xl font-bold text-blue-800 bg-blue-100 border-4 border-blue-500 rounded-full h-36 w-36 dark:border-white dark:bg-white/10 dark:text-white">
                                                 {distributor?.user?.avatar}
                                             </div>
                                         </div>
@@ -79,134 +79,143 @@ export default function edit({ distributor }) {
                                         <div className="w-full space-y-4">
                                             {/* Name */}
                                             <div>
-                                                <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
+                                                <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
                                                     Full Name
                                                 </label>
                                                 <input
                                                     type="text"
                                                     value={distributor?.user?.name ?? 'N/A'}
                                                     readOnly
-                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
+                                                    disabled
+                                                    className="w-full px-4 py-2 text-gray-800 border border-gray-300 rounded-md shadow-sm bg-gray-50 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
 
                                             {/* Email */}
                                             <div>
-                                                <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
+                                                <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
                                                     Email Address
                                                 </label>
                                                 <input
                                                     type="email"
                                                     value={distributor?.user?.email ?? 'N/A'}
                                                     readOnly
-                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
+                                                    disabled
+                                                    className="w-full px-4 py-2 text-gray-800 border border-gray-300 rounded-md shadow-sm bg-gray-50 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
 
                                             {/* Phone */}
                                             <div>
-                                                <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
+                                                <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
                                                     Phone Number
                                                 </label>
                                                 <input
                                                     type="text"
                                                     value={distributor?.user?.phone ?? 'N/A'}
                                                     readOnly
-                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
+                                                    disabled
+                                                    className="w-full px-4 py-2 text-gray-800 border border-gray-300 rounded-md shadow-sm bg-gray-50 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
 
                                             {/* Bank Name */}
                                             <div>
-                                                <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
+                                                <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
                                                     Bank Name
                                                 </label>
                                                 <input
                                                     type="text"
                                                     value={distributor?.bank_name ?? 'N/A'}
                                                     readOnly
-                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
+                                                    disabled
+                                                    className="w-full px-4 py-2 text-gray-800 border border-gray-300 rounded-md shadow-sm bg-gray-50 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
 
                                             {/* Bank Account Name */}
                                             <div>
-                                                <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
+                                                <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
                                                     Bank Account Name
                                                 </label>
                                                 <input
                                                     type="text"
                                                     value={distributor?.bank_account_name ?? 'N/A'}
                                                     readOnly
-                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
+                                                    disabled
+                                                    className="w-full px-4 py-2 text-gray-800 border border-gray-300 rounded-md shadow-sm bg-gray-50 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
 
                                             {/* Bank Account NO */}
                                             <div>
-                                                <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
+                                                <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
                                                     Bank Account Number
                                                 </label>
                                                 <input
                                                     type="text"
                                                     value={distributor?.bank_account_no ?? 'N/A'}
                                                     readOnly
-                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
+                                                    disabled
+                                                    className="w-full px-4 py-2 text-gray-800 border border-gray-300 rounded-md shadow-sm bg-gray-50 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
 
                                             {/* Bank Account IBAN */}
                                             <div>
-                                                <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
+                                                <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
                                                     Bank Account IBAN
                                                 </label>
                                                 <input
                                                     type="text"
                                                     value={distributor?.iban ?? 'N/A'}
                                                     readOnly
-                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
+                                                    disabled
+                                                    className="w-full px-4 py-2 text-gray-800 border border-gray-300 rounded-md shadow-sm bg-gray-50 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
 
                                             {/* Bank Account SWIFT CODE */}
                                             <div>
-                                                <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
+                                                <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
                                                     Bank Account SWIFT CODE
                                                 </label>
                                                 <input
                                                     type="text"
                                                     value={distributor?.swift_code ?? 'N/A'}
                                                     readOnly
-                                                    className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
+                                                    disabled
+                                                    className="w-full px-4 py-2 text-gray-800 border border-gray-300 rounded-md shadow-sm bg-gray-50 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
 
                                             {/* Address */}
                                             <div>
-                                                <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
+                                                <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
                                                     Address
                                                 </label>
                                                 <textarea
                                                     type="text"
                                                     value={distributor?.address ?? 'N/A'}
                                                     readOnly
-                                                    className="w-full text-wrap break-words rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
+                                                    disabled
+                                                    className="w-full px-4 py-2 text-gray-800 break-words border border-gray-300 rounded-md shadow-sm text-wrap bg-gray-50 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
 
                                             {/* Categories */}
                                             <div>
-                                                <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
+                                                <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
                                                     Categories
                                                 </label>
                                                 <div className="flex flex-wrap gap-2">
                                                     {distributor?.categories &&
-                                                    distributor?.categories.length > 0 ? (
+                                                        distributor?.categories.length > 0 ? (
                                                         distributor.categories.map(
                                                             (category, index) => (
                                                                 <span
                                                                     key={index}
-                                                                    className="rounded-full bg-purple-100 px-3 py-1 text-sm font-medium text-purple-800 dark:bg-purple-900 dark:text-white"
+                                                                    className="px-3 py-1 text-sm font-medium text-purple-800 bg-purple-100 rounded-full dark:bg-purple-900 dark:text-white"
                                                                 >
                                                                     {category.name}
                                                                 </span>
@@ -223,17 +232,17 @@ export default function edit({ distributor }) {
                                             <div className="flex flex-wrap gap-4">
                                                 {/* Roles */}
                                                 <div>
-                                                    <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
+                                                    <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
                                                         Role(s)
                                                     </label>
                                                     <div className="flex flex-wrap gap-2">
                                                         {distributor?.user?.roles &&
-                                                        distributor?.user?.roles.length > 0 ? (
+                                                            distributor?.user?.roles.length > 0 ? (
                                                             distributor?.user?.roles.map(
                                                                 (role, index) => (
                                                                     <span
                                                                         key={index}
-                                                                        className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900 dark:text-white"
+                                                                        className="px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full dark:bg-blue-900 dark:text-white"
                                                                     >
                                                                         {role.name}
                                                                     </span>
@@ -247,36 +256,20 @@ export default function edit({ distributor }) {
                                                     </div>
                                                 </div>
 
-                                                {/* Status */}
-                                                <div>
-                                                    <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
-                                                        Status
-                                                    </label>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {distributor?.user?.is_active == 1 ? (
-                                                            <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800 dark:bg-green-900 dark:text-white">
-                                                                Active
-                                                            </span>
-                                                        ) : (
-                                                            <span className="rounded-full bg-red-100 px-3 py-1 text-sm font-medium text-red-800 dark:bg-red-900 dark:text-white">
-                                                                In-Active
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </div>
+
 
                                                 {/* Commission Rate */}
                                                 <div>
-                                                    <label className="mb-1 block text-sm font-medium text-gray-600 dark:text-white/70">
+                                                    <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
                                                         Commission Rate
                                                     </label>
                                                     <div className="flex flex-wrap gap-2">
                                                         {distributor?.commission_rate ? (
-                                                            <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800 dark:bg-green-900 dark:text-white">
+                                                            <span className="px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full dark:bg-green-900 dark:text-white">
                                                                 {distributor?.commission_rate}%
                                                             </span>
                                                         ) : (
-                                                            <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900 dark:text-white">
+                                                            <span className="px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full dark:bg-blue-900 dark:text-white">
                                                                 Default
                                                             </span>
                                                         )}

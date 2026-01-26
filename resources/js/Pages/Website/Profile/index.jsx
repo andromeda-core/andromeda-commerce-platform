@@ -556,7 +556,7 @@ const Index = ({ user, countries }) => {
                     {/* Data Deletion */}
                     <div className="my-4">
                         <div className="flex items-center gap-1 text-main-text-light dark:text-main-text-dark">
-                            {!user?.is_deactivated ? (
+                            {user?.status !== 'deactivated' ? (
                                 <Link
                                     href={route('website.data-deletion.index')}
                                     className="text-sm font-semibold lg:text-md "

@@ -16,11 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
-            \App\Http\Middleware\EnsureUserIsActive::class,
             \App\Http\Middleware\CustomerNotAllowedToVisitDashboard::class,
             \App\Http\Middleware\SetAppLocale::class,
             \App\Http\Middleware\TrackUserActivity::class,
             \App\Http\Middleware\AskUserToActiveDormantAccount::class,
+            \App\Http\Middleware\EnsureAccountStatus::class,
         ]);
 
         $middleware->encryptCookies(except: [

@@ -60,18 +60,7 @@ export default function index({ users }) {
             },
 
 
-            {
-                label: 'Status',
-                render: (item) => {
-                    if (item.is_active != 1) {
-                        return (
-                            <span className="p-2 text-white bg-red-500 rounded-lg">In-Active</span>
-                        );
-                    }
 
-                    return <span className="p-2 text-white bg-green-500 rounded-lg">Active</span>;
-                },
-            },
             { key: 'added_at', label: 'Added At' },
         ];
 
@@ -91,19 +80,19 @@ export default function index({ users }) {
     return (
         <>
             <AuthenticatedLayout>
-                <Head title="Users" />
+                <Head title="Admin Staff Users" />
 
                 <BreadCrumb
-                    header={'Users'}
+                    header={'Admin Staff Users'}
                     parent={'Dashboard'}
                     parent_link={route('dashboard')}
-                    child={'Users'}
+                    child={'Admin Staff Users'}
                 />
 
                 <Card
                     Content={
                         <>
-                            {can('Users Create') && (
+                            {can('Admin/Staff Create') && (
                                 <div className="flex flex-wrap justify-end my-3">
                                     <LinkButton
                                         Text={'Create User'}
@@ -138,9 +127,9 @@ export default function index({ users }) {
                                 SingleDeleteMethod={SingleDelete}
                                 BulkDeleteRoute={'dashboard.users.destroybyselection'}
                                 SingleDeleteRoute={'dashboard.users.destroy'}
-                                EditRoute={can('Users Edit') ? 'dashboard.users.edit' : null}
-                                DeleteAction={can('Users Delete')}
-                                canSelect={can('Users Delete')}
+                                EditRoute={can('Admin/Staff Edit') ? 'dashboard.users.edit' : null}
+                                DeleteAction={can('Admin/Staff Delete')}
+                                canSelect={can('Admin/Staff Delete')}
                                 SearchRoute={'dashboard.users.index'}
                                 Search={true}
                                 DefaultSearchInput={true}

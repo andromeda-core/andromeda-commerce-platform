@@ -68,13 +68,25 @@ export default function edit({ customer }) {
                             <div className="max-w-3xl px-4 mx-auto mt-10">
                                 <div className="p-8 bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal dark:text-white/80">
                                     <div className="flex flex-col items-center justify-center md:flex-row md:items-start md:space-x-8">
-                                        {/* Avatar */}
-                                        <div className="flex-shrink-0 mb-6 text-center md:mb-0">
-                                            <div className="flex items-center justify-center text-5xl font-bold text-blue-800 bg-blue-100 border-4 border-blue-500 rounded-full h-36 w-36 dark:border-white dark:bg-white/10 dark:text-white">
-                                                {customer?.user?.avatar}
+                                        <div className="relative flex items-center justify-center w-32 h-32 text-center rounded-full bg-surface-2-light dark:bg-surface-2-dark"
+                                        >
+                                            {/* Avatar */}
+                                            <div className="flex-shrink-0 mb-6 text-center md:mb-0">
+                                                {customer?.user?.profile ? (
+                                                    <img
+                                                        src={customer?.user?.profile}
+                                                        alt="Profile"
+                                                        className="object-cover object-center w-32 h-32 rounded-full"
+                                                    />
+                                                ) : (
+                                                    <div className="flex items-center justify-center w-32 h-32 text-5xl font-bold text-blue-800 bg-blue-100 border-4 border-blue-500 rounded-full dark:border-white dark:bg-white/10 dark:text-white">
+                                                        {customer?.user?.avatar}
+                                                    </div>
+                                                )}
                                             </div>
-                                        </div>
 
+
+                                        </div>
                                         {/* Details */}
                                         <div className="w-full space-y-4">
                                             {/* Name */}
@@ -86,6 +98,7 @@ export default function edit({ customer }) {
                                                     type="text"
                                                     value={customer?.user?.name ?? 'N/A'}
                                                     readOnly
+                                                    disabled
                                                     className="w-full px-4 py-2 text-gray-800 border border-gray-300 rounded-md shadow-sm bg-gray-50 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
@@ -99,6 +112,7 @@ export default function edit({ customer }) {
                                                     type="email"
                                                     value={customer?.user?.email ?? 'N/A'}
                                                     readOnly
+                                                    disabled
                                                     className="w-full px-4 py-2 text-gray-800 border border-gray-300 rounded-md shadow-sm bg-gray-50 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
@@ -112,6 +126,7 @@ export default function edit({ customer }) {
                                                     type="text"
                                                     value={customer?.user?.phone ?? 'N/A'}
                                                     readOnly
+                                                    disabled
                                                     className="w-full px-4 py-2 text-gray-800 border border-gray-300 rounded-md shadow-sm bg-gray-50 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
@@ -125,6 +140,7 @@ export default function edit({ customer }) {
                                                     type="text"
                                                     value={customer?.country?.name ?? 'N/A'}
                                                     readOnly
+                                                    disabled
                                                     className="w-full px-4 py-2 text-gray-800 border border-gray-300 rounded-md shadow-sm bg-gray-50 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
@@ -138,6 +154,7 @@ export default function edit({ customer }) {
                                                     type="text"
                                                     value={customer?.city ?? 'N/A'}
                                                     readOnly
+                                                    disabled
                                                     className="w-full px-4 py-2 text-gray-800 border border-gray-300 rounded-md shadow-sm bg-gray-50 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
@@ -151,6 +168,7 @@ export default function edit({ customer }) {
                                                     type="text"
                                                     value={customer?.state ?? 'N/A'}
                                                     readOnly
+                                                    disabled
                                                     className="w-full px-4 py-2 text-gray-800 border border-gray-300 rounded-md shadow-sm bg-gray-50 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
@@ -164,6 +182,7 @@ export default function edit({ customer }) {
                                                     type="text"
                                                     value={customer?.postal_code ?? 'N/A'}
                                                     readOnly
+                                                    disabled
                                                     className="w-full px-4 py-2 text-gray-800 border border-gray-300 rounded-md shadow-sm bg-gray-50 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
@@ -177,6 +196,7 @@ export default function edit({ customer }) {
                                                     type="text"
                                                     value={customer?.address_line1 ?? 'N/A'}
                                                     readOnly
+                                                    disabled
                                                     className="w-full px-4 py-2 text-gray-800 break-words border border-gray-300 rounded-md shadow-sm text-wrap bg-gray-50 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
@@ -190,6 +210,7 @@ export default function edit({ customer }) {
                                                     type="text"
                                                     value={customer?.address_line2 ?? 'N/A'}
                                                     readOnly
+                                                    disabled
                                                     className="w-full px-4 py-2 text-gray-800 break-words border border-gray-300 rounded-md shadow-sm text-wrap bg-gray-50 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
                                                 />
                                             </div>
@@ -227,15 +248,14 @@ export default function edit({ customer }) {
                                                         Status
                                                     </label>
                                                     <div className="flex flex-wrap gap-2">
-                                                        {customer?.user?.is_active == 1 ? (
-                                                            <span className="px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full dark:bg-green-900 dark:text-white">
-                                                                Active
-                                                            </span>
-                                                        ) : (
-                                                            <span className="px-3 py-1 text-sm font-medium text-red-800 bg-red-100 rounded-full dark:bg-red-900 dark:text-white">
-                                                                In-Active
-                                                            </span>
-                                                        )}
+                                                        <span className="px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full dark:bg-green-900 dark:text-white">
+                                                            {
+                                                                customer?.user?.status
+                                                                    ?.replace(/_/g, ' ')
+                                                                    .replace(/\b\w/g, char => char.toUpperCase())
+                                                                || 'N/A'
+                                                            }
+                                                        </span>
                                                     </div>
                                                 </div>
 
@@ -250,6 +270,23 @@ export default function edit({ customer }) {
                                                         </span>
                                                     </div>
                                                 </div>
+
+
+
+                                                {/* Dormancy */}
+                                                <div>
+                                                    <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
+                                                        Dormancy Activated
+                                                    </label>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        <span className="px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full dark:bg-green-900 dark:text-white">
+                                                            {customer?.user?.is_dormant ? 'Yes' : 'No'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+
+
                                             </div>
                                         </div>
                                     </div>

@@ -16,7 +16,6 @@ export default function edit({ supplier }) {
         phone: supplier?.user?.phone || '',
         password: '',
         password_confirmation: '',
-        is_active: supplier?.user?.is_active ?? 1,
         company_name: supplier?.company_name || '',
     });
 
@@ -165,27 +164,6 @@ export default function edit({ supplier }) {
                                                     }
                                                 />
 
-                                                <SelectInput
-                                                    InputName={'Active Status'}
-                                                    Id={'is_active'}
-                                                    Name={'is_active'}
-                                                    Value={data.is_active}
-                                                    items={[
-                                                        {
-                                                            id: 1,
-                                                            name: 'Active',
-                                                        },
-                                                        {
-                                                            id: 0,
-                                                            name: 'In-Active',
-                                                        },
-                                                    ]}
-                                                    Error={errors.is_active}
-                                                    Placeholder={'Select Active Status'}
-                                                    Required={true}
-                                                    itemKey={'name'}
-                                                    Action={(value) => setData('is_active', value)}
-                                                />
                                             </div>
 
                                             <PrimaryButton
@@ -196,7 +174,6 @@ export default function edit({ supplier }) {
                                                     processing ||
                                                     data.name.trim() === '' ||
                                                     data.email.trim() === '' ||
-                                                    data.is_active === '' ||
                                                     data.phone.trim() === '' ||
                                                     data.company_name.trim() === '' ||
                                                     (data.password.trim() !== '' &&

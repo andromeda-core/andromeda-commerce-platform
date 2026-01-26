@@ -51,18 +51,7 @@ export default function index({ suppliers }) {
             { key: 'user.phone', label: 'Supplier Phone' },
             { key: 'company_name', label: 'Supplier Company' },
 
-            {
-                label: 'Supplier Status',
-                render: (item) => {
-                    if (item.user.is_active != 1) {
-                        return (
-                            <span className="p-2 text-white bg-red-500 rounded-lg">In-Active</span>
-                        );
-                    }
 
-                    return <span className="p-2 text-white bg-green-500 rounded-lg">Active</span>;
-                },
-            },
             { key: 'added_at', label: 'Added At' },
         ];
 

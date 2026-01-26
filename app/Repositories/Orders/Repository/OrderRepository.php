@@ -544,9 +544,6 @@ class OrderRepository implements IOrderRepository
     {
         return $this->customer
             ->with('user')
-            ->whereHas('user', function ($query) {
-                $query->where('is_active', true);
-            })
             ->latest()
             ->get()
             ->map(function ($customer) {

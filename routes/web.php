@@ -160,12 +160,15 @@ Route::group(['as' => 'website.'], function () {
         Route::put('/profile/upload-profile', 'uploadProfilePicture')->name('upload-profile-picture');
 
         // Active Dormant Account Routes
-        Route::get('/activate-dormant-account', 'activateDormantAccountIndex')->name('activate-dormant-account.index');
-        Route::put('/activate-dormant-account', 'activateDormantAccountActive')->name('activate-dormant-account.active');
+        Route::get('/profile/activate-dormant-account', 'activateDormantAccountIndex')->name('activate-dormant-account.index');
+        Route::put('/profile/activate-dormant-account', 'activateDormantAccountActive')->name('activate-dormant-account.active');
 
         // Active Deactivated Account Routes
-        Route::get('/activate-deactive-account', 'activateDeactiveAccountIndex')->name('activate-deactive-account.index');
-        Route::put('/activate-deactive-account', 'activateDeactiveAccountActive')->name('activate-deactive-account.active');
+        Route::get('/profile/activate-deactive-account', 'activateDeactiveAccountIndex')->name('activate-deactive-account.index');
+        Route::put('/profile/activate-deactive-account', 'activateDeactiveAccountActive')->name('activate-deactive-account.active');
+
+        // Suspend Account Route
+        Route::get('/profile/suspend-account', 'suspendAccountIndex')->name('suspend-account.index');
 
     });
 
@@ -241,14 +244,14 @@ Route::middleware(['auth'])->group(function () {
 
         // User Routes
         Route::controller(UserController::class)->name('users.')->group(function () {
-            Route::get('/users', 'index')->name('index');
-            Route::get('/users-create', 'create')->name('create');
-            Route::post('/users-store', 'store')->name('store');
-            Route::get('/users-edit/{id?}', 'edit')->name('edit');
-            Route::put('/users-update/{id?}', 'update')->name('update');
-            Route::get('/users-view/{id?}', 'show')->name('show');
-            Route::delete('/users-destroy/{id?}', 'destroy')->name('destroy');
-            Route::delete('/users-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
+            Route::get('/admin-staff-users', 'index')->name('index');
+            Route::get('/admin-staff-users-create', 'create')->name('create');
+            Route::post('/admin-staff-users-store', 'store')->name('store');
+            Route::get('/admin-staff-users-edit/{id?}', 'edit')->name('edit');
+            Route::put('/admin-staff-users-update/{id?}', 'update')->name('update');
+            Route::get('/admin-staff-users-view/{id?}', 'show')->name('show');
+            Route::delete('/admin-staff-users-destroy/{id?}', 'destroy')->name('destroy');
+            Route::delete('/admin-staff-users-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
         });
 
         // Supplier Routes

@@ -566,6 +566,11 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Deactivate Dormancy', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Account Dormant', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Your account has been marked as dormant due to inactivity. To continue using our services, please reactivate your account by clicking the button below.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Account Suspended', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Your account has been suspended. As a result, access to your account and its features is currently restricted. If you believe this action was taken in error or need further information, please contact our support team.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'You can only access the data deletion page when your account is active. current status', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Your account is under investigation. Some actions are restricted.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Checkout is restricted while your account is under dispute.', 'created_at' => $now, 'updated_at' => $now],
 
             // Backend
             ['key' => 'Profile Updated Successfully', 'created_at' => $now, 'updated_at' => $now],

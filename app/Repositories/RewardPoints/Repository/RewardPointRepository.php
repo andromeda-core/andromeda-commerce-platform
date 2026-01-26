@@ -169,6 +169,6 @@ class RewardPointRepository implements IRewardPointRepository
 
     public function getUsers()
     {
-        return $this->user->where('is_active', true)->get();
+        return $this->user->get();
     }
 }

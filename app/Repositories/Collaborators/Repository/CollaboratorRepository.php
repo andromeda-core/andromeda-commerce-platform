@@ -66,7 +66,6 @@ class CollaboratorRepository implements ICollaboratorRepository
             'swift_code' => ['required', 'string', 'max:255'],
             'point_accumulation_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'is_active' => ['required', 'boolean'],
         ], [
             'type.required' => 'The Collaborator Type Field Is Required.',
             'type.in' => 'The Collaborator Type Must Be Company Or Indivisual.',
@@ -89,7 +88,6 @@ class CollaboratorRepository implements ICollaboratorRepository
                 'email' => $validated_req['email'],
                 'phone' => $validated_req['phone'],
                 'password' => bcrypt($validated_req['password']),
-                'is_active' => $validated_req['is_active'],
             ]);
 
             if (empty($user)) {
@@ -182,7 +180,6 @@ class CollaboratorRepository implements ICollaboratorRepository
             'swift_code' => ['required', 'string', 'max:255'],
             'point_accumulation_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'is_active' => ['required', 'boolean'],
         ], [
             'type.required' => 'The Collaborator Type Field Is Required.',
             'type.in' => 'The Collaborator Type Must Be Company Or Indivisual.',
@@ -204,7 +201,6 @@ class CollaboratorRepository implements ICollaboratorRepository
                 'email' => $validated_req['email'],
                 'phone' => $validated_req['phone'],
                 ...(! empty($validated_req['password']) ? ['password' => $validated_req['password']] : []),
-                'is_active' => $validated_req['is_active'],
             ]);
 
             if (! $user_updated) {

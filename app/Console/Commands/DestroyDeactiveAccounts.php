@@ -24,7 +24,7 @@ class DestroyDeactiveAccounts extends Command
 
     public function handle()
     {
-        User::where('is_deactivated', true)->where('deactivated_at', '<=', now()->subDays(30))->chunk(100, function ($users) {
+        User::where('status', 'deactivated')->where('deactivated_at', '<=', now()->subDays(30))->chunk(100, function ($users) {
             foreach ($users as $user) {
 
                 $user->notify(new PermanentlyDestroyDeactivatedAccount);

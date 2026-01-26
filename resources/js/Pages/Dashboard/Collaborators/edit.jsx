@@ -16,7 +16,6 @@ export default function edit({ collaborator }) {
         phone: collaborator?.user?.phone || '',
         password: '',
         password_confirmation: '',
-        is_active: collaborator?.user?.is_active ?? 1,
         type: collaborator?.type || '',
         address: collaborator?.address || '',
         bank_name: collaborator?.bank_name || '',
@@ -52,7 +51,7 @@ export default function edit({ collaborator }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Collaborators'}
                                     URL={route('dashboard.collaborators.index')}
@@ -326,27 +325,7 @@ export default function edit({ collaborator }) {
                                                     )}
                                                 </div>
 
-                                                <SelectInput
-                                                    InputName={'Active Status'}
-                                                    Id={'is_active'}
-                                                    Name={'is_active'}
-                                                    Value={data.is_active}
-                                                    items={[
-                                                        {
-                                                            id: 1,
-                                                            name: 'Active',
-                                                        },
-                                                        {
-                                                            id: 0,
-                                                            name: 'In-Active',
-                                                        },
-                                                    ]}
-                                                    Error={errors.is_active}
-                                                    Placeholder={'Select Active Status'}
-                                                    Required={true}
-                                                    itemKey={'name'}
-                                                    Action={(value) => setData('is_active', value)}
-                                                />
+
                                             </div>
 
                                             <PrimaryButton
@@ -357,7 +336,6 @@ export default function edit({ collaborator }) {
                                                     processing ||
                                                     data.name.trim() === '' ||
                                                     data.email.trim() === '' ||
-                                                    data.is_active === '' ||
                                                     data.phone.trim() === '' ||
                                                     data.type.trim() === '' ||
                                                     data.address.trim() === '' ||
@@ -373,7 +351,7 @@ export default function edit({ collaborator }) {
                                                     (data.password.trim() !== '' &&
                                                         data.password_confirmation.trim() !== '' &&
                                                         data.password.trim() !==
-                                                            data.password_confirmation.trim())
+                                                        data.password_confirmation.trim())
                                                 }
                                                 Spinner={processing}
                                                 Icon={

@@ -52,7 +52,7 @@ class DistributorRepository implements IDistributorRepository
         $validated_req = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
-            'phone' => 'required|unique:users,phone',
+            'phone' => ['required', 'max:50', 'unique:users,phone'],
             'password' => ['required', 'string', 'min:8', 'max:50', 'confirmed'],
             'address' => ['required', 'string', 'max:255'],
             'bank_account_no' => ['required', 'string', 'max:255'],
@@ -61,10 +61,6 @@ class DistributorRepository implements IDistributorRepository
             'iban' => ['required', 'string', 'max:255'],
             'swift_code' => ['required', 'string', 'max:255'],
             'commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'is_active' => ['required', 'boolean'],
-        ], [
-            'is_active.required' => 'The Distributor Status Field Is Required.',
-            'is_active.boolean' => 'The Distributor Status Must Be Active Or In-Active.',
         ]);
 
         if ($validated_req['commission_rate'] == 0) {
@@ -79,7 +75,6 @@ class DistributorRepository implements IDistributorRepository
                 'email' => $validated_req['email'],
                 'phone' => $validated_req['phone'],
                 'password' => bcrypt($validated_req['password']),
-                'is_active' => $validated_req['is_active'],
             ]);
 
             if (empty($user)) {
@@ -145,7 +140,7 @@ class DistributorRepository implements IDistributorRepository
         $validated_req = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
-            'phone' => 'required|unique:users,phone,'.$user->id,
+            'phone' => ['required', 'max:50', 'unique:users,phone,'.$user->id],
             ...(($request->filled('password') || $request->filled('password_confirmation')) ? ['password' => ['required', 'string', 'min:8', 'confirmed', 'max:50']] : []),
             'address' => ['required', 'string', 'max:255'],
             'bank_account_no' => ['required', 'string', 'max:255'],
@@ -154,10 +149,6 @@ class DistributorRepository implements IDistributorRepository
             'iban' => ['required', 'string', 'max:255'],
             'swift_code' => ['required', 'string', 'max:255'],
             'commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'is_active' => ['required', 'boolean'],
-        ], [
-            'is_active.required' => 'The Distributor Status Field Is Required.',
-            'is_active.boolean' => 'The Distributor Status Must Be Active Or In-Active.',
         ]);
 
         if ($validated_req['commission_rate'] == 0) {
@@ -172,7 +163,6 @@ class DistributorRepository implements IDistributorRepository
                 'email' => $validated_req['email'],
                 'phone' => $validated_req['phone'],
                 ...($request->filled('password') ? ['password' => bcrypt($validated_req['password'])] : []),
-                'is_active' => $validated_req['is_active'],
             ]);
 
             if (! $user_updated) {
