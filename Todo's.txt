@@ -1027,6 +1027,7 @@ activate on profile in the palce of deactive account and backend + frontend Logi
 
 33: Internal Admin Notes For Customer Added  ✅
 
+
 34. Backend: Users, Customers, Distributors, Collaborators, Suppliers – Logic Refactor & Strengthening
 Backend me har user type ke liye separate aur clear business logic implement ki gayi:
 Customers
