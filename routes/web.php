@@ -15,6 +15,7 @@ use App\Http\Controllers\Dashboard\HomeController;
 use App\Http\Controllers\Dashboard\InventoryController;
 use App\Http\Controllers\Dashboard\LanguageController;
 use App\Http\Controllers\Dashboard\OrderController;
+use App\Http\Controllers\Dashboard\OrderRefundController;
 use App\Http\Controllers\Dashboard\PackageRecordingController;
 use App\Http\Controllers\Dashboard\PostController;
 use App\Http\Controllers\Dashboard\ProfileController;
@@ -148,6 +149,8 @@ Route::group(['as' => 'website.'], function () {
     Route::controller(WebsiteOrderController::class)->middleware('auth')->name('orders.')->group(function () {
         Route::get('/orders', 'index')->name('index');
         Route::get('/orders/order-view/{order_no?}', 'show')->name('order-view');
+        Route::get('/orders/{order_no?}/refund', 'refundIndex')->name('refund.index');
+        Route::post('/orders/{order_no?}/refund', 'refundRequestStore')->name('refund.request.store');
         Route::post('/orders/upload-payment-proof', 'uploadPaymentProof')->name('upload-payment-proof');
         Route::post('/orders/mark-packaging-video-viewed', 'markPackagingVideoViewed')->name('mark-packaging-video-viewed');
     });
@@ -357,6 +360,13 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/orders-destroy/{id?}', 'destroy')->name('destroy');
             Route::delete('/orders-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
             Route::put('/orders-update-cash-collected-status/{id?}', 'updateCashCollectedStatus')->name('updatecashcollectedstatus');
+        });
+
+        // Order Refund Routes
+        Route::controller(OrderRefundController::class)->name('order-refunds.')->group(function () {
+            Route::get('/order-refunds', 'index')->name('index');
+            Route::get('/order-refunds-edit/{id?}', 'edit')->name('edit');
+            Route::put('/order-refunds-update/{id?}', 'update')->name('update');
         });
 
         // Package Recording Routes

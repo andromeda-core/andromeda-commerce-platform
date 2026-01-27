@@ -1032,7 +1032,7 @@ const Index = ({ user, countries }) => {
                                                         UpdateProfileProcessing ||
                                                         isProfileUpdateButtonDisabled
                                                     }
-                                                    className={`tetx-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md bg-black font-semibold text-white transition-all hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80 ${(UpdateProfileProcessing || isProfileUpdateButtonDisabled) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
+                                                    className={`text-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md bg-black font-semibold text-white transition-all hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80 ${(UpdateProfileProcessing || isProfileUpdateButtonDisabled) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
                                                 >
                                                     {UpdateProfileProcessing && (
                                                         <Spinner customSize={'size-5'} />

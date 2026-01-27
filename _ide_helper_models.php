@@ -452,6 +452,7 @@ namespace App\Models{
  * @property string|null $postal_code
  * @property string|null $address_line1
  * @property string|null $address_line2
+ * @property string|null $note
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CartItem> $cart_items
@@ -473,6 +474,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereCountryId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereNote($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer wherePostalCode($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereState($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Customer whereUpdatedAt($value)
@@ -487,7 +489,7 @@ namespace App\Models{
  * @property string $ip_address
  * @property string $name
  * @property string $email
- * @property string $phone
+ * @property string|null $phone
  * @property string $reason
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -950,6 +952,45 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem whereUpdatedAt($value)
  */
 	class OrderItem extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property int $order_id
+ * @property int $customer_id
+ * @property string $refund_status
+ * @property string|null $refund_method
+ * @property string $refund_reason
+ * @property string|null $refund_reference
+ * @property string|null $note
+ * @property numeric $refund_amount
+ * @property string|null $requested_at
+ * @property string|null $approved_at
+ * @property string|null $rejected_at
+ * @property string|null $completed_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereApprovedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereCompletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereCustomerId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereNote($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereOrderId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereRefundAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereRefundMethod($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereRefundReason($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereRefundReference($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereRefundStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereRejectedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereRequestedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereUpdatedAt($value)
+ */
+	class OrderRefund extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -1725,12 +1766,19 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $email_verified_at
  * @property int $is_email_verification_sent
  * @property string $password
+ * @property string|null $deactivated_at
+ * @property string|null $suspended_at
+ * @property string|null $under_dispute_at
+ * @property string|null $under_investigation_at
  * @property int $is_agreed_to_terms
  * @property string $language_locale
  * @property int $language_id
  * @property string|null $profile
- * @property int $is_active
  * @property string|null $remember_token
+ * @property string|null $last_activity_at
+ * @property int $is_dormant
+ * @property string|null $dormant_at
+ * @property string $status
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Post> $bookMarkedPosts
@@ -1765,19 +1813,26 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User role($roles, $guard = null, $without = false)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereDeactivatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereDormantAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereEmail($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereEmailVerifiedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereIsActive($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereIsAgreedToTerms($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereIsDormant($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereIsEmailVerificationSent($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereLanguageId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereLanguageLocale($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereLastActivityAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User wherePassword($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User wherePhone($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereProfile($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereRememberToken($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereSuspendedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUnderDisputeAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUnderInvestigationAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutPermission($permissions)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutRole($roles, $guard = null)

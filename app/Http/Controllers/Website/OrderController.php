@@ -73,4 +73,30 @@ class OrderController extends Controller
 
         return response()->json(['status' => true, 'message' => $response['message']], 200);
     }
+
+    public function refundIndex(Request $request, ?string $order_no = null)
+    {
+        if (empty($order_no)) {
+            return to_route('website.orders.index');
+        }
+
+        $exists = $this->order->orderExists($order_no);
+
+        if ($exists['status'] === false) {
+            return to_route('website.orders.order-view', ['order_no' => $order_no])->with('info', $exists['message']);
+        }
+
+        return Inertia::render('Website/Orders/Refund/index', compact('order_no'));
+    }
+
+    public function refundRequestStore(Request $request, ?string $order_no = null)
+    {
+        $response = $this->order->refundRequestStore($request, $order_no);
+
+        if ($response['status'] === false) {
+            return back()->with('error', $response['message']);
+        }
+
+        return to_route('website.orders.order-view', ['order_no' => $order_no])->with('success', $response['message']);
+    }
 }

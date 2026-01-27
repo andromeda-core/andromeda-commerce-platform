@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Http\Controllers\Dashboard;
+
+use App\Helpers\Trans;
+use App\Http\Controllers\Controller;
+use App\Repositories\OrderRefund\Interface\IOrderRefundRepository;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+
+class OrderRefundController extends Controller
+{
+    public function __construct(
+        private IOrderRefundRepository $order_refund,
+        private Trans $trans
+    ) {}
+
+    public function index(Request $request)
+    {
+        $order_refunds = $this->order_refund->getAllOrderRefunds($request);
+        $refund_status = $request->input('refund_status');
+
+        return Inertia::render('Dashboard/OrderRefunds/index', compact('order_refunds', 'refund_status'));
+    }
+
+    public function edit(?string $id = null)
+    {
+        if (empty($id)) {
+            return back()->with('error', $this->trans->get('Order Refund Id not found'));
+        }
+
+        $order_refund = $this->order_refund->getSingleOrderRefund($id);
+        if (empty($order_refund)) {
+            return back()->with('error', $this->trans->get('Order Refund Not Found'));
+        }
+
+        return Inertia::render('Dashboard/OrderRefunds/edit', compact('order_refund'));
+    }
+
+    public function update(Request $request, ?string $id = null)
+    {
+        if (empty($id)) {
+            return back()->with('error', $this->trans->get('Order Refund Id not found'));
+        }
+
+        $updated = $this->order_refund->updateOrderRefund($request, $id);
+
+        if ($updated['status'] === false) {
+            return back()->with('error', $updated['message']);
+        }
+
+        return to_route('dashboard.order-refunds.index')->with('success', $updated['message']);
+    }
+}

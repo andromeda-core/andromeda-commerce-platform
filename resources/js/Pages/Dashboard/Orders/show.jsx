@@ -417,8 +417,7 @@ export default function show({ order }) {
                                             <span
                                                 className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(order.status)}`}
                                             >
-                                                {order.status.charAt(0).toUpperCase() +
-                                                    order.status.slice(1)}
+                                                {order.status.replace(/_/g, ' ').toUpperCase()}
                                             </span>
                                         </div>
                                     </div>

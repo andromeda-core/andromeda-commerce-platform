@@ -42,4 +42,8 @@ interface IOrderRepository
     // public function cryptoPaymentIPN(Request $request);
 
     public function markPackagingVideoViewed(Request $request);
+
+    public function orderExists(string $order_no);
+
+    public function refundRequestStore(Request $request, string $order_no);
 }

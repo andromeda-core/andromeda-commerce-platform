@@ -56,7 +56,7 @@ export default function index({ orders }) {
                     );
                 },
             },
-            { key: 'customer.user.email', label: 'Customer Name' },
+            { key: 'customer.user.name', label: 'Customer Name' },
             { key: 'customer.user.email', label: 'Customer Email' },
             { key: 'customer.user.phone', label: 'Customer Phone' },
 
@@ -130,47 +130,51 @@ export default function index({ orders }) {
                     if (item.status === 'pending') {
                         return (
                             <span className="p-2 text-yellow-800 bg-yellow-500 rounded-lg">
-                                Pending
+                                {item.status.replace(/_/g, ' ').toUpperCase()}
                             </span>
                         );
                     } else if (item.status === 'paid') {
-                        return <span className="p-2 text-white bg-blue-500 rounded-lg">Paid</span>;
+                        return <span className="p-2 text-white bg-blue-500 rounded-lg"> {item.status.replace(/_/g, ' ').toUpperCase()}</span>;
                     } else if (item.status === 'shipped') {
                         return (
-                            <span className="p-2 text-white bg-pink-500 rounded-lg">Shipped</span>
+                            <span className="p-2 text-white bg-pink-500 rounded-lg"> {item.status.replace(/_/g, ' ').toUpperCase()}</span>
                         );
                     } else if (item.status === 'arrived_locally') {
                         return (
                             <span className="p-1 text-white rounded-lg bg-stone-500">
-                                Arried Locally
+                                {item.status.replace(/_/g, ' ').toUpperCase()}
                             </span>
                         );
                     } else if (item.status === 'delivered') {
                         return (
                             <span className="p-2 text-white bg-green-500 rounded-lg">
-                                Delivered
+                                {item.status.replace(/_/g, ' ').toUpperCase()}
                             </span>
                         );
                     } else if (item.status === 'awaiting_payment') {
                         return (
                             <span className="p-2 text-white bg-indigo-500 rounded-lg">
-                                Awaiting Payment
+                                {item.status.replace(/_/g, ' ').toUpperCase()}
                             </span>
                         );
                     } else if (item.status === 'failed') {
-                        return <span className="p-2 text-white bg-red-500 rounded-lg">Failed</span>;
+                        return <span className="p-2 text-white bg-red-500 rounded-lg"> {item.status.replace(/_/g, ' ').toUpperCase()}</span>;
                     } else if (item.status === 'expired') {
                         return (
-                            <span className="p-2 text-white bg-red-500 rounded-lg">Expired</span>
+                            <span className="p-2 text-white bg-red-500 rounded-lg"> {item.status.replace(/_/g, ' ').toUpperCase()}</span>
                         );
                     } else if (item.status === 'blockchain_confirmation_pending') {
                         return (
                             <span className="p-2 text-white bg-indigo-500 rounded-lg">
-                                BlockChain Confirmation Pending
+                                {item.status.replace(/_/g, ' ').toUpperCase()}
                             </span>
                         );
                     } else {
-                        return 'N/A';
+                        return (
+                            <span className="p-2 text-white bg-indigo-500 rounded-lg">
+                                {item.status.replace(/_/g, ' ').toUpperCase()}
+                            </span>
+                        )
                     }
                 },
             },
@@ -282,6 +286,32 @@ export default function index({ orders }) {
                                                         name: 'Arrived Locally',
                                                     },
                                                     { id: 'delivered', name: 'Delivered' },
+                                                    {
+                                                        id: 'awaiting_payment',
+                                                        name: 'Awaiting Payment',
+                                                    },
+                                                    { id: 'failed', name: 'Failed' },
+                                                    { id: 'expired', name: 'Expired' },
+                                                    {
+                                                        id: 'blockchain_confirmation_pending',
+                                                        name: 'Blockchain Confirmation Pending',
+                                                    },
+                                                    {
+                                                        id: 'refund_requested',
+                                                        name: "Refund Requested"
+                                                    },
+                                                    {
+                                                        id: 'refund_approved',
+                                                        name: "Refund Approved"
+                                                    },
+                                                    {
+                                                        id: 'refund_rejected',
+                                                        name: "Refund Rejected"
+                                                    },
+                                                    {
+                                                        id: 'refund_completed',
+                                                        name: "Refund Completed"
+                                                    },
                                                 ]}
                                                 itemKey={'name'}
                                                 Value={status}

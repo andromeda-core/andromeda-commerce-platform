@@ -1330,6 +1330,47 @@ export default function Sidebar({
                                     </li>
                                 )}
 
+
+
+                                {can('Order Refunds View') && (
+                                    <li>
+                                        <Link
+                                            href={route('dashboard.order-refunds.index')}
+                                            className={`menu-item group ${route().current() === 'ashboard.order-refunds.index' ? 'menu-item-active' : 'menu-item-inactive'}`}
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 9.75h4.875a2.625 2.625 0 0 1 0 5.25H12M8.25 9.75 10.5 7.5M8.25 9.75 10.5 12m9-7.243V21.75l-3.75-1.5-3.75 1.5-3.75-1.5-3.75 1.5V4.757c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0c1.1.128 1.907 1.077 1.907 2.185Z" />
+                                            </svg>
+
+
+                                            <span
+                                                className={`menu-item-text ${sidebarToggle ? 'lg:hidden' : ''}`}
+                                            >
+                                                Order Refunds
+                                            </span>
+
+                                            <svg
+                                                className={`menu-item-arrow ${sidebarToggle ? 'lg:hidden' : ''}`}
+                                                width="20"
+                                                height="20"
+                                                viewBox="0 0 20 20"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <path
+                                                    d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585"
+                                                    stroke=""
+                                                    strokeWidth="1.5"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                />
+                                            </svg>
+                                        </Link>
+                                    </li>
+                                )}
+
+
+
                                 {can(['Package Recordings View', 'Package Recordings Create']) && (
                                     <li>
                                         <a

@@ -32,6 +32,8 @@ use App\Repositories\GlobalSearch\Interface\IGlobalSearchRepository;
 use App\Repositories\GlobalSearch\Repository\GlobalSearchRepository;
 use App\Repositories\Inventories\Interface\IInventoryRepository;
 use App\Repositories\Inventories\Repository\InventoryRepository;
+use App\Repositories\OrderRefund\Interface\IOrderRefundRepository;
+use App\Repositories\OrderRefund\Repository\OrderRefundRepository;
 use App\Repositories\Orders\Interface\IOrderRepository;
 use App\Repositories\Orders\Repository\OrderRepository;
 use App\Repositories\PackageRecordings\Interface\IPackageRecordingsRepository;
@@ -113,6 +115,7 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(ITermsOfServiceRepository::class, TermsOfServiceRepository::class);
         $this->app->bind(IPrivacyPolicyRepository::class, PrivacyPolicyRepository::class);
         $this->app->bind(IShippingPolicyRepository::class, ShippingPolicyRepository::class);
+        $this->app->bind(IOrderRefundRepository::class, OrderRefundRepository::class);
 
     }
 

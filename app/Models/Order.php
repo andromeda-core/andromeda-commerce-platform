@@ -19,6 +19,7 @@ use App\Notifications\OrderStatusShippedNotification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Cache;
 
 class Order extends Model
@@ -86,6 +87,11 @@ class Order extends Model
     public function shippingAddress(): BelongsTo
     {
         return $this->belongsTo(ShippingAddress::class, 'shipping_address_id', 'id');
+    }
+
+    public function refund(): HasOne
+    {
+        return $this->hasOne(OrderRefund::class, 'order_id', 'id');
     }
 
     // Static Booting

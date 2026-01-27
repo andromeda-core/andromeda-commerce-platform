@@ -14,8 +14,8 @@ use App\Models\CartItem;
 use App\Models\Collaborator;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\OrderRefund;
 use App\Models\PackageRecording;
-use App\Models\RewardPoint;
 use App\Models\RewardSetting;
 use App\Models\Smartphone;
 use App\Models\SmartphoneCartAddon;
@@ -23,6 +23,7 @@ use App\Models\SmartphoneOrderItemAddon;
 use App\Models\SpecialCountry;
 use App\Models\User;
 use App\Notifications\NotifyCustomerAboutAwaitingPaymentOrderFromCrypto;
+use App\Notifications\OrderRefundNotification;
 use App\Repositories\Orders\Interface\IOrderRepository;
 use App\Services\CartPriceCalculator;
 use App\Services\NOWPaymentPaymentService;
@@ -43,7 +44,7 @@ class OrderRepository implements IOrderRepository
         private RewardSetting $reward_setting,
         private CartItem $cart,
         private User $user,
-        private RewardPoint $reward_point,
+        private OrderRefund $order_refund,
         private NOWPaymentPaymentService $now_payment_service,
         private PackageRecording $package_recording,
         private SpecialCountry $special_country,
@@ -280,6 +281,14 @@ class OrderRepository implements IOrderRepository
             ];
         }
 
+        if ($order->refund()->exists()) {
+
+            return [
+                'status' => false,
+                'message' => 'Order Refund Request Exists And This Order Cannot Be Edited',
+            ];
+        }
+
         $validated_req = [];
         if ($order->status === 'pending') {
             $validated_req = $request->validate([
@@ -499,6 +508,11 @@ class OrderRepository implements IOrderRepository
 
             if (empty($order)) {
                 throw new Exception('Order Not Found');
+            }
+
+            if ($order->refund()->exists()) {
+
+                throw new Exception('Order Refund Request Exists And This Order Cannot Be Edited');
             }
 
             if ($order->status === 'pending') {
@@ -1265,5 +1279,118 @@ class OrderRepository implements IOrderRepository
         }
 
         return ((float) $smartphone->selling_info->total_price * (float) $default_value) / 100;
+    }
+
+    public function orderExists(string $order_no)
+    {
+        try {
+            $order = $this->order->where('order_no', $order_no)->first();
+            if (empty($order)) {
+                throw new Exception($this->trans->get('Order Not Found'));
+            }
+
+            if ($order->status !== 'paid') {
+                throw new Exception($this->trans->get('Only Paid Status orders Can be Request For a Refund'));
+            }
+
+            if ($order->refund()->exists()) {
+                throw new Exception($this->trans->get('Order Refund Request Already Exists'));
+            }
+
+            return [
+                'status' => true,
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+
+    }
+
+    public function refundRequestStore(Request $request, string $order_no)
+    {
+        $validated_req = $request->validate([
+            'refund_reason' => ['required', 'string', 'min:30', 'max:1000'],
+        ], [
+            'refund_reason.required' => $this->trans->get('The Refund Reason Field Is Required.'),
+            'refund_reason.min' => $this->trans->get('The Refund Reason Must Be At Least 30 Characters.'),
+            'refund_reason.max' => $this->trans->get('The Refund Reason Must Be Less Than 1000 Characters.'),
+        ]);
+
+        try {
+            $user = $request->user()->load([
+                'customer',
+            ]);
+
+            if (empty($user)) {
+                return [
+                    'status' => false,
+                    'message' => $this->trans->get('Please Login First'),
+                ];
+            }
+
+            $customer = $user->customer;
+
+            if (empty($customer)) {
+                return [
+                    'status' => false,
+                    'message' => $this->trans->get('Customer Not Found'),
+                ];
+            }
+
+            $order = $this->order->where('order_no', $order_no)->first();
+
+            if (empty($order)) {
+
+                throw new Exception($this->trans->get('Order Not Found'));
+            }
+
+            if (
+                $order->status !== 'paid'
+            ) {
+                throw new Exception(
+                    $this->trans->get('Refund requests are only allowed for paid orders that have not been shipped.')
+                );
+            }
+
+            if ($order->refund()->exists()) {
+                throw new Exception($this->trans->get('Order Refund Request Already Exists'));
+            }
+
+            DB::transaction(function () use ($order, $customer, $validated_req) {
+                $order->updateQuietly([
+                    'status' => 'refund_requested',
+                ]);
+
+                $order_refund = $order->refund()->create([
+                    'customer_id' => $customer->id,
+                    'refund_reason' => $validated_req['refund_reason'],
+                    'refund_amount' => $order->amount,
+                    'refund_status' => 'requested',
+                    'requested_at' => now(),
+                ]);
+
+                if (empty($order_refund)) {
+                    throw new Exception($this->trans->get('Order Refund Request Failed'));
+                }
+
+                $order_refund->load(['customer.user']);
+                $order->customer->user->notify(new OrderRefundNotification($order_refund, 'requested'));
+
+            });
+
+            return [
+                'status' => true,
+                'message' => $this->trans->get('Order Refund Requested Successful'),
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
     }
 }

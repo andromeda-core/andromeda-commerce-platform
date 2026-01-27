@@ -90,6 +90,10 @@ class OrderController extends Controller implements HasMiddleware
             return to_route('dashboard.orders.index')->with('error', 'Order not found');
         }
 
+        if ($order->refund()->exists()) {
+            return back()->with('info', 'Order Refund Request Exists And This Order Cannot Be Edited');
+        }
+
         if ($order->status === 'delivered') {
             return back()->with('error', 'Already Completed Orders Cannot Be Edited');
         }
