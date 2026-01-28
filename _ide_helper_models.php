@@ -859,7 +859,14 @@ namespace App\Models{
  * @property int $id
  * @property string|null $order_no
  * @property int|null $customer_id
- * @property int|null $shipping_address_id
+ * @property string|null $shipping_name
+ * @property string|null $shipping_phone
+ * @property string|null $shipping_address_line1
+ * @property string|null $shipping_address_line2
+ * @property string|null $shipping_city
+ * @property string|null $shipping_state
+ * @property string|null $shipping_postal_code
+ * @property string|null $shipping_country
  * @property numeric $amount
  * @property string $status
  * @property string|null $payment_method
@@ -886,7 +893,7 @@ namespace App\Models{
  * @property-read int|null $order_items_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageRecording> $orderPackageRecordings
  * @property-read int|null $order_package_recordings_count
- * @property-read \App\Models\ShippingAddress|null $shippingAddress
+ * @property-read \App\Models\OrderRefund|null $refund
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SupplierCommission> $supplierCommissions
  * @property-read int|null $supplier_commissions_count
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order newModelQuery()
@@ -906,15 +913,65 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereOrderNo($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order wherePaymentMethod($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order wherePaymentProof($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereShippingAddressId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereShippingAddressLine1($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereShippingAddressLine2($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereShippingCity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereShippingCountry($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereShippingDate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereShippingFee($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereShippingName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereShippingPhone($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereShippingPostalCode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereShippingState($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereSubTotal($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereTrackingNo($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereUpdatedAt($value)
  */
 	class Order extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property int $order_id
+ * @property int $customer_id
+ * @property string $shipping_name
+ * @property string $shipping_phone
+ * @property string $shipping_address_line1
+ * @property string $shipping_address_line2
+ * @property string $shipping_city
+ * @property string $shipping_state
+ * @property string $shipping_country
+ * @property string $shipping_postal_code
+ * @property string $reason
+ * @property string|null $note
+ * @property string $status
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Customer $customer
+ * @property-read \App\Models\Order $order
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereCustomerId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereNote($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereOrderId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereReason($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereShippingAddressLine1($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereShippingAddressLine2($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereShippingCity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereShippingCountry($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereShippingName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereShippingPhone($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereShippingPostalCode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereShippingState($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereUpdatedAt($value)
+ */
+	class OrderAddressChangeRequest extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -971,6 +1028,9 @@ namespace App\Models{
  * @property string|null $completed_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Customer $customer
+ * @property-read mixed $added_at
+ * @property-read \App\Models\Order $order
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund query()

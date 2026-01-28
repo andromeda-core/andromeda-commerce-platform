@@ -1198,6 +1198,26 @@ Is point me sab se zyada critical aur complex work complete hua:
     Delivers a clear and user-friendly refund experience
     Supports future extensibility for additional refund methods or rules
 )✅
+
+
+
+
+38: Shipping Address Workflow (
+ Keep Customer Profile + Shipping Address logic unchanged✅
+ Add shipping info fields directly in orders table (snapshot)✅
+ On order creation, copy shipping address data into order fields✅
+ Remove dependency on shipping_address_id for order display✅
+ Add “Request Shipping Address Update” option on order view (customer) ✅
+ Create address change request flow (customer → admin) ✅
+ Allow admin-only update of order shipping info ✅
+ Restrict edits when order_status >= shipped ✅
+ Log all shipping address changes (audit) ✅
+ Do NOT update customer profile address when editing an order ✅
+ Ensure shipped/delivered orders have locked addresses ✅
+ All Shipping Address Related Notificxations Setup Completed ✅
+)
+
+
  <- Review Remeaning ->
 (
 Joseph Kim

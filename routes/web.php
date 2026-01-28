@@ -14,6 +14,7 @@ use App\Http\Controllers\Dashboard\FloorController;
 use App\Http\Controllers\Dashboard\HomeController;
 use App\Http\Controllers\Dashboard\InventoryController;
 use App\Http\Controllers\Dashboard\LanguageController;
+use App\Http\Controllers\Dashboard\OrderAddressChangeRequestController;
 use App\Http\Controllers\Dashboard\OrderController;
 use App\Http\Controllers\Dashboard\OrderRefundController;
 use App\Http\Controllers\Dashboard\PackageRecordingController;
@@ -151,6 +152,8 @@ Route::group(['as' => 'website.'], function () {
         Route::get('/orders/order-view/{order_no?}', 'show')->name('order-view');
         Route::get('/orders/{order_no?}/refund', 'refundIndex')->name('refund.index');
         Route::post('/orders/{order_no?}/refund', 'refundRequestStore')->name('refund.request.store');
+        Route::get('/orders/{order_no?}/shipping-address-change-request', 'shippingAddressChangeRequestIndex')->name('address-change-request.index');
+        Route::post('/orders/{order_no?}/shipping-address-change-request', 'shippingAddressChangeRequestStore')->name('address-change-request.store');
         Route::post('/orders/upload-payment-proof', 'uploadPaymentProof')->name('upload-payment-proof');
         Route::post('/orders/mark-packaging-video-viewed', 'markPackagingVideoViewed')->name('mark-packaging-video-viewed');
     });
@@ -367,6 +370,13 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/order-refunds', 'index')->name('index');
             Route::get('/order-refunds-edit/{id?}', 'edit')->name('edit');
             Route::put('/order-refunds-update/{id?}', 'update')->name('update');
+        });
+
+        // Order Address Change Request Routes
+        Route::controller(OrderAddressChangeRequestController::class)->name('order-address-change-requests.')->group(function () {
+            Route::get('/order-address-change-requests', 'index')->name('index');
+            Route::get('/order-address-change-requests-edit/{id?}', 'edit')->name('edit');
+            Route::put('/order-address-change-requests-update/{id?}', 'update')->name('update');
         });
 
         // Package Recording Routes

@@ -43,6 +43,14 @@ class Order extends Model
         'is_cash_collected',
         'payment_method',
         'np_id',
+        'shipping_name',
+        'shipping_phone',
+        'shipping_address_line1',
+        'shipping_address_line2',
+        'shipping_city',
+        'shipping_state',
+        'shipping_postal_code',
+        'shipping_country',
     ];
 
     //    Attributes
@@ -84,14 +92,14 @@ class Order extends Model
         return $this->hasMany(CollaboratorCommission::class, 'order_id', 'id');
     }
 
-    public function shippingAddress(): BelongsTo
-    {
-        return $this->belongsTo(ShippingAddress::class, 'shipping_address_id', 'id');
-    }
-
     public function refund(): HasOne
     {
         return $this->hasOne(OrderRefund::class, 'order_id', 'id');
+    }
+
+    public function addressChangeRequest(): HasOne
+    {
+        return $this->hasOne(OrderAddressChangeRequest::class, 'order_id', 'id');
     }
 
     // Static Booting
@@ -178,11 +186,7 @@ class Order extends Model
 
             if ($order->status === 'paid' && empty($order->np_id)) {
                 $order->load([
-                    'customer',
                     'customer.user',
-                    'shippingAddress',
-                    'shippingAddress.country',
-
                     'orderItems' => function ($q) {
                         $q->with([
                             'smartphone' => function ($q) {

@@ -211,32 +211,32 @@ export default function CustomerOrderInvoice({ order }) {
                     <div className="p-4 rounded-lg bg-gray-50 sm:p-5">
                         <div className="space-y-1">
                             <p className="text-sm font-semibold text-gray-900 break-words sm:text-base">
-                                {order?.shipping_address?.name || order?.customer?.active_shipping_address?.name || order?.customer?.user?.name || ''}
+                                {order?.shipping_name || ''}
                             </p>
 
                             <p className="text-sm text-gray-600 break-words sm:text-base">
-                                {order?.shipping_address?.address_line1 || order?.customer?.active_shipping_address?.address_line1 || order?.customer?.address_line1 || ''}
+                                {order?.shipping_address_line1 || ''}
                                 {', '}
-                                {order?.shipping_address?.address_line2 != null
-                                    ? order?.shipping_address?.address_line2
-                                    : (order?.customer?.active_shipping_address?.address_line2 !== null ? order?.customer?.active_shipping_address?.address_line2 : (order?.customer?.address_line2 != null
-                                        ? order?.customer?.address_line2
-                                        : ''))}
+                                {order?.shipping_address_line2 || ''}
                             </p>
                             <p className="text-sm text-gray-600 break-words sm:text-base">
-                                {order?.shipping_address?.city || order?.customer?.active_shipping_address?.city || order?.customer?.city || ''}
+                                {order?.shipping_city || ''}
                             </p>
 
                             <p className="text-sm text-gray-600 break-words sm:text-base">
-                                {order?.shipping_address?.state || order?.customer?.active_shipping_address?.state || order?.customer?.state || ''}
+                                {order?.shipping_state || ''}
                             </p>
 
                             <p className="text-sm text-gray-600 break-words sm:text-base">
-                                {order?.shipping_address?.postal_code || order?.customer?.active_shipping_address?.postal_code || order?.customer?.postal_code || ''}
+                                {order?.shipping_postal_code || ''}
+                            </p>
+
+                            <p className="text-sm text-gray-600 break-words sm:text-base">
+                                {order?.shipping_country || ''}
                             </p>
 
                             <p className="mt-2 text-sm text-gray-600 break-all sm:text-base">
-                                {order?.shipping_address?.phone || order?.customer?.active_shipping_address?.phone || order?.customer?.user?.phone || ''}
+                                {order?.shipping_phone || ''}
                             </p>
                         </div>
                     </div>

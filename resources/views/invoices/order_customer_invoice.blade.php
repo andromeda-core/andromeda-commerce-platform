@@ -101,23 +101,14 @@
     ">
                 {{-- Name --}}
                 <strong>
-                    {{ $order?->shippingAddress?->name ?:
-                        $order?->customer?->activeShippingAddress?->name ?:
-                        $order?->customer?->user?->name ?:
-                        '' }}
+                    {{ $order?->shipping_name ?: '' }}
                 </strong>
                 <br>
 
                 {{-- Address line 1 + line 2 --}}
-                {{ $order?->shippingAddress?->address_line1 ?:
-                    $order?->customer?->activeShippingAddress?->address_line1 ?:
-                    $order?->customer?->address_line1 ?:
-                    '' }}
+                {{ $order?->shipping_address_line1 ?: '' }}
                 @php
-                    $addressLine2 =
-                        $order?->shippingAddress?->address_line2 ?:
-                        $order?->customer?->activeShippingAddress?->address_line2 ?:
-                        $order?->customer?->address_line2;
+                    $addressLine2 = $order?->shipping_address_line2;
                 @endphp
 
                 @if ($addressLine2)
@@ -126,31 +117,22 @@
                 <br>
 
                 {{-- City --}}
-                {{ $order?->shippingAddress?->city ?:
-                    $order?->customer?->activeShippingAddress?->city ?:
-                    $order?->customer?->city ?:
-                    '' }}
+                {{ $order?->shipping_city ?: '' }}
                 <br>
 
                 {{-- State --}}
-                {{ $order?->shippingAddress?->state ?:
-                    $order?->customer?->activeShippingAddress?->state ?:
-                    $order?->customer?->state ?:
-                    '' }}
+                {{ $order?->shipping_state ?: '' }}
                 <br>
 
                 {{-- Postal Code --}}
-                {{ $order?->shippingAddress?->postal_code ?:
-                    $order?->customer?->activeShippingAddress?->postal_code ?:
-                    $order?->customer?->postal_code ?:
-                    '' }}
+                {{ $order?->shipping_postal_code ?: '' }}
+                <br><br>
+
+                {{ $order?->shipping_country ?: '' }}
                 <br><br>
 
                 {{-- Phone --}}
-                {{ $order?->shippingAddress?->phone ?:
-                    $order?->customer?->activeShippingAddress?->phone ?:
-                    $order?->customer?->user?->phone ?:
-                    '' }}
+                {{ $order?->shipping_phone ?: '' }}
             </div>
 
 

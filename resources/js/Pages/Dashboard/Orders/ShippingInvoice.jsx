@@ -161,42 +161,29 @@ export default function ShippingInvoice({ order }) {
 
                         {/* Name */}
                         <p className="text-sm font-medium">
-                            {order?.shipping_address?.name ||
-                                order?.customer?.active_shipping_address?.name ||
-                                order?.customer?.user?.name ||
+                            {order?.shipping_name ||
                                 ''}
                         </p>
 
                         {/* Address */}
                         <p className="text-sm">
-                            {order?.shipping_address?.address_line1 ||
-                                order?.customer?.active_shipping_address?.address_line1 ||
-                                order?.customer?.address_line1 ||
+                            {order?.shipping_address_line1 ||
                                 ''}
                             {', '}
-                            {order?.shipping_address?.address_line2 != null
-                                ? order?.shipping_address?.address_line2
-                                : order?.customer?.active_shipping_address?.address_line2 != null
-                                    ? order?.customer?.active_shipping_address?.address_line2
-                                    : order?.customer?.address_line2 != null
-                                        ? order?.customer?.address_line2
-                                        : ''}
+                            {order?.shipping_address_line2 || ''}
                         </p>
 
                         {/* City / State / Postal */}
                         <p className="text-sm">
-                            {order?.shipping_address?.city ||
-                                order?.customer?.active_shipping_address?.city ||
-                                order?.customer?.city ||
+                            {order?.shipping_city ||
                                 ''}
                             {', '}
-                            {order?.shipping_address?.state ||
-                                order?.customer?.active_shipping_address?.state ||
-                                order?.customer?.state ||
+                            {order?.shipping_state ||
                                 ''}{' '}
-                            {order?.shipping_address?.postal_code ||
-                                order?.customer?.active_shipping_address?.postal_code ||
-                                order?.customer?.postal_code ||
+                            {order?.shipping_postal_code ||
+                                ''}
+                            {' '}
+                            {order?.shipping_country ||
                                 ''}
                         </p>
 
@@ -204,9 +191,7 @@ export default function ShippingInvoice({ order }) {
                         <div className="grid grid-cols-2 gap-4 mt-2">
                             <p className="text-sm">
                                 📞{' '}
-                                {order?.shipping_address?.phone ||
-                                    order?.customer?.active_shipping_address?.phone ||
-                                    order?.customer?.user?.phone ||
+                                {order?.shipping_phone ||
                                     ''}
                             </p>
                         </div>

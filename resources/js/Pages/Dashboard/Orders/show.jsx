@@ -1174,10 +1174,24 @@ export default function show({ order }) {
                                             Customer Information
                                         </h2>
                                         <div className="flex items-start space-x-4">
-                                            <div className="flex items-center justify-center w-20 h-20 text-white bg-indigo-500 rounded-full">
-                                                <span className="text-3xl">
-                                                    {order?.customer?.user?.avatar ?? 'N/A'}
-                                                </span>
+                                            <div className="relative flex items-center justify-center w-32 h-32 text-center rounded-full bg-surface-2-light dark:bg-surface-2-dark"
+                                            >
+                                                {/* Avatar */}
+                                                <div className="flex-shrink-0 mb-6 text-center md:mb-0">
+                                                    {order?.customer?.user?.profile ? (
+                                                        <img
+                                                            src={order?.customer?.user?.profile}
+                                                            alt="Profile"
+                                                            className="object-cover object-center w-32 h-32 rounded-full"
+                                                        />
+                                                    ) : (
+                                                        <div className="flex items-center justify-center w-32 h-32 text-5xl font-bold text-blue-800 bg-blue-100 border-4 border-blue-500 rounded-full dark:border-white dark:bg-white/10 dark:text-white">
+                                                            {order?.customer?.user?.avatar}
+                                                        </div>
+                                                    )}
+                                                </div>
+
+
                                             </div>
 
                                             <div className="flex-1">
@@ -1247,7 +1261,7 @@ export default function show({ order }) {
 
                             {/* Addresses */}
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                {order?.shipping_address?.address_line1 && (
+                                {order?.shipping_address_line1 && (
                                     <Card
                                         Content={
                                             <div className="p-6">
@@ -1268,20 +1282,20 @@ export default function show({ order }) {
                                                     Shipping Address 1
                                                 </h3>
                                                 <address className="text-sm not-italic text-gray-600 break-all whitespace-normal dark:text-white/90">
-                                                    {order?.shipping_address?.state || 'N/A'},{' '}
-                                                    {order?.shipping_address?.city || 'N/A'}
+                                                    {order?.shipping_state || 'N/A'},{' '}
+                                                    {order?.shipping_city || 'N/A'}
                                                     <br />
-                                                    {order?.shipping_address?.address_line1},{' '}
-                                                    {order?.shipping_address?.postal_code || ''}
+                                                    {order?.shipping_address_line1},{' '}
+                                                    {order?.shipping_postal_code || ''}
                                                     <br />
-                                                    {order?.shipping_address?.country?.name || ''}
+                                                    {order?.shipping_country || ''}
                                                 </address>
                                             </div>
                                         }
                                     />
                                 )}
 
-                                {order.shipping_address?.address_line2 && (
+                                {order.shipping_address_line2 && (
                                     <Card
                                         Content={
                                             <div className="p-6">
@@ -1302,13 +1316,13 @@ export default function show({ order }) {
                                                     Shipping Address 2
                                                 </h3>
                                                 <address className="text-sm not-italic text-gray-600 break-all whitespace-normal dark:text-white/90">
-                                                    {order?.shipping_address?.state || 'N/A'},{' '}
-                                                    {order?.shipping_address?.city || 'N/A'}
+                                                    {order?.shipping_state || 'N/A'},{' '}
+                                                    {order?.shipping_city || 'N/A'}
                                                     <br />
-                                                    {order?.shipping_address?.address_line2},{' '}
-                                                    {order?.shipping_address?.postal_code || ''}
+                                                    {order?.shipping_address_line2},{' '}
+                                                    {order?.shipping_postal_code || ''}
                                                     <br />
-                                                    {order?.shipping_address?.country?.name || ''}
+                                                    {order?.shipping_country || ''}
                                                 </address>
                                             </div>
                                         }
@@ -1429,7 +1443,7 @@ export default function show({ order }) {
                                                         viewBox="0 0 24 24"
                                                         strokeWidth={1.5}
                                                         stroke="currentColor"
-                                                        className="w-4 h-4 mr-2"
+                                                        className="mr-2 w-7 h-7"
                                                     >
                                                         <path
                                                             strokeLinecap="round"

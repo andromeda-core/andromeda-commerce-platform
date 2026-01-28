@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Website;
 
 use App\Http\Controllers\Controller;
+use App\Repositories\OrderAddressChangeRequest\Interface\IOrderAddressChangeRequestRepository;
 use App\Repositories\Orders\Interface\IOrderRepository;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -10,7 +11,8 @@ use Inertia\Inertia;
 class OrderController extends Controller
 {
     public function __construct(
-        private IOrderRepository $order
+        private IOrderRepository $order,
+        private IOrderAddressChangeRequestRepository $order_address_change_request
     ) {}
 
     public function index(Request $request)
@@ -80,10 +82,10 @@ class OrderController extends Controller
             return to_route('website.orders.index');
         }
 
-        $exists = $this->order->orderExists($order_no);
+        $notExists = $this->order->refundOrderDoesntExists($order_no);
 
-        if ($exists['status'] === false) {
-            return to_route('website.orders.order-view', ['order_no' => $order_no])->with('info', $exists['message']);
+        if ($notExists['status'] === false) {
+            return to_route('website.orders.order-view', ['order_no' => $order_no])->with('info', $notExists['message']);
         }
 
         return Inertia::render('Website/Orders/Refund/index', compact('order_no'));
@@ -92,6 +94,33 @@ class OrderController extends Controller
     public function refundRequestStore(Request $request, ?string $order_no = null)
     {
         $response = $this->order->refundRequestStore($request, $order_no);
+
+        if ($response['status'] === false) {
+            return back()->with('error', $response['message']);
+        }
+
+        return to_route('website.orders.order-view', ['order_no' => $order_no])->with('success', $response['message']);
+    }
+
+    public function shippingAddressChangeRequestIndex(Request $request, ?string $order_no = null)
+    {
+        if (empty($order_no)) {
+            return to_route('website.orders.index');
+        }
+
+        $notExists = $this->order->orderAddressChangeRequestDoesntExists($order_no);
+
+        if ($notExists['status'] === false) {
+            return to_route('website.orders.order-view', ['order_no' => $order_no])->with('info', $notExists['message']);
+        }
+
+        return Inertia::render('Website/Orders/ShippingAddressChangeRequest/index', compact('order_no'));
+
+    }
+
+    public function shippingAddressChangeRequestStore(Request $request, ?string $order_no = null)
+    {
+        $response = $this->order->ShippingAddressChangeRequestStore($request, $order_no);
 
         if ($response['status'] === false) {
             return back()->with('error', $response['message']);

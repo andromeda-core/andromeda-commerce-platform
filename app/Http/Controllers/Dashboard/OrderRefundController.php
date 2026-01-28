@@ -6,10 +6,21 @@ use App\Helpers\Trans;
 use App\Http\Controllers\Controller;
 use App\Repositories\OrderRefund\Interface\IOrderRefundRepository;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Inertia\Inertia;
 
-class OrderRefundController extends Controller
+class OrderRefundController extends Controller implements HasMiddleware
 {
+    public static function middleware()
+    {
+        return [
+            new Middleware('permission:Order Refunds View', ['only' => 'index']),
+            new Middleware('permission:Order Refunds Edit', ['only' => 'edit']),
+            new Middleware('permission:Order Refunds Edit', ['only' => 'update']),
+        ];
+    }
+
     public function __construct(
         private IOrderRefundRepository $order_refund,
         private Trans $trans

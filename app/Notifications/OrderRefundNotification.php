@@ -65,10 +65,6 @@ class OrderRefundNotification extends Notification implements ShouldQueue
             ->greeting('Hello '.$this->refund->customer->user->name.',')
             ->line('Unfortunately, your refund request has been rejected.')
             ->line('Order Number: '.$this->refund->order->order_no)
-            ->when(
-                ! empty($this->refund->note),
-                fn (MailMessage $mail) => $mail->line('Reason: '.$this->refund->note)
-            )
             ->line('If you believe this is a mistake, please contact our support team.')
             ->action('Contact Support', route('website.contact.index'));
     }

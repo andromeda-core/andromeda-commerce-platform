@@ -28,7 +28,7 @@ class OrderRefund extends Model
 
     public function getAddedAtAttribute()
     {
-        return ! empty($this->created_at) ? $this->created_at->format('Y-m-d') : null;
+        return ! empty($this->created_at) ? $this->created_at->format('Y-m-d H:i:s') : null;
     }
 
     // RelationShips

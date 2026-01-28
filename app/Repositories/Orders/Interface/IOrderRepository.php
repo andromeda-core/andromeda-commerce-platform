@@ -43,7 +43,11 @@ interface IOrderRepository
 
     public function markPackagingVideoViewed(Request $request);
 
-    public function orderExists(string $order_no);
+    public function refundOrderDoesntExists(string $order_no);
 
     public function refundRequestStore(Request $request, string $order_no);
+
+    public function orderAddressChangeRequestDoesntExists(string $order_no);
+
+    public function ShippingAddressChangeRequestStore(Request $request, string $order_no);
 }

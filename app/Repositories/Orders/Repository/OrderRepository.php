@@ -14,6 +14,7 @@ use App\Models\CartItem;
 use App\Models\Collaborator;
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\OrderAddressChangeRequest;
 use App\Models\OrderRefund;
 use App\Models\PackageRecording;
 use App\Models\RewardSetting;
@@ -23,6 +24,7 @@ use App\Models\SmartphoneOrderItemAddon;
 use App\Models\SpecialCountry;
 use App\Models\User;
 use App\Notifications\NotifyCustomerAboutAwaitingPaymentOrderFromCrypto;
+use App\Notifications\OrderAddressChangeNotification;
 use App\Notifications\OrderRefundNotification;
 use App\Repositories\Orders\Interface\IOrderRepository;
 use App\Services\CartPriceCalculator;
@@ -51,7 +53,8 @@ class OrderRepository implements IOrderRepository
         private Trans $trans,
         private SmartphoneCartAddon $smartphone_cart_addon,
         private SmartphoneOrderItemAddon $smartphone_order_item_addon,
-        private CartPriceCalculator $cart_price_calculator
+        private CartPriceCalculator $cart_price_calculator,
+        private OrderAddressChangeRequest $order_address_change_request
     ) {}
 
     public function getAllOrders(Request $request)
@@ -79,11 +82,8 @@ class OrderRepository implements IOrderRepository
     {
         $order = $this->order->with(
             [
-                'collaborator',
-                'customer',
                 'customer.user',
-                'shippingAddress',
-                'shippingAddress.country',
+                'collaborator',
                 'orderPackageRecordings',
                 'orderItems',
                 'orderItems.smartphone',
@@ -575,11 +575,8 @@ class OrderRepository implements IOrderRepository
             $order = $this->order
                 ->with(
                     [
-                        'customer',
                         'customer.user',
                         'collaborator',
-                        'shippingAddress',
-                        'shippingAddress.country',
                         'orderItems',
                         'orderItems.smartphone',
                         'orderItems.smartphone.model_name',
@@ -620,11 +617,8 @@ class OrderRepository implements IOrderRepository
             $order = $this->order
                 ->with(
                     [
-                        'customer',
                         'customer.user',
                         'collaborator',
-                        'shippingAddress',
-                        'shippingAddress.country',
                         'orderItems',
                         'orderItems.smartphone',
                         'orderItems.smartphone.model_name',
@@ -813,7 +807,14 @@ class OrderRepository implements IOrderRepository
 
             $order_data = [
                 'customer_id' => $customer->id,
-                'shipping_address_id' => $shipping_address->id,
+                'shipping_name' => $shipping_address?->name,
+                'shipping_phone' => $shipping_address?->phone,
+                'shipping_state' => $shipping_address?->state,
+                'shipping_city' => $shipping_address?->city,
+                'shipping_postal_code' => $shipping_address?->postal_code,
+                'shipping_country' => $shipping_address?->country->name,
+                'shipping_address_line1' => $shipping_address?->address_line1,
+                'shipping_address_line2' => $shipping_address?->address_line2,
                 'collaborator_id' => $collaborator ? $collaborator->id : null,
                 'sub_total' => $calculation['cart_subtotal'],
                 'import_tax' => $calculation['import_tax'],
@@ -919,7 +920,14 @@ class OrderRepository implements IOrderRepository
         try {
             $order = $this->order->create([
                 'customer_id' => $order_data['customer_id'],
-                'shipping_address_id' => $order_data['shipping_address_id'],
+                'shipping_name' => $order_data['shipping_name'],
+                'shipping_phone' => $order_data['shipping_phone'],
+                'shipping_state' => $order_data['shipping_state'],
+                'shipping_city' => $order_data['shipping_city'],
+                'shipping_postal_code' => $order_data['shipping_postal_code'],
+                'shipping_country' => $order_data['shipping_country'],
+                'shipping_address_line1' => $order_data['shipping_address_line1'],
+                'shipping_address_line2' => $order_data['shipping_address_line2'],
                 'collaborator_id' => $order_data['collaborator_id'],
                 'amount' => $order_data['amount'],
                 'sub_total' => $order_data['sub_total'],
@@ -1083,9 +1091,6 @@ class OrderRepository implements IOrderRepository
         $order = $this->order->with(
             [
                 'collaborator',
-                'customer.user',
-                'shippingAddress',
-                'shippingAddress.country',
                 'orderPackageRecordings',
                 'orderItems',
                 'orderItems.smartphone',
@@ -1281,7 +1286,7 @@ class OrderRepository implements IOrderRepository
         return ((float) $smartphone->selling_info->total_price * (float) $default_value) / 100;
     }
 
-    public function orderExists(string $order_no)
+    public function refundOrderDoesntExists(string $order_no)
     {
         try {
             $order = $this->order->where('order_no', $order_no)->first();
@@ -1384,6 +1389,127 @@ class OrderRepository implements IOrderRepository
             return [
                 'status' => true,
                 'message' => $this->trans->get('Order Refund Requested Successful'),
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function orderAddressChangeRequestDoesntExists(string $order_no)
+    {
+        try {
+            $order = $this->order->where('order_no', $order_no)->first();
+            if (empty($order)) {
+                throw new Exception($this->trans->get('Order Not Found'));
+            }
+
+            if (in_array($order->status, ['shipped', 'arrived_locally', 'delivered'])) {
+                throw new Exception($this->trans->get('This Order Address Change Request Cannot Be Created Because It Has Already Been Shipped'));
+            }
+
+            if ($order->addressChangeRequest()->exists()) {
+                throw new Exception($this->trans->get('Order Address Change Request Already Exists'));
+            }
+
+            return [
+                'status' => true,
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function ShippingAddressChangeRequestStore(Request $request, string $order_no)
+    {
+        $validated_req = $request->validate([
+            'reason' => ['required', 'string', 'min:30', 'max:1000'],
+            'shipping_name' => ['required', 'string', 'max:255'],
+            'shipping_phone' => ['required', 'string', 'max:255'],
+            'shipping_address_line1' => ['required', 'string', 'max:1000'],
+            'shipping_address_line2' => ['nullable', 'string', 'max:1000'],
+            'shipping_city' => ['required', 'string', 'max:255'],
+            'shipping_state' => ['required', 'string', 'max:255'],
+            'shipping_country' => ['required', 'string', 'max:255'],
+            'shipping_postal_code' => ['required', 'string', 'max:255'],
+        ], [
+            'reason.required' => $this->trans->get('The Reason Field Is Required.'),
+            'reason.min' => $this->trans->get('The Reason Must Be At Least 30 Characters.'),
+            'reason.max' => $this->trans->get('The Reason Must Be Less Than 1000 Characters.'),
+        ]);
+
+        try {
+            $user = $request->user()->load([
+                'customer',
+            ]);
+
+            if (empty($user)) {
+                return [
+                    'status' => false,
+                    'message' => $this->trans->get('Please Login First'),
+                ];
+            }
+
+            $customer = $user->customer;
+
+            if (empty($customer)) {
+                return [
+                    'status' => false,
+                    'message' => $this->trans->get('Customer Not Found'),
+                ];
+            }
+
+            $order = $this->order->where('order_no', $order_no)->first();
+
+            if (empty($order)) {
+
+                throw new Exception($this->trans->get('Order Not Found'));
+            }
+
+            if (in_array($order->status, ['shipped', 'arrived_locally', 'delivered'])) {
+                throw new Exception($this->trans->get('This Order Address Cannot Be Created Because It Has Already Been Shipped'));
+            }
+
+            if ($order->addressChangeRequest()->exists()) {
+                throw new Exception($this->trans->get('Order Address Change Request Already Exists'));
+            }
+
+            DB::transaction(function () use ($order, $customer, $validated_req) {
+
+                $order_address_change_request = $order->addressChangeRequest()->create([
+                    'customer_id' => $customer->id,
+                    'order_id' => $order->id,
+                    'reason' => $validated_req['reason'],
+                    'shipping_name' => $validated_req['shipping_name'],
+                    'shipping_phone' => $validated_req['shipping_phone'],
+                    'shipping_address_line1' => $validated_req['shipping_address_line1'],
+                    'shipping_address_line2' => $validated_req['shipping_address_line2'],
+                    'shipping_city' => $validated_req['shipping_city'],
+                    'shipping_state' => $validated_req['shipping_state'],
+                    'shipping_country' => $validated_req['shipping_country'],
+                    'shipping_postal_code' => $validated_req['shipping_postal_code'],
+                    'requested_at' => now(),
+                ]);
+
+                if (empty($order_address_change_request)) {
+                    throw new Exception($this->trans->get('Order Address Change Request Failed'));
+                }
+
+                $order_address_change_request->load(['customer.user', 'order']);
+                $order_address_change_request->customer->user->notify(new OrderAddressChangeNotification($order_address_change_request, 'requested'));
+
+            });
+
+            return [
+                'status' => true,
+                'message' => $this->trans->get('Order Address Change Requested Successful'),
             ];
 
         } catch (Exception $e) {
