@@ -23,4 +23,6 @@ interface ICustomerRepository
     public function updateCustomerProfile(Request $request, string $id);
 
     public function changeCustomerPassword(Request $request, string $id);
+
+    public function emailChangeVerify(Request $request, string $token);
 }

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Website;
 
 use App\Http\Controllers\Controller;
-use App\Repositories\OrderAddressChangeRequest\Interface\IOrderAddressChangeRequestRepository;
+use App\Repositories\Customers\Interface\ICustomerRepository;
 use App\Repositories\Orders\Interface\IOrderRepository;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -12,7 +12,7 @@ class OrderController extends Controller
 {
     public function __construct(
         private IOrderRepository $order,
-        private IOrderAddressChangeRequestRepository $order_address_change_request
+        private ICustomerRepository $customer
     ) {}
 
     public function index(Request $request)
@@ -114,7 +114,13 @@ class OrderController extends Controller
             return to_route('website.orders.order-view', ['order_no' => $order_no])->with('info', $notExists['message']);
         }
 
-        return Inertia::render('Website/Orders/ShippingAddressChangeRequest/index', compact('order_no'));
+        $countries = collect($this->customer->getCountries())
+            ->map(fn ($country) => [
+                'name' => $country->name,
+            ])
+            ->toArray();
+
+        return Inertia::render('Website/Orders/ShippingAddressChangeRequest/index', compact('order_no', 'countries'));
 
     }
 

@@ -5,16 +5,23 @@ namespace App\Repositories\Customers\Repository;
 use App\Helpers\Trans;
 use App\Models\Country;
 use App\Models\Customer;
+use App\Models\EmailChangeLog;
+use App\Models\EmailChangeRequest;
 use App\Models\User;
 use App\Notifications\AccountDeactiveOrActiveNotification;
 use App\Notifications\AccountSuspendNotification;
 use App\Notifications\AccountUnderDisputeNotification;
 use App\Notifications\AccountUnderInvestigationNotification;
+use App\Notifications\AlertUserAboutEmailChangeNotification;
+use App\Notifications\EmailChangeConfirmationNotification;
 use App\Repositories\Customers\Interface\ICustomerRepository;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\RateLimiter;
+use Str;
 
 class CustomerRepository implements ICustomerRepository
 {
@@ -23,6 +30,8 @@ class CustomerRepository implements ICustomerRepository
         private User $user,
         private Country $country,
         private Trans $trans,
+        private EmailChangeRequest $emailChangeRequest,
+        private EmailChangeLog $emailChangeLog,
     ) {}
 
     public function getAllCustomers(Request $request)
@@ -313,7 +322,7 @@ class CustomerRepository implements ICustomerRepository
     public function updateCustomerProfile(Request $request, string $id)
     {
         $user = $this->user->with(['customer'])->find($id);
-
+        $old_email = $user->email;
         if (empty($user)) {
             return [
                 'status' => false,
@@ -352,7 +361,6 @@ class CustomerRepository implements ICustomerRepository
 
             $user->update([
                 'name' => $validated_req['name'],
-                'email' => $validated_req['email'],
                 'phone' => $validated_req['phone'],
             ]);
 
@@ -372,14 +380,83 @@ class CustomerRepository implements ICustomerRepository
 
             ]);
 
+            $message = $this->trans::get('Profile Updated Successfully');
+
+            if ($old_email !== $validated_req['email']) {
+
+                $key = 'email-change:'.$user->id;
+
+                if (RateLimiter::tooManyAttempts($key, 1)) {
+                    throw new Exception(
+                        $this->trans::get('You can request an email change only once per hour. Please try again later.')
+                    );
+                }
+
+                // Register the attempt with 1 hour cooldown
+                RateLimiter::hit($key, 3600);
+
+                $hasPending = $this->emailChangeRequest
+                    ->where('user_id', $user->id)
+                    ->where('status', 'pending')
+                    ->where('expires_at', '>', now())
+                    ->exists();
+
+                if ($hasPending) {
+                    throw new Exception(
+                        $this->trans::get(
+                            'You already have a pending email change request. Please confirm it or wait for it to expire.'
+                        )
+                    );
+                }
+
+                $ip = $request->ip();
+                $user_agent = $request->userAgent();
+                $expires_at = now()->addHour(1);
+
+                $rawToken = Str::random(64);
+                $hashedToken = hash('sha256', $rawToken);
+
+                $this->emailChangeRequest->create([
+                    'user_id' => $user->id,
+                    'old_email' => $old_email,
+                    'new_email' => $validated_req['email'],
+                    'token' => $hashedToken,
+                    'ip_address' => $ip,
+                    'user_agent' => $user_agent,
+                    'expires_at' => $expires_at,
+                ]);
+
+                Notification::route('mail', $validated_req['email'])
+                    ->notify(new EmailChangeConfirmationNotification(
+                        $rawToken,
+                        $ip,
+                        $user_agent,
+                        $expires_at,
+                        $user->name
+                    ));
+                Notification::route('mail', $old_email)
+                    ->notify(new AlertUserAboutEmailChangeNotification(
+                        $validated_req['email'],
+                        $ip,
+                        $user_agent,
+                        $user->name
+                    ));
+
+                $message = $this->trans::get(
+                    'Your profile changes have been saved. Your email address will be updated after you confirm the verification link sent to your new email address.'
+                );
+            }
+
             DB::commit();
 
             return [
                 'status' => true,
-                'message' => $this->trans::get('Profile Updated Successfully'),
+                'message' => $message,
             ];
 
         } catch (Exception $e) {
+            DB::rollBack();
+
             return [
                 'status' => false,
                 'message' => $e->getMessage(),
@@ -426,5 +503,64 @@ class CustomerRepository implements ICustomerRepository
             ];
         }
 
+    }
+
+    public function emailChangeVerify(Request $request, string $token)
+    {
+        try {
+            $user = $request->user();
+
+            if (! $user) {
+                throw new Exception($this->trans->get('Please login to confirm your email change.'));
+            }
+
+            if (empty($token)) {
+                throw new Exception($this->trans->get('Token Not Found'));
+            }
+
+            $hashedToken = hash('sha256', $token);
+
+            $emailChangeRequest = $this->emailChangeRequest
+                ->where('user_id', $user->id)
+                ->where('token', $hashedToken)
+                ->where('status', 'pending')
+                ->where('expires_at', '>', now())
+                ->first();
+
+            if (empty($emailChangeRequest)) {
+                throw new Exception($this->trans->get('Invalid or expired verification link'));
+            }
+
+            DB::transaction(function () use ($user, $emailChangeRequest, $request) {
+                $this->emailChangeLog->create([
+                    'user_id' => $user->id,
+                    'old_email' => $emailChangeRequest->old_email,
+                    'new_email' => $emailChangeRequest->new_email,
+                    'changed_at' => now(),
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ]);
+
+                $user->email = $emailChangeRequest->new_email;
+                $user->email_verified_at = now();
+                $user->save();
+
+                $emailChangeRequest->status = 'confirmed';
+                $emailChangeRequest->token = null;
+                $emailChangeRequest->save();
+
+            });
+
+            return [
+                'status' => true,
+                'message' => $this->trans->get('Your email address has been updated successfully'),
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
     }
 }

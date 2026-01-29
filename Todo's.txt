@@ -1218,6 +1218,125 @@ Is point me sab se zyada critical aur complex work complete hua:
 )
 
 
+39: Refund Logic Fixed Now it Rollbacks The Stock as well which were selected with the Order and Backend And Tables
+Update To store Inventory item id in Order Items To Track actual Item when rollbacking  '''''''''''''''''''''' ✅
+
+40: (
+
+    TODO: Order Item Inventory Refactor (Completed)
+
+    Refactored order item data access across the entire application.
+    Previously, order items were directly accessing the Smartphone model.
+    This caused ambiguity and incorrect stock handling because smartphones can have multiple physical inventory units.
+
+    🔄 What changed
+    Order items now always reference the assigned InventoryItem first.
+    Smartphone data is accessed through the inventory item, not directly from the order item.
+    This ensures each order item is tied to an actual physical stock unit.
+
+    🧠 Why this was necessary
+    To enable accurate stock tracking (on_hold, sold, in_stock).
+
+    To prevent incorrect stock rollback during:
+    order cancellation
+    order expiration
+    refund completion
+    To support future flows like partial refunds, exchanges, and damaged returns.
+    To keep inventory logic consistent and audit-safe across the system.
+
+    🛠 Scope of update
+    Updated backend logic wherever order items were previously using direct smartphone access.
+    Updated frontend rendering to fetch product data via inventory → smartphone.
+    Refactored order cancellation, expiration, and refund flows to release stock using inventory items only.
+    Ensured no other order’s inventory can be affected unintentionally.
+
+    🟢 Result
+    Inventory tracking is now accurate, consistent, and production-safe.
+    Each order item maps to exactly one physical stock unit.
+    Stock state transitions are reliable across the entire order lifecycle.
+)✅
+
+
+41: (
+
+🔐 Account & Security Related
+Email change request flow finalize kiya with:
+Token expiry handling
+Status transitions (pending → expired)
+Token removal after expiry
+Email change expiry ke liye custom Artisan command design aur implement ki
+Notification flow clarify kiya ke email sirf commit ke baad trigger hoti hai
+Confirm kiya ke custom notification notifiable ka name user model se aata hai
+
+🏠 Shipping Address Module (Profile + Orders)
+Shipping Address ka clear separation define kiya:
+Profile-level shipping address
+
+Order-level snapshot shipping address
+Old vs New shipping address ka JSON-based change logging implement kiya
+
+Shipping address ke liye:
+Create
+Update
+Activate (toggle)
+Delete
+
+sab ke liye change logs + notifications add ki
+Max 2 shipping addresses constraint implement ki
+Ensure kiya ke sirf ek active shipping address ho sakta hai
+Profile se shipping address add karne ka separate controlled flow banaya
+
+🔔 Notifications
+
+Shipping Address ke liye 4 professional notification types define kiye:
+Created
+Updated
+Activated
+Deleted
+
+Notification placement refactor ki:
+
+❌ Transaction ke andar nahi
+✅ DB commit ke baad trigger
+Notification consistency ensure ki across repositories
+
+🧾 System Logs & Audit Trail
+Shipping Address Change Logs ka full backend flow complete
+IP address
+User agent
+User reference
+Old data (JSON)
+New data (JSON)
+Eloquent casting ke zariye JSON auto-decode enable ki
+Admin panel ke liye logs listing page integrate ki
+
+🖥 Frontend (Admin / Dashboard)
+Shipping address change logs ko frontend table me properly render karne ka logic finalize
+JSON data ko human-readable format me display karne ka approach define
+Table rendering ke liye:
+Custom formatter logic
+Multi-line address presentation
+
+Admin UX improve ki taake:
+Clear visibility ho ke kya change hua
+Old vs New data easily compare ho sake
+
+🧠 Architecture / Logic Improvements
+Variable reference vs value behavior ko clearly reason out kiya
+
+Confirm kiya ke:
+Reference pass karne pe outer variable update hota hai
+Direct value pass karne pe scope limited rehta hai
+Countries list ko key-value associative format me convert karne ka logic finalize
+Example: ['name' => 'Pakistan']
+
+🧹 Code Quality & Consistency
+Repository pattern ko consistently follow kiya
+Validation messages ko centralized Trans helper ke through align kiya
+Role-based checks (Customer only) har sensitive action pe enforce ki
+Error handling + rollback scenarios clean kiye
+)✅
+
  <- Review Remeaning ->
 (
 Joseph Kim

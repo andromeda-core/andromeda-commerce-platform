@@ -154,4 +154,19 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(MetaContact::class, 'user_id', 'id');
     }
+
+    public function emailChangeLogs(): HasMany
+    {
+        return $this->hasMany(EmailChangeLog::class, 'user_id', 'id');
+    }
+
+    public function emailChangeRequests(): HasMany
+    {
+        return $this->hasMany(EmailChangeRequest::class, 'user_id', 'id');
+    }
+
+    public function shippingAddressChangeLogs(): HasMany
+    {
+        return $this->hasMany(ShippingAddressChangeLog::class, 'user_id', 'id');
+    }
 }

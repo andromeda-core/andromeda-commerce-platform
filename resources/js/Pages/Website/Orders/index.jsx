@@ -522,9 +522,9 @@ function OrderCard({ order, currency, __ }) {
                             >
                                 <img
                                     src={
-                                        item?.smartphone?.smartphone_image_urls?.[0] || item?.smartphone?.smartphone_video_urls?.[0]?.thumbnail_url || Placeholder
+                                        item?.inventory_item?.smartphone?.smartphone_image_urls?.[0] || item?.inventory_item?.smartphone?.smartphone_video_urls?.[0]?.thumbnail_url || Placeholder
                                     }
-                                    alt={item?.smartphone?.model_name?.name || 'Product'}
+                                    alt={item?.inventory_item?.smartphone?.model_name?.name || 'Product'}
                                     className="object-cover w-full h-full transition-transform duration-300 group-hover/img:scale-110"
                                     loading="lazy"
                                     onError={(e) => (e.target.src = Placeholder)}

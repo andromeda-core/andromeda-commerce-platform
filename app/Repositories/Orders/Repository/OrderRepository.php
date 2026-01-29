@@ -86,13 +86,13 @@ class OrderRepository implements IOrderRepository
                 'collaborator',
                 'orderPackageRecordings',
                 'orderItems',
-                'orderItems.smartphone',
-                'orderItems.smartphone.model_name',
-                'orderItems.smartphone.capacity',
-                'orderItems.smartphone.selling_info',
-                'orderItems.smartphone.category',
-                'orderItems.smartphone.category.distributor',
-                'orderItems.smartphone.category.distributor.user',
+                'orderItems.inventoryItem.smartphone',
+                'orderItems.inventoryItem.smartphone.model_name',
+                'orderItems.inventoryItem.smartphone.capacity',
+                'orderItems.inventoryItem.smartphone.selling_info',
+                'orderItems.inventoryItem.smartphone.category',
+                'orderItems.inventoryItem.smartphone.category.distributor',
+                'orderItems.inventoryItem.smartphone.category.distributor.user',
                 'orderItems.color',
                 'orderItems.smartphoneAddons',
             ]
@@ -427,20 +427,31 @@ class OrderRepository implements IOrderRepository
                 throw new Exception('Order Not Found');
             }
 
-            if ($order->status === 'pending' || $order->status === 'awaiting_payment' || $order->status === 'expired' || $order->status === 'failed') {
-                foreach ($order->orderItems as $item) {
-                    $quantity = $item->quantity;
+            if (in_array($order->status, [
+                'pending',
+                'awaiting_payment',
+                'expired',
+                'failed',
+            ])) {
 
-                    $inventoryItems = $item->smartphone->inventory_items()
-                        ->where('status', 'on_hold')
-                        ->limit($quantity)
-                        ->get();
+                DB::transaction(function () use ($order) {
 
-                    foreach ($inventoryItems as $inventoryItem) {
-                        $inventoryItem->update(['status' => 'in_stock']);
+                    $order->load('orderItems.inventoryItem');
+
+                    foreach ($order->orderItems as $item) {
+
+                        $inventoryItem = $item->inventoryItem;
+
+                        if (
+                            $inventoryItem &&
+                            $inventoryItem->status === 'on_hold'
+                        ) {
+                            $inventoryItem->update([
+                                'status' => 'in_stock',
+                            ]);
+                        }
                     }
-                }
-
+                });
             }
 
             if (! empty($order->payment_proof)) {
@@ -578,11 +589,11 @@ class OrderRepository implements IOrderRepository
                         'customer.user',
                         'collaborator',
                         'orderItems',
-                        'orderItems.smartphone',
-                        'orderItems.smartphone.model_name',
-                        'orderItems.smartphone.capacity',
-                        'orderItems.smartphone.selling_info',
-                        'orderItems.smartphone.category',
+                        'orderItems.inventoryItem.smartphone',
+                        'orderItems.inventoryItem.smartphone.model_name',
+                        'orderItems.inventoryItem.smartphone.capacity',
+                        'orderItems.inventoryItem.smartphone.selling_info',
+                        'orderItems.inventoryItem.smartphone.category',
                         'orderItems.smartphoneAddons',
                     ]
                 )
@@ -620,11 +631,11 @@ class OrderRepository implements IOrderRepository
                         'customer.user',
                         'collaborator',
                         'orderItems',
-                        'orderItems.smartphone',
-                        'orderItems.smartphone.model_name',
-                        'orderItems.smartphone.capacity',
-                        'orderItems.smartphone.selling_info',
-                        'orderItems.smartphone.category',
+                        'orderItems.inventoryItem.smartphone',
+                        'orderItems.inventoryItem.smartphone.model_name',
+                        'orderItems.inventoryItem.smartphone.capacity',
+                        'orderItems.inventoryItem.smartphone.selling_info',
+                        'orderItems.inventoryItem.smartphone.category',
                         'orderItems.smartphoneAddons',
                     ]
                 )
@@ -779,16 +790,6 @@ class OrderRepository implements IOrderRepository
 
                 $amount = $calculation['total'];
 
-                $order_items[] = [
-                    'smartphone_id' => $smartphone->id,
-                    'unit_price' => $unit_price,
-                    'quantity' => $quantity,
-                    'sub_total' => $item_total,
-                    'shipping_cost' => $shipping_cost,
-                    'import_cost' => $import_cost,
-                    'color_id' => $smartphone_color_ids[$smartphone->id],
-                ];
-
                 $backend_inventoryItems = $smartphone->inventory_items()
                     ->where('status', 'in_stock')
                     ->lockForUpdate()
@@ -798,6 +799,17 @@ class OrderRepository implements IOrderRepository
                 foreach ($backend_inventoryItems as $inventoryItem) {
                     $inventoryItem->status = 'on_hold';
                     $inventoryItem->save();
+
+                    $order_items[] = [
+                        'smartphone_id' => $smartphone->id,
+                        'inventory_item_id' => $inventoryItem->id,
+                        'unit_price' => $unit_price,
+                        'quantity' => $quantity,
+                        'sub_total' => $item_total,
+                        'shipping_cost' => $shipping_cost,
+                        'import_cost' => $import_cost,
+                        'color_id' => $smartphone_color_ids[$smartphone->id],
+                    ];
                 }
 
                 $inventoryItems[] = $backend_inventoryItems
@@ -1065,7 +1077,7 @@ class OrderRepository implements IOrderRepository
         $customer = $user->customer;
 
         $orders = $this->order
-            ->with(['orderItems', 'orderItems.smartphone'])
+            ->with(['orderItems', 'orderItems.inventoryItem.smartphone'])
             ->withCount('orderItems')
             ->where('customer_id', $customer->id)
             ->latest()
@@ -1093,13 +1105,13 @@ class OrderRepository implements IOrderRepository
                 'collaborator',
                 'orderPackageRecordings',
                 'orderItems',
-                'orderItems.smartphone',
-                'orderItems.smartphone.model_name',
-                'orderItems.smartphone.capacity',
-                'orderItems.smartphone.selling_info',
-                'orderItems.smartphone.category',
-                'orderItems.smartphone.category.distributor',
-                'orderItems.smartphone.category.distributor.user',
+                'orderItems.inventoryItem.smartphone',
+                'orderItems.inventoryItem.smartphone.model_name',
+                'orderItems.inventoryItem.smartphone.capacity',
+                'orderItems.inventoryItem.smartphone.selling_info',
+                'orderItems.inventoryItem.smartphone.category',
+                'orderItems.inventoryItem.smartphone.category.distributor',
+                'orderItems.inventoryItem.smartphone.category.distributor.user',
                 'orderItems.color',
                 'orderItems.smartphoneAddons',
             ]
@@ -1411,6 +1423,14 @@ class OrderRepository implements IOrderRepository
                 throw new Exception($this->trans->get('This Order Address Change Request Cannot Be Created Because It Has Already Been Shipped'));
             }
 
+            if (in_array($order->status, ['failed', 'expired'])) {
+                throw new Exception($this->trans->get('This Order Address Change Request Cannot Be Created Because The Order Has Already Been Failed Or Expired'));
+            }
+
+            if (in_array($order->status, ['refund_requested', 'refund_approved', 'refund_rejected', 'refund_completed'])) {
+                throw new Exception($this->trans->get('This Order Address Change Request Cannot Be Created Because The Order Has Already Been Requested For A Refund'));
+            }
+
             if ($order->addressChangeRequest()->exists()) {
                 throw new Exception($this->trans->get('Order Address Change Request Already Exists'));
             }
@@ -1477,6 +1497,13 @@ class OrderRepository implements IOrderRepository
                 throw new Exception($this->trans->get('This Order Address Cannot Be Created Because It Has Already Been Shipped'));
             }
 
+            if (in_array($order->status, ['failed', 'expired'])) {
+                throw new Exception($this->trans->get('This Order Address Change Request Cannot Be Created Because The Order Has Already Been Failed Or Expired'));
+            }
+
+            if (in_array($order->status, ['refund_requested', 'refund_approved', 'refund_rejected', 'refund_completed'])) {
+                throw new Exception($this->trans->get('This Order Address Change Request Cannot Be Created Because The Order Has Already Been Requested For A Refund'));
+            }
             if ($order->addressChangeRequest()->exists()) {
                 throw new Exception($this->trans->get('Order Address Change Request Already Exists'));
             }

@@ -596,6 +596,68 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
+ * @property int $user_id
+ * @property string $old_email
+ * @property string $new_email
+ * @property string|null $ip_address
+ * @property string|null $user_agent
+ * @property string|null $changed_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User $user
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeLog newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeLog newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeLog query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeLog whereChangedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeLog whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeLog whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeLog whereIpAddress($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeLog whereNewEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeLog whereOldEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeLog whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeLog whereUserAgent($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeLog whereUserId($value)
+ */
+	class EmailChangeLog extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property string $old_email
+ * @property string $new_email
+ * @property string|null $token
+ * @property string $status
+ * @property string|null $ip_address
+ * @property string|null $user_agent
+ * @property string|null $expires_at
+ * @property string|null $confirmed_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User $user
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeRequest newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeRequest newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeRequest query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeRequest whereConfirmedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeRequest whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeRequest whereExpiresAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeRequest whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeRequest whereIpAddress($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeRequest whereNewEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeRequest whereOldEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeRequest whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeRequest whereToken($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeRequest whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeRequest whereUserAgent($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|EmailChangeRequest whereUserId($value)
+ */
+	class EmailChangeRequest extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
  * @property string $name
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -884,6 +946,7 @@ namespace App\Models{
  * @property numeric $import_tax
  * @property numeric $shipping_fee
  * @property numeric $addons_sub_total
+ * @property-read \App\Models\OrderAddressChangeRequest|null $addressChangeRequest
  * @property-read \App\Models\Collaborator|null $collaborator
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CollaboratorCommission> $collaboratorCommissions
  * @property-read int|null $collaborator_commissions_count
@@ -939,7 +1002,7 @@ namespace App\Models{
  * @property string $shipping_name
  * @property string $shipping_phone
  * @property string $shipping_address_line1
- * @property string $shipping_address_line2
+ * @property string|null $shipping_address_line2
  * @property string $shipping_city
  * @property string $shipping_state
  * @property string $shipping_country
@@ -947,19 +1010,26 @@ namespace App\Models{
  * @property string $reason
  * @property string|null $note
  * @property string $status
+ * @property string|null $requested_at
+ * @property string|null $approved_at
+ * @property string|null $rejected_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Customer $customer
+ * @property-read mixed $added_at
  * @property-read \App\Models\Order $order
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereApprovedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereCustomerId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereNote($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereOrderId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereReason($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereRejectedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereRequestedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereShippingAddressLine1($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereShippingAddressLine2($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderAddressChangeRequest whereShippingCity($value)
@@ -1383,6 +1453,32 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingAddress whereUpdatedAt($value)
  */
 	class ShippingAddress extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property string $old_shipping_address
+ * @property string $new_shipping_address
+ * @property string|null $ip_address
+ * @property string|null $user_agent
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User $user
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingAddressChangeLog newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingAddressChangeLog newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingAddressChangeLog query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingAddressChangeLog whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingAddressChangeLog whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingAddressChangeLog whereIpAddress($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingAddressChangeLog whereNewShippingAddress($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingAddressChangeLog whereOldShippingAddress($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingAddressChangeLog whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingAddressChangeLog whereUserAgent($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ShippingAddressChangeLog whereUserId($value)
+ */
+	class ShippingAddressChangeLog extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -1848,6 +1944,10 @@ namespace App\Models{
  * @property-read int|null $collaborator_commission_users_count
  * @property-read \App\Models\Customer|null $customer
  * @property-read \App\Models\Distributor|null $distributor
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\EmailChangeLog> $emailChangeLogs
+ * @property-read int|null $email_change_logs_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\EmailChangeRequest> $emailChangeRequests
+ * @property-read int|null $email_change_requests_count
  * @property-read mixed $added_at
  * @property-read mixed $avatar
  * @property-read mixed $points

@@ -13,25 +13,6 @@ export default function index({ order_refunds }) {
     // Bulk Delete Form Data
 
     const { props } = usePage();
-    const {
-        data: BulkselectedIds,
-        setData: setBulkSelectedIds,
-        delete: BulkDelete,
-        reset: resetBulkSelectedIds,
-    } = useForm({
-        ids: [],
-    });
-
-    // Single Delete Form Data
-    const {
-        data: SingleSelectedId,
-        setData: setSingleSelectedId,
-        delete: SingleDelete,
-        reset: resetSingleSelectedId,
-    } = useForm({
-        id: null,
-    });
-
     const { currency } = usePage().props;
     const [columns, setColumns] = useState([]);
     useEffect(() => {
@@ -121,13 +102,7 @@ export default function index({ order_refunds }) {
                     Content={
                         <>
                             <Table
-                                setBulkSelectedIds={setBulkSelectedIds}
-                                setSingleSelectedId={setSingleSelectedId}
-                                SingleSelectedId={SingleSelectedId}
-                                resetBulkSelectedIds={resetBulkSelectedIds}
-                                resetSingleSelectedId={resetSingleSelectedId}
-                                BulkDeleteMethod={BulkDelete}
-                                SingleDeleteMethod={SingleDelete}
+
                                 DeleteAction={false}
                                 EditRoute={can('Order Refunds Edit') ? 'dashboard.order-refunds.edit' : null}
                                 SearchRoute={'dashboard.order-refunds.index'}

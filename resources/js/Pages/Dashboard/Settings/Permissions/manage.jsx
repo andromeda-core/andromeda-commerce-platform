@@ -46,8 +46,8 @@ export default function manage({ all_permissions, assigned_permissions = [], rol
             <Card
                 Content={
                     <>
-                        <div className="my-3 flex flex-wrap justify-between">
-                            <label className="flex cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-800">
+                        <div className="flex flex-wrap justify-between my-1">
+                            <label className="flex items-center gap-2 px-2 rounded-lg cursor-pointer ">
                                 <input
                                     type="checkbox"
                                     className={
@@ -100,12 +100,12 @@ export default function manage({ all_permissions, assigned_permissions = [], rol
                                 return (
                                     <div
                                         key={index}
-                                        className="w-full rounded-2xl border bg-white p-6 shadow-md dark:bg-deepcharcoal"
+                                        className="w-full p-6 bg-white border shadow-md rounded-2xl dark:bg-deepcharcoal"
                                     >
                                         {/* Header with Icon + Parent Name */}
-                                        <div className="mb-4 flex items-center gap-3">
+                                        <div className="flex items-center gap-3 mb-4">
                                             {Icon && (
-                                                <Icon className="h-6 w-6 text-indigo-600 dark:text-white" />
+                                                <Icon className="w-6 h-6 text-indigo-600 dark:text-white" />
                                             )}
                                             <h2 className="text-lg font-semibold text-gray-800 dark:text-white/80">
                                                 {permissionGroup.parent_name}
@@ -117,14 +117,14 @@ export default function manage({ all_permissions, assigned_permissions = [], rol
                                             {permissionGroup.items?.map((item) => (
                                                 <label
                                                     key={item.id}
-                                                    className="flex cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                                    className="flex items-center gap-3 py-2 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
                                                 >
                                                     <input
                                                         type="checkbox"
                                                         className={
                                                             selected.includes(item.id)
-                                                                ? 'mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] border-indigo-500 bg-indigo-500 dark:border-gray-700'
-                                                                : 'mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] border-gray-300 bg-transparent'
+                                                                ? 'mr-1 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] border-indigo-500 bg-indigo-500 dark:border-gray-700'
+                                                                : 'mr-1 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] border-gray-300 bg-transparent'
                                                         }
                                                         checked={selected.includes(item.id)}
                                                         onChange={() => toggleCheckbox(item.id)}

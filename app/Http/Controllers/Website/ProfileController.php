@@ -114,4 +114,19 @@ class ProfileController extends Controller
     {
         return Inertia::render('Website/Profile/SuspendAccount');
     }
+
+    public function emailChangeVerify(Request $request, ?string $token = null)
+    {
+        if (empty($token)) {
+            return to_route('home');
+        }
+
+        $response = $this->customer->emailChangeVerify($request, $token);
+
+        if ($response['status'] === false) {
+            return to_route('home')->with('error', $response['message']);
+        }
+
+        return to_route('home')->with('success', $response['message']);
+    }
 }

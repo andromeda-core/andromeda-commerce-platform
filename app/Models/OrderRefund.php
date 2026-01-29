@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Notifications\OrderRefundNotification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\DB;
 
 class OrderRefund extends Model
 {
@@ -94,6 +95,24 @@ class OrderRefund extends Model
             }
 
             if ($refund->refund_status === 'completed') {
+
+                DB::transaction(function () use ($order) {
+
+                    foreach ($order->orderItems as $item) {
+
+                        $inventoryItem = $item->inventoryItem;
+
+                        if (
+                            $inventoryItem &&
+                           $inventoryItem->status === 'sold'
+                        ) {
+                            $inventoryItem->update([
+                                'status' => 'in_stock',
+                            ]);
+                        }
+                    }
+                });
+
                 $refund->customer->user->notify(new OrderRefundNotification($refund, 'completed'));
             }
         });

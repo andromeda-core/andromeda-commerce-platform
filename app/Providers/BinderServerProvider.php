@@ -64,6 +64,8 @@ use App\Repositories\Smartphones\Interface\ISmartphoneRepository;
 use App\Repositories\Smartphones\Repository\SmartphoneRepository;
 use App\Repositories\Suppliers\Interface\ISupplierRepository;
 use App\Repositories\Suppliers\Repository\SupplierRepository;
+use App\Repositories\SystemLogs\Interface\ISystemLogsRepository;
+use App\Repositories\SystemLogs\Repository\SystemLogsRepository;
 use App\Repositories\TermsOfService\Interface\ITermsOfServiceRepository;
 use App\Repositories\TermsOfService\Repository\TermsOfServiceRepository;
 use App\Repositories\TranslationSystem\Language\Interface\ILanguageRepository;
@@ -119,6 +121,7 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(IShippingPolicyRepository::class, ShippingPolicyRepository::class);
         $this->app->bind(IOrderRefundRepository::class, OrderRefundRepository::class);
         $this->app->bind(IOrderAddressChangeRequestRepository::class, OrderAddressChangeRequestRepository::class);
+        $this->app->bind(ISystemLogsRepository::class, SystemLogsRepository::class);
 
     }
 

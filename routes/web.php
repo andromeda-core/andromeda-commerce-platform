@@ -25,6 +25,7 @@ use App\Http\Controllers\Dashboard\SettingController;
 use App\Http\Controllers\Dashboard\SmartphoneController;
 use App\Http\Controllers\Dashboard\SmartphoneForSaleController;
 use App\Http\Controllers\Dashboard\SupplierController;
+use App\Http\Controllers\Dashboard\SystemLogsController;
 use App\Http\Controllers\Dashboard\TranslationController;
 use App\Http\Controllers\Dashboard\TranslationKeyController;
 use App\Http\Controllers\Dashboard\TranslationSystemController;
@@ -175,6 +176,9 @@ Route::group(['as' => 'website.'], function () {
 
         // Suspend Account Route
         Route::get('/profile/suspend-account', 'suspendAccountIndex')->name('suspend-account.index');
+
+        // Email Change Verification Route
+        Route::get('/profile/email-change/verify/{token?}', 'emailChangeVerify')->name('email-change.verify');
 
     });
 
@@ -465,6 +469,14 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/profile-update', 'updateProfile')->name('profile.update');
             Route::put('/profile-password-update', 'updatePassword')->name('profile.password.update');
             Route::delete('/profile/account-destroy', 'destroyAccount')->name('profile.account.destroy');
+        });
+
+        // System Logs System
+        Route::controller(SystemLogsController::class)->name('system-logs.')->prefix('/system-logs')->group(function () {
+            Route::get('/', 'index')->name('index');
+
+            Route::get('/email-change-logs', 'emailChangeLogs')->name('email-change-logs.index');
+            Route::get('/shipping-address-change-logs', 'shippingAddressChangeLogs')->name('shipping-address-change-logs.index');
         });
 
         // Translation System

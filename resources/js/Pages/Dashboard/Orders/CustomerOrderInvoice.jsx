@@ -281,11 +281,11 @@ export default function CustomerOrderInvoice({ order }) {
 
                                             <tr className="border-b border-gray-200">
                                                 <td className="px-2 py-4 text-sm font-medium text-gray-900">
-                                                    {item.smartphone?.model_name?.name}
+                                                    {item.inventory_item?.smartphone?.model_name?.name}
                                                 </td>
 
                                                 <td className="px-2 py-4 text-sm text-gray-600">
-                                                    {item.smartphone?.capacity?.name}
+                                                    {item.inventory_item?.smartphone?.capacity?.name}
                                                 </td>
 
                                                 <td className="px-2 py-4 text-sm text-right text-gray-900">

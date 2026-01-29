@@ -158,10 +158,10 @@
                             {{-- MAIN ROW --}}
                             <tr style="border-bottom:1px solid #e5e7eb;">
                                 <td style="padding:14px; font-weight:600;">
-                                    {{ $item->smartphone->model_name->name }}
+                                    {{ $item->inventoryItem->smartphone->model_name->name }}
                                 </td>
                                 <td style="padding:14px; color:#6b7280;">
-                                    {{ $item->smartphone->capacity->name }}
+                                    {{ $item->inventoryItem->smartphone->capacity->name }}
                                 </td>
                                 <td align="right" style="padding:14px;">
                                     {{ $currency->symbol }}{{ number_format($item->unit_price, 2) }}

@@ -531,18 +531,18 @@ export default function show({ order }) {
 
 
                                                                 {/* IMAGE */}
-                                                                {(item?.smartphone?.smartphone_image_urls.length > 0 || item?.smartphone?.smartphone_video_urls?.length > 0) && (
+                                                                {(item?.inventory_item?.smartphone?.smartphone_image_urls.length > 0 || item?.inventory_item?.smartphone?.smartphone_video_urls?.length > 0) && (
                                                                     <div className="relative w-24 h-24 overflow-hidden transition-all border-2 rounded-md cursor-pointer border-trasparent bg-surface-1-light aspect-square dark:bg-surface-1-dark dark:hover:border-surface-3-dark"
 
 
                                                                     >
                                                                         <img
                                                                             src={
-                                                                                item?.smartphone?.smartphone_image_urls?.[0] ||
-                                                                                item?.smartphone?.smartphone_video_urls[0]?.thumbnail_url ||
+                                                                                item?.inventory_item?.smartphone?.smartphone_image_urls?.[0] ||
+                                                                                item?.inventory_item?.smartphone?.smartphone_video_urls[0]?.thumbnail_url ||
                                                                                 Placeholder
                                                                             }
-                                                                            alt={item?.smartphone?.model_name?.name}
+                                                                            alt={item?.inventory_item?.smartphone?.model_name?.name}
                                                                             className="object-cover w-full h-full"
                                                                             loading="lazy"
                                                                             onError={(e) => (e.target.src = Placeholder)}
@@ -556,13 +556,13 @@ export default function show({ order }) {
                                                                     {/* HEADER */}
                                                                     <div>
                                                                         <h3 className="text-base font-semibold text-main-text-light dark:text-main-text-dark">
-                                                                            {item?.smartphone?.model_name?.name || 'N/A'}
+                                                                            {item?.inventory_item?.smartphone?.model_name?.name || 'N/A'}
                                                                         </h3>
 
                                                                         <div className="flex flex-wrap gap-2 mt-1 text-xs">
-                                                                            {item?.smartphone?.capacity?.name && (
+                                                                            {item?.inventory_item?.smartphone?.capacity?.name && (
                                                                                 <span className="px-2 py-0.5 rounded-md bg-surface-3-light dark:bg-surface-3-dark text-sub-text-light dark:text-sub-text-dark">
-                                                                                    {item.smartphone.capacity.name}
+                                                                                    {item.inventory_item?.smartphone.capacity.name}
                                                                                 </span>
                                                                             )}
 
@@ -581,7 +581,7 @@ export default function show({ order }) {
                                                                                 UPC / EAN
                                                                             </span>
                                                                             <span className="font-medium text-main-text-light dark:text-main-text-dark">
-                                                                                {item.smartphone?.upc || '—'}
+                                                                                {item.inventory_item?.smartphone?.upc || '—'}
                                                                             </span>
                                                                         </div>
 
@@ -1452,7 +1452,7 @@ export default function show({ order }) {
                                                         />
                                                     </svg>
                                                     <span className="min-w-0 break-all whitespace-normal">
-                                                        {order?.order_items[0]?.smartphone?.category
+                                                        {order?.order_items[0]?.inventory_item?.smartphone?.category
                                                             ?.distributor?.user?.name || 'N/A'}
                                                     </span>
                                                 </p>
@@ -1472,7 +1472,7 @@ export default function show({ order }) {
                                                     </svg>
                                                     {
                                                         <span className="min-w-0 break-all whitespace-normal">
-                                                            {order?.order_items[0]?.smartphone
+                                                            {order?.order_items[0]?.inventory_item?.smartphone
                                                                 ?.category?.distributor?.user
                                                                 ?.email || 'N/A'}
                                                         </span>
@@ -1495,7 +1495,7 @@ export default function show({ order }) {
                                                     </svg>
 
                                                     <span className="min-w-0 break-all whitespace-normal">
-                                                        {order?.order_items[0]?.smartphone?.category
+                                                        {order?.order_items[0]?.inventory_item?.smartphone?.category
                                                             ?.distributor?.user?.phone || 'N/A'}
                                                     </span>
                                                 </p>
@@ -1526,7 +1526,7 @@ export default function show({ order }) {
                                                         Bank Name:
                                                     </span>
                                                     <span className="min-w-0 font-medium text-gray-900 break-all whitespace-normal dark:text-white/90">
-                                                        {order?.order_items[0]?.smartphone?.category
+                                                        {order?.order_items[0]?.inventory_item?.smartphone?.category
                                                             ?.distributor?.bank_name || 'N/A'}
                                                     </span>
                                                 </div>
@@ -1536,7 +1536,7 @@ export default function show({ order }) {
                                                         Bank Account Name :
                                                     </span>
                                                     <span className="min-w-0 font-medium text-gray-900 break-all whitespace-normal dark:text-white/90">
-                                                        {order?.order_items[0]?.smartphone?.category
+                                                        {order?.order_items[0]?.inventory_item?.smartphone?.category
                                                             ?.distributor?.bank_account_name ||
                                                             'N/A'}
                                                     </span>
@@ -1547,7 +1547,7 @@ export default function show({ order }) {
                                                         Bank Account No:
                                                     </span>
                                                     <span className="min-w-0 font-medium text-gray-900 break-all whitespace-normal dark:text-white/90">
-                                                        {order?.order_items[0]?.smartphone?.category
+                                                        {order?.order_items[0]?.inventory_item?.smartphone?.category
                                                             ?.distributor?.bank_account_no || 'N/A'}
                                                     </span>
                                                 </div>
@@ -1557,7 +1557,7 @@ export default function show({ order }) {
                                                         IBAN:
                                                     </span>
                                                     <span className="min-w-0 font-medium text-gray-900 break-all whitespace-normal dark:text-white/90">
-                                                        {order?.order_items[0]?.smartphone?.category
+                                                        {order?.order_items[0]?.inventory_item?.smartphone?.category
                                                             ?.distributor?.iban || 'N/A'}
                                                     </span>
                                                 </div>
@@ -1567,7 +1567,7 @@ export default function show({ order }) {
                                                         SWIFT CODE:
                                                     </span>
                                                     <span className="min-w-0 font-medium text-gray-900 break-all whitespace-normal dark:text-white/90">
-                                                        {order?.order_items[0]?.smartphone?.category
+                                                        {order?.order_items[0]?.inventory_item?.smartphone?.category
                                                             ?.distributor?.swift_code || 'N/A'}
                                                     </span>
                                                 </div>

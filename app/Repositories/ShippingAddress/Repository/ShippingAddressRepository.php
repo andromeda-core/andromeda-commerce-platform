@@ -4,6 +4,8 @@ namespace App\Repositories\ShippingAddress\Repository;
 
 use App\Helpers\Trans;
 use App\Models\ShippingAddress;
+use App\Models\ShippingAddressChangeLog;
+use App\Notifications\ShippingAddressChangeNotification;
 use App\Repositories\ShippingAddress\Interface\IShippingAddressRepository;
 use Exception;
 use Illuminate\Http\Request;
@@ -14,6 +16,7 @@ class ShippingAddressRepository implements IShippingAddressRepository
     public function __construct(
         private ShippingAddress $shipping_address,
         private Trans $trans,
+        private ShippingAddressChangeLog $shipping_address_change_log
     ) {}
 
     public function getShippingAddresses(Request $request)
@@ -91,6 +94,7 @@ class ShippingAddressRepository implements IShippingAddressRepository
                 'address_line2.max' => $this->trans->get('Address line 2 cannot exceed 255 characters.'),
             ]);
 
+        DB::beginTransaction();
         try {
             $user = $request?->user()->load(['customer', 'customer.shippingAddresses']);
 
@@ -112,17 +116,37 @@ class ShippingAddressRepository implements IShippingAddressRepository
                 $validated_req['is_active'] = 1;
             }
 
+            $ip = $request->ip();
+            $user_agent = $request->userAgent();
+            $this->shipping_address_change_log->create([
+                'ip_address' => $ip,
+                'user_agent' => $user_agent,
+                'user_id' => $user->id,
+                'old_shipping_address' => null,
+                'new_shipping_address' => $validated_req,
+            ]);
+
             $created = $this->shipping_address->create($validated_req);
 
             if (empty($created)) {
                 throw new Exception($this->trans->get('Failed to create shipping address.'));
             }
 
+            DB::commit();
+
+            $user->notify(new ShippingAddressChangeNotification(
+                'created',
+                $ip,
+                $user_agent
+            ));
+
             return [
                 'status' => true,
                 'message' => $this->trans->get('Shipping address created successfully.'),
             ];
         } catch (Exception $e) {
+            DB::rollBack();
+
             return [
                 'status' => false,
                 'message' => $e->getMessage(),
@@ -173,6 +197,8 @@ class ShippingAddressRepository implements IShippingAddressRepository
                 'address_line2.string' => $this->trans->get('Address line 2 must be a valid text.'),
                 'address_line2.max' => $this->trans->get('Address line 2 cannot exceed 255 characters.'),
             ]);
+
+        DB::beginTransaction();
         try {
 
             $user = $request?->user();
@@ -189,20 +215,40 @@ class ShippingAddressRepository implements IShippingAddressRepository
                 throw new Exception($this->trans->get('Shipping address not found.'));
             }
 
+            $ip = $request->ip();
+            $user_agent = $request->userAgent();
+            $this->shipping_address_change_log->create([
+                'ip_address' => $ip,
+                'user_agent' => $user_agent,
+                'user_id' => $user->id,
+                'old_shipping_address' => $shipping_address->toArray(),
+                'new_shipping_address' => $validated_req,
+            ]);
+
             $updated = $shipping_address->update($validated_req);
             if (! $updated) {
                 throw new Exception($this->trans->get('Failed to update shipping address.'));
             }
+
+            DB::commit();
+
+            $user->notify(new ShippingAddressChangeNotification(
+                'updated',
+                $ip,
+                $user_agent
+            ));
 
             return [
                 'status' => true,
                 'message' => $this->trans->get('Shipping address updated successfully.'),
             ];
 
-        } catch (\Throwable $th) {
+        } catch (Exception $e) {
+            DB::rollBack();
+
             return [
                 'status' => false,
-                'message' => $th->getMessage(),
+                'message' => $e->getMessage(),
             ];
         }
     }
@@ -226,14 +272,38 @@ class ShippingAddressRepository implements IShippingAddressRepository
             if (empty($shipping_address)) {
                 throw new Exception($this->trans->get('Shipping address not found.'));
             }
-            DB::transaction(function () use ($shipping_address, $request) {
-                $changed = $this->shipping_address->where('is_active', true)->where('customer_id', $request->user()->customer->id)->update(['is_active' => false]);
-                $updated = $shipping_address->update(['is_active' => ! $shipping_address->is_active]);
 
-                if (! $updated || ! $changed) {
-                    throw new Exception($this->trans->get('Failed to toggle shipping address.'));
-                }
+            $ip = $request->ip();
+            $user_agent = $request->userAgent();
+            DB::transaction(function () use ($shipping_address, $user_agent, $ip, $user) {
+
+                $oldActive = $this->shipping_address
+                    ->where('customer_id', $user->customer->id)
+                    ->where('is_active', true)
+                    ->first();
+
+                $this->shipping_address
+                    ->where('customer_id', $user->customer->id)
+                    ->update(['is_active' => false]);
+
+                // Activate selected
+                $shipping_address->update(['is_active' => true]);
+
+                $this->shipping_address_change_log->create([
+                    'user_id' => $user->id,
+                    'ip_address' => $ip,
+                    'user_agent' => $user_agent,
+                    'old_shipping_address' => $oldActive?->toArray(),
+                    'new_shipping_address' => $shipping_address->fresh()->toArray(),
+                ]);
+
             });
+
+            $user->notify(new ShippingAddressChangeNotification(
+                'activated',
+                $ip,
+                $user_agent
+            ));
 
             return [
                 'status' => true,
@@ -266,26 +336,40 @@ class ShippingAddressRepository implements IShippingAddressRepository
                 throw new Exception($this->trans->get('Shipping address not found.'));
             }
 
-            DB::transaction(function () use ($shipping_address, $user) {
-                if ($shipping_address->is_active) {
+            $ip = $request->ip();
+            $user_agent = $request->userAgent();
+            $another = null;
+            DB::transaction(function () use ($shipping_address, $user, $ip, $user_agent, &$another) {
 
-                    $another_shipping_address = $this->shipping_address
+                $oldAddress = $shipping_address->toArray();
+
+                if ($shipping_address->is_active) {
+                    $another = $this->shipping_address
                         ->where('customer_id', $user->customer->id)
                         ->where('id', '!=', $shipping_address->id)
                         ->first();
 
-                    if (! empty($another_shipping_address)) {
-                        $another_shipping_address->update([
-                            'is_active' => true,
-                        ]);
+                    if ($another) {
+                        $another->update(['is_active' => true]);
                     }
                 }
 
-                $deleted = $shipping_address->delete();
-                if (! $deleted) {
-                    throw new Exception($this->trans->get('Failed to delete shipping address.'));
-                }
+                $shipping_address->delete();
+
+                $this->shipping_address_change_log->create([
+                    'user_id' => $user->id,
+                    'ip_address' => $ip,
+                    'user_agent' => $user_agent,
+                    'old_shipping_address' => $oldAddress,
+                    'new_shipping_address' => ! empty($another) ? $another->toArray() : null,
+                ]);
             });
+
+            $user->notify(new ShippingAddressChangeNotification(
+                'deleted',
+                $ip,
+                $user_agent
+            ));
 
             return [
                 'status' => true,
@@ -344,6 +428,7 @@ class ShippingAddressRepository implements IShippingAddressRepository
                 'address_line2.max' => $this->trans->get('Address line 2 cannot exceed 255 characters.'),
             ]);
 
+        DB::beginTransaction();
         try {
             $user = $request?->user()->load(['customer', 'customer.shippingAddresses']);
 
@@ -365,21 +450,41 @@ class ShippingAddressRepository implements IShippingAddressRepository
                 $validated_req['is_active'] = 1;
             }
 
+            $ip = $request->ip();
+            $user_agent = $request->userAgent();
+            $this->shipping_address_change_log->create([
+                'ip_address' => $ip,
+                'user_agent' => $user_agent,
+                'user_id' => $user->id,
+                'old_shipping_address' => null,
+                'new_shipping_address' => $validated_req,
+            ]);
+
             $created = $this->shipping_address->create($validated_req);
 
             if (empty($created)) {
                 throw new Exception($this->trans->get('Failed to Save shipping address.'));
             }
 
+            DB::commit();
+
+            $user->notify(new ShippingAddressChangeNotification(
+                'created',
+                $ip,
+                $user_agent
+            ));
+
             return [
                 'status' => true,
                 'message' => $this->trans->get('Shipping address Saved successfully.'),
             ];
 
-        } catch (\Throwable $th) {
+        } catch (Exception $e) {
+            DB::rollBack();
+
             return [
                 'status' => false,
-                'message' => $th->getMessage(),
+                'message' => $e->getMessage(),
             ];
         }
     }

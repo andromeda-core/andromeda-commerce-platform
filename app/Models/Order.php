@@ -189,12 +189,16 @@ class Order extends Model
                     'customer.user',
                     'orderItems' => function ($q) {
                         $q->with([
-                            'smartphone' => function ($q) {
+                            'inventoryItem' => function ($q) {
                                 $q->with([
-                                    'selling_info.shipping_fee',
-                                    'selling_info.import_tax',
-                                    'model_name',
-                                    'capacity',
+                                    'smartphone' => function ($q) {
+                                        $q->with([
+                                            'selling_info.shipping_fee',
+                                            'selling_info.import_tax',
+                                            'model_name',
+                                            'capacity',
+                                        ]);
+                                    },
                                 ]);
                             },
                             'smartphoneAddons',

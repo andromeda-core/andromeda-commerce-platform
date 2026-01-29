@@ -1,15 +1,16 @@
 
 import WebInput from '@/Components/WebInput';
+import WebSelectInput from '@/Components/WebSelectInput';
 import WebTextArea from '@/Components/WebTextArea';
 import { useConfirm } from '@/Hooks/useConfirm';
 import { useTranslation } from '@/Hooks/useTranslation';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import React, { useEffect, useState } from 'react';
 
 
-const index = ({ order_no }) => {
+const index = ({ order_no, countries }) => {
 
     const { confirm, ConfirmDialog } = useConfirm();
     const { data, setData, post, processing, errors } = useForm({
@@ -172,17 +173,22 @@ const index = ({ order_no }) => {
 
 
                                         {/* Shipping Country */}
+
                                         <div>
-                                            <WebInput
+                                            <WebSelectInput
                                                 InputName={__('Shipping Country')}
                                                 Id={'shipping_country'}
                                                 Name={'shipping_country'}
-                                                Error={errors.shipping_country}
                                                 Value={data.shipping_country}
-                                                Action={(e) => setData('shipping_country', e.target.value)}
                                                 Required={true}
-                                                Placeholder={__('Shipping Country')}
-                                                ClassName={'dark:bg-surface-1-dark'}
+                                                Action={(value) =>
+                                                    setData('shipping_country', value)
+                                                }
+                                                items={countries}
+                                                itemKey={'name'}
+                                                Error={errors.shipping_country}
+                                                Placeholder={__('Select Shipping Country')}
+                                                customPlaceHolder={true}
                                             />
                                         </div>
 

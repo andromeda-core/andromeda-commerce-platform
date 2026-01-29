@@ -269,10 +269,10 @@ export default function ShippingInvoice({ order }) {
                                             <tr className="hover:bg-gray-50">
                                                 <td className="px-4 py-3 text-gray-900 align-top border">
                                                     <p className="font-medium">
-                                                        {item.smartphone?.model_name?.name}
+                                                        {item.inventory_item?.smartphone?.model_name?.name}
                                                     </p>
                                                     <p className="text-sm text-gray-600">
-                                                        {item.smartphone?.capacity?.name || 'Standard'}
+                                                        {item.inventory_item?.smartphone?.capacity?.name || 'Standard'}
                                                     </p>
                                                 </td>
 

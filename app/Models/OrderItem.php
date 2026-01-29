@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class OrderItem extends Model
 {
     protected $fillable = [
-        'order_id', 'smartphone_id', 'product_id', 'quantity', 'unit_price', 'sub_total', 'color_id', 'shipping_cost', 'import_cost',
+        'order_id', 'smartphone_id', 'product_id', 'quantity', 'unit_price', 'sub_total', 'color_id', 'shipping_cost', 'inventory_item_id', 'import_cost',
     ];
 
     //   Attributes
@@ -39,5 +39,10 @@ class OrderItem extends Model
     public function smartphoneAddons(): HasMany
     {
         return $this->hasMany(SmartphoneOrderItemAddon::class, 'order_item_id', 'id');
+    }
+
+    public function inventoryItem(): BelongsTo
+    {
+        return $this->belongsTo(Inventory::class, 'inventory_item_id', 'id');
     }
 }
