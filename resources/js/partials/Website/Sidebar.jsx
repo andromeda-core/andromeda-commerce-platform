@@ -244,6 +244,16 @@ const Sidebar = ({
 
                                 }
                                 items={[
+                                    user &&
+                                    {
+                                        label: __('Notifications'),
+                                        href: route('website.notifications.index'),
+                                        routeName: 'website.notifications.index',
+                                        type: 'link',
+                                    },
+
+
+
                                     {
                                         label: __('Orders'),
                                         href: route('website.orders.index'),

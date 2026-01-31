@@ -217,4 +217,19 @@ class OrderController extends Controller implements HasMiddleware
 
         return back()->with('success', $created['message']);
     }
+
+    public function showByOrderNo(?string $order_no = null)
+    {
+        if (empty($order_no)) {
+            return back()->with('error', 'Order No. Is Missing');
+        }
+
+        $order = $this->order->getSingleOrderByNo($order_no);
+
+        if (empty($order)) {
+            return back()->with('error', 'Order Not Found');
+        }
+
+        return Inertia::render('Dashboard/Orders/show', compact('order'));
+    }
 }

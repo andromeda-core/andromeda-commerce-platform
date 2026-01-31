@@ -143,7 +143,7 @@ export default function manage({ all_permissions, assigned_permissions = [], rol
                         <PrimaryButton
                             Text={'Update Permissions'}
                             Type={'submit'}
-                            CustomClass={'w-[200px] '}
+                            CustomClass={'w-[250px] '}
                             Disabled={processing}
                             Spinner={processing}
                             Action={submit}

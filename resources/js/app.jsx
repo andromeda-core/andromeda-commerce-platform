@@ -6,6 +6,18 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 
 
+function generateDeviceFingerprint() {
+    const raw = [
+        navigator.userAgent,
+        navigator.language,
+        screen.width + 'x' + screen.height,
+        Intl.DateTimeFormat().resolvedOptions().timeZone,
+    ].join('|');
+
+    return btoa(raw).substring(0, 128);
+}
+
+
 createInertiaApp({
     title: (title) => {
         // Get the app name from the current page props if available
@@ -29,6 +41,16 @@ createInertiaApp({
 
     setup({ el, App, props }) {
         const root = createRoot(el);
+
+        if (!window.__fingerprintSent) {
+            window.__fingerprintSent = true;
+
+            const fingerprint = generateDeviceFingerprint();
+
+            axios.post(route('device-fingerprint.store'), { device_fingerprint: fingerprint })
+                .catch(() => {
+                });
+        }
 
         root.render(<App {...props} />);
     },

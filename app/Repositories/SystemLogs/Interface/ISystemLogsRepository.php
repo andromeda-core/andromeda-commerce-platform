@@ -9,4 +9,6 @@ interface ISystemLogsRepository
     public function getAllEmailAddressChangeLogs(Request $request);
 
     public function getAllShippingAddressChangeLogs(Request $request);
+
+    public function getAllUnsettledAccountNotificationLogs(Request $request);
 }

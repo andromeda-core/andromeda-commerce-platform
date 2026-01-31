@@ -21,6 +21,7 @@ use App\Http\Controllers\Dashboard\PackageRecordingController;
 use App\Http\Controllers\Dashboard\PostController;
 use App\Http\Controllers\Dashboard\ProfileController;
 use App\Http\Controllers\Dashboard\RewardPointController;
+use App\Http\Controllers\Dashboard\RiskSignalController;
 use App\Http\Controllers\Dashboard\SettingController;
 use App\Http\Controllers\Dashboard\SmartphoneController;
 use App\Http\Controllers\Dashboard\SmartphoneForSaleController;
@@ -29,7 +30,9 @@ use App\Http\Controllers\Dashboard\SystemLogsController;
 use App\Http\Controllers\Dashboard\TranslationController;
 use App\Http\Controllers\Dashboard\TranslationKeyController;
 use App\Http\Controllers\Dashboard\TranslationSystemController;
+use App\Http\Controllers\Dashboard\UnsettledAccountController;
 use App\Http\Controllers\Dashboard\UserController;
+use App\Http\Controllers\DeviceFingerPrintController;
 use App\Http\Controllers\MetaController;
 use App\Http\Controllers\Website\BookmarkController as WebsiteBookmarkController;
 use App\Http\Controllers\Website\CartController;
@@ -39,6 +42,7 @@ use App\Http\Controllers\Website\DataDeletionRequestController as WebsiteDataDel
 use App\Http\Controllers\Website\GlobalFilterController;
 use App\Http\Controllers\Website\GlobalSearchController;
 use App\Http\Controllers\Website\HomeController as WebsiteHomeController;
+use App\Http\Controllers\Website\NotificationController;
 use App\Http\Controllers\Website\OrderController as WebsiteOrderController;
 use App\Http\Controllers\Website\PostController as WebsitePostController;
 use App\Http\Controllers\Website\PrivacyPolicyController;
@@ -186,6 +190,14 @@ Route::group(['as' => 'website.'], function () {
     Route::controller(ContactController::class)->name('contact.')->group(function () {
         Route::get('/contact', 'index')->name('index');
         Route::post('/contact-store', 'store')->name('store');
+    });
+
+    // Notification Routes
+    Route::controller(NotificationController::class)->middleware('auth')->name('notifications.')->group(function () {
+        Route::get('/notifications', 'index')->name('index');
+        Route::put('/notifications/mark-as-seen/{id?}', 'markNotificationAsSeen')->name('mark-as-seen');
+        Route::put('/notifications/mark-all-as-seen/{id?}', 'markAllNotificationsAsSeen')->name('mark-all-as-seen');
+        Route::delete('/notifications/destroy/{id?}', 'destroyNotification')->name('destroy');
     });
 
     // Shipping Address Routes
@@ -363,6 +375,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/orders-edit/{id?}', 'edit')->name('edit');
             Route::put('/orders-update/{id?}', 'update')->name('update');
             Route::get('/orders-view/{id?}', 'show')->name('show');
+            Route::get('/orders-view-by-order_no/{order_no?}', 'showByOrderNo')->name('show.by_order_no');
             Route::post('/order-package-recordings-store', 'packageRecordingStore')->name('packagerecordingstore');
             Route::delete('/orders-destroy/{id?}', 'destroy')->name('destroy');
             Route::delete('/orders-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
@@ -477,6 +490,21 @@ Route::middleware(['auth'])->group(function () {
 
             Route::get('/email-change-logs', 'emailChangeLogs')->name('email-change-logs.index');
             Route::get('/shipping-address-change-logs', 'shippingAddressChangeLogs')->name('shipping-address-change-logs.index');
+            Route::get('/unsettled-account-notification-logs', 'unsettledAccountNotificationLogs')->name('unsettled-account-notification-logs.index');
+        });
+
+        // Risk Signal Routes
+        Route::controller(RiskSignalController::class)->name('risk-signals.')->group(function () {
+            Route::get('/risk-signals', 'index')->name('index');
+            Route::put('/risk-signals/{id?}', 'update')->name('update');
+        });
+
+        // UnSettled Account Routes
+        Route::controller(UnsettledAccountController::class)->name('unsettled-accounts.')->group(function () {
+            Route::get('/unsettled-accounts', 'index')->name('index');
+            Route::put('/unsettled-accounts/{id?}', 'update')->name('update');
+            Route::put('/unsettled-accounts/{id?}/update-note', 'updateNote')->name('update-note');
+            Route::post('/unsettled-accounts/{id?}/send-message', 'sendMessage')->name('send-message');
         });
 
         // Translation System
@@ -517,6 +545,9 @@ Route::middleware(['auth'])->group(function () {
                     // General Setting Routess
                     Route::get('/general-settings', 'generalSetting')->name('general.setting');
                     Route::put('/settings/general-settings-update', 'updateGeneralSetting')->name('general.setting.update');
+
+                    Route::get('/unsettled-accounts-notification-settings', 'unsettledAccountsNotificationSetting')->name('unsettled-accounts-notification-settings.index');
+                    Route::put('/unsettled-accounts-notification-settings-save', 'saveUnsettledAccountsNotificationSetting')->name('unsettled-accounts-notification-settings.save');
 
                     // SMTP Setting Routes
                     Route::get('/smtp-settings', 'smtpSetting')->name('smtp.setting');
@@ -798,5 +829,8 @@ Route::get('/pwa-manifest', function () {
 Route::match(['get', 'post'], '/meta/webhook', [MetaController::class, 'webhook'])->withoutMiddleware([
     VerifyCsrfToken::class,
 ]);
+
+// Device Finger Print
+Route::post('/device-fingerprint', DeviceFingerPrintController::class)->name('device-fingerprint.store');
 
 require __DIR__.'/auth.php';

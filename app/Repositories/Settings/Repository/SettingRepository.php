@@ -36,6 +36,7 @@ use App\Models\SmtpSetting;
 use App\Models\SpecialCountry;
 use App\Models\StorageLocation;
 use App\Models\TermsOfService;
+use App\Models\UnsettledAccountNotificationSetting;
 use App\Repositories\Settings\Interface\ISettingRepository;
 use Exception;
 use Illuminate\Http\Request;
@@ -74,6 +75,7 @@ class SettingRepository implements ISettingRepository
         private TermsOfService $terms_of_service,
         private PrivacyPolicy $privacy_policy,
         private DormancySetting $dormancy_setting,
+        private UnsettledAccountNotificationSetting $unsettled_account_notification_setting,
 
     ) {}
 
@@ -4231,6 +4233,84 @@ class SettingRepository implements ISettingRepository
                 'message' => 'Dormancy Setting Saved Successfully',
             ];
         } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function getUnsettledAccountsNotificationSettings()
+    {
+        $settings = $this->unsettled_account_notification_setting::all()
+            ->groupBy('reason')
+            ->map(function ($items) {
+                $item = $items->first();
+
+                return [
+                    'delay' => $item->delay,
+                    'channel' => $item->channel,
+                    'is_active' => (bool) $item->is_active,
+                ];
+            });
+
+        return $settings;
+    }
+
+    public function saveUnsettledAccountsNotificationSettings(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+
+            $request->validate(
+                [
+                    'settings' => ['required', 'array'],
+                    'settings.*.delay' => ['required', 'integer', 'min:1'],
+                    'settings.*.channel' => ['required', 'in:in_app,email'],
+                    'settings.*.is_active' => ['required', 'boolean'],
+                ],
+                [
+                    'settings.required' => 'Please configure at least one notification setting.',
+                    'settings.array' => 'Invalid notification settings format.',
+
+                    'settings.*.delay.required' => 'Please enter a delay (in hours) for each notification.',
+                    'settings.*.delay.integer' => 'The delay must be a valid number of hours.',
+                    'settings.*.delay.min' => 'The delay must be at least 1 hour.',
+
+                    'settings.*.channel.required' => 'Please select a notification channel (Email or In-App).',
+                    'settings.*.channel.in' => 'The selected notification channel is not valid.',
+
+                    'settings.*.is_active.required' => 'Please specify whether the notification is active.',
+                    'settings.*.is_active.boolean' => 'Invalid value for notification status.',
+                ]
+            );
+
+            $settings = $request->input('settings');
+            foreach ($settings as $reason => $setting) {
+
+                $this->unsettled_account_notification_setting->updateOrCreate(
+                    [
+                        'reason' => $reason,
+                    ],
+                    [
+                        'delay' => $setting['delay'],
+                        'channel' => $setting['channel'],
+                        'is_active' => $setting['is_active'],
+                    ]
+                );
+            }
+
+            DB::commit();
+
+            return [
+                'status' => true,
+                'message' => 'Unsettled account notification settings saved successfully',
+            ];
+
+        } catch (Exception $e) {
+            DB::rollBack();
+
             return [
                 'status' => false,
                 'message' => $e->getMessage(),

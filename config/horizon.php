@@ -217,6 +217,18 @@ return [
             'nice' => 5,
 
         ],
+
+        'supervisor-risk-analyzer' => [
+            'connection' => 'redis',
+            'queue' => ['risk-analyzer'],
+            'balance' => 'simple',
+            'processes' => 2,
+            'timeout' => 60,
+            'memory' => 2048,
+            'tries' => 1,
+            'nice' => 5,
+
+        ],
     ],
 
     'environments' => [
@@ -240,6 +252,18 @@ return [
                 'processes' => 1,
                 'timeout' => 14400,
                 'memory' => 4096,
+                'tries' => 1,
+                'nice' => 5,
+
+            ],
+
+            'supervisor-risk-analyzer' => [
+                'connection' => 'redis',
+                'queue' => ['risk-analyzer'],
+                'balance' => 'simple',
+                'processes' => 2,
+                'timeout' => 60,
+                'memory' => 2048,
                 'tries' => 1,
                 'nice' => 5,
 

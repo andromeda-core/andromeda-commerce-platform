@@ -343,4 +343,9 @@ interface ISettingRepository
     public function getDormancySetting();
 
     public function saveDormancySetting(Request $request);
+
+    // Unsettled Account Notification Setting
+    public function getUnsettledAccountsNotificationSettings();
+
+    public function saveUnsettledAccountsNotificationSettings(Request $request);
 }

@@ -50,4 +50,15 @@ class SystemLogsController extends Controller implements HasMiddleware
             'search' => $search,
         ]);
     }
+
+    public function unsettledAccountNotificationLogs(Request $request)
+    {
+        $system_logs = $this->system_logs->getAllUnsettledAccountNotificationLogs($request);
+        $search = $request->input('search');
+
+        return Inertia::render('Dashboard/SystemLogs/UnsettledAccountNotificationLogs/index', [
+            'system_logs' => $system_logs,
+            'search' => $search,
+        ]);
+    }
 }

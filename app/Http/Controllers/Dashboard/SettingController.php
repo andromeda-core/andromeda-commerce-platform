@@ -2069,4 +2069,22 @@ class SettingController extends Controller
 
         return to_route('dashboard.settings.dormancy-setting.index')->with('success', $saved['message']);
     }
+
+    public function unsettledAccountsNotificationSetting()
+    {
+        $settings = $this->setting->getUnsettledAccountsNotificationSettings();
+
+        return Inertia::render('Dashboard/Settings/UnsettledAccountsNotificationSettings/index', compact('settings'));
+    }
+
+    public function saveUnsettledAccountsNotificationSetting(Request $request)
+    {
+        $saved = $this->setting->saveUnsettledAccountsNotificationSettings($request);
+
+        if ($saved['status'] === false) {
+            return back()->with('error', $saved['message']);
+        }
+
+        return back()->with('success', $saved['message']);
+    }
 }

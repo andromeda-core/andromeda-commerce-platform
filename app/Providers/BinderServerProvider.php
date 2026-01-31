@@ -32,6 +32,8 @@ use App\Repositories\GlobalSearch\Interface\IGlobalSearchRepository;
 use App\Repositories\GlobalSearch\Repository\GlobalSearchRepository;
 use App\Repositories\Inventories\Interface\IInventoryRepository;
 use App\Repositories\Inventories\Repository\InventoryRepository;
+use App\Repositories\Notifications\Interface\INotificationRepository;
+use App\Repositories\Notifications\Repository\NotificationRepository;
 use App\Repositories\OrderAddressChangeRequest\Interface\IOrderAddressChangeRequestRepository;
 use App\Repositories\OrderAddressChangeRequest\Repository\OrderAddressChangeRequestRepository;
 use App\Repositories\OrderRefund\Interface\IOrderRefundRepository;
@@ -50,6 +52,8 @@ use App\Repositories\ReturnPolicy\Interface\IReturnPolicyRepository;
 use App\Repositories\ReturnPolicy\Repository\ReturnPolicyRepository;
 use App\Repositories\RewardPoints\Interface\IRewardPointRepository;
 use App\Repositories\RewardPoints\Repository\RewardPointRepository;
+use App\Repositories\RiskSignal\Interface\IRiskSignalRepository;
+use App\Repositories\RiskSignal\Repository\RiskSignalRepository;
 use App\Repositories\SearchHistories\Interface\ISearchHistoryRepository;
 use App\Repositories\SearchHistories\Repository\SearchHistoryRepository;
 use App\Repositories\Settings\Interface\ISettingRepository;
@@ -74,6 +78,8 @@ use App\Repositories\TranslationSystem\TranslationKey\Interface\ITranslationKeyR
 use App\Repositories\TranslationSystem\TranslationKey\Repository\TranslationKeyRepository;
 use App\Repositories\TranslationSystem\Translations\Interface\ITranslationRepository;
 use App\Repositories\TranslationSystem\Translations\Repository\TranslationRepository;
+use App\Repositories\UnsettledAccounts\Interface\IUnsettledAccountsRepository;
+use App\Repositories\UnsettledAccounts\Repository\UnsettledAccountsRepository;
 use App\Repositories\Users\Interface\IUserRepository;
 use App\Repositories\Users\Repository\UserRepository;
 use Illuminate\Support\ServiceProvider;
@@ -122,6 +128,9 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(IOrderRefundRepository::class, OrderRefundRepository::class);
         $this->app->bind(IOrderAddressChangeRequestRepository::class, OrderAddressChangeRequestRepository::class);
         $this->app->bind(ISystemLogsRepository::class, SystemLogsRepository::class);
+        $this->app->bind(IRiskSignalRepository::class, RiskSignalRepository::class);
+        $this->app->bind(IUnsettledAccountsRepository::class, UnsettledAccountsRepository::class);
+        $this->app->bind(INotificationRepository::class, NotificationRepository::class);
 
     }
 

@@ -10,6 +10,7 @@ use App\Notifications\NotifyCustomerAboutOrderCryptoPaymentReceived;
 use App\Notifications\NotifyCustomerOrderCryptoPaymentFailed;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
 class NOWPaymentInvoiceStatusCheck extends Command
@@ -25,7 +26,7 @@ class NOWPaymentInvoiceStatusCheck extends Command
         $currency = Cache::get('currency');
         $meta_setting = Cache::get('meta_setting');
         Order::where('status', 'blockchain_confirmation_pending')
-            ->with(['orderItems.smartphone.inventory_items', 'customer.user', 'customer.user.metaContacts'])
+            ->with(['orderItems.inventoryItem', 'customer.user', 'customer.user.metaContacts'])
             ->chunk(100, function ($orders) use ($now_payment_api_key, $base_url, $currency, $meta_setting) {
                 foreach ($orders as $order) {
                     $user = $order->customer->user;
@@ -33,21 +34,17 @@ class NOWPaymentInvoiceStatusCheck extends Command
                     $np_id = $order->np_id;
 
                     if (empty($np_id)) {
-                        $order->status = 'failed';
-                        $order->save();
+                        DB::transaction(function () use ($order) {
+                            $order->update(['status' => 'failed']);
 
-                        foreach ($order->orderItems as $item) {
-                            $quantity = $item->quantity;
+                            foreach ($order->orderItems as $item) {
+                                $inventoryItem = $item->inventoryItem;
 
-                            $inventoryItems = $item->smartphone->inventory_items()
-                                ->where('status', 'on_hold')
-                                ->limit($quantity)
-                                ->get();
-
-                            foreach ($inventoryItems as $inventoryItem) {
-                                $inventoryItem->update(['status' => 'in_stock']);
+                                if (! empty($inventoryItem)) {
+                                    $inventoryItem->update(['status' => 'in_stock']);
+                                }
                             }
-                        }
+                        });
 
                         continue;
                     }
@@ -66,19 +63,17 @@ class NOWPaymentInvoiceStatusCheck extends Command
 
                     switch ($paymentStatus) {
                         case 'finished':
-                            $order->update(['status' => 'paid']);
+                            DB::transaction(function () use ($order) {
+                                $order->update(['status' => 'paid']);
 
-                            foreach ($order->orderItems as $item) {
-                                $quantity = $item->quantity;
-                                $inventoryItems = $item->smartphone->inventory_items()
-                                    ->where('status', 'on_hold')
-                                    ->limit($quantity)
-                                    ->get();
+                                foreach ($order->orderItems as $item) {
+                                    $inventoryItem = $item->inventoryItem;
 
-                                foreach ($inventoryItems as $inventoryItem) {
-                                    $inventoryItem->update(['status' => 'sold']);
+                                    if (! empty($inventoryItem)) {
+                                        $inventoryItem->update(['status' => 'sold']);
+                                    }
                                 }
-                            }
+                            });
 
                             $user->notify(new NotifyCustomerAboutOrderCryptoPaymentReceived($order, $currency));
 
@@ -92,19 +87,17 @@ class NOWPaymentInvoiceStatusCheck extends Command
 
                         case 'failed':
                         case 'expired':
-                            $order->update(['status' => 'failed']);
+                            DB::transaction(function () use ($order) {
+                                $order->update(['status' => 'failed']);
 
-                            foreach ($order->orderItems as $item) {
-                                $quantity = $item->quantity;
-                                $inventoryItems = $item->smartphone->inventory_items()
-                                    ->where('status', 'on_hold')
-                                    ->limit($quantity)
-                                    ->get();
+                                foreach ($order->orderItems as $item) {
+                                    $inventoryItem = $item->inventoryItem;
 
-                                foreach ($inventoryItems as $inventoryItem) {
-                                    $inventoryItem->update(['status' => 'in_stock']);
+                                    if (! empty($inventoryItem)) {
+                                        $inventoryItem->update(['status' => 'in_stock']);
+                                    }
                                 }
-                            }
+                            });
 
                             $user->notify(new NotifyCustomerOrderCryptoPaymentFailed($order, $currency));
 

@@ -128,7 +128,7 @@ export default function Sidebar({
         <>
             <aside
                 className={`${sidebarToggle ? 'translate-x-0 lg:w-[90px]' : '-translate-x-full'}
-                sidebar fixed left-0 top-0 z-[10002] flex h-screen w-[290px] flex-col
+                sidebar fixed left-0 top-0 ${width <= 1024 ? "z-[10002]" : "z-50"} flex h-screen w-[290px] flex-col
                 overflow-y-hidden border-r border-gray-200 bg-white px-5
                 dark:border-gray-800 dark:bg-deepcharcoal lg:static lg:translate-x-0`}
             >
@@ -1793,6 +1793,85 @@ export default function Sidebar({
                                                 className={`menu-item-text ${sidebarToggle ? 'lg:hidden' : ''}`}
                                             >
                                                 Translation System
+                                            </span>
+
+                                            <svg
+                                                className={`menu-item-arrow ${sidebarToggle ? 'lg:hidden' : ''}`}
+                                                width="20"
+                                                height="20"
+                                                viewBox="0 0 20 20"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <path
+                                                    d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585"
+                                                    stroke=""
+                                                    strokeWidth="1.5"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                />
+                                            </svg>
+                                        </Link>
+                                    </li>
+                                )}
+
+
+                                {can("Risk Signals View") && (
+                                    <li>
+                                        <Link
+                                            href={route('dashboard.risk-signals.index')}
+                                            className={`menu-item group ${route().current() === 'dashboard.risk-signals.index' ? 'menu-item-active' : 'menu-item-inactive'}`}
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M10.05 4.575a1.575 1.575 0 1 0-3.15 0v3m3.15-3v-1.5a1.575 1.575 0 0 1 3.15 0v1.5m-3.15 0 .075 5.925m3.075.75V4.575m0 0a1.575 1.575 0 0 1 3.15 0V15M6.9 7.575a1.575 1.575 0 1 0-3.15 0v8.175a6.75 6.75 0 0 0 6.75 6.75h2.018a5.25 5.25 0 0 0 3.712-1.538l1.732-1.732a5.25 5.25 0 0 0 1.538-3.712l.003-2.024a.668.668 0 0 1 .198-.471 1.575 1.575 0 1 0-2.228-2.228 3.818 3.818 0 0 0-1.12 2.687M6.9 7.575V12m6.27 4.318A4.49 4.49 0 0 1 16.35 15m.002 0h-.002" />
+                                            </svg>
+
+
+
+                                            <span
+                                                className={`menu-item-text ${sidebarToggle ? 'lg:hidden' : ''}`}
+                                            >
+                                                Risk Signals
+                                            </span>
+
+                                            <svg
+                                                className={`menu-item-arrow ${sidebarToggle ? 'lg:hidden' : ''}`}
+                                                width="20"
+                                                height="20"
+                                                viewBox="0 0 20 20"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <path
+                                                    d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585"
+                                                    stroke=""
+                                                    strokeWidth="1.5"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                />
+                                            </svg>
+                                        </Link>
+                                    </li>
+                                )}
+
+
+                                {can("Unsettled Accounts View") && (
+                                    <li>
+                                        <Link
+                                            href={route('dashboard.unsettled-accounts.index')}
+                                            className={`menu-item group ${route().current() === 'dashboard.unsettled-accounts.index' ? 'menu-item-active' : 'menu-item-inactive'}`}
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 13.5H9m4.06-7.19-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
+                                            </svg>
+
+
+
+
+                                            <span
+                                                className={`menu-item-text ${sidebarToggle ? 'lg:hidden' : ''}`}
+                                            >
+                                                Unsettled Accounts
                                             </span>
 
                                             <svg

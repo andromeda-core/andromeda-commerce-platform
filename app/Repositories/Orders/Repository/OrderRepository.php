@@ -101,6 +101,30 @@ class OrderRepository implements IOrderRepository
         return $order;
     }
 
+    public function getSingleOrderByNo(string $order_no)
+    {
+        $order = $this->order->with(
+            [
+                'customer.user',
+                'collaborator',
+                'orderPackageRecordings',
+                'orderItems',
+                'orderItems.inventoryItem.smartphone',
+                'orderItems.inventoryItem.smartphone.model_name',
+                'orderItems.inventoryItem.smartphone.capacity',
+                'orderItems.inventoryItem.smartphone.selling_info',
+                'orderItems.inventoryItem.smartphone.category',
+                'orderItems.inventoryItem.smartphone.category.distributor',
+                'orderItems.inventoryItem.smartphone.category.distributor.user',
+                'orderItems.color',
+                'orderItems.smartphoneAddons',
+            ]
+        )->where('order_no', $order_no)
+            ->first();
+
+        return $order;
+    }
+
     public function storeOrder(Request $request)
     {
         $validated_req = $request->validate([
@@ -1449,6 +1473,7 @@ class OrderRepository implements IOrderRepository
 
     public function ShippingAddressChangeRequestStore(Request $request, string $order_no)
     {
+
         $validated_req = $request->validate([
             'reason' => ['required', 'string', 'min:30', 'max:1000'],
             'shipping_name' => ['required', 'string', 'max:255'],
@@ -1460,9 +1485,41 @@ class OrderRepository implements IOrderRepository
             'shipping_country' => ['required', 'string', 'max:255'],
             'shipping_postal_code' => ['required', 'string', 'max:255'],
         ], [
+            // Reason
             'reason.required' => $this->trans->get('The Reason Field Is Required.'),
             'reason.min' => $this->trans->get('The Reason Must Be At Least 30 Characters.'),
             'reason.max' => $this->trans->get('The Reason Must Be Less Than 1000 Characters.'),
+
+            // Shipping Name
+            'shipping_name.required' => $this->trans->get('Shipping name is required.'),
+            'shipping_name.max' => $this->trans->get('Shipping name must not exceed 255 characters.'),
+
+            // Shipping Phone
+            'shipping_phone.required' => $this->trans->get('Shipping phone number is required.'),
+            'shipping_phone.max' => $this->trans->get('Shipping phone number must not exceed 255 characters.'),
+
+            // Address Line 1
+            'shipping_address_line1.required' => $this->trans->get('Shipping address line 1 is required.'),
+            'shipping_address_line1.max' => $this->trans->get('Shipping address line 1 must not exceed 1000 characters.'),
+
+            // Address Line 2
+            'shipping_address_line2.max' => $this->trans->get('Shipping address line 2 must not exceed 1000 characters.'),
+
+            // City
+            'shipping_city.required' => $this->trans->get('Shipping city is required.'),
+            'shipping_city.max' => $this->trans->get('Shipping city must not exceed 255 characters.'),
+
+            // State
+            'shipping_state.required' => $this->trans->get('Shipping state is required.'),
+            'shipping_state.max' => $this->trans->get('Shipping state must not exceed 255 characters.'),
+
+            // Country
+            'shipping_country.required' => $this->trans->get('Shipping country is required.'),
+            'shipping_country.max' => $this->trans->get('Shipping country must not exceed 255 characters.'),
+
+            // Postal Code
+            'shipping_postal_code.required' => $this->trans->get('Shipping postal code is required.'),
+            'shipping_postal_code.max' => $this->trans->get('Shipping postal code must not exceed 255 characters.'),
         ]);
 
         try {

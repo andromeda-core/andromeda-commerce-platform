@@ -169,4 +169,39 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(ShippingAddressChangeLog::class, 'user_id', 'id');
     }
+
+    public function actionLogs(): HasMany
+    {
+        return $this->hasMany(ActionLog::class, 'user_id', 'id');
+    }
+
+    public function riskSignals(): HasMany
+    {
+        return $this->hasMany(AccountRiskSignal::class, 'user_id', 'id');
+    }
+
+    public function riskSignalResolvedBy(): HasMany
+    {
+        return $this->hasMany(AccountRiskSignal::class, 'resolved_by', 'id');
+    }
+
+    public function unsettledIssues(): HasMany
+    {
+        return $this->hasMany(UnsettledAccount::class, 'user_id', 'id');
+    }
+
+    public function unsettledIssuesResolvedBy(): HasMany
+    {
+        return $this->hasMany(UnsettledAccount::class, 'resolved_by', 'id');
+    }
+
+    public function unsettleAccountNotificationLogs(): HasMany
+    {
+        return $this->hasMany(UnsettledAccountNotificationLog::class, 'user_id', 'id');
+    }
+
+    public function unsettleAccountNotificationLogsSentBy(): HasMany
+    {
+        return $this->hasMany(UnsettledAccountNotificationLog::class, 'sent_by', 'id');
+    }
 }

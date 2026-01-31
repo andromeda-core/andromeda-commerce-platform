@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\TrackUserActivity::class,
             \App\Http\Middleware\AskUserToActiveDormantAccount::class,
             \App\Http\Middleware\EnsureAccountStatus::class,
+            \App\Http\Middleware\ActionMonitor::class,
         ]);
 
         $middleware->encryptCookies(except: [

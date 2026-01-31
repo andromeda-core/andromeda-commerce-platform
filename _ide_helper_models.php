@@ -14,6 +14,72 @@
 namespace App\Models{
 /**
  * @property int $id
+ * @property int $user_id
+ * @property string $signal_type
+ * @property string $context
+ * @property array<array-key, mixed> $meta
+ * @property string $status
+ * @property int|null $resolved_by
+ * @property string|null $resolved_at
+ * @property string|null $expires_at
+ * @property string|null $expired_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int|null $is_active
+ * @property-read mixed $detected_at
+ * @property-read \App\Models\User|null $resolvedBy
+ * @property-read \App\Models\User $user
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AccountRiskSignal newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AccountRiskSignal newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AccountRiskSignal query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AccountRiskSignal whereContext($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AccountRiskSignal whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AccountRiskSignal whereExpiredAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AccountRiskSignal whereExpiresAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AccountRiskSignal whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AccountRiskSignal whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AccountRiskSignal whereMeta($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AccountRiskSignal whereResolvedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AccountRiskSignal whereResolvedBy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AccountRiskSignal whereSignalType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AccountRiskSignal whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AccountRiskSignal whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AccountRiskSignal whereUserId($value)
+ */
+	class AccountRiskSignal extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property string|null $route
+ * @property string $path
+ * @property string $ip_address
+ * @property string $user_agent
+ * @property string|null $device_fingerprint
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User $user
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActionLog newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActionLog newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActionLog query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActionLog whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActionLog whereDeviceFingerprint($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActionLog whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActionLog whereIpAddress($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActionLog wherePath($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActionLog whereRoute($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActionLog whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActionLog whereUserAgent($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ActionLog whereUserId($value)
+ */
+	class ActionLog extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
  * @property string $name
  * @property string|null $category
  * @property string|null $value_type
@@ -1050,6 +1116,7 @@ namespace App\Models{
  * @property int $order_id
  * @property int|null $color_id
  * @property int $smartphone_id
+ * @property int|null $inventory_item_id
  * @property int $quantity
  * @property numeric $unit_price
  * @property numeric $sub_total
@@ -1059,6 +1126,7 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Color|null $color
  * @property-read mixed $added_at
+ * @property-read \App\Models\Inventory|null $inventoryItem
  * @property-read \App\Models\Order $order
  * @property-read \App\Models\Smartphone $smartphone
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SmartphoneOrderItemAddon> $smartphoneAddons
@@ -1070,6 +1138,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem whereImportCost($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem whereInventoryItemId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem whereOrderId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem whereQuantity($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem whereShippingCost($value)
@@ -1459,8 +1528,8 @@ namespace App\Models{
 /**
  * @property int $id
  * @property int $user_id
- * @property string $old_shipping_address
- * @property string $new_shipping_address
+ * @property array<array-key, mixed>|null $old_shipping_address
+ * @property array<array-key, mixed>|null $new_shipping_address
  * @property string|null $ip_address
  * @property string|null $user_agent
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -1915,6 +1984,39 @@ namespace App\Models{
 
 namespace App\Models{
 /**
+ * @property-read \App\Models\Order|null $order
+ * @property-read \App\Models\User|null $resolvedBy
+ * @property-read \App\Models\User|null $user
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccount newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccount newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccount query()
+ */
+	class UnsettledAccount extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property-read \App\Models\User|null $sent_by
+ * @property-read \App\Models\UnsettledAccount|null $unsettledAccount
+ * @property-read \App\Models\User|null $user
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationLog newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationLog newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationLog query()
+ */
+	class UnsettledAccountNotificationLog extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationSetting newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationSetting newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationSetting query()
+ */
+	class UnsettledAccountNotificationSetting extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
  * @property int $id
  * @property string $name
  * @property string $email
@@ -1937,6 +2039,8 @@ namespace App\Models{
  * @property string $status
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActionLog> $actionLogs
+ * @property-read int|null $action_logs_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Post> $bookMarkedPosts
  * @property-read int|null $book_marked_posts_count
  * @property-read \App\Models\Collaborator|null $collaborator
@@ -1961,11 +2065,25 @@ namespace App\Models{
  * @property-read int|null $posts_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\RewardPoint> $reward_points
  * @property-read int|null $reward_points_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AccountRiskSignal> $riskSignalResolvedBy
+ * @property-read int|null $risk_signal_resolved_by_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AccountRiskSignal> $riskSignals
+ * @property-read int|null $risk_signals_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Role> $roles
  * @property-read int|null $roles_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ShippingAddressChangeLog> $shippingAddressChangeLogs
+ * @property-read int|null $shipping_address_change_logs_count
  * @property-read \App\Models\Supplier|null $supplier
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SupplierCommission> $supplierCommissionUsers
  * @property-read int|null $supplier_commission_users_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\UnsettledAccountNotificationLog> $unsettleAccountNotificationLogs
+ * @property-read int|null $unsettle_account_notification_logs_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\UnsettledAccountNotificationLog> $unsettleAccountNotificationLogsSentBy
+ * @property-read int|null $unsettle_account_notification_logs_sent_by_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\UnsettledAccount> $unsettledIssues
+ * @property-read int|null $unsettled_issues_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\UnsettledAccount> $unsettledIssuesResolvedBy
+ * @property-read int|null $unsettled_issues_resolved_by_count
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newQuery()

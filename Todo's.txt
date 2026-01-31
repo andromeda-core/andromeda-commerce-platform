@@ -1337,6 +1337,288 @@ Role-based checks (Customer only) har sensitive action pe enforce ki
 Error handling + rollback scenarios clean kiye
 )✅
 
+
+42: (
+Module Set: Account Risk Signals + Unsettled Accounts + Notifications + Admin Controls
+
+(1. Account Risk Signal System (User Activity Monitoring)
+Purpose
+To monitor abnormal user behavior across the platform and provide visibility to admins, without applying any automatic penalties.
+
+What Was Implemented
+A centralized Account Risk Signal system that tracks suspicious patterns.
+Signals are informational only and visible in admin dashboards.
+No auto-blocking, no auto-suspension.
+
+Risk Detection Logic Implemented
+High Frequency Actions
+Detects excessive actions within a short time window.
+Example: More than 20 actions within 5 minutes.
+
+Burst Activity
+Detects bot-like behavior.
+Example: 10+ actions in 30 seconds.
+
+Device High Frequency
+Detects abnormal usage from the same device fingerprint.
+Uses hashed device fingerprint only (privacy safe).
+
+Rapid IP Change
+Detects frequent IP switching within a short duration.
+Reference-only signal, no enforcement.
+
+Repeated Risk Pattern
+Triggers when multiple different risk signals occur repeatedly over time.
+
+Architecture Decisions
+Uses Action Logs as the source of truth.
+Signals stored in account_risk_signals table.
+
+Signals have lifecycle:
+open
+resolved
+expired
+Expiry logic implemented via scheduled command.
+Queue-based processing using Laravel Horizon (isolated supervisor).
+)
+
+(
+2. Risk Signal Lifecycle & Data Integrity
+Key Decisions
+No destructive updates.
+All signals remain stored for audit purposes.
+Only one open signal per (user + signal_type) at a time.
+Historical resolved / expired signals are preserved.
+Automation
+
+Scheduled command:
+Automatically expires signals once expires_at is reached.
+Admin can manually resolve signals.
+System-resolved vs admin-resolved differentiation stored.
+)
+
+(
+3. Unsettled Accounts Module (Order-Focused)
+Definition (Aligned With Client Requirements)
+
+An Unsettled Account is an account that has unfinished or unresolved order/payment activity over time, such as:
+Payment pending too long
+Payment failed and not retried
+Refund requested but not resolved
+Paid but not fulfilled
+Repeated failed orders within a defined time window
+
+Important Clarification
+This module is purely order-related
+No device, IP, or behavior tracking here
+No automatic enforcement
+)
+
+
+(
+4. Unsettled Account Detection Engine
+Automated Detection (Command-Based)
+
+Implemented a dedicated command that detects unsettled issues using order data:
+Payment Pending Too Long
+Payment Failed
+Refund Not Resolved
+Paid But Not Fulfilled
+Repeated Failed Orders (Weekly Pattern)
+
+Data Design
+Each issue stored in account_unsettled_issues
+
+Linked to:
+User
+Order (if applicable)
+Meta JSON used where multiple orders exist (e.g. repeated failures)
+
+Behavior
+If same issue already exists as open, it updates metadata instead of duplicating.
+New record created only when no open issue exists for the same reason.
+)
+
+
+(
+5. Unsettled Account Notification System
+Notification Philosophy
+
+No automatic punishment
+System only informs and reminds
+Admin retains full control
+)
+
+(
+6. Notification Configuration (Admin Controlled)
+Admin Settings
+
+Implemented a full admin-controlled configuration system:
+Per unsettled reason:
+Notification delay (hours)
+Channel (Email / In-App)
+Active / Inactive toggle
+
+UI
+Single-page configuration panel
+All reasons shown together
+Admin edits and saves in one action
+Dark mode compatible UI
+Tailwind + reusable components
+)
+
+
+
+(
+
+7. Notification Scheduling & Delivery
+How Notifications Are Sent
+
+Separate scheduled command checks:
+Open unsettled issues
+Notification configuration
+Notification history
+Timing Logic
+
+First notification:
+Based on detected_at
+
+Subsequent notifications:
+Based on last sent time + configured delay
+Prevents spam
+Supports repeated reminders correctly
+)
+
+
+(
+8. Notification Message System
+Message Generation Strategy
+
+Messages are generated dynamically, not stored as HTML.
+
+Based on:
+Reason type
+Order number(s)
+Plain text only (\n supported)
+
+Benefits
+Email safe
+In-app safe
+No XSS risk
+
+Easy to render on frontend
+)
+
+
+
+(
+9. Notification Logging & Audit Trail
+What Is Logged
+
+Every notification sent is logged with:
+User
+Unsettled issue
+Channel
+Message content
+Sent time
+System vs manual send
+
+Purpose
+Full audit trail
+Admin visibility
+Historical accountability
+)
+
+(
+10. Manual Admin Actions
+Admin Capabilities
+
+Mark unsettled issue as resolved
+Send custom message to user
+Add internal admin-only notes
+View notification history
+View linked orders directly
+All actions are logged.
+)
+
+
+
+(
+11. Admin UI – Unsettled Accounts Dashboard
+Features
+
+Filter by status
+
+Search by:
+User name
+Email
+Phone
+Order number
+Card-based layout (clean, readable)
+Status badges
+Linked orders
+Meta rendering (multiple orders supported)
+Notes displayed inline (if present)
+Dark mode ready
+)
+
+(
+12. In-App Notifications
+Uses Laravel default notifications table
+Stored as database notifications
+Rendered using safe text rendering
+Supports multi-line messages
+Action URLs included where relevant
+)
+
+
+(
+13. System Architecture Quality
+Key Design Principles Followed
+
+Separation of concerns
+No tight coupling
+Queue-safe operations
+Idempotent commands
+Audit-first mindset
+Admin-first control model
+No silent automation or penalties
+)
+
+
+14.
+(
+    Frontend Notifications Page Created And Made it Gouping Wise, Like,  All, Unread, Read,
+    Also added Seen Marking on Notification
+    Also Added Destroy Notification
+    Also Added Mark All as Seen Functionality
+)
+
+15.
+(
+    Unsettled Accounts Marking as Resolved + Custom Mesage Send + Adding Note For Admin Internal Audit Added
+)
+
+16.
+(
+    Order Item Table Updated And Added inventory_item_id in it to Track actual Item which were used in the order Also
+    Updated All ORder Fecthing Logics Which were using before direct smarpthoen added from orderitems not it uses inventoryItem.smartphone
+    to get Proper Order Items And Updated All Frontend + checkout for Place Order and Dashboard Order Related Routes
+
+)
+
+17. Final Status
+
+✔ Risk system implemented
+✔ Unsettled account logic aligned with client definition
+✔ Notification system fully configurable
+✔ Admin tools complete
+✔ UI complete
+✔ Audit logging complete
+✔ No data loss scenarios
+✔ Production-safe design
+)✅
+
  <- Review Remeaning ->
 (
 Joseph Kim
@@ -1564,3 +1846,6 @@ all account data will be permanently deleted.
 
 When *Activate Account** is clicked, the user is redirected to a dedicated single page.
 This page contains a *simple informational message** and a button to proceed with account reactivation.
+
+
+

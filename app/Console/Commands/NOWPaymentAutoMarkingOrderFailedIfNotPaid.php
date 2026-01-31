@@ -8,6 +8,7 @@ use App\Models\SpecialCountry;
 use App\Notifications\NotifyCustomerOrderCryptoPaymentExpired;
 use Cache;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class NOWPaymentAutoMarkingOrderFailedIfNotPaid extends Command
 {
@@ -22,26 +23,24 @@ class NOWPaymentAutoMarkingOrderFailedIfNotPaid extends Command
         $meta_setting = Cache::get('meta_setting');
         Order::where('status', 'awaiting_payment')
             ->where('created_at', '<', $expiredTime)
-            ->with(['orderItems.smartphone.inventory_items', 'customer.user', 'customer.user.metaContacts'])
+            ->with(['orderItems.inventoryItem', 'customer.user', 'customer.user.metaContacts'])
             ->chunk(100, function ($orders) use ($currency, $meta_setting) {
 
                 foreach ($orders as $order) {
 
                     $user = $order->customer->user;
 
-                    $order->update(['status' => 'expired']);
+                    DB::transaction(function () use ($order) {
+                        $order->update(['status' => 'expired']);
 
-                    foreach ($order->orderItems as $item) {
-                        $inventoryItems = $item->smartphone->inventory_items()
-                            ->where('status', 'on_hold')
-                            ->limit($item->quantity)
-                            ->get();
+                        foreach ($order->orderItems as $item) {
+                            $inventoryItem = $item->inventoryItem;
 
-                        foreach ($inventoryItems as $inventoryItem) {
-                            $inventoryItem->update(['status' => 'in_stock']);
+                            if (! empty($inventoryItem)) {
+                                $inventoryItem->update(['status' => 'in_stock']);
+                            }
                         }
-
-                    }
+                    });
 
                     $user->notify(new NotifyCustomerOrderCryptoPaymentExpired($order, $currency));
 
