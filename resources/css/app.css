@@ -123,10 +123,21 @@
         @apply bg-gray-500 dark:bg-zinc-500;
     }
 
-    /* Firefox */
-    * {
-        scrollbar-width: thin;
-        scrollbar-color: #9ca3af #e5e7eb;
+    *::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    *::-webkit-scrollbar-thumb {
+        background: #6b6b6b;
+        border-radius: 8px;
+    }
+
+    .dark *::-webkit-scrollbar-thumb {
+        background: #6b6b6b;
+    }
+
+    *::-webkit-scrollbar-button {
+        display: none;
     }
 
     /* Safari masonry fix - critical */
@@ -145,10 +156,6 @@
             width: 100%;
             height: auto;
         }
-    }
-
-    .dark * {
-        scrollbar-color: #1e1e1e #3a3a3a;
     }
 }
 

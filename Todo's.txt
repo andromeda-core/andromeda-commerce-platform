@@ -1620,6 +1620,11 @@ No silent automation or penalties
 )✅
 
 
+43: Shop Page Category OnSelect Size Change Fixed ✅
+44: Contact Us Page  Hero Text Alignemnt FIX And Text Size Also Adjusted According To PDF ✅
+45: Langauge Modal Select Input And Its TEXT And Background Styling FIXED And its Button Stylign also Updated ✅
+46: Desktop Feed Elipsis Button Hashtag and Close Icon Buttons background Color Now Only shows when hovers According to PDF ✅
+
 
 
  <- Review Remeaning (Done) ->

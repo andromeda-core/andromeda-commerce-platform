@@ -243,7 +243,8 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'I understand that this action is permanent and irreversible. All my data will be permanently deleted and cannot be recovered.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Delete Account', 'created_at' => $now, 'updated_at' => $now],
 
-            ['key' => "Have a question or feedback? We'd love to hear from you. Fill out the form below and we'll get back to you as soon as possible.", 'created_at' => $now, 'updated_at' => $now],
+            ['key' => "Have a question or feedback? We'd love to hear from you.", 'created_at' => $now, 'updated_at' => $now],
+            ['key' => "Fill out the form below and we'll get back to you as soon as possible.", 'created_at' => $now, 'updated_at' => $now],
 
             ['key' => 'Visit Us', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Full Name', 'created_at' => $now, 'updated_at' => $now],

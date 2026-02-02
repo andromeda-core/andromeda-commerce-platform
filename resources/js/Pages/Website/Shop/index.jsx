@@ -466,7 +466,7 @@ const index = (
                                                 activeCategory &&
                                                     categories[index - 1]?.id === activeCategory
                                                     ? 'mx-3 text-main-text-light dark:text-main-text-dark font-semibold text-xl sm:text-xl lg:text-3xl inline-block'
-                                                    : 'mx-3 font-medium text-surface-3-light dark:text-surface-3-dark text-2xl sm:text-xl lg:text-3xl'
+                                                    : 'mx-3 font-semibold text-surface-3-light dark:text-surface-3-dark text-2xl sm:text-xl lg:text-3xl'
                                             }
                                         >
                                             |
@@ -482,7 +482,7 @@ const index = (
     font-medium
     ${activeCategory === category.id
                                                 ? 'font-semibold text-2xl text-main-text-light dark:text-main-text-dark sm:text-xl lg:text-3xl '
-                                                : 'font-medium text-surface-3-light dark:text-surface-3-dark text-2xl sm:text-xl lg:text-3xl'
+                                                : 'font-semibold text-surface-3-light dark:text-surface-3-dark text-2xl sm:text-xl lg:text-3xl'
                                             }
   `}
                                     >

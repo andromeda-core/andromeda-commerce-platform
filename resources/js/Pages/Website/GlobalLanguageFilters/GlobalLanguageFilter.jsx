@@ -194,6 +194,7 @@ const GlobalLanguageFilter = ({ isOpen, close, languages, loading, previousUrlRe
                                         itemKey={'name'}
                                         Placeholder={loading ? __('Loading Languages') : __('Select Language')}
                                         customPlaceHolder={true}
+                                        optionWindowHeight="calc(100vh  - 300px)"
 
                                     />
                                 </div>
@@ -208,7 +209,7 @@ const GlobalLanguageFilter = ({ isOpen, close, languages, loading, previousUrlRe
                             <button
                                 disabled={filterSaving || !languageHasChanged || activeLanguageIdState === ''}
                                 onClick={() => handleSaveFilters()}
-                                className={`w-full px-4 py-3 text-base font-semibold text-white transition-colors bg-black rounded-md dark:text-black dark:bg-white dark:hover:bg-white/80 hover:bg-black/80 ${(filterSaving || !languageHasChanged || activeLanguageIdState === '') ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                className={`w-full px-4 py-3 text-base font-semibold text-white transition-colors disabled:bg-[#e1e1e1]  bg-black rounded-md dark:text-black dark:bg-white dark:hover:bg-white/80 hover:bg-black/80 ${(filterSaving || !languageHasChanged || activeLanguageIdState === '') ? 'dark:opacity-50 cursor-not-allowed' : ''}`}
                             >
                                 <div className="flex items-center justify-center gap-3">
                                     {filterSaving && <Spinner customSize={'size-4'} Color={"fill-black dark:fill-white"} />}
@@ -236,7 +237,7 @@ const GlobalLanguageFilter = ({ isOpen, close, languages, loading, previousUrlRe
                     onClick={close}
                 />
 
-                <div className="relative w-full max-w-md border rounded-md min-h-[80vh] max-h-[80vh] border-surface-1-light bg-backgroundLight dark:bg-surface-1-dark dark:border-surface-3-dark flex flex-col">
+                <div className="relative w-full max-w-md border rounded-md min-h-[70vh] max-h-[70vh] border-surface-1-light bg-backgroundLight dark:bg-surface-1-dark dark:border-surface-3-dark flex flex-col">
 
                     <div className="flex-1 pt-8">
                         <div className="px-8 pb-4 text-start">
@@ -262,6 +263,7 @@ const GlobalLanguageFilter = ({ isOpen, close, languages, loading, previousUrlRe
                                         itemKey={'name'}
                                         Placeholder={loading ? __('Loading Languages') : __('Select Language')}
                                         customPlaceHolder={true}
+                                        optionWindowHeight="calc(75vh - 300px)"
 
                                     />
                                 </div>
@@ -277,7 +279,7 @@ const GlobalLanguageFilter = ({ isOpen, close, languages, loading, previousUrlRe
                         <button
                             disabled={filterSaving || !languageHasChanged || activeLanguageIdState === ''}
                             onClick={() => handleSaveFilters()}
-                            className={`w-full px-4 py-3 text-base font-semibold text-white transition-colors bg-black rounded-md dark:text-black dark:bg-white dark:hover:bg-white/80 hover:bg-black/80 ${(filterSaving || !languageHasChanged || activeLanguageIdState === '') ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            className={`w-full px-4 py-3 text-base font-semibold text-white transition-colors disabled:bg-[#e1e1e1]  bg-black rounded-md dark:text-black dark:bg-white dark:hover:bg-white/80 hover:bg-black/80 ${(filterSaving || !languageHasChanged || activeLanguageIdState === '') ? 'dark:opacity-50 cursor-not-allowed' : ''}`}
                         >
                             <div className="flex items-center justify-center gap-3">
                                 {filterSaving && <Spinner customSize={'size-4'} Color={"fill-black dark:fill-white"} />}

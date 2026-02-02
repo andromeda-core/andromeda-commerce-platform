@@ -52,8 +52,13 @@ const Index = () => {
                                 {__('Contact Us')}
                             </h1>
 
-                            <p className="max-w-3xl mt-1 text-sm text-sub-text-light dark:sub-text-dark">
-                                {__("Have a question or feedback? We'd love to hear from you. Fill out the form below and we'll get back to you as soon as possible.")}
+                            <p className="max-w-xl mt-1 text-sm text-sub-text-light dark:sub-text-dark">
+                                {__("Have a question or feedback? We'd love to hear from you.")}
+                            </p>
+
+
+                            <p className="max-w-xl mt-1 text-sm text-sub-text-light dark:sub-text-dark">
+                                {__("Fill out the form below and we'll get back to you as soon as possible.")}
                             </p>
 
 
@@ -68,7 +73,7 @@ const Index = () => {
                         {/* Contact Info Cards */}
                         <div className="grid grid-cols-1 gap-4 mb-5 lg:grid-cols-2">
                             <div className="px-4 py-3 min-h-[100px] break-words rounded-md bg-surface-1-light dark:bg-surface-1-dark">
-                                <p className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">{__('Contact Us')}</p>
+                                <p className="text-[16px] font-semibold text-main-text-light dark:text-main-text-dark">{__('Contact Us')}</p>
                                 <p className="mt-1 text-sm text-sub-text-light dark:text-sub-text-dark">
                                     contact@andromeda.blue <br />
                                     +1 (516) 518 3469
@@ -76,7 +81,7 @@ const Index = () => {
                             </div>
 
                             <div className="px-4 py-3 min-h-[100px] break-words rounded-md bg-surface-1-light dark:bg-surface-1-dark">
-                                <p className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">{__('Visit Us')}</p>
+                                <p className="text-[16px] font-semibold text-main-text-light dark:text-main-text-dark">{__('Visit Us')}</p>
                                 <p className="mt-1 text-sm text-sub-text-light dark:text-sub-text-dark">
                                     447 BROADWAY 2ND FL 2144 NEW YORK, <br />
                                     NY 10013

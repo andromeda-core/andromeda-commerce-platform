@@ -17,6 +17,7 @@ export default function WebSelectInput({
     Placeholder = true,
     isDisabled = false,
     customPlaceHolder = false,
+    optionWindowHeight,
 }) {
     const [options, setOptions] = useState([]);
     const isDarkMode = useDarkMode();
@@ -102,7 +103,8 @@ export default function WebSelectInput({
                     : '#1e1e1e',
             color: '#b3b3b3',
             cursor: 'pointer',
-            padding: '8px 10px',
+            fontSize: '14px',
+            padding: '8px 12px',
             '&:active': {
                 backgroundColor: '#3a3a3a',
             },
@@ -144,37 +146,39 @@ export default function WebSelectInput({
         }),
         menuList: (provided) => ({
             ...provided,
-            maxHeight: '180px',
+            maxHeight: optionWindowHeight || '180px',
             overflowY: 'auto',
             padding: '4px',
         }),
     };
 
     const lightStyles = {
-        control: (base, state) => ({
+        control: (base) => ({
             ...base,
             backgroundColor: '#ffffff',
-            color: '#111827',
             border: '1px solid #c8c8c8',
             borderRadius: '6px',
             minHeight: '40px',
-            outline: 'none !important',
-            boxShadow: 'none !important',
+            boxShadow: 'none',
+            outline: 'none',
             '&:hover': {
-                borderColor: 'none',
+                borderColor: '#c8c8c8',
             },
+            fontSize: '14px',
+            color: '#6b6b6b',
+        }),
 
-            fontWeight: 400,
-            fontSize: "0.875rem",
-            lineHeight: "1.25rem"
-        }),
-        indicatorSeparator: () => ({
-            display: 'none',
-        }),
-        valueContainer: (base) => ({
+        indicatorSeparator: () => ({ display: 'none' }),
+
+        dropdownIndicator: (base) => ({
             ...base,
-            padding: '2px 12px',
+            color: '#6b6b6b',
+            padding: '6px',
+            '&:hover': {
+                color: '#6b6b6b',
+            },
         }),
+
         indicatorsContainer: (base) => ({
             ...base,
             '& > div': {
@@ -198,87 +202,67 @@ export default function WebSelectInput({
             '&::before': {
                 content: '"×"',
                 fontSize: '20px',
-                color: '#222',
+                color: '#6b6b6b',
                 display: 'block',
                 fontWeight: 'normal',
             },
 
 
         }),
+        valueContainer: (base) => ({
+            ...base,
+            padding: '2px 12px',
+        }),
 
-
-        dropdownIndicator: (base) => ({
-            ...base,
-            color: '#6b7280',
-            padding: '6px',
-            '&:hover': {
-                color: '#111827',
-            },
-        }),
-        menu: (base) => ({
-            ...base,
-            backgroundColor: '#ffffff',
-            border: '1.5px solid #9FA0A0',
-            borderRadius: '6px',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-            marginTop: '4px',
-        }),
-        option: (base, state) => ({
-            ...base,
-            backgroundColor: state.isFocused
-                ? '#d4d4d4'
-                : state.isSelected
-                    ? '#e5e7eb'
-                    : '#ffffff',
-            color: '#111827',
-            cursor: 'pointer',
-            padding: '10px 12px',
-            '&:active': {
-                backgroundColor: '#e5e7eb',
-            },
-        }),
         singleValue: (base) => ({
             ...base,
-            color: '#111827',
+            color: '#6b6b6b',
         }),
-        multiValue: (base) => ({
-            ...base,
-            backgroundColor: '#e5e7eb',
-            borderRadius: '4px',
-        }),
-        multiValueLabel: (base) => ({
-            ...base,
-            color: '#111827',
-            padding: '2px 6px',
-        }),
-        multiValueRemove: (base) => ({
-            ...base,
-            color: '#6b7280',
-            cursor: 'pointer',
-            '&:hover': {
-                backgroundColor: '#d1d5db',
-                color: '#111827',
-            },
-        }),
-        input: (base) => ({
-            ...base,
-            color: '#111827',
-            caretColor: '#fff',
-        }),
+
         placeholder: (base) => ({
             ...base,
             color: '#9ca3af',
-            fontWeight: 400,
-            fontSize: "0.875rem",
-            lineHeight: "1.25rem"
+            fontSize: '14px',
         }),
-        menuList: (provided) => ({
-            ...provided,
-            maxHeight: '180px',
-            overflowY: 'auto',
+
+        input: (base) => ({
+            ...base,
+            color: '#6b6b6b',
+        }),
+
+        menu: (base) => ({
+            ...base,
+            backgroundColor: '#ffffff',
+            border: '1px solid #c8c8c8',
+            borderRadius: '6px',
+            boxShadow: 'none',
+            marginTop: '4px',
+        }),
+
+        menuList: (base) => ({
+            ...base,
+            maxHeight: optionWindowHeight || '180px',
             padding: '4px',
         }),
+
+        option: (base, state) => ({
+            ...base,
+            backgroundColor: state.isSelected
+                ? '#e1e1e1'
+                : state.isFocused
+                    ? '#f6f6f6'
+                    : '#ffffff',
+            color: '#6b6b6b',
+            padding: '8px 12px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            '&:active': {
+                backgroundColor: '#e1e1e1',
+            },
+        }),
     };
+
+
 
     useEffect(() => {
         const modified_options = items.map((item) => ({

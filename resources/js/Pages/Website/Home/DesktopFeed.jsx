@@ -1369,7 +1369,7 @@ const DesktopFeed = ({
                                     mediaThumbRefs.current = {};
                                     window.history.replaceState({}, '', window.location.pathname);
                                 }}
-                                className="absolute right-[clamp(35px,2vw,20px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-surface-1-light  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
+                                className="absolute right-[clamp(35px,2vw,20px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full hover:bg-surface-1-light  transition-all duration-200  dark:hover:bg-surface-2-dark "
                                 aria-label="Close modal"
                             >
                                 <svg
@@ -1481,11 +1481,10 @@ const DesktopFeed = ({
     flex items-center justify-center
     w-[36px] h-[36px]
     rounded-full
-    bg-surface-1-light
+    hover:bg-surface-1-light
     transition-all duration-200
-    hover:scale-110
-    dark:bg-surface-2-dark
-    dark:hover:bg-surface-3-dark
+    dark:hover:bg-surface-2-dark
+
   "
                                                     >
                                                         <svg
@@ -1722,7 +1721,7 @@ const DesktopFeed = ({
                                                                 )
                                                             }
 
-                                                            className=" text-[14px] font-medium z-[90] flex  items-center justify-center rounded-full bg-surface-1-light text-main-text-light dark:text-main-text-dark p-2  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
+                                                            className=" text-[14px] font-medium z-[90] flex  items-center justify-center rounded-full hover:bg-surface-1-light text-main-text-light dark:text-main-text-dark p-2  transition-all duration-200  dark:hover:bg-surface-2-dark "
                                                         >
                                                             {feedGallery?.tag}
                                                         </button>
@@ -1815,7 +1814,7 @@ const DesktopFeed = ({
                                     mediaThumbRefs.current = {};
                                     window.history.replaceState({}, '', window.location.pathname);
                                 }}
-                                className="absolute right-[clamp(35px,2vw,20px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-surface-1-light  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
+                                className="absolute right-[clamp(35px,2vw,20px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full hover:bg-surface-1-light  transition-all duration-200 dark:hover:bg-surface-2-dark "
                                 aria-label="Close modal"
                             >
                                 <svg
@@ -2116,11 +2115,9 @@ const DesktopFeed = ({
     flex items-center justify-center
     w-[36px] h-[36px]
     rounded-full
-    bg-surface-1-light
+    hover:bg-surface-1-light
     transition-all duration-200
-    hover:scale-110
-    dark:bg-surface-2-dark
-    dark:hover:bg-surface-3-dark
+    dark:hover:bg-surface-2-dark
   "
                                                                 >
                                                                     <svg
@@ -2273,7 +2270,7 @@ const DesktopFeed = ({
                                                                                 feedGallery?.tag,
                                                                             )
                                                                         }
-                                                                        className=" text-[14px] font-medium z-[90] flex  items-center justify-center rounded-full bg-surface-1-light text-main-text-light dark:text-main-text-dark p-2  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
+                                                                        className=" text-[14px] font-medium z-[90] flex  items-center justify-center rounded-full hover:bg-surface-1-light text-main-text-light dark:text-main-text-dark p-2  transition-all duration-200  dark:hover:bg-surface-2-dark"
                                                                     >
                                                                         {feedGallery?.tag}
                                                                     </button>
@@ -2918,7 +2915,7 @@ const DesktopFeed = ({
                                     mediaThumbRefs.current = {};
                                     window.history.replaceState({}, '', window.location.pathname);
                                 }}
-                                className="absolute right-[clamp(35px,2vw,20px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-surface-1-light  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
+                                className="absolute right-[clamp(35px,2vw,20px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full hover:bg-surface-1-light  transition-all duration-200  dark:hover:bg-surface-2-dark "
                                 aria-label="Close modal"
                             >
                                 <svg
@@ -3295,11 +3292,9 @@ const DesktopFeed = ({
     flex items-center justify-center
     w-[36px] h-[36px]
     rounded-full
-    bg-surface-1-light
+    hover:bg-surface-1-light
     transition-all duration-200
-    hover:scale-110
-    dark:bg-surface-2-dark
-    dark:hover:bg-surface-3-dark
+    dark:hover:bg-surface-2-dark
   "
                                                                 >
                                                                     <svg
@@ -3536,7 +3531,7 @@ const DesktopFeed = ({
                                                                             )
                                                                         }
 
-                                                                        className=" text-[14px] font-medium z-[90] flex  items-center justify-center rounded-full bg-surface-1-light text-main-text-light dark:text-main-text-dark p-2  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
+                                                                        className=" text-[14px] font-medium z-[90] flex  items-center justify-center rounded-full hover:bg-surface-1-light text-main-text-light dark:text-main-text-dark p-2  transition-all duration-200  dark:hover:bg-surface-2-dark"
                                                                     >
                                                                         {feedGallery?.tag}
                                                                     </button>
@@ -3653,7 +3648,7 @@ const DesktopFeed = ({
                                     mediaThumbRefs.current = {};
                                     window.history.replaceState({}, '', window.location.pathname);
                                 }}
-                                className="absolute right-[clamp(35px,2vw,20px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full bg-surface-1-light  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
+                                className="absolute right-[clamp(35px,2vw,20px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full hover:bg-surface-1-light  transition-all duration-200  dark:hover:bg-surface-2-dark "
                                 aria-label="Close modal"
                             >
                                 <svg
@@ -4040,11 +4035,9 @@ const DesktopFeed = ({
     flex items-center justify-center
     w-[36px] h-[36px]
     rounded-full
-    bg-surface-1-light
+    hover:bg-surface-1-light
     transition-all duration-200
-    hover:scale-110
-    dark:bg-surface-2-dark
-    dark:hover:bg-surface-3-dark
+    dark:hover:bg-surface-2-dark
   "
                                                                 >
                                                                     <svg
@@ -4197,7 +4190,7 @@ const DesktopFeed = ({
                                                                                 feedGallery?.tag,
                                                                             )
                                                                         }
-                                                                        className=" text-[14px] font-medium z-[90] flex  items-center justify-center rounded-full bg-surface-1-light text-main-text-light dark:text-main-text-dark p-2  transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark"
+                                                                        className=" text-[14px] font-medium z-[90] flex  items-center justify-center rounded-full hover:bg-surface-1-light text-main-text-light dark:text-main-text-dark p-2  transition-all duration-200 dark:hover:bg-surface-2-dark"
                                                                     >
                                                                         {feedGallery?.tag}
                                                                     </button>

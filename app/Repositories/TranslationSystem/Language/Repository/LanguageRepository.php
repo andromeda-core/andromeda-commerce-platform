@@ -38,7 +38,7 @@ class LanguageRepository implements ILanguageRepository
     {
         $validated_req = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:255'],
+            'code' => ['required', 'string', 'max:255', 'unique:languages,code'],
         ]);
 
         try {
@@ -72,7 +72,7 @@ class LanguageRepository implements ILanguageRepository
 
         $validated_req = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:255'],
+            'code' => ['required', 'string', 'max:255', 'unique:languages,code,'.$id],
         ]);
 
         try {
@@ -157,7 +157,7 @@ class LanguageRepository implements ILanguageRepository
     public function getAllLanguagesWithTranslationsWithoutPagination(Request $request)
     {
 
-        $languages = $this->language->latest()->select('id', 'name', 'code')->get();
+        $languages = $this->language->orderBy('created_at', 'asc')->select('id', 'name', 'code')->get();
 
         $translations = $this->translation_repo->getLanguageTranslations($request);
 
