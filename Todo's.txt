@@ -1650,6 +1650,10 @@ Buy Now checkout now uses a session-based cart item instead of database cart. Or
 55: Inventory Locking & Transaction Safety Improved
 Inventory units are locked using database transactions during order placement to prevent race conditions. All inventory status changes are rollback-safe if order placement fails at any step. ✅
 
+
+
+56: Cart Page Ui Changed To New One Accordign to the PDF✅
+57: Calculate Price For Cart Items Helper Updated and added items_total whihc just gives Only Total items Cost,✅
  <- Review Remeaning (Done) ->
 (
 Joseph Kim

@@ -602,6 +602,9 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Older', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Just now', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'No message available', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Items total', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Shipping will be calculated at checkout.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Estimated total', 'created_at' => $now, 'updated_at' => $now],
 
             // Backend
             ['key' => 'Profile Updated Successfully', 'created_at' => $now, 'updated_at' => $now],

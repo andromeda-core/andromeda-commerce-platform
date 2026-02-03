@@ -44,6 +44,7 @@ class CartPriceCalculator
         $grandTotal = $cartSubtotal + $addonsSubtotal + $shippingTotal + $importTaxTotal;
 
         return [
+            'items_total' => number_format($cartSubtotal + $addonsSubtotal, 2, '.', ''),
             'cart_subtotal' => number_format($cartSubtotal, 2, '.', ''),
             'addons_subtotal' => number_format($addonsSubtotal, 2, '.', ''),
             'shipping_fee' => number_format($shippingTotal, 2, '.', ''),

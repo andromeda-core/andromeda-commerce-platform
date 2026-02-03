@@ -22,9 +22,8 @@ class CartController extends Controller
 
         $addon_items = $data['addon_items'];
         $total_summary = $data['total_summary'];
-        $refferalSessionData = session()->get('referal_data');
 
-        return Inertia::render('Website/Cart/index', compact('cart_items', 'refferalSessionData', 'addon_items', 'total_summary'));
+        return Inertia::render('Website/Cart/index', compact('cart_items', 'addon_items', 'total_summary'));
     }
 
     public function getCartItems(Request $request)
