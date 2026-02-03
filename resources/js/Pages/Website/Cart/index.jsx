@@ -246,59 +246,53 @@ export default function index({ cart_items, addon_items, total_summary }) {
                 />
             )}
 
-
-
             <div className="min-h-screen transition-colors duration-200">
                 {/* Main Content */}
-                <div className={`mx-auto max-w-7xl pt-10 ${windowSize.width <= 1024 && 'mb-20'}`}>
+                <div className={`mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 ${windowSize.width <= 1024 && 'mb-20'}`}>
                     {cart_items.length === 0 ? (
                         <EmptyCart __={__} />
                     ) : (
-                        <div className="grid grid-cols-1 gap-8 mb-20 align-middle lg:grid-cols-3">
+                        <>
+                            {/* Cart Heading */}
+                            <h1 className='mb-5 text-[24px] font-semibold text-main-text-light dark:text-main-text-dark'>
+                                {__('Cart')} ({cart_items.length})
+                            </h1>
 
+                            {/* Grid Layout */}
+                            <div className="grid grid-cols-1 gap-6 mb-10 lg:gap-8 lg:grid-cols-3">
+                                {/* Cart Items - Left Side */}
+                                <div className="space-y-4 lg:col-span-2">
+                                    {cart_items.map((item) => {
+                                        return (
+                                            <CartItem
+                                                key={item.id}
+                                                item={item}
+                                                quantity={quantities[item.id] || item.quantity}
+                                                onUpdateQuantity={updateQuantity}
+                                                onProductRemove={onProductRemove}
+                                                currency={currency}
+                                                removing={removingProcessing}
+                                                addon_items={item?.smartphone_addon_items}
+                                                __={__}
+                                                smartphoneAddonQuantities={smartphoneAddonQuantities}
+                                                onUpdateSmartphoneAddon={updateSmartphoneAddon}
+                                                onRemoveSmartphoneAddon={removeSmartphoneAddon}
+                                                getTotalQtyOfSmartphone={getTotalQtyOfSmartphone}
+                                            />
+                                        )
+                                    })}
+                                </div>
 
-
-
-                            {/* Cart Items - Left Side */}
-                            <div className="space-y-4 lg:col-span-2">
-                                <p className='text-[24px] mb-5 font-semibold text-main-text-light dark:text-main-text-dark'>
-                                    Cart ({cart_items.length})
-                                </p>
-                                {cart_items.map((item) => {
-                                    return (
-                                        <CartItem
-                                            key={item.id}
-                                            item={item}
-                                            quantity={quantities[item.id] || item.quantity}
-                                            onUpdateQuantity={updateQuantity}
-                                            onProductRemove={onProductRemove}
-                                            currency={currency}
-                                            removing={removingProcessing}
-                                            addon_items={item?.smartphone_addon_items}
-                                            __={__}
-                                            smartphoneAddonQuantities={smartphoneAddonQuantities}
-                                            onUpdateSmartphoneAddon={updateSmartphoneAddon}
-                                            onRemoveSmartphoneAddon={removeSmartphoneAddon}
-                                            // calculateShippingCost={calculateShippingCost}
-                                            // calculateImportCost={calculateImportCost}
-                                            getTotalQtyOfSmartphone={getTotalQtyOfSmartphone}
-                                        />
-                                    )
-                                })}
+                                {/* Order Summary - Right Side */}
+                                <div className="lg:col-span-1">
+                                    <OrderSummary
+                                        summary={summary}
+                                        currency={currency}
+                                        __={__}
+                                    />
+                                </div>
                             </div>
-
-
-                            {/* Order Summary - Right Side */}
-                            <div className="lg:col-span-1">
-                                <OrderSummary
-                                    summary={summary}
-                                    currency={currency}
-                                    __={__}
-                                />
-                            </div>
-
-
-                        </div>
+                        </>
                     )}
                 </div>
             </div>
@@ -639,7 +633,7 @@ function OrderSummary({
 
 
     return (
-        <div className="sticky space-y-3 top-[6.5rem]">
+        <div className="sticky space-y-3 ">
             {/* Summary Card */}
             <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
                 <h2 className="mb-6 text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
