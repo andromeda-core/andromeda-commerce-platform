@@ -288,6 +288,7 @@ export default function index({ cart_items, addon_items, total_summary }) {
                                     <OrderSummary
                                         summary={summary}
                                         currency={currency}
+                                        cart_items={cart_items}
                                         __={__}
                                     />
                                 </div>
@@ -628,6 +629,7 @@ function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, remov
 function OrderSummary({
     summary,
     currency,
+    cart_items,
     __,
 }) {
 
@@ -674,7 +676,7 @@ function OrderSummary({
                     href={route('website.checkout.index')}
                     className="block w-full px-6 py-4 mt-10 text-base font-semibold text-center text-white transition-all rounded-md dark:text-main-text-light bg-backgroundDark hover:bg-backgroundDark/80 dark:bg-backgroundLight dark:hover:bg-backgroundLight/80"
                 >
-                    {__('Checkout')} ({summary.total_items || 2})
+                    {__('Checkout')} ({cart_items?.length})
                 </Link>
 
                 {/* Secure Checkout Badge */}
