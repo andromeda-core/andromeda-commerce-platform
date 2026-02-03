@@ -16,7 +16,7 @@ import WebSelectInput from '@/Components/WebSelectInput';
 import { BuildingLibraryIcon } from '@heroicons/react/24/solid';
 
 
-export default function Checkout({ cart_items, refferalSessionData, shipping_address, total_summary, meta_usernames, buy_now, is_eligible_for_social_message, addon_items, countries }) {
+export default function Checkout({ cart_items, refferalSessionData, shipping_address, total_summary, meta_usernames, buy_now, is_eligible_for_social_message, countries }) {
     const { currency, auth } = usePage().props;
     const windowSize = useWindowSize();
 
@@ -451,7 +451,6 @@ export default function Checkout({ cart_items, refferalSessionData, shipping_add
                                     cart_items={cart_items}
                                     currency={currency}
                                     __={__}
-                                    addon_items={addon_items}
                                     calculateImportCost={calculateImportCost}
                                     calculateShippingCost={calculateShippingCost}
 
@@ -467,7 +466,6 @@ export default function Checkout({ cart_items, refferalSessionData, shipping_add
                                     <OrderItemsSummary
                                         cart_items={cart_items}
                                         currency={currency}
-                                        addon_items={addon_items}
                                         __={__}
                                         calculateImportCost={calculateImportCost}
                                         calculateShippingCost={calculateShippingCost}
@@ -843,7 +841,7 @@ function PaymentMethod({ paymentMethod, setPaymentMethod, __ }) {
 }
 
 // Order Items Summary Component
-function OrderItemsSummary({ cart_items, currency, __, addon_items, calculateImportCost, calculateShippingCost }) {
+function OrderItemsSummary({ cart_items, currency, __, calculateImportCost, calculateShippingCost }) {
 
     const generateSmartphoneURL = (smartphone, isDirect = false, isSinglePage = false) => {
         return (
@@ -861,9 +859,7 @@ function OrderItemsSummary({ cart_items, currency, __, addon_items, calculateImp
                 {cart_items.map((item, index) => {
                     const shipping_fee = calculateShippingCost(item?.smartphone?.selling_info?.shipping_fee, item?.smartphone, item?.quantity);
                     const import_tax = calculateImportCost(item?.smartphone?.selling_info?.import_tax, item?.smartphone);
-                    const relatedAddons = addon_items.filter(
-                        addon => addon.smartphone_id === item.smartphone_id
-                    );
+                    const relatedAddons = item.smartphone_addon_items || [];
                     return (
                         <div
                             key={index}

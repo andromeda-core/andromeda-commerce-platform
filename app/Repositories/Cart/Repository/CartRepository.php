@@ -59,6 +59,7 @@ class CartRepository implements ICartRepository
             ->with(
                 [
                     'smartphone',
+                    'smartphoneAddonItems.addon',
                     'smartphone.selling_info',
                     'smartphone.model_name',
                     'smartphone.capacity',
@@ -76,13 +77,11 @@ class CartRepository implements ICartRepository
 
             ->get();
 
-        $addon_items = $this->smartphone_cart_addon
-            ->where('customer_id', $user->customer->id)
-            ->with(
-                ['addon']
-            )
-            ->latest()
-            ->get();
+        $addon_items = $items->flatMap(function ($item) {
+            return $item->smartphoneAddonItems;
+        });
+
+        // dd($items->toArray(), $addon_items->toArray());
 
         $total_summary = $this->price_calculator->calculate($items, $addon_items);
 
@@ -153,9 +152,6 @@ class CartRepository implements ICartRepository
 
             $addons = $request->array('addons');
 
-            $smartphone_cart_items = [];
-            $addon_cart_items = [];
-
             $already_items_in_cart = $this->cart->where('customer_id', $customer->id)->get();
 
             if (! blank($smartphones)) {
@@ -168,8 +164,8 @@ class CartRepository implements ICartRepository
                         }])
                         ->first();
 
-                    if ($smartphone->inventory_items_count < $cart_smartphone['quantity']) {
-                        throw new Exception($this->trans->get('Out Of Stock'));
+                    if (empty($smartphone)) {
+                        throw new Exception($this->trans->get('Wrong Product Selected Please Select Valid Product'));
                     }
 
                     if ($already_items_in_cart->isNotEmpty()) {
@@ -180,40 +176,71 @@ class CartRepository implements ICartRepository
                         }
                     }
 
-                    if (empty($smartphone)) {
-                        throw new Exception($this->trans->get('Wrong Product Selected Please Select Valid Product'));
+                    $incomingAddons = collect($addons)
+                        ->where('smartphone_id', $smartphone->id)
+                        ->values();
+
+                    $existingCartItems = $this->cart
+                        ->where('customer_id', $customer->id)
+                        ->where('smartphone_id', $smartphone->id)
+                        ->with('smartphoneAddonItems')
+                        ->get();
+
+                    $alreadyInCartQty = $existingCartItems->sum('quantity');
+                    $requiredQty = $alreadyInCartQty + $cart_smartphone['quantity'];
+
+                    if ($smartphone->inventory_items_count < $requiredQty) {
+                        $first_part_message = $this->trans->get('You already have');
+                        $second_part_message = $alreadyInCartQty;
+                        $third_part_message = $this->trans->get('items of this product in your cart. Adding more quantity exceeds available stock.');
+                        throw new Exception(
+                            $first_part_message.' '.$second_part_message.' '.$third_part_message
+                        );
                     }
 
-                    $exists = $this->cart->where('customer_id', $customer->id)->where('smartphone_id', $smartphone->id)
-                        ->with([
-                            'smartphone' => function ($q) {
-                                $q->withCount([
-                                    'inventory_items as inventory_items_count' => function ($q) {
-                                        $q->where('status', 'in_stock');
-                                    },
-                                ]);
-                            },
-                        ])
-                        ->first();
+                    $matchedCartItem = null;
 
-                    if (! empty($exists)) {
+                    foreach ($existingCartItems as $cartItem) {
 
-                        $total_quantity = $exists->quantity + $cart_smartphone['quantity'];
-
-                        if ($exists->smartphone->inventory_items_count < $total_quantity) {
-                            throw new Exception($this->trans->get('Product Out Of Stock Please Adjust Quantity'));
+                        // Case: both have NO addons
+                        if ($incomingAddons->isEmpty() && $cartItem->smartphoneAddonItems->isEmpty()) {
+                            $matchedCartItem = $cartItem;
+                            break;
                         }
 
-                        if ($exists->smartphone) {
-                            $exists->update([
-                                'quantity' => $total_quantity,
-                            ]);
+                        // Case: Addons Exists
+                        if (
+                            $incomingAddons->isNotEmpty() &&
+                            $cartItem->smartphoneAddonItems->isNotEmpty() &&
+                            $this->addonsMatch($cartItem->smartphoneAddonItems, $incomingAddons)
+                        ) {
+                            $matchedCartItem = $cartItem;
+                            break;
+                        }
+                    }
+
+                    // If Found -> Update
+                    if ($matchedCartItem) {
+
+                        $totalQty = $matchedCartItem->quantity + $cart_smartphone['quantity'];
+
+                        // Smartphone quantity +
+                        $matchedCartItem->update([
+                            'quantity' => $totalQty,
+                        ]);
+
+                        // Addon quantity + (ONLY for same cart item)
+                        foreach ($incomingAddons as $addon) {
+                            $this->smartphone_cart_addon
+                                ->where('cart_item_id', $matchedCartItem->id)
+                                ->where('addon_id', $addon['id'])
+                                ->increment('quantity', $addon['quantity']);
                         }
 
                         continue;
                     }
 
-                    $smartphone_cart_items[] = [
+                    $cartItem = $this->cart->create([
                         'type' => 'smartphone',
                         'color_id' => $cart_smartphone['color_id'],
                         'color_name' => $cart_smartphone['color_name'],
@@ -223,41 +250,22 @@ class CartRepository implements ICartRepository
                         'smartphone_id' => $smartphone->id,
                         'total_price' => $cart_smartphone['price'],
                         'unit_price' => $cart_smartphone['unit_price'],
-                    ];
-                }
+                    ]);
 
-            }
-
-            if (! blank($addons)) {
-                foreach ($addons as $addon) {
-
-                    $exists = $this->smartphone_cart_addon->where('customer_id', $customer->id)->where('addon_id', $addon['id'])->where('smartphone_id', $addon['smartphone_id'])->with('addon')->first();
-                    if (! empty($exists)) {
-                        $exists->update([
-                            'quantity' => $exists->quantity + $addon['quantity'],
+                    foreach ($incomingAddons as $addon) {
+                        $this->smartphone_cart_addon->create([
+                            'cart_item_id' => $cartItem->id,
+                            'addon_id' => $addon['id'],
+                            'name' => $addon['name'],
+                            'smartphone_id' => $cartItem->smartphone_id,
+                            'customer_id' => $customer->id,
+                            'quantity' => $addon['quantity'],
+                            'total_price' => $addon['price'],
+                            'unit_price' => $addon['unit_price'],
                         ]);
-
-                        continue;
                     }
 
-                    $addon_cart_items[] = [
-                        'addon_id' => $addon['id'],
-                        'name' => $addon['name'],
-                        'customer_id' => $customer->id,
-                        'smartphone_id' => $addon['smartphone_id'],
-                        'quantity' => $addon['quantity'],
-                        'total_price' => $addon['price'],
-                        'unit_price' => $addon['unit_price'],
-                    ];
                 }
-            }
-
-            if (! blank($smartphone_cart_items)) {
-                $this->cart->insert($smartphone_cart_items);
-            }
-
-            if (! blank($addon_cart_items)) {
-                $this->smartphone_cart_addon->insert($addon_cart_items);
 
             }
 
@@ -269,174 +277,6 @@ class CartRepository implements ICartRepository
             ];
         } catch (Exception $e) {
             DB::rollBack();
-
-            return [
-                'status' => false,
-                'message' => $e->getMessage(),
-            ];
-        }
-    }
-
-    public function updateItemFromFeed(Request $request, ?string $smartphone_id = null)
-    {
-
-        DB::beginTransaction();
-        try {
-
-            if (empty($smartphone_id)) {
-                throw new Exception($this->trans->get('Wrong Product Selected Please Select Valid Product'));
-            }
-
-            $user = $request->user();
-
-            if (empty($user)) {
-                throw new Exception($this->trans->get('Please Login First'));
-            }
-
-            if (! $user->hasRole('Customer')) {
-                throw new Exception($this->trans->get('Only Customers Can Add items In Cart'));
-            }
-
-            $customer = $user->customer;
-
-            if (empty($customer)) {
-                throw new Exception($this->trans->get('Only Customers Can Add items To Cart And Purchase'));
-            }
-
-            $smartphones = $request->array('smartphones');
-
-            if (blank($smartphones)) {
-                throw new Exception($this->trans->get('Please Select Atleast One Smartphone'));
-            }
-
-            $this->cart->where('customer_id', $customer->id)
-                ->where('smartphone_id', $smartphone_id)
-                ->delete();
-
-            $this->smartphone_cart_addon->where('customer_id', $customer->id)
-                ->where('smartphone_id', $smartphone_id)
-                ->delete();
-
-            $addons = $request->array('addons');
-
-            $smartphone_cart_items = [];
-            $addon_cart_items = [];
-
-            $already_items_in_cart = $this->cart->where('customer_id', $customer->id)->get();
-
-            if (! blank($smartphones)) {
-
-                foreach ($smartphones as $cart_smartphone) {
-                    $smartphone = $this->smartphone->where('id', $cart_smartphone['smartphone_id'])
-                        ->with(['selling_info', 'category.distributor.user'])
-                        ->withCount(['inventory_items as inventory_items_count' => function ($q) {
-                            $q->where('status', 'in_stock');
-                        }])
-                        ->first();
-
-                    if ($smartphone->inventory_items_count < $cart_smartphone['quantity']) {
-                        throw new Exception($this->trans->get('Out Of Stock'));
-                    }
-
-                    if ($already_items_in_cart->isNotEmpty()) {
-                        $is_same_distributor = $this->checkIsSameDistributor($already_items_in_cart, $smartphone);
-
-                        if (! $is_same_distributor) {
-                            throw new Exception($this->trans->get('You Cannot Add Product From Different Distributor'));
-                        }
-                    }
-
-                    if (empty($smartphone)) {
-                        throw new Exception($this->trans->get('Wrong Product Selected Please Select Valid Product'));
-                    }
-
-                    $exists = $this->cart->where('customer_id', $customer->id)->where('smartphone_id', $smartphone->id)
-                        ->with([
-                            'smartphone' => function ($q) {
-                                $q->withCount([
-                                    'inventory_items as inventory_items_count' => function ($q) {
-                                        $q->where('status', 'in_stock');
-                                    },
-                                ]);
-                            },
-                        ])
-                        ->first();
-
-                    if (! empty($exists)) {
-
-                        $total_quantity = $exists->quantity + $cart_smartphone['quantity'];
-
-                        if ($exists->smartphone->inventory_items_count < $total_quantity) {
-                            throw new Exception($this->trans->get('Product Out Of Stock Please Adjust Quantity'));
-                        }
-
-                        if ($exists->smartphone) {
-                            $exists->update([
-                                'quantity' => $total_quantity,
-                            ]);
-                        }
-
-                        continue;
-                    }
-
-                    $smartphone_cart_items[] = [
-                        'type' => 'smartphone',
-                        'color_id' => $cart_smartphone['color_id'],
-                        'color_name' => $cart_smartphone['color_name'],
-                        'capacity' => $cart_smartphone['capacity'],
-                        'customer_id' => $customer->id,
-                        'quantity' => $cart_smartphone['quantity'],
-                        'smartphone_id' => $smartphone->id,
-                        'total_price' => $cart_smartphone['price'],
-                        'unit_price' => $cart_smartphone['unit_price'],
-                    ];
-                }
-
-            }
-
-            if (! blank($addons)) {
-                foreach ($addons as $addon) {
-
-                    $exists = $this->smartphone_cart_addon->where('customer_id', $customer->id)->where('addon_id', $addon['id'])->where('smartphone_id', $addon['smartphone_id'])->with('addon')->first();
-                    if (! empty($exists)) {
-                        $exists->update([
-                            'quantity' => $exists->quantity + $addon['quantity'],
-                        ]);
-
-                        continue;
-                    }
-
-                    $addon_cart_items[] = [
-                        'addon_id' => $addon['id'],
-                        'name' => $addon['name'],
-                        'customer_id' => $customer->id,
-                        'smartphone_id' => $addon['smartphone_id'],
-                        'quantity' => $addon['quantity'],
-                        'total_price' => $addon['price'],
-                        'unit_price' => $addon['unit_price'],
-                    ];
-                }
-            }
-
-            // dd($smartphone_cart_items, $addon_cart_items);
-
-            if (! blank($smartphone_cart_items)) {
-                $this->cart->insert($smartphone_cart_items);
-            }
-
-            if (! blank($addon_cart_items)) {
-                $this->smartphone_cart_addon->insert($addon_cart_items);
-
-            }
-
-            DB::commit();
-
-            return [
-                'status' => true,
-                'message' => $this->trans->get('Updated Succesfully'),
-            ];
-        } catch (Exception $e) {
-            DB::rollback();
 
             return [
                 'status' => false,
@@ -467,22 +307,14 @@ class CartRepository implements ICartRepository
             $item_id = $request->integer('item_id');
 
             if ($item_type === 'smartphone') {
-                $smartphone = $this->smartphone->where('id', $item_id)->first();
-
-                if (empty($smartphone)) {
-                    throw new Exception($this->trans->get('Wrong Product Selected Please Select Valid Product'));
-                }
-
-                $item = $this->cart->where('customer_id', $customer->id)->where('smartphone_id', $item_id)->with(['smartphone'])->first();
+                $item = $this->cart->where('customer_id', $customer->id)->where('id', $item_id)->with(['smartphone', 'smartphoneAddonItems'])->first();
                 if (empty($item)) {
                     throw new Exception($this->trans->get('Something Went Wrong While Removing Product From Cart'));
                 }
 
                 DB::transaction(function () use ($item) {
                     if ($item->smartphone) {
-                        $item->smartphone
-                            ->smartphoneAddons()
-                            ->where('smartphone_id', $item->smartphone->id)
+                        $item->smartphoneAddonItems()
                             ->delete();
                     }
                     $deleted = $item->delete();
@@ -683,12 +515,12 @@ class CartRepository implements ICartRepository
 
             $item = $this->smartphone_cart_addon->where('customer_id', $customer->id)->where('id', $item_id)->first();
             if (empty($item)) {
-                throw new Exception($this->trans->get('Something Went Wrong While Removing Product From Cart'));
+                throw new Exception($this->trans->get('Something Went Wrong While Removing Addon From Cart'));
             }
 
             $deleted = $item->delete();
             if (! $deleted) {
-                throw new Exception($this->trans->get('Something Went Wrong While Removing Product From Cart'));
+                throw new Exception($this->trans->get('Something Went Wrong While Removing Addon From Cart'));
             }
 
             $all_cart_items = $this->cart->where('customer_id', $customer->id)->with(['smartphone', 'smartphone.selling_info', 'smartphone.selling_info.shipping_fee', 'smartphone.selling_info.import_tax'])->get();
@@ -961,5 +793,17 @@ class CartRepository implements ICartRepository
                 'message' => $e->getMessage(),
             ];
         }
+    }
+
+    private function addonsMatch($existing, $incoming)
+    {
+        if ($existing->count() !== $incoming->count()) {
+            return false;
+        }
+
+        $existingIds = $existing->pluck('addon_id')->sort()->values()->toArray();
+        $incomingIds = $incoming->pluck('id')->sort()->values()->toArray();
+
+        return $existingIds === $incomingIds;
     }
 }

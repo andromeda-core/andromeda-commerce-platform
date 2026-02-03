@@ -102,19 +102,6 @@ class CartController extends Controller
 
     }
 
-    public function UpdateItemFromFeed(Request $request, ?string $smartphone_id = null)
-    {
-
-        $response = $this->cart->updateItemFromFeed($request, $smartphone_id);
-
-        if ($response['status'] === false) {
-            return back()->with('error', $response['message']);
-        }
-
-        return back()->with('success', $response['message']);
-
-    }
-
     public function removeItem(Request $request)
     {
 

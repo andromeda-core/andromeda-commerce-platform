@@ -60,10 +60,10 @@ class HandleInertiaRequests extends Middleware
 
             'asset' => asset(''),
 
-            ...($user && $user?->hasRole('Customer') && $request->routeIs('home') ? [
-                'cart_items' => CartItem::where('customer_id', $user->customer?->id)->get(),
-                'smartphone_addon_items' => SmartphoneCartAddon::where('customer_id', $user->customer?->id)->get(),
-            ] : ['cart_items' => [], 'smartphone_addon_items' => []]),
+            // ...($user && $user?->hasRole('Customer') && $request->routeIs('home') ? [
+            //     'cart_items' => CartItem::where('customer_id', $user->customer?->id)->get(),
+            //     'smartphone_addon_items' => SmartphoneCartAddon::where('customer_id', $user->customer?->id)->get(),
+            // ] : ['cart_items' => [], 'smartphone_addon_items' => []]),
 
         ];
     }

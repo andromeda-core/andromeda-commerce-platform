@@ -72,7 +72,7 @@ class CheckoutController extends Controller
 
         $countries = $this->customer->getCountries();
 
-        return Inertia::render('Website/Checkout/index', compact('cart_items', 'total_summary', 'refferalSessionData', 'buy_now', 'countries', 'shipping_address', 'meta_usernames', 'addon_items', 'is_eligible_for_social_message'));
+        return Inertia::render('Website/Checkout/index', compact('cart_items', 'total_summary', 'refferalSessionData', 'buy_now', 'countries', 'shipping_address', 'meta_usernames', 'is_eligible_for_social_message'));
     }
 
     public function store(Request $request)

@@ -1625,7 +1625,30 @@ No silent automation or penalties
 45: Langauge Modal Select Input And Its TEXT And Background Styling FIXED And its Button Stylign also Updated ✅
 46: Desktop Feed Elipsis Button Hashtag and Close Icon Buttons background Color Now Only shows when hovers According to PDF ✅
 
+47: Desktop Feed (Smartphones) And Mobile Feed (Smartphones) Already Exists CartItems Showing When Mounts Logic Removed To align with new Requirement ✅
+48: Multiple Same Smartphones Adding in Cart Logic Added with these conditions -> (
+    1: When the selected smartphone isnt exists at all it will simply add new
+    2: Product Exists But Wtih Differrent Selections Like Addons And Others And new Product Have Differnernt Selections so it will Treat it as new Item in the cart
+    3: If  New Selections are same as we already have than it will increment in the quantity
+)✅
 
+49: Because of New Requirement For Cart Change, Cart Update And Remove + Addons Update And Remove Logic Adjusted ✅
+50: Because of New Requirement For Cart Change, Checkout Flow Updated And Algined With new Requirement ✅
+51: Because of New Requirement For Cart Change, Cart And Checkout Frontend Page UI Updated And Adjusted the Addons Showign logic with each seperate smartphone before it was simple since we had only one smartphone can be add at a time Logic But Now it Properly Diffrenciate Between Each Item and its addons also same Diffrenciate Logic Applied On Checkout Backend ✅
+
+52: New Column Added in order_items table to track proper stock units from inventory By Storing all Stock IDS used in the order To properly marking that item as soon  order proceeds + ORder Refund + All Commands Using THe Ivnentory Rollback Or Updates + Order Manage Backend  Are Updated and Adjusted and aligned with the New Logic Now it properly tracks each item properly so no other stock might accadently rollabcks or updates from different order  ✅
+
+53: Order Items & Addons Mapping Logic Updated
+Cart items are no longer mapped to order items using smartphone_id because same smartphone can exist multiple times in cart with different selections.
+A new mapping logic is introduced using cart_item_id → order_item_id mapping during order creation so that each addon is attached to its correct order item instead of always attaching to the last created one. ✅
+
+
+54: Buy Now (Single Product Checkout) Flow Adjusted
+Buy Now checkout now uses a session-based cart item instead of database cart. Order placement logic is adjusted to handle both database cart items and session-based cart items consistently without breaking inventory tracking, addon mapping, or checkout flow. ✅
+
+
+55: Inventory Locking & Transaction Safety Improved
+Inventory units are locked using database transactions during order placement to prevent race conditions. All inventory status changes are rollback-safe if order placement fails at any step. ✅
 
  <- Review Remeaning (Done) ->
 (

@@ -13,11 +13,9 @@ use App\Jobs\PaymentProofDestroyOnAWS;
 use App\Models\CartItem;
 use App\Models\Collaborator;
 use App\Models\Customer;
+use App\Models\Inventory;
 use App\Models\Order;
-use App\Models\OrderAddressChangeRequest;
-use App\Models\OrderRefund;
 use App\Models\PackageRecording;
-use App\Models\RewardSetting;
 use App\Models\Smartphone;
 use App\Models\SmartphoneCartAddon;
 use App\Models\SmartphoneOrderItemAddon;
@@ -43,10 +41,8 @@ class OrderRepository implements IOrderRepository
         private Collaborator $collaborator,
         private Smartphone $smartphone,
         private Customer $customer,
-        private RewardSetting $reward_setting,
         private CartItem $cart,
         private User $user,
-        private OrderRefund $order_refund,
         private NOWPaymentPaymentService $now_payment_service,
         private PackageRecording $package_recording,
         private SpecialCountry $special_country,
@@ -54,7 +50,7 @@ class OrderRepository implements IOrderRepository
         private SmartphoneCartAddon $smartphone_cart_addon,
         private SmartphoneOrderItemAddon $smartphone_order_item_addon,
         private CartPriceCalculator $cart_price_calculator,
-        private OrderAddressChangeRequest $order_address_change_request
+        private Inventory $inventory
     ) {}
 
     public function getAllOrders(Request $request)
@@ -125,174 +121,174 @@ class OrderRepository implements IOrderRepository
         return $order;
     }
 
-    public function storeOrder(Request $request)
-    {
-        $validated_req = $request->validate([
-            'customer_id' => ['required', 'exists:customers,id'],
-            'smartphones' => ['required', 'array'],
-            'referral_code' => ['nullable', 'exists:collaborators,referral_code'],
-        ], [
-            'customer_id.required' => 'The Customer Field Is Required.',
-            'customer_id.exists' => 'The selected customer is invalid.',
-            'referral_code.exists' => 'The Entered referral code is invalid.',
-            'smartphones.required' => 'The Please Select Atleast One Smartphone For Creating Order.',
-        ]);
+    // public function storeOrder(Request $request)
+    // {
+    //     $validated_req = $request->validate([
+    //         'customer_id' => ['required', 'exists:customers,id'],
+    //         'smartphones' => ['required', 'array'],
+    //         'referral_code' => ['nullable', 'exists:collaborators,referral_code'],
+    //     ], [
+    //         'customer_id.required' => 'The Customer Field Is Required.',
+    //         'customer_id.exists' => 'The selected customer is invalid.',
+    //         'referral_code.exists' => 'The Entered referral code is invalid.',
+    //         'smartphones.required' => 'The Please Select Atleast One Smartphone For Creating Order.',
+    //     ]);
 
-        try {
+    //     try {
 
-            DB::beginTransaction();
-            $validator = Validator::make($request->all(), [
-                'smartphones.*.id' => ['required', 'exists:smartphones,id'],
-                'smartphones.*.quantity' => ['required', 'integer', 'min:1'],
-            ], [
-                'smartphones.*.id.required' => 'The Smartphone Field Is Required.',
-                'smartphones.*.id.exists' => 'The selected smartphone is invalid.',
-                'smartphones.*.quantity.required' => 'The Quantity Field Is Required.',
-                'smartphones.*.quantity.integer' => 'The Quantity Field Must Be Integer.',
-                'smartphones.*.quantity.min' => 'The Quantity Field Must Be Atleast 1.',
-            ]);
+    //         DB::beginTransaction();
+    //         $validator = Validator::make($request->all(), [
+    //             'smartphones.*.id' => ['required', 'exists:smartphones,id'],
+    //             'smartphones.*.quantity' => ['required', 'integer', 'min:1'],
+    //         ], [
+    //             'smartphones.*.id.required' => 'The Smartphone Field Is Required.',
+    //             'smartphones.*.id.exists' => 'The selected smartphone is invalid.',
+    //             'smartphones.*.quantity.required' => 'The Quantity Field Is Required.',
+    //             'smartphones.*.quantity.integer' => 'The Quantity Field Must Be Integer.',
+    //             'smartphones.*.quantity.min' => 'The Quantity Field Must Be Atleast 1.',
+    //         ]);
 
-            if ($validator->fails()) {
-                throw new Exception($validator->errors()->first());
-            }
+    //         if ($validator->fails()) {
+    //             throw new Exception($validator->errors()->first());
+    //         }
 
-            $customer = $this->customer->find($validated_req['customer_id']);
-            if (empty($customer)) {
-                throw new Exception('Invalid Customer');
-            }
+    //         $customer = $this->customer->find($validated_req['customer_id']);
+    //         if (empty($customer)) {
+    //             throw new Exception('Invalid Customer');
+    //         }
 
-            if (
-                empty($customer->country) ||
-                empty($customer->state) ||
-                empty($customer->city) ||
-                empty($customer->postal_code) ||
-               (
-                   empty($customer->address_line1) &&
-                   empty($customer->address_line2)
-               )
-            ) {
-                throw new Exception('Please Complete Customer Profile, Before Placing An Order ');
-            }
+    //         if (
+    //             empty($customer->country) ||
+    //             empty($customer->state) ||
+    //             empty($customer->city) ||
+    //             empty($customer->postal_code) ||
+    //            (
+    //                empty($customer->address_line1) &&
+    //                empty($customer->address_line2)
+    //            )
+    //         ) {
+    //             throw new Exception('Please Complete Customer Profile, Before Placing An Order ');
+    //         }
 
-            if (! empty($validated_req['referral_code'])) {
+    //         if (! empty($validated_req['referral_code'])) {
 
-                if ($this->reward_setting->doesntExist()) {
-                    throw new Exception('Reward Point Setting Not Setup Please Setup Reward Point Setting To Use Reward Points Feature');
-                }
+    //             if ($this->reward_setting->doesntExist()) {
+    //                 throw new Exception('Reward Point Setting Not Setup Please Setup Reward Point Setting To Use Reward Points Feature');
+    //             }
 
-                $collaborator = $this->collaborator->where('referral_code', $validated_req['referral_code'])->first();
-                if (empty($collaborator)) {
-                    throw new Exception('Invalid Referral Code');
-                }
-                $validated_req['collaborator_id'] = $collaborator->id;
-            }
+    //             $collaborator = $this->collaborator->where('referral_code', $validated_req['referral_code'])->first();
+    //             if (empty($collaborator)) {
+    //                 throw new Exception('Invalid Referral Code');
+    //             }
+    //             $validated_req['collaborator_id'] = $collaborator->id;
+    //         }
 
-            $ids = collect($validated_req['smartphones'])->pluck('id');
+    //         $ids = collect($validated_req['smartphones'])->pluck('id');
 
-            $duplicates = $ids->duplicates();
+    //         $duplicates = $ids->duplicates();
 
-            if ($duplicates->isNotEmpty()) {
-                throw new Exception('Duplicate Smartphones Are Not Allowed');
-            }
+    //         if ($duplicates->isNotEmpty()) {
+    //             throw new Exception('Duplicate Smartphones Are Not Allowed');
+    //         }
 
-            $smartphones = $this->smartphone->with(['selling_info', 'inventory_items', 'model_name', 'category.distributor'])
-                ->whereIn('id', $ids)
-                ->get();
+    //         $smartphones = $this->smartphone->with(['selling_info', 'inventory_items', 'model_name', 'category.distributor'])
+    //             ->whereIn('id', $ids)
+    //             ->get();
 
-            if ($smartphones->isEmpty()) {
-                throw new Exception('Selected Smartphones Are Invalid');
-            }
+    //         if ($smartphones->isEmpty()) {
+    //             throw new Exception('Selected Smartphones Are Invalid');
+    //         }
 
-            $smartphoneQuantities = collect($validated_req['smartphones'])
-                ->mapWithKeys(fn ($item) => [$item['id'] => $item['quantity']]);
+    //         $smartphoneQuantities = collect($validated_req['smartphones'])
+    //             ->mapWithKeys(fn ($item) => [$item['id'] => $item['quantity']]);
 
-            $order_items = [];
-            $amount = 0;
+    //         $order_items = [];
+    //         $amount = 0;
 
-            $distributor_ids = $smartphones->pluck('category.distributor.id')->toArray();
+    //         $distributor_ids = $smartphones->pluck('category.distributor.id')->toArray();
 
-            if (in_array(null, $distributor_ids, true)) {
-                throw new Exception('One or more smartphones are missing a category. Please assign a category before placing an order.');
-            }
+    //         if (in_array(null, $distributor_ids, true)) {
+    //             throw new Exception('One or more smartphones are missing a category. Please assign a category before placing an order.');
+    //         }
 
-            if (count(array_unique($distributor_ids)) !== 1) {
-                throw new Exception('Order cannot be placed because the selected smartphones belong to different distributors. Please select products from the same distributor.');
-            }
+    //         if (count(array_unique($distributor_ids)) !== 1) {
+    //             throw new Exception('Order cannot be placed because the selected smartphones belong to different distributors. Please select products from the same distributor.');
+    //         }
 
-            foreach ($smartphones as $smartphone) {
+    //         foreach ($smartphones as $smartphone) {
 
-                if ($smartphone->inventory_items->isEmpty()) {
-                    throw new Exception(" {$smartphone->model_name->name} Smartphone Is Out Of Stock Please Check");
-                }
+    //             if ($smartphone->inventory_items->isEmpty()) {
+    //                 throw new Exception(" {$smartphone->model_name->name} Smartphone Is Out Of Stock Please Check");
+    //             }
 
-                if ($smartphone->inventory_items()->where('status', 'in_stock')->doesntExist()) {
-                    throw new Exception("{$smartphone->model_name->name} Smartphone Is Out Of Stock Please Check");
-                }
+    //             if ($smartphone->inventory_items()->where('status', 'in_stock')->doesntExist()) {
+    //                 throw new Exception("{$smartphone->model_name->name} Smartphone Is Out Of Stock Please Check");
+    //             }
 
-                if ($smartphone->inventory_items()->where('status', 'in_stock')->count() < $smartphoneQuantities[$smartphone->id]) {
-                    throw new Exception("{$smartphone->model_name->name} Smartphone Has Less Stock But You Have Selected More Quantity Please Check");
-                }
+    //             if ($smartphone->inventory_items()->where('status', 'in_stock')->count() < $smartphoneQuantities[$smartphone->id]) {
+    //                 throw new Exception("{$smartphone->model_name->name} Smartphone Has Less Stock But You Have Selected More Quantity Please Check");
+    //             }
 
-                if (empty($smartphone->selling_info)) {
-                    throw new Exception("{$smartphone->model_name->name} Smartphone Dont have Selling Price Please Check");
-                }
+    //             if (empty($smartphone->selling_info)) {
+    //                 throw new Exception("{$smartphone->model_name->name} Smartphone Dont have Selling Price Please Check");
+    //             }
 
-                $quantity = $smartphoneQuantities[$smartphone->id];
-                $unit_price = $smartphone->selling_info->total_price;
-                $sub_total = $smartphone->selling_info->total_price * $quantity;
-                $amount += $sub_total;
+    //             $quantity = $smartphoneQuantities[$smartphone->id];
+    //             $unit_price = $smartphone->selling_info->total_price;
+    //             $sub_total = $smartphone->selling_info->total_price * $quantity;
+    //             $amount += $sub_total;
 
-                $validated_req['amount'] = $amount;
+    //             $validated_req['amount'] = $amount;
 
-                $order_items[] = [
-                    'smartphone_id' => $smartphone->id,
-                    'unit_price' => $unit_price,
-                    'quantity' => $quantity,
-                    'sub_total' => $sub_total,
-                ];
+    //             $order_items[] = [
+    //                 'smartphone_id' => $smartphone->id,
+    //                 'unit_price' => $unit_price,
+    //                 'quantity' => $quantity,
+    //                 'sub_total' => $sub_total,
+    //             ];
 
-                $inventoryItems = $smartphone->inventory_items()
-                    ->where('status', 'in_stock')
-                    ->lockForUpdate()
-                    ->limit($quantity)
-                    ->get();
+    //             $inventoryItems = $smartphone->inventory_items()
+    //                 ->where('status', 'in_stock')
+    //                 ->lockForUpdate()
+    //                 ->limit($quantity)
+    //                 ->get();
 
-                foreach ($inventoryItems as $inventoryItem) {
-                    $inventoryItem->status = 'on_hold';
-                    $inventoryItem->save();
-                }
+    //             foreach ($inventoryItems as $inventoryItem) {
+    //                 $inventoryItem->status = 'on_hold';
+    //                 $inventoryItem->save();
+    //             }
 
-            }
+    //         }
 
-            unset($validated_req['referral_code'], $validated_req['smartphones']);
-            $created = $this->order->create($validated_req);
+    //         unset($validated_req['referral_code'], $validated_req['smartphones']);
+    //         $created = $this->order->create($validated_req);
 
-            if (empty($created)) {
-                throw new Exception('Something Went Wrong While Creating Order');
-            }
+    //         if (empty($created)) {
+    //             throw new Exception('Something Went Wrong While Creating Order');
+    //         }
 
-            foreach ($order_items as $item) {
-                $item['order_id'] = $created->id;
-            }
+    //         foreach ($order_items as $item) {
+    //             $item['order_id'] = $created->id;
+    //         }
 
-            $created->orderItems()->createMany($order_items);
+    //         $created->orderItems()->createMany($order_items);
 
-            DB::commit();
+    //         DB::commit();
 
-            return [
-                'status' => true,
-                'message' => 'Order Created Successfully',
-            ];
+    //         return [
+    //             'status' => true,
+    //             'message' => 'Order Created Successfully',
+    //         ];
 
-        } catch (Exception $e) {
-            DB::rollBack();
+    //     } catch (Exception $e) {
+    //         DB::rollBack();
 
-            return [
-                'status' => false,
-                'message' => $e->getMessage(),
-            ];
-        }
-    }
+    //         return [
+    //             'status' => false,
+    //             'message' => $e->getMessage(),
+    //         ];
+    //     }
+    // }
 
     public function updateOrder(Request $request, string $id)
     {
@@ -365,17 +361,17 @@ class OrderRepository implements IOrderRepository
             DB::beginTransaction();
 
             if ($order->status === 'pending') {
-                $smartphone_ids = $order->orderItems()->pluck('smartphone_id')->toArray();
 
-                $smartphones = $this->smartphone->with(['inventory_items'])->whereIn('id', $smartphone_ids)->get();
+                foreach ($order->orderItems as $item) {
 
-                foreach ($smartphones as $smartphone) {
-
-                    $quantity = $order->orderItems()->where('smartphone_id', $smartphone->id)->pluck('quantity')->implode(' ');
-                    $inventoryItems = $smartphone->inventory_items()
+                    $inventoryItemsIds = $item->inventory_item_ids;
+                    if (empty($inventoryItemsIds)) {
+                        continue;
+                    }
+                    $inventoryItems = $this->inventory
+                        ->whereIn('id', $inventoryItemsIds)
                         ->where('status', 'on_hold')
                         ->lockForUpdate()
-                        ->limit($quantity)
                         ->get();
 
                     foreach ($inventoryItems as $inventoryItem) {
@@ -460,20 +456,28 @@ class OrderRepository implements IOrderRepository
 
                 DB::transaction(function () use ($order) {
 
-                    $order->load('orderItems.inventoryItem');
+                    $order->load('orderItems');
 
                     foreach ($order->orderItems as $item) {
 
-                        $inventoryItem = $item->inventoryItem;
+                        $inventoryItemsIds = $item->inventory_item_ids;
 
-                        if (
-                            $inventoryItem &&
-                            $inventoryItem->status === 'on_hold'
-                        ) {
-                            $inventoryItem->update([
-                                'status' => 'in_stock',
-                            ]);
+                        if (empty($inventoryItemsIds)) {
+                            continue;
                         }
+                        foreach ($inventoryItemsIds as $inventoryItemId) {
+
+                            $inventoryItem = $this->inventory->find($inventoryItemId);
+                            if (
+                                ! empty($inventoryItem) &&
+                                $inventoryItem->status === 'on_hold'
+                            ) {
+                                $inventoryItem->update([
+                                    'status' => 'in_stock',
+                                ]);
+                            }
+                        }
+
                     }
                 });
             }
@@ -732,6 +736,14 @@ class OrderRepository implements IOrderRepository
 
                 $cart_items = $this->cart->where('customer_id', $customer->id)->get();
                 $smartphone_addon_cart_items = $this->smartphone_cart_addon->where('customer_id', $customer->id)->get();
+                $cart_items->load([
+                    'smartphone.selling_info',
+                    'smartphone.inventory_items',
+                    'smartphone.model_name',
+                    'smartphone.category.distributor',
+                    'smartphone.selling_info.shipping_fee',
+                    'smartphone.selling_info.import_tax',
+                ]);
             }
 
             if ($cart_items->isEmpty()) {
@@ -743,30 +755,14 @@ class OrderRepository implements IOrderRepository
                 throw new Exception($this->trans::get('Invalid Referal Code'));
             }
 
-            $smartphone_ids = [];
-            $smartphone_quantities = [];
-            $smartphone_color_ids = [];
-            $smartphone_unit_prices = [];
-            $smartphone_total_prices = [];
-
             $order_items = [];
             $inventoryItems = [];
             $smartphone_addon_order_items = [];
 
-            foreach ($cart_items as $item) {
-                if ($item->type === 'smartphone') {
-                    $smartphone_ids[] = $item->smartphone_id;
-                    $smartphone_quantities[$item->smartphone_id] = $item->quantity;
-                    $smartphone_color_ids[$item->smartphone_id] = $item->color_id;
-                    $smartphone_unit_prices[$item->smartphone_id] = $item->unit_price;
-                    $smartphone_total_prices[$item->smartphone_id] = $item->total_price;
-
-                }
-            }
-
             if ($smartphone_addon_cart_items->isNotEmpty()) {
                 foreach ($smartphone_addon_cart_items as $item) {
                     $smartphone_addon_order_items[] = [
+                        'cart_item_id' => $item->cart_item_id,
                         'smartphone_id' => $item->smartphone_id,
                         'addon_id' => $item->addon_id,
                         'customer_id' => $customer->id,
@@ -778,17 +774,12 @@ class OrderRepository implements IOrderRepository
                 }
             }
 
-            $smartphones = $this->smartphone->with(['selling_info', 'inventory_items', 'model_name', 'category.distributor', 'selling_info.shipping_fee', 'selling_info.import_tax'])
-                ->whereIn('id', $smartphone_ids)
-                ->get();
-
-            if ((count($smartphone_ids) !== $smartphones->count()) || $smartphones->isEmpty()) {
-                throw new Exception($this->trans::get('Invalid Cart Items'));
-            }
-
             $calculation = $this->cart_price_calculator->calculate($cart_items, $smartphone_addon_cart_items);
 
-            foreach ($smartphones as $smartphone) {
+            foreach ($cart_items as $index => $cartItem) {
+                $smartphone = $cartItem->smartphone;
+                $quantity = $cartItem->quantity;
+
                 if ($smartphone->inventory_items->isEmpty()) {
                     throw new Exception(" {$smartphone->model_name->name} {$this->trans::get('Smartphone Is Out Of Stock Please Check')}");
                 }
@@ -797,7 +788,7 @@ class OrderRepository implements IOrderRepository
                     throw new Exception("{$smartphone->model_name->name} {$this->trans::get('Smartphone Is Out Of Stock Please Check')}");
                 }
 
-                if ($smartphone->inventory_items()->where('status', 'in_stock')->count() < $smartphone_quantities[$smartphone->id]) {
+                if ($smartphone->inventory_items()->where('status', 'in_stock')->count() < $quantity) {
                     throw new Exception("{$smartphone->model_name->name} {$this->trans::get('Smartphone Has Less Stock But You Have Selected More Quantity Please Check')}");
                 }
 
@@ -805,10 +796,9 @@ class OrderRepository implements IOrderRepository
                     throw new Exception("{$smartphone->model_name->name} {$this->trans::get('Smartphone Dont have Selling Price Please Check')}");
                 }
 
-                $quantity = $smartphone_quantities[$smartphone->id];
                 $shipping_cost = $this->calculateShippingCost($smartphone->selling_info->shipping_fee, $smartphone, $quantity);
                 $import_cost = $this->calculateImportCost($smartphone->selling_info->import_tax, $smartphone);
-                $unit_price = $smartphone_unit_prices[$smartphone->id];
+                $unit_price = $cartItem->unit_price;
                 $product_total = $unit_price * $quantity;
                 $item_total = $product_total + $shipping_cost + $import_cost;
 
@@ -820,21 +810,27 @@ class OrderRepository implements IOrderRepository
                     ->limit($quantity)
                     ->get();
 
+                if ($backend_inventoryItems->isEmpty()) {
+                    throw new Exception("{$smartphone->model_name->name} {$this->trans::get('Smartphone Has Less Stock But You Have Selected More Quantity Please Check')}");
+                }
+
                 foreach ($backend_inventoryItems as $inventoryItem) {
                     $inventoryItem->status = 'on_hold';
                     $inventoryItem->save();
-
-                    $order_items[] = [
-                        'smartphone_id' => $smartphone->id,
-                        'inventory_item_id' => $inventoryItem->id,
-                        'unit_price' => $unit_price,
-                        'quantity' => $quantity,
-                        'sub_total' => $item_total,
-                        'shipping_cost' => $shipping_cost,
-                        'import_cost' => $import_cost,
-                        'color_id' => $smartphone_color_ids[$smartphone->id],
-                    ];
                 }
+
+                $order_items[] = [
+                    'cart_item_id' => $cartItem->id,
+                    'smartphone_id' => $smartphone->id,
+                    'inventory_item_ids' => $backend_inventoryItems->pluck('id')->toArray(),
+                    'inventory_item_id' => $backend_inventoryItems->first()?->id,
+                    'unit_price' => $unit_price,
+                    'quantity' => $cartItem->quantity,
+                    'sub_total' => $item_total,
+                    'shipping_cost' => $shipping_cost,
+                    'import_cost' => $import_cost,
+                    'color_id' => $cartItem->color_id,
+                ];
 
                 $inventoryItems[] = $backend_inventoryItems
                     ->groupBy('smartphone_id')->toArray();
@@ -980,25 +976,47 @@ class OrderRepository implements IOrderRepository
                 throw new Exception($this->trans::get('Something Went Wrong While Placing An Order'));
             }
 
-            $order->orderItems()->createMany($order_items);
+            $orderItemsForDb = [];
+            $orderItemIndexMap = [];
 
-            $orderItems = $order->orderItems()
-                ->get()
-                ->keyBy('smartphone_id');
+            foreach ($order_items as $index => $item) {
+                $orderItemIndexMap[$index] = $item['cart_item_id'];
+
+                unset($item['cart_item_id']);
+
+                $orderItemsForDb[] = $item;
+            }
+            $order->orderItems()->createMany($orderItemsForDb);
+
+            $orderItems = $order->orderItems()->get()->values();
+
+            $cartItemIdToOrderItem = [];
+
+            foreach ($orderItems as $index => $orderItem) {
+                $cartItemId = $orderItemIndexMap[$index];
+                $cartItemIdToOrderItem[$cartItemId] = $orderItem;
+            }
 
             $addonsToInsert = [];
 
             foreach ($order_item_addons as $addon) {
 
-                if (! isset($orderItems[$addon['smartphone_id']])) {
+                if (! isset($cartItemIdToOrderItem[$addon['cart_item_id']])) {
                     continue;
                 }
 
-                $addonsToInsert[] = array_merge($addon, [
-                    'order_item_id' => $orderItems[$addon['smartphone_id']]->id,
+                $addonsToInsert[] = [
+                    'order_item_id' => $cartItemIdToOrderItem[$addon['cart_item_id']]->id,
+                    'addon_id' => $addon['addon_id'],
+                    'smartphone_id' => $addon['smartphone_id'],
+                    'customer_id' => $addon['customer_id'],
+                    'quantity' => $addon['quantity'],
+                    'unit_price' => $addon['unit_price'],
+                    'total_price' => $addon['total_price'],
+                    'name' => $addon['name'],
                     'created_at' => now(),
                     'updated_at' => now(),
-                ]);
+                ];
             }
 
             if (! blank($addonsToInsert)) {

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class OrderItem extends Model
 {
     protected $fillable = [
-        'order_id', 'smartphone_id', 'product_id', 'quantity', 'unit_price', 'sub_total', 'color_id', 'shipping_cost', 'inventory_item_id', 'import_cost',
+        'order_id', 'smartphone_id', 'product_id', 'quantity', 'unit_price', 'sub_total', 'color_id', 'shipping_cost', 'inventory_item_id', 'inventory_item_ids', 'import_cost',
     ];
 
     //   Attributes
@@ -45,4 +45,8 @@ class OrderItem extends Model
     {
         return $this->belongsTo(Inventory::class, 'inventory_item_id', 'id');
     }
+
+    protected $casts = [
+        'inventory_item_ids' => 'array',
+    ];
 }

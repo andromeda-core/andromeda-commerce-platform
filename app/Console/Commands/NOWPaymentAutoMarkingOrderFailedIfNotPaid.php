@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Jobs\Meta\NotifyCustomerOrderCryptoPaymentExpiredJob;
+use App\Models\Inventory;
 use App\Models\Order;
 use App\Models\SpecialCountry;
 use App\Notifications\NotifyCustomerOrderCryptoPaymentExpired;
@@ -34,12 +35,24 @@ class NOWPaymentAutoMarkingOrderFailedIfNotPaid extends Command
                         $order->update(['status' => 'expired']);
 
                         foreach ($order->orderItems as $item) {
-                            $inventoryItem = $item->inventoryItem;
 
-                            if (! empty($inventoryItem)) {
-                                $inventoryItem->update(['status' => 'in_stock']);
+                            $inventoryItemsIds = $item->inventory_item_ids;
+                            if (empty($inventoryItemsIds)) {
+                                continue;
                             }
+
+                            foreach ($inventoryItemsIds as $inventoryItemId) {
+
+                                $inventoryItem = Inventory::find($inventoryItemId);
+                                if (! empty($inventoryItem)) {
+                                    $inventoryItem->update([
+                                        'status' => 'in_stock',
+                                    ]);
+                                }
+                            }
+
                         }
+
                     });
 
                     $user->notify(new NotifyCustomerOrderCryptoPaymentExpired($order, $currency));

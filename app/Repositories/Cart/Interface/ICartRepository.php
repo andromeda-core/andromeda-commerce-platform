@@ -12,8 +12,6 @@ interface ICartRepository
 
     public function addItem(Request $request);
 
-    public function updateItemFromFeed(Request $request, ?string $smartphone_id = null);
-
     public function removeItem(Request $request);
 
     public function updateItem(Request $request);

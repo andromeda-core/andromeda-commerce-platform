@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Jobs\Meta\NotifyCustomerAboutOrderCryptoPaymentReceivedJob;
 use App\Jobs\Meta\NotifyCustomerOrderCryptoPaymentFailedJob;
+use App\Models\Inventory;
 use App\Models\Order;
 use App\Models\SpecialCountry;
 use App\Notifications\NotifyCustomerAboutOrderCryptoPaymentReceived;
@@ -38,11 +39,21 @@ class NOWPaymentInvoiceStatusCheck extends Command
                             $order->update(['status' => 'failed']);
 
                             foreach ($order->orderItems as $item) {
-                                $inventoryItem = $item->inventoryItem;
 
-                                if (! empty($inventoryItem)) {
-                                    $inventoryItem->update(['status' => 'in_stock']);
+                                $inventoryItemsIds = $item->inventory_item_ids;
+                                if (empty($inventoryItemsIds)) {
+                                    continue;
                                 }
+                                foreach ($inventoryItemsIds as $inventoryItemId) {
+
+                                    $inventoryItem = Inventory::find($inventoryItemId);
+                                    if (! empty($inventoryItem)) {
+                                        $inventoryItem->update([
+                                            'status' => 'in_stock',
+                                        ]);
+                                    }
+                                }
+
                             }
                         });
 
@@ -67,11 +78,21 @@ class NOWPaymentInvoiceStatusCheck extends Command
                                 $order->update(['status' => 'paid']);
 
                                 foreach ($order->orderItems as $item) {
-                                    $inventoryItem = $item->inventoryItem;
 
-                                    if (! empty($inventoryItem)) {
-                                        $inventoryItem->update(['status' => 'sold']);
+                                    $inventoryItemsIds = $item->inventory_item_ids;
+                                    if (empty($inventoryItemsIds)) {
+                                        continue;
                                     }
+                                    foreach ($inventoryItemsIds as $inventoryItemId) {
+
+                                        $inventoryItem = Inventory::find($inventoryItemId);
+                                        if (! empty($inventoryItem)) {
+                                            $inventoryItem->update([
+                                                'status' => 'sold',
+                                            ]);
+                                        }
+                                    }
+
                                 }
                             });
 
@@ -91,11 +112,21 @@ class NOWPaymentInvoiceStatusCheck extends Command
                                 $order->update(['status' => 'failed']);
 
                                 foreach ($order->orderItems as $item) {
-                                    $inventoryItem = $item->inventoryItem;
 
-                                    if (! empty($inventoryItem)) {
-                                        $inventoryItem->update(['status' => 'in_stock']);
+                                    $inventoryItemsIds = $item->inventory_item_ids;
+                                    if (empty($inventoryItemsIds)) {
+                                        continue;
                                     }
+                                    foreach ($inventoryItemsIds as $inventoryItemId) {
+
+                                        $inventoryItem = Inventory::find($inventoryItemId);
+                                        if (! empty($inventoryItem)) {
+                                            $inventoryItem->update([
+                                                'status' => 'in_stock',
+                                            ]);
+                                        }
+                                    }
+
                                 }
                             });
 

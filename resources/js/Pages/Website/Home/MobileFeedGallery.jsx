@@ -8,7 +8,6 @@ const MobileFeedGallery = (
         setLinkCopied,
         auth,
         currency,
-        cart_items,
         navigateToHashtag,
         placeholderImage,
         generateURL,
@@ -24,7 +23,6 @@ const MobileFeedGallery = (
         setBookmarkStatusChanged,
         isDarkMode,
         setMobileFeedGalleryOpen,
-        smartphone_addon_items,
         generateSmartphoneURL,
         shouldCleanupBrowserHistoryRef,
         setSpatiotemporalInfoModal,
@@ -42,7 +40,6 @@ const MobileFeedGallery = (
                     setLinkCopied={setLinkCopied}
                     auth={auth}
                     currency={currency}
-                    cart_items={cart_items}
                     navigateToHashtag={navigateToHashtag}
                     placeholderImage={placeholderImage}
                     showErrorMessage={showErrorMessage}
@@ -54,7 +51,6 @@ const MobileFeedGallery = (
                     setErrorMessage={setErrorMessage}
                     setShowErrorMessage={setShowErrorMessage}
                     setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
-                    smartphone_addon_items={smartphone_addon_items}
                     generateSmartphoneURL={generateSmartphoneURL}
                     shouldCleanupBrowserHistoryRef={shouldCleanupBrowserHistoryRef}
                     spatiotemporalInfoModal={spatiotemporalInfoModal}

@@ -11,7 +11,6 @@ const MobileFeedSinglePage = ({
     navigateToHashtag,
     MobileFeedGalleryOpen,
     setMobileFeedGalleryOpen,
-    cart_items,
     currency,
     placeholderImage,
     showErrorMessage,
@@ -27,7 +26,6 @@ const MobileFeedSinglePage = ({
     setMediaItems,
     setFeedIndex,
     isSinglePageRef,
-    smartphone_addon_items,
     generateSmartphoneURL,
     setBookmarkStatusChanged,
     setSpatiotemporalInfoModal,
@@ -69,7 +67,6 @@ const MobileFeedSinglePage = ({
                     setLinkCopied={setLinkCopied}
                     auth={auth}
                     currency={currency}
-                    cart_items={cart_items}
                     navigateToHashtag={navigateToHashtag}
                     placeholderImage={placeholderImage}
                     generateURL={generateURL}
@@ -83,7 +80,6 @@ const MobileFeedSinglePage = ({
                     setErrorMessage={setErrorMessage}
                     setShowErrorMessage={setShowErrorMessage}
                     setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
-                    smartphone_addon_items={smartphone_addon_items}
                     setBookmarkStatusChanged={setBookmarkStatusChanged}
                     isDarkMode={isDarkMode}
                     shouldCleanupBrowserHistoryRef={shouldCleanupBrowserHistoryRef}

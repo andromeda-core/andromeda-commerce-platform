@@ -72,6 +72,14 @@ export default function index({ cart_items, refferalSessionData, addon_items, to
         }
     }, [showConfetti]);
 
+
+    const getTotalQtyOfSmartphone = (smartphoneId) => {
+        return cart_items
+            .filter(i => i.smartphone_id === smartphoneId)
+            .reduce((sum, i) => sum + (quantities[i.id] ?? i.quantity), 0);
+    };
+
+
     const updateQuantity = (itemId, newQuantity) => {
         if (newQuantity < 1) return;
 
@@ -83,11 +91,13 @@ export default function index({ cart_items, refferalSessionData, addon_items, to
             return;
         }
 
-        const availableInventory = cartItem.smartphone.inventory_items_count;
+        const totalUsedQty = getTotalQtyOfSmartphone(cartItem.smartphone_id);
+        const otherItemsQty = totalUsedQty - (quantities[itemId] ?? cartItem.quantity);
+        const maxAllowed = cartItem.smartphone.inventory_items_count - otherItemsQty;
 
-        if (newQuantity > availableInventory) {
+        if (newQuantity > maxAllowed) {
             setInfoMessage(
-                `${__('Only')} ${availableInventory} ${availableInventory === 1 ? __('Item') : __('Items')} ${__('available. Please adjust your quantity')}`,
+                __('Adding more quantity exceeds available stock for this product')
             );
             setShowInfoMessage(true);
             return;
@@ -115,7 +125,7 @@ export default function index({ cart_items, refferalSessionData, addon_items, to
             });
     };
 
-    const removeItem = (itemId, type) => {
+    const onProductRemove = (itemId, type) => {
         setRemovingProcessing(true);
         axios
             .delete(route('website.carts.remove-item'), {
@@ -175,7 +185,7 @@ export default function index({ cart_items, refferalSessionData, addon_items, to
             });
     };
 
-    const removeSmartphoneAddon = (itemId, type) => {
+    const removeSmartphoneAddon = (itemId) => {
         setRemovingProcessing(true);
         axios
             .delete(route('website.carts.remove-smartphone-addon-item'), {
@@ -388,24 +398,27 @@ export default function index({ cart_items, refferalSessionData, addon_items, to
 
                             {/* Cart Items - Left Side */}
                             <div className="space-y-4 lg:col-span-2">
-                                {cart_items.map((item) => (
-                                    <CartItem
-                                        key={item.id}
-                                        item={item}
-                                        quantity={quantities[item.id] || item.quantity}
-                                        onUpdateQuantity={updateQuantity}
-                                        onRemove={removeItem}
-                                        currency={currency}
-                                        removing={removingProcessing}
-                                        addon_items={addon_items}
-                                        __={__}
-                                        smartphoneAddonQuantities={smartphoneAddonQuantities}
-                                        onUpdateSmartphoneAddon={updateSmartphoneAddon}
-                                        onRemoveSmartphoneAddon={removeSmartphoneAddon}
-                                        calculateShippingCost={calculateShippingCost}
-                                        calculateImportCost={calculateImportCost}
-                                    />
-                                ))}
+                                {cart_items.map((item) => {
+                                    return (
+                                        <CartItem
+                                            key={item.id}
+                                            item={item}
+                                            quantity={quantities[item.id] || item.quantity}
+                                            onUpdateQuantity={updateQuantity}
+                                            onProductRemove={onProductRemove}
+                                            currency={currency}
+                                            removing={removingProcessing}
+                                            addon_items={item?.smartphone_addon_items}
+                                            __={__}
+                                            smartphoneAddonQuantities={smartphoneAddonQuantities}
+                                            onUpdateSmartphoneAddon={updateSmartphoneAddon}
+                                            onRemoveSmartphoneAddon={removeSmartphoneAddon}
+                                            calculateShippingCost={calculateShippingCost}
+                                            calculateImportCost={calculateImportCost}
+                                            getTotalQtyOfSmartphone={getTotalQtyOfSmartphone}
+                                        />
+                                    )
+                                })}
                             </div>
 
 
@@ -442,7 +455,7 @@ function CartItem({
     item,
     quantity,
     onUpdateQuantity,
-    onRemove,
+    onProductRemove,
     currency,
     removing,
     __,
@@ -452,6 +465,7 @@ function CartItem({
     onRemoveSmartphoneAddon,
     calculateShippingCost,
     calculateImportCost,
+    getTotalQtyOfSmartphone,
 }) {
     const shipping_fee = calculateShippingCost(
         item?.smartphone?.selling_info?.shipping_fee,
@@ -463,7 +477,14 @@ function CartItem({
         item?.smartphone,
     );
 
-    const relatedAddons = addon_items.filter((addon) => addon.smartphone_id === item.smartphone_id);
+    const relatedAddons = addon_items || [];
+
+    const currentQty = quantity;
+    const totalUsedQty = getTotalQtyOfSmartphone(item.smartphone_id);
+    const otherItemsQty = totalUsedQty - currentQty;
+    const maxAllowedForThisItem =
+        item.smartphone.inventory_items_count - otherItemsQty;
+
 
     const generateSmartphoneURL = (smartphone, isDirect = false, isSinglePage = false) => {
         return (
@@ -550,7 +571,7 @@ function CartItem({
                         {/* Remove Button */}
 
                         <button
-                            onClick={() => onRemove(item.smartphone_id, item.type)}
+                            onClick={() => onProductRemove(item.id, item.type)}
                             disabled={removing}
                             className={`p-2 text-gray-400 transition-colors hover:text-red-500 dark:text-white/40 dark:hover:text-red-400 ${removing ? 'cursor-not-allowed' : ''}`}
                             title={__('Remove item')}
@@ -603,9 +624,9 @@ function CartItem({
                                 {quantity}
                             </span>
                             <button
-                                disabled={item?.smartphone?.inventory_items_count <= quantity}
+                                disabled={quantity >= maxAllowedForThisItem}
                                 onClick={() => onUpdateQuantity(item.id, quantity + 1)}
-                                className="p-2 transition-colors text-sub-text-light hover:bg-surface-2-light dark:text-sub-text-dark dark:hover:bg-surface-3-dark"
+                                className="p-2 transition-colors disabled:cursor-not-allowed text-sub-text-light hover:bg-surface-2-light dark:text-sub-text-dark dark:hover:bg-surface-3-dark"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -668,9 +689,9 @@ function CartItem({
                     </div>
 
                     {/* Stock Status */}
-                    {item?.smartphone?.inventory_items_count !== undefined && (
+                    {maxAllowedForThisItem !== undefined && (
                         <div className="mt-3">
-                            {item.stock > 10 ? (
+                            {maxAllowedForThisItem > 10 ? (
                                 <span className="flex items-center gap-1 text-xs font-medium text-green-600 dark:text-green-400">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -684,9 +705,10 @@ function CartItem({
                                             clipRule="evenodd"
                                         />
                                     </svg>
+                                    {__('Only')} {maxAllowedForThisItem}{' '}
                                     {__('In Stock')}
                                 </span>
-                            ) : item?.smartphone?.inventory_items_count > 0 ? (
+                            ) : maxAllowedForThisItem > 0 ? (
                                 <span className="flex items-center gap-1 text-xs font-medium text-orange-600 dark:text-orange-400">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -700,7 +722,7 @@ function CartItem({
                                             clipRule="evenodd"
                                         />
                                     </svg>
-                                    {__('Only')} {item?.smartphone?.inventory_items_count}{' '}
+                                    {__('Only')} {maxAllowedForThisItem}{' '}
                                     {__('left in stock')}
                                 </span>
                             ) : (
@@ -814,7 +836,7 @@ function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, remov
 
             {/* Remove */}
             <button
-                onClick={() => onRemove(item.id, item.type)}
+                onClick={() => onRemove(item.id)}
                 disabled={removing}
                 className="text-sub-text-light hover:text-red-500 disabled:opacity-50"
                 title={__('Remove addon')}

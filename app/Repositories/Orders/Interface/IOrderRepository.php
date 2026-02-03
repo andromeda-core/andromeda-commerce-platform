@@ -12,7 +12,7 @@ interface IOrderRepository
 
     public function getSingleOrderByNo(string $order_no);
 
-    public function storeOrder(Request $request);
+    // public function storeOrder(Request $request);
 
     public function updateOrder(Request $request, string $id);
 

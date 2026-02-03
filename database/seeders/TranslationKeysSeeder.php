@@ -718,6 +718,10 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Referal Removed Successfully', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Please select at least one filter before searching.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Invalid filter format. Please refresh the page and try again.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'You already have', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'items of this product in your cart. Adding more quantity exceeds available stock.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Smartphone Has Less Stock But You Have Selected More Quantity Please Check', 'created_at' => $now, 'updated_at' => $now],
+
             ['key' => 'Please choose your content preferences before searching.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Invalid preferences data. Please refresh and try again.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Please specify whether to include text-only posts.', 'created_at' => $now, 'updated_at' => $now],

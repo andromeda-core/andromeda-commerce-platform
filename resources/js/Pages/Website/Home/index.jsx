@@ -1355,7 +1355,6 @@ const index = () => {
                                     navigateToHashtag={navigateToHashtag}
                                     Placeholder={Placeholder}
                                     showQrCode={showQrCode}
-                                    cart_items={cart_items}
                                     currency={currency}
                                     setInfoMessage={setInfoMessage}
                                     setShowInfoMessage={setShowInfoMessage}
@@ -1398,7 +1397,6 @@ const index = () => {
                             fetchMoreYAxis={fetchMorePostsAndProducts}
                             MobileFeedGalleryOpen={MobileFeedGalleryOpen}
                             setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
-                            cart_items={cart_items}
                             currency={currency}
                             placeholderImage={Placeholder}
                             fetchRelatedFeed={fetchRelatedFeed}
@@ -1416,7 +1414,6 @@ const index = () => {
                             setErrorMessage={setErrorMessage}
                             windowSize={windowSize}
                             setShowErrorMessage={setShowErrorMessage}
-                            smartphone_addon_items={smartphone_addon_items}
                             isSinglePageRef={isSinglePageRef}
                             spatiotemporalInfoModal={spatiotemporalInfoModal}
                             setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
@@ -1439,7 +1436,6 @@ const index = () => {
                             setFeedIndex={setFeedIndex}
                             MobileFeedGalleryOpen={MobileFeedGalleryOpen}
                             setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
-                            cart_items={cart_items}
                             currency={currency}
                             placeholderImage={Placeholder}
                             showErrorMessage={showErrorMessage}
@@ -1453,7 +1449,6 @@ const index = () => {
                             setShowErrorMessage={setShowErrorMessage}
                             setFeedOpen={setFeedOpen}
                             setMediaItems={setMediaItems}
-                            smartphone_addon_items={smartphone_addon_items}
                             spatiotemporalInfoModal={spatiotemporalInfoModal}
                             setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
                             __={__}

@@ -52,7 +52,7 @@ class OrderRefund extends Model
                 return;
             }
 
-            $refund->load(['order', 'customer.user', 'customer.user.reward_points']);
+            $refund->load(['order.orderItems', 'customer.user', 'customer.user.reward_points']);
 
             $order = $refund->order;
 
@@ -100,16 +100,20 @@ class OrderRefund extends Model
 
                     foreach ($order->orderItems as $item) {
 
-                        $inventoryItem = $item->inventoryItem;
-
-                        if (
-                            $inventoryItem &&
-                           $inventoryItem->status === 'sold'
-                        ) {
-                            $inventoryItem->update([
-                                'status' => 'in_stock',
-                            ]);
+                        $inventoryItemsIds = $item->inventory_item_ids;
+                        if (empty($inventoryItemsIds)) {
+                            continue;
                         }
+                        foreach ($inventoryItemsIds as $inventoryItemId) {
+
+                            $inventoryItem = Inventory::find($inventoryItemId);
+                            if (! empty($inventoryItem) && $inventoryItem->status === 'sold') {
+                                $inventoryItem->update([
+                                    'status' => 'in_stock',
+                                ]);
+                            }
+                        }
+
                     }
                 });
 

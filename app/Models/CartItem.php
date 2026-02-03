@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CartItem extends Model
 {
@@ -28,6 +29,11 @@ class CartItem extends Model
     public function smartphone(): BelongsTo
     {
         return $this->belongsTo(Smartphone::class, 'smartphone_id', 'id');
+    }
+
+    public function smartphoneAddonItems(): HasMany
+    {
+        return $this->hasMany(SmartphoneCartAddon::class, 'cart_item_id', 'id');
     }
 
     public function color(): BelongsTo

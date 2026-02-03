@@ -29,7 +29,6 @@ const DesktopFeed = ({
     setFeedGallery,
     setFeedOpen,
     currency,
-    cart_items,
     setInfoMessage,
     setShowInfoMessage,
     feedIndex,
@@ -40,7 +39,6 @@ const DesktopFeed = ({
     isfetchingMoreYAxisFeed,
     fetchMoreYAxis,
     fetchRelatedFeed,
-    smartphone_addon_items,
     generateSmartphoneURL,
     isSinglePageRef,
     setSpatiotemporalInfoModal,
@@ -453,14 +451,6 @@ const DesktopFeed = ({
     const [smartphoneTotalPrice, setSmartphoneTotalPrice] = useState({});
 
 
-    // Original cart data for comparison
-    const [originalCartSmartphones, setOriginalCartSmartphones] = useState([]);
-    const [originalCartAddons, setOriginalCartAddons] = useState([]);
-
-    // / Tracking if changes were made
-    const [hasCartChanges, setHasCartChanges] = useState(false);
-
-
     // Its Just For Initial Check When Smartphone Feed Loads
     const smartphoneCartItemsRef = useRef([]);
     const [cartItemAddons, setCartItemAddons] = useState([]);
@@ -476,93 +466,6 @@ const DesktopFeed = ({
 
     // Checking Stock
     const [isInStock, setIsInStock] = useState(feedGallery?.inventory_items_count > 0);
-
-    // Checking Cart State
-    const [isInCart, setIsInCart] = useState(false);
-
-
-
-
-
-    // Initialize cartItemSmartphones from backend cart_items on mount/feedGallery change
-    useEffect(() => {
-        if (!feedGallery || feedGallery.type !== 'smartphones') return;
-
-        // Check if this smartphone is already in cart
-        const existingCartItems = cart_items?.filter(
-            (item) => item.smartphone_id === feedGallery.id
-        );
-
-        if (existingCartItems && existingCartItems.length > 0) {
-            // Map backend structure to your frontend structure
-            const mappedSmartphones = existingCartItems.map((item) => ({
-                smartphone_id: item.smartphone_id,
-                name: feedGallery.name,
-                color_id: item.color_id,
-                color_name: item.color_name,
-                capacity: item.capacity,
-                price: Number(item.total_price),
-                unit_price: Number(item.unit_price),
-                quantity: item.quantity,
-            }));
-
-            setCartItemSmartphones(mappedSmartphones);
-            smartphoneCartItemsRef.current = mappedSmartphones;
-
-
-            // Storing Originals For Tracking If Changed Or Not
-            setOriginalCartSmartphones(JSON.parse(JSON.stringify(mappedSmartphones)));
-        }
-    }, [feedGallery?.id]);
-
-    // Initialize cartItemAddons from backend smartphone_addon_items
-    useEffect(() => {
-        if (!feedGallery || feedGallery.type !== 'smartphones') return;
-
-        // Check if this smartphone has addons in cart
-        const existingAddonItems = smartphone_addon_items?.filter(
-            (item) => item.smartphone_id === feedGallery.id
-        );
-
-
-        if (existingAddonItems && existingAddonItems.length > 0) {
-            // Map backend structure to your frontend structure
-            const mappedAddons = existingAddonItems.map((item) => ({
-                id: item.addon_id,
-                name: item.name,
-                price: Number(item.total_price),
-                unit_price: Number(item.unit_price),
-                quantity: item.quantity,
-                smartphone_id: item.smartphone_id,
-            }));
-
-            setCartItemAddons(mappedAddons);
-
-            // Storing Originals For Tracking If Changed Or Not
-            setOriginalCartAddons(JSON.parse(JSON.stringify(mappedAddons)));
-        }
-    }, [feedGallery?.id]);
-
-
-    // Detect changes in cart items
-    useEffect(() => {
-        if (!isInCart) {
-            setHasCartChanges(false);
-            return;
-        }
-
-        // Compare smartphones
-        const smartphonesChanged = JSON.stringify(
-            cartItemSmartphones.filter(s => s.smartphone_id === feedGallery?.id)
-        ) !== JSON.stringify(originalCartSmartphones);
-
-        // Compare addons
-        const addonsChanged = JSON.stringify(
-            cartItemAddons.filter(a => a.smartphone_id === feedGallery?.id)
-        ) !== JSON.stringify(originalCartAddons);
-
-        setHasCartChanges(smartphonesChanged || addonsChanged);
-    }, [cartItemSmartphones, cartItemAddons, originalCartSmartphones, originalCartAddons, feedGallery?.id, isInCart]);
 
 
     useEffect(() => {
@@ -616,11 +519,6 @@ const DesktopFeed = ({
         }
     }, [feedGallery]);
 
-
-    // Specifically For Already Added Smartphone in Cart Calcualtion
-    const calculateAddonPrice = (qty, unitPrice) => {
-        return parseFloat(qty * unitPrice).toFixed(2);
-    };
 
     // Smartphone Handling
     useEffect(() => {
@@ -713,9 +611,7 @@ const DesktopFeed = ({
                 updated[existingIndex] = {
                     ...updated[existingIndex],
                     quantity: newQty,
-                    price: isInCart
-                        ? calculateAddonPrice(newQty, unitPrice)
-                        : parseFloat(Number(updated[existingIndex].price) + unitPrice).toFixed(2),
+                    price: parseFloat(Number(updated[existingIndex].price) + unitPrice).toFixed(2),
                 };
 
                 return updated;
@@ -759,8 +655,6 @@ const DesktopFeed = ({
     const baseTotal = smartphoneSubtotal + addonSubtotal;
 
     const feeAppliedRef = useRef({});
-
-
 
 
     // Calculating Smartphone Total Price
@@ -832,9 +726,7 @@ const DesktopFeed = ({
                     return {
                         ...a,
                         quantity: newQty,
-                        price: isInCart
-                            ? calculateAddonPrice(newQty, unitPrice)
-                            : parseFloat(Number(a.price) + unitPrice).toFixed(2),
+                        price: parseFloat(Number(a.price) + unitPrice).toFixed(2),
                     };
                 }
                 return a;
@@ -861,9 +753,7 @@ const DesktopFeed = ({
                         return {
                             ...a,
                             quantity: newQty,
-                            price: isInCart
-                                ? calculateAddonPrice(newQty, unitPrice)
-                                : parseFloat(Number(a.price) - unitPrice).toFixed(2),
+                            price: parseFloat(Number(a.price) - unitPrice).toFixed(2),
                         };
                     }
                     return a;
@@ -1029,18 +919,8 @@ const DesktopFeed = ({
 
                     onFinish: () => {
                         setCartProcessing(false);
-                        setOriginalCartSmartphones(
-                            JSON.parse(JSON.stringify(cartItemSmartphones.filter(
-                                s => s.smartphone_id === feedGallery?.id
-                            )))
-                        );
-                        setOriginalCartAddons(
-                            JSON.parse(JSON.stringify(cartItemAddons.filter(
-                                a => a.smartphone_id === feedGallery?.id
-                            )))
-                        );
-                        setHasCartChanges(false);
-                        setIsInCart(true);
+
+
 
                     },
                     preserveScroll: true,
@@ -1052,33 +932,6 @@ const DesktopFeed = ({
             setCartProcessing(false);
             setShowErrorMessage(true);
             setErrorMessage(error.message);
-        }
-    };
-
-    const handleRemoveCartItem = async (type, item_id) => {
-        try {
-            setCartProcessing(true);
-
-            const data = {
-                type: type,
-                item_id: item_id,
-            };
-
-            router.delete(route('website.carts.remove-item'), {
-                data: data,
-                preserveScroll: true,
-                preserveUrl: true,
-                preserveState: true,
-
-                onFinish: () => {
-                    setCartProcessing(false);
-                    setIsInCart(false);
-                },
-            });
-        } catch (error) {
-            setShowErrorMessage(true);
-            setErrorMessage(error?.message || __('Something Went Wrong While Removing Cart Item'));
-            setCartProcessing(false);
         }
     };
 
@@ -1168,100 +1021,6 @@ const DesktopFeed = ({
     };
 
 
-    const handleUpdateCartItem = async (smartphones, addons, total_stock) => {
-        try {
-            setCartProcessing(true);
-
-            if (smartphones.length === 0 && addons.length === 0) {
-                setInfoMessage(__('Please select any Item First'));
-                setShowInfoMessage(true);
-                setCartProcessing(false);
-                return;
-            }
-
-            if (!isInStock) {
-                setInfoMessage(
-                    __('Sorry, this item is currently out of stock and cannot be updated')
-                );
-                setShowInfoMessage(true);
-                setCartProcessing(false);
-                return;
-            }
-
-            let quantity = 0;
-            smartphones.forEach((smartphone) => {
-                quantity += smartphone.quantity;
-            });
-
-            if (quantity > total_stock) {
-                setInfoMessage(
-                    `${'Only'} ${total_stock} ${total_stock === 1 ? __('Item') : __('Items')} ${__('Stock available. Please adjust your quantity')}`
-                );
-                setShowInfoMessage(true);
-                setCartProcessing(false);
-                return;
-            }
-
-            let data = {
-                smartphones: [],
-                addons: [],
-            };
-
-            smartphones
-                .filter((smartphone) => smartphone.smartphone_id === feedGallery?.id)
-                .forEach((smartphone) => {
-                    data = {
-                        ...data,
-                        smartphones: [...data.smartphones, smartphone],
-                    };
-                });
-
-            addons
-                .filter((addon) => addon.smartphone_id === feedGallery?.id)
-                .forEach((addon) => {
-                    data = {
-                        ...data,
-                        addons: [...data.addons, addon],
-                    };
-                });
-
-            router.put(
-                route('website.carts.update-item-from-feed', { smartphone_id: feedGallery?.id }),
-                { ...data },
-                {
-                    onSuccess: (page) => {
-                        if (page.props.flash?.success) {
-                            // Update original data after successful update
-                            setOriginalCartSmartphones(
-                                JSON.parse(JSON.stringify(cartItemSmartphones.filter(
-                                    s => s.smartphone_id === feedGallery?.id
-                                )))
-                            );
-                            setOriginalCartAddons(
-                                JSON.parse(JSON.stringify(cartItemAddons.filter(
-                                    a => a.smartphone_id === feedGallery?.id
-                                )))
-                            );
-                            setHasCartChanges(false);
-                        }
-
-                    },
-                    onFinish: () => {
-                        setCartProcessing(false);
-                    },
-                    preserveScroll: true,
-                    preserveUrl: true,
-                    preserveState: true,
-                }
-            );
-        } catch (error) {
-            setCartProcessing(false);
-            setShowErrorMessage(true);
-            setErrorMessage(error.message);
-        }
-    };
-
-
     // Watching The Smartphone Cart Item If Smarpthone added Than enable Action Buttons
     useEffect(() => {
         if (
@@ -1275,11 +1034,6 @@ const DesktopFeed = ({
         }
     }, [cartItemSmartphones, feedGallery?.id]);
 
-    // Watcing The Cart items When FeedChanges From Cart if exists than makes it true
-    useEffect(() => {
-        if (feedGallery?.type !== 'smartphones' || !feedGallery?.id) return;
-        setIsInCart(cart_items.some((item) => item.smartphone_id === feedGallery?.id));
-    }, [feedGallery?.id]);
 
     // CleanUp
     useEffect(() => {
@@ -1295,11 +1049,8 @@ const DesktopFeed = ({
             setCanActionOnSmartphone(false);
             setCartItemAddons([]);
             setCartItemSmartphones([]);
-            setOriginalCartSmartphones([]);
-            setOriginalCartAddons([]);
             setCurrentFeedIndex(0);
             setFeedItems([]);
-            setIsInCart(false);
             setMediaItems([]);
             setSelectedAddon('');
             setSelectedColor('');
@@ -2595,173 +2346,82 @@ const DesktopFeed = ({
                                                                 <div className="flex w-full gap-x-4">
                                                                     {auth?.user && (
                                                                         <>
-                                                                            {!isInCart && (
-                                                                                <>
-                                                                                    {/* Add to cart */}
-                                                                                    <button
-                                                                                        onClick={() => {
-                                                                                            handleAddCartItem(
-                                                                                                cartItemSmartphones?.filter(
-                                                                                                    (
-                                                                                                        item,
-                                                                                                    ) =>
-                                                                                                        item.smartphone_id ===
-                                                                                                        feedGallery?.id,
-                                                                                                ),
-                                                                                                cartItemAddons?.filter(
-                                                                                                    (
-                                                                                                        item,
-                                                                                                    ) =>
-                                                                                                        item.smartphone_id ===
-                                                                                                        feedGallery?.id,
-                                                                                                ),
-                                                                                                feedGallery?.inventory_items_count,
-                                                                                            );
-                                                                                        }}
-                                                                                        disabled={
-                                                                                            !canActionOnSmartphone
-                                                                                        }
-                                                                                        className={`h-12 flex-1 rounded-md border border-main-text-light bg-white text-center text-md font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
-                                                                                    >
-                                                                                        <div className="flex items-center justify-center">
-                                                                                            {cartProcessing && (
-                                                                                                <Spinner />
-                                                                                            )}
-
-                                                                                            <span>
-                                                                                                {__('Add to cart')}
-                                                                                            </span>
-                                                                                        </div>
-                                                                                    </button>
-
-                                                                                    {/* Buy now */}
-                                                                                    <button
-                                                                                        onClick={() =>
-                                                                                            handleBuyNow(
-                                                                                                cartItemSmartphones?.filter(
-                                                                                                    (
-                                                                                                        item,
-                                                                                                    ) =>
-                                                                                                        item.smartphone_id ===
-                                                                                                        feedGallery?.id,
-                                                                                                ),
-                                                                                                cartItemAddons?.filter(
-                                                                                                    (
-                                                                                                        item,
-                                                                                                    ) =>
-                                                                                                        item.smartphone_id ===
-                                                                                                        feedGallery?.id,
-                                                                                                ),
+                                                                            {/* Add to cart */}
+                                                                            <button
+                                                                                onClick={() => {
+                                                                                    handleAddCartItem(
+                                                                                        cartItemSmartphones?.filter(
+                                                                                            (
+                                                                                                item,
+                                                                                            ) =>
+                                                                                                item.smartphone_id ===
                                                                                                 feedGallery?.id,
-                                                                                                feedGallery?.inventory_items_count,
-                                                                                            )
-                                                                                        }
-                                                                                        disabled={
-                                                                                            !canActionOnSmartphone
-                                                                                        }
-                                                                                        className={`h-12 flex-1 rounded-md border border-main-text-dark bg-main-text-light text-md font-semibold text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
-                                                                                    >
-                                                                                        <div className="flex items-center justify-center">
-                                                                                            {buyNowProcessing && (
-                                                                                                <Spinner />
-                                                                                            )}
-
-                                                                                            <span>
-                                                                                                {__('Buy now')}
-                                                                                            </span>
-                                                                                        </div>
-                                                                                    </button>
-                                                                                </>
-                                                                            )}
-
-                                                                            {isInCart && (
-                                                                                <>
-                                                                                    {hasCartChanges ? (
-                                                                                        <>
-                                                                                            {/* Update Cart Button */}
-                                                                                            <button
-                                                                                                onClick={() => {
-                                                                                                    handleUpdateCartItem(
-                                                                                                        cartItemSmartphones?.filter(
-                                                                                                            (item) => item.smartphone_id === feedGallery?.id
-                                                                                                        ),
-                                                                                                        cartItemAddons?.filter(
-                                                                                                            (item) => item.smartphone_id === feedGallery?.id
-                                                                                                        ),
-                                                                                                        feedGallery?.inventory_items_count,
-                                                                                                    );
-                                                                                                }}
-                                                                                                className="flex-1 h-12 font-semibold text-center text-white transition bg-green-600 border border-green-600 rounded-md text-md hover:bg-green-700 dark:border-green-500 dark:bg-green-500 dark:hover:bg-green-600"
-                                                                                            >
-                                                                                                <div className="flex items-center justify-center">
-                                                                                                    {cartProcessing && <Spinner />}
-                                                                                                    <span>{__('Update Cart')}</span>
-                                                                                                </div>
-                                                                                            </button>
-
-                                                                                            {/* Cancel Changes Button */}
-                                                                                            <button
-                                                                                                onClick={() => {
-                                                                                                    // Reset to original values
-                                                                                                    setCartItemSmartphones([
-                                                                                                        ...cartItemSmartphones.filter(
-                                                                                                            s => s.smartphone_id !== feedGallery?.id
-                                                                                                        ),
-                                                                                                        ...JSON.parse(JSON.stringify(originalCartSmartphones))
-                                                                                                    ]);
-                                                                                                    setCartItemAddons([
-                                                                                                        ...cartItemAddons.filter(
-                                                                                                            a => a.smartphone_id !== feedGallery?.id
-                                                                                                        ),
-                                                                                                        ...JSON.parse(JSON.stringify(originalCartAddons))
-                                                                                                    ]);
-                                                                                                    setHasCartChanges(false);
-                                                                                                }}
-                                                                                                className="flex-1 h-12 font-semibold text-center transition bg-white border rounded-md text-md border-main-text-light text-main-text-light hover:bg-gray-100 dark:border-main-text-dark dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
-                                                                                            >
-                                                                                                <span>{__('Cancel')}</span>
-                                                                                            </button>
-                                                                                        </>
-                                                                                    ) : (
-                                                                                        <>
-                                                                                            {/* Remove Button */}
-                                                                                            <button
-                                                                                                onClick={() => {
-                                                                                                    handleRemoveCartItem('smartphone', feedGallery?.id);
-                                                                                                }}
-                                                                                                className="flex-1 h-12 font-semibold text-center transition bg-white border rounded-md text-md border-main-text-light text-main-text-light hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80"
-                                                                                            >
-                                                                                                <div className="flex items-center justify-center">
-                                                                                                    {cartProcessing && <Spinner />}
-                                                                                                    <span>{__('Remove From Cart')}</span>
-                                                                                                </div>
-                                                                                            </button>
-
-                                                                                            {/* Buy now */}
-                                                                                            <button
-                                                                                                onClick={() =>
-                                                                                                    handleBuyNow(
-                                                                                                        cartItemSmartphones?.filter(
-                                                                                                            (item) => item.smartphone_id === feedGallery?.id
-                                                                                                        ),
-                                                                                                        cartItemAddons?.filter(
-                                                                                                            (item) => item.smartphone_id === feedGallery?.id
-                                                                                                        ),
-                                                                                                        feedGallery?.id,
-                                                                                                        feedGallery?.inventory_items_count,
-                                                                                                    )
-                                                                                                }
-                                                                                                className="flex-1 h-12 font-semibold transition border rounded-md text-md border-main-text-dark bg-main-text-light text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80"
-                                                                                            >
-                                                                                                <div className="flex items-center justify-center">
-                                                                                                    {buyNowProcessing && <Spinner />}
-                                                                                                    <span>{__('Buy now')}</span>
-                                                                                                </div>
-                                                                                            </button>
-                                                                                        </>
+                                                                                        ),
+                                                                                        cartItemAddons?.filter(
+                                                                                            (
+                                                                                                item,
+                                                                                            ) =>
+                                                                                                item.smartphone_id ===
+                                                                                                feedGallery?.id,
+                                                                                        ),
+                                                                                        feedGallery?.inventory_items_count,
+                                                                                    );
+                                                                                }}
+                                                                                disabled={
+                                                                                    !canActionOnSmartphone
+                                                                                }
+                                                                                className={`h-12 flex-1 rounded-md border border-main-text-light bg-white text-center text-md font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
+                                                                            >
+                                                                                <div className="flex items-center justify-center">
+                                                                                    {cartProcessing && (
+                                                                                        <Spinner />
                                                                                     )}
-                                                                                </>
-                                                                            )}
+
+                                                                                    <span>
+                                                                                        {__('Add to cart')}
+                                                                                    </span>
+                                                                                </div>
+                                                                            </button>
+
+                                                                            {/* Buy now */}
+                                                                            <button
+                                                                                onClick={() =>
+                                                                                    handleBuyNow(
+                                                                                        cartItemSmartphones?.filter(
+                                                                                            (
+                                                                                                item,
+                                                                                            ) =>
+                                                                                                item.smartphone_id ===
+                                                                                                feedGallery?.id,
+                                                                                        ),
+                                                                                        cartItemAddons?.filter(
+                                                                                            (
+                                                                                                item,
+                                                                                            ) =>
+                                                                                                item.smartphone_id ===
+                                                                                                feedGallery?.id,
+                                                                                        ),
+                                                                                        feedGallery?.id,
+                                                                                        feedGallery?.inventory_items_count,
+                                                                                    )
+                                                                                }
+                                                                                disabled={
+                                                                                    !canActionOnSmartphone
+                                                                                }
+                                                                                className={`h-12 flex-1 rounded-md border border-main-text-dark bg-main-text-light text-md font-semibold text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
+                                                                            >
+                                                                                <div className="flex items-center justify-center">
+                                                                                    {buyNowProcessing && (
+                                                                                        <Spinner />
+                                                                                    )}
+
+                                                                                    <span>
+                                                                                        {__('Buy now')}
+                                                                                    </span>
+                                                                                </div>
+                                                                            </button>
+
+
                                                                         </>
                                                                     )}
 
@@ -4515,173 +4175,82 @@ const DesktopFeed = ({
                                                                 <div className="flex w-full gap-x-4">
                                                                     {auth?.user && (
                                                                         <>
-                                                                            {!isInCart && (
-                                                                                <>
-                                                                                    {/* Add to cart */}
-                                                                                    <button
-                                                                                        onClick={() => {
-                                                                                            handleAddCartItem(
-                                                                                                cartItemSmartphones?.filter(
-                                                                                                    (
-                                                                                                        item,
-                                                                                                    ) =>
-                                                                                                        item.smartphone_id ===
-                                                                                                        feedGallery?.id,
-                                                                                                ),
-                                                                                                cartItemAddons?.filter(
-                                                                                                    (
-                                                                                                        item,
-                                                                                                    ) =>
-                                                                                                        item.smartphone_id ===
-                                                                                                        feedGallery?.id,
-                                                                                                ),
-                                                                                                feedGallery?.inventory_items_count,
-                                                                                            );
-                                                                                        }}
-                                                                                        disabled={
-                                                                                            !canActionOnSmartphone
-                                                                                        }
-                                                                                        className={`h-12 flex-1 rounded-md border border-main-text-light bg-white text-center text-md font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
-                                                                                    >
-                                                                                        <div className="flex items-center justify-center">
-                                                                                            {cartProcessing && (
-                                                                                                <Spinner />
-                                                                                            )}
-
-                                                                                            <span>
-                                                                                                {__('Add to cart')}
-                                                                                            </span>
-                                                                                        </div>
-                                                                                    </button>
-
-                                                                                    {/* Buy now */}
-                                                                                    <button
-                                                                                        onClick={() =>
-                                                                                            handleBuyNow(
-                                                                                                cartItemSmartphones?.filter(
-                                                                                                    (
-                                                                                                        item,
-                                                                                                    ) =>
-                                                                                                        item.smartphone_id ===
-                                                                                                        feedGallery?.id,
-                                                                                                ),
-                                                                                                cartItemAddons?.filter(
-                                                                                                    (
-                                                                                                        item,
-                                                                                                    ) =>
-                                                                                                        item.smartphone_id ===
-                                                                                                        feedGallery?.id,
-                                                                                                ),
+                                                                            {/* Add to cart */}
+                                                                            <button
+                                                                                onClick={() => {
+                                                                                    handleAddCartItem(
+                                                                                        cartItemSmartphones?.filter(
+                                                                                            (
+                                                                                                item,
+                                                                                            ) =>
+                                                                                                item.smartphone_id ===
                                                                                                 feedGallery?.id,
-                                                                                                feedGallery?.inventory_items_count,
-                                                                                            )
-                                                                                        }
-                                                                                        disabled={
-                                                                                            !canActionOnSmartphone
-                                                                                        }
-                                                                                        className={`h-12 flex-1 rounded-md border border-main-text-dark bg-main-text-light text-md font-semibold text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
-                                                                                    >
-                                                                                        <div className="flex items-center justify-center">
-                                                                                            {buyNowProcessing && (
-                                                                                                <Spinner />
-                                                                                            )}
-
-                                                                                            <span>
-                                                                                                {__('Buy now')}
-                                                                                            </span>
-                                                                                        </div>
-                                                                                    </button>
-                                                                                </>
-                                                                            )}
-
-                                                                            {isInCart && (
-                                                                                <>
-                                                                                    {hasCartChanges ? (
-                                                                                        <>
-                                                                                            {/* Update Cart Button */}
-                                                                                            <button
-                                                                                                onClick={() => {
-                                                                                                    handleUpdateCartItem(
-                                                                                                        cartItemSmartphones?.filter(
-                                                                                                            (item) => item.smartphone_id === feedGallery?.id
-                                                                                                        ),
-                                                                                                        cartItemAddons?.filter(
-                                                                                                            (item) => item.smartphone_id === feedGallery?.id
-                                                                                                        ),
-                                                                                                        feedGallery?.inventory_items_count,
-                                                                                                    );
-                                                                                                }}
-                                                                                                className="flex-1 h-12 font-semibold text-center text-white transition bg-green-600 border border-green-600 rounded-md text-md hover:bg-green-700 dark:border-green-500 dark:bg-green-500 dark:hover:bg-green-600"
-                                                                                            >
-                                                                                                <div className="flex items-center justify-center">
-                                                                                                    {cartProcessing && <Spinner />}
-                                                                                                    <span>{__('Update Cart')}</span>
-                                                                                                </div>
-                                                                                            </button>
-
-                                                                                            {/* Cancel Changes Button */}
-                                                                                            <button
-                                                                                                onClick={() => {
-                                                                                                    // Reset to original values
-                                                                                                    setCartItemSmartphones([
-                                                                                                        ...cartItemSmartphones.filter(
-                                                                                                            s => s.smartphone_id !== feedGallery?.id
-                                                                                                        ),
-                                                                                                        ...JSON.parse(JSON.stringify(originalCartSmartphones))
-                                                                                                    ]);
-                                                                                                    setCartItemAddons([
-                                                                                                        ...cartItemAddons.filter(
-                                                                                                            a => a.smartphone_id !== feedGallery?.id
-                                                                                                        ),
-                                                                                                        ...JSON.parse(JSON.stringify(originalCartAddons))
-                                                                                                    ]);
-                                                                                                    setHasCartChanges(false);
-                                                                                                }}
-                                                                                                className="flex-1 h-12 font-semibold text-center transition bg-white border rounded-md text-md border-main-text-light text-main-text-light hover:bg-gray-100 dark:border-main-text-dark dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
-                                                                                            >
-                                                                                                <span>{__('Cancel')}</span>
-                                                                                            </button>
-                                                                                        </>
-                                                                                    ) : (
-                                                                                        <>
-                                                                                            {/* Remove Button */}
-                                                                                            <button
-                                                                                                onClick={() => {
-                                                                                                    handleRemoveCartItem('smartphone', feedGallery?.id);
-                                                                                                }}
-                                                                                                className="flex-1 h-12 font-semibold text-center transition bg-white border rounded-md text-md border-main-text-light text-main-text-light hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80"
-                                                                                            >
-                                                                                                <div className="flex items-center justify-center">
-                                                                                                    {cartProcessing && <Spinner />}
-                                                                                                    <span>{__('Remove From Cart')}</span>
-                                                                                                </div>
-                                                                                            </button>
-
-                                                                                            {/* Buy now */}
-                                                                                            <button
-                                                                                                onClick={() =>
-                                                                                                    handleBuyNow(
-                                                                                                        cartItemSmartphones?.filter(
-                                                                                                            (item) => item.smartphone_id === feedGallery?.id
-                                                                                                        ),
-                                                                                                        cartItemAddons?.filter(
-                                                                                                            (item) => item.smartphone_id === feedGallery?.id
-                                                                                                        ),
-                                                                                                        feedGallery?.id,
-                                                                                                        feedGallery?.inventory_items_count,
-                                                                                                    )
-                                                                                                }
-                                                                                                className="flex-1 h-12 font-semibold transition border rounded-md text-md border-main-text-dark bg-main-text-light text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80"
-                                                                                            >
-                                                                                                <div className="flex items-center justify-center">
-                                                                                                    {buyNowProcessing && <Spinner />}
-                                                                                                    <span>{__('Buy now')}</span>
-                                                                                                </div>
-                                                                                            </button>
-                                                                                        </>
+                                                                                        ),
+                                                                                        cartItemAddons?.filter(
+                                                                                            (
+                                                                                                item,
+                                                                                            ) =>
+                                                                                                item.smartphone_id ===
+                                                                                                feedGallery?.id,
+                                                                                        ),
+                                                                                        feedGallery?.inventory_items_count,
+                                                                                    );
+                                                                                }}
+                                                                                disabled={
+                                                                                    !canActionOnSmartphone
+                                                                                }
+                                                                                className={`h-12 flex-1 rounded-md border border-main-text-light bg-white text-center text-md font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
+                                                                            >
+                                                                                <div className="flex items-center justify-center">
+                                                                                    {cartProcessing && (
+                                                                                        <Spinner />
                                                                                     )}
-                                                                                </>
-                                                                            )}
+
+                                                                                    <span>
+                                                                                        {__('Add to cart')}
+                                                                                    </span>
+                                                                                </div>
+                                                                            </button>
+
+                                                                            {/* Buy now */}
+                                                                            <button
+                                                                                onClick={() =>
+                                                                                    handleBuyNow(
+                                                                                        cartItemSmartphones?.filter(
+                                                                                            (
+                                                                                                item,
+                                                                                            ) =>
+                                                                                                item.smartphone_id ===
+                                                                                                feedGallery?.id,
+                                                                                        ),
+                                                                                        cartItemAddons?.filter(
+                                                                                            (
+                                                                                                item,
+                                                                                            ) =>
+                                                                                                item.smartphone_id ===
+                                                                                                feedGallery?.id,
+                                                                                        ),
+                                                                                        feedGallery?.id,
+                                                                                        feedGallery?.inventory_items_count,
+                                                                                    )
+                                                                                }
+                                                                                disabled={
+                                                                                    !canActionOnSmartphone
+                                                                                }
+                                                                                className={`h-12 flex-1 rounded-md border border-main-text-dark bg-main-text-light text-md font-semibold text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
+                                                                            >
+                                                                                <div className="flex items-center justify-center">
+                                                                                    {buyNowProcessing && (
+                                                                                        <Spinner />
+                                                                                    )}
+
+                                                                                    <span>
+                                                                                        {__('Buy now')}
+                                                                                    </span>
+                                                                                </div>
+                                                                            </button>
+
+
                                                                         </>
                                                                     )}
 

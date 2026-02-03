@@ -13,6 +13,7 @@ class SmartphoneCartAddon extends Model
         'total_price',
         'unit_price',
         'smartphone_id',
+        'cart_item_id',
         'customer_id',
         'addon_id',
     ];
@@ -26,6 +27,11 @@ class SmartphoneCartAddon extends Model
     public function smartphone(): BelongsTo
     {
         return $this->belongsTo(Smartphone::class, 'smartphone_id', 'id');
+    }
+
+    public function cartItem(): BelongsTo
+    {
+        return $this->belongsTo(CartItem::class, 'cart_item_id', 'id');
     }
 
     public function customer(): BelongsTo

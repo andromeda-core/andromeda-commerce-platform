@@ -26,7 +26,6 @@ const MobileFeed = ({
     fetchMoreYAxis,
     MobileFeedGalleryOpen,
     setMobileFeedGalleryOpen,
-    cart_items,
     currency,
     placeholderImage,
     relatedFeed,
@@ -44,7 +43,6 @@ const MobileFeed = ({
     setErrorMessage,
     setShowErrorMessage,
     windowSize,
-    smartphone_addon_items,
     generateSmartphoneURL,
     isSinglePageRef,
     setSpatiotemporalInfoModal,
@@ -1945,7 +1943,6 @@ const MobileFeed = ({
                     setLinkCopied={setLinkCopied}
                     auth={auth}
                     currency={currency}
-                    cart_items={cart_items}
                     navigateToHashtag={navigateToHashtag}
                     placeholderImage={placeholderImage}
                     generateURL={generateURL}
@@ -1961,7 +1958,6 @@ const MobileFeed = ({
                     setBookmarkStatusChanged={setBookmarkStatusChanged}
                     isDarkMode={isDarkMode}
                     setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
-                    smartphone_addon_items={smartphone_addon_items}
                     shouldCleanupBrowserHistoryRef={shouldCleanupBrowserHistoryRef}
                     spatiotemporalInfoModal={spatiotemporalInfoModal}
                     setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}

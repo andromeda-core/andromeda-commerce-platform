@@ -15,7 +15,6 @@ const SmartphoneMobileGalleryModal = ({
     setShowQrCode,
     setLinkCopied,
     currency,
-    cart_items,
     auth,
     navigateToHashtag,
     placeholderImage,
@@ -29,7 +28,6 @@ const SmartphoneMobileGalleryModal = ({
     setErrorMessage,
     setShowErrorMessage,
     setMobileFeedGalleryOpen,
-    smartphone_addon_items,
     generateSmartphoneURL,
     shouldCleanupBrowserHistoryRef,
     setSpatiotemporalInfoModal,
@@ -87,12 +85,7 @@ const SmartphoneMobileGalleryModal = ({
     const [toggleAccordion, setToggleAccordion] = useState(false);
     const [smartphoneTotalPrice, setSmartphoneTotalPrice] = useState({});
 
-    // Original cart data for comparison
-    const [originalCartSmartphones, setOriginalCartSmartphones] = useState([]);
-    const [originalCartAddons, setOriginalCartAddons] = useState([]);
 
-    // / Tracking if changes were made
-    const [hasCartChanges, setHasCartChanges] = useState(false);
 
 
     // Its Just For Initial Check When Smartphone Feed Loads
@@ -107,8 +100,6 @@ const SmartphoneMobileGalleryModal = ({
     // Checking Stock
     const [isInStock, setIsInStock] = useState(smartphone?.inventory_items_count > 0);
 
-    // Checking Cart State
-    const [isInCart, setIsInCart] = useState(false);
 
 
     const mediaItems = useMemo(() => {
@@ -130,81 +121,7 @@ const SmartphoneMobileGalleryModal = ({
 
 
 
-    // Initialize cartItemSmartphones from backend cart_items on mount/smartphone change
-    useEffect(() => {
-        if (!smartphone || smartphone.type !== 'smartphones') return;
 
-        // Check if this smartphone is already in cart
-        const existingCartItems = cart_items?.filter(
-            (item) => item.smartphone_id === smartphone.id
-        );
-
-        if (existingCartItems && existingCartItems.length > 0) {
-            // Map backend structure to your frontend structure
-            const mappedSmartphones = existingCartItems.map((item) => ({
-                smartphone_id: item.smartphone_id,
-                name: smartphone.name,
-                color_id: item.color_id,
-                color_name: item.color_name,
-                capacity: item.capacity,
-                price: Number(item.total_price),
-                unit_price: Number(item.unit_price),
-                quantity: item.quantity,
-            }));
-
-            setCartItemSmartphones(mappedSmartphones);
-            smartphoneCartItemsRef.current = mappedSmartphones;
-
-
-            // Storing Originals For Tracking If Changed Or Not
-            setOriginalCartSmartphones(JSON.parse(JSON.stringify(mappedSmartphones)));
-        }
-    }, [smartphone?.id]);
-
-    // Initialize cartItemAddons from backend smartphone_addon_items
-    useEffect(() => {
-        if (!smartphone || smartphone.type !== 'smartphones') return;
-
-        // Check if this smartphone has addons in cart
-        const existingAddonItems = smartphone_addon_items?.filter(
-            (item) => item.smartphone_id === smartphone.id
-        );
-
-        if (existingAddonItems && existingAddonItems.length > 0) {
-            // Map backend structure to your frontend structure
-            const mappedAddons = existingAddonItems.map((item) => ({
-                id: item.addon_id,
-                name: item.name,
-                price: Number(item.total_price),
-                unit_price: Number(item.unit_price),
-                quantity: item.quantity,
-                smartphone_id: item.smartphone_id,
-            }));
-
-            setCartItemAddons(mappedAddons);
-            // Storing Originals For Tracking If Changed Or Not
-            setOriginalCartAddons(JSON.parse(JSON.stringify(mappedAddons)));
-        }
-    }, [smartphone?.id]);
-
-
-    // Detect changes in cart items
-    useEffect(() => {
-        if (!isInCart) {
-            setHasCartChanges(false);
-            return;
-        }
-
-        // Compare smartphones
-        const smartphonesChanged = JSON.stringify(
-            cartItemSmartphones) !== JSON.stringify(originalCartSmartphones);
-
-        // Compare addons
-        const addonsChanged = JSON.stringify(
-            cartItemAddons) !== JSON.stringify(originalCartAddons);
-
-        setHasCartChanges(smartphonesChanged || addonsChanged);
-    }, [cartItemSmartphones, cartItemAddons, originalCartSmartphones, originalCartAddons, smartphone?.id, isInCart]);
 
 
 
@@ -615,14 +532,7 @@ const SmartphoneMobileGalleryModal = ({
 
                     onFinish: () => {
                         setCartProcessing(false);
-                        setOriginalCartSmartphones(
-                            JSON.parse(JSON.stringify(cartItemSmartphones))
-                        );
-                        setOriginalCartAddons(
-                            JSON.parse(JSON.stringify(cartItemAddons))
-                        );
-                        setHasCartChanges(false);
-                        setIsInCart(true);
+
                     },
                     preserveScroll: true,
                     preserveUrl: true,
@@ -633,33 +543,6 @@ const SmartphoneMobileGalleryModal = ({
             setCartProcessing(false);
             setShowErrorMessage(true);
             setErrorMessage(error.message);
-        }
-    };
-
-    const handleRemoveCartItem = async (type, item_id) => {
-        try {
-            setCartProcessing(true);
-
-            const data = {
-                type: type,
-                item_id: item_id,
-            };
-
-            router.delete(route('website.carts.remove-item'), {
-                data: data,
-                preserveScroll: true,
-                preserveUrl: true,
-                preserveState: true,
-
-                onFinish: () => {
-                    setCartProcessing(false);
-                    setIsInCart(false);
-                },
-            });
-        } catch (error) {
-            setShowErrorMessage(true);
-            setErrorMessage(error?.message || __('Something Went Wrong While Removing Cart Item'));
-            setCartProcessing(false);
         }
     };
 
@@ -749,92 +632,7 @@ const SmartphoneMobileGalleryModal = ({
         }
     };
 
-    const handleUpdateCartItem = async (smartphones, addons, total_stock) => {
-        try {
-            setCartProcessing(true);
 
-            if (smartphones.length === 0 && addons.length === 0) {
-                setInfoMessage(__('Please select any Item First'));
-                setShowInfoMessage(true);
-                setCartProcessing(false);
-                return;
-            }
-
-            if (!isInStock) {
-                setInfoMessage(
-                    __('Sorry, this item is currently out of stock and cannot be added to your cart'),
-                );
-                setShowInfoMessage(true);
-                setCartProcessing(false);
-                return;
-            }
-
-            let quantity = 0;
-            smartphones.forEach((smartphone) => {
-                quantity += smartphone.quantity;
-            });
-
-            if (quantity > total_stock) {
-                setInfoMessage(
-                    `${'Only'} ${total_stock} ${total_stock === 1 ? __('Item') : __('Items')} ${__('Stock available. For This Smartphone Please adjust your quantity')}`,
-                );
-                setShowInfoMessage(true);
-                setCartProcessing(false);
-                return;
-            }
-
-            let data = {
-                smartphones: [],
-                addons: [],
-            };
-
-            smartphones
-                .forEach((smartphone) => {
-                    data = {
-                        ...data,
-                        smartphones: [...data.smartphones, smartphone],
-                    };
-                });
-
-            addons
-                .forEach((addon) => {
-                    data = {
-                        ...data,
-                        addons: [...data.addons, addon],
-                    };
-                });
-
-            router.put(
-                route('website.carts.update-item-from-feed', { smartphone_id: smartphone?.id }),
-                { ...data },
-                {
-                    onSuccess: (page) => {
-                        if (page.props.flash?.success) {
-                            // Update original data after successful update
-                            setOriginalCartSmartphones(
-                                JSON.parse(JSON.stringify(cartItemSmartphones))
-                            );
-                            setOriginalCartAddons(
-                                JSON.parse(JSON.stringify(cartItemAddons))
-                            );
-                            setHasCartChanges(false);
-                        }
-
-                    },
-                    onFinish: () => {
-                        setCartProcessing(false);
-                    },
-                    preserveScroll: true,
-                    preserveUrl: true,
-                    preserveState: true,
-                }
-            );
-        } catch (error) {
-            setCartProcessing(false);
-            setShowErrorMessage(true);
-            setErrorMessage(error.message);
-        }
-    };
 
     const handleAddonRemove = (id) => {
         setCartItemAddons((prev) => {
@@ -855,11 +653,6 @@ const SmartphoneMobileGalleryModal = ({
         }
     }, [cartItemSmartphones, smartphone?.id]);
 
-    // Watcing The Cart items When FeedChanges From Cart if exists than makes it true
-    useEffect(() => {
-        if (smartphone?.type !== 'smartphones' || !smartphone?.id) return;
-        setIsInCart(cart_items.some((item) => item.smartphone_id === smartphone?.id));
-    }, [smartphone?.id]);
 
     // LOCKING BODY WHEN MOUNT TO PREVENT SCROLLS BENEATH MODAL
     // And Cleanup when unmounts
@@ -876,9 +669,6 @@ const SmartphoneMobileGalleryModal = ({
             setCartItemSmartphones([]);
             setBuyNowProcessing(false);
             setCartProcessing(false);
-            setIsInCart(false);
-            setOriginalCartSmartphones([]);
-            setOriginalCartAddons([]);
             smartphoneCartItemsRef.current = [];
 
         };
@@ -1497,129 +1287,46 @@ const SmartphoneMobileGalleryModal = ({
                                     <div className="flex w-full gap-x-4">
                                         {auth?.user && (
                                             <>
-                                                {!isInCart && (
-                                                    <>
-                                                        {/* Add to cart */}
-                                                        <button
-                                                            onClick={() => {
-                                                                handleAddCartItem(
-                                                                    cartItemSmartphones,
-                                                                    cartItemAddons,
-                                                                    smartphone?.inventory_items_count,
-                                                                );
-                                                            }}
-                                                            disabled={!canActionOnSmartphone}
-                                                            className={`h-12 flex-1 rounded-md border border-main-text-light bg-white text-center text-sm font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
-                                                        >
-                                                            <div className="flex items-center justify-center">
-                                                                {cartProcessing && <Spinner />}
+                                                {/* Add to cart */}
+                                                <button
+                                                    onClick={() => {
+                                                        handleAddCartItem(
+                                                            cartItemSmartphones,
+                                                            cartItemAddons,
+                                                            smartphone?.inventory_items_count,
+                                                        );
+                                                    }}
+                                                    disabled={!canActionOnSmartphone}
+                                                    className={`h-12 flex-1 rounded-md border border-main-text-light bg-white text-center text-sm font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
+                                                >
+                                                    <div className="flex items-center justify-center">
+                                                        {cartProcessing && <Spinner />}
 
-                                                                <span>{__('Add to cart')}</span>
-                                                            </div>
-                                                        </button>
+                                                        <span>{__('Add to cart')}</span>
+                                                    </div>
+                                                </button>
 
-                                                        {/* Buy now */}
-                                                        <button
-                                                            onClick={() =>
-                                                                handleBuyNow(
-                                                                    cartItemSmartphones,
-                                                                    cartItemAddons,
-                                                                    smartphone?.id,
-                                                                    smartphone?.inventory_items_count,
-                                                                )
-                                                            }
-                                                            disabled={!canActionOnSmartphone}
-                                                            className={`h-12 flex-1 rounded-md border border-main-text-dark bg-main-text-light text-sm font-semibold text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
-                                                        >
-                                                            <div className="flex items-center justify-center">
-                                                                {buyNowProcessing && <Spinner />}
+                                                {/* Buy now */}
+                                                <button
+                                                    onClick={() =>
+                                                        handleBuyNow(
+                                                            cartItemSmartphones,
+                                                            cartItemAddons,
+                                                            smartphone?.id,
+                                                            smartphone?.inventory_items_count,
+                                                        )
+                                                    }
+                                                    disabled={!canActionOnSmartphone}
+                                                    className={`h-12 flex-1 rounded-md border border-main-text-dark bg-main-text-light text-sm font-semibold text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
+                                                >
+                                                    <div className="flex items-center justify-center">
+                                                        {buyNowProcessing && <Spinner />}
 
-                                                                <span>{__('Buy now')}</span>
-                                                            </div>
-                                                        </button>
-                                                    </>
-                                                )}
+                                                        <span>{__('Buy now')}</span>
+                                                    </div>
+                                                </button>
 
-                                                {isInCart && (
-                                                    <>
-                                                        {hasCartChanges ? (
-                                                            <>
-                                                                {/* Update Cart Button */}
-                                                                <button
-                                                                    onClick={() => {
-                                                                        handleUpdateCartItem(
-                                                                            cartItemSmartphones,
-                                                                            cartItemAddons,
-                                                                            smartphone?.inventory_items_count,
-                                                                        );
-                                                                    }}
-                                                                    className="flex-1 h-12 text-sm font-semibold text-center text-white transition bg-green-600 border border-green-600 rounded-md hover:bg-green-700 dark:border-green-500 dark:bg-green-500 dark:hover:bg-green-600"
-                                                                >
-                                                                    <div className="flex items-center justify-center">
-                                                                        {cartProcessing && <Spinner />}
-                                                                        <span>{__('Update Cart')}</span>
-                                                                    </div>
-                                                                </button>
 
-                                                                {/* Cancel Changes Button */}
-                                                                <button
-                                                                    onClick={() => {
-                                                                        // Reset to original values
-                                                                        setCartItemSmartphones([
-                                                                            ...cartItemSmartphones.filter(
-                                                                                s => s.smartphone_id !== smartphone?.id
-                                                                            ),
-                                                                            ...JSON.parse(JSON.stringify(originalCartSmartphones))
-                                                                        ]);
-                                                                        setCartItemAddons([
-                                                                            ...cartItemAddons.filter(
-                                                                                a => a.smartphone_id !== smartphone?.id
-                                                                            ),
-                                                                            ...JSON.parse(JSON.stringify(originalCartAddons))
-                                                                        ]);
-                                                                        setHasCartChanges(false);
-                                                                    }}
-                                                                    className="flex-1 h-12 text-sm font-semibold text-center transition bg-white border rounded-md border-main-text-light text-main-text-light hover:bg-gray-100 dark:border-main-text-dark dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
-                                                                >
-                                                                    <span>{__('Cancel')}</span>
-                                                                </button>
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                {/* Remove Button */}
-                                                                <button
-                                                                    onClick={() => {
-                                                                        handleRemoveCartItem('smartphone', smartphone?.id);
-                                                                    }}
-                                                                    className="flex-1 h-12 text-sm font-semibold text-center transition bg-white border rounded-md border-main-text-light text-main-text-light hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80"
-                                                                >
-                                                                    <div className="flex items-center justify-center">
-                                                                        {cartProcessing && <Spinner />}
-                                                                        <span>{__('Remove From Cart')}</span>
-                                                                    </div>
-                                                                </button>
-
-                                                                {/* Buy now */}
-                                                                <button
-                                                                    onClick={() =>
-                                                                        handleBuyNow(
-                                                                            cartItemSmartphones,
-                                                                            cartItemAddons,
-                                                                            smartphone?.id,
-                                                                            smartphone?.inventory_items_count,
-                                                                        )
-                                                                    }
-                                                                    className="flex-1 h-12 text-sm font-semibold transition border rounded-md border-main-text-dark bg-main-text-light text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80"
-                                                                >
-                                                                    <div className="flex items-center justify-center">
-                                                                        {buyNowProcessing && <Spinner />}
-                                                                        <span>{__('Buy now')}</span>
-                                                                    </div>
-                                                                </button>
-                                                            </>
-                                                        )}
-                                                    </>
-                                                )}
                                             </>
                                         )}
 
