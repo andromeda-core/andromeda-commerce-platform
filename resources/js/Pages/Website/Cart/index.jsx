@@ -674,7 +674,7 @@ function OrderSummary({
                 {/* Checkout Button */}
                 <Link
                     href={route('website.checkout.index')}
-                    className="block w-full px-6 py-4 mt-10 text-base font-semibold text-center text-white transition-all rounded-md dark:text-main-text-light bg-backgroundDark hover:bg-backgroundDark/80 dark:bg-backgroundLight dark:hover:bg-backgroundLight/80"
+                    className="block w-full px-6 py-4 text-base font-semibold text-center text-white transition-all rounded-md mt-14 dark:text-main-text-light bg-[#282828] hover:bg-backgroundDark/80 dark:bg-backgroundLight dark:hover:bg-backgroundLight/80"
                 >
                     {__('Checkout')} ({cart_items?.length})
                 </Link>
