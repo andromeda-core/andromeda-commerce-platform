@@ -21,6 +21,7 @@ class NOWPaymentPaymentService
 
     public function createPaymentSession($order)
     {
+
         $currency = Cache::get('currency') ?? 'USD';
         try {
             $payload = [

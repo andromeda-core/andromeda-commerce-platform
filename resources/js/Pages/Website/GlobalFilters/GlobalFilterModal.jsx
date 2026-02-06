@@ -428,7 +428,7 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
         <>
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                 <div
-                    className="fixed inset-0 bg-black/30 backdrop-blur-sm"
+                    className="fixed inset-0 bg-black/30"
                     onClick={close}
                 />
                 <div className="relative w-full max-w-3xl border rounded-md border-surface-1-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark">

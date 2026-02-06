@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Repositories\Cart\Interface\ICartRepository;
 use App\Repositories\Customers\Interface\ICustomerRepository;
 use App\Repositories\Orders\Interface\IOrderRepository;
+use App\Repositories\ShippingAddress\Interface\IShippingAddressRepository;
 use App\Repositories\Users\Interface\IUserRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -19,6 +20,7 @@ class CheckoutController extends Controller
         private IUserRepository $user,
         private IOrderRepository $order,
         private ICustomerRepository $customer,
+        private IShippingAddressRepository $shipping_address,
         private Trans $trans
     ) {}
 
@@ -42,8 +44,6 @@ class CheckoutController extends Controller
         if (blank($data)) {
             return to_route('home');
         }
-
-        // dd($data);
 
         $cart_items = $data['cart_items'];
         $addon_items = $data['addon_items'];
@@ -71,13 +71,13 @@ class CheckoutController extends Controller
         $is_eligible_for_social_message = $this->user->isCustomerEligableForSocialMessageSendOrReceive($request->user()->id);
 
         $countries = $this->customer->getCountries();
+        $shipping_addresses = $this->shipping_address->getShippingAddresses($request);
 
-        return Inertia::render('Website/Checkout/index', compact('cart_items', 'total_summary', 'refferalSessionData', 'buy_now', 'countries', 'shipping_address', 'meta_usernames', 'is_eligible_for_social_message'));
+        return Inertia::render('Website/Checkout/index', compact('cart_items', 'total_summary', 'shipping_addresses', 'refferalSessionData', 'addon_items', 'buy_now', 'countries', 'shipping_address', 'meta_usernames', 'is_eligible_for_social_message'));
     }
 
     public function store(Request $request)
     {
-
         $is_profile_completed = $this->user->profileCompletionCheck($request);
 
         if (! $is_profile_completed) {

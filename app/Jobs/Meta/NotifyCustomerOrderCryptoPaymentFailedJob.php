@@ -34,7 +34,8 @@ class NotifyCustomerOrderCryptoPaymentFailedJob implements ShouldQueue
 
         $message .= "📦 Order Details:\n";
         $message .= "Order Number: {$this->order->order_no}\n";
-        $message .= 'Amount Paid:'.number_format($this->order->amount, 2).' '.($this->currency->name ?? 'USD')."\n";
+        $message .= 'Remeaning Amount:'.number_format($this->order->amount, 2).' '.($this->currency->name ?? 'USD')."\n";
+        $message .= 'Full Amount:'.number_format($this->order->full_amount, 2).' '.($this->currency->name ?? 'USD')."\n";
         $message .= "Payment Method: Crypto Currency\n\n";
 
         $message .= "If you’d like to try again, you can easily complete your payment or choose a different method below.\n\n";

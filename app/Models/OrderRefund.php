@@ -104,8 +104,8 @@ class OrderRefund extends Model
                         if (empty($inventoryItemsIds)) {
                             continue;
                         }
+                        
                         foreach ($inventoryItemsIds as $inventoryItemId) {
-
                             $inventoryItem = Inventory::find($inventoryItemId);
                             if (! empty($inventoryItem) && $inventoryItem->status === 'sold') {
                                 $inventoryItem->update([

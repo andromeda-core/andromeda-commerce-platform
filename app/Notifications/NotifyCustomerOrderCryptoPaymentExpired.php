@@ -26,6 +26,7 @@ class NotifyCustomerOrderCryptoPaymentExpired extends Notification implements Sh
     public function toMail(object $notifiable): MailMessage
     {
         $orderNo = $this->order->order_no;
+        $fullAmount = number_format($this->order->full_amount, 2);
         $amount = number_format($this->order->amount, 2);
         $currency = strtoupper($this->currency->name ?? 'USD');
         $home = route('home');
@@ -37,7 +38,8 @@ class NotifyCustomerOrderCryptoPaymentExpired extends Notification implements Sh
             ->line('As a result, the order has now expired automatically. No funds have been deducted from your wallet.')
             ->line('**Order Details:**')
             ->line("• Order Number: {$orderNo}")
-            ->line("• Amount: {$amount} {$currency}")
+            ->line("• Remeaning Amount: {$amount} {$currency}")
+            ->line("• Full Amount: {$fullAmount} {$currency}")
             ->line('• Payment Method: Crypto Currency')
             ->line('If you still wish to complete your purchase, you can simply place the order again or choose another payment method below.')
             ->action('Place a New Order', $home)

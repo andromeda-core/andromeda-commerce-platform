@@ -35,8 +35,15 @@ class NOWPaymentInvoiceStatusCheck extends Command
                     $np_id = $order->np_id;
 
                     if (empty($np_id)) {
-                        DB::transaction(function () use ($order) {
+                        DB::transaction(function () use ($order, $user) {
                             $order->update(['status' => 'failed']);
+
+                            if (! empty($order->points_used)) {
+                                $user->reward_points()->create([
+                                    'points' => $order->points_used,
+                                    'expires_at' => now()->addYears(5),
+                                ]);
+                            }
 
                             foreach ($order->orderItems as $item) {
 
@@ -75,7 +82,7 @@ class NOWPaymentInvoiceStatusCheck extends Command
                     switch ($paymentStatus) {
                         case 'finished':
                             DB::transaction(function () use ($order) {
-                                $order->update(['status' => 'paid']);
+                                $order->update(['status' => 'paid', 'amount' => 0]);
 
                                 foreach ($order->orderItems as $item) {
 
@@ -108,8 +115,15 @@ class NOWPaymentInvoiceStatusCheck extends Command
 
                         case 'failed':
                         case 'expired':
-                            DB::transaction(function () use ($order) {
+                            DB::transaction(function () use ($order, $user) {
                                 $order->update(['status' => 'failed']);
+
+                                if (! empty($order->points_used)) {
+                                    $user->reward_points()->create([
+                                        'points' => $order->points_used,
+                                        'expires_at' => now()->addYears(5),
+                                    ]);
+                                }
 
                                 foreach ($order->orderItems as $item) {
 

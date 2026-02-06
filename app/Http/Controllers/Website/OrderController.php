@@ -39,13 +39,13 @@ class OrderController extends Controller
         return Inertia::render('Website/Orders/index', compact('orders', 'next_page_url'));
     }
 
-    public function show(?string $order_no = null)
+    public function show(Request $request, ?string $order_no = null)
     {
         if (empty($order_no)) {
             return to_route('website.orders.index');
         }
 
-        $order = $this->order->getCustomerSingleOrder($order_no);
+        $order = $this->order->getCustomerSingleOrder($request, $order_no);
 
         if (empty($order)) {
             return to_route('website.orders.index');
@@ -82,7 +82,7 @@ class OrderController extends Controller
             return to_route('website.orders.index');
         }
 
-        $notExists = $this->order->refundOrderDoesntExists($order_no);
+        $notExists = $this->order->refundOrderDoesntExists($request, $order_no);
 
         if ($notExists['status'] === false) {
             return to_route('website.orders.order-view', ['order_no' => $order_no])->with('info', $notExists['message']);
@@ -108,7 +108,7 @@ class OrderController extends Controller
             return to_route('website.orders.index');
         }
 
-        $notExists = $this->order->orderAddressChangeRequestDoesntExists($order_no);
+        $notExists = $this->order->orderAddressChangeRequestDoesntExists($request, $order_no);
 
         if ($notExists['status'] === false) {
             return to_route('website.orders.order-view', ['order_no' => $order_no])->with('info', $notExists['message']);

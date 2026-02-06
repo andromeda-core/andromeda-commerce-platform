@@ -40,7 +40,8 @@ class OrderStatusPendingNotification extends Notification implements ShouldQueue
             ->line('We’re pleased to inform you that your order has been placed successfully.')
             ->line('**Order Number:** '.$this->order->order_no)
             ->line('**Current Status:** Pending')
-            ->line('**Amount:** '.number_format($this->order->amount, 2).' '.$this->currency?->name ?? 'USD')
+            ->line('**Remeaning Amount:** '.number_format($this->order->amount, 2).' '.($this->currency->name ?? 'USD'))
+            ->line('**Full Amount:** '.number_format($this->order->full_amount, 2).' '.($this->currency->name ?? 'USD'))
             ->line('To complete your order, please transfer the total amount to the following bank account and upload your payment proof for verification:')
             ->line('')
             ->line(

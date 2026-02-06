@@ -31,9 +31,7 @@ class OrderStatusPaidNotificationJob implements ShouldQueue
 
         $message .= "📦 Order Details\n";
         $message .= "Order Number: {$this->order->order_no}\n";
-        if ($this->order->payment_method !== 'points') {
-            $message .= 'Amount: '.number_format($this->order->amount, 2).' '.($this->currency->name ?? 'USD')."\n\n";
-        }
+        $message .= 'Amount Paid: '.number_format($this->order->full_amount, 2).' '.($this->currency->name ?? 'USD')."\n\n";
 
         $message .= "Current Status: Paid\n";
         $message .= 'Payment Method: '.(

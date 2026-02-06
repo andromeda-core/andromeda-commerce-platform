@@ -59,7 +59,7 @@ export default function SpatiotemporalModal({ onClose, post }) {
 
                 {/* Backdrop with blur effect */}
                 <div
-                    className="fixed inset-0 transition-opacity duration-300 bg-black/60 backdrop-blur-sm"
+                    className="fixed inset-0 transition-opacity duration-300 bg-black/30"
                     onClick={onClose}
                     aria-hidden="true"
                 />

@@ -34,7 +34,7 @@ interface IOrderRepository
 
     public function getCustomerOrders(Request $request);
 
-    public function getCustomerSingleOrder(string $order_no);
+    public function getCustomerSingleOrder(Request $request, string $order_no);
 
     public function uploadPaymentProof(Request $request);
 
@@ -45,11 +45,11 @@ interface IOrderRepository
 
     public function markPackagingVideoViewed(Request $request);
 
-    public function refundOrderDoesntExists(string $order_no);
+    public function refundOrderDoesntExists(Request $request, string $order_no);
 
     public function refundRequestStore(Request $request, string $order_no);
 
-    public function orderAddressChangeRequestDoesntExists(string $order_no);
+    public function orderAddressChangeRequestDoesntExists(Request $request, string $order_no);
 
     public function ShippingAddressChangeRequestStore(Request $request, string $order_no);
 }

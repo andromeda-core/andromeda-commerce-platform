@@ -37,7 +37,7 @@ class NotifyCustomerAboutOrderCryptoPaymentReceived extends Notification impleme
     public function toMail(object $notifiable): MailMessage
     {
         $orderNo = $this->order->order_no;
-        $amount = number_format($this->order->amount, 2);
+        $amount = number_format($this->order->full_amount, 2);
         $currency = strtoupper($this->currency->name ?? 'USD');
         $orderUrl = route('website.orders.order-view', ['order_no' => $orderNo]);
 

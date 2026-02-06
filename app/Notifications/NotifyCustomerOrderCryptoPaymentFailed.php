@@ -26,6 +26,7 @@ class NotifyCustomerOrderCryptoPaymentFailed extends Notification implements Sho
     public function toMail(object $notifiable): MailMessage
     {
         $orderNo = $this->order->order_no;
+        $fullAmount = number_format($this->order->full_amount, 2);
         $amount = number_format($this->order->amount, 2);
         $currency = strtoupper($this->currency->name ?? 'USD');
         $home = route('home');
@@ -37,7 +38,8 @@ class NotifyCustomerOrderCryptoPaymentFailed extends Notification implements Sho
             ->line('The transaction either failed or expired before the blockchain confirmation was received. No funds have been deducted from your account.')
             ->line('**Order Details:**')
             ->line("• Order Number: {$orderNo}")
-            ->line("• Amount: {$amount} {$currency}")
+            ->line("• Remeaning Amount: {$amount} {$currency}")
+            ->line("• Full Amount: {$fullAmount} {$currency}")
             ->line('• Payment Method: Crypto Currency')
             ->line('If you’d like to try again, you can easily complete your payment or choose a different method below.')
             ->line('Your order has been  marked as *Failed*, but you can re-order anytime using the same items')

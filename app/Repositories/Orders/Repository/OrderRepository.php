@@ -361,7 +361,7 @@ class OrderRepository implements IOrderRepository
             DB::beginTransaction();
 
             if ($order->status === 'pending') {
-
+                $order->amount = 0;
                 foreach ($order->orderItems as $item) {
 
                     $inventoryItemsIds = $item->inventory_item_ids;
@@ -697,11 +697,15 @@ class OrderRepository implements IOrderRepository
         try {
 
             $payment_method = $request->input('payment_method');
+            $secondary_payment_method = $request->input('secondary_payment_method');
+
             if (empty($payment_method)) {
                 return response()->json(['message' => $this->trans::get('Please Select A Payment Method')], 400);
             }
 
             $referal_code = $request->input('referal_code');
+            $has_points_to_use = $request->filled('points_to_use');
+            $points_to_use = $request->input('points_to_use');
             $refferalSessionData = $request->session()->get('referal_data');
 
             $user = $request->user();
@@ -852,12 +856,16 @@ class OrderRepository implements IOrderRepository
                 'import_tax' => $calculation['import_tax'],
                 'shipping_fee' => $calculation['shipping_fee'],
                 'addons_sub_total' => $calculation['addons_subtotal'],
+                'full_amount' => $amount,
                 'amount' => $amount,
                 'payment_method' => $payment_method,
+                'secondary_payment_method' => $secondary_payment_method,
+                'has_points_to_use' => $has_points_to_use,
+                'points_to_use' => $points_to_use,
             ];
 
             if ($payment_method === 'bank_transfer') {
-                $order = $this->createOrderFromWebsite($order_data, $order_items, null, $smartphone_addon_order_items);
+                $order = $this->createOrderFromWebsite($order_data, $order_items, null, $smartphone_addon_order_items, user: $user);
 
                 if ($order['status'] === false) {
                     throw new Exception($order['message']);
@@ -881,14 +889,18 @@ class OrderRepository implements IOrderRepository
                 ];
 
             } elseif ($payment_method === 'crypto') {
-                $order = $this->createOrderFromWebsite($order_data, $order_items, 'awaiting_payment', order_item_addons: $smartphone_addon_order_items);
+                $order = $this->createOrderFromWebsite($order_data, $order_items, 'awaiting_payment', order_item_addons: $smartphone_addon_order_items, user: $user);
 
-                $response = $this->now_payment_service->createPaymentSession($order);
+                $response = [];
 
-                if ($response['status'] === false) {
-                    throw new Exception($response['message']);
+                if ($order['order']->amount > 0) {
+                    $response = $this->now_payment_service->createPaymentSession($order);
+
+                    if ($response['status'] === false) {
+                        throw new Exception($response['message']);
+                    }
+
                 }
-
                 if (blank($sessionData)) {
                     $this->clearCartExistingItems($customer->id);
                     $this->clearExistingAddonItems($customer->id, $this->smartphone_cart_addon);
@@ -899,19 +911,37 @@ class OrderRepository implements IOrderRepository
 
                 return [
                     'status' => true,
-                    'message' => $response['message'],
+
                     'type' => 'crypto',
-                    'redirect_uri' => $response['payment_url'],
+                    'message' => ! empty($response['message']) ? $response['message'] : $this->trans::get('Order Placed Successfully'),
+                    'redirect_uri' => ! empty($response['payment_url']) ? $response['payment_url'] : route('website.orders.order-view', ['order_no' => $order['order']->order_no]),
                 ];
 
             } elseif ($payment_method === 'points') {
-                $response = $this->payWithPoints($user->id, $amount);
 
-                if ($response['status'] === false) {
-                    throw new Exception($response['message']);
+                $response = [];
+                $status = null;
+                if (empty($secondary_payment_method)) {
+                    $response = $this->payWithPoints($user->id, $amount);
+
+                    if ($response['status'] === false) {
+                        throw new Exception($response['message']);
+                    }
+
+                    $order_data['points_used'] = $response['points_used'];
+                    $status = 'paid';
+                    $order_data['amount'] = 0;
                 }
 
-                $order = $this->createOrderFromWebsite($order_data, $order_items, 'paid', order_item_addons: $smartphone_addon_order_items);
+                $order = $this->createOrderFromWebsite($order_data, $order_items, $status, order_item_addons: $smartphone_addon_order_items, user: $user);
+
+                if ($order_data['payment_method'] === 'points'
+                && ! empty($order_data['secondary_payment_method']) && $order_data['secondary_payment_method'] === 'crypto') {
+                    $response = $this->now_payment_service->createPaymentSession($order);
+                    if ($response['status'] === false) {
+                        throw new Exception($response['message']);
+                    }
+                }
 
                 if ($order['status'] === false) {
                     throw new Exception($order['message']);
@@ -927,10 +957,10 @@ class OrderRepository implements IOrderRepository
 
                 return [
                     'status' => true,
-                    'message' => $this->trans::get('Order Placed Successfully'),
+                    'message' => ! empty($response['message']) ? $response['message'] : $this->trans::get('Order Placed Successfully'),
                     'order' => $order['order'],
                     'type' => 'points',
-                    'redirect_uri' => route('website.orders.order-view', ['order_no' => $order['order']->order_no]),
+                    'redirect_uri' => ! empty($response['payment_url']) ? $response['payment_url'] : route('website.orders.order-view', ['order_no' => $order['order']->order_no]),
                 ];
 
             }
@@ -947,10 +977,11 @@ class OrderRepository implements IOrderRepository
 
     }
 
-    private function createOrderFromWebsite($order_data, $order_items, ?string $status, $order_item_addons)
+    private function createOrderFromWebsite($order_data, $order_items, ?string $status, $order_item_addons, ?User $user = null)
     {
         try {
-            $order = $this->order->create([
+
+            $payload = [
                 'customer_id' => $order_data['customer_id'],
                 'shipping_name' => $order_data['shipping_name'],
                 'shipping_phone' => $order_data['shipping_phone'],
@@ -961,15 +992,58 @@ class OrderRepository implements IOrderRepository
                 'shipping_address_line1' => $order_data['shipping_address_line1'],
                 'shipping_address_line2' => $order_data['shipping_address_line2'],
                 'collaborator_id' => $order_data['collaborator_id'],
+                'full_amount' => $order_data['full_amount'],
                 'amount' => $order_data['amount'],
                 'sub_total' => $order_data['sub_total'],
                 'import_tax' => $order_data['import_tax'],
                 'shipping_fee' => $order_data['shipping_fee'],
                 'addons_sub_total' => $order_data['addons_sub_total'],
                 ...(! empty($status) ? ['status' => $status] : []),
+                ...(isset($order_data['points_used']) ? ['points_used' => $order_data['points_used']] : []),
                 'payment_method' => $order_data['payment_method'],
+                'secondary_payment_method' => $order_data['secondary_payment_method'],
+            ];
 
-            ]);
+            if (
+                $order_data['has_points_to_use']
+                && in_array($order_data['payment_method'], ['bank_transfer', 'crypto'])
+            ) {
+                $payload['full_amount'] = $order_data['amount'];
+
+                $used = $this->deductPoints($user, $order_data['points_to_use']);
+
+                $payload['points_used'] = $used;
+                $payload['amount'] = max(0, $payload['full_amount'] - $used);
+
+                if ($payload['amount'] == 0) {
+                    $payload['status'] = 'paid';
+                }
+
+            }
+
+            if (
+                $order_data['payment_method'] === 'points'
+                && ! empty($order_data['secondary_payment_method'])
+            ) {
+
+                $used = $this->deductPoints($user, $payload['full_amount']);
+
+                $payload['points_used'] = $used;
+                $payload['amount'] = max(0, $payload['full_amount'] - $used);
+
+                if ($payload['amount'] == 0) {
+                    $payload['status'] = 'paid';
+                } else {
+                    if ($order_data['secondary_payment_method'] === 'crypto') {
+                        $payload['status'] = 'awaiting_payment';
+                    } else {
+                        $payload['status'] = 'pending';
+                    }
+                }
+
+            }
+
+            $order = $this->order->create($payload);
 
             if (empty($order)) {
 
@@ -993,6 +1067,17 @@ class OrderRepository implements IOrderRepository
             $cartItemIdToOrderItem = [];
 
             foreach ($orderItems as $index => $orderItem) {
+
+                if (($payload['status'] ?? $status) === 'paid') {
+                    if (! blank($orderItem->inventory_item_ids)) {
+                        $this->inventory->whereIn('id', $orderItem->inventory_item_ids)->update([
+                            'status' => 'sold',
+                        ]);
+
+                    }
+
+                }
+
                 $cartItemId = $orderItemIndexMap[$index];
                 $cartItemIdToOrderItem[$cartItemId] = $orderItem;
             }
@@ -1025,8 +1110,8 @@ class OrderRepository implements IOrderRepository
 
             return [
                 'status' => true,
-                'message' => $this->trans::get('Order Placed Successfully'),
                 'order' => $order,
+                'message' => $this->trans::get('Order Placed Successfully'),
             ];
         } catch (Exception $e) {
 
@@ -1064,29 +1149,12 @@ class OrderRepository implements IOrderRepository
                 throw new Exception($this->trans::get('You Dont Have Enough Points To Pay'));
             }
 
-            $remaining = $amount;
-
-            foreach ($user->reward_points as $reward) {
-                if ($remaining <= 0) {
-                    break;
-                }
-
-                if ($reward->points >= $remaining) {
-
-                    $reward->points -= $remaining;
-                    $reward->save();
-                    $remaining = 0;
-                } else {
-
-                    $remaining -= $reward->points;
-                    $reward->points = 0;
-                    $reward->save();
-                }
-            }
+            $used = $this->deductPoints($user, $amount);
 
             return [
                 'status' => true,
                 'message' => $this->trans::get('Paid With Points'),
+                'points_used' => $used,
             ];
         } catch (Exception $e) {
 
@@ -1140,7 +1208,7 @@ class OrderRepository implements IOrderRepository
         ];
     }
 
-    public function getCustomerSingleOrder(string $order_no)
+    public function getCustomerSingleOrder(Request $request, string $order_no)
     {
         $order = $this->order->with(
             [
@@ -1158,6 +1226,7 @@ class OrderRepository implements IOrderRepository
                 'orderItems.smartphoneAddons',
             ]
         )->where('order_no', $order_no)
+            ->where('customer_id', $request->user()?->customer->id)
             ->first();
 
         if (! empty($order)) {
@@ -1278,6 +1347,33 @@ class OrderRepository implements IOrderRepository
 
     }
 
+    private function deductPoints(User $user, float $amount): float
+    {
+        if ($amount <= 0) {
+            return 0;
+        }
+
+        $remaining = $amount;
+
+        foreach ($user->reward_points()->orderBy('expires_at')->get() as $reward) {
+            if ($remaining <= 0) {
+                break;
+            }
+
+            if ($reward->points >= $remaining) {
+                $reward->points -= $remaining;
+                $reward->save();
+                $remaining = 0;
+            } else {
+                $remaining -= $reward->points;
+                $reward->points = 0;
+                $reward->save();
+            }
+        }
+
+        return $amount - $remaining;
+    }
+
     public function markPackagingVideoViewed(Request $request)
     {
 
@@ -1340,10 +1436,10 @@ class OrderRepository implements IOrderRepository
         return ((float) $smartphone->selling_info->total_price * (float) $default_value) / 100;
     }
 
-    public function refundOrderDoesntExists(string $order_no)
+    public function refundOrderDoesntExists(Request $request, string $order_no)
     {
         try {
-            $order = $this->order->where('order_no', $order_no)->first();
+            $order = $this->order->where('order_no', $order_no)->where('customer_id', $request->user()->customer?->id)->first();
             if (empty($order)) {
                 throw new Exception($this->trans->get('Order Not Found'));
             }
@@ -1399,7 +1495,7 @@ class OrderRepository implements IOrderRepository
                 ];
             }
 
-            $order = $this->order->where('order_no', $order_no)->first();
+            $order = $this->order->where('order_no', $order_no)->where('customer_id', $customer->id)->first();
 
             if (empty($order)) {
 
@@ -1426,7 +1522,7 @@ class OrderRepository implements IOrderRepository
                 $order_refund = $order->refund()->create([
                     'customer_id' => $customer->id,
                     'refund_reason' => $validated_req['refund_reason'],
-                    'refund_amount' => $order->amount,
+                    'refund_amount' => $order->full_amount,
                     'refund_status' => 'requested',
                     'requested_at' => now(),
                 ]);
@@ -1453,10 +1549,10 @@ class OrderRepository implements IOrderRepository
         }
     }
 
-    public function orderAddressChangeRequestDoesntExists(string $order_no)
+    public function orderAddressChangeRequestDoesntExists(Request $request, string $order_no)
     {
         try {
-            $order = $this->order->where('order_no', $order_no)->first();
+            $order = $this->order->where('order_no', $order_no)->where('customer_id', $request->user()->customer?->id)->first();
             if (empty($order)) {
                 throw new Exception($this->trans->get('Order Not Found'));
             }
@@ -1561,7 +1657,7 @@ class OrderRepository implements IOrderRepository
                 ];
             }
 
-            $order = $this->order->where('order_no', $order_no)->first();
+            $order = $this->order->where('order_no', $order_no)->where('customer_id', $customer->id)->first();
 
             if (empty($order)) {
 

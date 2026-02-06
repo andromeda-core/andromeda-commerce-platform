@@ -50,16 +50,16 @@ class OrderController extends Controller implements HasMiddleware
         return Inertia::render('Dashboard/Orders/create', compact('smartphones', 'customers'));
     }
 
-    public function store(Request $request)
-    {
-        $created = $this->order->storeOrder($request);
+    // public function store(Request $request)
+    // {
+    //     $created = $this->order->storeOrder($request);
 
-        if ($created['status'] === false) {
-            return back()->with('error', $created['message']);
-        }
+    //     if ($created['status'] === false) {
+    //         return back()->with('error', $created['message']);
+    //     }
 
-        return to_route('dashboard.orders.index')->with('success', $created['message']);
-    }
+    //     return to_route('dashboard.orders.index')->with('success', $created['message']);
+    // }
 
     public function show(?string $id = null)
     {

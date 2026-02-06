@@ -370,7 +370,7 @@ Route::middleware(['auth'])->group(function () {
 
             Route::get('/orders', 'index')->name('index');
             Route::get('/orders-create', 'create')->name('create');
-            Route::post('/orders-store', 'store')->name('store');
+            // Route::post('/orders-store', 'store')->name('store');
             Route::get('/orders-edit/{id?}', 'edit')->name('edit');
             Route::put('/orders-update/{id?}', 'update')->name('update');
             Route::get('/orders-view/{id?}', 'show')->name('show');

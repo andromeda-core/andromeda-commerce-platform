@@ -32,7 +32,8 @@ class NotifyCustomerAboutAwaitingPaymentOrderFromCryptoJob implements ShouldQueu
 
         $message .= "📦 Order Details\n";
         $message .= "Order Number: {$this->order->order_no}\n";
-        $message .= 'Amount: '.number_format($this->order->amount, 2).' '.($this->order->currency->name ?? 'USD')."\n";
+        $message .= 'Remeaning Amount: '.number_format($this->order->amount, 2).' '.($this->order->currency->name ?? 'USD')."\n";
+        $message .= 'Full Amount: '.number_format($this->order->full_amount, 2).' '.($this->order->currency->name ?? 'USD')."\n";
         $message .= "Payment Method: Crypto Payment\n\n";
         $message .= 'We’ll notify you again as soon as your payment is confirmed and your order moves to the next stage.'."\n\n";
         $message .= 'View Your Order: '.route('website.orders.order-view', $this->order->order_no)."\n\n";

@@ -305,37 +305,56 @@ class CartRepository implements ICartRepository
 
             $item_type = $request->input('type');
             $item_id = $request->integer('item_id');
+            $page = $request->input('page');
 
             if ($item_type === 'smartphone') {
-                $item = $this->cart->where('customer_id', $customer->id)->where('id', $item_id)->with(['smartphone', 'smartphoneAddonItems'])->first();
-                if (empty($item)) {
-                    throw new Exception($this->trans->get('Something Went Wrong While Removing Product From Cart'));
-                }
 
-                DB::transaction(function () use ($item) {
-                    if ($item->smartphone) {
-                        $item->smartphoneAddonItems()
-                            ->delete();
-                    }
-                    $deleted = $item->delete();
-                    if (! $deleted) {
+                if ($page === 'cart') {
+                    $item = $this->cart->where('customer_id', $customer->id)->where('id', $item_id)->with(['smartphone', 'smartphoneAddonItems'])->first();
+                    if (empty($item)) {
                         throw new Exception($this->trans->get('Something Went Wrong While Removing Product From Cart'));
                     }
-                });
 
-                $all_cart_items = $this->cart->where('customer_id', $customer->id)->with(['smartphone', 'smartphone.selling_info', 'smartphone.selling_info.shipping_fee', 'smartphone.selling_info.import_tax'])->get();
+                    DB::transaction(function () use ($item) {
+                        if ($item->smartphone) {
+                            $item->smartphoneAddonItems()
+                                ->delete();
+                        }
+                        $deleted = $item->delete();
+                        if (! $deleted) {
+                            throw new Exception($this->trans->get('Something Went Wrong While Removing Product From Cart'));
+                        }
+                    });
 
-                $addon_cart_items = $this->smartphone_cart_addon
-                    ->where('customer_id', $customer->id)
-                    ->whereIn('smartphone_id', $all_cart_items->pluck('smartphone_id')->toArray())
-                    ->get();
+                    $all_cart_items = $this->cart->where('customer_id', $customer->id)->with(['smartphone', 'smartphone.selling_info', 'smartphone.selling_info.shipping_fee', 'smartphone.selling_info.import_tax'])->get();
 
-                $total_summary = $this->price_calculator->calculate($all_cart_items, $addon_cart_items);
+                    $addon_cart_items = $this->smartphone_cart_addon
+                        ->where('customer_id', $customer->id)
+                        ->whereIn('smartphone_id', $all_cart_items->pluck('smartphone_id')->toArray())
+                        ->get();
+
+                    $total_summary = $this->price_calculator->calculate($all_cart_items, $addon_cart_items);
+
+                    return [
+                        'status' => true,
+                        'message' => $this->trans->get('Removed Succesfully From Cart'),
+                        'total_summary' => $total_summary,
+                    ];
+                }
+
+                $sessionKey = 'single_product_checkout_'.$user->id;
+                $sessionData = session()->get($sessionKey);
+
+                if (empty($sessionData) || empty($sessionData['cart_items'])) {
+                    throw new Exception('Invalid checkout session');
+                }
+
+                session()->forget($sessionKey);
 
                 return [
                     'status' => true,
-                    'message' => $this->trans->get('Removed Succesfully From Cart'),
-                    'total_summary' => $total_summary,
+                    'message' => 'Item Removed Successfully',
+                    'total_summary' => [],
                 ];
 
             }
@@ -378,15 +397,61 @@ class CartRepository implements ICartRepository
                 throw new Exception($this->trans->get('Only Customers Can Remove items From Cart'));
             }
 
+            $page = $request->input('page');
             $item_type = $request->input('type');
             $item_id = $request->integer('item_id');
             $quantity = $request->integer('quantity');
 
-            $cart_item = $this->cart
-                ->where('customer_id', $customer->id)
-                ->where('id', $item_id)
-                ->with(['smartphone', 'smartphone.selling_info', 'smartphone.selling_info.shipping_fee', 'smartphone.selling_info.import_tax'])
-                ->get();
+            $cart_item = null;
+            if ($page === 'cart') {
+                $cart_item = $this->cart
+                    ->where('customer_id', $customer->id)
+                    ->where('id', $item_id)
+                    ->with(['smartphone', 'smartphone.selling_info', 'smartphone.selling_info.shipping_fee', 'smartphone.selling_info.import_tax'])
+                    ->get();
+            } else {
+
+                $sessionKey = 'single_product_checkout_'.$user->id;
+                $sessionData = session()->get($sessionKey);
+
+                if (empty($sessionData) || empty($sessionData['cart_items'])) {
+                    throw new Exception($this->trans->get('Invalid Buy Now Session'));
+                }
+
+                /** @var \Illuminate\Support\Collection $cartItems */
+                $cartItems = $sessionData['cart_items'];
+
+                /** @var \App\Models\CartItem $cartItem */
+                $cartItem = $cartItems->first();
+
+                if (! $cartItem) {
+                    throw new Exception($this->trans->get('Product not found in Buy Now session'));
+                }
+
+                $cartItem->quantity = $quantity;
+                $cartItem->total_price = bcmul(
+                    $cartItem->unit_price,
+                    $quantity,
+                    2
+                );
+
+                $total_summary = $this->price_calculator->calculate(
+                    $cartItems,
+                    $sessionData['addon_items'] ?? collect()
+                );
+
+                session()->put($sessionKey, [
+                    ...$sessionData,
+                    'cart_items' => $cartItems,
+                    'total_summary' => $total_summary,
+                ]);
+
+                return [
+                    'status' => true,
+                    'message' => $this->trans->get('Product Updated Succesfully'),
+                    'total_summary' => $total_summary,
+                ];
+            }
 
             if ($cart_item->isEmpty()) {
                 throw new Exception($this->trans->get('Wrong Product Selected Please Select Valid Product'));
@@ -451,8 +516,56 @@ class CartRepository implements ICartRepository
             $item_id = $request->integer('item_id');
             $quantity = $request->integer('quantity');
 
-            $cart_item = $this->smartphone_cart_addon->where('customer_id', $customer->id)->where('id', $item_id)->first();
+            $page = $request->input('page');
 
+            $cart_item = null;
+
+            if ($page === 'cart') {
+                $cart_item = $this->smartphone_cart_addon->where('customer_id', $customer->id)->where('id', $item_id)->first();
+            } else {
+
+                $sessionKey = 'single_product_checkout_'.$user->id;
+                $sessionData = $request->session()->get($sessionKey);
+
+                if (empty($sessionData) || empty($sessionData['addon_items'])) {
+                    throw new Exception('Invalid Buy Now Session');
+                }
+
+                /** @var \Illuminate\Support\Collection $addonItems */
+                $addonItems = $sessionData['addon_items'];
+
+                /** @var \App\Models\SmartphoneCartAddon $addonItem */
+                $addonItem = $addonItems->firstWhere('addon_id', $item_id);
+
+                // dd($addonItem);
+                if (! $addonItem) {
+                    throw new Exception('Addon not found in session');
+                }
+
+                $addonItem->quantity = $quantity;
+                $addonItem->total_price = bcmul(
+                    $addonItem->unit_price,
+                    $request->quantity,
+                    2
+                );
+
+                $total_summary = $this->price_calculator->calculate(
+                    $sessionData['cart_items'],
+                    $addonItems
+                );
+
+                session()->put($sessionKey, [
+                    ...$sessionData,
+                    'addon_items' => $addonItems,
+                    'total_summary' => $total_summary,
+                ]);
+
+                return [
+                    'status' => true,
+                    'message' => 'Addon Updated Successfully',
+                    'total_summary' => $total_summary,
+                ];
+            }
             if (empty($cart_item)) {
                 throw new Exception($this->trans->get('Wrong Product Selected Please Select Valid Product'));
             }
@@ -512,31 +625,79 @@ class CartRepository implements ICartRepository
             }
 
             $item_id = $request->integer('item_id');
+            $page = $request->input('page');
 
-            $item = $this->smartphone_cart_addon->where('customer_id', $customer->id)->where('id', $item_id)->first();
-            if (empty($item)) {
-                throw new Exception($this->trans->get('Something Went Wrong While Removing Addon From Cart'));
+            if ($page === 'cart') {
+                $item = $this->smartphone_cart_addon->where('customer_id', $customer->id)->where('id', $item_id)->first();
+                if (empty($item)) {
+                    throw new Exception($this->trans->get('Something Went Wrong While Removing Addon From Cart'));
+                }
+
+                $deleted = $item->delete();
+                if (! $deleted) {
+                    throw new Exception($this->trans->get('Something Went Wrong While Removing Addon From Cart'));
+                }
+
+                $all_cart_items = $this->cart->where('customer_id', $customer->id)->with(['smartphone', 'smartphone.selling_info', 'smartphone.selling_info.shipping_fee', 'smartphone.selling_info.import_tax'])->get();
+
+                $addon_cart_items = $this->smartphone_cart_addon
+                    ->where('customer_id', $customer->id)
+                    ->whereIn('smartphone_id', $all_cart_items->pluck('smartphone_id')->toArray())
+                    ->get();
+
+                $total_summary = $this->price_calculator->calculate($all_cart_items, $addon_cart_items);
+
+                return [
+                    'status' => true,
+                    'message' => $this->trans->get('Removed Succesfully'),
+                    'total_summary' => $total_summary,
+                ];
             }
 
-            $deleted = $item->delete();
-            if (! $deleted) {
-                throw new Exception($this->trans->get('Something Went Wrong While Removing Addon From Cart'));
+            $sessionKey = 'single_product_checkout_'.$user->id;
+            $sessionData = session()->get($sessionKey);
+
+            if (empty($sessionData) || empty($sessionData['addon_items'])) {
+                throw new Exception('Invalid Buy Now Session');
             }
 
-            $all_cart_items = $this->cart->where('customer_id', $customer->id)->with(['smartphone', 'smartphone.selling_info', 'smartphone.selling_info.shipping_fee', 'smartphone.selling_info.import_tax'])->get();
+            $addonItems = $sessionData['addon_items'];
+            $cartItems = $sessionData['cart_items'];
 
-            $addon_cart_items = $this->smartphone_cart_addon
-                ->where('customer_id', $customer->id)
-                ->whereIn('smartphone_id', $all_cart_items->pluck('smartphone_id')->toArray())
-                ->get();
+            $addonItems = $addonItems
+                ->reject(fn ($addon) => $addon->addon_id == $item_id)
+                ->values();
 
-            $total_summary = $this->price_calculator->calculate($all_cart_items, $addon_cart_items);
+            foreach ($cartItems as $cartItem) {
+                if ($cartItem->relationLoaded('smartphoneAddonItems')) {
+                    $cartItem->setRelation(
+                        'smartphoneAddonItems',
+                        $cartItem->smartphoneAddonItems
+                            ->reject(fn ($addon) => $addon->addon_id == $item_id)
+                            ->values()
+                    );
+                }
+            }
+
+            // recalculate totals
+            $total_summary = $this->price_calculator->calculate(
+                $sessionData['cart_items'],
+                $addonItems
+            );
+
+            // save back to session
+            session()->put($sessionKey, [
+                ...$sessionData,
+                'addon_items' => $addonItems,
+                'total_summary' => $total_summary,
+            ]);
 
             return [
                 'status' => true,
-                'message' => $this->trans->get('Removed Succesfully From Cart'),
+                'message' => 'Addon Removed Successfully',
                 'total_summary' => $total_summary,
             ];
+
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -768,6 +929,8 @@ class CartRepository implements ICartRepository
 
                 $addonItem->setRelation('addon', $addonModel);
                 $addonItems->push($addonItem);
+
+                $cartItem->setRelation('smartphoneAddonItems', $addonItems);
             }
 
             $total_summary = $this->price_calculator->calculate(

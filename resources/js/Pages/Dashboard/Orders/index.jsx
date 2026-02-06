@@ -180,12 +180,62 @@ export default function index({ orders }) {
             },
 
             {
-                label: 'Total Amount',
+                label: 'Default Payment Method',
+                render: (item) => {
+                    return (
+                        <span className="p-2 text-white rounded-lg bg-violet-800">
+                            {item.payment_method?.replace(/_/g, ' ').toUpperCase()}
+                        </span>
+                    );
+                },
+            },
+
+            {
+                label: 'Secondary Payment Method',
+                render: (item) => {
+                    return (
+                        <span className="p-2 text-white rounded-lg bg-violet-800">
+                            {item.secondary_payment_method?.replace(/_/g, ' ').toUpperCase() || "N/A"}
+                        </span>
+                    );
+                },
+            },
+
+
+
+            {
+                label: 'Remeaning Amount',
                 render: (item) => {
                     return (
                         <span className="p-2 text-white bg-gray-500 rounded-lg">
                             {currency?.symbol}
                             {item.amount}
+                        </span>
+                    );
+                },
+            },
+
+
+            {
+                label: 'Paid With Points Amount',
+                render: (item) => {
+                    return (
+                        <span className="p-2 text-white bg-gray-500 rounded-lg">
+                            {currency?.symbol}
+                            {item.points_used || 0}
+                        </span>
+                    );
+                },
+            },
+
+
+            {
+                label: 'Total Amount',
+                render: (item) => {
+                    return (
+                        <span className="p-2 text-white bg-gray-500 rounded-lg">
+                            {currency?.symbol}
+                            {item.full_amount}
                         </span>
                     );
                 },

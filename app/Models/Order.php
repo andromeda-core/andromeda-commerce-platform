@@ -29,6 +29,8 @@ class Order extends Model
         'customer_id',
         'shipping_address_id',
         'amount',
+        'points_used',
+        'full_amount',
         'sub_total',
         'import_tax',
         'shipping_fee',
@@ -42,6 +44,7 @@ class Order extends Model
         'payment_proof',
         'is_cash_collected',
         'payment_method',
+        'secondary_payment_method',
         'np_id',
         'shipping_name',
         'shipping_phone',
@@ -164,7 +167,7 @@ class Order extends Model
             $order->save();
 
             // Notify Admin About Order
-            dispatch(new NotifyAdminAboutOrderPlaced($order))->afterCommit();
+            dispatch(new NotifyAdminAboutOrderPlaced($order, $currency))->afterCommit();
         });
 
         static::updated(function ($order) {

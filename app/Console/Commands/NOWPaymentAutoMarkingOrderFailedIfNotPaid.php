@@ -31,8 +31,15 @@ class NOWPaymentAutoMarkingOrderFailedIfNotPaid extends Command
 
                     $user = $order->customer->user;
 
-                    DB::transaction(function () use ($order) {
+                    DB::transaction(function () use ($order, $user) {
                         $order->update(['status' => 'expired']);
+
+                        if (! empty($order->points_used)) {
+                            $user->reward_points()->create([
+                                'points' => $order->points_used,
+                                'expires_at' => now()->addYears(5),
+                            ]);
+                        }
 
                         foreach ($order->orderItems as $item) {
 

@@ -1257,7 +1257,8 @@ Update To store Inventory item id in Order Items To Track actual Item when rollb
 )✅
 
 
-41: (
+41:
+(
 
 🔐 Account & Security Related
 Email change request flow finalize kiya with:
@@ -1654,6 +1655,53 @@ Inventory units are locked using database transactions during order placement to
 
 56: Cart Page Ui Changed To New One Accordign to the PDF✅
 57: Calculate Price For Cart Items Helper Updated and added items_total whihc just gives Only Total items Cost,✅
+
+58: Checkout Page Redesgined ANd Ui Completed According to The PDF ✅
+59: Lucid React Icon Library Added ✅
+60: New 3 Columns Added In Orders Table -> (
+    "points_used" => For Tracking How much Amount it  Paid For This Order Using Points
+    "full_amount" => Tracking THe Full Order Amount
+    "secondary_payment_method" To Track The 2nd Payment Method Used For the order when Uisng Points payment
+    )✅
+
+ 61: Accross the Site Amount COlumn For order Changed To Full_amount where i was using amount column i replaced it with full_amount of order column
+     And Now Amount Column For ORders Using as Remeaning Amount of Order Accross The Site✅
+ 62: Checkout Full Flow Rewritten According to new Payment Option Logics And Points + Payment Method Logics as Discussed with Joseph ✅
+ 63: (Cart Items Logic Updates Before we were showing cart items on checkout and on cart But In Checkout User Only can view the Items
+     But Now THe new design showcased user on checkout page can also edit delete The Items So Cart Items Shown There in checkout page as well
+     But there were was one Critical Issue is that when updating cart item from checkout page if user comes from  buy_now button by clicking directly
+     from product page to checkout, so there wasnt any cart items in the cart becasue when user directly tries to purchase any product By clicking
+     on Buynow button it simply creates a Session and Stores as That cart items so our update logic for the cart is asks for actual cart item but
+     there wasnt any so The Logic To Handle The Cart Item + Session Cart Items If BuyNow Implemented ensuring the Proper Calculation and Quantity Updates
+     And Same Applies For The Addon Items) ✅
+
+64: Critical Issue Fixed: From Order view page before anyone can view anyones Order it was way critical Now i have identified that issue so i have Restricted
+    Order View Only That order user can view which Belogns To Him Personally ✅
+
+65: Social Media Helper Added InCheckout Page BEfore we were showign Buttons Diretcly below the Order Summary card
+    Which was breaking the UX so now it SHows as helper Iocn right corner From Bottom of the Site And when clickign on it
+    The Modal popups On the Right side and Shows the Social Media Items So when clicign on it it will diretcly take user to the Sites social media Platform (If Configured Proper URL From Backend Meta Configuration) ✅
+
+66: In Now Payment invoice Status Check And Auto marking Order Failed if not paid Command Updated And Added Reward points Rollbacking If Used For the
+    Specific Order ✅
+
+ 67: All Notifications Related To Order Updated And Added New Column From order table full_amount replacing amoutn where i was showing ful_amount of the order in the Notification and added 2 Colums Remeaning Amount And Full amount to differenciate Properly On appropriate Places in notifications ✅
+
+ 68: Spatiotemporal and Global Filter Modal backdrop Blur Removed To Make  consistency Accross the site ✅
+ 69:  Order Table Columns Updated in backend and added 3 more columns in it to get Full admin View (Points used, full amount, amount ),
+ 70:  ORder View In Backend Order Summary Updated and added 3 new rows one shows full amount and one shows Remeanign amount and one shows Points payment ✅,
+
+ 71: Order Refund Backend Updated now it proerly stores The Refund Full amount before it was using the amount column from order which now is using as Remeaning amount ✅
+
+
+
+
+
+
+
+
+
+
  <- Review Remeaning (Done) ->
 (
 Joseph Kim

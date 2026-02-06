@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\Currency;
 use App\Models\Order;
 use App\Models\User;
 use App\Notifications\NotifyAdminAboutOrderPlacedNotification;
@@ -19,7 +20,8 @@ class NotifyAdminAboutOrderPlaced implements ShouldQueue
     public $timeout = 300;
 
     public function __construct(
-        private Order $order
+        private Order $order,
+        private Currency $currency
     ) {}
 
     public function handle(): void
@@ -31,7 +33,7 @@ class NotifyAdminAboutOrderPlaced implements ShouldQueue
 
         if ($admins->isNotEmpty()) {
             $admins->each(function ($admin) {
-                $admin->notify(new NotifyAdminAboutOrderPlacedNotification($this->order));
+                $admin->notify(new NotifyAdminAboutOrderPlacedNotification($this->order, $this->currency));
             });
 
         }

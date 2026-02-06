@@ -50,7 +50,7 @@ class NotifyCustomerAboutAwaitingPaymentOrderFromCrypto extends Notification imp
             ->line('Once the payment is verified by the network, your order will be automatically confirmed and processed for dispatch. No further action is required from your side at this time.')
             ->line('**📦 Order Details:**')
             ->line("• Order Number: {$orderNo}")
-            ->line("• Amount: {$amount} {$currency}")
+            ->line("• Remeaning Amount: {$amount} {$currency}")
             ->line('• Payment Method: Crypto Payment')
             ->line('We’ll notify you again as soon as your payment is confirmed and your order moves to the next stage.')
             ->action('View Your Order', $orderUrl)

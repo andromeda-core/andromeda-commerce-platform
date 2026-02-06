@@ -388,7 +388,7 @@ export default function CustomerOrderInvoice({ order }) {
                                         </span>
                                         <span className="text-base font-bold text-blue-600 break-words sm:text-lg">
                                             {currency?.symbol}
-                                            {order.amount}
+                                            {order.full_amount}
                                         </span>
                                     </div>
                                 </div>

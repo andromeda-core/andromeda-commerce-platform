@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Models\Currency;
 use App\Models\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -13,7 +14,8 @@ class NotifyAdminAboutOrderPlacedNotification extends Notification implements Sh
     use Queueable;
 
     public function __construct(
-        private Order $order
+        private Order $order,
+        private Currency $currency
     ) {}
 
     /**
@@ -31,6 +33,8 @@ class NotifyAdminAboutOrderPlacedNotification extends Notification implements Sh
      */
     public function toMail(object $notifiable): MailMessage
     {
+        $currency = strtoupper($this->currency->name ?? 'USD');
+
         return (new MailMessage)
             ->subject('📦 New Order Placed - Order #'.$this->order->order_no)
             ->greeting("Hello {$notifiable->name},")
@@ -38,7 +42,9 @@ class NotifyAdminAboutOrderPlacedNotification extends Notification implements Sh
             ->line('Here are the order details:')
             ->line('• Order No: #'.$this->order->order_no)
             ->line('• Customer: '.$this->order->customer->user->name)
-            ->line('• Total Amount: $'.number_format($this->order->amount, 2))
+            ->line('• Remeaning Amount: '.number_format($this->order->amount, 2).' '.$currency)
+            ->line('• Paid By Points Amount: '.number_format($this->order->points_used, 2).' '.$currency)
+            ->line('• Total Amount: '.number_format($this->order->full_amount, 2).' '.$currency)
             ->line('• Status: '.ucfirst($this->order->status))
             ->action('View Order', route('dashboard.orders.show', $this->order->id))
             ->line('Please review and process this order at your earliest convenience.');

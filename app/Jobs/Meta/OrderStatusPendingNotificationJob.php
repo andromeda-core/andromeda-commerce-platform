@@ -33,7 +33,8 @@ class OrderStatusPendingNotificationJob implements ShouldQueue
         $message .= "📦 Order Details\n";
         $message .= "Order Number: {$this->order->order_no}\n";
         $message .= "Status: Pending\n";
-        $message .= 'Amount: '.number_format($this->order->amount, 2).' '.($this->currency->name ?? 'USD')."\n\n";
+        $message .= 'Remeaning Amount: '.number_format($this->order->amount, 2).' '.($this->currency->name ?? 'USD')."\n\n";
+        $message .= 'Full Amount: '.number_format($this->order->full_amount, 2).' '.($this->currency->name ?? 'USD')."\n\n";
 
         $distributor = $this->order
             ->orderItems[0]

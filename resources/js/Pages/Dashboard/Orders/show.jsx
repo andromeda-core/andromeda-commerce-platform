@@ -1392,6 +1392,31 @@ export default function show({ order }) {
 
                                             {/* Summary */}
                                             <div className="pt-3 border-t border-surface-3-light dark:border-surface-3-dark">
+
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className="text-base font-semibold text-sub-text-light dark:text-sub-text-dark">
+                                                        {__('Remeaning Amount')}
+                                                    </span>
+                                                    <span className="text-xl font-semibold text-sub-text-light dark:text-sub-text-dark">
+                                                        {currency?.symbol}
+                                                        {parseFloat(
+                                                            (order.amount || 0),
+                                                        ).toFixed(2)}
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className="text-base font-semibold text-sub-text-light dark:text-sub-text-dark">
+                                                        {__('Used Points Discount')}
+                                                    </span>
+                                                    <span className="text-xl font-semibold text-sub-text-light dark:text-sub-text-dark">
+                                                        {currency?.symbol}
+                                                        {parseFloat(
+                                                            (order.points_used || 0),
+                                                        ).toFixed(2)}
+                                                    </span>
+                                                </div>
+
                                                 <div className="flex items-center justify-between">
                                                     <span className="text-base font-semibold text-sub-text-light dark:text-sub-text-dark">
                                                         {__('Total')}
@@ -1399,7 +1424,7 @@ export default function show({ order }) {
                                                     <span className="text-xl font-semibold text-sub-text-light dark:text-sub-text-dark">
                                                         {currency?.symbol}
                                                         {parseFloat(
-                                                            order.amount,
+                                                            order.full_amount,
                                                         ).toFixed(2)}
                                                     </span>
                                                 </div>

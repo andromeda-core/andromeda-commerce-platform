@@ -34,7 +34,7 @@ class NotifyCustomerAboutOrderCryptoPaymentReceivedJob implements ShouldQueue
 
         $message .= "📦 Order Details:\n";
         $message .= "Order Number: {$this->order->order_no}\n";
-        $message .= 'Amount Paid:'.number_format($this->order->amount, 2).' '.($this->currency->name ?? 'USD')."\n";
+        $message .= 'Amount Paid:'.number_format($this->order->full_amount, 2).' '.($this->currency->name ?? 'USD')."\n";
         $message .= "Payment Method: Crypto Currency\n\n";
 
         $message .= "Our team will now begin preparing your order for dispatch. You can track your order status anytime using the button below.\n\n";

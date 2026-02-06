@@ -1,25 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 import Toast from '@/Components/Toast';
 import axios from 'axios';
 import Spinner from '@/Components/Spinner';
 import useWindowSize from '@/Hooks/useWindowSize';
-import Confetti from 'react-confetti';
-import { createPortal } from 'react-dom';
-import WebInput from '@/Components/WebInput';
-import WebTextArea from '@/Components/WebTextArea';
-import PrimaryButton from '@/Components/PrimaryButton';
 import { useTranslation } from '@/Hooks/useTranslation';
+import { Bitcoin, Landmark, Pencil, Star, Trash2, X } from 'lucide-react';
+import SocialMediaHelpIcon from '@/Components/SocialMediaHelpIcon';
+import PrimaryButton from '@/Components/PrimaryButton';
+import WebInput from '@/Components/WebInput';
 import WebSelectInput from '@/Components/WebSelectInput';
-import { BuildingLibraryIcon } from '@heroicons/react/24/solid';
+import { createPortal } from 'react-dom';
+import WebTextArea from '@/Components/WebTextArea';
 
-
-export default function Checkout({ cart_items, refferalSessionData, shipping_address, total_summary, meta_usernames, buy_now, is_eligible_for_social_message, countries }) {
+export default function Checkout({
+    cart_items,
+    refferalSessionData,
+    shipping_address,
+    addon_items,
+    total_summary,
+    meta_usernames,
+    buy_now,
+    is_eligible_for_social_message,
+    countries,
+    shipping_addresses,
+}) {
     const { currency, auth } = usePage().props;
     const windowSize = useWindowSize();
-
 
     // Translation Hook
     const { __ } = useTranslation();
@@ -34,10 +43,10 @@ export default function Checkout({ cart_items, refferalSessionData, shipping_add
     const [processingOrder, setProcessingOrder] = useState(false);
     const [applyingReferalProcessing, setApplyingReferalProcessing] = useState(false);
     const [removingReferalProcessing, setRemovingReferalProcessing] = useState(false);
-    const [addingShippingAddress, setAddingShippingAddress] = useState(false);
 
     const [error, setError] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState('bank_transfer');
+    const [secondaryPaymentMethod, setSecondaryPaymentMethod] = useState('');
     const [showReferalInput, setShowReferalInput] = useState(false);
 
     const [referalData, setReferalData] = useState({
@@ -58,69 +67,80 @@ export default function Checkout({ cart_items, refferalSessionData, shipping_add
         country_id: shipping_address?.country_id || '',
     });
 
+    const [summary, setSummary] = useState(total_summary || []);
+    const [removingProcessing, setRemovingProcessing] = useState(false);
 
+    const [quantities, setQuantities] = useState(
+        cart_items.reduce((acc, item) => ({ ...acc, [item.id]: item.quantity }), {}),
+    );
 
-    const hasSavedShippingAddress = !!shipping_address;
+    const [smartphoneAddonQuantities, setSmartphoneAddonQuantities] = useState(
+        addon_items.reduce((acc, item) => ({ ...acc, [item.id]: item.quantity }), {}),
+    );
+    const [pointsToUse, setPointsToUse] = useState('');
+    const [pointsError, setPointsError] = useState('');
 
-    const isShippingFormComplete = () => {
-        return (
-            shippingInfo.name.trim() !== '' &&
-            shippingInfo.phone.trim() !== '' &&
-            shippingInfo.address_line1.trim() !== '' &&
-            shippingInfo.city.trim() !== '' &&
-            shippingInfo.postal_code.trim() !== '' &&
-            shippingInfo.country_id !== '' &&
-            shippingInfo.state.trim() !== ''
-        );
-    };
+    const [shippingAddressModal, setShippingAddressModal] = useState(false);
+    const [secondaryPaymentOptionModal, setSecondaryPaymentOptionModal] = useState(false);
 
-
-    const handleShippingInfoChange = (e) => {
-        if (hasSavedShippingAddress) return;
-
-        const { name, value } = e.target;
-        setShippingInfo((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-    };
-
-
-    const handleAddShippingAddress = (e) => {
-        e.preventDefault();
-        setAddingShippingAddress(true);
-        router.post(route('website.shipping-addresses.store'), shippingInfo, {
-            preserveScroll: true,
-            preserveState: true,
-            onFinish: () => {
-                setAddingShippingAddress(false);
-            },
-
-        });
-    };
-
-
-
-    const [showConfetti, setShowConfetti] = useState(false);
-    const [confettiFading, setConfettiFading] = useState(false);
-
-    useEffect(() => {
-        if (showConfetti) {
-            const fadeTimer = setTimeout(() => {
-                setConfettiFading(true);
-            }, 3000);
-
-            const hideTimer = setTimeout(() => {
-                setShowConfetti(false);
-                setConfettiFading(false);
-            }, 4000);
-
-            return () => {
-                clearTimeout(fadeTimer);
-                clearTimeout(hideTimer);
-            };
+    const handleUseAllPoints = () => {
+        if (paymentMethod === 'points') {
+            setErrorMessage(
+                __('Points payment is already selected. Manual point usage is not available.'),
+            );
+            setShowErrorMessage(true);
+            return;
         }
-    }, [showConfetti]);
+
+        if (parseFloat(auth?.user?.points) === 0) {
+            setErrorMessage(__('You have no points to use'));
+            setShowErrorMessage(true);
+            return;
+        }
+
+        const total = parseFloat(total_summary.total);
+        const points = [parseFloat(auth?.user?.points)];
+
+        if (total > points && points < total) {
+            setPointsToUse(points);
+            setPointsError('');
+            return;
+        }
+
+
+
+        setPointsToUse(total);
+        setPointsError('');
+    };
+
+    const handlePointsChange = (value) => {
+        if (paymentMethod === 'points') {
+            setErrorMessage(
+                __('Points payment is already selected. Manual point usage is not available.'),
+            );
+            setShowErrorMessage(true);
+            return;
+        }
+
+
+        if (parseFloat(auth?.user?.points) === 0) {
+            setErrorMessage(__('You have no points to use'));
+            setShowErrorMessage(true);
+            return;
+        }
+        const numValue = parseInt(value);
+
+
+        if (numValue > parseFloat(auth?.user?.points)) {
+            setPointsError(`${__('You can only use up to')} ${auth?.user?.points} ${__('points')}`);
+        } else if (numValue > parseFloat(total_summary.total)) {
+            setPointsError(`${__('You can only use up to')} ${total_summary.total} ${__('points')}`);
+        } else {
+            setPointsError('');
+        }
+
+        setPointsToUse(value);
+    };
 
     const applyReferal = async (referalCode, buy_now) => {
         setError(null);
@@ -149,7 +169,6 @@ export default function Checkout({ cart_items, refferalSessionData, shipping_add
                     total_points: response.total_points,
                 });
 
-                setShowConfetti(true);
                 return true;
             })
             .catch((error) => {
@@ -219,14 +238,43 @@ export default function Checkout({ cart_items, refferalSessionData, shipping_add
     };
 
 
-    const [summary, setSummary] = useState(total_summary || [])
 
     const handlePlaceOrder = async () => {
+
+
+
+        if (pointsError !== '') {
+            setErrorMessage(__('Please Adjust Your Points Before Placing An Order'));
+            setShowErrorMessage(true);
+            return;
+        }
+
+        if (paymentMethod === 'points' && parseFloat(auth?.user?.points) === 0) {
+            router.reload({
+                only: ['auth'],
+                preserveScroll: true,
+                preserveState: true,
+                preserveUrl: true
+            });
+        }
+
+        if (paymentMethod === 'points' && parseFloat(auth?.user?.points) > 0 && parseFloat(auth?.user?.points) < parseFloat(total_summary.total) && !secondaryPaymentOptionModal) {
+            setSecondaryPaymentOptionModal(true);
+            return;
+        }
+
+
         // Validate shipping info
-        const requiredFields = ['name', 'phone', 'address_line1', 'city', 'country_id', 'state', 'postal_code'];
+        const requiredFields = [
+            'name',
+            'phone',
+            'address_line1',
+            'city',
+            'country_id',
+            'state',
+            'postal_code',
+        ];
         const emptyFields = requiredFields.filter((field) => !shippingInfo[field]);
-
-
 
         if (emptyFields.length > 0) {
             setInfoMessage(__('Please Complete Your Profile Before Placing An Order'));
@@ -245,18 +293,22 @@ export default function Checkout({ cart_items, refferalSessionData, shipping_add
             shipping_info: shippingInfo,
             payment_method: paymentMethod,
             referal_code: referalData.referal_code,
-
+            points_to_use: pointsToUse,
+            secondary_payment_method: secondaryPaymentMethod,
         };
-
 
         if (buy_now) {
             payload.buy_now = true;
         }
 
+        if (pointsToUse) {
+            payload.points_to_use = pointsToUse;
+        }
+
         // Your order processing logic here
         await axios
             .post(route('website.checkout.store'), {
-                ...payload
+                ...payload,
             })
             .then((res) => {
                 const response = res.data;
@@ -281,59 +333,168 @@ export default function Checkout({ cart_items, refferalSessionData, shipping_add
             });
     };
 
-
-    const calculateShippingCost = (shipping_fee, product, quantity) => {
-        if (!shipping_fee) return 0;
-
-        const { value_type, default_value } = shipping_fee;
-
-        if (!default_value || default_value === 0) return 0;
-
-
-        if (value_type === 'fixed') {
-            return parseFloat((Number(default_value) * Number(quantity))).toFixed(2);
-        }
-
-
-        if (value_type === 'percentage') {
-            const shippingCost = (product.selling_info?.total_price * default_value) / 100;
-            return parseFloat(Number(shippingCost) * Number(quantity)).toFixed(2)
-
-        }
-
-        return __('Free');
+    const getTotalQtyOfSmartphone = (smartphoneId) => {
+        return cart_items
+            .filter((i) => i.smartphone_id === smartphoneId)
+            .reduce((sum, i) => sum + (quantities[i.id] ?? i.quantity), 0);
     };
 
-    const calculateImportCost = (import_tax, product) => {
+    const updateQuantity = (itemId, newQuantity) => {
+        if (newQuantity < 1) return;
 
-        if (!import_tax) return 0;
+        const cartItem = cart_items.find((item) => item.id === itemId);
 
-        const { value_type, default_value } = import_tax;
-
-        if (!default_value || default_value === 0) return 0;
-
-
-        if (value_type === 'fixed') {
-            return parseFloat(default_value).toFixed(2);
+        if (!cartItem) {
+            setInfoMessage(__('Item not found in cart'));
+            setShowInfoMessage(true);
+            return;
         }
 
+        const totalUsedQty = getTotalQtyOfSmartphone(cartItem.smartphone_id);
+        const otherItemsQty = totalUsedQty - (quantities[itemId] ?? cartItem.quantity);
+        const maxAllowed = cartItem.smartphone.inventory_items_count - otherItemsQty;
 
-        if (value_type === 'percentage') {
-            const shippingCost = (product.selling_info?.total_price * default_value) / 100;
-            return parseFloat(shippingCost).toFixed(2);
-
+        if (newQuantity > maxAllowed) {
+            setInfoMessage(__('Adding more quantity exceeds available stock for this product'));
+            setShowInfoMessage(true);
+            return;
         }
 
-        return noTaxMessage;
+        setQuantities((prev) => ({ ...prev, [itemId]: newQuantity }));
+
+        axios
+            .put(route('website.carts.update-item'), {
+                item_id: itemId,
+                type: cartItem.type,
+                quantity: newQuantity,
+                page: buy_now ? 'buy_now' : 'cart',
+            })
+            .then((response) => {
+                if (response.data.status === false) {
+                    setErrorMessage(response.data.message);
+                    setShowErrorMessage(true);
+                } else {
+                    setSummary(response.data.total_summary);
+                }
+            })
+            .catch((error) => {
+                setErrorMessage(error.message);
+                setShowErrorMessage(true);
+            });
     };
 
+    const onProductRemove = (itemId, type) => {
+        setRemovingProcessing(true);
+        axios
+            .delete(route('website.carts.remove-item'), {
+                data: { item_id: itemId, type: type, page: buy_now ? 'buy_now' : 'cart', },
+            })
+            .then((response) => {
+                if (response.data.status === false) {
+                    setErrorMessage(response.data.message);
+                    setShowErrorMessage(true);
+                    return;
+                }
 
+                if (response.data.status === true) {
+                    setSuccessMessage(response.data.message);
+                    setShowSuccessMessage(true);
+                    setSummary(response.data.total_summary);
+                    router.reload(['cart_items']);
+                }
+            })
+            .catch((error) => {
+                setErrorMessage(error.message);
+                setShowErrorMessage(true);
+            })
+            .finally(() => {
+                setRemovingProcessing(false);
+            });
+    };
 
+    const updateSmartphoneAddon = (itemId, newQuantity) => {
+        if (newQuantity < 1) return;
 
+        let cartItem = null;
+        if (buy_now) {
+            cartItem = addon_items.find((item) => item.addon_id === itemId);
+        } else {
+            cartItem = addon_items.find((item) => item.id === itemId);
+        }
+
+        if (!cartItem) {
+            setInfoMessage(__('Item not found in cart'));
+            setShowInfoMessage(true);
+            return;
+        }
+
+        setSmartphoneAddonQuantities((prev) => ({ ...prev, [itemId]: newQuantity }));
+        axios
+            .put(route('website.carts.update-smartphone-addon-item'), {
+                item_id: itemId,
+                quantity: newQuantity,
+                page: buy_now ? 'buy_now' : 'cart',
+            })
+            .then((response) => {
+                if (response.data.status === false) {
+                    setErrorMessage(response.data.message);
+                    setShowErrorMessage(true);
+                } else {
+                    setSummary(response.data.total_summary);
+                    router.reload(['addon_items']);
+                }
+            })
+            .catch((error) => {
+                setErrorMessage(error.message);
+                setShowErrorMessage(true);
+            });
+    };
+
+    const removeSmartphoneAddon = (itemId) => {
+        setRemovingProcessing(true);
+        axios
+            .delete(route('website.carts.remove-smartphone-addon-item'), {
+                data: { item_id: itemId, page: buy_now ? 'buy_now' : 'cart', },
+            })
+            .then((response) => {
+                if (response.data.status === false) {
+                    setErrorMessage(response.data.message);
+                    setShowErrorMessage(true);
+                    return;
+                }
+
+                if (response.data.status === true) {
+                    setSuccessMessage(response.data.message);
+                    setShowSuccessMessage(true);
+                    setSummary(response.data.total_summary);
+                    router.reload(['addon_items']);
+                }
+            })
+            .catch((error) => {
+                setErrorMessage(error.message);
+                setShowErrorMessage(true);
+            })
+            .finally(() => {
+                setRemovingProcessing(false);
+            });
+    };
+
+    // Watching When payment method changes
+
+    useEffect(() => {
+        if (paymentMethod === 'points') {
+            setPointsToUse('');
+        }
+    }, [paymentMethod]);
+
+    const socialLinks = {
+        facebook: `https://m.me/${meta_usernames?.fb_page_username}?ref=user_id=${auth?.user?.id}`,
+        instagram: `https://ig.me/m/${meta_usernames?.ig_username}?ref=user_id=${auth?.user?.id}`,
+    };
 
     return (
         <MainLayout>
-            <Head title={__("Checkout", true)} />
+            <Head title={__('Checkout', true)} />
 
             {(showInfoMessage || showErrorMessage || showSuccessMessage) && (
                 <Toast
@@ -361,80 +522,56 @@ export default function Checkout({ cart_items, refferalSessionData, shipping_add
                 />
             )}
 
-            {showConfetti &&
-                createPortal(
-                    <div
-                        className={`pointer-events-none fixed inset-0 z-[99999] transition-opacity duration-1000 ${confettiFading ? 'opacity-0' : 'opacity-100'
-                            }`}
-                        style={{
-                            position: 'fixed',
-                            top: 0,
-                            left: 0,
-                            width: '100vw',
-                            height: '100vh',
-                            overflow: 'hidden',
-                        }}
-                    >
-                        <Confetti
-                            width={windowSize.width}
-                            height={windowSize.height}
-                            recycle={false}
-                            numberOfPieces={1000}
-                            gravity={1}
-                        />
-                    </div>,
-                    document.body,
-                )}
-
             <div className="min-h-screen transition-colors duration-200">
                 <div
                     className={`max-w-8xl mx-auto sm:px-6 lg:px-8 ${windowSize.width <= 1024 && 'mb-20'}`}
                 >
-                    <Link
-                        href={route('website.carts.index')}
-                        className="inline-flex items-center gap-2 my-4 text-sm font-medium transition-colors text-main-text-light hover:text-sub-text-light dark:text-main-text-dark dark:hover:text-sub-text-dark"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={2}
-                            stroke="currentColor"
-                            className="w-4 h-4"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
-                            />
-                        </svg>
-                        {__('Back to Cart')}
-                    </Link>
+
 
                     {/* Header */}
-                    <div className="px-4 mb-6 sm:px-0">
+                    <div className="px-4 my-6 sm:px-0">
+                        <Link
+                            href={route('website.carts.index')}
+                            className="inline-flex items-center gap-2 text-sm font-medium transition-colors text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80"
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={2}
+                                stroke="currentColor"
+                                className="w-4 h-4"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+                                />
+                            </svg>
+                            {__('Back to Cart')}
+                        </Link>
                         <h1 className="text-xl font-semibold text-main-text-light dark:text-main-text-dark sm:text-3xl">
-                            {__('Checkout')}
+                            {__('Order Form')}
                         </h1>
-                        <p className="mt-1 text-sm text-sub-text-light dark:text-sub-text-dark">
-                            {__('Complete your order by providing your shipping information')}
-                        </p>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-8 mb-20 lg:grid-cols-3">
                         {/* Left Section: Shipping & Payment */}
                         <div className="space-y-6 lg:col-span-2">
                             {/* Shipping Information */}
-                            <ShippingForm
-                                isShippingFormComplete={isShippingFormComplete}
-                                setShippingInfo={setShippingInfo}
+                            <ShippingInfoCard
                                 shippingInfo={shippingInfo}
-                                hasSavedShippingAddress={hasSavedShippingAddress}
-                                handleShippingInfoChange={handleShippingInfoChange}
                                 countries={countries}
-                                handleAddShippingAddress={handleAddShippingAddress}
-                                addingShippingAddress={addingShippingAddress}
-
+                                shipping_addresses={shipping_addresses}
+                                windowSize={windowSize}
+                                shippingAddressModal={shippingAddressModal}
+                                setShippingAddressModal={setShippingAddressModal}
+                                setInfoMessage={setInfoMessage}
+                                setShowInfoMessage={setShowInfoMessage}
+                                setErrorMessage={setErrorMessage}
+                                setShowErrorMessage={setShowErrorMessage}
+                                setShippingInfo={setShippingInfo}
+                                user={auth?.user}
                                 __={__}
                             />
 
@@ -445,33 +582,36 @@ export default function Checkout({ cart_items, refferalSessionData, shipping_add
                                 __={__}
                             />
 
-                            {/* Order Items Summary (Mobile Only) */}
-                            {windowSize.width <= 1024 && (
-                                <OrderItemsSummary
-                                    cart_items={cart_items}
-                                    currency={currency}
-                                    __={__}
-                                    calculateImportCost={calculateImportCost}
-                                    calculateShippingCost={calculateShippingCost}
+                            {/* Use Points */}
+                            <UsePoints
+                                points={auth.user?.points}
+                                pointsToUse={pointsToUse}
+                                setPointsToUse={handlePointsChange}
+                                onUseAllPoints={handleUseAllPoints}
+                                error={pointsError}
+                                __={__}
+                            />
 
-                                />
-                            )}
+                            {/* Order Items */}
+                            <Items
+                                cart_items={cart_items}
+                                quantities={quantities}
+                                onUpdateQuantity={updateQuantity}
+                                onProductRemove={onProductRemove}
+                                currency={currency}
+                                removing={removingProcessing}
+                                __={__}
+                                smartphoneAddonQuantities={smartphoneAddonQuantities}
+                                onUpdateSmartphoneAddon={updateSmartphoneAddon}
+                                onRemoveSmartphoneAddon={removeSmartphoneAddon}
+                                getTotalQtyOfSmartphone={getTotalQtyOfSmartphone}
+                                buy_now={buy_now}
+                            />
                         </div>
 
                         {/* Right Section: Order Summary */}
                         <div className="lg:col-span-1">
                             <div className="sticky space-y-4 top-8">
-                                {/* Order Items (Desktop Only) */}
-                                {windowSize.width > 1024 && (
-                                    <OrderItemsSummary
-                                        cart_items={cart_items}
-                                        currency={currency}
-                                        __={__}
-                                        calculateImportCost={calculateImportCost}
-                                        calculateShippingCost={calculateShippingCost}
-                                    />
-                                )}
-
                                 {/* Order Summary Card */}
                                 <OrderSummaryCard
                                     summary={summary}
@@ -491,287 +631,153 @@ export default function Checkout({ cart_items, refferalSessionData, shipping_add
                                     __={__}
                                 />
 
-
-                                {/* Social Message Buttons */}
                                 {is_eligible_for_social_message && (
-                                    <SocialMessageButtons user={auth?.user} meta_usernames={meta_usernames} __={__} />
-
+                                    <SocialMediaHelpIcon
+                                        __={__}
+                                        socialLinks={socialLinks}
+                                        width={windowSize.width}
+                                    />
                                 )}
-
                             </div>
                         </div>
                     </div>
                 </div>
+
+                {secondaryPaymentOptionModal && (
+                    <SecondaryPaymentModal
+                        isOpen={secondaryPaymentOptionModal}
+                        onClose={() => {
+                            setSecondaryPaymentOptionModal(false);
+                            setSecondaryPaymentMethod("");
+                        }}
+                        availablePoints={parseFloat(auth?.user?.points)}
+                        totalAmount={summary.total}
+                        remainingAmount={parseFloat(summary.total) - parseFloat(auth?.user?.points)}
+                        onSelectPayment={setSecondaryPaymentMethod}
+                        currency={currency}
+                        handlePlace={handlePlaceOrder}
+                        selectedPayment={secondaryPaymentMethod}
+                        windowSize={windowSize}
+                        processingOrder={processingOrder}
+                        __={__}
+
+                    />
+                )}
             </div>
         </MainLayout>
     );
 }
 
 // Shipping Form Component
-function ShippingForm(
-    { setShippingInfo,
-        shippingInfo,
-        __,
-        isShippingFormComplete,
-        hasSavedShippingAddress,
-        handleShippingInfoChange,
-        countries,
-        handleAddShippingAddress,
-        addingShippingAddress
+function ShippingInfoCard({
+    shippingInfo,
+    countries,
+    shipping_addresses,
+    shippingAddressModal,
+    setShippingAddressModal,
+    setInfoMessage,
+    setShowInfoMessage,
+    setErrorMessage,
+    setShowErrorMessage,
+    setShippingInfo,
+    windowSize,
+    user,
+    __,
+}) {
+    // Get country name from ID
+    const countryName =
+        countries?.find((country) => country.id === Number(shippingInfo.country_id))?.name ||
+        shippingInfo.country ||
+        '';
 
-    }
-) {
+    // Format full address
+    const formatAddress = () => {
+        const parts = [
+            shippingInfo.address_line1,
+            shippingInfo.address_line2,
+            shippingInfo.city,
+            shippingInfo.state,
+            shippingInfo.postal_code,
+            countryName,
+        ].filter(Boolean);
+
+        return parts.join(', ');
+    };
+
     return (
-        <div className="p-6 border rounded-md bg-main-text-dark border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
-            <div className="flex items-center justify-between">
-                <h2 className="flex items-center gap-2 mb-6 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
-
+        <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+            {/* Header with Edit Button */}
+            <div className="flex items-start justify-between mb-4">
+                <h2 className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                     {__('Shipping Information')}
                 </h2>
 
-                <Link
-                    href={route('website.shipping-addresses.index')}
-                    className="font-medium text-main-text-light hover:text-sub-text-light text-md dark:hover:text-sub-text-dark dark:text-main-text-dark"
+                <button
+                    onClick={() => setShippingAddressModal(true)}
+                    className="flex cursor-pointer items-center gap-1.5 text-[13px] font-medium text-main-text-light transition-colors hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-main-text-dark/80"
                 >
-                    {__('Edit Information')}
-                </Link>
+                    <Pencil className="w-4 h-4" />
+                    {__('Edit address')}
+                </button>
             </div>
 
-            <form onSubmit={handleAddShippingAddress} className="space-y-4">
-
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div>
-
-                        <WebInput
-                            InputName={__('Full Name')}
-                            Id={'full_name'}
-                            Name={'name'}
-                            Disabled={hasSavedShippingAddress}
-                            Action={handleShippingInfoChange}
-                            Placeholder={"John Doe"}
-                            Value={shippingInfo.name}
-                            Required={true}
-                            Type={'text'}
-                            ClassName={"dark:bg-surface-2-dark dark:border-surface-3-dark"}
-
-                        />
-                    </div>
-
-                    <div>
-                        <WebInput
-                            InputName={__("Phone Number")}
-                            Id={'phone'}
-                            Name={'phone'}
-                            Disabled={hasSavedShippingAddress}
-                            Placeholder={"+1 (555) 000-0000"}
-                            Action={handleShippingInfoChange}
-                            Type={"tel"}
-                            Value={shippingInfo.phone}
-                            Required={true}
-                            ClassName={"dark:bg-surface-2-dark dark:border-surface-3-dark"}
-                        />
-                    </div>
-                </div>
-
-
-                <div>
-                    <WebTextArea
-                        InputName={__("Address 1")}
-                        Id={'address_line1'}
-                        Name={'address_line1'}
-                        Disabled={hasSavedShippingAddress}
-                        Action={handleShippingInfoChange}
-                        Placeholder={"123 Main Street, Apt 4B"}
-                        Value={shippingInfo.address_line1}
-                        Required={true}
-                        Rows={1}
-                        ClassName={"dark:bg-surface-2-dark dark:border-surface-3-dark"}
-
-                    />
-                </div>
-
-
-                <div>
-                    <WebTextArea
-                        InputName={__("Address 2")}
-                        Id={'address_line2'}
-                        Name={'address_line2'}
-                        Disabled={hasSavedShippingAddress}
-                        Action={handleShippingInfoChange}
-                        Placeholder={"123 Main Street, Apt 4B"}
-                        Value={shippingInfo.address_line2}
-                        Required={false}
-                        Rows={1}
-                        ClassName={"dark:bg-surface-2-dark dark:border-surface-3-dark"}
-
-                    />
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div>
-                        <WebInput
-                            InputName={__("City")}
-                            Id={'city'}
-                            Name={'city'}
-                            Disabled={hasSavedShippingAddress}
-                            Action={handleShippingInfoChange}
-                            Placeholder={"New York"}
-                            Type={"text"}
-                            Value={shippingInfo.city}
-                            Required={true}
-                            ClassName={"dark:bg-surface-2-dark dark:border-surface-3-dark"}
-                        />
-                    </div>
-
-                    <div>
-
-                        <WebInput
-                            InputName={__("Postal Code")}
-                            Id={'postal_code'}
-                            Name={'postal_code'}
-                            Disabled={hasSavedShippingAddress}
-                            Action={handleShippingInfoChange}
-                            Placeholder={"10001"}
-                            Type={"text"}
-                            Value={shippingInfo.postal_code}
-                            Required={true}
-                            ClassName={"dark:bg-surface-2-dark dark:border-surface-3-dark"}
-                        />
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div>
-
-                        <WebInput
-                            InputName={__("State")}
-                            Id={'state'}
-                            Name={'state'}
-                            Disabled={hasSavedShippingAddress}
-                            Action={handleShippingInfoChange}
-                            Placeholder={"New York"}
-                            Type={"text"}
-                            Value={shippingInfo.state}
-                            Required={true}
-                            ClassName={"dark:bg-surface-2-dark dark:border-surface-3-dark"}
-                        />
-                    </div>
-
-                    {hasSavedShippingAddress ? (
-                        <div>
-                            <WebInput
-                                InputName={__("Country")}
-                                Id={'country'}
-                                Name={'country'}
-                                Disabled={hasSavedShippingAddress}
-                                Placeholder={"United States"}
-                                Type={"text"}
-                                Value={
-                                    countries.find(
-                                        (country) => country.id === Number(shippingInfo.country_id)
-                                    )?.name || ''
-                                }
-                                Required={true}
-                                ClassName={"dark:bg-surface-2-dark dark:border-surface-3-dark"}
-                            />
-                        </div>
-                    ) : (
-                        <div>
-                            <WebSelectInput
-                                InputName={__('Country')}
-                                Id={'country_id'}
-                                Name={'country_id'}
-                                Value={shippingInfo.country_id}
-                                isDisabled={hasSavedShippingAddress}
-                                Required={true}
-                                Action={(value) =>
-                                    setShippingInfo((prevInfo) => ({
-                                        ...prevInfo,
-                                        country_id: value,
-                                    }))
-                                }
-                                items={countries}
-                                itemKey={'name'}
-                                Placeholder={__('Select Country')}
-                                customPlaceHolder={true}
-                            />
-                        </div>
+            {/* Address Information */}
+            <div className="space-y-1 break-words">
+                {/* Line 1: Name + Phone */}
+                <p className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
+                    {shippingInfo.name}
+                    {shippingInfo.phone && (
+                        <span className="font-medium"> {shippingInfo.phone}</span>
                     )}
+                </p>
 
+                {/* Line 2: Country, City, State */}
+                <p className="text-[14px] text-main-text-light dark:text-main-text-dark">
+                    {[countryName, shippingInfo.city, shippingInfo.state]
+                        .filter(Boolean)
+                        .join(', ')}
+                </p>
 
-                </div>
+                {/* Line 3: Address + Postal Code */}
+                <p className="text-[14px] text-main-text-light dark:text-main-text-dark">
+                    {formatAddress()}
+                </p>
+            </div>
 
-                {!hasSavedShippingAddress && isShippingFormComplete() && (
-                    <div className="flex items-center justify-end gap-3">
-
-
-                        <button
-                            type="submit"
-                            disabled={
-                                (hasSavedShippingAddress && isShippingFormComplete) || (addingShippingAddress)
-                            }
-                            className={`text-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md bg-main-text-light font-semibold text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80 ${(hasSavedShippingAddress && isShippingFormComplete) || (addingShippingAddress) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
-                        >
-                            {addingShippingAddress && (
-                                <Spinner customSize={'size-5'} />
-                            )}
-                            {__('Save Changes')}
-                        </button>
-                    </div>
-                )}
-
-            </form>
+            {shippingAddressModal && (
+                <ShippingAddressModal
+                    countries={countries}
+                    shipping_addresses={shipping_addresses}
+                    windowSize={windowSize}
+                    isOpen={shippingAddressModal}
+                    onClose={() => setShippingAddressModal(false)}
+                    setInfoMessage={setInfoMessage}
+                    setShowInfoMessage={setShowInfoMessage}
+                    setErrorMessage={setErrorMessage}
+                    setShowErrorMessage={setShowErrorMessage}
+                    setShippingInfo={setShippingInfo}
+                    user={user}
+                    __={__}
+                />
+            )}
         </div>
     );
 }
 
-// Payment Method Component
+// Payment methods
 function PaymentMethod({ paymentMethod, setPaymentMethod, __ }) {
     return (
-        <div className="p-6 border rounded-md bg-surface-1-light border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
-            <h2 className="flex items-center gap-2 mb-6 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
-
+        <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+            <h2 className="mb-4 text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                 {__('Payment Method')}
             </h2>
 
-            <div className="space-y-3">
-                {/* Bank Transfer Option */}
+            <div className="space-y-2">
+                {/* Crypto */}
                 <label
-                    className={`flex cursor-pointer items-center gap-4 rounded-md border p-4 transition-all ${paymentMethod === 'bank_transfer'
-                        ? 'border-surface-3-light dark:border-surface-3-dark bg-surface-2-light dark:bg-surface-2-dark'
-                        : 'border-surface-3-light bg-surface-1-light hover:bg-surface-2-light hover:border-surface-3-light  dark:border-surface-3-dark dark:bg-surface-1-dark dark:hover:bg-surface-2-dark dark:hover:border-surface-3-dark'
-                        }`}
-                >
-                    <input
-                        type="radio"
-                        name="payment_method"
-                        value="bank_transfer"
-                        checked={paymentMethod === 'bank_transfer'}
-                        onChange={(e) => setPaymentMethod(e.target.value)}
-                        className="w-5 h-5 text-surface-3-light dark:text-surface-3-dark focus:ring-0 focus:ring-offset-0"
-                    />
-                    <div className="flex items-center justify-between flex-1">
-                        <div className="flex items-center gap-3">
-                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-2-light dark:bg-surface-3-dark">
-                                <BuildingLibraryIcon className="w-6 h-6 fill-main-text-light dark:fill-main-text-dark" />
-                            </div>
-                            <div>
-                                <p className="font-semibold text-main-text-light dark:text-main-text-dark">
-                                    {__('Direct Bank Transfer')}
-                                </p>
-                                <p className="text-sm text-sub-text-light dark:text-sub-text-dark">
-                                    {__('Pay directly to our bank account')}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </label>
-
-                {/* Crypto Option */}
-                <label
-                    className={`flex cursor-pointer items-center gap-4 rounded-md border p-4 transition-all ${paymentMethod === 'crypto'
-                        ? 'border-surface-3-light dark:border-surface-3-dark bg-surface-2-light dark:bg-surface-2-dark'
-                        : 'border-surface-3-light bg-surface-1-light hover:bg-surface-2-light hover:border-surface-3-light  dark:border-surface-3-dark dark:bg-surface-1-dark dark:hover:bg-surface-2-dark dark:hover:border-surface-3-dark'
+                    className={`flex cursor-pointer items-center gap-3 rounded-md px-4 py-3 transition ${paymentMethod === 'crypto'
+                        ? 'bg-[#eaeaea] dark:bg-surface-2-dark'
+                        : 'dark:hover:bg-surface-2-dark lg:hover:bg-[#eaeaea]'
                         }`}
                 >
                     <input
@@ -780,33 +786,81 @@ function PaymentMethod({ paymentMethod, setPaymentMethod, __ }) {
                         value="crypto"
                         checked={paymentMethod === 'crypto'}
                         onChange={(e) => setPaymentMethod(e.target.value)}
-                        className="w-5 h-5 text-surface-3-light dark:text-surface-3-dark focus:ring-0 focus:ring-offset-0"
+                        className="sr-only peer"
                     />
-                    <div className="flex items-center justify-between flex-1">
-                        <div className="flex items-center gap-3">
-                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-2-light dark:bg-surface-3-dark">
-                                <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 fill-main-text-light dark:fill-main-text-dark">
-                                    <path d="M128 0C57.3 0 0 57.3 0 128s57.3 128 128 128 128-57.3 128-128S198.7 0 128 0zm62 91h-46v24.3c37.6 1.9 66 10 66 19.7 0 9.7-28.4 17.8-66 19.7V201h-32v-46.3c-37.6-1.9-66-10-66-19.7 0-9.7 28.4-17.8 66-19.7V91H66V63h124v28zm-78 35.2v25.2c-33.6-1.6-58-6.6-58-12.6 0-6 24.4-11 58-12.6zm32 25.2v-25.2c33.6 1.6 58 6.6 58 12.6 0 6-24.4 11-58 12.6z"
-                                    />
-                                </svg>
-                            </div>
-                            <div>
-                                <p className="font-semibold text-main-text-light dark:text-main-text-dark">
-                                    {__('Crypto Payment')}
-                                </p>
-                                <p className="text-sm text-sub-text-light dark:text-sub-text-dark">
-                                    {__('Pay with crypto currency')}
-                                </p>
-                            </div>
+
+                    {/* outer circle */}
+                    <span className="flex items-center justify-center w-5 h-5 border border-black rounded-full">
+                        {/* inner white space */}
+                        <span className="flex items-center justify-center w-4 h-4 bg-white rounded-full">
+                            {/* black dot */}
+                            {paymentMethod === 'crypto' && (
+                                <span className="w-3 h-3 bg-black rounded-full" />
+                            )}
+                        </span>
+                    </span>
+
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center text-center rounded-full bg-[#EE7B1A] p-2 text-main-text-dark">
+                            {/* <span className="w-6 h-6 text-[19px]" >₿</span> */}
+                            <Bitcoin className="w-6 h-6" />
+                        </div>
+
+                        <div>
+                            <p className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
+                                {__('Crypto Payment')}{' '}
+                                <span className="text-[14px] font-normal">
+                                    ({__('Network fees may apply')})
+                                </span>
+                            </p>
                         </div>
                     </div>
                 </label>
 
-                {/* Points option */}
+                {/* Bank Transfer */}
                 <label
-                    className={`flex cursor-pointer items-center gap-4 rounded-md border p-4 transition-all ${paymentMethod === 'points'
-                        ? 'border-surface-3-light dark:border-surface-3-dark bg-surface-2-light dark:bg-surface-2-dark'
-                        : 'border-surface-3-light bg-surface-1-light hover:bg-surface-2-light hover:border-surface-3-light  dark:border-surface-3-dark dark:bg-surface-1-dark dark:hover:bg-surface-2-dark dark:hover:border-surface-3-dark'
+                    className={`flex cursor-pointer items-center gap-3 rounded-md px-4 py-3 transition ${paymentMethod === 'bank_transfer'
+                        ? 'bg-[#eaeaea] dark:bg-surface-2-dark'
+                        : 'dark:hover:bg-surface-2-dark lg:hover:bg-[#eaeaea]'
+                        }`}
+                >
+                    <input
+                        type="radio"
+                        name="payment_method"
+                        value="bank_transfer"
+                        checked={paymentMethod === 'bank_transfer'}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        className="sr-only peer"
+                    />
+
+                    {/* outer circle */}
+                    <span className="flex items-center justify-center w-5 h-5 border border-black rounded-full">
+                        {/* inner white space */}
+                        <span className="flex items-center justify-center w-4 h-4 bg-white rounded-full">
+                            {/* black dot */}
+                            {paymentMethod === 'bank_transfer' && (
+                                <span className="w-3 h-3 bg-black rounded-full" />
+                            )}
+                        </span>
+                    </span>
+
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center rounded-full bg-[#00469B] p-2 text-main-text-dark">
+                            <Landmark className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <p className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
+                                {__('Direct Bank Transfer')}
+                            </p>
+                        </div>
+                    </div>
+                </label>
+
+                {/* Points */}
+                <label
+                    className={`flex cursor-pointer items-center gap-3 rounded-md px-4 py-3 transition ${paymentMethod === 'points'
+                        ? 'bg-[#eaeaea] dark:bg-surface-2-dark'
+                        : 'dark:hover:bg-surface-2-dark lg:hover:bg-[#eaeaea]'
                         }`}
                 >
                     <input
@@ -815,23 +869,29 @@ function PaymentMethod({ paymentMethod, setPaymentMethod, __ }) {
                         value="points"
                         checked={paymentMethod === 'points'}
                         onChange={(e) => setPaymentMethod(e.target.value)}
-                        className="w-5 h-5 text-surface-3-light dark:text-surface-3-dark focus:ring-0 focus:ring-offset-0"
+                        className="sr-only peer"
                     />
-                    <div className="flex items-center justify-between flex-1">
-                        <div className="flex items-center gap-3">
-                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-2-light dark:bg-surface-3-dark">
-                                <svg className="w-6 h-6 fill-main-text-light dark:fill-main-text-dark" viewBox="0 0 24 24">
-                                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <p className="font-semibold text-main-text-light dark:text-main-text-dark">
-                                    {__('Points')}
-                                </p>
-                                <p className="text-sm text-sub-text-light dark:text-sub-text-dark">
-                                    {__('Pay directly with your points')}
-                                </p>
-                            </div>
+
+                    {/* outer circle */}
+                    <span className="flex items-center justify-center w-5 h-5 border border-black rounded-full">
+                        {/* inner white space */}
+                        <span className="flex items-center justify-center w-4 h-4 bg-white rounded-full">
+                            {/* black dot */}
+                            {paymentMethod === 'points' && (
+                                <span className="w-3 h-3 bg-black rounded-full" />
+                            )}
+                        </span>
+                    </span>
+
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center rounded-full bg-[#00469B] p-2 text-main-text-dark">
+                            <Star className="w-6 h-6" />
+                        </div>
+
+                        <div>
+                            <p className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
+                                {__('Points')}
+                            </p>
                         </div>
                     </div>
                 </label>
@@ -840,154 +900,364 @@ function PaymentMethod({ paymentMethod, setPaymentMethod, __ }) {
     );
 }
 
-// Order Items Summary Component
-function OrderItemsSummary({ cart_items, currency, __, calculateImportCost, calculateShippingCost }) {
-
-    const generateSmartphoneURL = (smartphone, isDirect = false, isSinglePage = false) => {
-        return (
-            `?m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`
-        );
-    }
-
+// UsePoints
+function UsePoints({ points, pointsToUse, setPointsToUse, onUseAllPoints, error, __ }) {
     return (
-        <div className="p-6 border rounded-md bg-surface-1-light border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
-            <h2 className="flex items-center gap-2 mb-4 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
-                {__('Order Items')} ({cart_items.length})
+        <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+            {/* Header */}
+            <h2 className="mb-5 text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
+                {__('Use Points')}
             </h2>
 
-            <div className="pr-2 space-y-4 overflow-y-auto max-h-96">
-                {cart_items.map((item, index) => {
-                    const shipping_fee = calculateShippingCost(item?.smartphone?.selling_info?.shipping_fee, item?.smartphone, item?.quantity);
-                    const import_tax = calculateImportCost(item?.smartphone?.selling_info?.import_tax, item?.smartphone);
-                    const relatedAddons = item.smartphone_addon_items || [];
-                    return (
-                        <div
-                            key={index}
-                            className="flex gap-3 p-3 border rounded-md border-surface-3-light bg-surface-2-light dark:border-surface-3-dark dark:bg-surface-2-dark"
-                        >
-                            {/* IMAGE */}
-                            {(item?.smartphone?.smartphone_image_urls.length > 0 || item?.smartphone?.smartphone_video_urls?.length > 0) && (
-                                <div className="relative w-24 h-24 overflow-hidden transition-all border-2 rounded-md cursor-pointer border-trasparent bg-surface-1-light group/img aspect-square dark:bg-surface-1-dark dark:hover:border-surface-3-dark"
+            {/* Points Input Row */}
+            <div className="flex flex-wrap items-center gap-10">
+                {/* Label */}
+                <span className="whitespace-nowrap text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
+                    {__('Points to use')}
+                </span>
 
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        router.get(route('home') + generateSmartphoneURL(item?.smartphone, true, true));
-                                    }}
-                                >
-                                    <img
-                                        src={
-                                            item?.smartphone?.smartphone_image_urls?.[0] ||
-                                            item?.smartphone?.smartphone_video_urls[0]?.thumbnail_url ||
-                                            Placeholder
-                                        }
-                                        alt={item?.smartphone?.model_name?.name}
-                                        className="object-cover w-full h-full transition-transform duration-300 group-hover/img:scale-110"
-                                        loading="lazy"
-                                        onError={(e) => (e.target.src = Placeholder)}
-                                    />
-                                </div>
-                            )}
-                            <div className="flex-1">
-                                <h3 className="mb-1 text-sm font-semibold text-main-text-light dark:text-main-text-dark">
-                                    {item?.smartphone?.model_name?.name || 'N/A'}
-                                </h3>
+                <div className="flex flex-wrap items-center gap-5">
+                    {/* Input Field */}
+                    <input
+                        type="number"
+                        value={pointsToUse}
+                        onChange={(e) => setPointsToUse(e.target.value)}
+                        placeholder={__('Enter points amount')}
+                        min="0"
+                        max={points}
+                        className="focus:outline-hidden h-[40px] w-[300px] rounded-md border border-surface-3-light px-4 py-2.5 text-sm placeholder:text-[14px] placeholder:font-medium placeholder:text-[#b4b4b4] focus:border-surface-3-light focus:outline-none focus:ring-0 focus:ring-main-text-light dark:border-surface-3-dark dark:bg-surface-2-dark dark:text-main-text-dark dark:placeholder:text-sub-text-dark dark:focus:border-surface-3-dark"
+                    />
 
-                                {item?.smartphone?.capacity && (
-                                    <div className="flex flex-wrap gap-2 mb-3">
-                                        <span
-                                            className={`inline-flex items-center rounded-md bg-surface-2-light  py-0.5 px-2 text-xs font-medium text-sub-text-light dark:bg-surface-3-dark dark:text-sub-text-dark`}
-                                        >
-                                            {__('Capacity') + ': ' + item?.smartphone?.capacity?.name || 'N/A'}
-                                        </span>
+                    {/* Use All Button */}
+                    <button
+                        type="button"
+                        onClick={onUseAllPoints}
+                        disabled={!points || points === 0}
+                        className="h-[40px] rounded-md border border-[#c7c7c7] bg-backgroundLight px-6 text-[14px] font-semibold text-main-text-light transition-colors hover:bg-[#ebebeb] disabled:cursor-not-allowed disabled:opacity-50 dark:border-surface-3-dark dark:bg-surface-3-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark/80"
+                    >
+                        {__('Use all')}
+                    </button>
+                </div>
+
+                {/* Available Points */}
+                <span className="ml-auto whitespace-nowrap text-[14px] font-normal text-main-text-light dark:text-main-text-dark">
+                    {__('Available')}{' '}
+                    <span className="text-[14px] font-semibold">
+                        {Number(points || 0).toLocaleString('en-US')}
+                    </span>{' '}
+                    {__('points')}
+                </span>
+            </div>
+
+            {/* Error Message */}
+            {error && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>}
+        </div>
+    );
+}
+
+// Items
+function Items({
+    cart_items,
+    quantities,
+    onUpdateQuantity,
+    onProductRemove,
+    currency,
+    removing,
+    __,
+    smartphoneAddonQuantities,
+    onUpdateSmartphoneAddon,
+    onRemoveSmartphoneAddon,
+    getTotalQtyOfSmartphone,
+    buy_now,
+}) {
+    const generateSmartphoneURL = (smartphone, isDirect = false, isSinglePage = false) => {
+        return `?m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`;
+    };
+
+    return (
+        <div className="p-8 transition-all bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+            <div className="flex items-start justify-start mb-4">
+                <h2 className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
+                    {__('Order Items')} ({cart_items?.length})
+                </h2>
+            </div>
+
+            {cart_items?.map((item, index) => {
+                const quantity = quantities[item.id] || item.quantity;
+                const relatedAddons = item?.smartphone_addon_items || [];
+                const currentQty = quantity;
+                const totalUsedQty = getTotalQtyOfSmartphone(item.smartphone_id);
+                const otherItemsQty = totalUsedQty - currentQty;
+                const maxAllowedForThisItem = item.smartphone.inventory_items_count - otherItemsQty;
+
+                return (
+                    <div
+                        key={index}
+                        className={`border-t border-surface-3-light py-8 dark:border-surface-3-dark`}
+                    >
+                        <div className="flex gap-6 border-t border-surface-3-light first:border-t-0 dark:border-surface-3-dark">
+                            {/* Product Image */}
+                            {(item?.smartphone?.smartphone_image_urls.length > 0 ||
+                                item?.smartphone?.smartphone_video_urls?.length > 0) && (
+                                    <div
+                                        className="relative overflow-hidden transition-all rounded-md cursor-pointer group/img aspect-square h-28 w-28 shrink-0 bg-surface-2-light dark:bg-surface-2-dark"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            router.get(
+                                                route('home') +
+                                                generateSmartphoneURL(item?.smartphone, true, true),
+                                            );
+                                        }}
+                                    >
+                                        <img
+                                            src={
+                                                item?.smartphone?.smartphone_image_urls?.[0] ||
+                                                item?.smartphone?.smartphone_video_urls[0]
+                                                    ?.thumbnail_url ||
+                                                Placeholder
+                                            }
+                                            alt={item?.smartphone?.model_name?.name}
+                                            className="object-cover w-full h-full transition-transform duration-300 group-hover/img:scale-110"
+                                            loading="lazy"
+                                            onError={(e) => (e.target.src = Placeholder)}
+                                        />
                                     </div>
                                 )}
 
-                                {item?.color && (
-                                    <div className="flex flex-wrap gap-2 mb-3">
-                                        <span
-                                            className={`inline-flex items-center rounded-md py-0.5 px-2 text-xs font-medium bg-surface-3-light text-sub-text-light dark:bg-surface-3-dark dark:text-sub-text-dark`}
+                            {/* Product Details */}
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between gap-4 mb-3">
+                                    <div className="flex-1">
+                                        <h3 className="mb-1 text-[16px] font-semibold text-main-text-light dark:text-main-text-dark">
+                                            {item?.smartphone?.model_name?.name || 'N/A'}
+                                        </h3>
 
-                                        >
-                                            {__('Color') + ': ' + item.color?.name || 'N/A'}
-                                        </span>
-                                    </div>
-                                )}
-
-                                <div className="mx-2 mt-2 space-y-1 text-xs text-sub-text-light dark:text-sub-text-dark">
-
-                                    <div className="flex justify-between">
-                                        <span>
-                                            {__('Product')} ({currency.symbol}{item.unit_price} × {item.quantity})
-                                        </span>
-                                        <span>
-                                            {currency.symbol}
-                                            {(item.unit_price * item.quantity).toFixed(2)}
-                                        </span>
+                                        {/* Capacity and Color in one line */}
+                                        <p className="text-[14px] font-medium text-sub-text-light dark:text-sub-text-dark">
+                                            {item?.smartphone?.capacity?.name && item?.color?.name
+                                                ? `${item?.smartphone?.capacity?.name}, ${item?.color?.name}`
+                                                : item?.smartphone?.capacity?.name ||
+                                                item?.color?.name ||
+                                                ''}
+                                        </p>
                                     </div>
 
-                                    <div className="flex justify-between">
-                                        <span>{__('Shipping')}</span>
-                                        <span>
-                                            {currency.symbol}
-                                            {Number(shipping_fee).toFixed(2)}
-                                        </span>
-                                    </div>
-
-                                    <div className="flex justify-between">
-                                        <span>{__('Import / Customs Tax')}</span>
-                                        <span>
-                                            {currency.symbol}
-                                            {Number(import_tax).toFixed(2)}
-                                        </span>
-                                    </div>
-
-                                    {relatedAddons.length > 0 && (
-                                        <>
-                                            <div className="pt-1 mt-1 border-t border-dashed border-surface-3-light">
-                                                <p className="text-xs font-semibold">{__('Add-ons')}</p>
-
-                                                {relatedAddons.map(addon => (
-                                                    <div key={addon.id} className="flex justify-between">
-                                                        <span>{addon.name} × {addon.quantity}</span>
-                                                        <span>
-                                                            {currency.symbol}
-                                                            {Number(addon.total_price).toFixed(2)}
-                                                        </span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </>
-                                    )}
+                                    {/* Remove Button */}
+                                    <button
+                                        onClick={() => onProductRemove(item.id, item.type)}
+                                        disabled={removing}
+                                        className={`p-1.5 text-main-text-light transition-colors hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-main-text-dark/80 ${removing ? 'cursor-not-allowed' : ''}`}
+                                        title={__('Remove item')}
+                                    >
+                                        {removing ? <Spinner /> : <Trash2 className="w-5 h-5" />}
+                                    </button>
                                 </div>
 
-                                <div className="flex justify-between mx-2 mt-2 text-sm font-bold text-main-text-light dark:text-main-text-dark">
-                                    <span>{__('Item Total')}</span>
-                                    <span>
-                                        {currency.symbol}
-                                        {(
-                                            (item.unit_price * item.quantity) +
-                                            Number(shipping_fee) +
-                                            Number(import_tax) +
-                                            relatedAddons.reduce((t, a) => t + Number(a.total_price), 0)
-                                        ).toFixed(2)}
+                                {/* Price */}
+                                <div className="mb-4">
+                                    <span className="text-[16px] font-semibold text-main-text-light dark:text-main-text-dark">
+                                        {currency?.symbol}
+                                        {Number(item.unit_price).toLocaleString('en-US')}
                                     </span>
                                 </div>
 
-                            </div>
+                                {/* Quantity and Stock */}
+                                <div className="flex items-center gap-4">
+                                    {/* Quantity Controls */}
+                                    <div className="flex items-center border rounded-md border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-transparent">
+                                        <button
+                                            onClick={() => onUpdateQuantity(item.id, quantity - 1)}
+                                            className="px-1 py-1 transition-colors text-main-text-light hover:bg-surface-1-light disabled:opacity-50 dark:text-main-text-dark dark:hover:bg-surface-2-dark"
+                                            disabled={quantity <= 1}
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={3}
+                                                stroke="currentColor"
+                                                className="h-4 w-[0.8rem]"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M19.5 12h-15"
+                                                />
+                                            </svg>
+                                        </button>
 
+                                        <span className="text-md min-w-[3rem] px-2 py-1 text-center font-semibold text-main-text-light dark:text-main-text-dark">
+                                            {quantity}
+                                        </span>
+
+                                        <button
+                                            disabled={quantity >= maxAllowedForThisItem}
+                                            onClick={() => onUpdateQuantity(item.id, quantity + 1)}
+                                            className="px-1 py-1 transition-colors text-main-text-light hover:bg-surface-1-light disabled:opacity-50 dark:text-main-text-dark dark:hover:bg-surface-2-dark"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={3}
+                                                stroke="currentColor"
+                                                className="h-4 w-[0.8rem]"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M12 4.5v15m7.5-7.5h-15"
+                                                />
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    {/* Stock Status */}
+                                    {maxAllowedForThisItem !== undefined &&
+                                        maxAllowedForThisItem <= 10 &&
+                                        maxAllowedForThisItem > 0 && (
+                                            <span className="text-[13px] font-semibold text-[#ff0000]">
+                                                {__('Only')} {maxAllowedForThisItem}{' '}
+                                                {__('left in stock')}
+                                            </span>
+                                        )}
+                                </div>
+                            </div>
                         </div>
 
+                        {/* Add-ons Section */}
+                        {relatedAddons.length > 0 && (
+                            <div className="pt-6 mt-6 border-t border-surface-3-light dark:border-surface-3-dark">
+                                <h4 className="mb-4 text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
+                                    {__('Add-ons')}
+                                </h4>
 
-                    )
-                })}
+                                <div className="space-y-3 border-t border-surface-3-light dark:border-surface-3-dark">
+                                    {relatedAddons.map((addon_item) => (
+                                        <AddonItem
+                                            key={addon_item.id}
+                                            buy_now={buy_now}
+                                            item={addon_item}
+                                            quantity={
+                                                smartphoneAddonQuantities[buy_now ? addon_item.addon_id : addon_item.id] ??
+                                                addon_item.quantity
+                                            }
+                                            onUpdateQuantity={onUpdateSmartphoneAddon}
+                                            onRemove={onRemoveSmartphoneAddon}
+                                            currency={currency}
+                                            removing={removing}
+                                            __={__}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
+                        {/* Total Section */}
+                        <div className="flex items-center justify-between pt-3 mt-3">
+                            <span className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
+                                {__('Total')}
+                            </span>
+                            <span className="text-[20px] font-semibold text-main-text-light dark:text-main-text-dark">
+                                {currency?.symbol}
+                                {Number(
+                                    item?.unit_price * quantity +
+                                    Number(
+                                        relatedAddons?.reduce(
+                                            (total, addon) => total + Number(addon.total_price),
+                                            0,
+                                        ),
+                                    ),
+                                ).toLocaleString('en-US')}
+                            </span>
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
+
+// Addon Items
+function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, removing, __, buy_now }) {
+
+    return (
+        <div className="flex items-center gap-4 px-5 py-4 border-b border-surface-3-light dark:border-surface-3-dark">
+            {/* Addon Name - Truncated after certain chars */}
+            <div className="min-w-0 max-w-[70px] flex-1">
+                <p className="truncate text-[14px] font-normal dark:text-main-text-dark">
+                    {item?.name || 'Option title'}
+                </p>
+            </div>
+
+            {/* Remove Button */}
+            <button
+                onClick={() => onRemove(buy_now ? item.addon_id : item.id)}
+                disabled={removing}
+                className={`p-1.5 text-main-text-light transition-colors hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-main-text-dark/80`}
+                title={__('Remove addon')}
+            >
+                {removing ? <Spinner size="sm" /> : <Trash2 className="w-5 h-5" />}
+            </button>
+
+            {/* Spacer to push quantity controls to the right */}
+            <div className="flex-1"></div>
+
+            {/* Quantity Controls - Screenshot style with rounded square buttons */}
+            <div className="flex items-center flex-shrink-0 gap-2">
+                <button
+                    onClick={() => onUpdateQuantity((buy_now ? item?.addon_id : item?.id), quantity - 1)}
+                    disabled={quantity <= 1}
+                    className="flex h-[27px] w-[27px] items-center justify-center rounded-md border border-main-text-light bg-backgroundLight text-main-text-light transition-colors hover:bg-surface-2-light disabled:cursor-not-allowed disabled:border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark dark:hover:bg-surface-2-dark"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={3}
+                        stroke="currentColor"
+                        className="w-4 h-4 font-semibold text-main-text-light dark:text-main-text-dark"
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
+                    </svg>
+                </button>
+
+                <span className="w-8 font-semibold text-center text-md text-main-text-light dark:text-main-text-dark">
+                    {quantity}
+                </span>
+
+                <button
+                    onClick={() => onUpdateQuantity((buy_now ? item?.addon_id : item?.id), quantity + 1)}
+                    className="flex h-[27px] w-[27px] items-center justify-center rounded-md border border-main-text-light bg-backgroundLight text-main-text-light transition-colors hover:bg-surface-2-light disabled:cursor-not-allowed disabled:opacity-60 dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark dark:hover:bg-surface-2-dark"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={3}
+                        stroke="currentColor"
+                        className="w-4 h-4 font-semibold text-main-text-light dark:text-main-text-dark"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 4.5v15m7.5-7.5h-15"
+                        />
+                    </svg>
+                </button>
+            </div>
+
+            {/* Total Price */}
+            <div className="w-24 flex-shrink-0 text-right text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
+                {currency?.symbol}
+                {Number(item?.unit_price * quantity).toLocaleString('en-US')}
             </div>
         </div>
     );
 }
 
-// Order Summary Card Component
+// Order Summary
 function OrderSummaryCard({
     summary,
     currency,
@@ -1006,70 +1276,661 @@ function OrderSummaryCard({
     __,
 }) {
     return (
-        <div className="p-6 border rounded-md bg-surface-1-light border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
-            <h2 className="flex items-center gap-2 mb-6 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
+        <div className="sticky space-y-3 top-24">
+            {/* Summary Card */}
+            <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+                <h2 className="mb-6 text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
+                    {__('Order Summary')}
+                </h2>
 
-                {__('Order Summary')}
-            </h2>
+                {/* Price Breakdown */}
+                <div className="pb-5 mb-5 space-y-3">
+                    {/* Items Total */}
+                    <div className="flex items-center justify-between">
+                        <span className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
+                            {__('Items total')}
+                        </span>
+                        <span className="text-[20px] font-semibold text-main-text-light dark:text-main-text-dark">
+                            {currency?.symbol}
+                            {Number(summary.items_total).toLocaleString('en-US')}
+                        </span>
+                    </div>
 
-            <div className="mb-6 space-y-4">
-                <div className="flex justify-between text-sm">
-                    <span className="text-sub-text-light dark:text-sub-text-dark">{__('Product SubTotal')}</span>
-                    <span className="font-semibold text-sub-text-ight dark:text-sub-text-dark">
-                        {currency?.symbol}{parseFloat(Number(summary.cart_subtotal)).toFixed(2) || '0.00'}
+                    {/* Shipping */}
+                    <div className="flex items-center justify-between">
+                        <span className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
+                            {__('Shipping')}
+                        </span>
+                        <span className="text-[20px] font-semibold text-main-text-light dark:text-main-text-dark">
+                            {summary?.shipping_fee == 0
+                                ? __('Free')
+                                : `${currency?.symbol}${Number(summary.shipping_fee).toLocaleString('en-US')}`}
+                        </span>
+                    </div>
+
+                    {/* Import Tax */}
+                    <div className="flex items-center justify-between">
+                        <span className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
+                            {__('Import Tax')}
+                        </span>
+                        <span className="text-[20px] font-semibold text-main-text-light dark:text-main-text-dark">
+                            {currency?.symbol}
+                            {Number(summary.import_tax).toLocaleString('en-US')}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Promo Code Card */}
+                <div className="mb-10">
+                    <PromoCodeCard
+                        showInput={showReferalInput}
+                        setShowInput={setShowReferalInput}
+                        promoCode={referalCode}
+                        setPromoCode={setReferalCode}
+                        onApply={handleApplyReferal}
+                        onRemove={handleRemoveReferal}
+                        appliedPromo={referalData?.referal_code ? referalData : null}
+                        isApplying={applyingReferalProcessing}
+                        isRemoving={removingReferalProcessing}
+                        error={error}
+                        __={__}
+                    />
+                </div>
+
+                {/* Total Due */}
+                <div className="flex items-center justify-between">
+                    <span className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
+                        {__('Total due')}
+                    </span>
+                    <span className="text-[30px] font-semibold text-[#ff4400]">
+                        {currency?.symbol}
+                        {Number(summary.total).toLocaleString('en-US')}
                     </span>
                 </div>
 
+                {/* Confirm & Pay Button */}
+                <button
+                    onClick={handlePlaceOrder}
+                    disabled={processingOrder}
+                    className="mt-7 block w-full rounded-md bg-[#282828] px-6 py-4 text-center text-base font-semibold text-white transition-all hover:bg-[#282828]/80 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-backgroundLight dark:text-main-text-light dark:hover:bg-backgroundLight/80"
+                >
+                    {processingOrder ? (
+                        <div className="flex items-center justify-center gap-2">
+                            <Spinner customSize={'size-5'} />
+                            <span>{__('Processing...')}</span>
+                        </div>
+                    ) : (
+                        __('Confirm & Pay')
+                    )}
+                </button>
 
-                <div className="flex justify-between text-sm">
-                    <span className="text-sub-text-light dark:text-sub-text-dark">{__('Addons SubTotal')}</span>
-                    <span className="font-semibold text-sub-text-ight dark:text-sub-text-dark">
-                        {currency?.symbol}{parseFloat(Number(summary.addons_subtotal)).toFixed(2) || '0.00'}
-                    </span>
+                {/* Secure Checkout Badge */}
+                <div className="mt-10">
+                    <div className="flex items-center justify-center gap-2 text-[13px] font-semibold text-main-text-light dark:text-main-text-dark">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={2}
+                            stroke="currentColor"
+                            className="w-5 h-5 text-green-600"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
+                            />
+                        </svg>
+                        <span className="font-medium">{__('Secure Checkout')}</span>
+                    </div>
                 </div>
+            </div>
+        </div>
+    );
+}
 
-
-                <div className="flex justify-between text-sm">
-                    <span className="text-sub-text-light dark:text-sub-text-dark">{__('Shipping Fee')} </span>
-                    <span className="font-semibold text-sub-text-ight dark:text-sub-text-dark">
-                        {currency?.symbol}{parseFloat(Number(summary.shipping_fee)).toFixed(2) || '0.00'}
-                    </span>
-                </div>
-
-                <div className="flex justify-between text-sm">
-                    <span className="text-sub-text-light dark:text-sub-text-dark">{__('Import Tax')}</span>
-                    <span className="font-semibold text-sub-text-ight dark:text-sub-text-dark">
-                        {currency?.symbol}{parseFloat(Number(summary.import_tax)).toFixed(2) || '0.00'}
-                    </span>
-                </div>
-                {referalData.total_points > 0 && (
-                    <div className="flex justify-between text-sm">
-                        <span className="flex items-center gap-1 text-sub-text-light dark:text-sub-text-dark">
+// Promot Code Card
+function PromoCodeCard({
+    showInput,
+    setShowInput,
+    promoCode,
+    setPromoCode,
+    onApply,
+    onRemove,
+    appliedPromo,
+    isApplying,
+    isRemoving,
+    error,
+    __,
+}) {
+    return (
+        <div className="p-3 mb-5 border border-surface-3-light dark:border-surface-3-dark">
+            {!appliedPromo ? (
+                <>
+                    {/* Collapsed State - Toggle Button */}
+                    <button
+                        onClick={() => setShowInput(!showInput)}
+                        className={`flex w-full items-center justify-between ${showInput ? 'mb-5' : ''} text-[14px] font-semibold text-main-text-light transition-colors hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-main-text-dark/80`}
+                    >
+                        <span className="flex items-center gap-0.5">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
                                 viewBox="0 0 24 24"
-                                strokeWidth={1.5}
+                                strokeWidth={3}
                                 stroke="currentColor"
-                                className="w-4 h-4"
+                                className="w-3 h-3"
                             >
                                 <path
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
-                                    d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"
+                                    d="M12 4.5v15m7.5-7.5h-15"
                                 />
+                            </svg>
+                            {__('Apply a promo code')}
+                        </span>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={3}
+                            stroke="currentColor"
+                            className={`h-3 w-3 transition-transform duration-200 ${showInput ? 'rotate-180' : ''}`}
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                            />
+                        </svg>
+                    </button>
+
+                    {/* Expanded State - Input Field + Apply Button */}
+                    {showInput && (
+                        <div className="mt-3 mb-5 space-y-2">
+                            <div className="flex flex-wrap items-center justify-center gap-2">
+                                <div className="relative flex flex-wrap items-center flex-1 gap-2 rounded-md">
+                                    <input
+                                        type="text"
+                                        value={promoCode}
+                                        onChange={(e) => setPromoCode(e.target.value)}
+                                        placeholder={__('Enter promo code')}
+                                        className="focus:outline-hidden h-[40px] w-full  flex-1 rounded-md border border-surface-3-light px-4 py-2.5  text-sm placeholder:text-[14px] placeholder:font-medium placeholder:text-[#b4b4b4] focus:border-surface-3-light focus:outline-none focus:ring-0 focus:ring-main-text-light dark:border-surface-3-dark dark:bg-surface-2-dark dark:text-main-text-dark dark:placeholder:text-sub-text-dark dark:focus:border-surface-3-dark"
+                                    />
+                                    {error && (
+                                        <p className="absolute text-xs text-red-500 xl:-bottom-5 lg:-bottom-7 left-1 dark:text-red-400">
+                                            {error}
+                                        </p>
+                                    )}
+                                </div>
+                                <button
+                                    onClick={onApply}
+                                    disabled={isApplying}
+                                    className="h-[40px] rounded-md  border border-[#c7c7c7] bg-backgroundLight px-6 text-[14px] text-sm font-semibold text-main-text-light transition-colors hover:bg-[#ebebeb] disabled:cursor-not-allowed disabled:opacity-50 dark:border-surface-3-dark dark:bg-surface-3-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark/80"
+                                >
+                                    {isApplying ? <Spinner customSize={'size-4'} /> : __('Apply')}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </>
+            ) : (
+                /* Applied Promo State - Success Box */
+                <div className="flex items-center justify-between p-3 border border-green-200 rounded-md bg-green-50 dark:border-green-800 dark:bg-green-900/20">
+                    <div className="flex items-center gap-2">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            className="w-5 h-5 text-green-600 dark:text-green-400"
+                        >
+                            <path
+                                fillRule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+                                clipRule="evenodd"
+                            />
+                        </svg>
+                        <div>
+                            <p className="text-sm font-medium text-green-900 dark:text-green-400">
+                                {appliedPromo?.referal_code || appliedPromo?.code}
+                            </p>
+                            <p className="text-xs text-green-700 dark:text-green-500">
+                                {appliedPromo?.total_points
+                                    ? `${appliedPromo.total_points} ${__('points you will earn')}`
+                                    : __('Promo code applied')}
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={onRemove}
+                        disabled={isRemoving}
+                        className="text-green-600 transition-colors hover:text-green-800 disabled:opacity-50 dark:text-green-400 dark:hover:text-green-300"
+                        title={__('Remove promo code')}
+                    >
+                        {isRemoving ? (
+                            <Spinner customSize={'size-4'} />
+                        ) : (
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={2}
+                                stroke="currentColor"
+                                className="w-5 h-5"
+                            >
                                 <path
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
-                                    d="M6 6h.008v.008H6V6z"
+                                    d="M6 18L18 6M6 6l12 12"
                                 />
                             </svg>
-                            <span className="mr-1">{__('Referal Points')}</span>
-                            <span className="mr-1">({referalData?.referal_code})</span>
-                            {!removingReferalProcessing ? (
+                        )}
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// Shipping Address View Modal
+function ShippingAddressModal({
+    shipping_addresses,
+    countries,
+    __,
+    windowSize,
+    isOpen,
+    onClose,
+    setInfoMessage,
+    setShowInfoMessage,
+    setErrorMessage,
+    setShowErrorMessage,
+    setShippingInfo,
+    user,
+}) {
+    const [isDropdownOpen, setIsDropdownOpen] = useState(null);
+    const [selectedAddressId, setSelectedAddressId] = useState(shipping_addresses?.filter((address) => address.is_active === 1)[0]?.id);
+
+    const [toggleProcessing, setToggleProcessing] = useState(false);
+    const [deleteProcessing, setDeleteProcessing] = useState(false);
+    const [useProfileProcessing, setUseProfileProcessing] = useState(false);
+
+    const { data, setData, post, put, processing, errors } = useForm({
+        country_id: '',
+        name: '',
+        phone: '',
+        state: '',
+        city: '',
+        postal_code: '',
+        address_line1: '',
+        address_line2: '',
+    });
+
+    const [isCreateShippingAddressModalOpen, setIsCreateShippingAddressModalOpen] = useState(false);
+    const [isEditShippingAddressModalOpen, setIsEditShippingAddressModalOpen] = useState(false);
+
+    // Auto Opening Modal If Query Exists
+    useEffect(() => {
+        const url = new URL(window.location.href);
+        const param = url.searchParams.get('modal');
+
+        if (param === 'create-shipping-address') {
+            setIsCreateShippingAddressModalOpen(true);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (isCreateShippingAddressModalOpen) {
+            document.body.style.overflow = 'hidden';
+            document.body.style.touchAction = 'none';
+        } else {
+            document.body.style.overflow = '';
+            document.body.style.touchAction = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+            document.body.style.touchAction = '';
+        };
+    }, [isCreateShippingAddressModalOpen]);
+
+    // // Appedning modal to URL
+    useEffect(() => {
+        const url = new URL(window.location.href);
+        if (isCreateShippingAddressModalOpen) {
+            window.history.pushState({}, '', window.location.pathname);
+            url.searchParams.set('modal', 'create-shipping-address');
+        } else if (isEditShippingAddressModalOpen) {
+            window.history.pushState({}, '', window.location.pathname);
+            url.searchParams.set('modal', 'edit-shipping-address');
+        } else {
+            url.searchParams.delete('modal');
+        }
+
+        window.history.replaceState({}, '', url);
+    }, [isCreateShippingAddressModalOpen, isEditShippingAddressModalOpen]);
+
+    // // Handle browser/mobile back button to close modals
+    useEffect(() => {
+        const handlePopState = (e) => {
+            if (isCreateShippingAddressModalOpen) {
+                setIsCreateShippingAddressModalOpen(false);
+                return;
+            }
+
+            if (isEditShippingAddressModalOpen) {
+                setIsEditShippingAddressModalOpen(false);
+                return;
+            }
+
+            if (isOpen) {
+                onClose();
+                return;
+            }
+        };
+
+        const preventInertiaNavigation = (event) => {
+            const pathname = event.detail?.visit?.url?.pathname || '';
+
+            if (pathname.includes("/shipping-addresses") || pathname.includes('/shipping-address-status-toggle')) {
+                return;
+            }
+            if (isCreateShippingAddressModalOpen && pathname === '/shipping-address') {
+                event.preventDefault();
+            }
+
+            if (isOpen) {
+                event.preventDefault();
+            }
+        };
+        window.addEventListener('popstate', handlePopState);
+        const removeRouterEvent = router.on('before', preventInertiaNavigation);
+
+        // Cleanup
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+            if (removeRouterEvent) removeRouterEvent();
+        };
+    }, [isCreateShippingAddressModalOpen, isEditShippingAddressModalOpen, isOpen]);
+
+    // // Disable Shipping Create and Update Modal
+    //  Button State
+    const [isCreateShippingAddressButtonDisabled, setIsCreateShippingAddressButtonDisabled] =
+        useState(true);
+    const [isUpdateShippingAddressButtonDisabled, setIsUpdateShippingAddressButtonDisabled] =
+        useState(true);
+
+    useEffect(() => {
+        const isIncomplete =
+            !data.name ||
+            !data.phone ||
+            !data.address_line1 ||
+            !data.city ||
+            !data.state ||
+            !data.postal_code ||
+            !data.country_id;
+
+        setIsCreateShippingAddressButtonDisabled(isIncomplete);
+        setIsUpdateShippingAddressButtonDisabled(isIncomplete);
+    }, [data]);
+
+    // Store Shipping Address
+    const handleCreateShippingAddress = (e) => {
+        e.preventDefault();
+        post(route('website.shipping-addresses.store'), {
+            onSuccess: (response) => {
+                if (response.props.flash.success) {
+                    setIsCreateShippingAddressModalOpen(false);
+                    setData({
+                        country_id: '',
+                        name: '',
+                        phone: '',
+                        state: '',
+                        city: '',
+                        postal_code: '',
+                        address_line1: '',
+                        address_line2: '',
+                    });
+                }
+            },
+        });
+    };
+
+    // Destroy Shipping Address
+
+    const handleRemoveShippingAddress = (id) => {
+        setDeleteProcessing(true);
+        router.delete(route('website.shipping-addresses.destroy', id), {
+            preserveScroll: true,
+            preserveUrl: true,
+
+            onFinish: () => {
+                setDeleteProcessing(false);
+                setIsDropdownOpen(null);
+            },
+        });
+    };
+
+    // Edit Shipping Address
+    const handleEditShippingAddress = (address) => {
+        setData({
+            id: address.id,
+            country_id: address.country_id,
+            name: address.name,
+            phone: address.phone,
+            state: address.state,
+            city: address.city,
+            postal_code: address.postal_code,
+            address_line1: address.address_line1,
+            address_line2: address.address_line2,
+        });
+
+        setIsEditShippingAddressModalOpen(true);
+    };
+
+
+    // Update Shipping Address
+    const handleUpdateShippingAddress = (e) => {
+        e.preventDefault();
+        put(route('website.shipping-addresses.update', data.id), {
+            onSuccess: (response) => {
+                if (response.props.flash.success) {
+                    setIsEditShippingAddressModalOpen(false);
+                    setData({
+                        country_id: '',
+                        name: '',
+                        phone: '',
+                        state: '',
+                        city: '',
+                        postal_code: '',
+                        address_line1: '',
+                        address_line2: '',
+                    });
+                }
+            },
+        });
+    };
+
+    // Toggle Shipping Address
+    const handleToggleShippingAddressStatus = (id) => {
+        setToggleProcessing(true);
+
+        router.put(
+            route('website.shipping-addresses.toggle-status', id),
+            {},
+            {
+                preserveScroll: true,
+                preserveUrl: true,
+
+                onFinish: () => {
+                    setToggleProcessing(false);
+                    setSelectedAddressId(id);
+                    setIsDropdownOpen(null);
+                },
+            },
+        );
+    };
+
+    // Using Profile Address Info When No Shipping Address Exists
+    const useProfileAddress = () => {
+        setUseProfileProcessing(true);
+
+        if (shipping_addresses.length > 0 || useProfileProcessing) {
+            setUseProfileProcessing(false);
+            return;
+        }
+
+        const customer = user.customer;
+        if (!user) {
+            setShowErrorMessage(true);
+            setErrorMessage(__('Something went wrong. Please try again.'));
+            setUseProfileProcessing(false);
+            return;
+        } else if (!customer) {
+            setShowErrorMessage(true);
+            setErrorMessage(__('Only customers can use this feature.'));
+            setUseProfileProcessing(false);
+            return;
+        }
+
+        if (
+            !customer.country_id ||
+            !user.name ||
+            !user.phone ||
+            !customer.state ||
+            !customer.city ||
+            !customer.postal_code ||
+            (!customer.address_line1 && !customer.address_line2)
+        ) {
+            setShowInfoMessage(true);
+            setInfoMessage(
+                <>
+                    {__('Please complete your profile first.')} <br />
+                    <Link
+                        href={route('website.profile.index') + '?modal=edit-profile'}
+                        className="underline text-main-text-light dark:text-main-text-dark"
+                    >
+                        {__('Go to Profile Page')}
+                    </Link>
+                </>,
+            );
+            setUseProfileProcessing(false);
+
+            return;
+        }
+
+        const formPayload = {
+            country_id: customer.country_id,
+            name: user.name,
+            phone: user.phone,
+            state: customer.state,
+            city: customer.city,
+            postal_code: customer.postal_code,
+            address_line1: customer.address_line1,
+            address_line2: customer.address_line2,
+        };
+
+        router.post(
+            route('website.shipping-addresses.store.from-profile'),
+            {
+                ...formPayload,
+            },
+            {
+                preserveScroll: true,
+                onFinish: () => {
+                    setUseProfileProcessing(false);
+                },
+                onError: (errors) => {
+                    const errMessages = Object.values(errors).flat();
+                    setShowErrorMessage(true);
+                    setErrorMessage(errMessages.join(' '));
+                },
+            },
+        );
+    };
+
+
+    const handleSelectAddress = (addressId) => {
+
+        setSelectedAddressId(addressId);
+        handleToggleShippingAddressStatus(addressId);
+    };
+
+
+    const EmptyShippingAddress = ({ onClick, processing, __ }) => {
+        return (
+            <div className="w-full p-8 border rounded-md border-surface-3-light bg-surface-2-light dark:border-surface-3-dark dark:bg-surface-2-dark">
+                {/* Message Text */}
+                <p className="mb-4 text-sm text-center text-main-text-light dark:text-main-text-dark">
+                    {__('No shipping address yet. Add one to use at checkout.')}
+                </p>
+
+                {/* Button */}
+                <div className="flex justify-center">
+                    <button
+                        onClick={onClick}
+                        type="button"
+                        disabled={processing}
+                        className={`f rounded-md border border-main-text-light bg-main-text-dark px-6 py-2 text-sm font-medium text-main-text-light transition-colors hover:bg-main-text-dark/80 focus:outline-none focus:ring-0 focus:ring-offset-0 dark:border-main-text-dark dark:bg-main-text-light dark:text-main-text-dark dark:hover:bg-main-text-light/80 ${processing && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
+                    >
+                        {processing ? <Spinner /> : __('Use Profile Address')}
+                    </button>
+                </div>
+            </div>
+        );
+    };
+
+    const ShippingAddressItem = ({
+        item,
+        onEdit,
+        onToggle,
+        onRemove,
+        toggleProcessing,
+        isDropdownOpen,
+        setIsDropdownOpen,
+        deleteProcessing,
+        onSelect,
+        selectedAddressId,
+
+
+        __,
+    }) => {
+        // If this is the active/default address
+        if (item.is_active) {
+            return (
+                <>
+                    <label
+                        className={`flex cursor-pointer items-center gap-3  px-5 py-1 transition-colors border rounded-md border-main-text-light bg-white dark:border-main-text-dark dark:bg-surface-2-dark`}
+                    >
+                        <input
+                            type="radio"
+                            name="payment_method"
+                            value="bank_transfer"
+                            checked={selectedAddressId === item?.id}
+                            onChange={() => onSelect(item?.id)}
+                            className="sr-only peer"
+                        />
+
+                        {/* outer circle */}
+                        <span className="flex items-center justify-center w-5 h-5 border border-black rounded-full">
+                            {/* inner white space */}
+                            <span className="flex items-center justify-center w-4 h-4 bg-white rounded-full">
+                                {/* black dot */}
+                                {selectedAddressId === item?.id && (
+                                    <span className="w-3 h-3 bg-black rounded-full" />
+                                )}
+                            </span>
+                        </span>
+
+                        <div className="relative w-full p-5 ">
+                            {/* Top Right: Default Badge + Edit Button */}
+                            <div className="absolute flex items-center gap-2 right-4 top-4">
+                                <span className="px-4 py-1 text-sm font-medium text-white bg-green-600 rounded-full">
+                                    {__('default')}
+                                </span>
+
                                 <button
-                                    onClick={handleRemoveReferal}
-                                    className="hover:text-red-400"
+                                    type="button"
+                                    onClick={() => onEdit(item)}
+                                    className="flex items-center gap-1.5 rounded-md  px-3 py-1.5 text-sm font-medium text-main-text-light transition-colors hover:text-main-text-light/80  dark:text-main-text-dark dark:hover:text-main-text-dark/80"
                                 >
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -1082,192 +1943,1786 @@ function OrderSummaryCard({
                                         <path
                                             strokeLinecap="round"
                                             strokeLinejoin="round"
-                                            d="M6 18 18 6M6 6l12 12"
+                                            d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
+                                        />
+                                    </svg>
+                                    {__('Edit')}
+                                </button>
+                            </div>
+
+                            {/* Address Details */}
+
+                            <div className="pr-32 text-sm leading-relaxed text-main-text-light dark:text-main-text-dark">
+                                <p className="font-semibold">{item.name}</p>
+                                <p>{item.address_line1}</p>
+                                {item.address_line2 && <p>{item.address_line2}</p>}
+                                <p>
+                                    {item.city}, {item.state} {item.postal_code}
+                                </p>
+                                {item.phone && (
+                                    <p className="text-main-text-light dark:text-main-text-dark">{item.phone}</p>
+                                )}
+                                <p>{item.country?.name || item.country}</p>
+                            </div>
+                        </div>
+                    </label>
+                </>
+            );
+        }
+
+        // If this is an inactive/other address
+        return (
+            <>
+
+                <label
+                    className={`flex cursor-pointer items-center gap-3  px-5 py-1 transition-colors border rounded-md border-surface-3-light bg-white  dark:border-surface-3-dark dark:bg-surface-1-dark `}
+                >
+                    <input
+                        type="radio"
+                        name="payment_method"
+                        value="bank_transfer"
+                        checked={selectedAddressId === item?.id}
+                        onChange={() => onSelect(item?.id)}
+                        className="sr-only peer"
+                    />
+
+                    {/* outer circle */}
+                    <span className="flex items-center justify-center w-5 h-5 border border-black rounded-full">
+                        {/* inner white space */}
+                        <span className="flex items-center justify-center w-4 h-4 bg-white rounded-full">
+                            {/* black dot */}
+                            {selectedAddressId === item?.id && (
+                                <span className="w-3 h-3 bg-black rounded-full" />
+                            )}
+                        </span>
+                    </span>
+
+                    <div className="relative w-full p-5 ">
+                        {/* Top Right: Dropdown Menu */}
+                        <div className="absolute right-4 top-4">
+                            <div className="relative">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsDropdownOpen(item.id)}
+                                    className="rounded-md p-1.5 text-main-text-light transition-colors hover:bg-surface-2-light focus:outline-none focus:ring-0 focus:ring-offset-0 dark:text-main-text-dark dark:hover:bg-surface-2-dark"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth={1.5}
+                                        stroke="currentColor"
+                                        className="w-5 h-5"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
                                         />
                                     </svg>
                                 </button>
-                            ) : (
-                                <Spinner customSize={'size-3'} />
-                            )}
-                        </span>
-                        <span className="font-semibold text-green-600 dark:text-green-400">
-                            {referalData.total_points ?? '0'}
-                        </span>
-                    </div>
-                )}
 
-                <div className="pt-4 border-t border-surface-3-light dark:border-surface-3-dark">
-                    <div className="flex items-center justify-between">
-                        <span className="font-semibold text-md text-sub-text-light dark:text-sub-text-dark">
-                            {__('Total')}
-                        </span>
-                        <span className="text-2xl font-semibold text-sub-text-light dark:text-sub-text-dark">
-                            {currency?.symbol}
-                            {summary.total}
-                        </span>
-                    </div>
-                </div>
-            </div>
+                                {/* Dropdown Menu */}
+                                {isDropdownOpen === item.id && (
+                                    <>
+                                        {/* Backdrop */}
+                                        <div
+                                            className="fixed inset-0 z-10"
+                                            onClick={() => setIsDropdownOpen(null)}
+                                        />
 
-            {/* Referal Code Section */}
+                                        {/* Menu */}
+                                        <div className="absolute right-0 z-20 w-48 bg-white border rounded-md shadow-lg top-6 border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+                                            <div className="py-3">
+                                                {/* Set as Default */}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        onToggle(item.id);
+                                                    }}
+                                                    className="flex items-center w-full gap-2 px-4 py-1 text-sm text-left transition-colors text-main-text-light lg:hover:bg-surface-2-light dark:text-main-text-dark dark:lg:hover:bg-surface-2-dark"
+                                                >
+                                                    {toggleProcessing ? (
+                                                        <Spinner />
+                                                    ) : (
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            strokeWidth={2}
+                                                            stroke="currentColor"
+                                                            className="w-4 h-4"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                                                            />
+                                                        </svg>
+                                                    )}
+                                                    {__('Set as default')}
+                                                </button>
 
+                                                {/* Edit */}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setIsDropdownOpen(null);
+                                                        onEdit(item);
+                                                    }}
+                                                    className="flex items-center w-full gap-2 px-4 py-2 text-sm text-left transition-colors text-main-text-light lg:hover:bg-surface-2-light dark:text-main-text-dark dark:lg:hover:bg-surface-2-dark"
+                                                >
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        strokeWidth={1.5}
+                                                        stroke="currentColor"
+                                                        className="w-4 h-4"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
+                                                        />
+                                                    </svg>
 
-            {!referalData.referal_code && (
-                <div className="mb-6">
-                    {!showReferalInput ? (
-                        <button
-                            onClick={() => setShowReferalInput(true)}
-                            className="flex items-center justify-center w-full gap-2 text-sm font-medium transition-colors text-main-text-light hover:text-sub-text-light dark:text-main-text-dark dark:hover:text-sub-text-dark"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={1.5}
-                                stroke="currentColor"
-                                className="w-4 h-4"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"
-                                />
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M6 6h.008v.008H6V6z"
-                                />
-                            </svg>
-                            {__('Wana Earn Points? Add Referal Code')}
-                        </button>
-                    ) : (
-                        <div className="space-y-2">
-                            <div className="flex items-start gap-2">
-                                <div className="flex-1">
+                                                    {__('Edit')}
+                                                </button>
 
-                                    <WebInput
-                                        Value={referalCode}
-                                        Action={(e) => setReferalCode(e.target.value)}
-                                        Placeholder={__("Enter Refferal Code")}
-                                        Error={error}
-                                    />
-
-                                    <PrimaryButton
-                                        Text={__("Apply")}
-                                        Spinner={applyingReferalProcessing}
-                                        Action={handleApplyReferal}
-                                        Type={'button'}
-                                    />
-
-                                </div>
-
-
+                                                {/* Delete */}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        onRemove(item.id);
+                                                    }}
+                                                    className="flex items-center w-full gap-2 px-4 py-1 text-sm text-left text-red-600 transition-colors lg:hover:bg-red-50 dark:text-red-400 dark:lg:hover:bg-red-900/20"
+                                                >
+                                                    {deleteProcessing ? (
+                                                        <Spinner />
+                                                    ) : (
+                                                        <Trash2 className="w-4 h-4" />
+                                                    )}
+                                                    {__('Delete')}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
-                    )}
+
+                        {/* Address Details */}
+                        <div className="pr-12 text-sm leading-relaxed text-main-text-light dark:text-main-text-dark">
+                            <p className="font-semibold">{item.name}</p>
+                            <p>{item.address_line1}</p>
+                            {item.address_line2 && <p>{item.address_line2}</p>}
+                            <p>
+                                {item.city}, {item.state} {item.postal_code}
+                            </p>
+                            {item.phone && (
+                                <p className="text-main-text-light dark:text-main-text-dark">{item.phone}</p>
+                            )}
+                            <p>{item.country?.name}</p>
+                        </div>
+                    </div>
+                </label>
+
+
+            </>
+        );
+    };
+
+    useEffect(() => {
+        if (isOpen) {
+            if (shipping_addresses.length > 0) {
+                if (shipping_addresses.filter((addr) => addr.is_active).length > 0) {
+                    const activeAddress = shipping_addresses.filter((addr) => addr.is_active)[0];
+                    setShippingInfo({
+                        country_id: activeAddress.country_id,
+                        name: activeAddress.name,
+                        phone: activeAddress.phone,
+                        state: activeAddress.state,
+                        city: activeAddress.city,
+                        postal_code: activeAddress.postal_code,
+                        address_line1: activeAddress.address_line1,
+                        address_line2: activeAddress.address_line2,
+                    });
+                }
+            }
+        }
+    }, [shipping_addresses, isOpen]);
+
+
+    useEffect(() => {
+        if (isOpen) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('shipping-address', 'true');
+            window.history.pushState({}, '', url.toString());
+        }
+
+
+        return () => {
+            if (!isOpen) {
+                window.history.pushState(
+                    { fromModal: true },
+                    '',
+                    route('website.carts.index')
+                );
+            }
+
+            window.history.replaceState(
+                { fromModal: true },
+                '',
+                route('website.checkout.index')
+            );
+        }
+    }, [isOpen]);
+
+    if (!isOpen) {
+        return null;
+    }
+    return (
+        <>
+            {windowSize.width > 1024 ? (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    {/* Backdrop/Overlay */}
+                    <div
+                        className="fixed inset-0 transition-opacity duration-300 bg-black/30"
+                        onClick={() => onClose()}
+                    />
+
+                    {/* Modal Container */}
+                    <div className="relative z-10 w-full max-w-5xl p-6 pb-1 bg-white border rounded-md border-surface-1-light text-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark">
+                        <div className="p-6">
+                            {/* Header */}
+                            <div className="flex items-center justify-between mb-6">
+                                <h1 className="text-[20px] font-semibold text-main-text-light dark:text-main-text-dark">
+                                    {__('Shipping Address')}
+                                </h1>
+
+                                <button
+                                    onClick={onClose}
+                                    className="p-2 transition-colors text-main-text-light dark:text-main-text-dark hover:text-main-text-light/80 dark:hover:text-main-text-dark/80"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            <div className="flex flex-wrap items-center justify-start gap-4 mb-4">
+                                <p className="text-sm text-main-text-light dark:text-main-text-dark">
+                                    <span className="font-semibold">
+                                        {__('Default Shipping Address')}
+                                    </span>
+                                    <span className="mx-1 font-normal">
+                                        {' '}
+                                        ({__('Used for delivery at checkout.')})
+                                    </span>
+                                </p>
+                            </div>
+
+                            {/* Content */}
+                            <div className="mt-6 max-h-[80vh] overflow-y-auto pr-2">
+                                {shipping_addresses.length === 0 ? (
+                                    <EmptyShippingAddress
+                                        onClick={useProfileAddress}
+                                        processing={useProfileProcessing}
+                                        __={__}
+                                    />
+                                ) : (
+                                    <>
+                                        {/* Active Addresses */}
+                                        {shipping_addresses
+                                            .filter((addr) => addr.is_active)
+                                            .map((item, index) => (
+                                                <ShippingAddressItem
+                                                    key={item.id || index}
+                                                    item={item}
+                                                    onRemove={handleRemoveShippingAddress}
+                                                    onEdit={handleEditShippingAddress}
+                                                    onToggle={handleToggleShippingAddressStatus}
+                                                    toggleProcessing={toggleProcessing}
+                                                    isDropdownOpen={isDropdownOpen}
+                                                    setIsDropdownOpen={setIsDropdownOpen}
+                                                    deleteProcessing={deleteProcessing}
+                                                    selectedAddressId={selectedAddressId}
+                                                    onSelect={handleSelectAddress}
+                                                    __={__}
+                                                />
+                                            ))}
+
+                                        {/* Inactive Addresses */}
+                                        {shipping_addresses.filter((addr) => !addr.is_active)
+                                            .length > 0 && (
+                                                <div className="mt-8">
+                                                    <p className="mb-3 font-semibold text-main-text-light dark:text-main-text-dark">
+                                                        {__('Other Shipping Addresses')}
+                                                    </p>
+                                                    <div className="space-y-3">
+                                                        {shipping_addresses
+                                                            .filter((addr) => !addr.is_active)
+                                                            .map((item, index) => (
+                                                                <ShippingAddressItem
+                                                                    key={item.id || index}
+                                                                    item={item}
+                                                                    onRemove={
+                                                                        handleRemoveShippingAddress
+                                                                    }
+                                                                    onEdit={handleEditShippingAddress}
+                                                                    onToggle={
+                                                                        handleToggleShippingAddressStatus
+                                                                    }
+                                                                    toggleProcessing={toggleProcessing}
+                                                                    isDropdownOpen={isDropdownOpen}
+                                                                    setIsDropdownOpen={
+                                                                        setIsDropdownOpen
+                                                                    }
+                                                                    deleteProcessing={deleteProcessing}
+                                                                    selectedAddressId={selectedAddressId}
+                                                                    onSelect={handleSelectAddress}
+                                                                    __={__}
+                                                                />
+                                                            ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                    </>
+                                )}
+                            </div>
+
+                            {/* Action Bar */}
+                            <div className="flex flex-wrap items-center justify-end gap-4 mt-10">
+                                <PrimaryButton
+                                    Text={__('Add Address')}
+                                    Type={'button'}
+                                    Action={() => setIsCreateShippingAddressModalOpen(true)}
+                                    CustomClass={'w-[200px] !text-center'}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div className="fixed inset-0 z-50 bg-black">
+                    {/* Backdrop */}
+                    <div className="absolute inset-0 bg-black/70"></div>
+
+                    {/* Fullscreen slide-over */}
+                    <div className="relative z-10 flex h-[100dvh]  w-full flex-col overflow-y-auto border border-surface-1-light bg-backgroundLight text-main-text-light dark:border-surface-3-dark dark:bg-backgroundDark dark:text-main-text-dark">
+                        {/* Top Bar */}
+                        <div className="flex items-center justify-center px-4 py-3">
+                            <button
+                                onClick={() => onClose()}
+                                className="absolute p-1 text-black rounded-full left-4 dark:text-main-text-dark"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={1.5}
+                                    stroke="currentColor"
+                                    className="size-6"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+                                    />
+                                </svg>
+                            </button>
+
+                            <h2 className="mx-10 text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
+                                {__('Shipping Address')}
+                            </h2>
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 p-4 mb-20 space-y-6">
+                            {shipping_addresses.length === 0 ? (
+                                <EmptyShippingAddress
+                                    onClick={useProfileAddress}
+                                    processing={useProfileProcessing}
+                                    __={__}
+                                />
+                            ) : (
+                                <>
+                                    {/* Active Addresses */}
+                                    {shipping_addresses
+                                        .filter((addr) => addr.is_active)
+                                        .map((item, index) => (
+                                            <ShippingAddressItem
+                                                key={item.id || index}
+                                                item={item}
+                                                onRemove={handleRemoveShippingAddress}
+                                                onEdit={handleEditShippingAddress}
+                                                onToggle={handleToggleShippingAddressStatus}
+                                                toggleProcessing={toggleProcessing}
+                                                isDropdownOpen={isDropdownOpen}
+                                                setIsDropdownOpen={setIsDropdownOpen}
+                                                deleteProcessing={deleteProcessing}
+                                                selectedAddressId={selectedAddressId}
+                                                onSelect={handleSelectAddress}
+                                                __={__}
+                                            />
+                                        ))}
+
+                                    {/* Inactive Addresses */}
+                                    {shipping_addresses.filter((addr) => !addr.is_active).length >
+                                        0 && (
+                                            <div className="mt-8">
+                                                <p className="mb-3 font-semibold text-main-text-light dark:text-main-text-dark">
+                                                    {__('Other Shipping Addresses')}
+                                                </p>
+                                                <div className="space-y-3">
+                                                    {shipping_addresses
+                                                        .filter((addr) => !addr.is_active)
+                                                        .map((item, index) => (
+                                                            <ShippingAddressItem
+                                                                key={item.id || index}
+                                                                item={item}
+                                                                onRemove={handleRemoveShippingAddress}
+                                                                onEdit={handleEditShippingAddress}
+                                                                onToggle={
+                                                                    handleToggleShippingAddressStatus
+                                                                }
+                                                                toggleProcessing={toggleProcessing}
+                                                                isDropdownOpen={isDropdownOpen}
+                                                                setIsDropdownOpen={setIsDropdownOpen}
+                                                                deleteProcessing={deleteProcessing}
+                                                                selectedAddressId={selectedAddressId}
+                                                                onSelect={(id) => handleSelectAddress(id)}
+                                                                __={__}
+                                                            />
+                                                        ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                </>
+                            )}
+                        </div>
+
+                        {/* Action Bar */}
+                        <div className="flex flex-wrap items-center justify-end gap-4 px-4 mb-[4rem]">
+                            <PrimaryButton
+                                Text={__('Add Address')}
+                                Type={'button'}
+                                Action={() => setIsCreateShippingAddressModalOpen(true)}
+                                CustomClass={'w-full h-[40px] !text-center'}
+                            />
+                        </div>
+                    </div>
                 </div>
             )}
 
+            {/* Create Shipping Address Modal */}
+            {isCreateShippingAddressModalOpen && (
+                <>
+                    {createPortal(
+                        windowSize.width > 1024 ? (
+                            // PC VERSION
+                            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                                {/* Backdrop */}
+                                <div
+                                    className="fixed inset-0 transition-opacity duration-300 bg-black/30"
+                                    onClick={() => setIsCreateShippingAddressModalOpen(false)}
+                                />
 
-            {/* Place Order Button */}
-            <button
-                onClick={handlePlaceOrder}
-                disabled={processingOrder}
-                className="flex w-full justify-center items-center rounded-md bg-main-text-light  px-6 py-3.5 text-center text-md font-semibold text-main-text-dark shadow-lg transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
-            >
-                {processingOrder && (
+                                {/* Modal Card */}
+                                <div className="relative z-10 w-full max-w-5xl p-6 pb-1 bg-white border rounded-md border-surface-1-light text-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark">
 
-                    <Spinner />
+                                    <div className="p-6">
 
-                )}
-                <span>{__('Place Order')}</span>
-            </button>
 
-            {/* Secure Checkout Badge */}
-            <div className="flex items-center justify-center gap-2 mt-10 text-sm text-sub-text-light dark:text-sub-text-dark">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-5 h-5 text-green-500"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
-                    />
-                </svg>
-                <span className="font-medium">{__('Secure Checkout')}</span>
-            </div>
-        </div>
+                                        {/* Header */}
+                                        <div className="flex items-center justify-between pb-4">
+                                            <h2 className="text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
+                                                {__('Add Shipping Address')}
+                                            </h2>
+                                        </div>
+
+                                        {/* Content */}
+                                        <div className="mt-6 max-h-[80vh] overflow-y-auto pr-2">
+                                            <form
+                                                onSubmit={handleCreateShippingAddress}
+                                                className="mb-10 space-y-5"
+                                            >
+                                                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                                                    {/* Name */}
+                                                    <div>
+                                                        <WebInput
+                                                            Id={'name'}
+                                                            InputName={__('Name')}
+                                                            Error={errors.name}
+                                                            Name={'name'}
+                                                            Placeholder={__('Enter Full Name')}
+                                                            Type={'text'}
+                                                            Value={data.name}
+                                                            Action={(e) =>
+                                                                setData('name', e.target.value)
+                                                            }
+                                                            Required={true}
+                                                        />
+                                                    </div>
+
+                                                    {/* Phone */}
+                                                    <div>
+                                                        <WebInput
+                                                            Id={'phone'}
+                                                            InputName={__('Phone')}
+                                                            Error={errors.phone}
+                                                            Name={'phone'}
+                                                            Placeholder={__('Enter Phone')}
+                                                            Type={'text'}
+                                                            Value={data.phone}
+                                                            Action={(e) =>
+                                                                setData('phone', e.target.value)
+                                                            }
+                                                            Required={true}
+                                                        />
+                                                    </div>
+                                                    {/* Country */}
+                                                    <div>
+                                                        <WebSelectInput
+                                                            InputName={__('Country')}
+                                                            Id={'country_id'}
+                                                            Name={'country_id'}
+                                                            Value={data.country_id}
+                                                            Required={true}
+                                                            Action={(value) =>
+                                                                setData('country_id', value)
+                                                            }
+                                                            items={countries}
+                                                            itemKey={'name'}
+                                                            Error={errors.country_id}
+                                                            Placeholder={__('Select Country')}
+                                                            customPlaceHolder={true}
+                                                        />
+                                                    </div>
+
+                                                    {/* Address Line 1 */}
+                                                    <div className="col-span-2">
+                                                        <WebTextArea
+                                                            InputName={__('Address 1')}
+                                                            Id={'address_1'}
+                                                            Name={'address_1'}
+                                                            Error={errors.address_line1}
+                                                            Value={data.address_line1}
+                                                            Required={true}
+                                                            Placeholder={__('Enter Address 1')}
+                                                            Action={(e) =>
+                                                                setData('address_line1', e.target.value)
+                                                            }
+                                                            Rows={1}
+                                                        />
+                                                    </div>
+
+                                                    {/* Address Line 2 */}
+                                                    <div className="col-span-2">
+                                                        <WebTextArea
+                                                            InputName={__('Address 2')}
+                                                            Id={'address_2'}
+                                                            Name={'address_2'}
+                                                            Error={errors.address_line2}
+                                                            Placeholder={__('Enter Address 2')}
+                                                            Value={data.address_line2}
+                                                            Required={false}
+                                                            Action={(e) =>
+                                                                setData('address_line2', e.target.value)
+                                                            }
+                                                            Rows={1}
+                                                        />
+                                                    </div>
+
+                                                    {/* City and State */}
+                                                    <div>
+                                                        <WebInput
+                                                            Id={'City'}
+                                                            InputName={__('City')}
+                                                            Error={errors.city}
+                                                            Name={'city'}
+                                                            Placeholder={__('Enter City')}
+                                                            Type={'text'}
+                                                            Value={data.city}
+                                                            Action={(e) =>
+                                                                setData('city', e.target.value)
+                                                            }
+                                                            Required={true}
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <WebInput
+                                                            Id={'state'}
+                                                            InputName={__('State')}
+                                                            Error={errors.state}
+                                                            Name={'state'}
+                                                            Placeholder={__('Enter State')}
+                                                            Type={'text'}
+                                                            Value={data.state}
+                                                            Action={(e) =>
+                                                                setData('state', e.target.value)
+                                                            }
+                                                            Required={true}
+                                                        />
+                                                    </div>
+
+                                                    {/* Postal Code and Country ID */}
+                                                    <div>
+                                                        <WebInput
+                                                            Id={'postal_code'}
+                                                            InputName={__('Postal Code')}
+                                                            Error={errors.postal_code}
+                                                            Name={'postal_code'}
+                                                            Placeholder={__('Enter Postal Code')}
+                                                            Type={'text'}
+                                                            Value={data.postal_code}
+                                                            Action={(e) =>
+                                                                setData('postal_code', e.target.value)
+                                                            }
+                                                            Required={true}
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center justify-end gap-3">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            setIsCreateShippingAddressModalOpen(false)
+                                                        }
+                                                        className="h-[50px] w-[180px] rounded-md bg-surface-2-light text-main-text-light transition-all hover:bg-surface-3-light dark:bg-surface-3-dark dark:text-sub-text-dark dark:hover:bg-surface-3-dark/80"
+                                                    >
+                                                        {__('Cancel')}
+                                                    </button>
+
+                                                    <button
+                                                        type="submit"
+                                                        disabled={
+                                                            processing ||
+                                                            isCreateShippingAddressButtonDisabled
+                                                        }
+                                                        className={`text-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md bg-main-text-light font-semibold text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80 ${(processing || isCreateShippingAddressButtonDisabled) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
+                                                    >
+                                                        {processing && (
+                                                            <Spinner customSize={'size-5'} />
+                                                        )}
+                                                        {__('Save Changes')}
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            // MOBILE VERSION
+                            <div className="fixed inset-0 z-50 bg-black">
+                                {/* Backdrop */}
+                                <div className="absolute inset-0 bg-black/70"></div>
+
+                                {/* Fullscreen slide-over */}
+                                <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto border border-surface-1-light bg-backgroundLight text-main-text-light dark:border-surface-3-dark dark:bg-backgroundDark dark:text-main-text-dark">
+                                    {/* Top Bar */}
+                                    <div className="flex items-center justify-center px-4 py-3">
+                                        <button
+                                            onClick={() =>
+                                                setIsCreateShippingAddressModalOpen(false)
+                                            }
+                                            className="absolute p-1 text-black rounded-full left-4 dark:text-main-text-dark"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.5}
+                                                stroke="currentColor"
+                                                className="size-6"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+                                                />
+                                            </svg>
+                                        </button>
+
+                                        <h2 className="mx-10 text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
+                                            {__('Add Shipping Address')}
+                                        </h2>
+                                    </div>
+
+                                    {/* Content */}
+                                    <div className="flex-1 p-4 space-y-6">
+                                        <form
+                                            onSubmit={handleCreateShippingAddress}
+                                            className="mb-24 space-y-5"
+                                        >
+                                            {/* Name */}
+                                            <div>
+                                                <WebInput
+                                                    Id={'name'}
+                                                    InputName={__('Name')}
+                                                    Error={errors.name}
+                                                    Name={'name'}
+                                                    Placeholder={__('Enter Full Name')}
+                                                    Type={'text'}
+                                                    Value={data.name}
+                                                    Action={(e) => setData('name', e.target.value)}
+                                                    Required={true}
+                                                />
+                                            </div>
+
+                                            {/* Phone */}
+                                            <div>
+                                                <WebInput
+                                                    Id={'phone'}
+                                                    InputName={__('Phone')}
+                                                    Error={errors.phone}
+                                                    Name={'phone'}
+                                                    Placeholder={__('Enter Phone')}
+                                                    Type={'text'}
+                                                    Value={data.phone}
+                                                    Action={(e) => setData('phone', e.target.value)}
+                                                    Required={true}
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <WebSelectInput
+                                                    InputName={__('Country')}
+                                                    Id={'country_id'}
+                                                    Name={'country_id'}
+                                                    Value={data.country_id}
+                                                    Required={true}
+                                                    Action={(value) => setData('country_id', value)}
+                                                    items={countries}
+                                                    itemKey={'name'}
+                                                    Error={errors.country_id}
+                                                    Placeholder={__('Select Country')}
+                                                    customPlaceHolder={true}
+                                                />
+                                            </div>
+
+                                            {/* Address Line 1 */}
+                                            <div>
+                                                <WebTextArea
+                                                    InputName={__('Address 1')}
+                                                    Id={'address_1'}
+                                                    Name={'address_1'}
+                                                    Error={errors.address_line1}
+                                                    Value={data.address_line1}
+                                                    Placeholder={__('Enter Address 1')}
+                                                    Required={true}
+                                                    Action={(e) =>
+                                                        setData('address_line1', e.target.value)
+                                                    }
+                                                    Rows={1}
+                                                />
+                                            </div>
+
+                                            {/* Address Line 2 */}
+                                            <div>
+                                                <WebTextArea
+                                                    InputName={__('Address 2')}
+                                                    Id={'address_2'}
+                                                    Name={'address_2'}
+                                                    Error={errors.address_line2}
+                                                    Value={data.address_line2}
+                                                    Placeholder={__('Enter Address 2')}
+                                                    Required={false}
+                                                    Action={(e) =>
+                                                        setData('address_line2', e.target.value)
+                                                    }
+                                                    Rows={1}
+                                                />
+                                            </div>
+
+                                            {/* City and State */}
+                                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                                <div>
+                                                    <WebInput
+                                                        Id={'City'}
+                                                        InputName={__('City')}
+                                                        Error={errors.city}
+                                                        Name={'city'}
+                                                        Placeholder={__('Enter City')}
+                                                        Type={'text'}
+                                                        Value={data.city}
+                                                        Action={(e) =>
+                                                            setData('city', e.target.value)
+                                                        }
+                                                        Required={true}
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <WebInput
+                                                        Id={'state'}
+                                                        InputName={__('State')}
+                                                        Error={errors.state}
+                                                        Name={'state'}
+                                                        Placeholder={__('Enter State')}
+                                                        Type={'text'}
+                                                        Value={data.state}
+                                                        Action={(e) =>
+                                                            setData('state', e.target.value)
+                                                        }
+                                                        Required={true}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {/* Postal Code and Country ID */}
+                                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                                <div>
+                                                    <WebInput
+                                                        Id={'postal_code'}
+                                                        InputName={__('Postal Code')}
+                                                        Error={errors.postal_code}
+                                                        Name={'postal_code'}
+                                                        Placeholder={__('Enter Postal Code')}
+                                                        Type={'text'}
+                                                        Value={data.postal_code}
+                                                        Action={(e) =>
+                                                            setData('postal_code', e.target.value)
+                                                        }
+                                                        Required={true}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center justify-end gap-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        setIsCreateShippingAddressModalOpen(false)
+                                                    }
+                                                    className="h-[50px] w-[180px] rounded-md bg-surface-2-light text-main-text-light transition-all hover:bg-surface-3-light dark:bg-surface-3-dark dark:text-sub-text-dark dark:hover:bg-surface-3-dark/80"
+                                                >
+                                                    {__('Cancel')}
+                                                </button>
+
+                                                <button
+                                                    type="submit"
+                                                    disabled={
+                                                        processing ||
+                                                        isCreateShippingAddressButtonDisabled
+                                                    }
+                                                    className={`tetx-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md bg-black font-semibold text-white transition-all hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80 ${(processing || isCreateShippingAddressButtonDisabled) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
+                                                >
+                                                    {processing && (
+                                                        <Spinner customSize={'size-5'} />
+                                                    )}
+                                                    {__('Save Changes')}
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        ),
+                        document.body,
+                    )}
+                </>
+            )}
+
+            {/* Edit Shipping Address Modal */}
+            {isEditShippingAddressModalOpen && (
+                <>
+                    {createPortal(
+                        windowSize.width > 1024 ? (
+                            // PC VERSION
+                            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                                {/* Backdrop */}
+                                <div
+                                    className="fixed inset-0 transition-opacity duration-300 bg-black/30"
+                                    onClick={() => {
+                                        setIsEditShippingAddressModalOpen(false);
+                                        setData({
+                                            country_id: '',
+                                            name: '',
+                                            phone: '',
+                                            state: '',
+                                            city: '',
+                                            postal_code: '',
+                                            address_line1: '',
+                                            address_line2: '',
+                                        });
+                                    }}
+                                />
+
+                                {/* Modal Card */}
+                                <div className="relative z-10 w-full max-w-5xl p-6 pb-1 bg-white border rounded-md border-surface-1-light text-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark">
+
+                                    <div className='p-6'>
+                                        {/* Header */}
+                                        <div className="flex items-center justify-between pb-4">
+                                            <h2 className="text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
+                                                {__(' Edit Shipping Address')}
+                                            </h2>
+                                        </div>
+
+                                        {/* Content */}
+                                        <div className="mt-6 max-h-[80vh] overflow-y-auto pr-2">
+                                            <form
+                                                onSubmit={handleUpdateShippingAddress}
+                                                className="mb-10 space-y-5"
+                                            >
+                                                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                                                    {/* Name */}
+                                                    <div>
+                                                        <WebInput
+                                                            Id={'name'}
+                                                            InputName={__('Name')}
+                                                            Error={errors.name}
+                                                            Name={'name'}
+                                                            Placeholder={__('Enter Full Name')}
+                                                            Type={'text'}
+                                                            Value={data.name}
+                                                            Action={(e) =>
+                                                                setData('name', e.target.value)
+                                                            }
+                                                            Required={true}
+                                                        />
+                                                    </div>
+
+                                                    {/* Phone */}
+                                                    <div>
+                                                        <WebInput
+                                                            Id={'phone'}
+                                                            InputName={__('Phone')}
+                                                            Error={errors.phone}
+                                                            Name={'phone'}
+                                                            Placeholder={__('Enter Phone')}
+                                                            Type={'text'}
+                                                            Value={data.phone}
+                                                            Action={(e) =>
+                                                                setData('phone', e.target.value)
+                                                            }
+                                                            Required={true}
+                                                        />
+                                                    </div>
+                                                    {/* Country */}
+                                                    <div>
+                                                        <WebSelectInput
+                                                            InputName={__('Country')}
+                                                            Id={'country_id'}
+                                                            Name={'country_id'}
+                                                            Value={data.country_id}
+                                                            Required={true}
+                                                            Action={(value) =>
+                                                                setData('country_id', value)
+                                                            }
+                                                            items={countries}
+                                                            itemKey={'name'}
+                                                            Error={errors.country_id}
+                                                            Placeholder={__('Select Country')}
+                                                            customPlaceHolder={true}
+                                                        />
+                                                    </div>
+
+                                                    {/* Address Line 1 */}
+                                                    <div className="col-span-2">
+                                                        <WebTextArea
+                                                            InputName={__('Address 1')}
+                                                            Id={'address_1'}
+                                                            Name={'address_1'}
+                                                            Error={errors.address_line1}
+                                                            Value={data.address_line1}
+                                                            Required={true}
+                                                            Placeholder={__('Enter Address 1')}
+                                                            Action={(e) =>
+                                                                setData('address_line1', e.target.value)
+                                                            }
+                                                            Rows={1}
+                                                        />
+                                                    </div>
+
+                                                    {/* Address Line 2 */}
+                                                    <div className="col-span-2">
+                                                        <WebTextArea
+                                                            InputName={__('Address 2')}
+                                                            Id={'address_2'}
+                                                            Name={'address_2'}
+                                                            Error={errors.address_line2}
+                                                            Placeholder={__('Enter Address 2')}
+                                                            Value={data.address_line2}
+                                                            Required={false}
+                                                            Action={(e) =>
+                                                                setData('address_line2', e.target.value)
+                                                            }
+                                                            Rows={1}
+                                                        />
+                                                    </div>
+
+                                                    {/* City and State */}
+                                                    <div>
+                                                        <WebInput
+                                                            Id={'City'}
+                                                            InputName={__('City')}
+                                                            Error={errors.city}
+                                                            Name={'city'}
+                                                            Placeholder={__('Enter City')}
+                                                            Type={'text'}
+                                                            Value={data.city}
+                                                            Action={(e) =>
+                                                                setData('city', e.target.value)
+                                                            }
+                                                            Required={true}
+                                                        />
+                                                    </div>
+
+                                                    <div>
+                                                        <WebInput
+                                                            Id={'state'}
+                                                            InputName={__('State')}
+                                                            Error={errors.state}
+                                                            Name={'state'}
+                                                            Placeholder={__('Enter State')}
+                                                            Type={'text'}
+                                                            Value={data.state}
+                                                            Action={(e) =>
+                                                                setData('state', e.target.value)
+                                                            }
+                                                            Required={true}
+                                                        />
+                                                    </div>
+
+                                                    {/* Postal Code and Country ID */}
+                                                    <div>
+                                                        <WebInput
+                                                            Id={'postal_code'}
+                                                            InputName={__('Postal Code')}
+                                                            Error={errors.postal_code}
+                                                            Name={'postal_code'}
+                                                            Placeholder={__('Enter Postal Code')}
+                                                            Type={'text'}
+                                                            Value={data.postal_code}
+                                                            Action={(e) =>
+                                                                setData('postal_code', e.target.value)
+                                                            }
+                                                            Required={true}
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center justify-end gap-3">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setIsEditShippingAddressModalOpen(false);
+                                                            setData({
+                                                                country_id: '',
+                                                                name: '',
+                                                                phone: '',
+                                                                state: '',
+                                                                city: '',
+                                                                postal_code: '',
+                                                                address_line1: '',
+                                                                address_line2: '',
+                                                            });
+                                                        }}
+                                                        className="h-[50px] w-[180px] rounded-md bg-surface-2-light text-main-text-light transition-all hover:bg-surface-3-light dark:bg-surface-3-dark dark:text-sub-text-dark dark:hover:bg-surface-3-dark/80"
+                                                    >
+                                                        {__('Cancel')}
+                                                    </button>
+
+                                                    <button
+                                                        type="submit"
+                                                        disabled={
+                                                            processing ||
+                                                            isUpdateShippingAddressButtonDisabled
+                                                        }
+                                                        className={`text-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md bg-main-text-light font-semibold text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80 ${(processing || isUpdateShippingAddressButtonDisabled) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
+                                                    >
+                                                        {processing && (
+                                                            <Spinner customSize={'size-5'} />
+                                                        )}
+                                                        {__('Save Changes')}
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            // MOBILE VERSION
+                            <div className="fixed inset-0 z-50 bg-black">
+                                {/* Backdrop */}
+                                <div className="absolute inset-0 bg-black/70"></div>
+
+                                {/* Fullscreen slide-over */}
+                                <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto border border-surface-1-light bg-backgroundLight text-main-text-light dark:border-surface-3-dark dark:bg-backgroundDark dark:text-main-text-dark">
+                                    {/* Top Bar */}
+                                    <div className="flex items-center justify-center px-4 py-3">
+                                        <button
+                                            onClick={() => {
+                                                setIsEditShippingAddressModalOpen(false);
+                                                setData({
+                                                    country_id: '',
+                                                    name: '',
+                                                    phone: '',
+                                                    state: '',
+                                                    city: '',
+                                                    postal_code: '',
+                                                    address_line1: '',
+                                                    address_line2: '',
+                                                });
+                                            }}
+                                            className="absolute p-1 text-black rounded-full left-4 dark:text-main-text-dark"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.5}
+                                                stroke="currentColor"
+                                                className="size-6"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+                                                />
+                                            </svg>
+                                        </button>
+
+                                        <h2 className="mx-10 text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
+                                            {__('Edit Shipping Address')}
+                                        </h2>
+                                    </div>
+
+                                    {/* Content */}
+                                    <div className="flex-1 p-4 space-y-6">
+                                        <form
+                                            onSubmit={handleUpdateShippingAddress}
+                                            className="mb-24 space-y-5"
+                                        >
+                                            {/* Name */}
+                                            <div>
+                                                <WebInput
+                                                    Id={'name'}
+                                                    InputName={__('Name')}
+                                                    Error={errors.name}
+                                                    Name={'name'}
+                                                    Placeholder={__('Enter Full Name')}
+                                                    Type={'text'}
+                                                    Value={data.name}
+                                                    Action={(e) => setData('name', e.target.value)}
+                                                    Required={true}
+                                                />
+                                            </div>
+
+                                            {/* Phone */}
+                                            <div>
+                                                <WebInput
+                                                    Id={'phone'}
+                                                    InputName={__('Phone')}
+                                                    Error={errors.phone}
+                                                    Name={'phone'}
+                                                    Placeholder={__('Enter Phone')}
+                                                    Type={'text'}
+                                                    Value={data.phone}
+                                                    Action={(e) => setData('phone', e.target.value)}
+                                                    Required={true}
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <WebSelectInput
+                                                    InputName={__('Country')}
+                                                    Id={'country_id'}
+                                                    Name={'country_id'}
+                                                    Value={data.country_id}
+                                                    Required={true}
+                                                    Action={(value) => setData('country_id', value)}
+                                                    items={countries}
+                                                    itemKey={'name'}
+                                                    Error={errors.country_id}
+                                                    Placeholder={__('Select Country')}
+                                                    customPlaceHolder={true}
+                                                />
+                                            </div>
+
+                                            {/* Address Line 1 */}
+                                            <div>
+                                                <WebTextArea
+                                                    InputName={__('Address 1')}
+                                                    Id={'address_1'}
+                                                    Name={'address_1'}
+                                                    Error={errors.address_line1}
+                                                    Placeholder={__('Enter Address 1')}
+                                                    Value={data.address_line1}
+                                                    Required={true}
+                                                    Action={(e) =>
+                                                        setData('address_line1', e.target.value)
+                                                    }
+                                                    Rows={1}
+                                                />
+                                            </div>
+
+                                            {/* Address Line 2 */}
+                                            <div>
+                                                <WebTextArea
+                                                    InputName={__('Address 2')}
+                                                    Id={'address_2'}
+                                                    Name={'address_2'}
+                                                    Error={errors.address_line2}
+                                                    Value={data.address_line2}
+                                                    Placeholder={__('Enter Address 2')}
+                                                    Required={false}
+                                                    Action={(e) =>
+                                                        setData('address_line2', e.target.value)
+                                                    }
+                                                    Rows={1}
+                                                />
+                                            </div>
+
+                                            {/* City and State */}
+                                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                                <div>
+                                                    <WebInput
+                                                        Id={'City'}
+                                                        InputName={__('City')}
+                                                        Error={errors.city}
+                                                        Name={'city'}
+                                                        Placeholder={__('Enter City')}
+                                                        Type={'text'}
+                                                        Value={data.city}
+                                                        Action={(e) =>
+                                                            setData('city', e.target.value)
+                                                        }
+                                                        Required={true}
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <WebInput
+                                                        Id={'state'}
+                                                        InputName={__('State')}
+                                                        Error={errors.state}
+                                                        Name={'state'}
+                                                        Placeholder={__('Enter State')}
+                                                        Type={'text'}
+                                                        Value={data.state}
+                                                        Action={(e) =>
+                                                            setData('state', e.target.value)
+                                                        }
+                                                        Required={true}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {/* Postal Code and Country ID */}
+                                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                                <div>
+                                                    <WebInput
+                                                        Id={'postal_code'}
+                                                        InputName={__('Postal Code')}
+                                                        Error={errors.postal_code}
+                                                        Name={'postal_code'}
+                                                        Placeholder={__('Enter Postal Code')}
+                                                        Type={'text'}
+                                                        Value={data.postal_code}
+                                                        Action={(e) =>
+                                                            setData('postal_code', e.target.value)
+                                                        }
+                                                        Required={true}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center justify-end gap-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setIsEditShippingAddressModalOpen(false);
+                                                        setData({
+                                                            country_id: '',
+                                                            name: '',
+                                                            phone: '',
+                                                            state: '',
+                                                            city: '',
+                                                            postal_code: '',
+                                                            address_line1: '',
+                                                            address_line2: '',
+                                                        });
+                                                    }}
+                                                    className="h-[50px] w-[180px] rounded-md bg-surface-2-light text-main-text-light transition-all hover:bg-surface-3-light dark:bg-surface-3-dark dark:text-sub-text-dark dark:hover:bg-surface-3-dark/80"
+                                                >
+                                                    {__('Cancel')}
+                                                </button>
+
+                                                <button
+                                                    type="submit"
+                                                    disabled={
+                                                        processing ||
+                                                        isUpdateShippingAddressButtonDisabled
+                                                    }
+                                                    className={`tetx-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md bg-black font-semibold text-white transition-all hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80 ${(processing || isUpdateShippingAddressButtonDisabled) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
+                                                >
+                                                    {processing && (
+                                                        <Spinner customSize={'size-5'} />
+                                                    )}
+                                                    {__('Save Changes')}
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        ),
+                        document.body,
+                    )}
+                </>
+            )}
+        </>
     );
 }
 
-// Social Message Buttons
-function SocialMessageButtons({ user, meta_usernames, __ }) {
+
+
+// Secondary Payment Option Select modal
+function SecondaryPaymentModal({
+    isOpen,
+    onClose,
+    availablePoints,
+    totalAmount,
+    remainingAmount,
+    onSelectPayment,
+    selectedPayment,
+    currency,
+    handlePlace,
+    windowSize,
+    processingOrder,
+    __
+}) {
+    if (!isOpen) return null;
+
+    const paymentOptions = [
+        {
+            id: 'crypto',
+            name: __('Crypto Payment'),
+            icon: <Bitcoin />,
+            iconBg: 'bg-[#EE7B1A]',
+            description: __('Network fees may apply'),
+        },
+        {
+            id: 'bank_transfer',
+            name: __('Direct Bank Transfer'),
+            icon: <Landmark />,
+            iconBg: 'bg-[#00469B]',
+            description: __('Manual verification required'),
+        },
+    ];
+
+
+    // // Handle browser/mobile back button to close modals
+    useEffect(() => {
+        const handlePopState = (e) => {
+            if (isOpen) {
+                onClose();
+                return;
+            }
+        };
+
+        const preventInertiaNavigation = (event) => {
+            const pathname = event.detail?.visit?.url?.pathname || '';
+            if (pathname.includes("/shipping-addresses") || pathname.includes('/shipping-address-status-toggle')) {
+                return;
+            }
+
+            if (isOpen) {
+                event.preventDefault();
+            }
+        };
+        window.addEventListener('popstate', handlePopState);
+        const removeRouterEvent = router.on('before', preventInertiaNavigation);
+
+        // Cleanup
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+            if (removeRouterEvent) removeRouterEvent();
+        };
+    }, [isOpen]);
+
+
+    useEffect(() => {
+        if (isOpen) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('secondary-payment', 'true');
+            window.history.pushState({}, '', url.toString());
+        }
+
+
+        return () => {
+            if (!isOpen) {
+                window.history.pushState(
+                    { fromModal: true },
+                    '',
+                    route('website.carts.index')
+                );
+            }
+
+            window.history.replaceState(
+                { fromModal: true },
+                '',
+                route('website.checkout.index')
+            );
+        }
+    }, [isOpen]);
+
     return (
-        <div className="p-4 bg-white border border-gray-200 rounded-md dark:border-surface-3-dark dark:bg-surface-1-dark">
-            <div className="flex flex-col w-full gap-3">
-                {/* Instagram Button */}
-                <a
-                    href={`https://ig.me/m/${meta_usernames?.ig_username}?ref=user_id=${user?.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group relative flex items-center justify-center gap-2
-                            px-5 py-3 min-h-[44px]
-                            text-sm font-semibold text-white
-                            rounded-md
-                            bg-gradient-to-r
-                            from-[#405DE6]
-                            via-[#C13584]
-                            to-[#F56040]
-                            transition-all duration-300
-                            hover:scale-[1.03]
-                            active:scale-[0.97]
-                            focus:outline-none"
-                >
+        <>
+            {createPortal(
+                windowSize.width > 1024 ? (
+                    // PC VERSION
+                    <div className="fixed inset-0 z-50 flex items-center justify-center">
+                        {/* Backdrop */}
+                        <div
+                            className="fixed inset-0 transition-opacity duration-300 bg-black/30"
+                            onClick={onClose}
+                        />
 
+                        {/* Modal Card */}
+                        <div className="relative z-10 w-full max-w-5xl p-6 pb-1 bg-white border rounded-md border-surface-3-light text-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark">
+                            {/* Header */}
+                            <div className='p-6'>
+                                <div className="flex items-center justify-between">
+                                    <h2 className="mb-4 text-[20px] font-semibold text-main-text-light dark:text-main-text-dark">
+                                        {__('Select Secondary Payment')}
+                                    </h2>
 
-                    {/* Icon */}
-                    <svg
-                        className="relative flex-shrink-0 w-4 h-4"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                    >
-                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
-                    </svg>
+                                    <button
+                                        onClick={onClose}
+                                        className="p-2 transition-colors text-main-text-light dark:text-main-text-dark hover:text-main-text-light/80 dark:hover:text-main-text-dark/80"
+                                    >
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                </div>
 
-                    {/* Text - Responsive */}
-                    <span className="relative text-xs sm:text-sm">
-                        {__('Message us on Instagram')}
-                    </span>
-                </a>
+                                {/* Content */}
+                                <div className="mt-6 max-h-[80vh] overflow-y-auto pr-2">
+                                    <div className="mb-10 space-y-6">
+                                        {/* Points Usage Info */}
+                                        <div className="p-4 border rounded-md border-surface-3-light bg-backgroundLight dark:bg-surface-3-dark dark:border-surface-3-dark">
+                                            <div className="flex items-start gap-3">
+                                                <div className="flex-shrink-0 mt-0.5">
+                                                    <span className="text-xl">
+                                                        <Star />
+                                                    </span>
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className="text-sm font-medium text-main-text-light dark:text-main-text-dark">
+                                                        {__('Your Points Will Be Applied')}
+                                                    </h3>
+                                                    <p className="mt-1 text-sm text-main-text-light dark:text-main-text-dark">
+                                                        <span className="font-medium text-blue-600 dark:text-blue-400">
+                                                            {availablePoints} {__('points')}
+                                                        </span>{' '}
+                                                        {__('will be deducted from your account. You need to pay the remaining amount using a secondary payment method.')}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
 
-                {/* Facebook Button */}
-                <a
-                    href={`https://m.me/${meta_usernames?.fb_page_username}?ref=user_id=${user?.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group relative flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-white bg-blue-600 rounded-md overflow-hidden transition-all duration-300 hover:shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.98] min-h-[44px]"
-                >
+                                        {/* Payment Breakdown */}
+                                        <div className="p-4 space-y-3 border rounded-md border-surface-3-light bg-backgroundLight dark:bg-surface-3-dark dark:border-surface-3-dark">
+                                            <div className="flex items-center justify-between text-sm">
+                                                <span className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+                                                    {__('Total Amount')}
+                                                </span>
+                                                <span className="font-semibold text-[18px] text-main-text-light dark:text-main-text-dark">
+                                                    {currency?.symbol}{totalAmount}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center justify-between text-sm">
+                                                <span className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+                                                    {__('Points Discount')}
+                                                </span>
+                                                <span className="font-semibold text-[18px] text-main-text-light dark:text-main-text-dark">
+                                                    -{currency?.symbol}{(totalAmount - remainingAmount).toFixed(2)}
+                                                </span>
+                                            </div>
+                                            <div className="pt-3 border-t border-surface-2-light dark:border-surface-3-dark">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+                                                        {__('Remaining to Pay')}
+                                                    </span>
+                                                    <span className="font-semibold text-[18px] text-main-text-light dark:text-main-text-dark">
+                                                        {currency?.symbol}{remainingAmount}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
 
-                    {/* Icon */}
-                    <svg
-                        className="relative flex-shrink-0 w-4 h-4"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                    >
-                        <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047v-2.66c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.971h-1.513c-1.491 0-1.956.93-1.956 1.886v2.264h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z" />
-                    </svg>
+                                        {/* Payment Options */}
+                                        <div className="space-y-4">
+                                            <label className="block text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+                                                {__('Choose Payment Method')}
+                                            </label>
 
-                    {/* Text - Responsive */}
-                    <span className="relative text-xs sm:text-sm">
-                        {__('Message us on Facebook')}
-                    </span>
-                </a>
-            </div>
-        </div>
+                                            <div className="space-y-3">
+                                                {paymentOptions.map((option) => (
+                                                    <label
+                                                        key={option.id}
+                                                        className={`flex cursor-pointer items-center gap-3 rounded-md px-4 py-3 transition ${selectedPayment === option.id
+                                                            ? 'bg-[#eaeaea] dark:bg-surface-2-dark'
+                                                            : 'dark:hover:bg-surface-2-dark lg:hover:bg-[#eaeaea]'
+                                                            }`}
+                                                    >
+                                                        <input
+                                                            type="radio"
+                                                            name="payment_method"
+                                                            value="crypto"
+                                                            checked={selectedPayment === option.id}
+                                                            onChange={(e) => onSelectPayment(option.id)}
+                                                            className="sr-only peer"
+                                                        />
+
+                                                        {/* outer circle */}
+                                                        <span className="flex items-center justify-center w-5 h-5 border border-black rounded-full">
+                                                            {/* inner white space */}
+                                                            <span className="flex items-center justify-center w-4 h-4 bg-white rounded-full">
+                                                                {/* black dot */}
+                                                                {selectedPayment === option.id && (
+                                                                    <span className="w-3 h-3 bg-black rounded-full" />
+                                                                )}
+                                                            </span>
+                                                        </span>
+
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={`flex items-center ${option.iconBg} justify-center text-center rounded-full  p-2 text-main-text-dark`}>
+                                                                <span className="w-6 h-6">{option.icon}</span>
+                                                            </div>
+
+                                                            <div>
+                                                                <p className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
+                                                                    {__(option.name)}{' '}
+                                                                    <span className="text-[14px] font-normal">
+                                                                        ({__(option.description)})
+                                                                    </span>
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-end gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={onClose}
+                                                className="h-[50px] w-[180px] rounded-md bg-surface-2-light text-main-text-light transition-all hover:bg-surface-3-light dark:bg-surface-3-dark dark:text-sub-text-dark dark:hover:bg-surface-3-dark/80"
+                                            >
+                                                {__('Cancel')}
+                                            </button>
+
+                                            {selectedPayment && (
+                                                <button
+                                                    type="button"
+                                                    onClick={handlePlace}
+                                                    className="text-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
+                                                >
+                                                    {processingOrder ? (
+                                                        <div className="flex items-center justify-center gap-2">
+                                                            <Spinner customSize={'size-5'} />
+                                                            <span>{__('Processing...')}</span>
+                                                        </div>
+                                                    ) : (
+                                                        __('Confirm & Pay')
+                                                    )}
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    // MOBILE VERSION
+                    <div className="fixed inset-0 z-50 bg-black">
+                        {/* Backdrop */}
+                        <div className="absolute inset-0 bg-black/70"></div>
+
+                        {/* Fullscreen slide-over */}
+                        <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-white border rounded-md border-surface-3-light text-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark">
+                            {/* Top Bar */}
+                            <div className="flex items-center justify-center px-4 py-3">
+                                <button
+                                    onClick={onClose}
+                                    className="absolute p-1 rounded-full left-4 text-main-text-light dark:text-main-text-dark"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth={1.5}
+                                        stroke="currentColor"
+                                        className="size-6"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+                                        />
+                                    </svg>
+                                </button>
+
+                                <h2 className="mx-10 text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
+                                    {__('Select Secondary Payment')}
+                                </h2>
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1 p-4 space-y-6">
+                                <div className="mb-24 space-y-6">
+                                    {/* Points Usage Info */}
+                                    <div className="p-4 border rounded-md border-surface-3-light bg-backgroundLight dark:bg-surface-3-dark dark:border-surface-3-dark">
+                                        <div className="flex items-start gap-3">
+                                            <div className="flex-shrink-0 mt-0.5">
+                                                <span className="text-xl">
+                                                    <Star />
+                                                </span>
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="text-sm font-medium text-main-text-light dark:text-main-text-dark">
+                                                    {__('Your Points Will Be Applied')}
+                                                </h3>
+                                                <p className="mt-1 text-sm text-main-text-light dark:text-main-text-dark">
+                                                    <span className="font-medium text-blue-600 dark:text-blue-400">
+                                                        {availablePoints} {__('points')}
+                                                    </span>{' '}
+                                                    {__('will be deducted from your account. You need to pay the remaining amount using a secondary payment method.')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Payment Breakdown */}
+                                    <div className="p-4 space-y-3 border rounded-md border-surface-3-light bg-backgroundLight dark:bg-surface-3-dark dark:border-surface-3-dark">
+                                        <div className="flex items-center justify-between text-sm">
+                                            <span className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+                                                {__('Total Amount')}
+                                            </span>
+                                            <span className="font-semibold text-[18px] text-main-text-light dark:text-main-text-dark">
+                                                {currency?.symbol}{totalAmount}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between text-sm">
+                                            <span className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+                                                {__('Points Discount')}
+                                            </span>
+                                            <span className="font-semibold text-[18px] text-main-text-light dark:text-main-text-dark">
+                                                -{currency?.symbol}{(totalAmount - remainingAmount).toFixed(2)}
+                                            </span>
+                                        </div>
+                                        <div className="pt-3 border-t border-surface-2-light dark:border-surface-3-dark">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+                                                    {__('Remaining to Pay')}
+                                                </span>
+                                                <span className="font-semibold text-[18px] text-main-text-light dark:text-main-text-dark">
+                                                    {currency?.symbol}{remainingAmount}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Payment Options */}
+                                    <div className="space-y-4">
+                                        <label className="block text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+                                            {__('Choose Payment Method')}
+                                        </label>
+
+                                        <div className="space-y-3">
+                                            {paymentOptions.map((option) => (
+                                                <label
+                                                    key={option.id}
+                                                    className={`flex cursor-pointer items-center gap-3 rounded-md px-4 py-3 transition ${selectedPayment === option.id
+                                                        ? 'bg-[#eaeaea] dark:bg-surface-2-dark'
+                                                        : ''
+                                                        }`}
+                                                >
+                                                    <input
+                                                        type="radio"
+                                                        name="payment_method"
+                                                        value="crypto"
+                                                        checked={selectedPayment === option.id}
+                                                        onChange={(e) => onSelectPayment(option.id)}
+                                                        className="sr-only peer"
+                                                    />
+
+                                                    {/* outer circle */}
+                                                    <span className="flex items-center justify-center w-5 h-5 border border-black rounded-full">
+                                                        {/* inner white space */}
+                                                        <span className="flex items-center justify-center w-4 h-4 bg-white rounded-full">
+                                                            {/* black dot */}
+                                                            {selectedPayment === option.id && (
+                                                                <span className="w-3 h-3 bg-black rounded-full" />
+                                                            )}
+                                                        </span>
+                                                    </span>
+
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`flex items-center ${option.iconBg} justify-center text-center rounded-full  p-2 text-main-text-dark`}>
+                                                            <span className="w-6 h-6">{option.icon}</span>
+                                                        </div>
+
+                                                        <div>
+                                                            <p className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
+                                                                {__(option.name)}{' '}
+                                                                <span className="text-[14px] font-normal">
+                                                                    ({__(option.description)})
+                                                                </span>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-end gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={onClose}
+                                            className="h-[50px] w-[180px] rounded-md bg-surface-2-light text-main-text-light transition-all hover:bg-surface-3-light dark:bg-surface-3-dark dark:text-sub-text-dark dark:hover:bg-surface-3-dark/80"
+                                        >
+                                            {__('Cancel')}
+                                        </button>
+
+                                        {selectedPayment && (
+                                            <button
+                                                type="button"
+                                                onClick={handlePlace}
+                                                className="text-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
+                                            >
+                                                {processingOrder ? (
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        <Spinner customSize={'size-5'} />
+                                                        <span>{__('Processing...')}</span>
+                                                    </div>
+                                                ) : (
+                                                    __('Confirm & Pay')
+                                                )}
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ),
+                document.body,
+            )}
+        </>
     );
 }
+
+
+

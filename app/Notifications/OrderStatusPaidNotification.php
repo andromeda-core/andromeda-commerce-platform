@@ -45,12 +45,9 @@ class OrderStatusPaidNotification extends Notification implements ShouldQueue
             ->subject('Payment Received – Thank You for Your Order')
             ->greeting('Hello '.$notifiable->name.',')
             ->line('Thank you for your payment! We’ve successfully received your payment for your order.')
-            ->line('**Order Number:** '.$this->order->order_no);
-
-        if ($this->order->payment_method !== 'points') {
-            $mail->line('**Amount:** '.number_format($this->order->amount, 2).' '.($this->currency->name ?? 'USD'));
-
-        }
+            ->line('**Order Number:** '.$this->order->order_no)
+            ->line('**Remeaning Amount:** '.number_format($this->order->amount, 2).' '.($this->currency->name ?? 'USD'))
+            ->line('**Full Amount:** '.number_format($this->order->full_amount, 2).' '.($this->currency->name ?? 'USD'));
 
         $mail->line('**Current Status:**  Paid')
             ->line('**Payment Method:** '.(
