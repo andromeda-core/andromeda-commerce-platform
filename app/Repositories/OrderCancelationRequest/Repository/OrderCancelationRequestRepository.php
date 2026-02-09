@@ -99,7 +99,7 @@ class OrderCancelationRequestRepository implements IOrderCancelationRequestRepos
 
             $user->notify(new OrderCancellationRequestSubmitted($order));
 
-            NotifyAdminOrderCancelationRequestCreated::dispatch($order);
+            NotifyAdminOrderCancelationRequestCreated::dispatch($order, $cancelationRequest);
 
             $meta_setting = Cache::get('meta_setting');
             $user_meta_contacts = $order->customer->user->metaContacts;

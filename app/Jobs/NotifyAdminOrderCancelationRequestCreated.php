@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Order;
+use App\Models\OrderCancelationRequest;
 use App\Models\User;
 use App\Notifications\OrderCancellationRequestedForAdmin;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -20,6 +21,7 @@ class NotifyAdminOrderCancelationRequestCreated implements ShouldQueue
 
     public function __construct(
         private Order $order,
+        private OrderCancelationRequest $cancelationRequest
     ) {}
 
     public function handle(): void
@@ -31,7 +33,7 @@ class NotifyAdminOrderCancelationRequestCreated implements ShouldQueue
 
         if ($admins->isNotEmpty()) {
             $admins->each(function ($admin) {
-                $admin->notify(new OrderCancellationRequestedForAdmin($this->order));
+                $admin->notify(new OrderCancellationRequestedForAdmin($this->order, $this->cancelationRequest));
             });
 
         }

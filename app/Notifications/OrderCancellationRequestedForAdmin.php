@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Order;
+use App\Models\OrderCancelationRequest;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -13,7 +14,8 @@ class OrderCancellationRequestedForAdmin extends Notification implements ShouldQ
     use Queueable;
 
     public function __construct(
-        private Order $order
+        private Order $order,
+        private OrderCancelationRequest $cancelationRequest
     ) {}
 
     public function via(object $notifiable): array
@@ -32,7 +34,7 @@ class OrderCancellationRequestedForAdmin extends Notification implements ShouldQ
             ->line('Please review the cancellation request and take the necessary action.')
             ->action(
                 'Review Cancellation Request',
-                route('dashboard.order-cancelation-requests.edit', $this->order->id)
+                route('dashboard.order-cancelation-requests.edit', $this->cancelationRequest->id)
             )
             ->line('Thank you.');
     }
