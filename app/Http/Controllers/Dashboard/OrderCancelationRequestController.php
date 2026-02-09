@@ -40,6 +40,10 @@ class OrderCancelationRequestController extends Controller implements HasMiddlew
 
         $orderCancelationRequest = $this->orderCancelationRequest->getSingleRequest($id);
 
+        if (empty($orderCancelationRequest)) {
+            return to_route('dashboard.order-cancelation-requests.index')->with('error', 'Request Not Found');
+        }
+
         return Inertia::render('Dashboard/OrderCancelationRequest/edit', compact('orderCancelationRequest'));
     }
 
