@@ -94,6 +94,10 @@ class OrderController extends Controller implements HasMiddleware
             return back()->with('info', 'Order Refund Request Exists And This Order Cannot Be Edited');
         }
 
+        if ($order->cancelationRequest()->exists()) {
+            return back()->with('info', 'Order Cancelation Request Exists And This Order Cannot Be Edited');
+        }
+
         if ($order->status === 'delivered') {
             return back()->with('error', 'Already Completed Orders Cannot Be Edited');
         }

@@ -1477,12 +1477,11 @@ class PostRepository implements IPostRepository
     public function hashtagResults(Request $request, ?string $hashtag, array $preferences = [])
     {
         try {
-
-            $text = $preferences['text'] ?? true;
-            $images = $preferences['images'] ?? true;
-            $videos = $preferences['videos'] ?? true;
-            $show_posts = $preferences['show_posts'] ?? true;
-            $show_products = $preferences['show_products'] ?? true;
+            // $text = $preferences['text'] ?? true;
+            // $images = $preferences['images'] ?? true;
+            // $videos = $preferences['videos'] ?? true;
+            // $show_posts = $preferences['show_posts'] ?? true;
+            // $show_products = $preferences['show_products'] ?? true;
 
             $page = $request->input('page', 1);
             $perPage = 10;
@@ -1494,153 +1493,154 @@ class PostRepository implements IPostRepository
                 ],
             ];
 
-            if ($show_posts) {
-                $posts = $this->post
-                    ->where('tag', $hashtag)
-                    ->where('status', true)
-                    // its For restricting The Text Only Posts -> Not needed Now
-                    // ->where(function ($sub) {
-                    //     $sub->whereRaw('JSON_LENGTH(images) > 0')
-                    //         ->orWhereRaw('JSON_LENGTH(videos) > 0');
-                    // })
-                    ->where(function ($q) use ($images, $videos, $text) {
-                        if ($text) {
+            // if ($show_posts) {
 
-                            $q->orWhere(function ($sub) {
-                                $sub->whereNull('images')
-                                    ->whereNull('videos');
-                            });
-                        }
+            // }
+            $posts = $this->post
+                ->where('tag', $hashtag)
+                ->where('status', true)
+                   // its For restricting The Text Only Posts -> Not needed Now
+                   // ->where(function ($sub) {
+                   //     $sub->whereRaw('JSON_LENGTH(images) > 0')
+                   //         ->orWhereRaw('JSON_LENGTH(videos) > 0');
+                   // })
+                // ->where(function ($q) use ($images, $videos, $text) {
+                //     if ($text) {
 
-                        if ($images) {
+                //         $q->orWhere(function ($sub) {
+                //             $sub->whereNull('images')
+                //                 ->whereNull('videos');
+                //         });
+                //     }
 
-                            $q->orWhere(function ($sub) {
-                                $sub->whereNotNull('images')
-                                    ->whereNull('videos');
-                            });
-                        }
+                //     if ($images) {
 
-                        if ($videos) {
+                //         $q->orWhere(function ($sub) {
+                //             $sub->whereNotNull('images')
+                //                 ->whereNull('videos');
+                //         });
+                //     }
 
-                            $q->orWhere(function ($sub) {
-                                $sub->whereNotNull('videos');
-                            });
-                        }
-                    })
-                    ->with(['floor', 'user'])
-                    ->latest()
-                    ->forPage($page, $perPage)
-                    ->get()
-                    ->map(function ($post) {
-                        return [
-                            'id' => $post->id,
-                            'title' => Str::length($post->title) > 30 ? Str::limit($post->title, 30, '...') : $post->title,
-                            'slug' => $post->slug,
-                            'location_name' => $post->location_name,
-                            'latitude' => $post->latitude,
-                            'longitude' => $post->longitude,
-                            'image' => $post->post_image_urls && count($post->post_image_urls) > 0 ? $post->post_image_urls[0] : null,
-                            'video_thumbnail' => $post->post_video_urls && count($post->post_video_urls) > 0 ? $post->post_video_urls[0]['thumbnail_url'] : null,
-                            'content' => $post->content,
-                            'tag' => $post->tag,
-                            'floor' => $post?->floor?->name,
-                            'created_at' => $post->created_at->format('Y-m-d g:i A '),
-                            'timestamp' => $post->created_at->timestamp,
-                            'type' => 'posts',
-                        ];
-                    });
+                //     if ($videos) {
 
-                $data['posts'] = $posts;
-                $hasMore = $hasMore || ($posts->count() === $perPage);
-            }
+                //         $q->orWhere(function ($sub) {
+                //             $sub->whereNotNull('videos');
+                //         });
+                //     }
+                // })
+                ->with(['floor', 'user'])
+                ->latest()
+                ->forPage($page, $perPage)
+                ->get()
+                ->map(function ($post) {
+                    return [
+                        'id' => $post->id,
+                        'title' => Str::length($post->title) > 30 ? Str::limit($post->title, 30, '...') : $post->title,
+                        'slug' => $post->slug,
+                        'location_name' => $post->location_name,
+                        'latitude' => $post->latitude,
+                        'longitude' => $post->longitude,
+                        'image' => $post->post_image_urls && count($post->post_image_urls) > 0 ? $post->post_image_urls[0] : null,
+                        'video_thumbnail' => $post->post_video_urls && count($post->post_video_urls) > 0 ? $post->post_video_urls[0]['thumbnail_url'] : null,
+                        'content' => $post->content,
+                        'tag' => $post->tag,
+                        'floor' => $post?->floor?->name,
+                        'created_at' => $post->created_at->format('Y-m-d g:i A '),
+                        'timestamp' => $post->created_at->timestamp,
+                        'type' => 'posts',
+                    ];
+                });
 
-            if ($show_products) {
-                $smartphones = $this->smartphone
-                    ->where(function ($q) use ($images, $videos, $text) {
-                        if ($text) {
+            $data['posts'] = $posts;
+            $hasMore = $hasMore || ($posts->count() === $perPage);
 
-                            $q->orWhere(function ($sub) {
-                                $sub->whereNull('images')
-                                    ->whereNull('videos');
-                            });
-                        }
+            // if ($show_products) {
 
-                        if ($images) {
+            // }
 
-                            $q->orWhere(function ($sub) {
-                                $sub->whereNotNull('images')
-                                    ->whereNull('videos');
-                            });
-                        }
+            $smartphones = $this->smartphone
+                // ->where(function ($q) use ($images, $videos, $text) {
+                //     if ($text) {
 
-                        if ($videos) {
+                //         $q->orWhere(function ($sub) {
+                //             $sub->whereNull('images')
+                //                 ->whereNull('videos');
+                //         });
+                //     }
 
-                            $q->orWhere(function ($sub) {
-                                $sub->whereNotNull('videos');
-                            });
-                        }
-                    })
-                    ->where('tag', $hashtag)
-                    ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug'])
-                    ->withCount([
-                        'inventory_items' => function ($query) {
-                            $query->where('status', 'in_stock');
-                        },
-                    ])
+                //     if ($images) {
 
-                    ->whereHas('selling_info')
-                    ->whereNotNull('slug')
-                    ->latest()
-                    ->forPage($page, $perPage)
-                    ->get()
-                    ->map(function ($smartphone) {
-                        return [
-                            'id' => $smartphone->id,
-                            'name' => $smartphone->model_searchable_name,
-                            'capacity' => $smartphone->capacity->name,
-                            'image' => $smartphone->smartphone_image_urls && count($smartphone->smartphone_image_urls) > 0 ? $smartphone->smartphone_image_urls[0] : null,
-                            'video_thumbnail' => $smartphone->smartphone_video_urls && count($smartphone->smartphone_video_urls) > 0 ? $smartphone->smartphone_video_urls[0]['thumbnail_url'] : null,
-                            'location_name' => $smartphone->location_name,
-                            'latitude' => $smartphone->latitude,
-                            'longitude' => $smartphone->longitude,
-                            'colors' => $smartphone->colors,
-                            'upc' => $smartphone->upc,
-                            'floor' => $smartphone->floor,
-                            'selling_info' => $smartphone->selling_info,
-                            'inventory_items_count' => $smartphone->inventory_items_count,
-                            'country' => $smartphone?->country,
-                            'condition' => $smartphone?->condition,
-                            'delivery_days' => $smartphone?->delivery_days,
-                            'courier_company' => $smartphone?->courier_company,
-                            'return_policy' => $smartphone?->return_policy,
-                            'shipping_policy' => $smartphone?->shipping_policy,
-                            'content' => $smartphone->content,
-                            'slug' => $smartphone->slug,
-                            'addons' => $smartphone?->addons,
-                            'tag' => $smartphone->tag,
-                            'type' => 'smartphones',
-                            'created_at' => $smartphone->created_at->format('Y-m-d g:i A '),
-                            'timestamp' => $smartphone->created_at->timestamp,
-                            'added_at' => $smartphone->added_at,
-                            'created_at_time' => $smartphone->created_at_time,
-                            'product_details' => $smartphone->product_details,
+                //         $q->orWhere(function ($sub) {
+                //             $sub->whereNotNull('images')
+                //                 ->whereNull('videos');
+                //         });
+                //     }
 
-                        ];
-                    });
+                //     if ($videos) {
 
-                $hasMore = $hasMore || ($smartphones->count() === $perPage);
-                $data['products'] = [
-                    'smartphones' => $smartphones,
-                ];
-            }
+                //         $q->orWhere(function ($sub) {
+                //             $sub->whereNotNull('videos');
+                //         });
+                //     }
+                // })
+                ->where('tag', $hashtag)
+                ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug'])
+                ->withCount([
+                    'inventory_items' => function ($query) {
+                        $query->where('status', 'in_stock');
+                    },
+                ])
+                ->whereHas('selling_info')
+                ->whereNotNull('slug')
+                ->latest()
+                ->forPage($page, $perPage)
+                ->get()
+                ->map(function ($smartphone) {
+                    return [
+                        'id' => $smartphone->id,
+                        'name' => $smartphone->model_searchable_name,
+                        'capacity' => $smartphone->capacity->name,
+                        'image' => $smartphone->smartphone_image_urls && count($smartphone->smartphone_image_urls) > 0 ? $smartphone->smartphone_image_urls[0] : null,
+                        'video_thumbnail' => $smartphone->smartphone_video_urls && count($smartphone->smartphone_video_urls) > 0 ? $smartphone->smartphone_video_urls[0]['thumbnail_url'] : null,
+                        'location_name' => $smartphone->location_name,
+                        'latitude' => $smartphone->latitude,
+                        'longitude' => $smartphone->longitude,
+                        'colors' => $smartphone->colors,
+                        'upc' => $smartphone->upc,
+                        'floor' => $smartphone->floor,
+                        'selling_info' => $smartphone->selling_info,
+                        'inventory_items_count' => $smartphone->inventory_items_count,
+                        'country' => $smartphone?->country,
+                        'condition' => $smartphone?->condition,
+                        'delivery_days' => $smartphone?->delivery_days,
+                        'courier_company' => $smartphone?->courier_company,
+                        'return_policy' => $smartphone?->return_policy,
+                        'shipping_policy' => $smartphone?->shipping_policy,
+                        'content' => $smartphone->content,
+                        'slug' => $smartphone->slug,
+                        'addons' => $smartphone?->addons,
+                        'tag' => $smartphone->tag,
+                        'type' => 'smartphones',
+                        'created_at' => $smartphone->created_at->format('Y-m-d g:i A '),
+                        'timestamp' => $smartphone->created_at->timestamp,
+                        'added_at' => $smartphone->added_at,
+                        'created_at_time' => $smartphone->created_at_time,
+                        'product_details' => $smartphone->product_details,
 
+                    ];
+                });
+
+            $hasMore = $hasMore || ($smartphones->count() === $perPage);
+            $data['products'] = [
+                'smartphones' => $smartphones,
+            ];
             $queryParams = [
                 'page' => $page + 1,
-                'images' => $images,
-                'text' => $text,
-                'videos' => $videos,
-                'show_products' => $show_products,
-                'show_posts' => $show_posts,
+                // 'images' => $images,
+                // 'text' => $text,
+                // 'videos' => $videos,
+                // 'show_products' => $show_products,
+                // 'show_posts' => $show_posts,
             ];
 
             $nextParams = $queryParams;

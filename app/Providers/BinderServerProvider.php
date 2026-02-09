@@ -36,6 +36,8 @@ use App\Repositories\Notifications\Interface\INotificationRepository;
 use App\Repositories\Notifications\Repository\NotificationRepository;
 use App\Repositories\OrderAddressChangeRequest\Interface\IOrderAddressChangeRequestRepository;
 use App\Repositories\OrderAddressChangeRequest\Repository\OrderAddressChangeRequestRepository;
+use App\Repositories\OrderCancelationRequest\Interface\IOrderCancelationRequestRepository;
+use App\Repositories\OrderCancelationRequest\Repository\OrderCancelationRequestRepository;
 use App\Repositories\OrderRefund\Interface\IOrderRefundRepository;
 use App\Repositories\OrderRefund\Repository\OrderRefundRepository;
 use App\Repositories\Orders\Interface\IOrderRepository;
@@ -131,6 +133,7 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(IRiskSignalRepository::class, RiskSignalRepository::class);
         $this->app->bind(IUnsettledAccountsRepository::class, UnsettledAccountsRepository::class);
         $this->app->bind(INotificationRepository::class, NotificationRepository::class);
+        $this->app->bind(IOrderCancelationRequestRepository::class, OrderCancelationRequestRepository::class);
 
     }
 

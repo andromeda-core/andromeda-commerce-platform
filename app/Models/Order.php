@@ -36,6 +36,7 @@ class Order extends Model
         'shipping_fee',
         'addons_sub_total',
         'status',
+        'previous_status',
         'collaborator_id',
         'courier_company',
         'shipping_date',
@@ -54,14 +55,54 @@ class Order extends Model
         'shipping_state',
         'shipping_postal_code',
         'shipping_country',
+        'expires_at',
+        'expired_at',
     ];
 
     //    Attributes
-    protected $appends = ['added_at'];
+    protected $appends = [
+        'added_at',
+        'is_refund_requested',
+        'refund_request_status',
+        'is_address_change_requested',
+        'address_change_request_status',
+        'is_cancelation_requested',
+        'cancelation_request_status',
+    ];
 
     public function getAddedAtAttribute()
     {
         return ! empty($this->created_at) ? $this->created_at->format('Y-m-d') : null;
+    }
+
+    public function getIsRefundRequestedAttribute()
+    {
+        return $this->refund()->exists();
+    }
+
+    public function getRefundRequestStatusAttribute()
+    {
+        return $this->refund()?->exists() ? $this->refund()->first()?->refund_status : null;
+    }
+
+    public function getIsAddressChangeRequestedAttribute()
+    {
+        return $this->addressChangeRequest()->exists();
+    }
+
+    public function getAddressChangeRequestStatusAttribute()
+    {
+        return $this->addressChangeRequest()?->exists() ? $this->addressChangeRequest()->first()?->status : null;
+    }
+
+    public function getIsCancelationRequestedAttribute()
+    {
+        return $this->cancelationRequest()->exists();
+    }
+
+    public function getCancelationRequestStatusAttribute()
+    {
+        return $this->cancelationRequest()?->exists() ? $this->cancelationRequest()->first()?->status : null;
     }
 
     // RelationShips
@@ -105,6 +146,11 @@ class Order extends Model
         return $this->hasOne(OrderAddressChangeRequest::class, 'order_id', 'id');
     }
 
+    public function cancelationRequest(): HasOne
+    {
+        return $this->hasOne(OrderCancelationRequest::class, 'order_id', 'id');
+    }
+
     // Static Booting
     public static function booted()
     {
@@ -118,10 +164,10 @@ class Order extends Model
             if (! empty($order->collaborator_id) && $order->status === 'paid') {
                 if (empty($order->collaborator->point_accumulation_rate)) {
                     $reward_rate = RewardSetting::first()->reward_rate;
-                    $total_points = $order->amount * $reward_rate / 100;
+                    $total_points = $order->full_amount * $reward_rate / 100;
                 } else {
                     $reward_rate = $order->collaborator->point_accumulation_rate;
-                    $total_points = $order->amount * $reward_rate / 100;
+                    $total_points = $order->full_amount * $reward_rate / 100;
                 }
 
                 $user_id = $order->customer->user_id;
@@ -164,7 +210,7 @@ class Order extends Model
             // Supplier Commission Set Event
             dispatch(new SupplierCommissionSet($order))->afterCommit();
 
-            $order->save();
+            $order->updateQuietly(['expires_at' => now()->addDays(1)]);
 
             // Notify Admin About Order
             dispatch(new NotifyAdminAboutOrderPlaced($order, $currency))->afterCommit();
@@ -215,36 +261,6 @@ class Order extends Model
                     dispatch(new OrderStatusPaidNotificationJob($user_meta_contacts, $order, $currency, $meta_setting, $user))->onQueue('meta');
                 }
 
-                $reward_rate = null;
-                $total_points = null;
-
-                if (! empty($order->collaborator_id) && $order->status === 'paid') {
-                    if (empty($order->collaborator->point_accumulation_rate)) {
-                        $reward_rate = RewardSetting::first()->reward_rate;
-                        $total_points = $order->amount * $reward_rate / 100;
-                    } else {
-                        $reward_rate = $order->collaborator->point_accumulation_rate;
-                        $total_points = $order->amount * $reward_rate / 100;
-                    }
-
-                    $user_id = $order->customer->user_id;
-
-                    $reward_point = RewardPoint::where('user_id', $user_id)->first();
-
-                    if (empty($reward_point)) {
-                        RewardPoint::create([
-                            'user_id' => $user_id,
-                            'points' => $total_points,
-                            'expires_at' => now()->addYears(5),
-                        ]);
-                    } else {
-                        $reward_point->points += round($total_points);
-                        $reward_point->save();
-                    }
-                    // Collaborator Commission Set Event
-                    dispatch(new CollaboratorCommissionSet($order));
-                }
-
             } elseif ($order->status === 'shipped') {
 
                 $user->notify(new OrderStatusShippedNotification($order));
@@ -265,6 +281,39 @@ class Order extends Model
                 if ($is_eligible && $user_meta_contacts->isNotEmpty() && ! empty($meta_setting)) {
                     dispatch(new OrderStatusDeliveredNotificationJob($user_meta_contacts, $order, $meta_setting, $user))->onQueue('meta');
                 }
+            }
+
+            $reward_rate = null;
+            $total_points = null;
+
+            if (
+                $order->status === 'paid'
+                && $order->wasChanged('status')
+                && ! empty($order->collaborator_id)
+            ) {
+                if (empty($order->collaborator->point_accumulation_rate)) {
+                    $reward_rate = RewardSetting::first()->reward_rate;
+                    $total_points = $order->full_amount * $reward_rate / 100;
+                } else {
+                    $reward_rate = $order->collaborator->point_accumulation_rate;
+                    $total_points = $order->full_amount * $reward_rate / 100;
+                }
+
+                $user_id = $order->customer->user_id;
+
+                $reward_point = RewardPoint::where('user_id', $user_id)->first();
+
+                if (empty($reward_point)) {
+                    RewardPoint::create([
+                        'user_id' => $user_id,
+                        'points' => $total_points,
+                        'expires_at' => now()->addYears(5),
+                    ]);
+                } else {
+                    $reward_point->points += round($total_points);
+                    $reward_point->save();
+                }
+                dispatch(new CollaboratorCommissionSet($order));
             }
 
         });

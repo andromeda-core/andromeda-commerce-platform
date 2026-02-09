@@ -2,37 +2,40 @@
 
 namespace App\Console\Commands;
 
-use App\Jobs\Meta\NotifyCustomerOrderCryptoPaymentExpiredJob;
+use App\Jobs\Meta\NotifyCustomerOrderExpiredJob;
 use App\Models\Inventory;
 use App\Models\Order;
 use App\Models\SpecialCountry;
-use App\Notifications\NotifyCustomerOrderCryptoPaymentExpired;
+use App\Notifications\NotifyCustomerOrderExpired;
 use Cache;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
-class NOWPaymentAutoMarkingOrderFailedIfNotPaid extends Command
+class AutoMarkingOrderExpiredIfNotPaid extends Command
 {
-    protected $signature = 'app:n-o-w-payment-auto-marking-order-failed-if-not-paid';
+    protected $signature = 'app:order-expired';
 
-    protected $description = 'This Command Will Change Status Of Orders Whose Payment Status Is Not Paid And Not Even User Tries To Pay Via Crypto To Failed';
+    protected $description = 'This Command Will Change Status Of Orders Whose Payment Status Is Not Paid';
 
     public function handle()
     {
-        $expiredTime = now()->subMinutes(30);
         $currency = Cache::get('currency');
         $meta_setting = Cache::get('meta_setting');
-        Order::where('status', 'awaiting_payment')
-            ->where('created_at', '<', $expiredTime)
+        Order::whereIn('status', ['awaiting_payment', 'pending'])
             ->with(['orderItems.inventoryItem', 'customer.user', 'customer.user.metaContacts'])
             ->chunk(100, function ($orders) use ($currency, $meta_setting) {
 
                 foreach ($orders as $order) {
 
+                    if (! empty($order->expires_at) && now()->lessThan(Carbon::parse($order->expires_at))) {
+                        continue;
+                    }
+
                     $user = $order->customer->user;
 
                     DB::transaction(function () use ($order, $user) {
-                        $order->update(['status' => 'expired']);
+                        $order->update(['status' => 'expired', 'expired_at' => now()]);
 
                         if (! empty($order->points_used)) {
                             $user->reward_points()->create([
@@ -62,12 +65,12 @@ class NOWPaymentAutoMarkingOrderFailedIfNotPaid extends Command
 
                     });
 
-                    $user->notify(new NotifyCustomerOrderCryptoPaymentExpired($order, $currency));
+                    $user->notify(new NotifyCustomerOrderExpired($order, $currency));
 
                     $user_meta_contacts = $order->customer->user->metaContacts;
                     $is_eligible = SpecialCountry::where('country_id', $order->customer->country_id)->exists();
                     if (! empty($meta_setting) && $user_meta_contacts->isNotEmpty() && $is_eligible) {
-                        dispatch(new NotifyCustomerOrderCryptoPaymentExpiredJob($user_meta_contacts, $order, $meta_setting, $user, $currency))->onQueue('meta');
+                        dispatch(new NotifyCustomerOrderExpiredJob($user_meta_contacts, $order, $meta_setting, $user, $currency))->onQueue('meta');
                     }
 
                 }

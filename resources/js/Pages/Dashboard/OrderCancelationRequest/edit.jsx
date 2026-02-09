@@ -10,31 +10,32 @@ import SelectInput from '@/Components/SelectInput';
 import Textarea from '@/Components/Textarea';
 
 
-export default function edit({ order_address_change_request }) {
+export default function edit({ orderCancelationRequest }) {
     // Edit Data Form Data
     const { data, setData, post, processing, errors, reset } = useForm({
         _method: 'PUT',
-        status: order_address_change_request?.status || '',
-        note: order_address_change_request?.note || ''
+        status: orderCancelationRequest?.status || '',
+        note: orderCancelationRequest?.note || '',
+        order_no: orderCancelationRequest?.order?.order_no || ''
     });
 
 
     // Edit Data Form Request
     const submit = (e) => {
         e.preventDefault();
-        post(route('dashboard.order-address-change-requests.update', order_address_change_request?.id));
+        post(route('dashboard.order-cancelation-requests.update', orderCancelationRequest?.id));
     };
 
     return (
         <>
             <AuthenticatedLayout>
-                <Head title="Order Address Changes" />
+                <Head title="Order Cancelations" />
 
                 <BreadCrumb
-                    header={'Edit Order Address Changes'}
+                    header={'Edit Order Cancelation'}
                     parent={'Orders'}
-                    parent_link={route('dashboard.order-address-change-requests.index')}
-                    child={'Edit Order Address Changes'}
+                    parent_link={route('dashboard.order-cancelation-requests.index')}
+                    child={'Edit Order Cancelation'}
                 />
 
                 <Card
@@ -43,7 +44,7 @@ export default function edit({ order_address_change_request }) {
                             <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Requests'}
-                                    URL={route('dashboard.order-address-change-requests.index')}
+                                    URL={route('dashboard.order-cancelation-requests.index')}
                                     Icon={
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
@@ -74,7 +75,7 @@ export default function edit({ order_address_change_request }) {
                                                     Name={'customer_name'}
                                                     Type={'text'}
                                                     readOnly={true}
-                                                    Value={order_address_change_request?.customer?.user?.name || 'N/A'}
+                                                    Value={orderCancelationRequest?.customer?.user?.name || 'N/A'}
                                                 />
 
 
@@ -84,89 +85,8 @@ export default function edit({ order_address_change_request }) {
                                                     Name={'order_no'}
                                                     Type={'text'}
                                                     readOnly={true}
-                                                    Value={order_address_change_request?.order?.order_no || 'N/A'}
+                                                    Value={orderCancelationRequest?.order?.order_no || 'N/A'}
                                                 />
-
-
-                                                <Input
-                                                    InputName={'Shipping Name (Non Editable)'}
-                                                    Id={'shipping_name'}
-                                                    Name={'shipping_name'}
-                                                    Type={'text'}
-                                                    readOnly={true}
-                                                    Value={order_address_change_request?.shipping_name || 'N/A'}
-                                                />
-
-                                                <Input
-                                                    InputName={'Shipping Phone (Non Editable)'}
-                                                    Id={'shipping_phone'}
-                                                    Name={'shipping_phone'}
-                                                    Type={'text'}
-                                                    readOnly={true}
-                                                    Value={order_address_change_request?.shipping_phone || 'N/A'}
-                                                />
-
-
-
-                                                <Input
-                                                    InputName={'Shipping Country (Non Editable)'}
-                                                    Id={'shipping_country'}
-                                                    Name={'shipping_country'}
-                                                    Type={'text'}
-                                                    readOnly={true}
-                                                    Value={order_address_change_request?.shipping_country || 'N/A'}
-                                                />
-
-
-                                                <Input
-                                                    InputName={'Shipping City (Non Editable)'}
-                                                    Id={'shipping_city'}
-                                                    Name={'shipping_city'}
-                                                    Type={'text'}
-                                                    readOnly={true}
-                                                    Value={order_address_change_request?.shipping_city || 'N/A'}
-                                                />
-
-
-                                                <Input
-                                                    InputName={'Shipping State (Non Editable)'}
-                                                    Id={'shipping_state'}
-                                                    Name={'shipping_state'}
-                                                    Type={'text'}
-                                                    readOnly={true}
-                                                    Value={order_address_change_request?.shipping_state || 'N/A'}
-                                                />
-
-
-                                                <Input
-                                                    InputName={'Shipping Postal Code (Non Editable)'}
-                                                    Id={'shipping_postal_code'}
-                                                    Name={'shipping_postal_code'}
-                                                    Type={'text'}
-                                                    readOnly={true}
-                                                    Value={order_address_change_request?.shipping_postal_code || 'N/A'}
-                                                />
-
-
-                                                <Textarea
-                                                    InputName={"Shipping Address Line 1"}
-                                                    Id={'shipping_address_line1'}
-                                                    Name={'shipping_address_line1'}
-                                                    Rows={6}
-                                                    Disabled={true}
-                                                    Value={order_address_change_request?.shipping_address_line1 || 'N/A'}
-                                                />
-
-
-                                                <Textarea
-                                                    InputName={"Shipping Address Line 2"}
-                                                    Id={'shipping_address_line2'}
-                                                    Name={'shipping_address_line2'}
-                                                    Rows={6}
-                                                    Disabled={true}
-                                                    Value={order_address_change_request?.shipping_address_line2 || "N/A"}
-                                                />
-
 
 
 
@@ -207,17 +127,17 @@ export default function edit({ order_address_change_request }) {
 
                                             <div className="grid grid-cols-1 gap-4 md:grid-cols-1">
                                                 <Textarea
-                                                    InputName={"Customer Address Change Reason (Non Editable)"}
-                                                    Id={'customer_refund_reason'}
-                                                    Name={'customer_refund_reason'}
+                                                    InputName={"Customer Order Cancelation Reason (Non Editable)"}
+                                                    Id={'customer_order_cancelation_reason'}
+                                                    Name={'customer_order_cancelation_reason'}
                                                     Rows={6}
-                                                    Value={order_address_change_request?.reason}
+                                                    Value={orderCancelationRequest?.reason}
                                                     Disabled={true}
                                                 />
                                             </div>
 
                                             <PrimaryButton
-                                                Text={'Update Order Address Change'}
+                                                Text={'Update Order Cancelation'}
                                                 Type={'submit'}
                                                 CustomClass={'w-[300px] '}
                                                 Disabled={

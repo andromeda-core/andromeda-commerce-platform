@@ -254,6 +254,8 @@ namespace App\Models{
  * @property-read \App\Models\Color|null $color
  * @property-read \App\Models\Customer $customer
  * @property-read \App\Models\Smartphone|null $smartphone
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SmartphoneCartAddon> $smartphoneAddonItems
+ * @property-read int|null $smartphone_addon_items_count
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CartItem newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CartItem newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CartItem query()
@@ -996,8 +998,11 @@ namespace App\Models{
  * @property string|null $shipping_postal_code
  * @property string|null $shipping_country
  * @property numeric $amount
+ * @property numeric|null $points_used
+ * @property numeric|null $full_amount
  * @property string $status
  * @property string|null $payment_method
+ * @property string|null $secondary_payment_method
  * @property string|null $np_id
  * @property int|null $collaborator_id
  * @property string|null $courier_company
@@ -1006,6 +1011,8 @@ namespace App\Models{
  * @property string|null $courier_invoice
  * @property string|null $payment_proof
  * @property int $is_cash_collected
+ * @property string|null $expires_at
+ * @property string|null $expired_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property numeric $sub_total
@@ -1035,6 +1042,9 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereCourierInvoice($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereCustomerId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereExpiredAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereExpiresAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereFullAmount($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereImportTax($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereIsCashCollected($value)
@@ -1042,6 +1052,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereOrderNo($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order wherePaymentMethod($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order wherePaymentProof($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order wherePointsUsed($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereSecondaryPaymentMethod($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereShippingAddressLine1($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereShippingAddressLine2($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereShippingCity($value)
@@ -1112,11 +1124,21 @@ namespace App\Models{
 
 namespace App\Models{
 /**
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCancelationRequest newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCancelationRequest newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCancelationRequest query()
+ */
+	class OrderCancelationRequest extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
  * @property int $id
  * @property int $order_id
  * @property int|null $color_id
  * @property int $smartphone_id
  * @property int|null $inventory_item_id
+ * @property array<array-key, mixed>|null $inventory_item_ids
  * @property int $quantity
  * @property numeric $unit_price
  * @property numeric $sub_total
@@ -1139,6 +1161,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem whereImportCost($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem whereInventoryItemId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem whereInventoryItemIds($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem whereOrderId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem whereQuantity($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderItem whereShippingCost($value)
@@ -1683,18 +1706,21 @@ namespace App\Models{
  * @property int $quantity
  * @property int $addon_id
  * @property int $smartphone_id
+ * @property int $cart_item_id
  * @property int $customer_id
  * @property numeric $total_price
  * @property numeric $unit_price
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Addon $addon
+ * @property-read \App\Models\CartItem $cartItem
  * @property-read \App\Models\Customer $customer
  * @property-read \App\Models\Smartphone $smartphone
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCartAddon newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCartAddon newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCartAddon query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCartAddon whereAddonId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCartAddon whereCartItemId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCartAddon whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCartAddon whereCustomerId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCartAddon whereId($value)
@@ -1984,33 +2010,94 @@ namespace App\Models{
 
 namespace App\Models{
 /**
+ * @property int $id
+ * @property int $user_id
+ * @property int|null $order_id
+ * @property string $reason
+ * @property array<array-key, mixed>|null $meta
+ * @property string $status
+ * @property string $detected_at
+ * @property string|null $resolved_at
+ * @property int $is_system_resolved
+ * @property int|null $resolved_by
+ * @property string|null $note
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Order|null $order
  * @property-read \App\Models\User|null $resolvedBy
- * @property-read \App\Models\User|null $user
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\UnsettledAccountNotificationLog> $unsettledNotificationLogs
+ * @property-read int|null $unsettled_notification_logs_count
+ * @property-read \App\Models\User $user
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccount newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccount newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccount query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccount whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccount whereDetectedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccount whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccount whereIsSystemResolved($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccount whereMeta($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccount whereNote($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccount whereOrderId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccount whereReason($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccount whereResolvedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccount whereResolvedBy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccount whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccount whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccount whereUserId($value)
  */
 	class UnsettledAccount extends \Eloquent {}
 }
 
 namespace App\Models{
 /**
- * @property-read \App\Models\User|null $sent_by
- * @property-read \App\Models\UnsettledAccount|null $unsettledAccount
- * @property-read \App\Models\User|null $user
+ * @property int $id
+ * @property int $user_id
+ * @property int $unsettled_account_id
+ * @property string $channel
+ * @property string $message
+ * @property int $is_system_sent
+ * @property \App\Models\User|null $sent_by
+ * @property string $sent_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\UnsettledAccount $unsettledAccount
+ * @property-read \App\Models\User $user
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationLog newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationLog newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationLog query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationLog whereChannel($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationLog whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationLog whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationLog whereIsSystemSent($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationLog whereMessage($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationLog whereSentAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationLog whereSentBy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationLog whereUnsettledAccountId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationLog whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationLog whereUserId($value)
  */
 	class UnsettledAccountNotificationLog extends \Eloquent {}
 }
 
 namespace App\Models{
 /**
+ * @property int $id
+ * @property string $reason
+ * @property int $delay
+ * @property string $channel
+ * @property int $is_active
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationSetting newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationSetting newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationSetting query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationSetting whereChannel($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationSetting whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationSetting whereDelay($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationSetting whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationSetting whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationSetting whereReason($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|UnsettledAccountNotificationSetting whereUpdatedAt($value)
  */
 	class UnsettledAccountNotificationSetting extends \Eloquent {}
 }

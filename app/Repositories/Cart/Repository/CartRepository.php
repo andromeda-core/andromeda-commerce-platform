@@ -342,19 +342,56 @@ class CartRepository implements ICartRepository
                     ];
                 }
 
+                // BUY NOW SESSION LOGIC
                 $sessionKey = 'single_product_checkout_'.$user->id;
                 $sessionData = session()->get($sessionKey);
+                $temp_id = $request->input('temp_id');
 
-                if (empty($sessionData) || empty($sessionData['cart_items'])) {
-                    throw new Exception('Invalid checkout session');
+                if (empty($sessionData)) {
+                    throw new Exception($this->trans->get('Invalid Buy Now Session'));
                 }
 
-                session()->forget($sessionKey);
+                if (empty($temp_id)) {
+                    throw new Exception($this->trans->get('Invalid Item Identifier'));
+                }
+
+                $cartItems = $sessionData['cart_items'] ?? collect();
+                $addonItems = $sessionData['addon_items'] ?? collect();
+
+                $updatedCartItems = $cartItems
+                    ->reject(fn ($item) => isset($item->temp_id) && $item->temp_id === $temp_id)
+                    ->values();
+
+                $updatedAddonItems = $addonItems
+                    ->reject(fn ($addon) => isset($addon->parent_temp_id) && $addon->parent_temp_id === $temp_id)
+                    ->values();
+
+                if ($updatedCartItems->isEmpty()) {
+                    session()->forget($sessionKey);
+
+                    return [
+                        'status' => true,
+                        'message' => $this->trans->get('All items removed. Session cleared.'),
+                        'total_summary' => [],
+                    ];
+                }
+
+                // Recalculate totals
+                $total_summary = $this->price_calculator->calculate($updatedCartItems, $updatedAddonItems);
+
+                // Save updated collections to session
+                session()->put($sessionKey, [
+                    ...$sessionData,
+                    'cart_items' => $updatedCartItems,
+                    'addon_items' => $updatedAddonItems,
+                    'total_summary' => $total_summary,
+                    'updated_at' => now(),
+                ]);
 
                 return [
                     'status' => true,
-                    'message' => 'Item Removed Successfully',
-                    'total_summary' => [],
+                    'message' => $this->trans->get('Product Removed Successfully'),
+                    'total_summary' => $total_summary,
                 ];
 
             }
@@ -413,6 +450,7 @@ class CartRepository implements ICartRepository
 
                 $sessionKey = 'single_product_checkout_'.$user->id;
                 $sessionData = session()->get($sessionKey);
+                $temp_id = $request->input('temp_id');
 
                 if (empty($sessionData) || empty($sessionData['cart_items'])) {
                     throw new Exception($this->trans->get('Invalid Buy Now Session'));
@@ -421,8 +459,12 @@ class CartRepository implements ICartRepository
                 /** @var \Illuminate\Support\Collection $cartItems */
                 $cartItems = $sessionData['cart_items'];
 
+                // dd($cartItems->toArray());
+
                 /** @var \App\Models\CartItem $cartItem */
-                $cartItem = $cartItems->first();
+                $cartItem = $cartItems->firstWhere(function ($item) use ($temp_id) {
+                    return isset($item->temp_id) && $item->temp_id === $temp_id;
+                });
 
                 if (! $cartItem) {
                     throw new Exception($this->trans->get('Product not found in Buy Now session'));
@@ -526,6 +568,7 @@ class CartRepository implements ICartRepository
 
                 $sessionKey = 'single_product_checkout_'.$user->id;
                 $sessionData = $request->session()->get($sessionKey);
+                $temp_id = $request->input('temp_id');
 
                 if (empty($sessionData) || empty($sessionData['addon_items'])) {
                     throw new Exception('Invalid Buy Now Session');
@@ -535,23 +578,55 @@ class CartRepository implements ICartRepository
                 $addonItems = $sessionData['addon_items'];
 
                 /** @var \App\Models\SmartphoneCartAddon $addonItem */
-                $addonItem = $addonItems->firstWhere('addon_id', $item_id);
+                $addonItem = $addonItems->firstWhere(function ($addon) use ($temp_id) {
+                    return isset($addon->temp_id) && $addon->temp_id === $temp_id;
+                });
 
                 // dd($addonItem);
                 if (! $addonItem) {
                     throw new Exception('Addon not found in session');
                 }
 
+                // Update the found addon
                 $addonItem->quantity = $quantity;
                 $addonItem->total_price = bcmul(
                     $addonItem->unit_price,
-                    $request->quantity,
+                    $quantity,
                     2
                 );
 
+                $updatedAddonItems = $addonItems->map(function ($addon) use ($addonItem, $temp_id) {
+                    if (isset($addon->temp_id) && $addon->temp_id === $temp_id) {
+                        return $addonItem;
+                    }
+
+                    return $addon;
+                });
+
+                // Also update the addon in parent cart item's relation
+                $cartItems = $sessionData['cart_items'];
+                $updatedCartItems = $cartItems->map(function ($cartItem) use ($addonItem, $temp_id) {
+                    // Check if this cart item has the addon
+                    if (isset($addonItem->parent_temp_id) && isset($cartItem->temp_id) && $cartItem->temp_id === $addonItem->parent_temp_id) {
+                        if ($cartItem->relationLoaded('smartphoneAddonItems')) {
+                            $updatedAddons = $cartItem->smartphoneAddonItems->map(function ($addon) use ($addonItem, $temp_id) {
+                                if (isset($addon->temp_id) && $addon->temp_id === $temp_id) {
+                                    return $addonItem;
+                                }
+
+                                return $addon;
+                            });
+                            $cartItem->setRelation('smartphoneAddonItems', $updatedAddons);
+                        }
+                    }
+
+                    return $cartItem;
+                });
+
+                // Recalculate totals
                 $total_summary = $this->price_calculator->calculate(
-                    $sessionData['cart_items'],
-                    $addonItems
+                    $updatedCartItems,
+                    $updatedAddonItems
                 );
 
                 session()->put($sessionKey, [
@@ -654,42 +729,62 @@ class CartRepository implements ICartRepository
                 ];
             }
 
+            // BUY NOW SESSION LOGIC
             $sessionKey = 'single_product_checkout_'.$user->id;
             $sessionData = session()->get($sessionKey);
+            $temp_id = $request->input('temp_id');
 
             if (empty($sessionData) || empty($sessionData['addon_items'])) {
                 throw new Exception('Invalid Buy Now Session');
             }
 
+            if (empty($temp_id)) {
+                throw new Exception('Invalid Addon Identifier');
+            }
+
             $addonItems = $sessionData['addon_items'];
             $cartItems = $sessionData['cart_items'];
 
-            $addonItems = $addonItems
-                ->reject(fn ($addon) => $addon->addon_id == $item_id)
-                ->values();
+            $addonToRemove = $addonItems->firstWhere(function ($addon) use ($temp_id) {
+                return isset($addon->temp_id) && $addon->temp_id === $temp_id;
+            });
 
-            foreach ($cartItems as $cartItem) {
-                if ($cartItem->relationLoaded('smartphoneAddonItems')) {
-                    $cartItem->setRelation(
-                        'smartphoneAddonItems',
-                        $cartItem->smartphoneAddonItems
-                            ->reject(fn ($addon) => $addon->addon_id == $item_id)
-                            ->values()
-                    );
-                }
+            if (! $addonToRemove) {
+                throw new Exception('Addon not found in session');
             }
 
-            // recalculate totals
+            $parentTempId = $addonToRemove->parent_temp_id ?? null;
+
+            $updatedAddonItems = $addonItems
+                ->reject(fn ($addon) => isset($addon->temp_id) && $addon->temp_id === $temp_id)
+                ->values();
+
+            $updatedCartItems = $cartItems->map(function ($cartItem) use ($temp_id, $parentTempId) {
+                if ($parentTempId && isset($cartItem->temp_id) && $cartItem->temp_id === $parentTempId) {
+                    if ($cartItem->relationLoaded('smartphoneAddonItems')) {
+                        $updatedAddons = $cartItem->smartphoneAddonItems
+                            ->reject(fn ($addon) => isset($addon->temp_id) && $addon->temp_id === $temp_id)
+                            ->values();
+                        $cartItem->setRelation('smartphoneAddonItems', $updatedAddons);
+                    }
+                }
+
+                return $cartItem;
+            });
+
+            // Recalculate totals
             $total_summary = $this->price_calculator->calculate(
-                $sessionData['cart_items'],
-                $addonItems
+                $updatedCartItems,
+                $updatedAddonItems
             );
 
-            // save back to session
+            // Save updated collections to session
             session()->put($sessionKey, [
                 ...$sessionData,
-                'addon_items' => $addonItems,
+                'cart_items' => $updatedCartItems,
+                'addon_items' => $updatedAddonItems,
                 'total_summary' => $total_summary,
+                'updated_at' => now(),
             ]);
 
             return [
@@ -852,7 +947,6 @@ class CartRepository implements ICartRepository
 
     public function singleProductCheckoutSessionStore(Request $request)
     {
-
         try {
             $user = $request->user();
 
@@ -872,82 +966,123 @@ class CartRepository implements ICartRepository
 
             session()->forget('single_product_checkout_'.$user->id);
 
-            $data = $request->input('smartphone');
+            $smartphonesData = [];
 
-            $addons = json_decode($data['addons'], true) ?? [];
+            if ($request->has('smartphones')) {
+                $rawData = $request->input('smartphones');
 
-            $smartphoneModel = $this->smartphone->with([
-                'selling_info',
-                'selling_info.shipping_fee',
-                'selling_info.import_tax',
-                'addons',
-                'model_name',
-                'capacity',
+                foreach ($rawData as $key => $value) {
+                    if (is_numeric($key)) {
+                        $smartphonesData[] = $value;
+                    }
+                }
+            } elseif ($request->has('smartphone')) {
+                $smartphonesData[] = $request->input('smartphone');
+            } else {
+                throw new Exception($this->trans->get('No product data received'));
+            }
 
-            ])->findOrFail($data['smartphone_id']);
+            if (empty($smartphonesData)) {
+                throw new Exception($this->trans->get('No products to checkout'));
+            }
 
-            $cartItem = new CartItem([
-                'customer_id' => $request->user()->customer->id,
-                'smartphone_id' => $smartphoneModel->id,
-                'type' => 'smartphone',
-                'quantity' => $data['quantity'],
-                'color_id' => $data['color_id'],
-                'color_name' => $data['color_name'],
-                'capacity' => $data['capacity'],
-                'unit_price' => $smartphoneModel->selling_info->total_price,
-                'total_price' => bcmul(
-                    $smartphoneModel->selling_info->total_price,
-                    $data['quantity'],
-                    2
-                ),
-            ]);
+            $allCartItems = collect();
+            $allAddonItems = collect();
 
-            $cartItem->setRelation('smartphone', $smartphoneModel);
+            foreach ($smartphonesData as $data) {
 
-            $colorModel = $this->color->findOrFail($data['color_id']);
-            $cartItem->setRelation('color', $colorModel);
+                if (empty($data['smartphone_id']) || empty($data['color_id'])) {
+                    continue;
+                }
 
-            $addonItems = collect();
+                $addons = json_decode($data['addons'], true) ?? [];
 
-            foreach ($addons as $addon) {
+                $smartphoneModel = $this->smartphone->with([
+                    'selling_info',
+                    'selling_info.shipping_fee',
+                    'selling_info.import_tax',
+                    'addons',
+                    'model_name',
+                    'capacity',
+                ])->findOrFail($data['smartphone_id']);
 
-                $addonModel = $this->addon->findOrFail($addon['id']);
+                $tempId = uniqid('cart_', true);
 
-                $addonItem = new SmartphoneCartAddon([
-                    'addon_id' => $addonModel->id,
-                    'name' => $addonModel->name,
-                    'customer_id' => $request->user()->customer->id,
+                $cartItem = new CartItem([
+                    'customer_id' => $customer->id,
                     'smartphone_id' => $smartphoneModel->id,
-                    'quantity' => $addon['quantity'],
-                    'unit_price' => $addonModel->price,
+                    'type' => 'smartphone',
+                    'quantity' => $data['quantity'] ?? 1,
+                    'color_id' => $data['color_id'],
+                    'color_name' => $data['color_name'] ?? '',
+                    'capacity' => $data['capacity'] ?? '',
+                    'unit_price' => $data['unit_price'] ?? $smartphoneModel->selling_info->total_price,
                     'total_price' => bcmul(
-                        $addonModel->price,
-                        $addon['quantity'],
+                        $data['unit_price'] ?? $smartphoneModel->selling_info->total_price,
+                        $data['quantity'] ?? 1,
                         2
                     ),
                 ]);
 
-                $addonItem->setRelation('addon', $addonModel);
-                $addonItems->push($addonItem);
+                $cartItem->temp_id = $tempId;
+
+                $cartItem->setRelation('smartphone', $smartphoneModel);
+
+                $colorModel = $this->color->findOrFail($data['color_id']);
+                $cartItem->setRelation('color', $colorModel);
+
+                $addonItems = collect();
+
+                foreach ($addons as $addon) {
+                    $addonModel = $this->addon->findOrFail($addon['id']);
+
+                    $addonTempId = uniqid('addon_', true);
+
+                    $addonItem = new SmartphoneCartAddon([
+                        'addon_id' => $addonModel->id,
+                        'name' => $addonModel->name ?? $addon['name'],
+                        'customer_id' => $customer->id,
+                        'smartphone_id' => $smartphoneModel->id,
+                        'quantity' => $addon['quantity'] ?? 1,
+                        'unit_price' => $addon['unit_price'] ?? $addonModel->price,
+                        'total_price' => bcmul(
+                            $addon['unit_price'] ?? $addonModel->price,
+                            $addon['quantity'] ?? 1,
+                            2
+                        ),
+                    ]);
+
+                    $addonItem->temp_id = $addonTempId;
+                    $addonItem->parent_temp_id = $tempId;
+
+                    $addonItem->setRelation('addon', $addonModel);
+                    $addonItems->push($addonItem);
+                }
 
                 $cartItem->setRelation('smartphoneAddonItems', $addonItems);
+
+                $allCartItems->push($cartItem);
+                $allAddonItems = $allAddonItems->merge($addonItems);
             }
 
             $total_summary = $this->price_calculator->calculate(
-                collect([$cartItem]),
-                $addonItems
+                $allCartItems,
+                $allAddonItems
             );
 
+            // Store in session
             session()->put('single_product_checkout_'.$user->id, [
-                'cart_items' => collect([$cartItem]),
-                'addon_items' => $addonItems,
+                'cart_items' => $allCartItems,
+                'addon_items' => $allAddonItems,
                 'total_summary' => $total_summary,
                 'created_at' => now(),
             ]);
 
             return [
                 'status' => true,
-                'message' => $this->trans->get('Session Created Successfully You will be Redirected To Checkout Shortly..! '),
+                'message' => $this->trans->get('Session Created Successfully You will be Redirected To Checkout Shortly..!'),
+                'cart_count' => $allCartItems->count(),
+                'addon_count' => $allAddonItems->count(),
             ];
 
         } catch (Exception $e) {

@@ -11,7 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Queue\Queueable;
 
-class NotifyCustomerOrderCryptoPaymentExpiredJob implements ShouldQueue
+class NotifyCustomerOrderExpiredJob implements ShouldQueue
 {
     use Queueable;
 
@@ -29,14 +29,14 @@ class NotifyCustomerOrderCryptoPaymentExpiredJob implements ShouldQueue
 
         $message = "Hello {$this->user->name},\n\n";
 
-        $message .= "Your order #{$this->order->order_no} was created but we didn’t receive the Crypto Currency payment within the allowed time window.\n\n";
+        $message .= "Your order #{$this->order->order_no} was created but we didn’t receive the payment within the allowed time window.\n\n";
         $message .= "As a result, the order has now expired automatically. No funds have been deducted from your wallet.\n\n";
 
         $message .= "📦 Order Details:\n";
         $message .= "Order Number: {$this->order->order_no}\n";
         $message .= 'Remeaning Amount:'.number_format($this->order->amount, 2).' '.($this->currency->name ?? 'USD')."\n";
         $message .= 'Full Amount:'.number_format($this->order->full_amount, 2).' '.($this->currency->name ?? 'USD')."\n";
-        $message .= "Payment Method: Crypto Currency\n\n";
+        $message .= "Payment Method: {$this->order->payment_method}\n\n";
 
         $message .= "If you still wish to complete your purchase, you can simply place the order again or choose another payment method below.\n\n";
         $message .= 'Place a New Order: '.route('home')."\n\n";

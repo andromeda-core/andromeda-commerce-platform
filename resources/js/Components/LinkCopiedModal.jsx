@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 
 import { createPortal } from 'react-dom';
 
-const LinkCopiedModal = ({ linkCopied, setLinkCopied }) => {
+const LinkCopiedModal = ({ linkCopied, setLinkCopied, message = null }) => {
 
 
     // Translation Hook
@@ -50,7 +50,7 @@ const LinkCopiedModal = ({ linkCopied, setLinkCopied }) => {
 
 
                 <p className="text-sm font-medium text-main-text-light lg:text-xl dark:text-main-text-dark">
-                    {__('Link copied')}!
+                    {message || __('Link copied')}!
                 </p>
             </div>
 

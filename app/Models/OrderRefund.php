@@ -63,7 +63,7 @@ class OrderRefund extends Model
             $orderStatus = match ($refund->refund_status) {
                 'requested' => 'refund_requested',
                 'approved' => 'refund_approved',
-                'rejected' => 'paid',
+                'rejected' => $order->previous_status,
                 'completed' => 'refund_completed',
             };
 
@@ -104,7 +104,7 @@ class OrderRefund extends Model
                         if (empty($inventoryItemsIds)) {
                             continue;
                         }
-                        
+
                         foreach ($inventoryItemsIds as $inventoryItemId) {
                             $inventoryItem = Inventory::find($inventoryItemId);
                             if (! empty($inventoryItem) && $inventoryItem->status === 'sold') {

@@ -494,6 +494,8 @@ const Index = ({
 
     // Handle tab change
     const handleTabChange = useCallback((tabKey) => {
+        const container = scrollContainerRef.current;
+        const prevScroll = container?.scrollLeft ?? 0;
         updateState({ activeTab: tabKey, activeMatchType: null });
 
         if (tabKey === 'all') {
@@ -503,6 +505,12 @@ const Index = ({
         } else if (typeof tabKey === 'number') {
             fetchSearchHistoryResults(tabKey);
         }
+
+        requestAnimationFrame(() => {
+            if (container) {
+                container.scrollLeft = prevScroll;
+            }
+        });
     }, [state.historyResults.length, hasPerformedSearch, fetchHistoryResults, fetchSearchHistoryResults]);
 
     // Fetch more results with optimization
@@ -963,22 +971,22 @@ const Index = ({
 
                             <div className="relative flex items-center w-full">
                                 {/* Left Arrow */}
-                                {state.canScrollLeft && (
-                                    <button
-                                        onClick={scrollLeft}
-                                        className="absolute left-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-2-light hover:scale-110 dark:bg-surface-3-dark md:flex"
-                                        style={{ left: '0px' }}
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="text-gray-600 size-4 dark:text-sub-text-dark"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
-                                    </button>
-                                )}
+
+                                <button
+                                    onClick={scrollLeft}
+                                    className={`absolute left-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-2-light hover:scale-110 dark:bg-surface-3-dark md:flex ${state.canScrollLeft ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                                    style={{ left: '0px' }}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="text-gray-600 size-4 dark:text-sub-text-dark"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+                                </button>
 
 
                                 <div
                                     ref={scrollContainerRef}
-                                    className="flex items-center w-full gap-3 overflow-x-auto flex-nowrap scrollbar-none scroll-smooth"
+                                    className="flex items-center w-full gap-3 overflow-x-auto flex-nowrap scrollbar-none scroll-auto"
                                     style={{
                                         transform: 'translateZ(0)',
+                                        overflowAnchor: 'none',
                                         WebkitOverflowScrolling: 'touch',
                                         scrollbarWidth: 'none',
                                         msOverflowStyle: 'none',
@@ -990,16 +998,24 @@ const Index = ({
                                     {tabs.map((tab) => (
                                         <button
                                             key={tab.key}
+                                            onMouseDown={(e) => e.preventDefault()}
                                             onClick={() => handleTabChange(tab.key)}
-                                            className={`relative flex-shrink-0 px-4 py-2 text-sm transition-all rounded-full whitespace-nowrap ${state.activeTab === tab.key
-                                                ? 'bg-main-text-light text-main-text-dark dark:bg-main-text-dark dark:text-main-text-light font-semibold'
+
+
+                                            className={`relative flex flex-shrink-0 items-center gap-2 px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap ${state.activeTab === tab.key
+                                                ? 'bg-main-text-light text-main-text-dark dark:bg-main-text-dark dark:text-main-text-light '
                                                 : 'bg-surface-1-light text-main-text-light dark:bg-surface-1-dark dark:text-main-text-dark'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-1">
                                                 {tab.icon}
                                                 <span>{__(tab.label)}</span>
-                                                <span className={`text-xs ${state.activeTab === tab.key ? 'text-main-text-dark dark:text-main-text-light' : 'text-main-text-light dark:text-main-text-dark'}`}>({tab.count})</span>
+                                                <span
+                                                    className="inline-flex justify-center text-xs"
+                                                    style={{ minWidth: 32 }}
+                                                >
+                                                    ({tab.count})
+                                                </span>
                                             </div>
                                         </button>
                                     ))}
@@ -1008,9 +1024,10 @@ const Index = ({
                                     {state.searchHistories.map((history) => (
                                         <button
                                             key={history.id}
+                                            onMouseDown={(e) => e.preventDefault()}
                                             onClick={() => handleTabChange(history.id)}
-                                            className={`relative flex flex-shrink-0 items-center gap-2 px-4 py-2 text-sm rounded-full whitespace-nowrap ${state.activeTab === history.id
-                                                ? 'bg-main-text-light text-main-text-dark dark:bg-main-text-dark dark:text-main-text-light font-semibold'
+                                            className={`relative flex flex-shrink-0 items-center gap-2 px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap ${state.activeTab === history.id
+                                                ? 'bg-main-text-light text-main-text-dark dark:bg-main-text-dark dark:text-main-text-light '
                                                 : 'bg-surface-1-light text-main-text-light dark:bg-surface-1-dark dark:text-main-text-dark'
                                                 }`}
                                         >
@@ -1030,14 +1047,13 @@ const Index = ({
                                 </div>
 
                                 {/* Right Arrow */}
-                                {state.canScrollRight && (
-                                    <button
-                                        onClick={scrollRight}
-                                        className="absolute right-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-2-light hover:scale-110 dark:bg-surface-3-dark md:flex"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="text-black size-4 dark:text-sub-text-dark"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
-                                    </button>
-                                )}
+
+                                <button
+                                    onClick={scrollRight}
+                                    className={`absolute right-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-2-light hover:scale-110 dark:bg-surface-3-dark md:flex ${state.canScrollRight ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="text-black size-4 dark:text-sub-text-dark"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+                                </button>
                             </div>
                         </div>
                     </div>

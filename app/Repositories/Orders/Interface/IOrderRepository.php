@@ -52,4 +52,12 @@ interface IOrderRepository
     public function orderAddressChangeRequestDoesntExists(Request $request, string $order_no);
 
     public function ShippingAddressChangeRequestStore(Request $request, string $order_no);
+
+    public function payNow(Request $request);
+
+    public function AddressChangeRequestWithdrawl(Request $request);
+
+    public function RefundRequestWithdrawl(Request $request);
+
+    public function reOrder(Request $request);
 }

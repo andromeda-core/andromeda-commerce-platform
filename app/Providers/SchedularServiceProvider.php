@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Console\Commands\AutoMarkingOrderExpiredIfNotPaid;
 use App\Console\Commands\CheckRewardPointExpiry;
 use App\Console\Commands\ClearPreviousOrderPackageRecordings;
 use App\Console\Commands\DestroyDeactiveAccounts;
@@ -11,7 +12,6 @@ use App\Console\Commands\ExpireOldEmailChangeRequests;
 use App\Console\Commands\MarkExpireOldAccountRiskSignal;
 use App\Console\Commands\MarkUserAsDormant;
 use App\Console\Commands\MetaPageTokenRefresh;
-use App\Console\Commands\NOWPaymentAutoMarkingOrderFailedIfNotPaid;
 use App\Console\Commands\NOWPaymentInvoiceStatusCheck;
 use App\Console\Commands\SendUnsettledAccountNotifications;
 use Illuminate\Console\Scheduling\Schedule;
@@ -35,7 +35,7 @@ class SchedularServiceProvider extends ServiceProvider
         $schedule->command(CheckRewardPointExpiry::class)->daily();
         $schedule->command(ClearPreviousOrderPackageRecordings::class)->daily();
         $schedule->command(NOWPaymentInvoiceStatusCheck::class)->everyMinute()->withoutOverlapping();
-        $schedule->command(NOWPaymentAutoMarkingOrderFailedIfNotPaid::class)->everyFiveMinutes()->withoutOverlapping();
+        $schedule->command(AutoMarkingOrderExpiredIfNotPaid::class)->everyFiveMinutes()->withoutOverlapping();
         $schedule->command(MetaPageTokenRefresh::class)->daily();
         $schedule->command(MarkUserAsDormant::class)->daily();
         $schedule->command(DestroyDeactiveAccounts::class)->daily();

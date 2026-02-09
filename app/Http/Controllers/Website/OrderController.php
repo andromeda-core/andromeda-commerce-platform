@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Website;
 
 use App\Http\Controllers\Controller;
+use App\Repositories\Cart\Interface\ICartRepository;
 use App\Repositories\Customers\Interface\ICustomerRepository;
 use App\Repositories\Orders\Interface\IOrderRepository;
 use Illuminate\Http\Request;
@@ -12,7 +13,8 @@ class OrderController extends Controller
 {
     public function __construct(
         private IOrderRepository $order,
-        private ICustomerRepository $customer
+        private ICustomerRepository $customer,
+        private ICartRepository $cart,
     ) {}
 
     public function index(Request $request)
@@ -133,5 +135,60 @@ class OrderController extends Controller
         }
 
         return to_route('website.orders.order-view', ['order_no' => $order_no])->with('success', $response['message']);
+    }
+
+    public function payNow(Request $request)
+    {
+        $response = $this->order->payNow($request);
+
+        if ($response['status'] === false) {
+            return back()->with('error', $response['message']);
+        }
+
+        return Inertia::location($response['redirect_url']);
+    }
+
+    public function addressChangeWithdrawl(Request $request)
+    {
+        $widthdrawl = $this->order->AddressChangeRequestWithdrawl($request);
+        if ($widthdrawl['status'] === false) {
+            return back()->with('error', $widthdrawl['message']);
+        }
+
+        return back()->with('success', $widthdrawl['message']);
+
+    }
+
+    public function refundWithdrawl(Request $request)
+    {
+        $widthdrawl = $this->order->RefundRequestWithdrawl($request);
+        if ($widthdrawl['status'] === false) {
+            return back()->with('error', $widthdrawl['message']);
+        }
+
+        return back()->with('success', $widthdrawl['message']);
+
+    }
+
+    public function reOrder(Request $request)
+    {
+        $reOrder_response = $this->order->reOrder($request);
+
+        if ($reOrder_response['status'] === false) {
+            return back()->with('error', $reOrder_response['message']);
+        }
+
+        $smartphones = $reOrder_response['smartphones'];
+
+        $request->merge(['smartphones' => $smartphones]);
+
+        $response = $this->cart->singleProductCheckoutSessionStore($request);
+
+        if ($response['status'] === false) {
+            return back()->with('error', $response['message']);
+        }
+
+        return to_route('website.checkout.index', ['buy_now' => true]);
+
     }
 }

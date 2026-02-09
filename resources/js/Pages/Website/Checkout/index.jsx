@@ -30,6 +30,11 @@ export default function Checkout({
     const { currency, auth } = usePage().props;
     const windowSize = useWindowSize();
 
+
+    const getItemKey = (item) => {
+        return buy_now ? item.temp_id : item.id
+    }
+
     // Translation Hook
     const { __ } = useTranslation();
 
@@ -71,11 +76,11 @@ export default function Checkout({
     const [removingProcessing, setRemovingProcessing] = useState(false);
 
     const [quantities, setQuantities] = useState(
-        cart_items.reduce((acc, item) => ({ ...acc, [item.id]: item.quantity }), {}),
+        cart_items.reduce((acc, item) => ({ ...acc, [getItemKey(item)]: item.quantity }), {}),
     );
 
     const [smartphoneAddonQuantities, setSmartphoneAddonQuantities] = useState(
-        addon_items.reduce((acc, item) => ({ ...acc, [item.id]: item.quantity }), {}),
+        addon_items.reduce((acc, item) => ({ ...acc, [getItemKey(item)]: item.quantity }), {}),
     );
     const [pointsToUse, setPointsToUse] = useState('');
     const [pointsError, setPointsError] = useState('');
@@ -99,7 +104,7 @@ export default function Checkout({
         }
 
         const total = parseFloat(total_summary.total);
-        const points = [parseFloat(auth?.user?.points)];
+        const points = parseFloat(auth?.user?.points);
 
         if (total > points && points < total) {
             setPointsToUse(points);
@@ -336,13 +341,13 @@ export default function Checkout({
     const getTotalQtyOfSmartphone = (smartphoneId) => {
         return cart_items
             .filter((i) => i.smartphone_id === smartphoneId)
-            .reduce((sum, i) => sum + (quantities[i.id] ?? i.quantity), 0);
+            .reduce((sum, i) => sum + (quantities[getItemKey(i)] ?? i.quantity), 0);
     };
 
-    const updateQuantity = (itemId, newQuantity) => {
+    const updateQuantity = (itemId, newQuantity, temp_id) => {
         if (newQuantity < 1) return;
 
-        const cartItem = cart_items.find((item) => item.id === itemId);
+        const cartItem = cart_items.find((item) => temp_id ? item.temp_id === temp_id : item.id === itemId);
 
         if (!cartItem) {
             setInfoMessage(__('Item not found in cart'));
@@ -351,7 +356,7 @@ export default function Checkout({
         }
 
         const totalUsedQty = getTotalQtyOfSmartphone(cartItem.smartphone_id);
-        const otherItemsQty = totalUsedQty - (quantities[itemId] ?? cartItem.quantity);
+        const otherItemsQty = totalUsedQty - (quantities[getItemKey(cartItem)] ?? cartItem.quantity);
         const maxAllowed = cartItem.smartphone.inventory_items_count - otherItemsQty;
 
         if (newQuantity > maxAllowed) {
@@ -360,12 +365,13 @@ export default function Checkout({
             return;
         }
 
-        setQuantities((prev) => ({ ...prev, [itemId]: newQuantity }));
+        setQuantities((prev) => ({ ...prev, [getItemKey(cartItem)]: newQuantity }));
 
         axios
             .put(route('website.carts.update-item'), {
                 item_id: itemId,
                 type: cartItem.type,
+                temp_id: temp_id,
                 quantity: newQuantity,
                 page: buy_now ? 'buy_now' : 'cart',
             })
@@ -383,11 +389,12 @@ export default function Checkout({
             });
     };
 
-    const onProductRemove = (itemId, type) => {
+    const onProductRemove = (itemId, type, temp_id) => {
+
         setRemovingProcessing(true);
         axios
             .delete(route('website.carts.remove-item'), {
-                data: { item_id: itemId, type: type, page: buy_now ? 'buy_now' : 'cart', },
+                data: { item_id: itemId, type: type, page: buy_now ? 'buy_now' : 'cart', temp_id: temp_id },
             })
             .then((response) => {
                 if (response.data.status === false) {
@@ -412,12 +419,12 @@ export default function Checkout({
             });
     };
 
-    const updateSmartphoneAddon = (itemId, newQuantity) => {
+    const updateSmartphoneAddon = (itemId, newQuantity, temp_id) => {
         if (newQuantity < 1) return;
 
         let cartItem = null;
         if (buy_now) {
-            cartItem = addon_items.find((item) => item.addon_id === itemId);
+            cartItem = addon_items.find((item) => item.temp_id === temp_id);
         } else {
             cartItem = addon_items.find((item) => item.id === itemId);
         }
@@ -428,12 +435,13 @@ export default function Checkout({
             return;
         }
 
-        setSmartphoneAddonQuantities((prev) => ({ ...prev, [itemId]: newQuantity }));
+        setSmartphoneAddonQuantities((prev) => ({ ...prev, [getItemKey(cartItem)]: newQuantity }));
         axios
             .put(route('website.carts.update-smartphone-addon-item'), {
                 item_id: itemId,
                 quantity: newQuantity,
                 page: buy_now ? 'buy_now' : 'cart',
+                temp_id: temp_id
             })
             .then((response) => {
                 if (response.data.status === false) {
@@ -450,11 +458,11 @@ export default function Checkout({
             });
     };
 
-    const removeSmartphoneAddon = (itemId) => {
+    const removeSmartphoneAddon = (itemId, temp_id) => {
         setRemovingProcessing(true);
         axios
             .delete(route('website.carts.remove-smartphone-addon-item'), {
-                data: { item_id: itemId, page: buy_now ? 'buy_now' : 'cart', },
+                data: { item_id: itemId, page: buy_now ? 'buy_now' : 'cart', temp_id: temp_id },
             })
             .then((response) => {
                 if (response.data.status === false) {
@@ -579,6 +587,7 @@ export default function Checkout({
                             <PaymentMethod
                                 paymentMethod={paymentMethod}
                                 setPaymentMethod={setPaymentMethod}
+                                points={auth.user?.points}
                                 __={__}
                             />
 
@@ -606,6 +615,7 @@ export default function Checkout({
                                 onRemoveSmartphoneAddon={removeSmartphoneAddon}
                                 getTotalQtyOfSmartphone={getTotalQtyOfSmartphone}
                                 buy_now={buy_now}
+                                getItemKey={getItemKey}
                             />
                         </div>
 
@@ -765,7 +775,7 @@ function ShippingInfoCard({
 }
 
 // Payment methods
-function PaymentMethod({ paymentMethod, setPaymentMethod, __ }) {
+function PaymentMethod({ paymentMethod, setPaymentMethod, __, points }) {
     return (
         <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
             <h2 className="mb-4 text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
@@ -801,8 +811,7 @@ function PaymentMethod({ paymentMethod, setPaymentMethod, __ }) {
                     </span>
 
                     <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center text-center rounded-full bg-[#EE7B1A] p-2 text-main-text-dark">
-                            {/* <span className="w-6 h-6 text-[19px]" >₿</span> */}
+                        <div className="flex items-center justify-center p-2 text-center text-gray-700 bg-gray-200 rounded-full">
                             <Bitcoin className="w-6 h-6" />
                         </div>
 
@@ -845,7 +854,7 @@ function PaymentMethod({ paymentMethod, setPaymentMethod, __ }) {
                     </span>
 
                     <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center rounded-full bg-[#00469B] p-2 text-main-text-dark">
+                        <div className="flex items-center justify-center p-2 text-center text-gray-700 bg-gray-200 rounded-full">
                             <Landmark className="w-6 h-6" />
                         </div>
                         <div>
@@ -858,7 +867,7 @@ function PaymentMethod({ paymentMethod, setPaymentMethod, __ }) {
 
                 {/* Points */}
                 <label
-                    className={`flex cursor-pointer items-center gap-3 rounded-md px-4 py-3 transition ${paymentMethod === 'points'
+                    className={`flex cursor-pointer items-center gap-3 rounded-md px-4 py-3 transition ${!points || points === 0 ? 'pointer-events-none opacity-50' : ''} ${paymentMethod === 'points'
                         ? 'bg-[#eaeaea] dark:bg-surface-2-dark'
                         : 'dark:hover:bg-surface-2-dark lg:hover:bg-[#eaeaea]'
                         }`}
@@ -884,7 +893,7 @@ function PaymentMethod({ paymentMethod, setPaymentMethod, __ }) {
                     </span>
 
                     <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center rounded-full bg-[#00469B] p-2 text-main-text-dark">
+                        <div className="flex items-center justify-center p-2 text-center text-gray-700 bg-gray-200 rounded-full">
                             <Star className="w-6 h-6" />
                         </div>
 
@@ -933,7 +942,7 @@ function UsePoints({ points, pointsToUse, setPointsToUse, onUseAllPoints, error,
                         type="button"
                         onClick={onUseAllPoints}
                         disabled={!points || points === 0}
-                        className="h-[40px] rounded-md border border-[#c7c7c7] bg-backgroundLight px-6 text-[14px] font-semibold text-main-text-light transition-colors hover:bg-[#ebebeb] disabled:cursor-not-allowed disabled:opacity-50 dark:border-surface-3-dark dark:bg-surface-3-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark/80"
+                        className="h-[40px] rounded-md border border-[#c7c7c7] bg-backgroundLight px-6 text-[14px] font-semibold text-main-text-light transition-colors lg:hover:bg-[#ebebeb] disabled:cursor-not-allowed disabled:opacity-50 dark:border-surface-3-dark dark:bg-surface-3-dark dark:text-main-text-dark dark:lg:hover:bg-surface-3-dark/80"
                     >
                         {__('Use all')}
                     </button>
@@ -969,6 +978,7 @@ function Items({
     onRemoveSmartphoneAddon,
     getTotalQtyOfSmartphone,
     buy_now,
+    getItemKey,
 }) {
     const generateSmartphoneURL = (smartphone, isDirect = false, isSinglePage = false) => {
         return `?m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`;
@@ -983,7 +993,7 @@ function Items({
             </div>
 
             {cart_items?.map((item, index) => {
-                const quantity = quantities[item.id] || item.quantity;
+                const quantity = quantities[getItemKey(item)] || item.quantity;
                 const relatedAddons = item?.smartphone_addon_items || [];
                 const currentQty = quantity;
                 const totalUsedQty = getTotalQtyOfSmartphone(item.smartphone_id);
@@ -992,7 +1002,7 @@ function Items({
 
                 return (
                     <div
-                        key={index}
+                        key={getItemKey(item)}
                         className={`border-t border-surface-3-light py-8 dark:border-surface-3-dark`}
                     >
                         <div className="flex gap-6 border-t border-surface-3-light first:border-t-0 dark:border-surface-3-dark">
@@ -1045,7 +1055,7 @@ function Items({
 
                                     {/* Remove Button */}
                                     <button
-                                        onClick={() => onProductRemove(item.id, item.type)}
+                                        onClick={() => onProductRemove(item.id, item.type, item?.temp_id)}
                                         disabled={removing}
                                         className={`p-1.5 text-main-text-light transition-colors hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-main-text-dark/80 ${removing ? 'cursor-not-allowed' : ''}`}
                                         title={__('Remove item')}
@@ -1067,7 +1077,7 @@ function Items({
                                     {/* Quantity Controls */}
                                     <div className="flex items-center border rounded-md border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-transparent">
                                         <button
-                                            onClick={() => onUpdateQuantity(item.id, quantity - 1)}
+                                            onClick={() => onUpdateQuantity(item.id, quantity - 1, item?.temp_id)}
                                             className="px-1 py-1 transition-colors text-main-text-light hover:bg-surface-1-light disabled:opacity-50 dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                             disabled={quantity <= 1}
                                         >
@@ -1093,7 +1103,7 @@ function Items({
 
                                         <button
                                             disabled={quantity >= maxAllowedForThisItem}
-                                            onClick={() => onUpdateQuantity(item.id, quantity + 1)}
+                                            onClick={() => onUpdateQuantity(item.id, quantity + 1, item?.temp_id)}
                                             className="px-1 py-1 transition-colors text-main-text-light hover:bg-surface-1-light disabled:opacity-50 dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                         >
                                             <svg
@@ -1140,7 +1150,7 @@ function Items({
                                             buy_now={buy_now}
                                             item={addon_item}
                                             quantity={
-                                                smartphoneAddonQuantities[buy_now ? addon_item.addon_id : addon_item.id] ??
+                                                smartphoneAddonQuantities[getItemKey(addon_item)] ??
                                                 addon_item.quantity
                                             }
                                             onUpdateQuantity={onUpdateSmartphoneAddon}
@@ -1193,7 +1203,7 @@ function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, remov
 
             {/* Remove Button */}
             <button
-                onClick={() => onRemove(buy_now ? item.addon_id : item.id)}
+                onClick={() => onRemove(buy_now ? item.addon_id : item.id, item?.temp_id)}
                 disabled={removing}
                 className={`p-1.5 text-main-text-light transition-colors hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-main-text-dark/80`}
                 title={__('Remove addon')}
@@ -1207,7 +1217,7 @@ function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, remov
             {/* Quantity Controls - Screenshot style with rounded square buttons */}
             <div className="flex items-center flex-shrink-0 gap-2">
                 <button
-                    onClick={() => onUpdateQuantity((buy_now ? item?.addon_id : item?.id), quantity - 1)}
+                    onClick={() => onUpdateQuantity((buy_now ? item?.addon_id : item?.id), quantity - 1, item?.temp_id)}
                     disabled={quantity <= 1}
                     className="flex h-[27px] w-[27px] items-center justify-center rounded-md border border-main-text-light bg-backgroundLight text-main-text-light transition-colors hover:bg-surface-2-light disabled:cursor-not-allowed disabled:border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                 >
@@ -1228,7 +1238,7 @@ function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, remov
                 </span>
 
                 <button
-                    onClick={() => onUpdateQuantity((buy_now ? item?.addon_id : item?.id), quantity + 1)}
+                    onClick={() => onUpdateQuantity((buy_now ? item?.addon_id : item?.id), quantity + 1, item?.temp_id)}
                     className="flex h-[27px] w-[27px] items-center justify-center rounded-md border border-main-text-light bg-backgroundLight text-main-text-light transition-colors hover:bg-surface-2-light disabled:cursor-not-allowed disabled:opacity-60 dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                 >
                     <svg
@@ -1352,7 +1362,7 @@ function OrderSummaryCard({
                 <button
                     onClick={handlePlaceOrder}
                     disabled={processingOrder}
-                    className="mt-7 block w-full rounded-md bg-[#282828] px-6 py-4 text-center text-base font-semibold text-white transition-all hover:bg-[#282828]/80 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-backgroundLight dark:text-main-text-light dark:hover:bg-backgroundLight/80"
+                    className="mt-7 block w-full rounded-md bg-[#282828] px-6 py-4 text-center text-base font-semibold text-white transition-all lg:hover:bg-[#282828]/80 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-backgroundLight dark:text-main-text-light dark:lg:hover:bg-backgroundLight/80"
                 >
                     {processingOrder ? (
                         <div className="flex items-center justify-center gap-2">
@@ -1410,7 +1420,7 @@ function PromoCodeCard({
                     {/* Collapsed State - Toggle Button */}
                     <button
                         onClick={() => setShowInput(!showInput)}
-                        className={`flex w-full items-center justify-between ${showInput ? 'mb-5' : ''} text-[14px] font-semibold text-main-text-light transition-colors hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-main-text-dark/80`}
+                        className={`flex w-full items-center justify-between ${showInput ? 'mb-5' : ''} text-[14px] font-semibold text-main-text-light transition-colors lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80`}
                     >
                         <span className="flex items-center gap-0.5">
                             <svg
@@ -1466,7 +1476,7 @@ function PromoCodeCard({
                                 <button
                                     onClick={onApply}
                                     disabled={isApplying}
-                                    className="h-[40px] rounded-md  border border-[#c7c7c7] bg-backgroundLight px-6 text-[14px] text-sm font-semibold text-main-text-light transition-colors hover:bg-[#ebebeb] disabled:cursor-not-allowed disabled:opacity-50 dark:border-surface-3-dark dark:bg-surface-3-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark/80"
+                                    className="h-[40px] rounded-md  border border-[#c7c7c7] bg-backgroundLight px-6 text-[14px] text-sm font-semibold text-main-text-light transition-colors lg:hover:bg-[#ebebeb] disabled:cursor-not-allowed disabled:opacity-50 dark:border-surface-3-dark dark:bg-surface-3-dark dark:text-main-text-dark dark:lg:hover:bg-surface-3-dark/80"
                                 >
                                     {isApplying ? <Spinner customSize={'size-4'} /> : __('Apply')}
                                 </button>
@@ -3493,7 +3503,7 @@ function SecondaryPaymentModal({
                                                         </span>
 
                                                         <div className="flex items-center gap-3">
-                                                            <div className={`flex items-center ${option.iconBg} justify-center text-center rounded-full  p-2 text-main-text-dark`}>
+                                                            <div className={`flex items-center justify-center p-2 text-center text-gray-700 bg-gray-200 rounded-full`}>
                                                                 <span className="w-6 h-6">{option.icon}</span>
                                                             </div>
 
@@ -3524,7 +3534,7 @@ function SecondaryPaymentModal({
                                                 <button
                                                     type="button"
                                                     onClick={handlePlace}
-                                                    className="text-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
+                                                    className="text-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light dark:lg:hover:bg-main-text-dark/80"
                                                 >
                                                     {processingOrder ? (
                                                         <div className="flex items-center justify-center gap-2">
@@ -3669,7 +3679,7 @@ function SecondaryPaymentModal({
                                                     </span>
 
                                                     <div className="flex items-center gap-3">
-                                                        <div className={`flex items-center ${option.iconBg} justify-center text-center rounded-full  p-2 text-main-text-dark`}>
+                                                        <div className={`flex items-center justify-center p-2 text-center text-gray-700 bg-gray-200 rounded-full`}>
                                                             <span className="w-6 h-6">{option.icon}</span>
                                                         </div>
 
@@ -3700,7 +3710,7 @@ function SecondaryPaymentModal({
                                             <button
                                                 type="button"
                                                 onClick={handlePlace}
-                                                className="text-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
+                                                className="text-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light dark:lg:hover:bg-main-text-dark/80"
                                             >
                                                 {processingOrder ? (
                                                     <div className="flex items-center justify-center gap-2">

@@ -15,6 +15,7 @@ export default function OrderView({ order }) {
     const { currency } = usePage().props;
     const windowSize = useWindowSize();
 
+
     const generateSmartphoneURL = (smartphone, isDirect = false, isSinglePage = false) => {
         return (
             `?m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`

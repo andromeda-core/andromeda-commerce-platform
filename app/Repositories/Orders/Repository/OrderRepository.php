@@ -23,7 +23,9 @@ use App\Models\SpecialCountry;
 use App\Models\User;
 use App\Notifications\NotifyCustomerAboutAwaitingPaymentOrderFromCrypto;
 use App\Notifications\OrderAddressChangeNotification;
+use App\Notifications\OrderAddressChangeRequestWithdrawnNotification;
 use App\Notifications\OrderRefundNotification;
+use App\Notifications\OrderRefundRequestWithdrawnNotification;
 use App\Repositories\Orders\Interface\IOrderRepository;
 use App\Services\CartPriceCalculator;
 use App\Services\NOWPaymentPaymentService;
@@ -1008,8 +1010,6 @@ class OrderRepository implements IOrderRepository
                 $order_data['has_points_to_use']
                 && in_array($order_data['payment_method'], ['bank_transfer', 'crypto'])
             ) {
-                $payload['full_amount'] = $order_data['amount'];
-
                 $used = $this->deductPoints($user, $order_data['points_to_use']);
 
                 $payload['points_used'] = $used;
@@ -1187,11 +1187,11 @@ class OrderRepository implements IOrderRepository
         $customer = $user->customer;
 
         $orders = $this->order
-            ->with(['orderItems', 'orderItems.inventoryItem.smartphone'])
+            ->with(['orderItems', 'orderItems.inventoryItem.smartphone.capacity', 'orderItems.inventoryItem.smartphone.model_name'])
             ->withCount('orderItems')
             ->where('customer_id', $customer->id)
             ->latest()
-            ->paginate(10);
+            ->paginate(35);
 
         $orders->setCollection(
             $orders->getCollection()->transform(function ($order) {
@@ -1226,7 +1226,7 @@ class OrderRepository implements IOrderRepository
                 'orderItems.smartphoneAddons',
             ]
         )->where('order_no', $order_no)
-            ->where('customer_id', $request->user()?->customer->id)
+            ->where('customer_id', $request->user()?->customer?->id)
             ->first();
 
         if (! empty($order)) {
@@ -1444,7 +1444,9 @@ class OrderRepository implements IOrderRepository
                 throw new Exception($this->trans->get('Order Not Found'));
             }
 
-            if ($order->status !== 'paid') {
+            if (
+                ! in_array($order->status, ['paid', 'delivered'])
+            ) {
                 throw new Exception($this->trans->get('Only Paid Status orders Can be Request For a Refund'));
             }
 
@@ -1503,7 +1505,7 @@ class OrderRepository implements IOrderRepository
             }
 
             if (
-                $order->status !== 'paid'
+                ! in_array($order->status, ['paid', 'delivered'])
             ) {
                 throw new Exception(
                     $this->trans->get('Refund requests are only allowed for paid orders that have not been shipped.')
@@ -1515,7 +1517,9 @@ class OrderRepository implements IOrderRepository
             }
 
             DB::transaction(function () use ($order, $customer, $validated_req) {
+                $old_status = $order->status;
                 $order->updateQuietly([
+                    'previous_status' => $old_status,
                     'status' => 'refund_requested',
                 ]);
 
@@ -1555,6 +1559,14 @@ class OrderRepository implements IOrderRepository
             $order = $this->order->where('order_no', $order_no)->where('customer_id', $request->user()->customer?->id)->first();
             if (empty($order)) {
                 throw new Exception($this->trans->get('Order Not Found'));
+            }
+
+            if (in_array($order->status, ['pending', 'awaiting_payment'])) {
+                throw new Exception($this->trans->get('Only Paid Status orders Can be Request For a Address Change'));
+            }
+
+            if ($order->status === 'canceled') {
+                throw new Exception($this->trans->get('This Order Address Change Request Cannot Be Created Because The Order Has Already Been Canceled'));
             }
 
             if (in_array($order->status, ['shipped', 'arrived_locally', 'delivered'])) {
@@ -1710,6 +1722,262 @@ class OrderRepository implements IOrderRepository
                 'message' => $this->trans->get('Order Address Change Requested Successful'),
             ];
 
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function payNow(Request $request)
+    {
+        try {
+            $request->validate([
+                'order_id' => ['required', 'exists:orders,id'],
+            ], [
+                'order_id.required' => $this->trans->get('Something Went Wrong'),
+                'order_id.exists' => $this->trans->get('Something Went Wrong'),
+            ]);
+
+            $user = $request?->user()?->load([
+                'customer',
+            ]);
+
+            if (empty($user)) {
+                return [
+                    'status' => false,
+                    'message' => $this->trans->get('Please Login First'),
+                ];
+            }
+
+            $customer = $user->customer;
+
+            if (empty($customer)) {
+                return [
+                    'status' => false,
+                    'message' => $this->trans->get('Customer Not Found'),
+                ];
+            }
+
+            $order = $this->order->where('id', $request->order_id)->where('customer_id', $customer->id)->first();
+
+            if (empty($order)) {
+                throw new Exception($this->trans->get('Order Not Found'));
+            }
+
+            if ($order->status !== 'awaiting_payment') {
+                throw new Exception($this->trans->get('Only Awaiting Payment Order Can Use This Feature'));
+            }
+
+            $response = $this->now_payment_service->createPaymentSession(['order' => $order]);
+
+            if ($response['status'] === false) {
+                throw new Exception($response['message']);
+            }
+
+            return [
+                'status' => true,
+                'message' => $response['message'],
+                'redirect_url' => $response['payment_url'],
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function AddressChangeRequestWithdrawl(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $request->validate([
+                'order_no' => ['required', 'exists:orders,order_no'],
+            ], [
+                'order_no.required' => $this->trans->get('Order No Is Required'),
+                'order_no.exists' => $this->trans->get('Order Not Found'),
+            ]);
+
+            $user = $request->user();
+
+            if (empty($user)) {
+                throw new Exception($this->trans->get('User Not found'));
+            }
+
+            $customer = $user->customer;
+
+            if (empty($customer)) {
+                throw new Exception($this->trans->get('Customer Not found'));
+            }
+
+            $order = $this->order->with(['addressChangeRequest'])->where('order_no', $request->order_no)->where('customer_id', $customer->id)->first();
+
+            if (empty($order)) {
+                throw new Exception($this->trans->get('Order Not Found'));
+            }
+
+            if ($order->addressChangeRequest()->doesntExist()) {
+                throw new Exception($this->trans->get('Order Address Change request not found'));
+            }
+
+            if ($order->addressChangeRequest->status !== 'requested') {
+                throw new Exception($this->trans->get('Only Unprocessed Address Change Request Can Be Withdrawn'));
+            }
+
+            $deleted = $order->addressChangeRequest()->delete();
+
+            if (! $deleted) {
+                throw new Exception($this->trans->get('Order Address Change request not withdrawn'));
+            }
+
+            DB::commit();
+
+            $user->notify(new OrderAddressChangeRequestWithdrawnNotification($order));
+
+            return [
+                'status' => true,
+                'message' => $this->trans->get('Order Address Change request withdrawn successfully'),
+            ];
+        } catch (Exception $th) {
+            DB::rollBack();
+
+            return [
+                'status' => false,
+                'message' => $th->getMessage(),
+            ];
+        }
+    }
+
+    public function RefundRequestWithdrawl(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $request->validate([
+                'order_no' => ['required', 'exists:orders,order_no'],
+            ], [
+                'order_no.required' => $this->trans->get('Order No Is Required'),
+                'order_no.exists' => $this->trans->get('Order Not Found'),
+            ]);
+
+            $user = $request->user();
+
+            if (empty($user)) {
+                throw new Exception($this->trans->get('User Not found'));
+            }
+
+            $customer = $user->customer;
+
+            if (empty($customer)) {
+                throw new Exception($this->trans->get('Customer Not found'));
+            }
+
+            $order = $this->order->with(['refund'])->where('order_no', $request->order_no)->where('customer_id', $customer->id)->first();
+
+            if (empty($order)) {
+                throw new Exception($this->trans->get('Order Not Found'));
+            }
+
+            if ($order->refund()->doesntExist()) {
+                throw new Exception($this->trans->get('Order Refund request not found'));
+            }
+
+            if ($order->refund->refund_status !== 'requested') {
+                throw new Exception($this->trans->get('Only Unprocessed Refund Request Can Be Withdrawn'));
+            }
+
+            $deleted = $order->refund()->delete();
+
+            $order->updateQuietly([
+                'status' => $order->previous_status,
+            ]);
+
+            if (! $deleted) {
+                throw new Exception($this->trans->get('Order Refund request not withdrawn'));
+            }
+
+            DB::commit();
+
+            $user->notify(new OrderRefundRequestWithdrawnNotification($order));
+
+            return [
+                'status' => true,
+                'message' => $this->trans->get('Order Refund request withdrawn successfully'),
+            ];
+        } catch (Exception $th) {
+            DB::rollBack();
+
+            return [
+                'status' => false,
+                'message' => $th->getMessage(),
+            ];
+        }
+    }
+
+    public function reOrder(Request $request)
+    {
+        try {
+            $request->validate([
+                'order_no' => ['required', 'exists:orders,order_no'],
+            ], [
+                'order_no.required' => $this->trans->get('Order No Is Required'),
+                'order_no.exists' => $this->trans->get('Order Not Found'),
+            ]);
+
+            $user = $request->user();
+
+            if (empty($user)) {
+                throw new Exception($this->trans->get('User Not found'));
+            }
+
+            $customer = $user->customer;
+
+            if (empty($customer)) {
+                throw new Exception($this->trans->get('Customer Not found'));
+            }
+
+            $order = $this->order->with(['orderItems'])->where('order_no', $request->order_no)->where('customer_id', $customer->id)->first();
+
+            if (empty($order)) {
+                throw new Exception($this->trans->get('Order Not Found'));
+            }
+
+            $smartphones = [
+                'buy_now' => true,
+            ];
+            $orderItems = $order->orderItems()->with(['smartphone.model_name', 'smartphone.capacity', 'smartphoneAddons', 'color'])->get();
+
+            foreach ($orderItems as $orderItem) {
+                $addons = $orderItem->smartphoneAddons->map(function ($addon) {
+                    return [
+                        'id' => $addon->addon_id,
+                        'name' => $addon->name,
+                        'quantity' => $addon->quantity,
+                        'unit_price' => $addon->unit_price,
+                        'price' => $addon->total_price,
+                        'smartphone_id' => $addon->smartphone_id,
+                    ];
+                })->toArray();
+                $smartphones[] = [
+                    'smartphone_id' => $orderItem->smartphone->id,
+                    'name' => $orderItem->smartphone->model_name->name,
+                    'color_id' => $orderItem->color->id,
+                    'color_name' => $orderItem->color->name,
+                    'capacity' => $orderItem->smartphone->capacity->name,
+                    'price' => (float) $orderItem->sub_total,
+                    'unit_price' => (float) $orderItem->unit_price,
+                    'quantity' => $orderItem->quantity,
+                    'addons' => json_encode($addons),
+                ];
+            }
+
+            return [
+                'status' => true,
+                'message' => $this->trans->get('Order Reordered Successfully'),
+                'smartphones' => $smartphones,
+            ];
         } catch (Exception $e) {
             return [
                 'status' => false,

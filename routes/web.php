@@ -15,6 +15,7 @@ use App\Http\Controllers\Dashboard\HomeController;
 use App\Http\Controllers\Dashboard\InventoryController;
 use App\Http\Controllers\Dashboard\LanguageController;
 use App\Http\Controllers\Dashboard\OrderAddressChangeRequestController;
+use App\Http\Controllers\Dashboard\OrderCancelationRequestController;
 use App\Http\Controllers\Dashboard\OrderController;
 use App\Http\Controllers\Dashboard\OrderRefundController;
 use App\Http\Controllers\Dashboard\PackageRecordingController;
@@ -43,6 +44,7 @@ use App\Http\Controllers\Website\GlobalFilterController;
 use App\Http\Controllers\Website\GlobalSearchController;
 use App\Http\Controllers\Website\HomeController as WebsiteHomeController;
 use App\Http\Controllers\Website\NotificationController;
+use App\Http\Controllers\Website\OrderCancelationRequestController as WebsiteOrderCancelationRequestController;
 use App\Http\Controllers\Website\OrderController as WebsiteOrderController;
 use App\Http\Controllers\Website\PostController as WebsitePostController;
 use App\Http\Controllers\Website\PrivacyPolicyController;
@@ -160,6 +162,10 @@ Route::group(['as' => 'website.'], function () {
         Route::post('/orders/{order_no?}/shipping-address-change-request', 'shippingAddressChangeRequestStore')->name('address-change-request.store');
         Route::post('/orders/upload-payment-proof', 'uploadPaymentProof')->name('upload-payment-proof');
         Route::post('/orders/mark-packaging-video-viewed', 'markPackagingVideoViewed')->name('mark-packaging-video-viewed');
+        Route::post('/orders/pay-now', 'payNow')->name('pay-now');
+        Route::post('/orders/address-change/withdrawl', 'addressChangeWithdrawl')->name('address-change.withdrawl');
+        Route::post('/orders/refund/withdrawl', 'refundWithdrawl')->name('refund.withdrawl');
+        Route::post('/orders/re-order', 'reOrder')->name('re-order');
     });
 
     // Profile Routes
@@ -203,6 +209,11 @@ Route::group(['as' => 'website.'], function () {
     Route::resource('/shipping-addresses', ShippingAddressController::class)->except(['show', 'edit', 'create']);
     Route::put('/shipping-address-status-toggle/{id?}', [ShippingAddressController::class, 'toggleStatus'])->name('shipping-addresses.toggle-status');
     Route::post('/shipping-address-store-from-profile', [ShippingAddressController::class, 'storeShippingAddressFromProfile'])->name('shipping-addresses.store.from-profile');
+
+    // Order Cancelation Routes
+    Route::get('/order-cancelation-request/{order_no?}', [WebsiteOrderCancelationRequestController::class, 'index'])->name('order-cancelation.index');
+    Route::post('/order-cancelation-request/{order_no?}', [WebsiteOrderCancelationRequestController::class, 'store'])->name('order-cancelation.store');
+    Route::post('/order/cancelation/withdrwal-request', [WebsiteOrderCancelationRequestController::class, 'widthdrawal'])->name('order-cancelation.withdrawl');
 
     // Return Policy Routes
     Route::get('/return-policy/{slug?}/{smartphone_slug?}', WebsiteReturnPolicyController::class)->name('return-policy.index');
@@ -531,6 +542,13 @@ Route::middleware(['auth'])->group(function () {
         // Data Deletion Request Routes
         Route::controller(DataDeletionRequestController::class)->name('data-deletion-requests.')->group(function () {
             Route::get('/data-deletion-requests', 'index')->name('index');
+        });
+
+        // Order Cancelation Requests
+        Route::controller(OrderCancelationRequestController::class)->name('order-cancelation-requests.')->group(function () {
+            Route::get('/order-cancelations/index', 'index')->name('index');
+            Route::get('/order-cancelations/edit/{id?}', 'edit')->name('edit');
+            Route::put('/order-cancelations/update/{id?}', 'update')->name('update');
         });
 
         // Setting Routes

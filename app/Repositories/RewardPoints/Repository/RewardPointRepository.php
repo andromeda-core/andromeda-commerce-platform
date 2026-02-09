@@ -169,6 +169,11 @@ class RewardPointRepository implements IRewardPointRepository
 
     public function getUsers()
     {
-        return $this->user->get();
+        return $this->user->get()->map(function ($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name.' ('.$user->email.')',
+            ];
+        });
     }
 }

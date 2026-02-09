@@ -1695,10 +1695,83 @@ Inventory units are locked using database transactions during order placement to
 
 
 
+72: Order Repository Checkout Flow Error Fixed Because Of Frontend Points Sending Logic Before it was mistakely wrapped with [] now fixed ✅
 
 
 
+73: Orders Page Changed To New UI Completed ✅
 
+74: Orders Page All New Actions Completed -> Cancel Order, ReOrder, Refund Order, Address Change, Pay Now For Crypto Payments ✅
+
+75: Cancel Order -> New Module In Backend [Dashboard] Added For Order Cancelation Requests And Added Functionality For Admin To Review, Approve Or Reject Requests ✅
+
+76: Cancel Order -> All Notifications Added (Approve / Reject)
+→ Email + Meta Notifications For Admin And Customer
+→ Order Cancel Request Withdrawal Logic Added (Only For Requested Status)
+→ Withdrawal Email Notification Included ✅
+
+77: ReOrder -> Full Order Replication With Buy Now Session Functionality
+→ Fully Compatible Cart-Like Behaviour Implemented ✅
+
+78: Buy Now Session Creation Logic Updated
+→ Now Supports Multiple Smartphones In A Single Session (Specially For ReOrders) ✅
+
+79: Cart-Like Behaviour For Buy Now Session Implemented
+→ Cart Update
+→ Addon Update
+→ Cart Item Remove
+→ Addon Remove
+(All Fully Synced With Session Logic) ✅
+
+80: Checkout Page Payment Method Icons UI Updated
+→ Changed To Mono Tone Style For Better Visual Consistency ✅
+
+81: Order Expiry Logic Updated
+→ 1 Day Grace Period Added For Pending & Awaiting Payment Orders
+→ Automatic Expiration Logic After Grace Period Implemented ✅
+
+82: Reward Points Issue Fixed
+→ Points Were Not Assigning When Collaborator Promo Code Was Used With Crypto Payments ✅
+
+83: Reward Points Duplication Issue Fixed
+→ Prevented Duplicate Points Assignment For Already Paid Orders ✅
+
+84: Reward Points Dashboard Improvement
+→ User Select Input Now Shows Email Along With User Name ✅
+
+85: New Fields Added In Orders Table ✅
+
+previous_status
+→ Used For Refund Flow (If Refund Request Is Rejected, Order Automatically Falls Back To Previous Status)
+
+expires_at
+→ For Tracking Unpaid Orders Expiry Window
+
+expired_at
+→ For Tracking When Order Is Actually Expired
+
+canceled
+→ For Tracking Canceled Orders
+
+86: Reward Points Table Updated
+→ points Column Converted To BIGINT To Support Large Reward Values ✅
+
+87: Search Page Tabs Auto-Scroll / Jump Issue Fixed
+→ Tabs No Longer Move Unexpectedly On Click ✅
+
+88: Hashtag Page Logic Updated
+→ Dependency On Filters Removed
+→ Filters Are Now Only Applied To Main Feed (As Intended) ✅
+
+89: Search Page “All” Tab Scroll Jump Issue Fixed
+→ Root Cause Identified (DOM Width Reflow On State Update)
+→ Tab Rendering Optimized To Prevent Horizontal Scroll Movement
+→ Behaviour Now Consistent With Other Tabs ✅
+
+
+90: All Translation Keys Added For new Pages And New Content ✅
+
+91: ORders Module Dashboard Delivered Status Optionl Documents Upload Logic -> Remeaning
 
 
 

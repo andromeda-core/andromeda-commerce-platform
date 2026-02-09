@@ -9,7 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class NotifyCustomerOrderCryptoPaymentExpired extends Notification implements ShouldQueue
+class NotifyCustomerOrderExpired extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -28,19 +28,20 @@ class NotifyCustomerOrderCryptoPaymentExpired extends Notification implements Sh
         $orderNo = $this->order->order_no;
         $fullAmount = number_format($this->order->full_amount, 2);
         $amount = number_format($this->order->amount, 2);
+        $paymentMethod = $this->order->payment_method;
         $currency = strtoupper($this->currency->name ?? 'USD');
         $home = route('home');
 
         return (new MailMessage)
             ->subject("Order #{$orderNo} Expired — Payment Not Received in Time")
             ->greeting("Hi {$notifiable->name},")
-            ->line("Your order **#{$orderNo}** was created but we didn’t receive the Crypto Currency payment within the allowed time window.")
+            ->line("Your order **#{$orderNo}** was created but we didn’t receive the payment within the allowed time window.")
             ->line('As a result, the order has now expired automatically. No funds have been deducted from your wallet.')
             ->line('**Order Details:**')
             ->line("• Order Number: {$orderNo}")
             ->line("• Remeaning Amount: {$amount} {$currency}")
             ->line("• Full Amount: {$fullAmount} {$currency}")
-            ->line('• Payment Method: Crypto Currency')
+            ->line('• Payment Method: '.$paymentMethod)
             ->line('If you still wish to complete your purchase, you can simply place the order again or choose another payment method below.')
             ->action('Place a New Order', $home)
             ->line('We’ve released the reserved items back into stock so they remain available for purchase.')

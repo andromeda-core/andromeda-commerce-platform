@@ -58,4 +58,9 @@ class Customer extends Model
     {
         return $this->hasMany(ShippingAddress::class, 'customer_id', 'id');
     }
+
+    public function orderCancelationRequests(): HasMany
+    {
+        return $this->hasMany(OrderCancelationRequest::class, 'customer_id', 'id');
+    }
 }

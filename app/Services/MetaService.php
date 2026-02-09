@@ -218,7 +218,7 @@ class MetaService
             // Instagram → DO NOT BLOCK
             // Log::info('Instagram webhook received (signature skipped)');
         } else {
-            info('Invalid Signature');
+            // info('Invalid Signature');
 
             return response('Invalid signature', 403);
         }
@@ -318,7 +318,7 @@ class MetaService
                     }
 
                     if (filter_var(trim($message), FILTER_VALIDATE_EMAIL)) {
-                        info('Valid email received: '.$message);
+                        // info('Valid email received: '.$message);
 
                         $email = strtolower(trim($message));
                         $user = User::where('email', $email)->first();
