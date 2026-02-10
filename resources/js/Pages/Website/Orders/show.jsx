@@ -1018,23 +1018,25 @@ function OrderItems({ order, currency, __ }) {
                                     </div>
 
 
-                                    <div className="mt-10 border-t border-surface-3-light dark:border-surface-3-dark" />
                                     {/* Add-ons */}
                                     {item.smartphone_addons?.length > 0 && (
-                                        <div className="py-3 space-y-2">
-                                            {item.smartphone_addons.map((addon) => (
-                                                <div
-                                                    key={addon.id}
-                                                    className="text-sm font-medium text-main-text-light dark:text-main-text-dark"
-                                                >
-                                                    <span className="font-medium">
-                                                        {addon.name} x {addon.quantity} :{' '}
-                                                    </span>
-                                                    {currency?.symbol}
-                                                    {Number(addon.total_price).toFixed(2)}
-                                                </div>
-                                            ))}
-                                        </div>
+                                        <>
+                                            <div className="mt-10 border-t border-surface-3-light dark:border-surface-3-dark" />
+                                            <div className="py-3 space-y-2">
+                                                {item.smartphone_addons.map((addon) => (
+                                                    <div
+                                                        key={addon.id}
+                                                        className="text-sm font-medium text-main-text-light dark:text-main-text-dark"
+                                                    >
+                                                        <span className="font-medium">
+                                                            {addon.name} x {addon.quantity} :{' '}
+                                                        </span>
+                                                        {currency?.symbol}
+                                                        {Number(addon.total_price).toFixed(2)}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </>
                                     )}
 
 
