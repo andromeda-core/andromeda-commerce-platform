@@ -1250,6 +1250,7 @@ class OrderRepository implements IOrderRepository
             ->with([
                 'customer.user',
                 'customer.user.metaContacts',
+                'cancelationRequest',
             ])
             ->where('id', $order_id)->first();
 
@@ -1257,6 +1258,13 @@ class OrderRepository implements IOrderRepository
             return [
                 'status' => false,
                 'message' => $this->trans::get('Order Not Found'),
+            ];
+        }
+
+        if ($order->cancelationRequest()->exists() && in_array($order->cancelationRequest()->first()->status, ['requested', 'approved'])) {
+            return [
+                'status' => false,
+                'message' => $this->trans::get('Order Cancelation Requested So You Can Not Upload Payment Proof'),
             ];
         }
 

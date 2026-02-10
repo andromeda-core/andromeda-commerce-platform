@@ -1028,7 +1028,7 @@ function Items({
                                                 Placeholder
                                             }
                                             alt={item?.smartphone?.model_name?.name}
-                                            className="object-cover w-full h-full transition-transform duration-300 group-hover/img:scale-110"
+                                            className="object-cover w-full h-full transition-transform duration-300 lg:group-hover/img:scale-110"
                                             loading="lazy"
                                             onError={(e) => (e.target.src = Placeholder)}
                                         />

@@ -77,31 +77,55 @@ class Order extends Model
 
     public function getIsRefundRequestedAttribute()
     {
+        if (! isset($this->id)) {
+            return false;
+        }
+
         return $this->refund()->exists();
     }
 
     public function getRefundRequestStatusAttribute()
     {
+        if (! isset($this->id)) {
+            return false;
+        }
+
         return $this->refund()?->exists() ? $this->refund()->first()?->refund_status : null;
     }
 
     public function getIsAddressChangeRequestedAttribute()
     {
+        if (! isset($this->id)) {
+            return false;
+        }
+
         return $this->addressChangeRequest()->exists();
     }
 
     public function getAddressChangeRequestStatusAttribute()
     {
+        if (! isset($this->id)) {
+            return false;
+        }
+
         return $this->addressChangeRequest()?->exists() ? $this->addressChangeRequest()->first()?->status : null;
     }
 
     public function getIsCancelationRequestedAttribute()
     {
+        if (! isset($this->id)) {
+            return false;
+        }
+
         return $this->cancelationRequest()->exists();
     }
 
     public function getCancelationRequestStatusAttribute()
     {
+        if (! isset($this->id)) {
+            return false;
+        }
+
         return $this->cancelationRequest()?->exists() ? $this->cancelationRequest()->first()?->status : null;
     }
 

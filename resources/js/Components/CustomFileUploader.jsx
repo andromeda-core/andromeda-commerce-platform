@@ -13,6 +13,7 @@ export default function CustomFileUploader({
     uploadButtonText = '',
     className = '',
     disabled = false,
+    customMessage = '',
 }) {
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef(null);
@@ -192,7 +193,7 @@ export default function CustomFileUploader({
                         {!disabled && (
                             <button
                                 onClick={handleRemove}
-                                className="absolute flex items-center justify-center w-8 h-8 text-white transition-all bg-red-500 rounded-full right-2 top-2 hover:bg-red-600"
+                                className="absolute flex items-center justify-center w-8 h-8 transition-all rounded-full text-main-text-dark dark:text-main-text-light bg-main-text-light dark:bg-main-text-dark right-2 top-2 hover:bg-red-600"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -214,7 +215,7 @@ export default function CustomFileUploader({
 
                     {/* File Info */}
                     {fileName && (
-                        <div className="flex items-center justify-between p-4 rounded-md bg-surface-2-light dark:bg-surface-2-dark">
+                        <div className="flex items-center justify-between p-4 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-2-dark">
                             <div className="flex items-center gap-3">
                                 <div className="flex items-center justify-center w-10 h-10 rounded-md bg-surface-3-light dark:bg-surface-3-dark">
                                     <svg
@@ -253,20 +254,20 @@ export default function CustomFileUploader({
                     onDragLeave={handleDragLeave}
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
-                    className={`cursor-pointer rounded-xl border-2 border-dashed p-8 text-center transition-all ${disabled
+                    className={`cursor-pointer rounded-md border-[2px] border-dashed p-8 text-center transition-all ${disabled
                         ? 'cursor-not-allowed opacity-50'
                         : isDragging
                             ? 'border-indigo-500 bg-indigo-50 dark:border-indigo-400 dark:bg-indigo-900/20'
-                            : 'border-red-300 bg-red-50/50 hover:border-red-400 hover:bg-red-50 dark:border-red-800 dark:bg-red-900/10 dark:hover:border-red-700 dark:hover:bg-red-900/20'
+                            : 'border-main-text-light bg-surface-1-light hover:bg-surface-2-light dark:border-main-text-dark dark:bg-surface-1-dark  dark:hover:bg-surface-2-dark'
                         }`}
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
-                        strokeWidth={1.5}
+                        strokeWidth={1.1}
                         stroke="currentColor"
-                        className={`mx-auto mb-4 h-16 w-16 transition-colors ${isDragging ? 'text-indigo-500 dark:text-indigo-400' : 'text-red-400'
+                        className={`mx-auto mb-4 h-14 w-14 transition-colors ${isDragging ? 'text-indigo-500 dark:text-indigo-400' : 'text-main-text-light dark:text-main-text-dark'
                             }`}
                     >
                         <path
@@ -275,15 +276,24 @@ export default function CustomFileUploader({
                             d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
                         />
                     </svg>
-                    <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+                    <h3 className="mb-2 text-[16px] font-semibold text-main-text-light dark:text-main-text-dark">
                         {isDragging ? __('Drop your file here') : uploadButtonText}
                     </h3>
-                    <p className="mb-4 text-sm text-gray-600 dark:text-white/60">
-                        {isDragging
-                            ? __('Release to upload')
-                            : __('Click to select or drag and drop your file')}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-white/40">
+                    {!customMessage && (
+                        <p className="mb-4  text-[14px] font-medium text-main-text-light dark:text-main-text-dark">
+                            {isDragging
+                                ? __('Release to upload')
+                                : __('Click to select or drag and drop your file')}
+                        </p>
+                    )}
+
+                    {customMessage && (
+                        <p className="mb-4  text-[14px] font-medium text-main-text-light dark:text-main-text-dark">
+                            {customMessage}
+                        </p>
+                    )}
+
+                    <p className="mb-4  text-[14px] font-medium text-main-text-light dark:text-main-text-dark">
                         {getFileTypeName()} (max. {(maxSize / 1024 / 1024).toFixed(0)}MB)
                     </p>
                 </div>

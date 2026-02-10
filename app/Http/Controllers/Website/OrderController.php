@@ -53,7 +53,9 @@ class OrderController extends Controller
             return to_route('website.orders.index');
         }
 
-        return Inertia::render('Website/Orders/show', compact('order'));
+        $countries = $this->customer->getCountries();
+
+        return Inertia::render('Website/Orders/show', compact('order', 'countries'));
     }
 
     public function uploadPaymentProof(Request $request)
