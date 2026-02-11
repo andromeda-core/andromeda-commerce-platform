@@ -289,15 +289,15 @@ const Sidebar = ({
                                     ,
 
 
-                                    user &&
-                                    {
-                                        label: __('Shipping Address'),
-                                        href: route('website.shipping-addresses.index'),
-                                        routeName: 'website.shipping-addresses.index',
-                                        type: 'link',
+                                    // user &&
+                                    // {
+                                    //     label: __('Shipping Address'),
+                                    //     href: route('website.shipping-addresses.index'),
+                                    //     routeName: 'website.shipping-addresses.index',
+                                    //     type: 'link',
 
-                                    }
-                                    ,
+                                    // }
+                                    // ,
 
                                 ]}
                             />

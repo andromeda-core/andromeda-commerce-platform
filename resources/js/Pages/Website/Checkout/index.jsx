@@ -7,7 +7,7 @@ import axios from 'axios';
 import Spinner from '@/Components/Spinner';
 import useWindowSize from '@/Hooks/useWindowSize';
 import { useTranslation } from '@/Hooks/useTranslation';
-import { Bitcoin, Landmark, Pencil, Star, Trash2, X } from 'lucide-react';
+import { Bitcoin, ChevronLeft, Landmark, Pencil, Star, Trash2, X } from 'lucide-react';
 import SocialMediaHelpIcon from '@/Components/SocialMediaHelpIcon';
 import PrimaryButton from '@/Components/PrimaryButton';
 import WebInput from '@/Components/WebInput';
@@ -532,33 +532,17 @@ export default function Checkout({
 
             <div className="min-h-screen transition-colors duration-200">
                 <div
-                    className={`max-w-8xl mx-auto sm:px-6 lg:px-8 ${windowSize.width <= 1024 && 'mb-20'}`}
+                    className={`max-w-8xl lg:my-7 mx-auto px-6 lg:px-8 ${windowSize.width <= 1024 && 'mb-20'}`}
                 >
-
-
                     {/* Header */}
-                    <div className="px-4 my-6 sm:px-0">
+                    <div className="my-2">
                         <Link
                             href={route('website.carts.index')}
-                            className="inline-flex items-center gap-2 text-sm font-medium transition-colors text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80"
+                            className="inline-flex items-center gap-2 mb-2 text-sm font-medium transition-colors lg:hidden text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80"
                         >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={2}
-                                stroke="currentColor"
-                                className="w-4 h-4"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
-                                />
-                            </svg>
-                            {__('Back to Cart')}
+                            <ChevronLeft />
                         </Link>
-                        <h1 className="text-xl font-semibold text-main-text-light dark:text-main-text-dark sm:text-3xl">
+                        <h1 className="text-[24px] font-semibold text-main-text-light dark:text-main-text-dark">
                             {__('Order Form')}
                         </h1>
                     </div>
@@ -717,7 +701,7 @@ function ShippingInfoCard({
     return (
         <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
             {/* Header with Edit Button */}
-            <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center justify-between mb-4">
                 <h2 className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                     {__('Shipping Information')}
                 </h2>
@@ -727,7 +711,7 @@ function ShippingInfoCard({
                     className="flex cursor-pointer items-center gap-1.5 text-[13px] font-medium text-main-text-light transition-colors hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-main-text-dark/80"
                 >
                     <Pencil className="w-4 h-4" />
-                    {__('Edit address')}
+                    <span className='hidden lg:block'>{__('Edit address')}</span>
                 </button>
             </div>
 
@@ -1005,7 +989,7 @@ function Items({
                         key={getItemKey(item)}
                         className={`border-t border-surface-3-light py-8 dark:border-surface-3-dark`}
                     >
-                        <div className="flex gap-6 border-t border-surface-3-light first:border-t-0 dark:border-surface-3-dark">
+                        <div className="flex flex-col gap-6 border-t lg:flex-row border-surface-3-light first:border-t-0 dark:border-surface-3-dark">
                             {/* Product Image */}
                             {(item?.smartphone?.smartphone_image_urls.length > 0 ||
                                 item?.smartphone?.smartphone_video_urls?.length > 0) && (
@@ -1193,7 +1177,7 @@ function Items({
 function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, removing, __, buy_now }) {
 
     return (
-        <div className="flex items-center gap-4 px-5 py-4 border-b border-surface-3-light dark:border-surface-3-dark">
+        <div className="flex items-center justify-center gap-2 py-4 border-b lg:px-5 lg:gap-4 border-surface-3-light dark:border-surface-3-dark">
             {/* Addon Name - Truncated after certain chars */}
             <div className="min-w-0 max-w-[70px] flex-1">
                 <p className="truncate text-[14px] font-normal dark:text-main-text-dark">
@@ -1212,7 +1196,7 @@ function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, remov
             </button>
 
             {/* Spacer to push quantity controls to the right */}
-            <div className="flex-1"></div>
+            <div className="lg:flex-1"></div>
 
             {/* Quantity Controls - Screenshot style with rounded square buttons */}
             <div className="flex items-center flex-shrink-0 gap-2">
@@ -1259,7 +1243,7 @@ function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, remov
             </div>
 
             {/* Total Price */}
-            <div className="w-24 flex-shrink-0 text-right text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
+            <div className="lg:flex-shrink-0 w-16 lg:w-24 text-[14px] font-semibold text-right text-main-text-light dark:text-main-text-dark">
                 {currency?.symbol}
                 {Number(item?.unit_price * quantity).toLocaleString('en-US')}
             </div>
@@ -1558,7 +1542,6 @@ function ShippingAddressModal({
     user,
 }) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(null);
-    const [selectedAddressId, setSelectedAddressId] = useState(shipping_addresses?.filter((address) => address.is_active === 1)[0]?.id);
 
     const [toggleProcessing, setToggleProcessing] = useState(false);
     const [deleteProcessing, setDeleteProcessing] = useState(false);
@@ -1639,7 +1622,6 @@ function ShippingAddressModal({
 
         const preventInertiaNavigation = (event) => {
             const pathname = event.detail?.visit?.url?.pathname || '';
-
             if (pathname.includes("/shipping-addresses") || pathname.includes('/shipping-address-status-toggle')) {
                 return;
             }
@@ -1647,7 +1629,11 @@ function ShippingAddressModal({
                 event.preventDefault();
             }
 
-            if (isOpen) {
+
+            const mainRoutes = ['/', '/global-search', '/shop', '/profile', '/cart', '/orders', '/bookmarks', '/privacy-policy', '/terms-of-service', 'contact'];
+            const isNavigatingToMainRoute = mainRoutes.some(route => pathname === route || pathname.startsWith(route));
+
+            if (isOpen && !isNavigatingToMainRoute) {
                 event.preventDefault();
             }
         };
@@ -1772,7 +1758,6 @@ function ShippingAddressModal({
 
                 onFinish: () => {
                     setToggleProcessing(false);
-                    setSelectedAddressId(id);
                     setIsDropdownOpen(null);
                 },
             },
@@ -1858,12 +1843,6 @@ function ShippingAddressModal({
     };
 
 
-    const handleSelectAddress = (addressId) => {
-
-        setSelectedAddressId(addressId);
-        handleToggleShippingAddressStatus(addressId);
-    };
-
 
     const EmptyShippingAddress = ({ onClick, processing, __ }) => {
         return (
@@ -1897,8 +1876,6 @@ function ShippingAddressModal({
         isDropdownOpen,
         setIsDropdownOpen,
         deleteProcessing,
-        onSelect,
-        selectedAddressId,
 
 
         __,
@@ -1907,223 +1884,71 @@ function ShippingAddressModal({
         if (item.is_active) {
             return (
                 <>
-                    <label
-                        className={`flex cursor-pointer items-center gap-3  px-5 py-1 transition-colors border rounded-md border-main-text-light bg-white dark:border-main-text-dark dark:bg-surface-2-dark`}
-                    >
-                        <input
-                            type="radio"
-                            name="payment_method"
-                            value="bank_transfer"
-                            checked={selectedAddressId === item?.id}
-                            onChange={() => onSelect(item?.id)}
-                            className="sr-only peer"
-                        />
+                    <div className="relative w-full p-5 transition-colors bg-white border rounded-md border-main-text-light dark:bg-surface-2-dark dark:border-main-text-dark">
 
-                        {/* outer circle */}
-                        <span className="flex items-center justify-center w-5 h-5 border border-black rounded-full">
-                            {/* inner white space */}
-                            <span className="flex items-center justify-center w-4 h-4 bg-white rounded-full">
-                                {/* black dot */}
-                                {selectedAddressId === item?.id && (
-                                    <span className="w-3 h-3 bg-black rounded-full" />
-                                )}
+                        {/* Top Right: Default Badge + Edit Button  For Mobile*/}
+                        <div className="flex items-center justify-between gap-2 lg:hidden lg:left-auto lg:justify-end">
+
+
+                            <span className="px-4 py-1 text-sm font-medium text-white bg-green-600 rounded-full">
+                                {__('default')}
                             </span>
-                        </span>
 
-                        <div className="relative w-full p-5 ">
-                            {/* Top Right: Default Badge + Edit Button */}
-                            <div className="absolute flex items-center gap-2 right-4 top-4">
-                                <span className="px-4 py-1 text-sm font-medium text-white bg-green-600 rounded-full">
-                                    {__('default')}
-                                </span>
-
-                                <button
-                                    type="button"
-                                    onClick={() => onEdit(item)}
-                                    className="flex items-center gap-1.5 rounded-md  px-3 py-1.5 text-sm font-medium text-main-text-light transition-colors hover:text-main-text-light/80  dark:text-main-text-dark dark:hover:text-main-text-dark/80"
+                            <button
+                                type="button"
+                                onClick={() => onEdit(item)}
+                                className="flex items-center gap-1.5 rounded-md  px-3 py-1.5 text-sm font-medium text-main-text-light transition-colors hover:text-main-text-light/80  dark:text-main-text-dark dark:hover:text-main-text-dark/80"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={1.5}
+                                    stroke="currentColor"
+                                    className="w-4 h-4"
                                 >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        strokeWidth={1.5}
-                                        stroke="currentColor"
-                                        className="w-4 h-4"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
-                                        />
-                                    </svg>
-                                    {__('Edit')}
-                                </button>
-                            </div>
-
-                            {/* Address Details */}
-
-                            <div className="pr-32 text-sm leading-relaxed text-main-text-light dark:text-main-text-dark">
-                                <p className="font-semibold">{item.name}</p>
-                                <p>{item.address_line1}</p>
-                                {item.address_line2 && <p>{item.address_line2}</p>}
-                                <p>
-                                    {item.city}, {item.state} {item.postal_code}
-                                </p>
-                                {item.phone && (
-                                    <p className="text-main-text-light dark:text-main-text-dark">{item.phone}</p>
-                                )}
-                                <p>{item.country?.name || item.country}</p>
-                            </div>
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
+                                    />
+                                </svg>
+                            </button>
                         </div>
-                    </label>
-                </>
-            );
-        }
 
-        // If this is an inactive/other address
-        return (
-            <>
+                        {/* Top Right: Default Badge + Edit Button  For Desktop*/}
+                        <div className="absolute items-center hidden gap-2 lg:flex top-4 right-4">
 
-                <label
-                    className={`flex cursor-pointer items-center gap-3  px-5 py-1 transition-colors border rounded-md border-surface-3-light bg-white  dark:border-surface-3-dark dark:bg-surface-1-dark `}
-                >
-                    <input
-                        type="radio"
-                        name="payment_method"
-                        value="bank_transfer"
-                        checked={selectedAddressId === item?.id}
-                        onChange={() => onSelect(item?.id)}
-                        className="sr-only peer"
-                    />
 
-                    {/* outer circle */}
-                    <span className="flex items-center justify-center w-5 h-5 border border-black rounded-full">
-                        {/* inner white space */}
-                        <span className="flex items-center justify-center w-4 h-4 bg-white rounded-full">
-                            {/* black dot */}
-                            {selectedAddressId === item?.id && (
-                                <span className="w-3 h-3 bg-black rounded-full" />
-                            )}
-                        </span>
-                    </span>
+                            <span className="px-4 py-1 text-sm font-medium text-white bg-green-600 rounded-full">
+                                {__('default')}
+                            </span>
 
-                    <div className="relative w-full p-5 ">
-                        {/* Top Right: Dropdown Menu */}
-                        <div className="absolute right-4 top-4">
-                            <div className="relative">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsDropdownOpen(item.id)}
-                                    className="rounded-md p-1.5 text-main-text-light transition-colors hover:bg-surface-2-light focus:outline-none focus:ring-0 focus:ring-offset-0 dark:text-main-text-dark dark:hover:bg-surface-2-dark"
+                            <button
+                                type="button"
+                                onClick={() => onEdit(item)}
+                                className="flex items-center gap-1.5 rounded-md  px-3 py-1.5 text-sm font-medium text-main-text-light transition-colors hover:text-main-text-light/80  dark:text-main-text-dark dark:hover:text-main-text-dark/80"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={1.5}
+                                    stroke="currentColor"
+                                    className="w-4 h-4"
                                 >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        strokeWidth={1.5}
-                                        stroke="currentColor"
-                                        className="w-5 h-5"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
-                                        />
-                                    </svg>
-                                </button>
-
-                                {/* Dropdown Menu */}
-                                {isDropdownOpen === item.id && (
-                                    <>
-                                        {/* Backdrop */}
-                                        <div
-                                            className="fixed inset-0 z-10"
-                                            onClick={() => setIsDropdownOpen(null)}
-                                        />
-
-                                        {/* Menu */}
-                                        <div className="absolute right-0 z-20 w-48 bg-white border rounded-md shadow-lg top-6 border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
-                                            <div className="py-3">
-                                                {/* Set as Default */}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        onToggle(item.id);
-                                                    }}
-                                                    className="flex items-center w-full gap-2 px-4 py-1 text-sm text-left transition-colors text-main-text-light lg:hover:bg-surface-2-light dark:text-main-text-dark dark:lg:hover:bg-surface-2-dark"
-                                                >
-                                                    {toggleProcessing ? (
-                                                        <Spinner />
-                                                    ) : (
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            strokeWidth={2}
-                                                            stroke="currentColor"
-                                                            className="w-4 h-4"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                                                            />
-                                                        </svg>
-                                                    )}
-                                                    {__('Set as default')}
-                                                </button>
-
-                                                {/* Edit */}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setIsDropdownOpen(null);
-                                                        onEdit(item);
-                                                    }}
-                                                    className="flex items-center w-full gap-2 px-4 py-2 text-sm text-left transition-colors text-main-text-light lg:hover:bg-surface-2-light dark:text-main-text-dark dark:lg:hover:bg-surface-2-dark"
-                                                >
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        strokeWidth={1.5}
-                                                        stroke="currentColor"
-                                                        className="w-4 h-4"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
-                                                        />
-                                                    </svg>
-
-                                                    {__('Edit')}
-                                                </button>
-
-                                                {/* Delete */}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        onRemove(item.id);
-                                                    }}
-                                                    className="flex items-center w-full gap-2 px-4 py-1 text-sm text-left text-red-600 transition-colors lg:hover:bg-red-50 dark:text-red-400 dark:lg:hover:bg-red-900/20"
-                                                >
-                                                    {deleteProcessing ? (
-                                                        <Spinner />
-                                                    ) : (
-                                                        <Trash2 className="w-4 h-4" />
-                                                    )}
-                                                    {__('Delete')}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
+                                    />
+                                </svg>
+                                {__('Edit')}
+                            </button>
                         </div>
 
                         {/* Address Details */}
-                        <div className="pr-12 text-sm leading-relaxed text-main-text-light dark:text-main-text-dark">
+                        <div className="pr-32 mt-3 text-sm leading-relaxed text-main-text-light dark:text-main-text-dark">
                             <p className="font-semibold">{item.name}</p>
                             <p>{item.address_line1}</p>
                             {item.address_line2 && <p>{item.address_line2}</p>}
@@ -2133,10 +1958,150 @@ function ShippingAddressModal({
                             {item.phone && (
                                 <p className="text-main-text-light dark:text-main-text-dark">{item.phone}</p>
                             )}
-                            <p>{item.country?.name}</p>
+                            <p>{item.country?.name || item.country}</p>
+                        </div>
+
+                    </div>
+                </>
+            );
+        }
+
+        // If this is an inactive/other address
+        return (
+            <>
+
+                <div className="relative w-full p-5 transition-colors bg-white border rounded-md border-surface-3-light hover:border-main-text-light/20 dark:bg-surface-1-dark dark:border-surface-3-dark dark:hover:border-main-text-dark/20">
+
+                    {/* Top Right: Dropdown Menu */}
+                    <div className="absolute top-4 right-4">
+                        <div className="relative">
+                            <button
+                                type="button"
+                                onClick={() => setIsDropdownOpen(item.id)}
+                                className="rounded-md p-1.5 text-main-text-light transition-colors lg:hover:bg-surface-2-light focus:outline-none focus:ring-0 focus:ring-offset-0 dark:text-main-text-dark dark:lg:hover:bg-surface-2-dark"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={1.5}
+                                    stroke="currentColor"
+                                    className="w-5 h-5"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
+                                    />
+                                </svg>
+                            </button>
+
+
+                            {/* Dropdown Menu */}
+                            {isDropdownOpen === item.id && (
+                                <>
+                                    {/* Backdrop */}
+                                    <div
+                                        className="fixed inset-0 z-10"
+                                        onClick={() => setIsDropdownOpen(null)}
+                                    />
+
+                                    {/* Menu */}
+                                    <div className="absolute right-0 z-20 w-48 bg-white border rounded-md shadow-lg top-6 border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+                                        <div className="py-3">
+                                            {/* Set as Default */}
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    onToggle(item.id);
+                                                }}
+                                                className="flex items-center w-full gap-2 px-4 py-1 text-sm text-left transition-colors text-main-text-light lg:hover:bg-surface-2-light dark:text-main-text-dark dark:lg:hover:bg-surface-2-dark"
+                                            >
+                                                {toggleProcessing ? (
+                                                    <Spinner />
+                                                ) : (
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        strokeWidth={2}
+                                                        stroke="currentColor"
+                                                        className="w-4 h-4"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                                                        />
+                                                    </svg>
+                                                )}
+                                                {__('Set as default')}
+                                            </button>
+
+                                            {/* Edit */}
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setIsDropdownOpen(null);
+                                                    onEdit(item);
+                                                }}
+                                                className="flex items-center w-full gap-2 px-4 py-2 text-sm text-left transition-colors text-main-text-light lg:hover:bg-surface-2-light dark:text-main-text-dark dark:lg:hover:bg-surface-2-dark"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    strokeWidth={1.5}
+                                                    stroke="currentColor"
+                                                    className="w-4 h-4"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
+                                                    />
+                                                </svg>
+
+                                                {__('Edit')}
+                                            </button>
+
+                                            {/* Delete */}
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    onRemove(item.id);
+                                                }}
+                                                className="flex items-center w-full gap-2 px-4 py-1 text-sm text-left text-red-600 transition-colors lg:hover:bg-red-50 dark:text-red-400 dark:lg:hover:bg-red-900/20"
+                                            >
+                                                {deleteProcessing ? (
+                                                    <Spinner />
+                                                ) : (
+                                                    <Trash2 className="w-4 h-4" />
+                                                )}
+                                                {__('Delete')}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
-                </label>
+
+                    {/* Address Details */}
+                    <div className="pr-32 text-sm leading-relaxed text-main-text-light dark:text-main-text-dark">
+                        <p className="font-semibold">{item.name}</p>
+                        <p>{item.address_line1}</p>
+                        {item.address_line2 && <p>{item.address_line2}</p>}
+                        <p>
+                            {item.city}, {item.state} {item.postal_code}
+                        </p>
+                        {item.phone && (
+                            <p className="text-main-text-light dark:text-main-text-dark">{item.phone}</p>
+                        )}
+                        <p>{item.country?.name || item.country}</p>
+                    </div>
+
+                </div>
 
 
             </>
@@ -2255,8 +2220,6 @@ function ShippingAddressModal({
                                                     isDropdownOpen={isDropdownOpen}
                                                     setIsDropdownOpen={setIsDropdownOpen}
                                                     deleteProcessing={deleteProcessing}
-                                                    selectedAddressId={selectedAddressId}
-                                                    onSelect={handleSelectAddress}
                                                     __={__}
                                                 />
                                             ))}
@@ -2288,8 +2251,6 @@ function ShippingAddressModal({
                                                                         setIsDropdownOpen
                                                                     }
                                                                     deleteProcessing={deleteProcessing}
-                                                                    selectedAddressId={selectedAddressId}
-                                                                    onSelect={handleSelectAddress}
                                                                     __={__}
                                                                 />
                                                             ))}
@@ -2325,20 +2286,7 @@ function ShippingAddressModal({
                                 onClick={() => onClose()}
                                 className="absolute p-1 text-black rounded-full left-4 dark:text-main-text-dark"
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth={1.5}
-                                    stroke="currentColor"
-                                    className="size-6"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-                                    />
-                                </svg>
+                                <ChevronLeft />
                             </button>
 
                             <h2 className="mx-10 text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
@@ -2370,8 +2318,6 @@ function ShippingAddressModal({
                                                 isDropdownOpen={isDropdownOpen}
                                                 setIsDropdownOpen={setIsDropdownOpen}
                                                 deleteProcessing={deleteProcessing}
-                                                selectedAddressId={selectedAddressId}
-                                                onSelect={handleSelectAddress}
                                                 __={__}
                                             />
                                         ))}
@@ -2399,8 +2345,6 @@ function ShippingAddressModal({
                                                                 isDropdownOpen={isDropdownOpen}
                                                                 setIsDropdownOpen={setIsDropdownOpen}
                                                                 deleteProcessing={deleteProcessing}
-                                                                selectedAddressId={selectedAddressId}
-                                                                onSelect={(id) => handleSelectAddress(id)}
                                                                 __={__}
                                                             />
                                                         ))}
@@ -2640,20 +2584,7 @@ function ShippingAddressModal({
                                             }
                                             className="absolute p-1 text-black rounded-full left-4 dark:text-main-text-dark"
                                         >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
-                                                stroke="currentColor"
-                                                className="size-6"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-                                                />
-                                            </svg>
+                                            <ChevronLeft />
                                         </button>
 
                                         <h2 className="mx-10 text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
@@ -3082,20 +3013,7 @@ function ShippingAddressModal({
                                             }}
                                             className="absolute p-1 text-black rounded-full left-4 dark:text-main-text-dark"
                                         >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
-                                                stroke="currentColor"
-                                                className="size-6"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-                                                />
-                                            </svg>
+                                            <ChevronLeft />
                                         </button>
 
                                         <h2 className="mx-10 text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
@@ -3567,20 +3485,7 @@ function SecondaryPaymentModal({
                                     onClick={onClose}
                                     className="absolute p-1 rounded-full left-4 text-main-text-light dark:text-main-text-dark"
                                 >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        strokeWidth={1.5}
-                                        stroke="currentColor"
-                                        className="size-6"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-                                        />
-                                    </svg>
+                                    <ChevronLeft />
                                 </button>
 
                                 <h2 className="mx-10 text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">

@@ -191,7 +191,7 @@
     }
 
     .logout-menu-item-button {
-        @apply font-normal text-sub-text-light dark:text-sub-text-dark lg:hover:bg-red-600/90 lg:hover:text-white lg:dark:hover:bg-red-600/90 lg:dark:hover:text-white;
+        @apply font-normal text-sub-text-light hover:bg-red-600/90 hover:text-white dark:text-sub-text-dark dark:hover:bg-red-600/90 dark:hover:text-white;
     }
 
     /* Menu Item Icon Active State */

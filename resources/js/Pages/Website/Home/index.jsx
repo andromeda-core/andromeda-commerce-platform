@@ -1478,12 +1478,12 @@ const index = () => {
                                                 <QRCode
                                                     id="qr-code-canvas"
                                                     className="size-40 sm:size-44 lg:size-60"
-                                                    {...(feedGallery.type === 'posts' && {
+                                                    {...(feedGallery?.type === 'posts' && {
                                                         value:
                                                             route('home') +
                                                             generateURL(feedGallery, true, true),
                                                     })}
-                                                    {...(feedGallery.type === 'smartphones' && {
+                                                    {...(feedGallery?.type === 'smartphones' && {
                                                         value:
                                                             route('home') + generateSmartphoneURL(feedGallery, true, true)
                                                     })}
@@ -1500,9 +1500,9 @@ const index = () => {
                                                 onClick={() => {
                                                     let url = null;
 
-                                                    if (feedGallery.type === 'posts') {
+                                                    if (feedGallery?.type === 'posts') {
                                                         url = route('home') + generateURL(feedGallery, true, true);
-                                                    } else if (feedGallery.type === 'smartphones') {
+                                                    } else if (feedGallery?.type === 'smartphones') {
                                                         url = route('home') + generateSmartphoneURL(feedGallery, true, true);
                                                     }
 

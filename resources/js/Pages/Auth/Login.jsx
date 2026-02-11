@@ -38,7 +38,7 @@ export default function Login({ canResetPassword, redirect }) {
             <div className="flex flex-col flex-1 w-full md:my-5 lg:w-1/2">
 
                 <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
-                    <div className="w-full mb-10">
+                    {/* <div className="w-full mb-10">
                         <Link
                             href={route('home')}
                             className="inline-flex items-center gap-1 text-[12px] transition-colors text-main-text-light hover:text-gray-700 dark:text-main-text-dark dark:hover:text-sub-text-dark "
@@ -61,7 +61,7 @@ export default function Login({ canResetPassword, redirect }) {
                             </svg>
                             {__('Back to Website')}
                         </Link>
-                    </div>
+                    </div> */}
                     <div>
                         <div className="mb-5 sm:mb-8">
                             <h1 className="mb-2 text-[21px] font-semibold text-main-text-light sm:text-title-md dark:text-main-text-dark">
@@ -119,8 +119,8 @@ export default function Login({ canResetPassword, redirect }) {
                                                     <div
                                                         className={
                                                             data.remember === true
-                                                                ? 'mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] border-black dark:border-surafce-3-dark bg-black dark:bg-surface-1-dark dark:border-gray-700'
-                                                                : 'mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] border-gray-300 bg-transparent'
+                                                                ? 'mr-3 flex h-4 w-4 items-center justify-center rounded-sm border-[1.25px] border-black dark:border-surafce-3-dark bg-black dark:bg-surface-1-dark dark:border-gray-700'
+                                                                : 'mr-3 flex h-4 w-4 items-center justify-center rounded-sm border-[1.25px] border-gray-300 bg-transparent'
                                                         }
                                                     >
                                                         <span

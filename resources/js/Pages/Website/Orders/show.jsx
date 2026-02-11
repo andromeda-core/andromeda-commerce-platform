@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
@@ -9,7 +9,7 @@ import Toast from '@/Components/Toast';
 import VideoWithThumbnail from '@/Components/VideoWithThumbnail';
 import axios from 'axios';
 import { useTranslation } from '@/Hooks/useTranslation';
-import { Copy } from 'lucide-react';
+import { ChevronLeft, Copy } from 'lucide-react';
 import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import duration from 'dayjs/plugin/duration';
 import dayjs from 'dayjs';
@@ -239,36 +239,21 @@ export default function OrderView({ order, countries }) {
             <div className="min-h-screen transition-colors duration-200">
 
                 <div
-                    className={`mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 ${windowSize.width <= 1024 && 'mb-20'}`}
+                    className={`max-w-8xl lg:my-7 mx-auto px-6 lg:px-8 ${windowSize.width <= 1024 && 'mb-20'}`}
                 >
 
-
                     {/* Header */}
-                    <div className="mb-8">
-                        {/* <Link
+                    <div className="my-2">
+                        <Link
                             href={route('website.orders.index')}
-                            className="inline-flex items-center gap-2 mb-4 text-sm font-medium transition-colors text-main-text-light dark:hover:text-sub-text-dark dark:text-main-text-dark hover:text-sub-text-light"
+                            className="inline-flex items-center gap-2 mb-4 text-sm font-medium transition-colors lg:hidden text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80"
                         >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={2}
-                                stroke="currentColor"
-                                className="w-4 h-4"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
-                                />
-                            </svg>
-                            {__('Back to Orders')}
-                        </Link> */}
+                            <ChevronLeft />
+                        </Link>
 
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                             <div className='flex items-center gap-5'>
-                                <h1 className="text-3xl font-bold text-main-text-light dark:text-main-text-dark">
+                                <h1 className="text-[24px] font-semibold text-main-text-light dark:text-main-text-dark">
                                     {__('View Details')} - #{order.order_no}
                                 </h1>
 
@@ -621,12 +606,14 @@ function BankDetailsCard({ order, __, setCopied, setCopiedMessage }) {
                 </p>
 
 
-                <p className="text-[14px] flex items-center gap-2 font-semibold text-main-text-light dark:text-main-text-dark">
+                <div className="text-[14px] flex items-center gap-2 font-semibold text-main-text-light dark:text-main-text-dark">
                     <span>
                         {__("Account Holder")}:   {order?.order_items[0]?.inventory_item?.smartphone
                             ?.category?.distributor
                             ?.bank_account_name || 'N/A'}
                     </span>
+
+
 
                     <button onClick={() => {
                         navigator.clipboard.writeText(order?.order_no);
@@ -636,7 +623,7 @@ function BankDetailsCard({ order, __, setCopied, setCopiedMessage }) {
                     }}>
                         <Copy className='size-4' />
                     </button>
-                </p>
+                </div>
 
 
 
@@ -918,7 +905,7 @@ function OrderItems({ order, currency, __ }) {
 
 
 
-                            <div className="flex items-start gap-x-6">
+                            <div className="flex flex-col items-start gap-6 lg:flex-row">
                                 {/* Product Image */}
                                 {(item?.inventory_item?.smartphone?.smartphone_image_urls?.length > 0 ||
                                     item?.inventory_item?.smartphone?.smartphone_video_urls?.length > 0) && (

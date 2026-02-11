@@ -2,6 +2,7 @@ import { useTranslation } from '@/Hooks/useTranslation';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, Link } from '@inertiajs/react';
+import { ChevronLeft } from 'lucide-react';
 import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 
 const index = ({ terms_of_service }) => {
@@ -90,7 +91,7 @@ const index = ({ terms_of_service }) => {
         <MainLayout>
             <Head title={__('Terms Of Service', true)} />
             <div className="sm:px-6 lg:px-8">
-                <div className={`px-6  mx-auto ${windowSize.width > 1024 ? 'pb-10' : 'pb-24'} lg:max-w-6xl sm:max-w-3xl`}>
+                <div className={`px-6 lg:mt-6  mx-auto ${windowSize.width > 1024 ? 'pb-10' : 'pb-24'} lg:max-w-6xl sm:max-w-3xl`}>
 
 
 
@@ -99,10 +100,16 @@ const index = ({ terms_of_service }) => {
                         <div className="absolute inset-0" />
 
 
-                        <div className="relative mx-auto my-10 lg:max-w-6xl sm:max-w-3xl ">
+                        <div className="relative mx-auto my-2 lg:max-w-6xl sm:max-w-3xl ">
 
+                            <button
+                                onClick={() => window.history.back()}
+                                className="inline-flex items-center gap-2 mb-4 text-sm font-medium transition-colors lg:hidden text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80"
+                            >
+                                <ChevronLeft />
+                            </button>
 
-                            <h1 className="text-2xl font-semibold text-main-text-light dark:text-main-text-dark">
+                            <h1 className="text-[24px] font-semibold text-main-text-light dark:text-main-text-dark">
                                 {__('Terms Of Service')}
                             </h1>
 
@@ -126,7 +133,7 @@ const index = ({ terms_of_service }) => {
                     </div>
 
                     {/* Main Content */}
-                    <div className="mx-auto lg:max-w-6xl sm:max-w-3xl lg:flex lg:gap-8">
+                    <div className="mx-auto my-5 lg:max-w-6xl sm:max-w-3xl lg:flex lg:gap-8">
                         {/* Sticky Table of Contents */}
                         <aside className="hidden shrink-0 lg:block lg:w-80">
                             <div className="sticky top-24">

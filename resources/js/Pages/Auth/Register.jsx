@@ -40,7 +40,7 @@ export default function Register({ countries, redirect }) {
 
                 <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
 
-                    <div className="w-full mb-10">
+                    {/* <div className="w-full mb-10">
                         <Link
                             href={route('home')}
                             className="inline-flex items-center text-[12px] gap-1 transition-colors text-main-text-light hover:text-gray-700 dark:text-main-text-dark dark:hover:text-sub-text-dark "
@@ -63,7 +63,7 @@ export default function Register({ countries, redirect }) {
                             </svg>
                             {__('Back to Website')}
                         </Link>
-                    </div>
+                    </div> */}
 
                     <div>
                         <div className="mb-5 sm:mb-8">

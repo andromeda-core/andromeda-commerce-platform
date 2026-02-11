@@ -7,6 +7,7 @@ import getCookie from '@/Hooks/useGetCookie';
 import Toast from '@/Components/Toast';
 import Spinner from '@/Components/Spinner';
 import { useTranslation } from '@/Hooks/useTranslation';
+import { ChevronLeft } from 'lucide-react';
 
 const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
     const windowSize = useWindowSize();
@@ -230,20 +231,7 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                                 onClick={close}
                                 className="absolute p-1 rounded-full left-4 text-main-text-light dark:text-main-text-dark"
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth={1.5}
-                                    stroke="currentColor"
-                                    className="size-6"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-                                    />
-                                </svg>
+                                <ChevronLeft />
                             </button>
 
                             <h2 className="mx-10 text-xl font-semibold text-main-text-light dark:text-main-text-dark">

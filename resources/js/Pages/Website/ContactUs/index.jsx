@@ -6,6 +6,7 @@ import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, useForm } from '@inertiajs/react';
 import React from 'react';
 import { useTranslation } from '@/Hooks/useTranslation';
+import { ChevronLeft } from 'lucide-react';
 
 const Index = () => {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -38,17 +39,24 @@ const Index = () => {
             <Head title={__("Contact Us", true)} />
 
             <div className="sm:px-6 lg:px-8">
-                <div className={` mx-auto ${windowSize.width > 1024 ? 'pb-12' : 'pb-24'} lg:max-w-6xl sm:max-w-3xl`}>
+                <div className={`mx-auto ${windowSize.width > 1024 ? 'pb-12' : 'pb-24'} lg:mt-6 lg:max-w-6xl sm:max-w-3xl`}>
 
 
                     {/* Hero Section */}
                     <div className="relative overflow-hidden text-white dark:text-black ">
                         <div className="absolute inset-0" />
 
-                        <div className="relative px-6 mx-auto my-10 lg:max-w-6xl sm:max-w-3xl">
+                        <div className="relative px-6 mx-auto my-2 lg:max-w-6xl sm:max-w-3xl">
+
+                            <button
+                                onClick={() => window.history.back()}
+                                className="inline-flex items-center gap-2 mb-4 text-sm font-medium transition-colors lg:hidden text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80"
+                            >
+                                <ChevronLeft />
+                            </button>
 
 
-                            <h1 className="text-2xl font-semibold text-main-text-light dark:text-main-text-dark">
+                            <h1 className="text-[24px] font-semibold text-main-text-light dark:text-main-text-dark">
                                 {__('Contact Us')}
                             </h1>
 

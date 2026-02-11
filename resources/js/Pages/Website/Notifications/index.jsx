@@ -173,7 +173,7 @@ const index = ({ notifications }) => {
 
                     {/* Header Section */}
                     <div className="py-8">
-                        <div className="flex items-center justify-between mb-6">
+                        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
                             <div className="flex items-center gap-4">
                                 <div className="relative">
                                     <BellIcon className="w-8 h-8 dark:text-main-text-dark text-main-text-light" />
@@ -184,7 +184,7 @@ const index = ({ notifications }) => {
                                     )}
                                 </div>
                                 <div>
-                                    <h1 className="text-3xl font-semibold dark:text-main-text-dark text-main-text-light">
+                                    <h1 className="text-[24px] font-semibold dark:text-main-text-dark text-main-text-light">
                                         {__('Notifications')}
                                     </h1>
                                     <p className="mt-1 text-sm dark:text-sub-text-dark text-sub-text-light">
@@ -200,7 +200,7 @@ const index = ({ notifications }) => {
                                 <button
                                     onClick={markAllAsRead}
                                     disabled={loadingStates.markAllAsRead}
-                                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-200 border rounded-lg dark:text-main-text-dark text-main-text-light dark:bg-surface-2-dark bg-surface-2-light dark:lg:hover:bg-surface-3-dark lg:hover:bg-surface-3-light dark:border-primary-input-border-dark border-primary-input-border-light disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-200 bg-white border rounded-lg dark:text-main-text-dark text-main-text-light dark:bg-surface-2-dark dark:lg:hover:bg-surface-3-dark lg:hover:bg-surface-3-light dark:border-primary-input-border-dark border-primary-input-border-light disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {loadingStates.markAllAsRead ? (
                                         <>
@@ -218,7 +218,7 @@ const index = ({ notifications }) => {
                         </div>
 
                         {/* Filter Tabs */}
-                        <div className="flex gap-2 p-1 rounded-lg dark:bg-surface-1-dark bg-surface-1-light w-fit">
+                        <div className="flex gap-2 p-1 bg-white rounded-md dark:bg-surface-1-dark w-fit">
                             <button
                                 onClick={() => setFilter('all')}
                                 className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${filter === 'all'
@@ -252,9 +252,9 @@ const index = ({ notifications }) => {
                     {/* Main Content */}
                     <div className="mx-auto lg:max-w-6xl sm:max-w-3xl">
                         {filteredNotifications.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-16 border dark:bg-surface-1-dark bg-surface-1-light rounded-xl dark:border-surface-3-dark border-surface-3-light">
-                                <div className="p-4 mb-4 rounded-full dark:bg-surface-2-dark bg-surface-2-light">
-                                    <BellIcon className="w-12 h-12 dark:text-sub-text-dark text-sub-text-light" />
+                            <div className="flex flex-col items-center justify-center py-16 bg-white border rounded-md dark:bg-surface-1-dark dark:border-surface-3-dark border-surface-3-light">
+                                <div className="p-4 mb-4 rounded-full ">
+                                    <BellIcon className="w-12 h-12 dark:text-main-text-dark text-main-text-light" />
                                 </div>
                                 <h3 className="mb-2 text-xl font-semibold dark:text-main-text-dark text-main-text-light">
                                     {__('No notifications')}
@@ -371,10 +371,10 @@ const NotificationItem = ({ notification, markAsRead, deleteNotification, loadin
         for (const [unit, secondsInUnit] of Object.entries(intervals)) {
             const interval = Math.floor(seconds / secondsInUnit);
             if (interval >= 1) {
-                return `${interval} ${__(unit)}${interval > 1 ? 's' : ''} ${__('ago')}`;
+                return `${interval} ${__(unit, true)}${interval > 1 ? 's' : ''} ${__('ago', true)}`;
             }
         }
-        return __('Just now');
+        return __('Just now', true);
     };
 
     const handleClick = () => {
@@ -386,10 +386,10 @@ const NotificationItem = ({ notification, markAsRead, deleteNotification, loadin
     return (
         <div
             onClick={handleClick}
-            className={`group relative flex gap-4 p-4 rounded-xl transition-all duration-200 ${hasActionUrl ? 'cursor-pointer' : 'cursor-default'}
+            className={`group relative flex gap-4 p-4 rounded-md transition-all duration-200 ${hasActionUrl ? 'cursor-pointer' : 'cursor-default'}
                        border ${isUnread
-                    ? 'dark:bg-surface-1-dark bg-surface-1-light dark:border-surface-3-dark border-surface-3-light'
-                    : 'dark:bg-surface-1-dark bg-surface-1-light dark:border-surface-3-dark border-surface-3-light'
+                    ? 'dark:bg-surface-1-dark bg-white dark:border-surface-3-dark border-surface-3-light'
+                    : 'dark:bg-surface-1-dark bg-white dark:border-surface-3-dark border-surface-3-light'
                 }
                        dark:lg:hover:bg-surface-2-dark lg:hover:bg-surface-2-light
 
@@ -406,7 +406,7 @@ const NotificationItem = ({ notification, markAsRead, deleteNotification, loadin
                 <div className="flex items-start justify-between gap-4 mb-1">
                     <h3 className={`font-semibold ${isUnread
                         ? 'dark:text-main-text-dark text-main-text-light'
-                        : 'dark:text-sub-text-dark text-sub-text-light'
+                        : 'dark:text-main-text-dark text-main-text-light'
                         }`}>
                         {notification.data?.title || __('Notification')}
                     </h3>
@@ -421,7 +421,7 @@ const NotificationItem = ({ notification, markAsRead, deleteNotification, loadin
                                     markAsRead(notification.id);
                                 }}
                                 disabled={isMarkingAsRead || isDeleting}
-                                className="p-2 transition-colors duration-200 rounded-lg dark:lg:hover:bg-surface-3-dark lg:hover:bg-surface-3-light dark:text-sub-text-dark text-sub-text-light dark:lg:hover:text-green-400 lg:hover:text-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="p-2 transition-colors duration-200 rounded-md dark:lg:hover:bg-surface-3-dark lg:hover:bg-white dark:text-main-text-dark text-main-text-light dark:lg:hover:text-green-400 lg:hover:text-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
                                 title={__('Mark as read')}
                             >
                                 {isMarkingAsRead ? (
@@ -437,7 +437,7 @@ const NotificationItem = ({ notification, markAsRead, deleteNotification, loadin
                                 deleteNotification(notification.id);
                             }}
                             disabled={isDeleting || isMarkingAsRead}
-                            className="p-2 transition-colors duration-200 rounded-lg dark:lg:hover:bg-surface-3-dark lg:hover:bg-surface-3-light dark:text-sub-text-dark text-sub-text-light dark:lg:hover:text-red-400 lg:hover:text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="p-2 transition-colors duration-200 rounded-md dark:lg:hover:bg-surface-3-dark lg:hover:bg-white dark:text-main-text-dark text-main-text-light dark:lg:hover:text-red-400 lg:hover:text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
                             title={__('Delete')}
                         >
                             {isDeleting ? (
@@ -449,11 +449,11 @@ const NotificationItem = ({ notification, markAsRead, deleteNotification, loadin
                     </div>
                 </div>
 
-                <p className="mb-2 text-sm dark:text-sub-text-dark text-sub-text-light line-clamp-5">
+                <p className="mb-2 text-sm dark:text-main-text-dark text-main-text-light line-clamp-5">
                     {notification.data?.message || __('No message available')}
                 </p>
 
-                <div className="flex items-center gap-2 text-xs dark:text-sub-text-dark text-sub-text-light">
+                <div className="flex items-center gap-2 text-xs dark:text-main-text-dark text-main-text-light">
                     <ClockIcon className="w-3 h-3" />
                     <span>{timeAgo(notification.created_at)}</span>
                 </div>

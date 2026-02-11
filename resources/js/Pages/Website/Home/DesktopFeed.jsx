@@ -1042,6 +1042,7 @@ const DesktopFeed = ({
             if (shouldCleanupBrowserHistoryRef.current) {
                 window.history.replaceState({}, '', window.location.pathname);
             }
+            setShowQrCode(false);
             setCartProcessing(false);
             setSpatiotemporalInfoModal(false);
             setBuyNowProcessing(false);

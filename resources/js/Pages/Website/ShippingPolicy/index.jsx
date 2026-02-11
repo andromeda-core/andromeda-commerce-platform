@@ -2,6 +2,7 @@ import { useTranslation } from '@/Hooks/useTranslation';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, Link, router } from '@inertiajs/react';
+import { ChevronLeft } from 'lucide-react';
 import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 
 const index = ({ shipping_policy, smartphone_slug }) => {
@@ -98,7 +99,7 @@ const index = ({ shipping_policy, smartphone_slug }) => {
         <MainLayout>
             <Head title={__('Shipping Policy', true)} />
             <div className="sm:px-6 lg:px-8">
-                <div className={`px-6  mx-auto ${windowSize.width > 1024 ? 'pb-10' : 'pb-24'} lg:max-w-6xl sm:max-w-3xl`}>
+                <div className={`px-6  lg:mt-6  mx-auto ${windowSize.width > 1024 ? 'pb-10' : 'pb-24'} lg:max-w-6xl sm:max-w-3xl`}>
 
 
 
@@ -106,28 +107,22 @@ const index = ({ shipping_policy, smartphone_slug }) => {
                     <div className="relative overflow-hidden text-main-text-dark dark:text-main-text-light ">
                         <div className="absolute inset-0" />
 
-                        <div className="absolute flex items-center justify-start lg:hidden -left-1 top-3">
+
+                        <div className="relative mx-auto my-2 lg:max-w-6xl sm:max-w-3xl ">
+
                             <button
                                 onClick={() => {
                                     router.get(route('home') + generateSmartphoneURL(true, true));
 
                                 }}
-                                className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark"
+                                className="inline-flex items-center gap-2 mb-4 text-sm font-medium transition-colors lg:hidden text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80"
+
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-6">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-                                </svg>
+                                <ChevronLeft />
 
                             </button>
 
-                        </div>
-
-
-
-                        <div className="relative mx-auto my-10 lg:max-w-6xl sm:max-w-3xl ">
-
-
-                            <h1 className="text-2xl font-semibold text-main-text-light dark:text-main-text-dark">
+                            <h1 className="text-[24px] font-semibold text-main-text-light dark:text-main-text-dark">
                                 {__('Shipping Policy')}
                             </h1>
 
@@ -150,7 +145,7 @@ const index = ({ shipping_policy, smartphone_slug }) => {
                     </div>
 
                     {/* Main Content */}
-                    <div className="mx-auto lg:max-w-6xl sm:max-w-3xl lg:flex lg:gap-8">
+                    <div className="mx-auto my-5 lg:max-w-6xl sm:max-w-3xl lg:flex lg:gap-8">
                         {/* Sticky Table of Contents */}
                         <aside className="hidden shrink-0 lg:block lg:w-80">
                             <div className="sticky top-24">

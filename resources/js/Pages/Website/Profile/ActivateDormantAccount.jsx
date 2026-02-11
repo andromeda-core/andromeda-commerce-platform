@@ -60,7 +60,7 @@ const ActivateDormantAccount = () => {
                             </div>
 
                             {/* Title */}
-                            <h1 className="mb-3 text-2xl font-semibold text-center text-main-text-light dark:text-main-text-dark">
+                            <h1 className="mb-3 text-[24px] font-semibold text-center text-main-text-light dark:text-main-text-dark">
                                 {__('Account Dormant')}
                             </h1>
 

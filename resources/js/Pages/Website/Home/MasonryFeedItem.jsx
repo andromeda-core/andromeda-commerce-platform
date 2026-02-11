@@ -126,7 +126,7 @@ const MasonryFeedItem = memo(
                                                 );
                                             }}
                                         >
-                                            <button className="text-[8px] text-white sm:text-[9px] md:text-[10px] lg:text-[14px]">
+                                            <button className="text-[8px] text-main-text-light dark:text-main-text-dark sm:text-[9px] md:text-[10px] lg:text-[14px]">
                                                 {unmarking ? (
                                                     <Spinner />
                                                 ) : (
@@ -260,7 +260,7 @@ const MasonryFeedItem = memo(
                                                 );
                                             }}
                                         >
-                                            <button className="text-[8px] text-white sm:text-[9px] md:text-[10px] lg:text-[14px]">
+                                            <button className="text-[8px] text-main-text-light dark:text-main-text-dark sm:text-[9px] md:text-[10px] lg:text-[14px]">
                                                 {unmarking ? (
                                                     <Spinner />
                                                 ) : (
@@ -341,7 +341,7 @@ const MasonryFeedItem = memo(
                                         );
                                     }}
                                 >
-                                    <button className="text-[8px] text-white sm:text-[9px] md:text-[10px] lg:text-[14px]">
+                                    <button className="text-[8px] text-main-text-light dark:text-main-text-dark sm:text-[9px] md:text-[10px] lg:text-[14px]">
                                         {unmarking ? (
                                             <Spinner />
                                         ) : (

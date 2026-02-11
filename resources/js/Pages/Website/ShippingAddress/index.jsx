@@ -10,6 +10,7 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PrimaryButton from '@/Components/PrimaryButton';
 import { useTranslation } from '@/Hooks/useTranslation';
+import { ChevronLeft, Trash2 } from 'lucide-react';
 
 const Index = ({ shipping_addresses, countries }) => {
 
@@ -368,10 +369,16 @@ const Index = ({ shipping_addresses, countries }) => {
 
 
             <div className="sm:px-6 lg:px-8">
-                <div className={`px-6  mx-auto ${windowSize.width > 1024 ? 'pb-0 mb-10' : 'pb-32'} lg:max-w-6xl sm:max-w-3xl `}>
+                <div className={`px-6 lg:my-8 mx-auto ${windowSize.width > 1024 ? 'pb-0 mb-10' : 'pb-32'} lg:max-w-6xl sm:max-w-3xl `}>
 
-                    <div className="my-10">
-                        <h1 className="text-2xl font-semibold text-main-text-light dark:text-main-text-dark">
+                    <div className="my-2 ">
+                        <Link
+                            href={route('website.profile.index')}
+                            className="inline-flex items-center gap-2 mb-4 text-sm font-medium transition-colors lg:hidden text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80"
+                        >
+                            <ChevronLeft />
+                        </Link>
+                        <h1 className="text-[24px] font-semibold text-main-text-light dark:text-main-text-dark">
                             {__('Shipping Address')}
                         </h1>
                         <p className="mt-1 text-sm text-sub-text-light dark:sub-text-dark">
@@ -381,14 +388,14 @@ const Index = ({ shipping_addresses, countries }) => {
 
 
 
-                    <div className="flex flex-wrap items-center justify-center gap-4 mb-2 xl:justify-between">
-                        <p className='text-main-text-light dark:text-main-text-dark'> <span className='font-semibold'>{__('Default Shipping Address')}</span> ({__('Used for delivery at checkout.')}) </p>
+                    <div className="flex flex-wrap items-center justify-start gap-4 mb-2 lg:justify-between">
+                        <p className='text-main-text-light dark:text-main-text-dark'> <span className='font-semibold'>{__('Default Shipping Address')}</span> </p>
 
                         <PrimaryButton
                             Text={__("Add Address")}
                             Type={"button"}
                             Action={() => setIsCreateShippingAddressModalOpen(true)}
-                            CustomClass={"w-[280px] !text-center"}
+                            CustomClass={"w-full lg:w-[280px] h-[40px] !text-center"}
                         />
                     </div>
 
@@ -664,20 +671,7 @@ const Index = ({ shipping_addresses, countries }) => {
                                             onClick={() => setIsCreateShippingAddressModalOpen(false)}
                                             className="absolute p-1 text-black rounded-full left-4 dark:text-main-text-dark"
                                         >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
-                                                stroke="currentColor"
-                                                className="size-6"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-                                                />
-                                            </svg>
+                                            <ChevronLeft />
                                         </button>
 
                                         <h2 className="mx-10 text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
@@ -1143,20 +1137,7 @@ const Index = ({ shipping_addresses, countries }) => {
                                             }}
                                             className="absolute p-1 text-black rounded-full left-4 dark:text-main-text-dark"
                                         >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
-                                                stroke="currentColor"
-                                                className="size-6"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-                                                />
-                                            </svg>
+                                            <ChevronLeft />
                                         </button>
 
                                         <h2 className="mx-10 text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
@@ -1405,10 +1386,12 @@ const ShippingAddressItem = ({ item, onEdit, onToggle, onRemove, toggleProcessin
     // If this is the active/default address
     if (item.is_active) {
         return (
-            <div className="relative w-full p-5 transition-colors border rounded-md bg-surface-2-light border-main-text-light dark:bg-surface-2-dark dark:border-main-text-dark">
+            <div className="relative w-full p-5 transition-colors bg-white border rounded-md border-main-text-light dark:bg-surface-2-dark dark:border-main-text-dark">
 
-                {/* Top Right: Default Badge + Edit Button */}
-                <div className="absolute flex items-center gap-2 top-4 right-4">
+                {/* Top Right: Default Badge + Edit Button  For Mobile*/}
+                <div className="flex items-center justify-between gap-2 lg:hidden lg:left-auto lg:justify-end">
+
+
                     <span className="px-4 py-1 text-sm font-medium text-white bg-green-600 rounded-full">
                         {__('default')}
                     </span>
@@ -1416,22 +1399,67 @@ const ShippingAddressItem = ({ item, onEdit, onToggle, onRemove, toggleProcessin
                     <button
                         type="button"
                         onClick={() => onEdit(item)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors bg-surface-2-light dark:bg-surface-2-dark  rounded-md text-main-text-light dark:text-main-text-dark hover:text-main-text-light/80 dark:hover:text-main-text-dark/80"
+                        className="flex items-center gap-1.5 rounded-md  px-3 py-1.5 text-sm font-medium text-main-text-light transition-colors hover:text-main-text-light/80  dark:text-main-text-dark dark:hover:text-main-text-dark/80"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="w-4 h-4"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
+                            />
+                        </svg>
+                    </button>
+                </div>
+
+                {/* Top Right: Default Badge + Edit Button  For Desktop*/}
+                <div className="absolute items-center hidden gap-2 lg:flex top-4 right-4">
+
+
+                    <span className="px-4 py-1 text-sm font-medium text-white bg-green-600 rounded-full">
+                        {__('default')}
+                    </span>
+
+                    <button
+                        type="button"
+                        onClick={() => onEdit(item)}
+                        className="flex items-center gap-1.5 rounded-md  px-3 py-1.5 text-sm font-medium text-main-text-light transition-colors hover:text-main-text-light/80  dark:text-main-text-dark dark:hover:text-main-text-dark/80"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="w-4 h-4"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
+                            />
                         </svg>
                         {__('Edit')}
                     </button>
                 </div>
 
                 {/* Address Details */}
-                <div className="pr-32 text-sm leading-relaxed text-main-text-light dark:text-main-text-dark">
+                <div className="pr-32 mt-3 text-sm leading-relaxed text-main-text-light dark:text-main-text-dark">
                     <p className="font-semibold">{item.name}</p>
                     <p>{item.address_line1}</p>
                     {item.address_line2 && <p>{item.address_line2}</p>}
-                    <p>{item.city}, {item.state} {item.postal_code}</p>
-                    {item.phone && <p className="text-sub-text-light dark:text-sub-text-dark">{item.phone}</p>}
+                    <p>
+                        {item.city}, {item.state} {item.postal_code}
+                    </p>
+                    {item.phone && (
+                        <p className="text-main-text-light dark:text-main-text-dark">{item.phone}</p>
+                    )}
                     <p>{item.country?.name || item.country}</p>
                 </div>
 
@@ -1441,7 +1469,7 @@ const ShippingAddressItem = ({ item, onEdit, onToggle, onRemove, toggleProcessin
 
     // If this is an inactive/other address
     return (
-        <div className="relative w-full p-5 transition-colors border rounded-md bg-surface-1-light border-surface-3-light hover:border-main-text-light/20 dark:bg-surface-1-dark dark:border-surface-3-dark dark:hover:border-main-text-dark/20">
+        <div className="relative w-full p-5 transition-colors bg-white border rounded-md border-surface-3-light hover:border-main-text-light/20 dark:bg-surface-1-dark dark:border-surface-3-dark dark:hover:border-main-text-dark/20">
 
             {/* Top Right: Dropdown Menu */}
             <div className="absolute top-4 right-4">
@@ -1449,7 +1477,7 @@ const ShippingAddressItem = ({ item, onEdit, onToggle, onRemove, toggleProcessin
                     <button
                         type="button"
                         onClick={() => setIsDropdownOpen(item.id)}
-                        className="p-1.5 transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-2-dark focus:outline-none focus:ring-0 focus:ring-offset-0"
+                        className="rounded-md p-1.5 text-main-text-light transition-colors lg:hover:bg-surface-2-light focus:outline-none focus:ring-0 focus:ring-offset-0 dark:text-main-text-dark dark:lg:hover:bg-surface-2-dark"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -1467,6 +1495,7 @@ const ShippingAddressItem = ({ item, onEdit, onToggle, onRemove, toggleProcessin
                         </svg>
                     </button>
 
+
                     {/* Dropdown Menu */}
                     {isDropdownOpen === item.id && (
                         <>
@@ -1477,18 +1506,16 @@ const ShippingAddressItem = ({ item, onEdit, onToggle, onRemove, toggleProcessin
                             />
 
                             {/* Menu */}
-                            <div className="absolute right-0 z-20 w-48 mt-1 border rounded-md shadow-lg bg-surface-1-light border-surface-3-light dark:bg-surface-1-dark dark:border-surface-3-dark">
-                                <div className="py-1">
+                            <div className="absolute right-0 z-20 w-48 bg-white border rounded-md shadow-lg top-6 border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+                                <div className="py-3">
                                     {/* Set as Default */}
                                     <button
                                         type="button"
                                         onClick={() => {
-
                                             onToggle(item.id);
                                         }}
-                                        className="flex items-center w-full gap-2 px-4 py-1 text-sm text-left transition-colors text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-2-dark "
+                                        className="flex items-center w-full gap-2 px-4 py-1 text-sm text-left transition-colors text-main-text-light lg:hover:bg-surface-2-light dark:text-main-text-dark dark:lg:hover:bg-surface-2-dark"
                                     >
-
                                         {toggleProcessing ? (
                                             <Spinner />
                                         ) : (
@@ -1506,7 +1533,6 @@ const ShippingAddressItem = ({ item, onEdit, onToggle, onRemove, toggleProcessin
                                                     d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
                                                 />
                                             </svg>
-
                                         )}
                                         {__('Set as default')}
                                     </button>
@@ -1518,10 +1544,21 @@ const ShippingAddressItem = ({ item, onEdit, onToggle, onRemove, toggleProcessin
                                             setIsDropdownOpen(null);
                                             onEdit(item);
                                         }}
-                                        className="flex items-center w-full gap-2 px-4 py-1 text-sm text-left transition-colors text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-2-dark"
+                                        className="flex items-center w-full gap-2 px-4 py-2 text-sm text-left transition-colors text-main-text-light lg:hover:bg-surface-2-light dark:text-main-text-dark dark:lg:hover:bg-surface-2-dark"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            strokeWidth={1.5}
+                                            stroke="currentColor"
+                                            className="w-4 h-4"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
+                                            />
                                         </svg>
 
                                         {__('Edit')}
@@ -1533,26 +1570,12 @@ const ShippingAddressItem = ({ item, onEdit, onToggle, onRemove, toggleProcessin
                                         onClick={() => {
                                             onRemove(item.id);
                                         }}
-                                        className="flex items-center w-full gap-2 px-4 py-1 text-sm text-left text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                                        className="flex items-center w-full gap-2 px-4 py-1 text-sm text-left text-red-600 transition-colors lg:hover:bg-red-50 dark:text-red-400 dark:lg:hover:bg-red-900/20"
                                     >
-
                                         {deleteProcessing ? (
                                             <Spinner />
                                         ) : (
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
-                                                stroke="currentColor"
-                                                className="w-4 h-4"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                                                />
-                                            </svg>
+                                            <Trash2 className="w-4 h-4" />
                                         )}
                                         {__('Delete')}
                                     </button>
@@ -1564,13 +1587,17 @@ const ShippingAddressItem = ({ item, onEdit, onToggle, onRemove, toggleProcessin
             </div>
 
             {/* Address Details */}
-            <div className="pr-12 text-sm leading-relaxed text-main-text-light dark:text-main-text-dark">
+            <div className="pr-32 text-sm leading-relaxed text-main-text-light dark:text-main-text-dark">
                 <p className="font-semibold">{item.name}</p>
                 <p>{item.address_line1}</p>
                 {item.address_line2 && <p>{item.address_line2}</p>}
-                <p>{item.city}, {item.state} {item.postal_code}</p>
-                {item.phone && <p className="text-sub-text-light dark:text-sub-text-dark">{item.phone}</p>}
-                <p>{item.country?.name}</p>
+                <p>
+                    {item.city}, {item.state} {item.postal_code}
+                </p>
+                {item.phone && (
+                    <p className="text-main-text-light dark:text-main-text-dark">{item.phone}</p>
+                )}
+                <p>{item.country?.name || item.country}</p>
             </div>
 
         </div>

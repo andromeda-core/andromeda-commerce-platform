@@ -180,9 +180,9 @@ export default function index() {
             {/* Masonry Layout */}
             {isLoaded && (
                 <div
-                    className={`pb-20 pt-3 sm:pb-20 lg:pt-[75px]`}
+                    className={`pb-20 lg:my-9`}
                 >
-                    <div className="mx-auto max-w-8xl sm:px-6 lg:px-8">
+                    <div className="px-6 mx-auto max-w-8xl lg:px-8">
 
                         <div className="gap-2 columns-2 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5">
                             {bookmarkedPosts.map((item, index) => {

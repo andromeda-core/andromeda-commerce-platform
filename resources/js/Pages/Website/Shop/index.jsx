@@ -68,6 +68,62 @@ const index = (
         );
     }
 
+
+    const [canCategoryScrollLeft, setCanCategoryScrollLeft] = useState(false);
+    const [canCategoryScrollRight, setCanCategoryScrollRight] = useState(false);
+
+
+    const scrollContainerRef = useRef(null);
+
+
+    // Scroll handlers
+    const scrollLeftCategory = useCallback(() => {
+        scrollContainerRef.current?.scrollBy({ left: -200, behavior: 'smooth' });
+    }, []);
+
+    const scrollRightCategory = useCallback(() => {
+        scrollContainerRef.current?.scrollBy({ left: 200, behavior: 'smooth' });
+    }, []);
+
+
+
+
+    // Optimized scroll button update with debouncing
+    const updateCategoryScrollButtons = useCallback(() => {
+        if (scrollContainerRef.current) {
+            const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+            const newCanScrollLeft = scrollLeft > 0;
+            const newCanScrollRight = scrollLeft < scrollWidth - clientWidth - 20;
+
+            // Only update if values changed
+            if (newCanScrollLeft !== canCategoryScrollLeft || newCanScrollRight !== canCategoryScrollRight) {
+
+                setCanCategoryScrollLeft(newCanScrollLeft);
+                setCanCategoryScrollRight(newCanScrollRight);
+            }
+        }
+    }, [canCategoryScrollLeft, canCategoryScrollRight]);
+
+
+    useEffect(() => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+
+        const raf = requestAnimationFrame(() => {
+            updateCategoryScrollButtons();
+        });
+
+        container.addEventListener('scroll', updateCategoryScrollButtons);
+        window.addEventListener('resize', updateCategoryScrollButtons);
+
+        return () => {
+            cancelAnimationFrame(raf);
+            container.removeEventListener('scroll', updateCategoryScrollButtons);
+            window.removeEventListener('resize', updateCategoryScrollButtons);
+        };
+    }, [updateCategoryScrollButtons, categories.length]);
+
+
     const handleTabClick = async (tabKey) => {
         if (activeTab === tabKey) return;
 
@@ -450,48 +506,87 @@ const index = (
             <Head title={__('Shop', true)} />
 
             {/* Main Container*/}
-            <div className="w-full px-2 py-6 sm:px-2 lg:px-8">
+            <div className="w-full px-6 lg:mt-6 lg:px-8">
                 <div className={`w-full mx-auto ${windowSize.width > 1024 ? 'pb-10' : 'pb-24'} max-w-[1400px]`}>
 
                     {/* Navigation Tabs */}
-                    <div className="w-full mb-6 sm:mb-8">
+                    <div className="w-full my-2 mb-6 sm:mb-8">
                         {/* Headers */}
+                        <div className="w-full mb-7">
+                            <div className="relative grid w-full grid-cols-1 overflow-hidden">
 
-                        <div className="flex flex-wrap items-center mb-4 sm:mb-6">
-                            {categories?.map((category, index) => (
-                                <Fragment key={category.id}>
-                                    {index > 0 && (
-                                        <span
-                                            className={
-                                                activeCategory &&
-                                                    categories[index - 1]?.id === activeCategory
-                                                    ? 'mx-3 text-main-text-light dark:text-main-text-dark font-semibold text-xl sm:text-xl lg:text-3xl inline-block'
-                                                    : 'mx-3 font-semibold text-surface-3-light dark:text-surface-3-dark text-2xl sm:text-xl lg:text-3xl'
-                                            }
+                                <div className="relative flex items-center w-full">
+                                    {/* Left Arrow */}
+                                    {canCategoryScrollLeft && (
+                                        <button
+                                            onClick={scrollLeftCategory}
+                                            className="absolute left-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-1-light hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
+                                            style={{ left: '0px' }}
                                         >
-                                            |
-                                        </span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="text-sub-text-light size-4 dark:text-sub-text-dark"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+                                        </button>
                                     )}
 
-                                    {/* Category name */}
 
-
-                                    <button
-                                        onClick={() => handleCategoryClick(category)}
-                                        className={`
-    font-medium
-    ${activeCategory === category.id
-                                                ? 'font-semibold text-2xl text-main-text-light dark:text-main-text-dark sm:text-xl lg:text-3xl '
-                                                : 'font-semibold text-surface-3-light dark:text-surface-3-dark text-2xl sm:text-xl lg:text-3xl'
-                                            }
-  `}
+                                    <div
+                                        ref={scrollContainerRef}
+                                        className="flex items-center w-full overflow-x-auto gap-7 flex-nowrap scrollbar-none scroll-smooth"
+                                        style={{
+                                            transform: 'translateZ(0)',
+                                            WebkitOverflowScrolling: 'touch',
+                                            scrollbarWidth: 'none',
+                                            msOverflowStyle: 'none',
+                                            maxWidth: '100%',
+                                            display: 'flex'
+                                        }}
                                     >
-                                        {category.name}
-                                    </button>
-                                </Fragment>
-                            ))}
-                        </div>
 
+
+                                        {categories?.map((category, index) => (
+                                            <Fragment key={category.id}>
+
+                                                {/* Category name */}
+
+                                                <button
+                                                    onClick={() => handleCategoryClick(category)}
+
+
+                                                    className={`flex flex-shrink-0 items-center gap-2 whitespace-nowrap
+        border-b-[3px] pl-1   py-2 text-sm font-semibold transition-all
+        ${activeCategory === category.id
+                                                            ? 'border-main-text-light text-main-text-light dark:text-main-text-dark dark:border-main-text-dark'
+                                                            : 'border-transparent text-main-text-light hover:border-main-text-light dark:text-main-text-dark dark:hover:border-main-text-dark'
+                                                        }`}
+                                                >
+
+
+
+
+                                                    <span className='text-[24px] font-semibold text-main-text-light dark:text-main-text-dark'> {category.name}</span>
+                                                </button>
+
+
+
+                                            </Fragment>
+                                        ))}
+
+
+                                    </div>
+
+                                    {/* Right Arrow */}
+                                    {canCategoryScrollRight && (
+                                        <button
+                                            onClick={scrollRightCategory}
+                                            className="absolute right-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-1-light hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="text-sub-text-light size-4 dark:text-sub-text-dark"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+                                        </button>
+                                    )}
+
+
+                                </div>
+                            </div>
+                        </div>
 
 
 

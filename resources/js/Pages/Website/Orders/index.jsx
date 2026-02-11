@@ -370,7 +370,7 @@ function TabButton({ label, count, active, onClick }) {
         <button
             onClick={onClick}
             className={`flex flex-shrink-0 items-center gap-2 whitespace-nowrap
-        border-b-[3px] pr-5   py-3.5 text-sm font-semibold transition-all
+        border-b-[3px] pl-1   py-3.5 text-sm font-semibold transition-all
         ${active
                     ? 'border-main-text-light text-main-text-light dark:text-main-text-dark dark:border-main-text-dark'
                     : 'border-transparent text-main-text-light hover:border-main-text-light dark:text-main-text-dark dark:hover:border-main-text-dark'

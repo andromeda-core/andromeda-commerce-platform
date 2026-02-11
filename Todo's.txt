@@ -1779,7 +1779,12 @@ canceled
 95: Overall Changes New Content + Text Translation Keys added ✅
 96: Order Model Custom Accessors Issue Fixed When Going to Dashboard there was an error showing Now its fixed ✅
 
-97: Orders Module Dashboard Delivered Status Optionl Documents Upload Logic -> Remeaning
+97: All Ui Fixes Related To New PDF Completed ✅
+98: Back Button Added On Each Appropriate Page On Mobile ✅
+99: Whole Website All Pages Alignment + Font Sizes Adjusted And Made Consistency Between Them ✅
+100: Notification Page LI Added in Bottombar More Dropdown ✅
+
+101: Orders Module Dashboard Delivered Status Optionl Documents Upload Logic -> Remeaning
 
 
 

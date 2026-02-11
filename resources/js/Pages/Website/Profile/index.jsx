@@ -12,6 +12,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Cropper from 'react-easy-crop';
 import { useTranslation } from '@/Hooks/useTranslation';
+import { ChevronLeft } from 'lucide-react';
 
 const Index = ({ user, countries }) => {
     const [infoMessage, setInfoMessage] = useState('');
@@ -390,10 +391,18 @@ const Index = ({ user, countries }) => {
 
             <div>
                 <div
-                    className={`mx-auto px-4 sm:px-6 lg:px-8 sm:max-w-3xl lg:max-w-6xl ${windowSize.width > 1024 ? 'pb-0' : 'pb-24'} `}
+                    className={`mx-auto px-6 lg:px-8 lg:my-7 sm:max-w-3xl lg:max-w-6xl ${windowSize.width > 1024 ? 'pb-0' : 'pb-24'} `}
                 >
-                    <div className="my-10">
-                        <h1 className="text-2xl font-semibold text-main-text-light dark:text-main-text-dark">
+                    <div className="my-2">
+
+                        <button
+                            onClick={() => window.history.back()}
+                            className="inline-flex items-center gap-2 mb-4 text-sm font-medium transition-colors lg:hidden text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80"
+                        >
+                            <ChevronLeft />
+                        </button>
+
+                        <h1 className="text-[24px] font-semibold text-main-text-light dark:text-main-text-dark">
                             {__('Account Settings')}
                         </h1>
                         <p className="mt-1 text-sm dark:sub-text-dark text-sub-text-light">
@@ -402,7 +411,7 @@ const Index = ({ user, countries }) => {
                     </div>
 
                     {/* Avatar */}
-                    <div className="flex items-start gap-6">
+                    <div className="flex items-start gap-6 mt-10">
                         <div
                             onClick={() => fileInputRef.current?.click()}
                             className="relative flex items-center justify-center w-20 h-20 text-center rounded-full cursor-pointer bg-surface-2-light dark:bg-surface-2-dark"
@@ -824,20 +833,7 @@ const Index = ({ user, countries }) => {
                                             onClick={() => setIsEditProfileOpen(false)}
                                             className="absolute p-1 text-black rounded-full left-4 dark:text-main-text-dark"
                                         >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
-                                                stroke="currentColor"
-                                                className="size-6"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-                                                />
-                                            </svg>
+                                            <ChevronLeft />
                                         </button>
 
                                         <h2 className="mx-10 text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
@@ -1186,20 +1182,7 @@ const Index = ({ user, countries }) => {
                                             onClick={() => setIsChangePasswordOpen(false)}
                                             className="absolute p-1 text-black rounded-full left-4 dark:text-main-text-dark"
                                         >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
-                                                stroke="currentColor"
-                                                className="size-6"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-                                                />
-                                            </svg>
+                                            <ChevronLeft />
                                         </button>
 
                                         <h2 className="mx-10 text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
@@ -1510,7 +1493,7 @@ const Index = ({ user, countries }) => {
                                 <div className="absolute inset-0 bg-black/70"></div>
 
                                 {/* Fullscreen slide-over */}
-                                <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto border border-surface-1-light bg-backgroundLight text-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark">
+                                <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto border border-surface-1-light bg-backgroundLight text-main-text-light dark:border-surface-3-dark dark:bg-backgroundDark dark:text-main-text-dark">
                                     {/* Top Bar */}
                                     <div className="flex items-center justify-center px-4 py-3">
                                         <button
@@ -1527,20 +1510,7 @@ const Index = ({ user, countries }) => {
                                             }}
                                             className="absolute p-1 rounded-full left-4"
                                         >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
-                                                stroke="currentColor"
-                                                className="size-6"
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-                                                />
-                                            </svg>
+                                            <ChevronLeft />
                                         </button>
 
                                         <h3 className="text-base font-semibold truncate text-main-text-light dark:text-main-text-dark sm:text-lg">
@@ -1549,7 +1519,7 @@ const Index = ({ user, countries }) => {
                                     </div>
 
                                     {/* Content */}
-                                    <div className="pr-2 my-6 mb-820">
+                                    <div className="pr-2 mb-20">
                                         {/* Crop Area */}
                                         <div className="relative w-full h-64 bg-gray-900 xs:h-72 dark:bg-deepcharcoal sm:h-80 md:h-96">
                                             <Cropper

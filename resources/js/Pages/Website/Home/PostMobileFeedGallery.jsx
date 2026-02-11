@@ -312,7 +312,7 @@ const PostMobileFeedGallery = (
 
 
                         {/* Full Content - Scrollable, No Truncation */}
-                        <div className="mt-0 mb-10">
+                        <div className="mt-2 mb-10">
                             {mediaItems.length > 0 && (
 
 

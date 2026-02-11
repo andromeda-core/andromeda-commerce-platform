@@ -37,7 +37,7 @@ export default function ResetPassword({ token, email }) {
             <div className="flex flex-col flex-1 w-full md:my-5 lg:w-1/2">
 
                 <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
-                    <div className="w-full mb-10">
+                    {/* <div className="w-full mb-10">
                         <Link
                             href={route('home')}
                             className="inline-flex items-center text-[12px] gap-1 transition-colors text-main-text-light hover:text-gray-700 dark:text-main-text-dark dark:hover:text-sub-text-dark "
@@ -60,7 +60,7 @@ export default function ResetPassword({ token, email }) {
                             </svg>
                             {__('Back to Website')}
                         </Link>
-                    </div>
+                    </div> */}
                     <div>
                         <div className="mb-5 sm:mb-8">
                             <h1 className="mb-2 text-[21px] font-semibold text-main-text-light sm:text-title-md dark:text-main-text-dark">

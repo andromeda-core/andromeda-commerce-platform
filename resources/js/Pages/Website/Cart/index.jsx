@@ -7,7 +7,7 @@ import axios from 'axios';
 import Spinner from '@/Components/Spinner';
 import useWindowSize from '@/Hooks/useWindowSize';
 import { useTranslation } from '@/Hooks/useTranslation';
-import { Trash2 } from 'lucide-react';
+import { ChevronLeft, Trash2 } from 'lucide-react';
 export default function index({ cart_items, addon_items, total_summary }) {
     const [quantities, setQuantities] = useState(
         cart_items.reduce((acc, item) => ({ ...acc, [item.id]: item.quantity }), {}),
@@ -251,15 +251,25 @@ export default function index({ cart_items, addon_items, total_summary }) {
 
             <div className="min-h-screen transition-colors duration-200">
                 {/* Main Content */}
-                <div className={`mx-auto max-w-8xl px-4 sm:px-6 lg:px-8 pt-8 ${windowSize.width <= 1024 && 'mb-20'}`}>
+                <div className={`mx-auto max-w-8xl px-4 sm:px-6 lg:mt-7 ${windowSize.width <= 1024 && 'mb-20'}`}>
                     {cart_items.length === 0 ? (
                         <EmptyCart __={__} />
                     ) : (
                         <>
-                            {/* Cart Heading */}
-                            <h1 className='mb-5 text-[24px] font-semibold text-main-text-light dark:text-main-text-dark'>
-                                {__('Cart')} ({cart_items.length})
-                            </h1>
+
+                            <div className="my-2">
+                                <button
+                                    onClick={() => window.history.back()}
+                                    className="inline-flex items-center gap-2 mb-4 text-sm font-medium transition-colors lg:hidden text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80"
+                                >
+                                    <ChevronLeft />
+                                </button>
+
+                                {/* Cart Heading */}
+                                <h1 className='mb-5 text-[24px] font-semibold text-main-text-light dark:text-main-text-dark'>
+                                    {__('Cart')} ({cart_items.length})
+                                </h1>
+                            </div>
 
                             {/* Grid Layout */}
                             <div className="grid grid-cols-1 gap-6 mb-10 lg:gap-8 lg:grid-cols-3">
@@ -347,7 +357,7 @@ function CartItem({
 
     return (
         <div className="p-6 transition-all bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
-            <div className="flex gap-6">
+            <div className="flex flex-col gap-6 lg:flex-row">
                 {/* Product Image */}
                 {(item?.smartphone?.smartphone_image_urls.length > 0 || item?.smartphone?.smartphone_video_urls?.length > 0) && (
                     <div
@@ -374,7 +384,7 @@ function CartItem({
 
                 {/* Product Details */}
                 <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-4 mb-3">
+                    <div className="flex items-start justify-between gap-4 mb-3 ">
                         <div className="flex-1">
                             <h3 className="mb-1 text-[16px] font-semibold text-main-text-light dark:text-main-text-dark">
                                 {item?.smartphone?.model_name?.name || 'N/A'}
@@ -523,10 +533,10 @@ function CartItem({
 // Addon Item Component
 function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, removing, __ }) {
     return (
-        <div className="flex items-center gap-4 px-5 py-4 border-b border-surface-3-light dark:border-surface-3-dark">
+        <div className="flex items-center justify-center gap-2 py-4 border-b lg:px-5 lg:gap-4 border-surface-3-light dark:border-surface-3-dark">
             {/* Addon Name - Truncated after certain chars */}
-            <div className="flex-1 min-w-0 max-w-[70px]">
-                <p className="text-[14px] font-normal truncate dark:text-main-text-dark">
+            <div className="flex-1 min-w-0 lg:max-w-[70px]">
+                <p className="text-[14px] font-normal dark:text-main-text-dark">
                     {item?.name || 'Option title'}
                 </p>
             </div>
@@ -546,7 +556,7 @@ function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, remov
             </button>
 
             {/* Spacer to push quantity controls to the right */}
-            <div className="flex-1"></div>
+            <div className="lg:flex-1"></div>
 
             {/* Quantity Controls - Screenshot style with rounded square buttons */}
             <div className="flex items-center flex-shrink-0 gap-2">
@@ -597,7 +607,7 @@ function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, remov
             </div>
 
             {/* Total Price */}
-            <div className="flex-shrink-0 w-24 text-[14px] font-semibold text-right text-main-text-light dark:text-main-text-dark">
+            <div className="lg:flex-shrink-0 w-16 lg:w-24 text-[14px] font-semibold text-right text-main-text-light dark:text-main-text-dark">
                 {currency?.symbol}{Number(item?.unit_price * quantity).toLocaleString('en-US')}
             </div>
         </div>

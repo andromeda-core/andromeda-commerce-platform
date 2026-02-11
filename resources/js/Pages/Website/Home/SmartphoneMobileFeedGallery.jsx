@@ -783,7 +783,7 @@ const SmartphoneMobileGalleryModal = ({
 
                         {/* Thumbnail Refs */}
 
-                        <div className="flex items-center justify-start gap-0 pt-4">
+                        <div className="flex items-center justify-start gap-0 pt-4 ">
                             {/* Thumbnails */}
                             {((Array.isArray(
                                 smartphone?.smartphone_video_urls,
@@ -796,7 +796,7 @@ const SmartphoneMobileGalleryModal = ({
                                     1)) && (
                                     <div
                                         ref={thumbnailContainerRef}
-                                        className="flex items-center gap-3 overflow-x-auto scrollbar-none"
+                                        className="flex items-center gap-3 overflow-x-auto scrollbar-none "
                                         style={{ scrollBehavior: 'smooth' }}
                                     >
                                         {/* Render thumbnails */}
@@ -880,7 +880,7 @@ const SmartphoneMobileGalleryModal = ({
 
 
                         {/* Full Content - Scrollable, No Truncation */}
-                        <div className="mt-0 mb-10">
+                        <div className="mt-2 mb-10">
 
 
 

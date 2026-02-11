@@ -1,5 +1,5 @@
 import { router } from "@inertiajs/react";
-import { CircleQuestionMark, Facebook, Instagram } from "lucide-react";
+import { ChevronLeft, CircleQuestionMark, Facebook, Instagram } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export default function SocialMediaHelpIcon({
@@ -83,26 +83,13 @@ export default function SocialMediaHelpIcon({
                                 {/* Close Button */}
                                 <button
                                     onClick={() => setIsOpen(false)}
-                                    className="absolute p-1 transition-colors cursor-pointer text-main-text-light top-4 right-4 hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-main-text-dark/80"
+                                    className="absolute p-1 transition-colors cursor-pointer text-main-text-light top-4 left-4 dark:text-main-text-dark "
                                 >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        strokeWidth={2}
-                                        stroke="currentColor"
-                                        className="w-5 h-5"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M6 18L18 6M6 6l12 12"
-                                        />
-                                    </svg>
+                                    <ChevronLeft />
                                 </button>
                                 {/* Content */}
                                 <div className="flex flex-col h-full p-6 pt-16">
-                                    <h3 className="text-xl font-semibold text-main-text-light dark:text-main-text-dark">
+                                    <h3 className="text-[24px] font-semibold text-main-text-light dark:text-main-text-dark">
                                         {__('Message us on Social.')}
                                     </h3>
                                     <p className="mt-2 text-sm text-sub-text-light dark:text-sub-text-dark">
@@ -153,7 +140,7 @@ export default function SocialMediaHelpIcon({
                                 {/* Close Button */}
                                 <button
                                     onClick={() => setIsOpen(false)}
-                                    className="absolute p-1 transition-colors cursor-pointer text-main-text-light top-4 right-4 hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-main-text-dark/80"
+                                    className="absolute p-1 transition-colors cursor-pointer text-main-text-light top-5 right-4 hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-main-text-dark/80"
                                 >
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -173,7 +160,7 @@ export default function SocialMediaHelpIcon({
 
                                 {/* Modal Header */}
                                 <div className="p-6 pb-4">
-                                    <h3 className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
+                                    <h3 className="text-[20px] font-semibold text-main-text-light dark:text-main-text-dark">
                                         {__('Message us on Social.')}
                                     </h3>
                                     <p className="mt-1 text-sm text-sub-text-light dark:text-main-text-dark">

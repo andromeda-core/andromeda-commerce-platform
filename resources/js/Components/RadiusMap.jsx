@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import Spinner from './Spinner';
 import WebInput from './WebInput';
 import useWindowSize from '@/Hooks/useWindowSize';
+import { ChevronLeft } from 'lucide-react';
 
 
 export default function RadiusMap({
@@ -119,15 +120,15 @@ export default function RadiusMap({
     if (!isModalOpen) return null;
 
     return createPortal(
-        <div className={`fixed inset-0 z-50 flex items-center justify-center overflow-y-auto ${windowSize.width <= 1024 ? 'p-0' : 'p-4 sm:p-6'}`}>
+        <div className={`fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto ${windowSize.width <= 1024 ? 'p-0' : 'p-4 sm:p-6'}`}>
             <div
-                className="fixed inset-0 backdrop-blur-[32px]"
+                className="fixed inset-0 "
                 onClick={() => setIsModalOpen(false)}
             ></div>
 
             {/* Modal content */}
             <div
-                className={`relative z-10 w-full overflow-y-auto border ${windowSize.width <= 1024
+                className={`relative z-50 w-full overflow-y-auto border ${windowSize.width <= 1024
                     ? 'h-full max-w-full rounded-none border-none'
                     : 'max-w-4xl max-h-[90vh] rounded-xl border-surface-3-light dark:border-surface-3-dark'
                     } ${windowSize.width <= 1024
@@ -153,20 +154,7 @@ export default function RadiusMap({
                             onClick={() => setIsModalOpen(false)}
                             className="absolute p-1 text-black rounded-full left-4 dark:text-main-text-dark"
                         >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth={1.5}
-                                stroke="currentColor"
-                                className="size-6"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-                                />
-                            </svg>
+                            <ChevronLeft />
                         </button>
 
                         <h2 className="mx-10 text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">

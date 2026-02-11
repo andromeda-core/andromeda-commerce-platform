@@ -6,7 +6,8 @@ import { useConfirm } from '@/Hooks/useConfirm';
 import { useTranslation } from '@/Hooks/useTranslation';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { ChevronLeft } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 
@@ -79,16 +80,23 @@ const index = ({ order_no, countries }) => {
 
 
             <div className="sm:px-6 lg:px-8">
-                <div className={`mx-auto ${windowSize.width > 1024 ? 'pb-0' : 'pb-24'} lg:max-w-6xl sm:max-w-3xl`}>
+                <div className={`mx-auto lg:mt-6 ${windowSize.width > 1024 ? 'pb-0' : 'pb-24'} lg:max-w-6xl sm:max-w-3xl`}>
 
 
                     {/* Hero Section */}
                     <div className="relative overflow-hidden">
                         <div className="absolute inset-0" />
 
-                        <div className="relative px-6 mx-auto my-10 lg:max-w-6xl sm:max-w-3xl">
+                        <div className="relative px-6 mx-auto my-2 lg:max-w-6xl sm:max-w-3xl">
 
-                            <h1 className="text-2xl font-semibold text-main-text-light dark:text-main-text-dark">
+                            <Link
+                                href={route('website.orders.index')}
+                                className="inline-flex items-center gap-2 mb-4 text-sm font-medium transition-colors lg:hidden text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80"
+                            >
+                                <ChevronLeft />
+                            </Link>
+
+                            <h1 className="text-[24px] font-semibold text-main-text-light dark:text-main-text-dark">
                                 {__('Request a Address Change')}
                             </h1>
 

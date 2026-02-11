@@ -8,6 +8,7 @@ import Spinner from '@/Components/Spinner';
 import WebSelectInput from '@/Components/WebSelectInput';
 import { useLanguageStore } from '@/Hooks/useLanguageStore';
 import { useTranslation } from '@/Hooks/useTranslation';
+import { ChevronLeft } from 'lucide-react';
 
 const GlobalLanguageFilter = ({ isOpen, close, languages, loading, previousUrlRef }) => {
 
@@ -151,20 +152,7 @@ const GlobalLanguageFilter = ({ isOpen, close, languages, loading, previousUrlRe
                                 onClick={close}
                                 className="absolute p-1 rounded-full text-main-text-light left-4 dark:text-main-text-dark "
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth={1.5}
-                                    stroke="currentColor"
-                                    className="size-6"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
-                                    />
-                                </svg>
+                                <ChevronLeft />
                             </button>
 
                             <h2 className="mx-10 text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
