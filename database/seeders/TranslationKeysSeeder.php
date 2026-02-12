@@ -647,6 +647,7 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Estimated total', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Shipping', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Crypto Payment', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Crypto', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Direct Bank Transfer', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Network fees may apply', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Manual verification required', 'created_at' => $now, 'updated_at' => $now],

@@ -115,7 +115,7 @@ const SmartphoneDetails = ({ currency, product, StockBadge }) => {
                     <>
                         <div className="grid grid-cols-1 gap-2 lg:grid-cols-1">
                             <div className="flex flex-wrap items-center gap-4">
-                                {/* Bitcoin */}
+                                {/* Crypto */}
                                 <div className="flex items-center gap-1.5">
                                     <div className="flex items-center justify-center w-8 h-8 rounded-full bg-surface-2-light dark:bg-surface-3-dark">
                                         <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 fill-main-text-light dark:fill-main-text-dark">
@@ -123,7 +123,7 @@ const SmartphoneDetails = ({ currency, product, StockBadge }) => {
                                             />
                                         </svg>
                                     </div>
-                                    <span className="text-xs font-normal text-sub-text-light dark:text-sub-text-dark">{__('Bitcoin')}</span>
+                                    <span className="text-xs font-normal text-sub-text-light dark:text-sub-text-dark">{__('Crypto')}</span>
                                 </div>
 
                                 {/* Bank Transfer */}

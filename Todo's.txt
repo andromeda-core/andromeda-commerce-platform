@@ -1791,6 +1791,7 @@ canceled
 105: Aligned The Action Button To The Right Corner Of Dashboard Table ✅
 106: Increased The Search Input Width Slightly To Make Wider ✅
 107: FIXED The Hover State For Mobile On Orders And Shop Page Tabs On Website To Dont Use Hover On Mobile Devices ✅
+108: Smartphone Details Bitcoin Badge Text Changed To Crypto  ✅
 
 
 
