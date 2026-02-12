@@ -545,7 +545,7 @@ class OrderRepository implements IOrderRepository
             $ids = $request->array('ids');
 
             if (blank($ids)) {
-                throw new Exception('Something Went Wrong While Deleting Order');
+                throw new Exception('Please Select Atleast One Order');
             }
 
             foreach ($ids as $id) {

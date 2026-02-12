@@ -1787,6 +1787,10 @@ canceled
 101: Orders Module Dashboard Delivered Status Optionl Documents Upload Logic + Showing On Orders View Section + Backend File Handling And Uploading On AWS Done + Orders Table Updated And Added ne column Final_attachments Column to Store Attachments ✅
 102: Posts And Smartphones Assets ReOrdering Added ✅
 103: Posts And Smartphone Images Marking Badge As Main Image on First Image Which Will Display Added ✅
+104: Aligned The Elipsis Button Of Dashboard tables To Right ✅
+105: Aligned The Action Button To The Right Corner Of Dashboard Table ✅
+106: Increased The Search Input Width Slightly To Make Wider ✅
+107: FIXED The Hover State For Mobile On Orders And Shop Page Tabs On Website To Dont Use Hover On Mobile Devices ✅
 
 
 

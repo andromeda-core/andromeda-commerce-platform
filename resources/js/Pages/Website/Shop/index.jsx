@@ -555,7 +555,7 @@ const index = (
         border-b-[3px] pl-1   py-2 text-sm font-semibold transition-all
         ${activeCategory === category.id
                                                             ? 'border-main-text-light text-main-text-light dark:text-main-text-dark dark:border-main-text-dark'
-                                                            : 'border-transparent text-main-text-light hover:border-main-text-light dark:text-main-text-dark dark:hover:border-main-text-dark'
+                                                            : 'border-transparent text-main-text-light lg:hover:border-main-text-light dark:text-main-text-dark dark:lg:hover:border-main-text-dark'
                                                         }`}
                                                 >
 

@@ -4,6 +4,7 @@ import debounce from 'lodash.debounce';
 import React, { useEffect, useRef, useState } from 'react';
 import Input from './Input';
 import { createPortal } from 'react-dom';
+import { Ellipsis } from 'lucide-react';
 
 export default function Table({
     resetSingleSelectedId,
@@ -232,92 +233,152 @@ export default function Table({
 
         // Default: render text
         return getNestedValue(item, column.key);
+
     };
+
+    const bulkBtnRef = useRef(null);
+    const bulkMenuRef = useRef(null);
+
+    const [bulkMenuPos, setBulkMenuPos] = useState({ top: 0, left: 0 });
+
+    const openBulkMenu = () => {
+        const btn = bulkBtnRef.current;
+        if (!btn) return;
+
+        const r = btn.getBoundingClientRect();
+        const menuW = 192; // w-48
+        const gap = 8;
+
+        // align dropdown to the RIGHT edge of the button
+        let left = r.right - menuW;
+
+        // clamp to viewport
+        left = Math.max(8, Math.min(left, window.innerWidth - menuW - 8));
+
+        setBulkMenuPos({ top: r.bottom + gap, left });
+
+        setOpenBulkActionDropdownOptions(true);
+        setOpenDropdownId("00000");
+    };
+
+    useEffect(() => {
+        const onDocClick = (e) => {
+            if (!openBulkActionDropdownOptions) return;
+
+            if (bulkBtnRef.current?.contains(e.target)) return;
+            if (bulkMenuRef.current?.contains(e.target)) return;
+
+            setOpenBulkActionDropdownOptions(false);
+            setOpenDropdownId(null);
+        };
+
+        document.addEventListener("mousedown", onDocClick);
+        return () => document.removeEventListener("mousedown", onDocClick);
+    }, [openBulkActionDropdownOptions]);
+
+
+
 
     return (
         <>
             <div className="pt-4 bg-white border border-gray-200 rounded-2xl dark:border-gray-900/10 dark:bg-zinc-950/50">
                 {/* Search and Bulk Actions (unchanged) */}
-                <div className="flex flex-col gap-2 px-5 mb-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                    <div ref={dropdownRefs.current['00000']}>
-                        {BulkActionDropdown && (
-                            <>
-                                <div
-                                    className="p-3 text-white cursor-pointer"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setOpenBulkActionDropdownOptions(
-                                            !openBulkActionDropdownOptions,
-                                        );
-                                        setOpenDropdownId('00000');
-                                    }}
-                                >
-                                    <p className="text-lg font-medium text-gray-900 dark:text-white">
-                                        ...
-                                    </p>
+                <div className="px-5 mb-4 sm:px-6">
+                    <div className="flex flex-col gap-3 sm:items-end">
+                        {/* Search (optional) */}
+                        {Search && (
+                            <div className="w-full sm:w-auto">
+                                <div className="flex flex-wrap items-center justify-end gap-3">
+                                    {DefaultSearchInput && (
+                                        <Input
+                                            InputRef={searchInputRef}
+                                            InputName={"Search"}
+                                            Id={"search"}
+                                            Placeholder={"Search here..."}
+                                            Type={"search"}
+                                            CustomCss={"w-full sm:w-[320px] mt-3"}
+                                            Name={"search"}
+                                            Value={search}
+                                            Action={(e) => {
+                                                const value = e.target.value;
+                                                setSearch(value);
+                                                debouncedSearch.current?.(value);
+                                            }}
+                                        />
+                                    )}
+                                    {customSearch}
                                 </div>
-                                {openBulkActionDropdownOptions && (
-                                    <div className="z-10 bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-zinc-900">
-                                        <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
-                                            <li>
+                            </div>
+                        )}
+
+                        {/* Ellipsis ALWAYS RIGHT; if search exists, it's automatically below it */}
+                        {DeleteAction && (
+                            <div className="flex justify-end w-full sm:w-auto">
+                                <div className="relative inline-flex">
+                                    <button
+                                        ref={bulkBtnRef}
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (openBulkActionDropdownOptions) {
+                                                setOpenBulkActionDropdownOptions(false);
+                                                setOpenDropdownId(null);
+                                            } else {
+                                                openBulkMenu();
+                                            }
+                                        }}
+                                        className="inline-flex items-center justify-center w-10 h-10 text-gray-700 transition rounded-md hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-indigo-200 dark:text-white/80 dark:hover:bg-white/10 dark:focus:ring-gray-800"
+                                        aria-haspopup="menu"
+                                        aria-expanded={openBulkActionDropdownOptions}
+                                        title="More actions"
+                                    >
+                                        <Ellipsis />
+                                    </button>
+
+                                    {/* Dropdown (portal so it never hides) */}
+                                    {openBulkActionDropdownOptions &&
+                                        createPortal(
+                                            <div
+                                                ref={bulkMenuRef}
+                                                style={{ top: bulkMenuPos.top, left: bulkMenuPos.left }}
+                                                className="fixed z-[999999] w-48 overflow-hidden bg-white border border-gray-200 shadow-xl rounded-xl dark:bg-zinc-900 dark:border-gray-700"
+                                                role="menu"
+                                            >
                                                 <button
-                                                    onClick={() =>
-                                                        setDeleteSelectedBuilkConfirmationModal(
-                                                            true,
-                                                        )
-                                                    }
-                                                    className="flex items-center w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-zinc-950/50 dark:hover:text-white"
+                                                    onClick={() => {
+                                                        setDeleteSelectedBuilkConfirmationModal(true);
+                                                        setOpenBulkActionDropdownOptions(false);
+                                                        setOpenDropdownId(null);
+                                                    }}
+                                                    className="flex items-center w-full gap-2 px-4 py-2.5 text-sm text-left text-red-600 transition hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                                                    role="menuitem"
                                                 >
-                                                    Delete
                                                     <svg
+                                                        className="w-4 h-4"
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         fill="none"
                                                         viewBox="0 0 24 24"
                                                         strokeWidth="1.5"
                                                         stroke="currentColor"
-                                                        className="mx-2 size-6"
                                                     >
                                                         <path
                                                             strokeLinecap="round"
                                                             strokeLinejoin="round"
-                                                            d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                                                            d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
                                                         />
                                                     </svg>
+                                                    Delete Selected
                                                 </button>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                )}
-                            </>
-                        )}
-                    </div>
-                    {Search && (
-                        <div className="flex flex-wrap items-center gap-3 sm:flex-row">
-                            {DefaultSearchInput && (
-                                <div className="relative">
-                                    <Input
-                                        InputRef={searchInputRef}
-                                        InputName={'Search'}
-                                        Id={'search'}
-                                        Placeholder={'Search Here.. Related Data'}
-                                        Type={'search'}
-                                        Name={'search'}
-                                        Value={search}
-                                        Action={(e) => {
-                                            const value = e.target.value;
-                                            setSearch(value);
-                                            if (debouncedSearch.current) {
-                                                debouncedSearch.current(value);
-                                            }
-                                        }}
-                                    />
+                                            </div>,
+                                            document.body
+                                        )}
                                 </div>
-                            )}
+                            </div>
+                        )}
 
-                            {customSearch}
-                        </div>
-                    )}
+                    </div>
                 </div>
+
 
                 {/* Table */}
                 <div className="relative z-0 px-5 sm:px-6">
@@ -355,8 +416,8 @@ export default function Table({
                                     ))}
 
                                     {(customActions.length > 0 || DeleteAction || EditRoute) && (
-                                        <th className="px-5 py-3 font-normal whitespace-nowrap sm:px-6">
-                                            <div className="flex items-center">
+                                        <th className="px-5 py-3 font-normal text-right whitespace-nowrap sm:px-6">
+                                            <div className="flex items-center justify-end w-full">
                                                 <p className="text-gray-500 text-theme-sm dark:text-gray-400">
                                                     Action
                                                 </p>
@@ -401,7 +462,7 @@ export default function Table({
                                             DeleteAction ||
                                             EditRoute) && (
                                                 <td className="px-5 py-3 whitespace-nowrap sm:px-6">
-                                                    <div className="flex items-center justify-start">
+                                                    <div className="flex items-center justify-end w-full">
                                                         <div
                                                             ref={(el) =>
                                                                 (dropdownRefs.current[item.id] = el)

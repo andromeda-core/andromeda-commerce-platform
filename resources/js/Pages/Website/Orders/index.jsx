@@ -373,7 +373,7 @@ function TabButton({ label, count, active, onClick }) {
         border-b-[3px] pl-1   py-3.5 text-sm font-semibold transition-all
         ${active
                     ? 'border-main-text-light text-main-text-light dark:text-main-text-dark dark:border-main-text-dark'
-                    : 'border-transparent text-main-text-light hover:border-main-text-light dark:text-main-text-dark dark:hover:border-main-text-dark'
+                    : 'border-transparent text-main-text-light hover:lg:border-main-text-light dark:text-main-text-dark dark:lg:hover:border-main-text-dark'
                 }`}
         >
             <span className='text-[24px] font-semibold text-main-text-light dark:text-main-text-dark'>{label} {count > 0 ? `(${count})` : ''}</span>
