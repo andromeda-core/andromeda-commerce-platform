@@ -428,6 +428,52 @@ class SmartphoneRepository implements ISmartphoneRepository
                 $validated_req['videos'] = null;
             }
 
+            // Handle Image Reordering
+            if ($request->filled('image_order')) {
+
+                $currentImages = $smartphone->images ?? [];
+
+                $orderedImages = [];
+
+                foreach ($request->image_order as $url) {
+
+                    foreach ($currentImages as $image) {
+
+                        if (isset($image['url']) && $image['url'] === $url) {
+                            $orderedImages[] = $image;
+                            break;
+                        }
+                    }
+                }
+
+                // Safety: Prevent accidental overwrite
+                if (! empty($orderedImages)) {
+                    $validated_req['images'] = $orderedImages;
+                }
+            }
+
+            // Handle Video Reordering
+            if ($request->filled('video_order')) {
+
+                $currentVideos = $smartphone->videos ?? [];
+
+                // Create lookup map by URL
+                $videoMap = collect($currentVideos)->keyBy('url')->toArray();
+
+                $orderedVideos = [];
+
+                foreach ($request->video_order as $url) {
+                    if (isset($videoMap[$url])) {
+                        $orderedVideos[] = $videoMap[$url];
+                    }
+                }
+
+                // Safety check to prevent wiping data
+                if (! empty($orderedVideos)) {
+                    $validated_req['videos'] = $orderedVideos;
+                }
+            }
+
             $updated = $smartphone->update($validated_req);
             if (! $updated) {
                 throw new Exception('Something Went Wrong While Updating Smartphone');

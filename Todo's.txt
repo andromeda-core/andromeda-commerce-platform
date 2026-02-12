@@ -1784,7 +1784,9 @@ canceled
 99: Whole Website All Pages Alignment + Font Sizes Adjusted And Made Consistency Between Them ✅
 100: Notification Page LI Added in Bottombar More Dropdown ✅
 
-101: Orders Module Dashboard Delivered Status Optionl Documents Upload Logic -> Remeaning
+101: Orders Module Dashboard Delivered Status Optionl Documents Upload Logic + Showing On Orders View Section + Backend File Handling And Uploading On AWS Done + Orders Table Updated And Added ne column Final_attachments Column to Store Attachments ✅
+102: Posts And Smartphones Assets ReOrdering Added ✅
+103: Posts And Smartphone Images Marking Badge As Main Image on First Image Which Will Display Added ✅
 
 
 

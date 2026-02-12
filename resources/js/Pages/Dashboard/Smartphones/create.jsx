@@ -697,11 +697,13 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                     InputName={'Smart Phone Images'}
                                                     Id={'images'}
                                                     Error={errors.file_error}
+                                                    reOrder={true}
                                                     Label={
                                                         'Drag & Drop your Smart Phone Images or <span class="filepond--label-action">Browse</span>'
                                                     }
                                                     Multiple={true}
                                                     acceptedFileTypes={['image/*']}
+                                                    canMarkMainImage={true}
                                                     MaxFiles={5}
                                                     MaxFileSize={'5MB'}
                                                     onUpdate={(files) => {
@@ -724,6 +726,7 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                     'Drag & Drop your Smart phone Video or <span class="filepond--label-action">Browse</span>'
                                                 }
                                                 Error={errors.video_error}
+                                                reOrder={true}
                                                 Id={'videos'}
                                                 InputName={'Smart phone Video'}
                                                 acceptedFileTypes={['video/*']}

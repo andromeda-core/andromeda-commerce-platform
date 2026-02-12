@@ -419,6 +419,8 @@ export default function create({ floors, googleMapSettings }) {
                                                     Id={'images'}
                                                     InputName={'Post Images'}
                                                     acceptedFileTypes={['image/*']}
+                                                    canMarkMainImage={true}
+                                                    reOrder={true}
                                                     MaxFileSize={'10MB'}
                                                     onUpdate={(files) => {
                                                         if (files.length > 0) {
@@ -444,6 +446,7 @@ export default function create({ floors, googleMapSettings }) {
                                                     InputName={'Post Videos'}
                                                     acceptedFileTypes={['video/*']}
                                                     MaxFileSize={'1000MB'}
+                                                    reOrder={true}
                                                     onUpdate={(files) => {
                                                         if (files.length > 0) {
                                                             const newFiles = files

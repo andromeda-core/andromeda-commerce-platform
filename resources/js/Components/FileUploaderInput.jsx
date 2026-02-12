@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+
+import React, { useEffect, useRef, useState } from 'react';
 import { FilePond, registerPlugin } from 'react-filepond';
 
 import 'filepond/dist/filepond.min.css';
@@ -28,6 +29,8 @@ export default function FileUploaderInput({
     acceptedFileTypes,
     MaxFileSize,
     MaxFiles,
+    reOrder = false,
+    canMarkMainImage = false
 }) {
     const [files, setFiles] = useState(() => {
         if (!DefaultFile || !Array.isArray(DefaultFile)) return [];
@@ -40,7 +43,51 @@ export default function FileUploaderInput({
         return Multiple ? preloaded : preloaded.slice(0, 1);
     });
 
+    const pondRef = useRef(null);
 
+
+    function getPond() {
+        return pondRef.current?.pond ?? pondRef.current;
+    }
+
+    function markMainImage() {
+        const pond = getPond();
+        const root = pond?._element || pond?.element;
+        if (!root) return;
+
+        const files = Array.from(root.querySelectorAll(".filepond--file"));
+        if (!files.length) return;
+
+        // remove old badges
+        root.querySelectorAll(".main-badge").forEach(b => b.remove());
+
+        // find the visually "first" file (top-most, then left-most)
+        const first = files
+            .map(el => ({ el, r: el.getBoundingClientRect() }))
+            .sort((a, b) => (a.r.top - b.r.top) || (a.r.left - b.r.left))[0]?.el;
+
+        if (!first) return;
+
+        const badge = document.createElement("div");
+        badge.className = "main-badge";
+        badge.innerText = "Main Image";
+
+        if (getComputedStyle(first).position === "static") first.style.position = "relative";
+        first.appendChild(badge);
+    }
+
+
+
+
+    useEffect(() => {
+        if (!canMarkMainImage) return;
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                markMainImage();
+            });
+        });
+    }, [files, canMarkMainImage]);
 
 
     // CLeanup
@@ -68,13 +115,14 @@ export default function FileUploaderInput({
                 )}
                 <div className="relative cursor-pointer">
                     <FilePond
+                        ref={pondRef}
                         allowMultiple={Multiple}
                         credits={false}
                         acceptedFileTypes={acceptedFileTypes ?? ['image/*']}
+
                         labelIdle={Label ?? 'Drag & Drop Your Files or <strong>Click</strong>'}
                         onupdatefiles={(fileItems) => {
                             setFiles(fileItems);
-
                             const updatedFiles = fileItems.map((item) => {
                                 if (item.file instanceof File) {
                                     return {
@@ -95,8 +143,10 @@ export default function FileUploaderInput({
                         files={files}
                         dropOnElement={true}
                         dropOnPage={true}
+                        allowReorder={reOrder}
                         className="filepond--root"
                         maxFileSize={MaxFileSize ?? '2MB'}
+
                         onreorderfiles={(fileItems) => {
                             setFiles(fileItems);
 
@@ -116,7 +166,9 @@ export default function FileUploaderInput({
 
                             // Send full list to parent
                             onUpdate(updatedFiles);
+
                         }}
+
                         {...(MaxFiles ? { maxFiles: MaxFiles } : {})}
                     />
                 </div>

@@ -56,12 +56,25 @@ export default function edit({ post, floors }) {
         const newImages = (data.images || []).filter((f) => f.isNew).map((f) => f.file);
         const newVideos = (data.videos || []).filter((f) => f.isNew).map((f) => f.file);
 
+
+
+        // Reorder
+        const imageOrder = (data.images || [])
+            .filter(f => !f.isNew)
+            .map(f => f.source);
+
+        const videoOrder = (data.videos || [])
+            .filter(f => !f.isNew)
+            .map(f => f.source);
+
         const formData = {
             ...data,
             deleted_images: deletedImages,
             deleted_videos: deletedVideos,
             new_images: newImages,
             new_videos: newVideos,
+            image_order: imageOrder,
+            video_order: videoOrder,
         };
 
         setProcessing(true);
@@ -188,7 +201,9 @@ export default function edit({ post, floors }) {
                                                     Id={'images'}
                                                     InputName={'Post Images'}
                                                     acceptedFileTypes={['image/*']}
+                                                    canMarkMainImage={true}
                                                     MaxFileSize={'10MB'}
+                                                    reOrder={true}
                                                     onUpdate={(files) => {
                                                         if (files.length > 0) {
                                                             setData('images', files);
@@ -211,6 +226,7 @@ export default function edit({ post, floors }) {
                                                     InputName={'Post Videos'}
                                                     acceptedFileTypes={['video/*']}
                                                     MaxFileSize={'1000MB'}
+                                                    reOrder={true}
                                                     onUpdate={(files) => {
                                                         if (files.length > 0) {
                                                             setData('videos', files);

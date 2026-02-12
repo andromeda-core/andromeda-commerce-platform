@@ -487,3 +487,16 @@ video.feed-video::-webkit-media-controls {
         height: auto !important;
     }
 }
+
+.main-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: #ffff;
+    color: black;
+    padding: 2px 6px;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 3px;
+    z-index: 10;
+}

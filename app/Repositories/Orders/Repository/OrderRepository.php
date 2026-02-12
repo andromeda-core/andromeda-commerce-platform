@@ -10,6 +10,7 @@ use App\Jobs\Meta\OrderPaymentProofUploadedNotificationJob;
 use App\Jobs\NotifyPaymentProofHasBeenUploaded;
 use App\Jobs\PayemntProofStoreOnAWS;
 use App\Jobs\PaymentProofDestroyOnAWS;
+use App\Jobs\UploadFinalAttachmentsToAWS;
 use App\Models\CartItem;
 use App\Models\Collaborator;
 use App\Models\Customer;
@@ -294,6 +295,7 @@ class OrderRepository implements IOrderRepository
 
     public function updateOrder(Request $request, string $id)
     {
+
         $order = $this->getSingleOrder($id);
 
         if (empty($order)) {
@@ -352,6 +354,8 @@ class OrderRepository implements IOrderRepository
         if ($order->status === 'arrived_locally') {
             $validated_req = $request->validate([
                 'status' => ['required', Rule::in(['arrived_locally', 'delivered'])],
+                'final_attachments' => ['nullable', 'array', 'max:10'],
+                'final_attachments.*.file' => ['required', 'file', 'max:5048'],
                 'is_cash_collected' => ['required', 'boolean'],
             ], [
                 'is_cash_collected.required' => 'Cash Collected Field Is Required',
@@ -399,6 +403,27 @@ class OrderRepository implements IOrderRepository
                 throw new Exception('The Status Should Be Changed To Delivered Before Proceesing');
             }
 
+            if (! blank($validated_req['final_attachments'])) {
+                $final_attachments = [];
+                foreach ($validated_req['final_attachments'] as $key => $attachment) {
+
+                    if (empty($attachment) || ! $attachment->isValid()) {
+                        continue;
+                    }
+
+                    $file = $attachment->getClientOriginalExtension();
+                    $new_name = 'final_attachments_'.time().uniqid().'.'.$file;
+
+                    $temp_path = $attachment->storeAs('temp/uploads', $new_name, 'local');
+                    $final_attachments[] = [
+                        'file' => $new_name,
+                        'file_path' => $temp_path,
+                    ];
+                }
+
+                UploadFinalAttachmentsToAWS::dispatch($final_attachments, $order);
+                unset($validated_req['final_attachments']);
+            }
             $oldStatus = $order->status;
             $updated = $order->update($validated_req);
 

@@ -26,6 +26,13 @@ export default function edit({ order, smartphones, customers }) {
             }
             : {}),
 
+
+        ...(order.status === 'arrived_locally'
+            ? {
+                final_attachments: [],
+            }
+            : {}),
+
         ...(order.status !== 'pending' ? { is_cash_collected: order.is_cash_collected ?? '' } : {}),
     });
 
@@ -328,6 +335,40 @@ export default function edit({ order, smartphones, customers }) {
                                                                 );
                                                             } else {
                                                                 setData('courier_invoice', '');
+                                                            }
+                                                        }}
+                                                    />
+                                                </div>
+                                            )}
+
+
+                                            {order.status === 'arrived_locally' && (
+                                                <div className="grid col-span-1 my-4">
+                                                    <FileUploaderInput
+                                                        InputName={'Final Attachments'}
+                                                        Id={'final_attachments'}
+                                                        Error={errors.final_attachments}
+                                                        Label={
+                                                            'Drag & Drop your Final Attachments or <span class="filepond--label-action">Browse</span>'
+                                                        }
+                                                        MaxFileSize={'5MB'}
+                                                        MaxFiles={10}
+                                                        Multiple={true}
+                                                        Required={false}
+                                                        DefaultFile={
+                                                            order.final_attachments && [
+                                                                order.final_attachments,
+                                                            ]
+                                                        }
+                                                        onUpdate={(files) => {
+                                                            if (files.length > 0) {
+                                                                const newFiles = files
+                                                                    .filter((f) => f.isNew)
+                                                                    .map((f) => f.file);
+
+                                                                setData('final_attachments', newFiles);
+                                                            } else {
+                                                                setData('final_attachments', null);
                                                             }
                                                         }}
                                                     />

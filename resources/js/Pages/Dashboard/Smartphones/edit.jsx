@@ -86,12 +86,26 @@ export default function edit({ colors, model_names, capacities, categories, ship
         const deletedVideos = getDeletedFiles(smartphone.videos, data.videos || []);
         const newImages = (data.images || []).filter((f) => f.isNew).map((f) => f.file);
         const newVideos = (data.videos || []).filter((f) => f.isNew).map((f) => f.file);
+
+
+        // Reorder
+        const imageOrder = (data.images || [])
+            .filter(f => !f.isNew)
+            .map(f => f.source);
+
+        const videoOrder = (data.videos || [])
+            .filter(f => !f.isNew)
+            .map(f => f.source);
+
+
         const formData = {
             ...data,
             deleted_images: deletedImages,
             deleted_videos: deletedVideos,
             new_images: newImages,
             new_videos: newVideos,
+            image_order: imageOrder,
+            video_order: videoOrder,
         };
 
         setProcessing(true);
@@ -433,10 +447,12 @@ export default function edit({ colors, model_names, capacities, categories, ship
                                                     InputName={'Smart Phone Images'}
                                                     Id={'images'}
                                                     Error={errors.file_error}
+                                                    reOrder={true}
                                                     Label={
                                                         'Drag & Drop your Smart Phone Images or <span class="filepond--label-action">Browse</span>'
                                                     }
                                                     Multiple={true}
+                                                    canMarkMainImage={true}
                                                     acceptedFileTypes={['image/*']}
                                                     MaxFiles={5}
                                                     MaxFileSize={'5MB'}
@@ -463,6 +479,7 @@ export default function edit({ colors, model_names, capacities, categories, ship
                                                     }
                                                     Error={errors.video_error}
                                                     Id={'videos'}
+                                                    reOrder={true}
                                                     InputName={'Smart Phone Videos'}
                                                     acceptedFileTypes={['video/*']}
                                                     MaxFileSize={'1000MB'}

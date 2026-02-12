@@ -44,6 +44,7 @@ class Order extends Model
         'courier_invoice',
         'payment_proof',
         'is_cash_collected',
+        'final_attachments',
         'payment_method',
         'secondary_payment_method',
         'np_id',
@@ -346,6 +347,7 @@ class Order extends Model
     // Casting
     protected $casts = [
         'shipping_date' => 'date:Y-m-d',
+        'final_attachments' => 'array',
     ];
 
     // Attributes
