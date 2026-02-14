@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback, memo } from 'react';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import GlobalSearch from '@/Components/GlobalSearch';
 import Toast from '@/Components/Toast';

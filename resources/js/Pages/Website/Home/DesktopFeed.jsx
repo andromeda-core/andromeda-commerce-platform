@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { router } from '@inertiajs/react';
 import useDarkMode from '@/Hooks/useDarkMode';
 import Spinner from '@/Components/Spinner';
-import VideoWithThumbnail from '@/Components/VideoWithThumbnail';
 import { AnimatePresence, motion } from 'framer-motion';
 import SmartphoneDetails from '@/Components/SmartphoneDetails';
 import SmartphoneContentAccordion from '@/Components/SmartphoneContentAccordion';

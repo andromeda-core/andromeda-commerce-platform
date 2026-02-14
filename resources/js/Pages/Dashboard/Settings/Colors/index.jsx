@@ -7,6 +7,7 @@ import Table from '@/Components/Table';
 
 import { useEffect, useState } from 'react';
 import getContrastingColor from '@/Hooks/useColorContraster';
+import can from '@/Hooks/useCan';
 
 export default function index({ colors }) {
     // Bulk Delete Form Data
@@ -38,7 +39,7 @@ export default function index({ colors }) {
                 label: 'Color Code',
                 render: (item) => (
                     <span
-                        className="rounded-lg p-3"
+                        className="p-3 rounded-lg"
                         style={{
                             backgroundColor: item?.code,
                             color: getContrastingColor(item?.code),
@@ -53,11 +54,11 @@ export default function index({ colors }) {
                 render: (item) => {
                     if (item.is_active === 1) {
                         return (
-                            <span className="rounded-lg bg-green-500 p-3 text-white">Active</span>
+                            <span className="p-3 text-white bg-green-500 rounded-lg">Active</span>
                         );
                     } else {
                         return (
-                            <span className="rounded-lg bg-red-500 p-2 text-white">In Active</span>
+                            <span className="p-2 text-white bg-red-500 rounded-lg">In Active</span>
                         );
                     }
                 },
@@ -71,41 +72,43 @@ export default function index({ colors }) {
     return (
         <>
             <AuthenticatedLayout>
-                <Head title="Settings - Colors" />
+                <Head title="Colors" />
 
                 <BreadCrumb
-                    header={'Settings - Colors'}
-                    parent={'Settings'}
-                    parent_link={route('dashboard.settings.index')}
+                    header={'Colors'}
+                    parent={'Dashboard'}
+                    parent_link={route('dashboard')}
                     child={'Colors'}
                 />
 
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end gap-4">
-                                <LinkButton
-                                    Text={'Create Color'}
-                                    URL={route('dashboard.settings.colors.create')}
-                                    Icon={
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            strokeWidth={1.5}
-                                            stroke="currentColor"
-                                            className="size-6"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                d="M12 4.5v15m7.5-7.5h-15"
-                                            />
-                                        </svg>
-                                    }
-                                />
+                            <div className="flex flex-wrap justify-end gap-4 my-3">
+                                {can("Colors Create") && (
+                                    <LinkButton
+                                        Text={'Create Color'}
+                                        URL={route('dashboard.settings.colors.create')}
+                                        Icon={
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.5}
+                                                stroke="currentColor"
+                                                className="size-6"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M12 4.5v15m7.5-7.5h-15"
+                                                />
+                                            </svg>
+                                        }
+                                    />
+                                )}
 
-                                <LinkButton
+                                {/* <LinkButton
                                     Text={'Back To Settings'}
                                     URL={route('dashboard.settings.index')}
                                     Icon={
@@ -124,7 +127,7 @@ export default function index({ colors }) {
                                             />
                                         </svg>
                                     }
-                                />
+                                /> */}
                             </div>
 
                             <Table
@@ -137,7 +140,9 @@ export default function index({ colors }) {
                                 SingleDeleteMethod={SingleDelete}
                                 BulkDeleteRoute={'dashboard.settings.colors.destroybyselection'}
                                 SingleDeleteRoute={'dashboard.settings.colors.destroy'}
-                                EditRoute={'dashboard.settings.colors.edit'}
+                                EditRoute={can("Colors Edit") ? 'dashboard.settings.colors.edit' : null}
+                                DeleteAction={can('Colors Delete')}
+                                canSelect={can('Colors Delete')}
                                 SearchRoute={'dashboard.settings.colors.index'}
                                 Search={false}
                                 DefaultSearchInput={false}

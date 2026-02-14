@@ -5,6 +5,7 @@ import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import Table from '@/Components/Table';
 import { useEffect, useState } from 'react';
+import can from '@/Hooks/useCan';
 
 export default function index({ capacities }) {
     // Bulk Delete Form Data
@@ -37,11 +38,11 @@ export default function index({ capacities }) {
                 render: (item) => {
                     if (item.is_active === 1) {
                         return (
-                            <span className="rounded-lg bg-green-500 p-3 text-white">Active</span>
+                            <span className="p-3 text-white bg-green-500 rounded-lg">Active</span>
                         );
                     } else {
                         return (
-                            <span className="rounded-lg bg-red-500 p-2 text-white">In Active</span>
+                            <span className="p-2 text-white bg-red-500 rounded-lg">In Active</span>
                         );
                     }
                 },
@@ -56,41 +57,43 @@ export default function index({ capacities }) {
     return (
         <>
             <AuthenticatedLayout>
-                <Head title="Settings - Capacities" />
+                <Head title="Capacities" />
 
                 <BreadCrumb
-                    header={'Settings - Capacities'}
-                    parent={'Settings'}
-                    parent_link={route('dashboard.settings.index')}
+                    header={'Capacities'}
+                    parent={'Dashboard'}
+                    parent_link={route('dashboard')}
                     child={'Capacities'}
                 />
 
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end gap-4">
-                                <LinkButton
-                                    Text={'Create Capacity'}
-                                    URL={route('dashboard.settings.capacities.create')}
-                                    Icon={
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            strokeWidth={1.5}
-                                            stroke="currentColor"
-                                            className="size-6"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                d="M12 4.5v15m7.5-7.5h-15"
-                                            />
-                                        </svg>
-                                    }
-                                />
+                            <div className="flex flex-wrap justify-end gap-4 my-3">
+                                {can("Capacity Create") && (
+                                    <LinkButton
+                                        Text={'Create Capacity'}
+                                        URL={route('dashboard.settings.capacities.create')}
+                                        Icon={
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.5}
+                                                stroke="currentColor"
+                                                className="size-6"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M12 4.5v15m7.5-7.5h-15"
+                                                />
+                                            </svg>
+                                        }
+                                    />
+                                )}
 
-                                <LinkButton
+                                {/* <LinkButton
                                     Text={'Back To Settings'}
                                     URL={route('dashboard.settings.index')}
                                     Icon={
@@ -109,7 +112,7 @@ export default function index({ capacities }) {
                                             />
                                         </svg>
                                     }
-                                />
+                                /> */}
                             </div>
 
                             <Table
@@ -122,7 +125,9 @@ export default function index({ capacities }) {
                                 SingleDeleteMethod={SingleDelete}
                                 BulkDeleteRoute={'dashboard.settings.capacities.destroybyselection'}
                                 SingleDeleteRoute={'dashboard.settings.capacities.destroy'}
-                                EditRoute={'dashboard.settings.capacities.edit'}
+                                EditRoute={can("Capacity Edit") ? 'dashboard.settings.capacities.edit' : null}
+                                DeleteAction={can('Capacity Delete')}
+                                canSelect={can('Capacity Delete')}
                                 SearchRoute={'dashboard.settings.capacities.index'}
                                 Search={false}
                                 DefaultSearchInput={false}

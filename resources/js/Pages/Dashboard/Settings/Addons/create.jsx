@@ -26,10 +26,10 @@ export default function create() {
     return (
         <>
             <AuthenticatedLayout>
-                <Head title="Settings - Addons" />
+                <Head title="Addons" />
 
                 <BreadCrumb
-                    header={'Settings - Create Addon'}
+                    header={'Create Addon'}
                     parent={'Addons'}
                     parent_link={route('dashboard.settings.addon-settings.index')}
                     child={'Create Addon'}
@@ -109,7 +109,7 @@ export default function create() {
                                             <PrimaryButton
                                                 Text={'Create Addon'}
                                                 Type={'submit'}
-                                                CustomClass={'w-[250px] '}
+                                                CustomClass={'w-[200px] '}
                                                 Disabled={
                                                     processing ||
                                                     data.name.trim() === '' ||

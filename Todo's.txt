@@ -1793,6 +1793,14 @@ canceled
 107: FIXED The Hover State For Mobile On Orders And Shop Page Tabs On Website To Dont Use Hover On Mobile Devices ✅
 108: Smartphone Details Bitcoin Badge Text Changed To Crypto  ✅
 
+109: Whole Dashboard Menu Items Changed According To The PDF ✅
+110: Permissions Grouping Adjusted According to menu items ✅
+111: New Permissions Added For Model Names, Colors, Conditions, DataDeletion Request, Capacity, Addon-on Items + Whole Setting Module's Each Module Permission ✅
+112: Backend Restriction For Whole Setting Module's Modules Added ✅
+113: Setting Controller Some Methods Naming Adjusted ✅
+114: New Column added Named (alias) To Give alias Upon Those Permissions which were configured Before and Now thier Name is Changed In The Dashboard Menu ✅
+115: Whole Website Unused Imports Removed To Optimize Site a Bit More ✅
+
 
 
  <- Review Remeaning (Done) ->

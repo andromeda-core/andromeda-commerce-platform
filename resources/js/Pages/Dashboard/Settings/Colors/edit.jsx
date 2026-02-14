@@ -27,10 +27,10 @@ export default function edit({ color }) {
     return (
         <>
             <AuthenticatedLayout>
-                <Head title="Settings - Colors" />
+                <Head title="Colors" />
 
                 <BreadCrumb
-                    header={'Settings - Edit Color'}
+                    header={'Edit Color'}
                     parent={'Colors'}
                     parent_link={route('dashboard.settings.colors.index')}
                     child={'Edit Color'}

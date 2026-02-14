@@ -1,4 +1,3 @@
-import { router } from '@inertiajs/react';
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal, flushSync } from 'react-dom';
 import gsap from 'gsap';

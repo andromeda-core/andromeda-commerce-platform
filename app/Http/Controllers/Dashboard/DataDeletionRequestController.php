@@ -5,10 +5,19 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Repositories\DataDeletionRequests\Interface\IDataDeletionRequestRepository;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Inertia\Inertia;
 
-class DataDeletionRequestController extends Controller
+class DataDeletionRequestController extends Controller implements HasMiddleware
 {
+    public static function middleware()
+    {
+        return [
+            new Middleware('permission:Data Deletion Requests View', ['only' => 'index']),
+        ];
+    }
+
     public function __construct(
         private IDataDeletionRequestRepository $data_deletion_request
     ) {}

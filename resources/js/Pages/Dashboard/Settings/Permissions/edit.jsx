@@ -11,6 +11,7 @@ export default function edit({ permission }) {
     // Edit Data Form Data
     const { data, setData, put, processing, errors } = useForm({
         name: permission.name || '',
+        alias: permission.alias || '',
         icon: permission.icon || '',
         parent_name: permission.parent_name || '',
     });
@@ -74,6 +75,20 @@ export default function edit({ permission }) {
                                                     Name={'name'}
                                                     Type={'text'}
                                                     Required={true}
+                                                />
+
+                                                <Input
+                                                    InputName={'Permission Name Alias'}
+                                                    Error={errors.alias}
+                                                    Value={data.alias}
+                                                    Action={(e) =>
+                                                        setData('alias', e.target.value)
+                                                    }
+                                                    Placeholder={'Enter Permission Name Alias'}
+                                                    Id={'alias'}
+                                                    Name={'alias'}
+                                                    Type={'text'}
+                                                    Required={false}
                                                 />
 
                                                 <Input

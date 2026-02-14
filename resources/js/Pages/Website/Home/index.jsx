@@ -38,7 +38,7 @@ const index = () => {
     });
 
 
-    const { currency, auth, cart_items, smartphone_addon_items } = usePage().props;
+    const { currency, auth, smartphone_addon_items } = usePage().props;
 
 
     // Translation Hook

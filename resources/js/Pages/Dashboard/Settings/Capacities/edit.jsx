@@ -24,10 +24,10 @@ export default function edit({ capacity }) {
     return (
         <>
             <AuthenticatedLayout>
-                <Head title="Settings - Capacities" />
+                <Head title="Capacities" />
 
                 <BreadCrumb
-                    header={'Settings - Edit Capacity'}
+                    header={'Edit Capacity'}
                     parent={'Capacities'}
                     parent_link={route('dashboard.settings.capacities.index')}
                     child={'Edit Capacity'}

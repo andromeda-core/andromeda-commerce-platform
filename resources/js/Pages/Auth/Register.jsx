@@ -1,6 +1,5 @@
 import PrimaryButton from '@/Components/PrimaryButton';
 import WebInput from '@/Components/WebInput';
-import WebSelectInput from '@/Components/WebSelectInput';
 import { useTranslation } from '@/Hooks/useTranslation';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';

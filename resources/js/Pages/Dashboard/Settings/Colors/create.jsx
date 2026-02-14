@@ -27,10 +27,10 @@ export default function create() {
     return (
         <>
             <AuthenticatedLayout>
-                <Head title="Settings - Colors" />
+                <Head title="Colors" />
 
                 <BreadCrumb
-                    header={'Settings - Create Color'}
+                    header={'Create Color'}
                     parent={'Colors'}
                     parent_link={route('dashboard.settings.colors.index')}
                     child={'Create Color'}

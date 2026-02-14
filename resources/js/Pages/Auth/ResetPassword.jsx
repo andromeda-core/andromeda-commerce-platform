@@ -2,7 +2,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import WebInput from '@/Components/WebInput';
 import { useTranslation } from '@/Hooks/useTranslation';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function ResetPassword({ token, email }) {

@@ -7,10 +7,220 @@ use App\Repositories\Settings\Interface\ISettingRepository;
 use App\Repositories\TranslationSystem\Language\Interface\ILanguageRepository;
 use Artisan;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Inertia\Inertia;
 
-class SettingController extends Controller
+class SettingController extends Controller implements HasMiddleware
 {
+    public static function middleware()
+    {
+        return [
+
+            new Middleware('permission:Settings View', ['only' => 'index']),
+            new Middleware('permission:General', ['only' => 'generalSetting']),
+            new Middleware('permission:General', ['only' => 'updateGeneralSetting']),
+
+            new Middleware('permission:SMTP', ['only' => 'smtpSetting']),
+            new Middleware('permission:SMTP', ['only' => 'updateSmtpSetting']),
+
+            new Middleware('permission:Role', ['only' => 'roleIndex']),
+            new Middleware('permission:Role', ['only' => 'roleCreate']),
+            new Middleware('permission:Role', ['only' => 'roleStore']),
+            new Middleware('permission:Role', ['only' => 'roleEdit']),
+            new Middleware('permission:Role', ['only' => 'roleUpdate']),
+            new Middleware('permission:Role', ['only' => 'roleDestroy']),
+            new Middleware('permission:Role', ['only' => 'destroyRoleBySelection']),
+
+            new Middleware('permission:Role', ['only' => 'permissionsIndex']),
+            new Middleware('permission:Role', ['only' => 'permissionCreate']),
+            new Middleware('permission:Role', ['only' => 'permissionStore']),
+            new Middleware('permission:Role', ['only' => 'permissionEdit']),
+            new Middleware('permission:Role', ['only' => 'permissionUpdate']),
+            new Middleware('permission:Role', ['only' => 'destroyPermissionBySelection']),
+            new Middleware('permission:Role', ['only' => 'permissionManage']),
+            new Middleware('permission:Role', ['only' => 'permissionSync']),
+
+            new Middleware('permission:Colors View', ['only' => 'colorIndex']),
+            new Middleware('permission:Colors Create', ['only' => 'colorCreate']),
+            new Middleware('permission:Colors Create', ['only' => 'colorStore']),
+            new Middleware('permission:Colors Edit', ['only' => 'colorEdit']),
+            new Middleware('permission:Colors Edit', ['only' => 'colorUpdate']),
+            new Middleware('permission:Colors Delete', ['only' => 'colorDestroy']),
+            new Middleware('permission:Colors Delete', ['only' => 'destroyColorBySelection']),
+
+            new Middleware('permission:Model Names View', ['only' => 'modelNameIndex']),
+            new Middleware('permission:Model Names Create', ['only' => 'modelNameCreate']),
+            new Middleware('permission:Model Names Create', ['only' => 'modelNameStore']),
+            new Middleware('permission:Model Names Edit', ['only' => 'modelNameEdit']),
+            new Middleware('permission:Model Names Edit', ['only' => 'modelNameUpdate']),
+            new Middleware('permission:Model Names Delete', ['only' => 'modelNameDestroy']),
+            new Middleware('permission:Model Names Delete', ['only' => 'destroyModelNameBySelection']),
+
+            new Middleware('permission:Capacity View', ['only' => 'capacityIndex']),
+            new Middleware('permission:Capacity Create', ['only' => 'capacityCreate']),
+            new Middleware('permission:Capacity Create', ['only' => 'capacityStore']),
+            new Middleware('permission:Capacity Edit', ['only' => 'capacityEdit']),
+            new Middleware('permission:Capacity Edit', ['only' => 'capacityUpdate']),
+            new Middleware('permission:Capacity Delete', ['only' => 'capacityDestroy']),
+            new Middleware('permission:Capacity Delete', ['only' => 'destroyCapacityBySelection']),
+
+            new Middleware('permission:Storage Locations', ['only' => 'storageLocationIndex']),
+            new Middleware('permission:Storage Locations', ['only' => 'storageLocationCreate']),
+            new Middleware('permission:Storage Locations', ['only' => 'storageLocationStore']),
+            new Middleware('permission:Storage Locations', ['only' => 'storageLocationEdit']),
+            new Middleware('permission:Storage Locations', ['only' => 'storageLocationUpdate']),
+            new Middleware('permission:Storage Locations', ['only' => 'storageLocationDestroy']),
+            new Middleware('permission:Storage Locations', ['only' => 'destroyStorageLocationBySelection']),
+
+            new Middleware('permission:Currency', ['only' => 'currencyIndex']),
+            new Middleware('permission:Currency', ['only' => 'currencyCreate']),
+            new Middleware('permission:Currency', ['only' => 'currencyStore']),
+            new Middleware('permission:Currency', ['only' => 'currencyEdit']),
+            new Middleware('permission:Currency', ['only' => 'currencyUpdate']),
+            new Middleware('permission:Currency', ['only' => 'currencyDestroy']),
+            new Middleware('permission:Currency', ['only' => 'destroyCurrencyBySelection']),
+            new Middleware('permission:Currency', ['only' => 'toggleCurrencyStatus']),
+
+            new Middleware('permission:Additional Fees', ['only' => 'additionalFeeListIndex']),
+            new Middleware('permission:Additional Fees', ['only' => 'additionalFeeListCreate']),
+            new Middleware('permission:Additional Fees', ['only' => 'additionalFeeListStore']),
+            new Middleware('permission:Additional Fees', ['only' => 'additionalFeeListEdit']),
+            new Middleware('permission:Additional Fees', ['only' => 'additionalFeeListUpdate']),
+            new Middleware('permission:Additional Fees', ['only' => 'additionalFeeListDestroy']),
+            new Middleware('permission:Additional Fees', ['only' => 'destroyAdditionalFeeListBySelection']),
+
+            new Middleware('permission:Reward Rate', ['only' => 'rewardPointSettingIndex']),
+            new Middleware('permission:Reward Rate', ['only' => 'rewardPointSettingUpdate']),
+
+            new Middleware('permission:Commission', ['only' => 'commissionSettingIndex']),
+            new Middleware('permission:Commission', ['only' => 'commissionSettingCreate']),
+            new Middleware('permission:Commission', ['only' => 'commissionSettingStore']),
+            new Middleware('permission:Commission', ['only' => 'commissionSettingEdit']),
+            new Middleware('permission:Commission', ['only' => 'commissionSettingUpdate']),
+            new Middleware('permission:Commission', ['only' => 'destroyCommissionSetting']),
+            new Middleware('permission:Commission', ['only' => 'destroyCommissionSettingBySelection']),
+
+            new Middleware('permission:Countries', ['only' => 'countryIndex']),
+            new Middleware('permission:Countries', ['only' => 'countryCreate']),
+            new Middleware('permission:Countries', ['only' => 'countryStore']),
+            new Middleware('permission:Countries', ['only' => 'countryUpdate']),
+            new Middleware('permission:Countries', ['only' => 'countryDestroy']),
+            new Middleware('permission:Countries', ['only' => 'countryDestroyBySelection']),
+
+            new Middleware('permission:Special Countries', ['only' => 'specialCountryIndex']),
+            new Middleware('permission:Special Countries', ['only' => 'specialCountryCreate']),
+            new Middleware('permission:Special Countries', ['only' => 'specialCountryStore']),
+            new Middleware('permission:Special Countries', ['only' => 'specialCountryDestroy']),
+            new Middleware('permission:Special Countries', ['only' => 'specialCountryDestroyBySelection']),
+
+            new Middleware('permission:AWS', ['only' => 'awsSettingsIndex']),
+            new Middleware('permission:AWS', ['only' => 'awsSettingsCreate']),
+            new Middleware('permission:AWS', ['only' => 'awsSettingsStore']),
+            new Middleware('permission:AWS', ['only' => 'awsSettingsEdit']),
+            new Middleware('permission:AWS', ['only' => 'awsSettingsUpdate']),
+            new Middleware('permission:AWS', ['only' => 'awsSettingsToggleStatus']),
+            new Middleware('permission:AWS', ['only' => 'awsSettingsDestroy']),
+            new Middleware('permission:AWS', ['only' => 'awsSettingsDestroyBySelection']),
+
+            new Middleware('permission:Google Maps', ['only' => 'googleMapSettingsIndex']),
+            new Middleware('permission:Google Maps', ['only' => 'googleMapSettingsCreate']),
+            new Middleware('permission:Google Maps', ['only' => 'googleMapSettingsStore']),
+            new Middleware('permission:Google Maps', ['only' => 'googleMapSettingsEdit']),
+            new Middleware('permission:Google Maps', ['only' => 'googleMapSettingsUpdate']),
+            new Middleware('permission:Google Maps', ['only' => 'googleMapSettingsDestroy']),
+            new Middleware('permission:Google Maps', ['only' => 'googleMapSettingsDestroyBySelection']),
+            new Middleware('permission:Google Maps', ['only' => 'googleMapSettingsToggleStatus']),
+
+            new Middleware('permission:Meta', ['only' => 'metaSettingsIndex']),
+            new Middleware('permission:Meta', ['only' => 'metaSettingsCreate']),
+            new Middleware('permission:Meta', ['only' => 'metaSettingsStore']),
+            new Middleware('permission:Meta', ['only' => 'metaSettingsEdit']),
+            new Middleware('permission:Meta', ['only' => 'metaSettingsUpdate']),
+            new Middleware('permission:Meta', ['only' => 'metaSettingsDestroy']),
+            new Middleware('permission:Meta', ['only' => 'metaSettingsDestroyBySelection']),
+            new Middleware('permission:Meta', ['only' => 'metaSettingsToggleStatus']),
+
+            new Middleware('permission:NOWPayments', ['only' => 'NOWPaymentSettingsIndex']),
+            new Middleware('permission:NOWPayments', ['only' => 'NOWPaymentSettingsCreate']),
+            new Middleware('permission:NOWPayments', ['only' => 'NOWPaymentSettingsStore']),
+            new Middleware('permission:NOWPayments', ['only' => 'NOWPaymentSettingsEdit']),
+            new Middleware('permission:NOWPayments', ['only' => 'NOWPaymentSettingsUpdate']),
+            new Middleware('permission:NOWPayments', ['only' => 'NOWPaymentSettingsDestroy']),
+            new Middleware('permission:NOWPayments', ['only' => 'NOWPaymentSettingsDestroyBySelection']),
+            new Middleware('permission:NOWPayments', ['only' => 'NOWPaymentSettingsToggleStatus']),
+
+            new Middleware('permission:Return Policy', ['only' => 'returnPolicyIndex']),
+            new Middleware('permission:Return Policy', ['only' => 'returnPolicyCreate']),
+            new Middleware('permission:Return Policy', ['only' => 'returnPolicyStore']),
+            new Middleware('permission:Return Policy', ['only' => 'returnPolicyEdit']),
+            new Middleware('permission:Return Policy', ['only' => 'returnPolicyUpdate']),
+            new Middleware('permission:Return Policy', ['only' => 'returnPolicyDestroy']),
+            new Middleware('permission:Return Policy', ['only' => 'returnPolicyDestroyBySelection']),
+            new Middleware('permission:Return Policy', ['only' => 'returnPolicyToggleStatus']),
+
+            new Middleware('permission:Shipping Policy', ['only' => 'shippingPolicyIndex']),
+            new Middleware('permission:Shipping Policy', ['only' => 'shippingPolicyCreate']),
+            new Middleware('permission:Shipping Policy', ['only' => 'shippingPolicyStore']),
+            new Middleware('permission:Shipping Policy', ['only' => 'shippingPolicyEdit']),
+            new Middleware('permission:Shipping Policy', ['only' => 'shippingPolicyUpdate']),
+            new Middleware('permission:Shipping Policy', ['only' => 'shippingPolicyDestroy']),
+            new Middleware('permission:Shipping Policy', ['only' => 'shippingPolicyDestroyBySelection']),
+            new Middleware('permission:Shipping Policy', ['only' => 'shippingPolicyToggleStatus']),
+
+            new Middleware('permission:Terms of Service', ['only' => 'termsOfServiceIndex']),
+            new Middleware('permission:Terms of Service', ['only' => 'termsOfServiceCreate']),
+            new Middleware('permission:Terms of Service', ['only' => 'termsOfServiceStore']),
+            new Middleware('permission:Terms of Service', ['only' => 'termsOfServiceEdit']),
+            new Middleware('permission:Terms of Service', ['only' => 'termsOfServiceUpdate']),
+            new Middleware('permission:Terms of Service', ['only' => 'termsOfServiceDestroy']),
+            new Middleware('permission:Terms of Service', ['only' => 'termsOfServiceDestroyBySelection']),
+            new Middleware('permission:Terms of Service', ['only' => 'termsOfServiceToggleStatus']),
+
+            new Middleware('permission:Privacy Policy', ['only' => 'privacyPolicyIndex']),
+            new Middleware('permission:Privacy Policy', ['only' => 'privacyPolicyCreate']),
+            new Middleware('permission:Privacy Policy', ['only' => 'privacyPolicyStore']),
+            new Middleware('permission:Privacy Policy', ['only' => 'privacyPolicyEdit']),
+            new Middleware('permission:Privacy Policy', ['only' => 'privacyPolicyUpdate']),
+            new Middleware('permission:Privacy Policy', ['only' => 'privacyPolicyDestroy']),
+            new Middleware('permission:Privacy Policy', ['only' => 'privacyPolicyDestroyBySelection']),
+            new Middleware('permission:Privacy Policy', ['only' => 'privacyPolicyToggleStatus']),
+
+            new Middleware('permission:Courier Companies', ['only' => 'courierCompanyIndex']),
+            new Middleware('permission:Courier Companies', ['only' => 'courierCompanyCreate']),
+            new Middleware('permission:Courier Companies', ['only' => 'courierCompanyStore']),
+            new Middleware('permission:Courier Companies', ['only' => 'courierCompanyEdit']),
+            new Middleware('permission:Courier Companies', ['only' => 'courierCompanyUpdate']),
+            new Middleware('permission:Courier Companies', ['only' => 'courierCompanyDestroy']),
+            new Middleware('permission:Courier Companies', ['only' => 'courierCompanyDestroyBySelection']),
+            new Middleware('permission:Courier Companies', ['only' => 'courierCompanyToggleStatus']),
+
+            new Middleware('permission:Conditions View', ['only' => 'conditionIndex']),
+            new Middleware('permission:Conditions Create', ['only' => 'conditionCreate']),
+            new Middleware('permission:Conditions Create', ['only' => 'conditionStore']),
+            new Middleware('permission:Conditions Edit', ['only' => 'conditionEdit']),
+            new Middleware('permission:Conditions Edit', ['only' => 'conditionUpdate']),
+            new Middleware('permission:Conditions Delete', ['only' => 'conditionDestroy']),
+            new Middleware('permission:Conditions Delete', ['only' => 'conditionDestroyBySelection']),
+            new Middleware('permission:Conditions Edit', ['only' => 'conditionToggleStatus']),
+
+            new Middleware('permission:Addon Items View', ['only' => 'addonIndex']),
+            new Middleware('permission:Addon Items Create', ['only' => 'addonCreate']),
+            new Middleware('permission:Addon Items Create', ['only' => 'addonStore']),
+            new Middleware('permission:Addon Items Edit', ['only' => 'addonEdit']),
+            new Middleware('permission:Addon Items Edit', ['only' => 'addonUpdate']),
+            new Middleware('permission:Addon Items Delete', ['only' => 'addonDestroy']),
+            new Middleware('permission:Addon Items Delete', ['only' => 'addonDestroyBySelection']),
+            new Middleware('permission:Addon Items Edit', ['only' => 'addonToggleStatus']),
+
+            new Middleware('permission:Dormancy', ['only' => 'dormancySettingIndex']),
+            new Middleware('permission:Dormancy', ['only' => 'dormancySettingSave']),
+
+            new Middleware('permission:Unsettled Account Notifications', ['only' => 'unsettledAccountsNotificationSetting']),
+            new Middleware('permission:Unsettled Account Notifications', ['only' => 'saveUnsettledAccountsNotificationSetting']),
+        ];
+    }
+
     public function __construct(
         private ISettingRepository $setting,
         private ILanguageRepository $language
@@ -160,11 +370,19 @@ class SettingController extends Controller
 
     public function permissionCreate()
     {
+        if (app()->isProduction()) {
+            return back();
+        }
+
         return Inertia::render('Dashboard/Settings/Permissions/create');
     }
 
     public function permissionStore(Request $request)
     {
+        if (app()->isProduction()) {
+            return back();
+        }
+
         $created = $this->setting->storePermission($request);
 
         if ($created['status'] === false) {
@@ -176,6 +394,10 @@ class SettingController extends Controller
 
     public function permissionEdit(?string $id = null)
     {
+        if (app()->isProduction()) {
+            return back();
+        }
+
         if (empty($id)) {
             return to_route('dashboard.settings.permissions.index')->with('error', 'Permission ID not found');
         }
@@ -191,6 +413,10 @@ class SettingController extends Controller
 
     public function permissionUpdate(Request $request, ?string $id = null)
     {
+        if (app()->isProduction()) {
+            return back();
+        }
+
         if (empty($id)) {
             return back()->with('error', 'Permission ID not found');
         }
@@ -206,6 +432,10 @@ class SettingController extends Controller
 
     public function permissionDestroy(?string $id = null)
     {
+        if (app()->isProduction()) {
+            return back();
+        }
+
         if (empty($id)) {
             return back()->with('error', 'Permission ID not found');
         }
@@ -221,6 +451,10 @@ class SettingController extends Controller
 
     public function destroyPermissionBySelection(Request $request)
     {
+        if (app()->isProduction()) {
+            return back();
+        }
+
         $deleted = $this->setting->destroyPermissionBySelection($request);
 
         if ($deleted['status'] === false) {
@@ -582,7 +816,6 @@ class SettingController extends Controller
     }
 
     // Currencies Methods
-
     public function currencyIndex()
     {
         $currencies = $this->setting->getAllCurrencies();
@@ -1004,12 +1237,12 @@ class SettingController extends Controller
         return Inertia::render('Dashboard/Settings/AwsSettings/index', compact('aws_settings'));
     }
 
-    public function awsSettingCreate()
+    public function awsSettingsCreate()
     {
         return Inertia::render('Dashboard/Settings/AwsSettings/create');
     }
 
-    public function awsSettingStore(Request $request)
+    public function awsSettingsStore(Request $request)
     {
         $created = $this->setting->storeAwsSetting($request);
 
@@ -1020,7 +1253,7 @@ class SettingController extends Controller
         return to_route('dashboard.settings.aws-settings.index')->with('success', $created['message']);
     }
 
-    public function awsSettingEdit(?string $id = null)
+    public function awsSettingsEdit(?string $id = null)
     {
         if (empty($id)) {
             return to_route('dashboard.settings.aws-settings.index')->with('error', 'Aws Setting ID not found');
@@ -1031,7 +1264,7 @@ class SettingController extends Controller
         return Inertia::render('Dashboard/Settings/AwsSettings/edit', compact('aws_setting'));
     }
 
-    public function awsSettingUpdate(Request $request, ?string $id = null)
+    public function awsSettingsUpdate(Request $request, ?string $id = null)
     {
         if (empty($id)) {
             return to_route('dashboard.settings.aws-settings.index')->with('error', 'Aws Setting ID not found');
@@ -1046,7 +1279,7 @@ class SettingController extends Controller
         return to_route('dashboard.settings.aws-settings.index')->with('success', $updated['message']);
     }
 
-    public function awsSettingDestroy(?string $id = null)
+    public function awsSettingsDestroy(?string $id = null)
     {
         if (empty($id)) {
             return back()->with('error', 'Aws Setting ID not found');
@@ -1061,7 +1294,7 @@ class SettingController extends Controller
         return back()->with('success', $deleted['message']);
     }
 
-    public function awsSettingDestroyBySelection(Request $request)
+    public function awsSettingsDestroyBySelection(Request $request)
     {
         $deleted = $this->setting->destroyAwsSettingBySelection($request);
         if ($deleted['status'] === false) {
@@ -1071,7 +1304,7 @@ class SettingController extends Controller
         return back()->with('success', $deleted['message']);
     }
 
-    public function awsSettingToggleStatus(?string $id = null)
+    public function awsSettingsToggleStatus(?string $id = null)
     {
         if (empty($id)) {
             return back()->with('error', 'Aws Setting ID not found');
@@ -1095,12 +1328,12 @@ class SettingController extends Controller
         return Inertia::render('Dashboard/Settings/GoogleMapSettings/index', compact('google_map_settings'));
     }
 
-    public function googleMapSettingCreate()
+    public function googleMapSettingsCreate()
     {
         return Inertia::render('Dashboard/Settings/GoogleMapSettings/create');
     }
 
-    public function googleMapSettingStore(Request $request)
+    public function googleMapSettingsStore(Request $request)
     {
         $created = $this->setting->storeGoogleMapSetting($request);
 
@@ -1111,7 +1344,7 @@ class SettingController extends Controller
         return to_route('dashboard.settings.google-map-settings.index')->with('success', $created['message']);
     }
 
-    public function googleMapSettingEdit(?string $id = null)
+    public function googleMapSettingsEdit(?string $id = null)
     {
         if (empty($id)) {
             return to_route('dashboard.settings.google-map-settings.index')->with('error', 'Google Map Setting ID not found');
@@ -1122,7 +1355,7 @@ class SettingController extends Controller
         return Inertia::render('Dashboard/Settings/GoogleMapSettings/edit', compact('google_map_setting'));
     }
 
-    public function googleMapSettingUpdate(Request $request, ?string $id = null)
+    public function googleMapSettingsUpdate(Request $request, ?string $id = null)
     {
         if (empty($id)) {
             return to_route('dashboard.settings.google-map-settings.index')->with('error', 'Google Map Setting ID not found');
@@ -1137,7 +1370,7 @@ class SettingController extends Controller
         return to_route('dashboard.settings.google-map-settings.index')->with('success', $updated['message']);
     }
 
-    public function googleMapSettingDestroy(?string $id = null)
+    public function googleMapSettingsDestroy(?string $id = null)
     {
         if (empty($id)) {
             return back()->with('error', 'Google Map Setting ID not found');
@@ -1152,7 +1385,7 @@ class SettingController extends Controller
         return back()->with('success', $deleted['message']);
     }
 
-    public function googleMapSettingDestroyBySelection(Request $request)
+    public function googleMapSettingsDestroyBySelection(Request $request)
     {
         $deleted = $this->setting->destroyGoogleMapSettingBySelection($request);
         if ($deleted['status'] === false) {
@@ -1162,7 +1395,7 @@ class SettingController extends Controller
         return back()->with('success', $deleted['message']);
     }
 
-    public function googleMapSettingToggleStatus(?string $id = null)
+    public function googleMapSettingsToggleStatus(?string $id = null)
     {
         if (empty($id)) {
             return back()->with('error', 'Google Map Setting ID not found');
@@ -1187,12 +1420,12 @@ class SettingController extends Controller
         return Inertia::render('Dashboard/Settings/MetaSettings/index', compact('meta_settings'));
     }
 
-    public function metaSettingCreate()
+    public function metaSettingsCreate()
     {
         return Inertia::render('Dashboard/Settings/MetaSettings/create');
     }
 
-    public function metaSettingStore(Request $request)
+    public function metaSettingsStore(Request $request)
     {
         $created = $this->setting->storeMetaSetting($request);
 
@@ -1203,7 +1436,7 @@ class SettingController extends Controller
         return to_route('dashboard.settings.meta-settings.index')->with('success', $created['message']);
     }
 
-    public function metaSettingEdit(?string $id = null)
+    public function metaSettingsEdit(?string $id = null)
     {
         if (empty($id)) {
             return to_route('dashboard.settings.meta-settings.index')->with('error', 'Meta Setting ID not found');
@@ -1218,7 +1451,7 @@ class SettingController extends Controller
         return Inertia::render('Dashboard/Settings/MetaSettings/edit', compact('meta_setting'));
     }
 
-    public function metaSettingUpdate(Request $request, ?string $id = null)
+    public function metaSettingsUpdate(Request $request, ?string $id = null)
     {
         if (empty($id)) {
             return to_route('dashboard.settings.meta-settings.index')->with('error', 'Meta Setting ID not found');
@@ -1233,7 +1466,7 @@ class SettingController extends Controller
         return to_route('dashboard.settings.meta-settings.index')->with('success', $updated['message']);
     }
 
-    public function metaSettingDestroy(?string $id = null)
+    public function metaSettingsDestroy(?string $id = null)
     {
         if (empty($id)) {
             return back()->with('error', 'Meta Setting ID not found');
@@ -1248,7 +1481,7 @@ class SettingController extends Controller
         return back()->with('success', $deleted['message']);
     }
 
-    public function metaSettingDestroyBySelection(Request $request)
+    public function metaSettingsDestroyBySelection(Request $request)
     {
         $deleted = $this->setting->destroyMetaSettingBySelection($request);
         if ($deleted['status'] === false) {
@@ -1258,7 +1491,7 @@ class SettingController extends Controller
         return back()->with('success', $deleted['message']);
     }
 
-    public function metaSettingToggleStatus(?string $id = null)
+    public function metaSettingsToggleStatus(?string $id = null)
     {
         if (empty($id)) {
             return back()->with('error', 'Meta Setting ID not found');
@@ -1274,6 +1507,7 @@ class SettingController extends Controller
 
     }
 
+    // NOWPayments
     public function NOWPaymentSettingsIndex()
     {
 
@@ -1282,12 +1516,12 @@ class SettingController extends Controller
         return Inertia::render('Dashboard/Settings/NowPaymentSettings/index', compact('now_payment_settings'));
     }
 
-    public function NOWPaymentSettingCreate()
+    public function NOWPaymentSettingsCreate()
     {
         return Inertia::render('Dashboard/Settings/NowPaymentSettings/create');
     }
 
-    public function NOWPaymentSettingStore(Request $request)
+    public function NOWPaymentSettingsStore(Request $request)
     {
         $response = $this->setting->storeNOWPaymentSetting($request);
         if ($response['status'] === false) {
@@ -1297,7 +1531,7 @@ class SettingController extends Controller
         return to_route('dashboard.settings.now-payment-settings.index')->with('success', $response['message']);
     }
 
-    public function NOWPaymentSettingEdit(?string $id = null)
+    public function NOWPaymentSettingsEdit(?string $id = null)
     {
 
         if (empty($id)) {
@@ -1313,7 +1547,7 @@ class SettingController extends Controller
         return Inertia::render('Dashboard/Settings/NowPaymentSettings/edit', compact('now_payment_setting'));
     }
 
-    public function NOWPaymentSettingUpdate(Request $request, ?string $id = null)
+    public function NOWPaymentSettingsUpdate(Request $request, ?string $id = null)
     {
 
         if (empty($id)) {
@@ -1329,7 +1563,7 @@ class SettingController extends Controller
         return to_route('dashboard.settings.now-payment-settings.index')->with('success', $updated['message']);
     }
 
-    public function NOWPaymentSettingToggleStatus(?string $id = null)
+    public function NOWPaymentSettingsToggleStatus(?string $id = null)
     {
         if (empty($id)) {
             return to_route('dashboard.settings.now-payment-settings.index')->with('error', 'Now Payment Setting ID not found');
@@ -1343,7 +1577,7 @@ class SettingController extends Controller
         return back()->with('success', $response['message']);
     }
 
-    public function NOWPaymentSettingDestroy(?string $id = null)
+    public function NOWPaymentSettingsDestroy(?string $id = null)
     {
         if (empty($id)) {
             return to_route('dashboard.settings.now-payment-settings.index')->with('error', 'Now Payment Setting ID not found');
@@ -1359,7 +1593,7 @@ class SettingController extends Controller
 
     }
 
-    public function NOWPaymentSettingDestroyBySelection(Request $request)
+    public function NOWPaymentSettingsDestroyBySelection(Request $request)
     {
         $deleted = $this->setting->destroyNOWPaymentSettingBySelection($request);
         if ($deleted['status'] === false) {

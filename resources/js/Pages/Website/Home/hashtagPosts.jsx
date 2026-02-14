@@ -3,7 +3,7 @@ import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import Toast from '@/Components/Toast';
 import getCookie from '@/Hooks/useGetCookie';
 import MainLayout from '@/Layouts/Website/MainLayout';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import axios from 'axios';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';

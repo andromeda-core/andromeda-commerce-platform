@@ -23,10 +23,10 @@ export default function create() {
     return (
         <>
             <AuthenticatedLayout>
-                <Head title="Settings - Model Names" />
+                <Head title="Model Names" />
 
                 <BreadCrumb
-                    header={'Settings - Create Model Name'}
+                    header={'Create Model Name'}
                     parent={'Model Names'}
                     parent_link={route('dashboard.settings.model_names.index')}
                     child={'Create Model Name'}
@@ -95,7 +95,7 @@ export default function create() {
                                             <PrimaryButton
                                                 Text={'Create Model Name'}
                                                 Type={'submit'}
-                                                CustomClass={'w-[200px] '}
+                                                CustomClass={'w-[250px] '}
                                                 Disabled={
                                                     processing ||
                                                     data.name.trim() === '' ||

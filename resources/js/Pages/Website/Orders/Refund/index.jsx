@@ -1,5 +1,3 @@
-
-import WebInput from '@/Components/WebInput';
 import WebTextArea from '@/Components/WebTextArea';
 import { useConfirm } from '@/Hooks/useConfirm';
 import { useTranslation } from '@/Hooks/useTranslation';

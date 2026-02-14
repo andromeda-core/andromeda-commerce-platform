@@ -5,6 +5,7 @@ import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import Table from '@/Components/Table';
 import { useEffect, useState } from 'react';
+import can from '@/Hooks/useCan';
 
 export default function index({ addons }) {
     // Bulk Delete Form Data
@@ -102,41 +103,43 @@ export default function index({ addons }) {
     return (
         <>
             <AuthenticatedLayout>
-                <Head title="Settings - Addon Settings" />
+                <Head title="Addons" />
 
                 <BreadCrumb
-                    header={'Settings - Addon Settings'}
-                    parent={'Settings'}
-                    parent_link={route('dashboard.settings.index')}
-                    child={'Addon Settings'}
+                    header={'Addons'}
+                    parent={'Dashboard'}
+                    parent_link={route('dashboard')}
+                    child={'Addons'}
                 />
 
                 <Card
                     Content={
                         <>
                             <div className="flex flex-wrap justify-end gap-4 my-3">
-                                <LinkButton
-                                    Text={'Create Addon'}
-                                    URL={route('dashboard.settings.addon-settings.create')}
-                                    Icon={
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            strokeWidth={1.5}
-                                            stroke="currentColor"
-                                            className="size-6"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                d="M12 4.5v15m7.5-7.5h-15"
-                                            />
-                                        </svg>
-                                    }
-                                />
+                                {can("Addon Items Create") && (
+                                    <LinkButton
+                                        Text={'Create Addon'}
+                                        URL={route('dashboard.settings.addon-settings.create')}
+                                        Icon={
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.5}
+                                                stroke="currentColor"
+                                                className="size-6"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M12 4.5v15m7.5-7.5h-15"
+                                                />
+                                            </svg>
+                                        }
+                                    />
+                                )}
 
-                                <LinkButton
+                                {/* <LinkButton
                                     Text={'Back To Settings'}
                                     URL={route('dashboard.settings.index')}
                                     Icon={
@@ -155,7 +158,7 @@ export default function index({ addons }) {
                                             />
                                         </svg>
                                     }
-                                />
+                                /> */}
                             </div>
 
                             <Table
@@ -172,13 +175,15 @@ export default function index({ addons }) {
                                 SingleDeleteRoute={
                                     'dashboard.settings.addon-settings.destroy'
                                 }
-                                EditRoute={'dashboard.settings.addon-settings.edit'}
+                                EditRoute={can("Addon Items Edit") ? 'dashboard.settings.addon-settings.edit' : null}
                                 SearchRoute={'dashboard.settings.addon-settings.index'}
                                 Search={false}
                                 DefaultSearchInput={false}
+                                DeleteAction={can('Addon Items Delete')}
                                 items={addons}
                                 props={props}
                                 columns={columns}
+                                canSelect={can('Addon Items Delete')}
                             />
                         </>
                     }

@@ -21,13 +21,13 @@ export default function edit({ condition }) {
     return (
         <>
             <AuthenticatedLayout>
-                <Head title="Settings - Condition Settings" />
+                <Head title="Conditions" />
 
                 <BreadCrumb
-                    header={'Settings - Edit Condition'}
-                    parent={'Condition Settings'}
+                    header={'Edit Condition'}
+                    parent={'Conditions'}
                     parent_link={route('dashboard.settings.condition-settings.index')}
-                    child={'Condition Settings'}
+                    child={'Edit Condition'}
                 />
 
                 <Card
@@ -84,7 +84,7 @@ export default function edit({ condition }) {
                                             <PrimaryButton
                                                 Text={'Update Condition'}
                                                 Type={'submit'}
-                                                CustomClass={'w-[300px] '}
+                                                CustomClass={'w-[200px] '}
                                                 Disabled={
                                                     processing ||
                                                     data.name.trim() === ''

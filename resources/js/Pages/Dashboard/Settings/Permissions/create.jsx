@@ -12,6 +12,7 @@ export default function create() {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         icon: '',
+        alias: '',
         parent_name: '',
     });
 
@@ -74,6 +75,21 @@ export default function create() {
                                                     Name={'name'}
                                                     Type={'text'}
                                                     Required={true}
+                                                />
+
+
+                                                <Input
+                                                    InputName={'Permission Name Alias'}
+                                                    Error={errors.alias}
+                                                    Value={data.alias}
+                                                    Action={(e) =>
+                                                        setData('alias', e.target.value)
+                                                    }
+                                                    Placeholder={'Enter Permission Name Alias'}
+                                                    Id={'alias'}
+                                                    Name={'alias'}
+                                                    Type={'text'}
+                                                    Required={false}
                                                 />
 
                                                 <Input

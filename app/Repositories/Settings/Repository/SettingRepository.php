@@ -471,6 +471,7 @@ class SettingRepository implements ISettingRepository
         $validated_req = $request->validate([
             'name' => ['required', 'max:255', 'unique:permissions,name'],
             'icon' => ['required', 'max:100'],
+            'alias' => ['nullable', 'max:100'],
             'parent_name' => ['required', 'max:255'],
         ]);
 
@@ -498,6 +499,7 @@ class SettingRepository implements ISettingRepository
         $validated_req = $request->validate([
             'name' => ['required', 'max:255', 'unique:permissions,name,'.$id],
             'icon' => ['required', 'max:100'],
+            'alias' => ['nullable', 'max:100'],
             'parent_name' => ['required', 'max:255'],
         ]);
 
@@ -4069,7 +4071,7 @@ class SettingRepository implements ISettingRepository
     {
         $validated_req = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'price' => ['required', 'integer', 'min:0'],
+            'price' => ['required', 'decimal:2', 'min:0'],
         ]);
 
         try {
@@ -4096,7 +4098,7 @@ class SettingRepository implements ISettingRepository
 
         $validated_req = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'price' => ['required', 'integer', 'min:0'],
+            'price' => ['required', 'decimal:2', 'min:0'],
         ]);
 
         try {

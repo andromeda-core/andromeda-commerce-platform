@@ -23,10 +23,10 @@ export default function edit({ model_name }) {
     return (
         <>
             <AuthenticatedLayout>
-                <Head title="Settings - Model Names" />
+                <Head title="Model Names" />
 
                 <BreadCrumb
-                    header={'Settings - Edit Model Name'}
+                    header={'Edit Model Name'}
                     parent={'Model Names'}
                     parent_link={route('dashboard.settings.model_names.index')}
                     child={'Edit Model Name'}

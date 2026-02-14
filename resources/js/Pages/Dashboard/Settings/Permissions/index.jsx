@@ -34,11 +34,12 @@ export default function index({ permissions }) {
     useEffect(() => {
         const columns = [
             { key: 'name', label: 'Permission Name' },
+            { key: 'alias', label: 'Permission Name Alias' },
             {
                 label: 'Permission ICON',
                 render: (item) => {
                     const Icon = HeroIcons[item.icon];
-                    return <div>{Icon ? <Icon className="h-6 w-6 text-blue-500" /> : null}</div>;
+                    return <div>{Icon ? <Icon className="w-6 h-6 text-blue-500" /> : null}</div>;
                 },
             },
 
@@ -64,7 +65,7 @@ export default function index({ permissions }) {
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end gap-4">
+                            <div className="flex flex-wrap justify-end gap-4 my-3">
                                 <LinkButton
                                     Text={'Create Permission'}
                                     URL={route('dashboard.settings.permissions.create')}

@@ -113,7 +113,7 @@ export default function manage({ all_permissions, assigned_permissions = [], rol
                                         </div>
 
                                         {/* List of Items */}
-                                        <div className="space-y-2">
+                                        <div className="grid grid-cols-2 gap-4 ">
                                             {permissionGroup.items?.map((item) => (
                                                 <label
                                                     key={item.id}
@@ -130,7 +130,7 @@ export default function manage({ all_permissions, assigned_permissions = [], rol
                                                         onChange={() => toggleCheckbox(item.id)}
                                                     />
                                                     <span className="text-sm text-gray-700 dark:text-white/80">
-                                                        {item.name}
+                                                        {item.name} {item?.alias ? `(${item.alias})` : ''}
                                                     </span>
                                                 </label>
                                             ))}

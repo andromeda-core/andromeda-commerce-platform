@@ -26,10 +26,10 @@ export default function edit({ addon }) {
     return (
         <>
             <AuthenticatedLayout>
-                <Head title="Settings - Addons" />
+                <Head title="Addons" />
 
                 <BreadCrumb
-                    header={'Settings - Edit Addon'}
+                    header={'Edit Addon'}
                     parent={'Addons'}
                     parent_link={route('dashboard.settings.addon-settings.index')}
                     child={'Edit Addon'}
@@ -109,7 +109,7 @@ export default function edit({ addon }) {
                                             <PrimaryButton
                                                 Text={'Update Addon'}
                                                 Type={'submit'}
-                                                CustomClass={'w-[250px] '}
+                                                CustomClass={'w-[200px] '}
                                                 Disabled={
                                                     processing ||
                                                     data.name.trim() === '' ||

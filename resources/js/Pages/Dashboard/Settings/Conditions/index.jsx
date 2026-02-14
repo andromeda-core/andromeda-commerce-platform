@@ -5,6 +5,7 @@ import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import Table from '@/Components/Table';
 import { useEffect, useState } from 'react';
+import can from '@/Hooks/useCan';
 
 export default function index({ conditions }) {
     // Bulk Delete Form Data
@@ -91,41 +92,43 @@ export default function index({ conditions }) {
     return (
         <>
             <AuthenticatedLayout>
-                <Head title="Settings - Condition Settings" />
+                <Head title="Conditions" />
 
                 <BreadCrumb
-                    header={'Settings - Condition Settings'}
-                    parent={'Settings'}
-                    parent_link={route('dashboard.settings.index')}
-                    child={'Condition Settings'}
+                    header={'Conditions'}
+                    parent={'Dashboard'}
+                    parent_link={route('dashboard')}
+                    child={'Conditions'}
                 />
 
                 <Card
                     Content={
                         <>
                             <div className="flex flex-wrap justify-end gap-4 my-3">
-                                <LinkButton
-                                    Text={'Create Condition'}
-                                    URL={route('dashboard.settings.condition-settings.create')}
-                                    Icon={
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            strokeWidth={1.5}
-                                            stroke="currentColor"
-                                            className="size-6"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                d="M12 4.5v15m7.5-7.5h-15"
-                                            />
-                                        </svg>
-                                    }
-                                />
+                                {can("Conditions Create") && (
+                                    <LinkButton
+                                        Text={'Create Condition'}
+                                        URL={route('dashboard.settings.condition-settings.create')}
+                                        Icon={
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.5}
+                                                stroke="currentColor"
+                                                className="size-6"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M12 4.5v15m7.5-7.5h-15"
+                                                />
+                                            </svg>
+                                        }
+                                    />
+                                )}
 
-                                <LinkButton
+                                {/* <LinkButton
                                     Text={'Back To Settings'}
                                     URL={route('dashboard.settings.index')}
                                     Icon={
@@ -144,7 +147,7 @@ export default function index({ conditions }) {
                                             />
                                         </svg>
                                     }
-                                />
+                                /> */}
                             </div>
 
                             <Table
@@ -161,7 +164,10 @@ export default function index({ conditions }) {
                                 SingleDeleteRoute={
                                     'dashboard.settings.condition-settings.destroy'
                                 }
-                                EditRoute={'dashboard.settings.condition-settings.edit'}
+
+                                EditRoute={can("Conditions Edit") ? 'dashboard.settings.condition-settings.edit' : null}
+                                DeleteAction={can('Conditions Delete')}
+                                canSelect={can('Conditions Delete')}
                                 SearchRoute={'dashboard.settings.condition-settings.index'}
                                 Search={false}
                                 DefaultSearchInput={false}

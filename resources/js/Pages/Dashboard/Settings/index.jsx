@@ -1,11 +1,186 @@
-import Card from '@/Components/Card';
-import LinkButton from '@/Components/LinkButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
 import { Head } from '@inertiajs/react';
-import React from 'react';
+import React, { useState } from 'react';
+import LinkButton from '@/Components/LinkButton';
+import Card from '@/Components/Card';
+import can from '@/Hooks/useCan';
 
 export default function index() {
+    const [activeTab, setActiveTab] = useState('Basic');
+
+    const tabs = ['Basic', 'Integrations', 'Operations', 'Financial', 'Policies', 'Regional'];
+
+    const allTabContent = {
+        Basic: [
+            {
+                title: 'General',
+                desc: 'Manage your application settings including app name, contact information, and branding like logos—all from one place.',
+                button: 'General Settings',
+                url: route('dashboard.settings.general.setting'),
+            },
+            {
+                title: 'Dormancy',
+                desc: 'Easily manage and configure Dormancy Setting across your application to control User Dormancy Threshold.',
+                button: 'Dormancy Settings',
+                url: route('dashboard.settings.dormancy-setting.index'),
+            },
+            {
+                title: 'Role',
+                desc: 'Easily manage and configure and create roles across your application to control responsibilities.',
+                button: 'Role Settings',
+                url: route('dashboard.settings.roles.index'),
+            },
+        ],
+        Integrations: [
+            {
+                title: 'AWS',
+                desc: 'Configure and manage Amazon Web Services credentials for storage, cloud services, and infrastructure integrations.',
+                button: 'Manage Keys',
+                url: route('dashboard.settings.aws-settings.index'),
+            },
+            {
+                title: 'Meta',
+                desc: 'Manage Meta platform credentials and API integrations for Messaging, services.',
+                button: 'Manage Keys',
+                url: route('dashboard.settings.meta-settings.index'),
+            },
+            {
+                title: 'Google Map',
+                desc: 'Set up and maintain Google Maps API configurations for geolocation, address validation, and map services.',
+                button: 'Manage Keys',
+                url: route('dashboard.settings.google-map-settings.index'),
+            },
+            {
+                title: 'SMTP',
+                desc: 'Configure SMTP server settings to enable secure and reliable email communications from the platform.',
+                button: 'Manage Keys',
+                url: route('dashboard.settings.smtp.setting'),
+            },
+            {
+                title: 'NOWPayment',
+                desc: 'Manage NOWPayments API credentials to enable cryptocurrency payment processing within the system.',
+                button: 'Manage Keys',
+                url: route('dashboard.settings.now-payment-settings.index'),
+            },
+        ],
+        Operations: [
+            {
+                title: 'Storage Locations',
+                desc: 'Manage warehouse and storage locations to accurately track inventory distribution and operational logistics.',
+                button: 'Manage Locations',
+                url: route('dashboard.settings.storage_locations.index'),
+            },
+            {
+                title: 'Courier Companies',
+                desc: 'Configure and manage courier partners to streamline shipping operations and delivery workflows.',
+                button: 'Manage Companies',
+                url: route('dashboard.settings.courier-company-settings.index'),
+            },
+        ],
+        Financial: [
+            {
+                title: 'Currency',
+                desc: 'Manage supported currencies, and monetary preferences for global transactions.',
+                button: 'Manage Currencies',
+                url: route('dashboard.settings.currencies.index'),
+            },
+            {
+                title: 'Commission',
+                desc: 'Define and control commission structures to automate earnings calculations across sales and partnerships.',
+                button: 'Manage Commissions',
+                url: route('dashboard.settings.commission-settings.index'),
+            },
+            {
+                title: 'Additional Fees',
+                desc: 'Configure supplementary fees and service charges applied during transactions and operational processes.',
+                button: 'Manage Additional Fees',
+                url: route('dashboard.settings.additional_fee_lists.index'),
+            },
+            {
+                title: 'Reward Rate',
+                desc: 'Set and manage reward point conversion rates to maintain an effective and balanced loyalty system.',
+                button: 'Manage Reward Rate',
+                url: route('dashboard.settings.reward-point-setting.index'),
+            },
+            {
+                title: 'Unsettled Account Notifications',
+                desc: 'Monitor and manage alerts related to unsettled accounts to ensure financial transparency and timely resolution.',
+                button: 'View Notifications',
+                url: route('dashboard.settings.unsettled-accounts-notification-settings.index'),
+            },
+        ],
+        Policies: [
+            {
+                title: 'Return Policy',
+                desc: 'Create and maintain return policy guidelines to ensure transparent refund and return procedures.',
+                button: 'Manage Return Policy',
+                url: route('dashboard.settings.return-policy-settings.index'),
+            },
+            {
+                title: 'Shipping Policy',
+                desc: 'Define shipping terms, delivery conditions, and logistics policies for consistent customer communication.',
+                button: 'Manage Shipping Policy',
+                url: route('dashboard.settings.shipping-policy-settings.index'),
+            },
+            {
+                title: 'Privacy Policy',
+                desc: 'Manage privacy policy content to ensure compliance with data protection regulations and transparency standards.',
+                button: 'Manage Privacy Policy',
+                url: route('dashboard.settings.privacy-policy-settings.index'),
+            },
+            {
+                title: 'Terms of Service',
+                desc: 'Maintain and update the platform’s terms of service to clearly define usage rules and legal agreements.',
+                button: 'Manage Terms of Service',
+                url: route('dashboard.settings.terms-of-service-settings.index'),
+            },
+        ],
+        Regional: [
+            {
+                title: 'Countries',
+                desc: 'Manage supported countries to control regional availability, taxation, and operational coverage.',
+                button: 'Manage Countries',
+                url: route('dashboard.settings.countries.index'),
+            },
+            {
+                title: 'Special Countries',
+                desc: 'Configure special country rules and exceptions for region-specific policies and operational adjustments.',
+                button: 'Manage Special Countries',
+                url: route('dashboard.settings.special-countries.index'),
+            },
+        ],
+    };
+    const visibleTabContent = Object.fromEntries(
+        Object.entries(allTabContent).map(([tabName, items]) => {
+            const allowedItems = items.filter(item => can(item.title));
+            return [tabName, allowedItems];
+        })
+    );
+
+    const visibleTabs = tabs.filter(tab => (visibleTabContent[tab]?.length ?? 0) > 0);
+
+    function SubCard({ title, desc, button, url }) {
+        return (
+            <div className="flex min-h-[260px] flex-col justify-between rounded-md border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-zinc-950/50">
+                <div>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white/80">
+                        {title}
+                    </h3>
+                    <p className="mt-3 leading-relaxed text-gray-600 dark:text-white/80">{desc}</p>
+                </div>
+
+                <div className="flex justify-end mt-6">
+                    <LinkButton
+                        Text={button}
+                        URL={url}
+                        CustomClass="!px-1 !py-4 font-medium text-white bg-black rounded-md"
+                    ></LinkButton>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <AuthenticatedLayout>
             <Head title="Settings" />
@@ -18,6 +193,65 @@ export default function index() {
             />
 
             <Card
+                Content={
+                    <>
+                        {/* Top bar */}
+                        <div className="flex flex-wrap items-center justify-between">
+                            {/* Tabs */}
+                            <div className="flex gap-8 py-2 overflow-auto lg:py-0">
+                                {visibleTabs.map((t) => {
+                                    const isActive = activeTab === t;
+                                    return (
+                                        <button
+                                            key={t}
+                                            onClick={() => setActiveTab(t)}
+                                            aria-current={isActive ? 'page' : undefined}
+                                            className={`relative border-b-2 border-transparent pb-3 text-sm font-semibold transition-colors duration-200 ${isActive
+                                                ? 'border-black text-black dark:border-white dark:text-white'
+                                                : 'text-gray-600 hover:border-black hover:text-black dark:text-white/60 dark:hover:border-white dark:hover:text-white'
+                                                } `}
+                                        >
+                                            {t}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Back Button */}
+                            <LinkButton
+                                Text={'Back To Dashboard'}
+                                Icon={
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth={1.5}
+                                        stroke="currentColor"
+                                        className="size-6"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
+                                        />
+                                    </svg>
+                                }
+                                URL={route('dashboard')}
+                                CustomClass="px-6 !py-4 font-medium text-white bg-black rounded-md"
+                            ></LinkButton>
+                        </div>
+
+                        {/* Cards grid */}
+                        <div className="grid grid-cols-1 gap-8 mt-10 md:grid-cols-3">
+                            {(visibleTabContent[activeTab] || []).map((c, idx) => (
+                                <SubCard key={idx} {...c} />
+                            ))}
+                        </div>
+                    </>
+                }
+            />
+
+            {/* <Card
                 Content={
                     <>
                         <div className="flex flex-wrap justify-end gap-4 my-3">
@@ -106,6 +340,102 @@ export default function index() {
                                                         d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
                                                     />
                                                 </svg>
+                                            }
+                                        />
+                                    </>
+                                }
+                            />
+
+                            <Card
+                                CustomCss={
+                                    'flex justify-center items-center flex-col max-w-lg mx-auto min-h-[400px]'
+                                }
+                                Content={
+                                    <>
+                                        <div className="flex items-center justify-center w-20 h-20 mb-3 bg-gray-100 rounded-full">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.5}
+                                                stroke="currentColor"
+                                                className={`size-9 dark:border-white`}
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+                                                />
+                                            </svg>
+                                        </div>
+
+                                        <h2 className="mb-2 text-xl font-semibold text-center text-gray-800 dark:text-white">
+                                            Role Settings
+                                        </h2>
+
+                                        <p className="mb-6 leading-relaxed text-center text-gray-600 dark:text-white">
+                                            Easily manage and configure and create roles across your
+                                            application to control responsibilities.
+                                        </p>
+
+                                        <LinkButton
+                                            URL={route('dashboard.settings.roles.index')}
+                                            Text={'Manage Roles'}
+                                            CustomClass="w-full md:w-[280px] mt-10 "
+                                            Icon={
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    strokeWidth={1.5}
+                                                    stroke="currentColor"
+                                                    className="size-6"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+                                                    />
+                                                </svg>
+                                            }
+                                        />
+                                    </>
+                                }
+                            />
+
+
+                            <Card
+                                CustomCss={
+                                    'flex justify-center items-center flex-col max-w-lg mx-auto min-h-[400px]'
+                                }
+                                Content={
+                                    <>
+                                        <div className="flex items-center justify-center w-20 h-20 mb-3 bg-gray-100 rounded-full">
+
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`size-9 dark:border-white`}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                            </svg>
+
+                                        </div>
+
+                                        <h2 className="mb-2 text-xl font-semibold text-center text-gray-800 dark:text-white">
+                                            Dormancy Settings
+                                        </h2>
+
+                                        <p className="mb-6 leading-relaxed text-center text-gray-600 dark:text-white">
+                                            Easily manage and configure and Dormancy Setting  across your
+                                            application to control User Dormancy Threshold.
+                                        </p>
+
+                                        <LinkButton
+                                            URL={route('dashboard.settings.dormancy-setting.index')}
+                                            Text={'Manage Dormancy Setting'}
+                                            CustomClass="w-full md:w-[280px] mt-10 "
+                                            Icon={
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                                </svg>
+
                                             }
                                         />
                                     </>
@@ -544,101 +874,7 @@ export default function index() {
                                 }
                             />
 
-                            <Card
-                                CustomCss={
-                                    'flex justify-center items-center flex-col max-w-lg mx-auto min-h-[400px]'
-                                }
-                                Content={
-                                    <>
-                                        <div className="flex items-center justify-center w-20 h-20 mb-3 bg-gray-100 rounded-full">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                strokeWidth={1.5}
-                                                stroke="currentColor"
-                                                className={`size-9 dark:border-white`}
-                                            >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
-                                                />
-                                            </svg>
-                                        </div>
 
-                                        <h2 className="mb-2 text-xl font-semibold text-center text-gray-800 dark:text-white">
-                                            Role Settings
-                                        </h2>
-
-                                        <p className="mb-6 leading-relaxed text-center text-gray-600 dark:text-white">
-                                            Easily manage and configure and create roles across your
-                                            application to control responsibilities.
-                                        </p>
-
-                                        <LinkButton
-                                            URL={route('dashboard.settings.roles.index')}
-                                            Text={'Manage Roles'}
-                                            CustomClass="w-full md:w-[280px] mt-10 "
-                                            Icon={
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    strokeWidth={1.5}
-                                                    stroke="currentColor"
-                                                    className="size-6"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
-                                                    />
-                                                </svg>
-                                            }
-                                        />
-                                    </>
-                                }
-                            />
-
-
-                            <Card
-                                CustomCss={
-                                    'flex justify-center items-center flex-col max-w-lg mx-auto min-h-[400px]'
-                                }
-                                Content={
-                                    <>
-                                        <div className="flex items-center justify-center w-20 h-20 mb-3 bg-gray-100 rounded-full">
-
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`size-9 dark:border-white`}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                            </svg>
-
-                                        </div>
-
-                                        <h2 className="mb-2 text-xl font-semibold text-center text-gray-800 dark:text-white">
-                                            Dormancy Settings
-                                        </h2>
-
-                                        <p className="mb-6 leading-relaxed text-center text-gray-600 dark:text-white">
-                                            Easily manage and configure and Dormancy Setting  across your
-                                            application to control User Dormancy Threshold.
-                                        </p>
-
-                                        <LinkButton
-                                            URL={route('dashboard.settings.dormancy-setting.index')}
-                                            Text={'Manage Dormancy Setting'}
-                                            CustomClass="w-full md:w-[280px] mt-10 "
-                                            Icon={
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                                </svg>
-
-                                            }
-                                        />
-                                    </>
-                                }
-                            />
 
                             <Card
                                 CustomCss={
@@ -1561,7 +1797,7 @@ export default function index() {
                         </div>
                     </>
                 }
-            />
+            /> */}
         </AuthenticatedLayout>
     );
 }

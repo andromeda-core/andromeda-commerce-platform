@@ -553,7 +553,6 @@ Route::middleware(['auth'])->group(function () {
 
         // Setting Routes
         Route::controller(SettingController::class)->as('settings.')
-            ->middleware(['permission:Settings View'])
             ->group(function () {
                 Route::get('/settings', 'index')->name('index');
 
@@ -680,43 +679,43 @@ Route::middleware(['auth'])->group(function () {
 
                     // AWS Setting Routes
                     Route::get('/aws-settings', 'awsSettingsIndex')->name('aws-settings.index');
-                    Route::get('/aws-settings-create', 'awsSettingCreate')->name('aws-settings.create');
-                    Route::post('/aws-settings-store', 'awsSettingStore')->name('aws-settings.store');
-                    Route::get('/aws-settings-edit/{id?}', 'awsSettingEdit')->name('aws-settings.edit');
-                    Route::put('/aws-settings-update/{id?}', 'awsSettingUpdate')->name('aws-settings.update');
-                    Route::put('/aws-settings-toggle-status/{id?}', 'awsSettingToggleStatus')->name('aws-settings.toggle-status');
-                    Route::delete('/aws-settings-destroy/{id?}', 'awsSettingDestroy')->name('aws-settings.destroy');
-                    Route::delete('/aws-settings-destroy-by-selection', 'awsSettingDestroyBySelection')->name('aws-settings.destroybyselection');
+                    Route::get('/aws-settings-create', 'awsSettingsCreate')->name('aws-settings.create');
+                    Route::post('/aws-settings-store', 'awsSettingsStore')->name('aws-settings.store');
+                    Route::get('/aws-settings-edit/{id?}', 'awsSettingsEdit')->name('aws-settings.edit');
+                    Route::put('/aws-settings-update/{id?}', 'awsSettingsUpdate')->name('aws-settings.update');
+                    Route::put('/aws-settings-toggle-status/{id?}', 'awsSettingsToggleStatus')->name('aws-settings.toggle-status');
+                    Route::delete('/aws-settings-destroy/{id?}', 'awsSettingsDestroy')->name('aws-settings.destroy');
+                    Route::delete('/aws-settings-destroy-by-selection', 'awsSettingsDestroyBySelection')->name('aws-settings.destroybyselection');
 
                     // Google Map Setting Routes
                     Route::get('/google-map-settings', 'googleMapSettingsIndex')->name('google-map-settings.index');
-                    Route::get('/google-map-settings-create', 'googleMapSettingCreate')->name('google-map-settings.create');
-                    Route::post('/google-map-settings-store', 'googleMapSettingStore')->name('google-map-settings.store');
-                    Route::get('/google-map-settings-edit/{id?}', 'googleMapSettingEdit')->name('google-map-settings.edit');
-                    Route::put('/google-map-settings-update/{id?}', 'googleMapSettingUpdate')->name('google-map-settings.update');
-                    Route::put('/google-map-settings-toggle-status/{id?}', 'googleMapSettingToggleStatus')->name('google-map-settings.toggle-status');
-                    Route::delete('/google-map-settings-destroy/{id?}', 'googleMapSettingDestroy')->name('google-map-settings.destroy');
-                    Route::delete('/google-map-settings-destroy-by-selection', 'googleMapSettingDestroyBySelection')->name('google-map-settings.destroybyselection');
+                    Route::get('/google-map-settings-create', 'googleMapSettingsCreate')->name('google-map-settings.create');
+                    Route::post('/google-map-settings-store', 'googleMapSettingsStore')->name('google-map-settings.store');
+                    Route::get('/google-map-settings-edit/{id?}', 'googleMapSettingsEdit')->name('google-map-settings.edit');
+                    Route::put('/google-map-settings-update/{id?}', 'googleMapSettingsUpdate')->name('google-map-settings.update');
+                    Route::put('/google-map-settings-toggle-status/{id?}', 'googleMapSettingsToggleStatus')->name('google-map-settings.toggle-status');
+                    Route::delete('/google-map-settings-destroy/{id?}', 'googleMapSettingsDestroy')->name('google-map-settings.destroy');
+                    Route::delete('/google-map-settings-destroy-by-selection', 'googleMapSettingsDestroyBySelection')->name('google-map-settings.destroybyselection');
 
                     // Meta Setting Routes
                     Route::get('/meta-settings', 'metaSettingsIndex')->name('meta-settings.index');
-                    Route::get('/meta-settings-create', 'metaSettingCreate')->name('meta-settings.create');
-                    Route::post('/meta-settings-store', 'metaSettingStore')->name('meta-settings.store');
-                    Route::get('/meta-settings-edit/{id?}', 'metaSettingEdit')->name('meta-settings.edit');
-                    Route::put('/meta-settings-update/{id?}', 'metaSettingUpdate')->name('meta-settings.update');
-                    Route::put('/meta-settings-toggle-status/{id?}', 'metaSettingToggleStatus')->name('meta-settings.toggle-status');
-                    Route::delete('/meta-settings-destroy/{id?}', 'metaSettingDestroy')->name('meta-settings.destroy');
-                    Route::delete('/meta-settings-destroy-by-selection', 'metaSettingDestroyBySelection')->name('meta-settings.destroybyselection');
+                    Route::get('/meta-settings-create', 'metaSettingsCreate')->name('meta-settings.create');
+                    Route::post('/meta-settings-store', 'metaSettingsStore')->name('meta-settings.store');
+                    Route::get('/meta-settings-edit/{id?}', 'metaSettingsEdit')->name('meta-settings.edit');
+                    Route::put('/meta-settings-update/{id?}', 'metaSettingsUpdate')->name('meta-settings.update');
+                    Route::put('/meta-settings-toggle-status/{id?}', 'metaSettingsToggleStatus')->name('meta-settings.toggle-status');
+                    Route::delete('/meta-settings-destroy/{id?}', 'metaSettingsDestroy')->name('meta-settings.destroy');
+                    Route::delete('/meta-settings-destroy-by-selection', 'metaSettingsDestroyBySelection')->name('meta-settings.destroybyselection');
 
                     // NOW Payment COnfig Routes
                     Route::get('/now-payment-settings', 'NOWPaymentSettingsIndex')->name('now-payment-settings.index');
-                    Route::get('/now-payment-settings-create', 'NOWPaymentSettingCreate')->name('now-payment-settings.create');
-                    Route::post('/now-payment-settings-store', 'NOWPaymentSettingStore')->name('now-payment-settings.store');
-                    Route::get('/now-payment-settings-edit/{id?}', 'NOWPaymentSettingEdit')->name('now-payment-settings.edit');
-                    Route::put('/now-payment-settings-update/{id?}', 'NOWPaymentSettingUpdate')->name('now-payment-settings.update');
-                    Route::put('/now-payment-settings-toggle-status/{id?}', 'NOWPaymentSettingToggleStatus')->name('now-payment-settings.toggle-status');
-                    Route::delete('/now-payment-settings-destroy/{id?}', 'NOWPaymentSettingDestroy')->name('now-payment-settings.destroy');
-                    Route::delete('/now-payment-settings-destroy-by-selection', 'NOWPaymentSettingDestroyBySelection')->name('now-payment-settings.destroybyselection');
+                    Route::get('/now-payment-settings-create', 'NOWPaymentSettingsCreate')->name('now-payment-settings.create');
+                    Route::post('/now-payment-settings-store', 'NOWPaymentSettingsStore')->name('now-payment-settings.store');
+                    Route::get('/now-payment-settings-edit/{id?}', 'NOWPaymentSettingsEdit')->name('now-payment-settings.edit');
+                    Route::put('/now-payment-settings-update/{id?}', 'NOWPaymentSettingsUpdate')->name('now-payment-settings.update');
+                    Route::put('/now-payment-settings-toggle-status/{id?}', 'NOWPaymentSettingsToggleStatus')->name('now-payment-settings.toggle-status');
+                    Route::delete('/now-payment-settings-destroy/{id?}', 'NOWPaymentSettingsDestroy')->name('now-payment-settings.destroy');
+                    Route::delete('/now-payment-settings-destroy-by-selection', 'NOWPaymentSettingsDestroyBySelection')->name('now-payment-settings.destroybyselection');
 
                     // Return Policy  Routes
                     Route::get('/return-policy-settings', 'returnPolicyIndex')->name('return-policy-settings.index');
