@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Meta;
 
+use App\Helpers\Trans;
 use App\Models\MetaSetting;
 use App\Models\Order;
 use App\Models\User;
@@ -24,18 +25,25 @@ class OrderPaymentProofUploadedNotificationJob implements ShouldQueue
     public function handle(): void
     {
         $meta_service = new MetaService($this->meta_setting);
+        $locale = $this->user->language_locale ?? 'en';
 
-        $message = "Hello {$this->user->name}"."\n\n";
-        $message .= 'We’ve successfully received your payment proof for Order #'.$this->order->order_no."\n\n";
-        $message .= 'Our team will now review and verify your payment. This process usually takes 2 to 3 business days.'."\n\n";
-        $message .= 'Once your payment is approved, you’ll receive another Email And DM confirming your order status update.'."\n\n";
-        $message .= 'If you haven’t heard back from us after 3 business days, please don’t hesitate to reach out to our support team for assistance.'."\n\n";
-        $message .= 'View Your Order: '.route('website.orders.order-view', $this->order->order_no)."\n\n";
+        $message = Trans::get('Hello', $locale)." {$this->user->name}"."\n\n";
+
+        $message .= Trans::get('We’ve successfully received your payment proof for Order', $locale).' #'.$this->order->order_no."\n\n";
+
+        $message .= Trans::get('Our team will now review and verify your payment. This process usually takes 2 to 3 business days.'.$locale)."\n\n";
+
+        $message .= Trans::get('Once your payment is approved, you’ll receive another Email And DM confirming your order status update.', $locale)."\n\n";
+
+        $message .= Trans::get('If you haven’t heard back from us after 3 business days, please don’t hesitate to reach out to our support team for assistance.', $locale)."\n\n";
+
+        $message .= Trans::get('View Your Order', $locale).': '.route('website.orders.order-view', $this->order->order_no)."\n\n";
+
+        $internal_id = $this->meta_setting->meta_fb_page_id;
+        $token = $this->meta_setting->meta_fb_page_access_token;
 
         foreach ($this->meta_contacts as $contact) {
             $platform = $contact->platform;
-            $internal_id = $this->meta_setting->meta_fb_page_id;
-            $token = $this->meta_setting->meta_fb_page_access_token;
             $meta_service->sendMessageViaMeta($platform, $token, $internal_id, $contact->platform_user_id, $message);
         }
     }

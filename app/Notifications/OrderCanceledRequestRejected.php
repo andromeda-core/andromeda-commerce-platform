@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Helpers\Trans;
 use App\Models\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -23,14 +24,17 @@ class OrderCanceledRequestRejected extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
+        $locale = $notifiable->language_locale ?? 'en';
+
         return (new MailMessage)
-            ->subject('Order Cancellation Request Update')
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('We have reviewed your order cancellation request.')
-            ->line('Unfortunately, your request has been rejected at this time.')
-            ->line('Order Number: #'.$this->order->order_no)
-            ->line('If you need more information or have any concerns, please feel free to contact our support team.')
-            ->action('View Order Details', route('website.orders.order-view', $this->order->order_no))
-            ->line('Thank you for your understanding.');
+            ->subject(Trans::get('Order Cancellation Request Update', $locale))
+            ->greeting(Trans::get('Hello', $locale).' '.$notifiable->name.',')
+            ->line(Trans::get('We have reviewed your order cancellation request.', $locale))
+            ->line(Trans::get('Unfortunately, your request has been rejected at this time.', $locale))
+            ->line(Trans::get('Order Number', $locale).': #'.$this->order->order_no)
+            ->line(Trans::get('If you need more information or have any concerns, please feel free to contact our support team.', $locale))
+            ->action(Trans::get('View Order Details', $locale), route('website.orders.order-view', $this->order->order_no))
+            ->line(Trans::get('Thank you for your understanding.', $locale));
+
     }
 }

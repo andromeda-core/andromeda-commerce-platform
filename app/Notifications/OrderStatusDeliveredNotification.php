@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Helpers\Trans;
 use App\Models\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -31,16 +32,19 @@ class OrderStatusDeliveredNotification extends Notification implements ShouldQue
      */
     public function toMail(object $notifiable): MailMessage
     {
+        $locale = $notifiable->language_locale ?? 'en';
+
         return (new MailMessage)
-            ->subject('Your Order Has Been Delivered')
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('We’re happy to inform you that your order has been delivered successfully.')
-            ->line('**Order Number:** '.$this->order->order_no)
-            ->line('**Current Status:** Delivered')
-            ->line('We hope you’re satisfied with your purchase and enjoy using your new product(s).')
-            ->line('You can view your order details anytime in the *My Orders* section of your account.')
-            ->action('View Your Order', route('website.orders.order-view', $this->order->order_no))
-            ->line('Thank you for choosing us! We look forward to serving you again soon.');
+            ->subject(Trans::get('Your Order Has Been Delivered', $locale))
+            ->greeting(Trans::get('Hello', $locale).' '.$notifiable->name.',')
+            ->line(Trans::get('We’re happy to inform you that your order has been delivered successfully.', $locale))
+            ->line('**'.Trans::get('Order Number', $locale).':** '.$this->order->order_no)
+            ->line('**'.Trans::get('Current Status', $locale).':** '.Trans::get('DELIVERED', $locale))
+            ->line(Trans::get('We hope you’re satisfied with your purchase and enjoy using your new product(s).', $locale))
+            ->line(Trans::get('You can view your order details anytime in the My Orders section of your account.', $locale))
+            ->action(Trans::get('View Your Order', $locale), route('website.orders.order-view', $this->order->order_no))
+            ->line(Trans::get('Thank you for choosing us! We look forward to serving you again soon.', $locale));
+
     }
 
     /**

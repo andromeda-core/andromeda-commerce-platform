@@ -609,7 +609,7 @@ const Index = ({ user, countries }) => {
                             <div className="fixed inset-0 z-50 flex items-center justify-center">
                                 {/* Backdrop */}
                                 <div
-                                    className="fixed inset-0 transition-opacity duration-300 bg-black/30 backdrop-blur-sm"
+                                    className="fixed inset-0 transition-opacity duration-300 bg-black/30"
                                     onClick={() => setIsEditProfileOpen(false)}
                                 />
 
@@ -1055,7 +1055,7 @@ const Index = ({ user, countries }) => {
                             <div className="fixed inset-0 z-50 flex items-center justify-center">
                                 {/* Backdrop */}
                                 <div
-                                    className="fixed inset-0 transition-opacity duration-300 bg-black/30 backdrop-blur-sm"
+                                    className="fixed inset-0 transition-opacity duration-300 bg-black/30"
                                     onClick={() => setIsChangePasswordOpen(false)}
                                 />
 
@@ -1297,7 +1297,7 @@ const Index = ({ user, countries }) => {
                             <div className="fixed inset-0 z-50 flex items-center justify-center">
                                 {/* Backdrop */}
                                 <div
-                                    className="fixed inset-0 transition-opacity duration-300 bg-black/30 backdrop-blur-sm"
+                                    className="fixed inset-0 transition-opacity duration-300 bg-black/30"
                                     onClick={() => {
                                         setShowCropper(false);
                                         setProfileImage(null);

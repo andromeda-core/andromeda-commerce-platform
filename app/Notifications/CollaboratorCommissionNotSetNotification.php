@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Helpers\Trans;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -28,12 +29,15 @@ class CollaboratorCommissionNotSetNotification extends Notification implements S
      */
     public function toMail(object $notifiable): MailMessage
     {
+
+        $locale = $notifiable->language_locale ?? 'en';
+
         return (new MailMessage)
-            ->subject('Collaborator Commission Not Configured')
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('An order has been placed using a collaborator referral code, but the commission rate for the collaborator has not been configured.')
-            ->line('Please review the settings and configure the commission rate to ensure proper calculation for future orders.')
-            ->line('Thank you.');
+            ->subject(Trans::get('Collaborator Commission Not Configured', $locale))
+            ->greeting(Trans::get('Hello', $locale).' '.$notifiable->name.',')
+            ->line(Trans::get('An order has been placed using a collaborator referral code, but the commission rate for the collaborator has not been configured.', $locale))
+            ->line(Trans::get('Please review the settings and configure the commission rate to ensure proper calculation for future orders.', $locale))
+            ->line(Trans::get('Thank you.', $locale));
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Helpers\Trans;
 use App\Models\OrderAddressChangeRequest;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -25,53 +26,60 @@ class OrderAddressChangeNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return match ($this->type) {
-            'requested' => $this->addressRequested(),
-            'approved' => $this->addressApproved(),
-            'rejected' => $this->addressRejected(),
-            default => $this->addressRequested(),
+            'requested' => $this->addressRequested($notifiable),
+            'approved' => $this->addressApproved($notifiable),
+            'rejected' => $this->addressRejected($notifiable),
+            default => $this->addressRequested($notifiable),
         };
     }
 
-    protected function addressRequested(): MailMessage
+    protected function addressRequested($notifiable): MailMessage
     {
+        $locale = $notifiable->language_locale ?? 'en';
+
         return (new MailMessage)
-            ->subject('Shipping Address Change Request Received')
-            ->greeting('Hello '.$this->request->customer->user->name.',')
-            ->line('We have received your request to update the shipping address for your order.')
-            ->line('Order Number: '.$this->request->order->order_no)
-            ->line('Our team will review your request and notify you once a decision is made.')
+            ->subject(Trans::get('Shipping Address Change Request Received', $locale))
+            ->greeting(Trans::get('Hello', $locale).' '.$this->request->customer->user->name.',')
+            ->line(Trans::get('We have received your request to update the shipping address for your order.', $locale))
+            ->line(Trans::get('Order Number', $locale).': '.$this->request->order->order_no)
+            ->line(Trans::get('Our team will review your request and notify you once a decision is made.', $locale))
             ->action(
-                'View Order',
+                Trans::get('View Order', $locale),
                 route('website.orders.order-view', ['order_no' => $this->request->order->order_no])
             )
-            ->line('Thank you for your patience.');
+            ->line(Trans::get('Thank you for your patience.', $locale));
     }
 
-    protected function addressApproved(): MailMessage
+    protected function addressApproved($notifiable): MailMessage
     {
+        $locale = $notifiable->language_locale ?? 'en';
+
         return (new MailMessage)
-            ->subject('Shipping Address Change Approved')
-            ->greeting('Good news!')
-            ->line('Your shipping address change request has been approved.')
-            ->line('Order Number: '.$this->request->order->order_no)
-            ->line('The updated address will be used for delivery of your order.')
+            ->subject(Trans::get('Shipping Address Change Approved', $locale))
+            ->greeting(Trans::get('Good news!', $locale))
+            ->line(Trans::get('Your shipping address change request has been approved.', $locale))
+            ->line(Trans::get('Order Number', $locale).': '.$this->request->order->order_no)
+            ->line(Trans::get('The updated address will be used for delivery of your order.', $locale))
             ->action(
-                'View Order',
+                Trans::get('View Order', $locale),
                 route('website.orders.order-view', ['order_no' => $this->request->order->order_no])
             )
-            ->line('If you have any further questions, feel free to contact our support team.');
+            ->line(Trans::get('If you have any further questions, feel free to contact our support team.', $locale));
+
     }
 
-    protected function addressRejected(): MailMessage
+    protected function addressRejected($notifiable): MailMessage
     {
+        $locale = $notifiable->language_locale ?? 'en';
+
         return (new MailMessage)
-            ->subject('Shipping Address Change Rejected')
-            ->greeting('Hello '.$this->request->customer->user->name.',')
-            ->line('Unfortunately, your request to change the shipping address could not be approved.')
-            ->line('Order Number: '.$this->request->order->order_no)
-            ->line('If you believe this is a mistake, please contact our support team.')
+            ->subject(Trans::get('Shipping Address Change Rejected', $locale))
+            ->greeting(Trans::get('Hello', $locale).' '.$this->request->customer->user->name.',')
+            ->line(Trans::get('Unfortunately, your request to change the shipping address could not be approved.', $locale))
+            ->line(Trans::get('Order Number', $locale).': '.$this->request->order->order_no)
+            ->line(Trans::get('If you believe this is a mistake, please contact our support team.', $locale))
             ->action(
-                'Contact Support',
+                Trans::get('Contact Support', $locale),
                 route('website.contact.index')
             );
     }

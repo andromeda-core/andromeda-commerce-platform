@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Meta;
 
+use App\Helpers\Trans;
 use App\Models\MetaSetting;
 use App\Models\Order;
 use App\Models\User;
@@ -24,25 +25,37 @@ class OrderStatusShippedNotificationJob implements ShouldQueue
     public function handle(): void
     {
         $meta_service = new MetaService($this->meta_setting);
-        $message = "Hello {$this->user->name},\n\n";
-        $message .= "Good news! Your order has been shipped and is now on its way to you.\n\n";
+        $locale = $this->user->language_locale ?? 'en';
 
-        $message .= "📦 Order Details\n";
-        $message .= "Order Number: {$this->order->order_no}\n";
-        $message .= "Current Status: Shipped\n";
-        $message .= "Courier Company: {$this->order->courier_company}\n";
-        $message .= "Tracking Number: {$this->order->tracking_no}\n";
-        $message .= "Shipping Date: {$this->order->shipping_date->format('M d, Y')}\n\n";
+        $message = Trans::get('Hello', $locale)." {$this->user->name},\n\n";
 
-        $message .= "You can track your shipment directly on {$this->order->courier_company}’s website using your tracking number: {$this->order->tracking_no}'\n\n";
-        $message .= "For complete details and the latest status of your order, please visit the My Orders Page in your account.\n\n";
-        $message .= 'View Your Order: '.route('website.orders.order-view', $this->order->order_no)."\n\n";
-        $message .= 'Thank you for shopping with us! We look forward to delivering your order soon.';
+        $message .= Trans::get('Good news! Your order has been shipped and is now on its way to you.', $locale)."\n\n";
+
+        $message .= '📦 '.Trans::get('Order Details', $locale)."\n";
+
+        $message .= Trans::get('Order Number', $locale).": {$this->order->order_no}\n";
+
+        $message .= Trans::get('Current Status', $locale).': '.Trans::get('SHIPPED', $locale)."\n";
+
+        $message .= Trans::get('Courier Company', $locale).": {$this->order->courier_company}\n";
+
+        $message .= Trans::get('Tracking Number', $locale).": {$this->order->tracking_no}\n";
+
+        $message .= Trans::get('Shipping Date', $locale).": {$this->order->shipping_date->format('M d, Y')}\n\n";
+
+        $message .= Trans::get('You can track your shipment directly on', $locale)." {$this->order->courier_company} ".Trans::get('website using your tracking number').": {$this->order->tracking_no}'\n\n";
+
+        $message .= Trans::get('For complete details and the latest status of your order, please visit the My Orders Page in your account.', $locale)."\n\n";
+
+        $message .= Trans::get('View Your Order', $locale).': '.route('website.orders.order-view', $this->order->order_no)."\n\n";
+
+        $message .= Trans::get('Thank you for shopping with us! We look forward to delivering your order soon.', $locale);
+
+        $internal_id = $this->meta_setting->meta_fb_page_id;
+        $token = $this->meta_setting->meta_fb_page_access_token;
 
         foreach ($this->meta_contacts as $contact) {
             $platform = $contact->platform;
-            $internal_id = $this->meta_setting->meta_fb_page_id;
-            $token = $this->meta_setting->meta_fb_page_access_token;
             $meta_service->sendMessageViaMeta($platform, $token, $internal_id, $contact->platform_user_id, $message);
         }
     }

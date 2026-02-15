@@ -52,15 +52,16 @@ class SendUnsettledAccountNotifications extends Command
                         $carbonFormatedBaseTime = Carbon::parse($baseTime);
                         $nextSendTime = $carbonFormatedBaseTime->copy()->addHours($setting->delay);
                         if ($nextSendTime->isPast()) {
-
-                            $message = UnsettledAccountMessageBuilder::build($issue);
                             $user = $issue->user;
+
+                            $message = UnsettledAccountMessageBuilder::build($issue, $user);
 
                             $user->notify(
                                 new SendUnsettledAccountNotification(
                                     message: $message,
                                     channel: $setting->channel,
-                                    actionUrl: ! empty($issue->order_id) ? route('website.orders.order-view', $issue->order->order_no) : route('website.orders.index')
+                                    actionUrl: ! empty($issue->order_id) ? route('website.orders.order-view', $issue->order->order_no) : route('website.orders.index'),
+
                                 )
                             );
 

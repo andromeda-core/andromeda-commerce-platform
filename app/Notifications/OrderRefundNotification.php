@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Helpers\Trans;
 use App\Models\OrderRefund;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -25,68 +26,76 @@ class OrderRefundNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return match ($this->type) {
-            'requested' => $this->refundRequested(),
-            'approved' => $this->refundApproved(),
-            'rejected' => $this->refundRejected(),
-            'completed' => $this->refundCompleted(),
+            'requested' => $this->refundRequested($notifiable),
+            'approved' => $this->refundApproved($notifiable),
+            'rejected' => $this->refundRejected($notifiable),
+            'completed' => $this->refundCompleted($notifiable),
         };
     }
 
-    protected function refundRequested(): MailMessage
+    protected function refundRequested($notifiable): MailMessage
     {
+        $locale = $notifiable->language_locale ?? 'en';
+
         return (new MailMessage)
-            ->subject('Refund Request Received')
-            ->greeting('Hello '.$this->refund->customer->user->name.',')
-            ->line('We have received your refund request and it is currently under review.')
-            ->line('Order Number: '.$this->refund->order->order_no)
-            ->line('Refund Amount: '.$this->refund->refund_amount)
-            ->line('Our team will notify you once a decision is made.')
-            ->action('View Order', route('website.orders.order-view', ['order_no' => $this->refund->order->order_no]))
-            ->line('Thank you for your patience.');
+            ->subject(Trans::get('Refund Request Received', $locale))
+            ->greeting(Trans::get('Hello', $locale).' '.$this->refund->customer->user->name.',')
+            ->line(Trans::get('We have received your refund request and it is currently under review.', $locale))
+            ->line(Trans::get('Order Number', $locale).': '.$this->refund->order->order_no)
+            ->line(Trans::get('Refund Amount', $locale).': '.$this->refund->refund_amount)
+            ->line(Trans::get('Our team will notify you once a decision is made.', $locale))
+            ->action(Trans::get('View Order', $locale), route('website.orders.order-view', ['order_no' => $this->refund->order->order_no]))
+            ->line(Trans::get('Thank you for your patience.', $locale));
     }
 
-    protected function refundApproved(): MailMessage
+    protected function refundApproved($notifiable): MailMessage
     {
+        $locale = $notifiable->language_locale ?? 'en';
+
         return (new MailMessage)
-            ->subject('Refund Request Approved')
-            ->greeting('Good news!')
-            ->line('Your refund request has been approved.')
-            ->line('Order Number: '.$this->refund->order->order_no)
-            ->line('Refund Amount: '.$this->refund->refund_amount)
-            ->line('Refund Method: '.ucfirst(str_replace('_', ' ', $this->refund->refund_method)))
-            ->line('We are processing your refund and will notify you once it is completed.')
-            ->action('View Order', route('website.orders.order-view', ['order_no' => $this->refund->order->order_no]));
+            ->subject(Trans::get('Refund Request Approved', $locale))
+            ->greeting(Trans::get('Good news!', $locale))
+            ->line(Trans::get('Your refund request has been approved.', $locale))
+            ->line(Trans::get('Order Number', $locale).': '.$this->refund->order->order_no)
+            ->line(Trans::get('Refund Amount', $locale).': '.$this->refund->refund_amount)
+            ->line(Trans::get('Refund Method', $locale).': '.ucfirst(str_replace('_', ' ', $this->refund->refund_method)))
+            ->line(Trans::get('We are processing your refund and will notify you once it is completed.', $locale))
+            ->action(Trans::get('View Order', $locale), route('website.orders.order-view', ['order_no' => $this->refund->order->order_no]));
     }
 
-    protected function refundRejected(): MailMessage
+    protected function refundRejected($notifiable): MailMessage
     {
+        $locale = $notifiable->language_locale ?? 'en';
+
         return (new MailMessage)
-            ->subject('Refund Request Rejected')
-            ->greeting('Hello '.$this->refund->customer->user->name.',')
-            ->line('Unfortunately, your refund request has been rejected.')
-            ->line('Order Number: '.$this->refund->order->order_no)
-            ->line('If you believe this is a mistake, please contact our support team.')
-            ->action('Contact Support', route('website.contact.index'));
+            ->subject(Trans::get('Refund Request Rejected', $locale))
+            ->greeting(Trans::get('Hello', $locale).' '.$this->refund->customer->user->name.',')
+            ->line(Trans::get('Unfortunately, your refund request has been rejected.', $locale))
+            ->line(Trans::get('Order Number', $locale).': '.$this->refund->order->order_no)
+            ->line(Trans::get('If you believe this is a mistake, please contact our support team.', $locale))
+            ->action(Trans::get('Contact Support', $locale), route('website.contact.index'));
     }
 
-    protected function refundCompleted(): MailMessage
+    protected function refundCompleted($notifiable): MailMessage
     {
+        $locale = $notifiable->language_locale ?? 'en';
+
         $mail = (new MailMessage)
-            ->subject('Refund Completed')
-            ->greeting('Refund Completed')
-            ->line('Your refund has been successfully completed.')
-            ->line('Order Number: '.$this->refund->order->order_no)
-            ->line('Refund Amount: '.$this->refund->refund_amount);
+            ->subject(Trans::get('Refund Completed', $locale))
+            ->greeting(Trans::get('Refund Completed', $locale))
+            ->line(Trans::get('Your refund has been successfully completed.', $locale))
+            ->line(Trans::get('Order Number', $locale).': '.$this->refund->order->order_no)
+            ->line(Trans::get('Refund Amount', $locale).': '.$this->refund->refund_amount);
 
         if ($this->refund->refund_method === 'points') {
-            $mail->line('The refunded amount has been credited to your points balance.');
+            $mail->line(Trans::get('The refunded amount has been credited to your points balance.', $locale));
         } else {
-            $mail->line('The refund has been processed via '.ucfirst(str_replace('_', ' ', $this->refund->refund_method)).'.');
-            $mail->line('Please allow some time for it to reflect in your account.');
+            $mail->line(Trans::get('The refund has been processed via', $locale).' '.ucfirst(str_replace('_', ' ', $this->refund->refund_method)).'.');
+            $mail->line(Trans::get('Please allow some time for it to reflect in your account.', $locale));
         }
 
         return $mail
-            ->action('View Order', route('website.orders.order-view', ['order_no' => $this->refund->order->order_no]))
-            ->line('Thank you for shopping with us.');
+            ->action(Trans::get('View Order', $locale), route('website.orders.order-view', ['order_no' => $this->refund->order->order_no]))
+            ->line(Trans::get('Thank you for shopping with us.', $locale));
     }
 }

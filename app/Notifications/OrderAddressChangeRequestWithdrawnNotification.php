@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Helpers\Trans;
 use App\Models\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -23,16 +24,19 @@ class OrderAddressChangeRequestWithdrawnNotification extends Notification implem
 
     public function toMail(object $notifiable): MailMessage
     {
+        $locale = $notifiable->language_locale ?? 'en';
+
         return (new MailMessage)
-            ->subject('Address Change Request Withdrawn')
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('Your address change request has been successfully withdrawn.')
-            ->line('The order will continue with the original shipping address.')
-            ->line('Order Number: #'.$this->order->order_no)
+            ->subject(Trans::get('Address Change Request Withdrawn', $locale))
+            ->greeting(Trans::get('Hello', $locale).' '.$notifiable->name.',')
+            ->line(Trans::get('Your address change request has been successfully withdrawn.', $locale))
+            ->line(Trans::get('The order will continue with the original shipping address.', $locale))
+            ->line(Trans::get('Order Number', $locale).': #'.$this->order->order_no)
             ->action(
-                'View Order Details',
+                Trans::get('View Order Details', $locale),
                 route('website.orders.order-view', $this->order->order_no)
             )
-            ->line('If you need to make any changes later, please contact our support team.');
+            ->line(Trans::get('If you need to make any changes later, please contact our support team.', $locale));
+
     }
 }

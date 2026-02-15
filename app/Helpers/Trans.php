@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\Cache;
 
 class Trans
 {
-    public static function get(string $key)
+    public static function get(string $key, ?string $defaultLocale = null)
     {
-        $locale = app()->getLocale();
+        $locale = $defaultLocale ?? app()->getLocale();
 
         return Cache::tags(["translation_{$locale}"])->remember("trans_{$locale}_{$key}", 3600, function () use ($key, $locale) {
 

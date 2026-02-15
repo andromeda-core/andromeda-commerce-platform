@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Helpers\Trans;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -25,17 +26,19 @@ class AlertUserAboutEmailChangeNotification extends Notification implements Shou
 
     public function toMail(object $notifiable): MailMessage
     {
+        $locale = $notifiable->language_locale ?? 'en';
+
         return (new MailMessage)
-            ->subject('Security alert: Your email address was changed')
-            ->greeting('Hello '.$this->userName.',')
-            ->line('This is a security notification to inform you that the email address associated with your account has been changed.')
-            ->line('New email address: '.$this->email)
-            ->line('Change details:')
-            ->line('IP Address: '.$this->ip)
-            ->line('Device: '.$this->user_agent)
-            ->line('If you made this change, no further action is required.')
-            ->line('If you did NOT authorize this change, please contact our support team immediately so we can help secure your account.')
+            ->subject(Trans::get('Security alert: Your email address was changed', $locale))
+            ->greeting(Trans::get('Hello', $locale).' '.$this->userName.',')
+            ->line(Trans::get('This is a security notification to inform you that the email address associated with your account has been changed.', $locale))
+            ->line(Trans::get('New email address:', $locale).' '.$this->email)
+            ->line(Trans::get('Change details:', $locale))
+            ->line(Trans::get('IP Address:', $locale).' '.$this->ip)
+            ->line(Trans::get('Device:', $locale).' '.$this->user_agent)
+            ->line(Trans::get('If you made this change, no further action is required.', $locale))
+            ->line(Trans::get('If you did NOT authorize this change, please contact our support team immediately so we can help secure your account.', $locale))
             ->salutation('Regards,')
-            ->salutation(config('app.name').' Security Team');
+            ->salutation(config('app.name').' '.'Security Team');
     }
 }

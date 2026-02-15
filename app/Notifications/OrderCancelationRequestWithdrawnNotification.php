@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Helpers\Trans;
 use App\Models\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -23,16 +24,18 @@ class OrderCancelationRequestWithdrawnNotification extends Notification implemen
 
     public function toMail(object $notifiable): MailMessage
     {
+        $locale = $notifiable->language_locale ?? 'en';
+
         return (new MailMessage)
-            ->subject('Order Cancellation Request Withdrawn')
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('Your order cancellation request has been successfully withdrawn.')
-            ->line('Your order will continue to be processed as usual.')
-            ->line('Order Number: #'.$this->order->order_no)
+            ->subject(Trans::get('Order Cancellation Request Withdrawn', $locale))
+            ->greeting(Trans::get('Hello', $locale).' '.$notifiable->name.',')
+            ->line(Trans::get('Your order cancellation request has been successfully withdrawn.', $locale))
+            ->line(Trans::get('Your order will continue to be processed as usual.', $locale))
+            ->line(Trans::get('Order Number', $locale).': #'.$this->order->order_no)
             ->action(
-                'View Order Details',
+                Trans::get('View Order Details', $locale),
                 route('website.orders.order-view', $this->order->order_no)
             )
-            ->line('If you have any questions, our support team is always here to help.');
+            ->line(Trans::get('If you have any questions, our support team is always here to help.', $locale));
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Meta;
 
+use App\Helpers\Trans;
 use App\Models\MetaSetting;
 use App\Models\Order;
 use App\Models\User;
@@ -25,24 +26,39 @@ class NotifyCustomerAboutAwaitingPaymentOrderFromCryptoJob implements ShouldQueu
     {
         $meta_service = new MetaService($this->meta_setting);
 
-        $message = "Hello {$this->user->name},\n\n";
+        $locale = $this->user->language_locale ?? 'en';
+        $currency = $this->currency->name ?? 'USD';
 
-        $message .= "Thank you for placing your order with us! Your order #{$this->order->order_no} has been successfully created and is currently awaiting confirmation on the blockchain.\n\n";
-        $message .= "Once the payment is verified by the network, your order will be automatically confirmed and processed for dispatch. No further action is required from your side at this time.\n\n";
+        $message = Trans::get('Hello', $locale)." {$this->user->name},\n\n";
 
-        $message .= "📦 Order Details\n";
-        $message .= "Order Number: {$this->order->order_no}\n";
-        $message .= 'Remeaning Amount: '.number_format($this->order->amount, 2).' '.($this->order->currency->name ?? 'USD')."\n";
-        $message .= 'Full Amount: '.number_format($this->order->full_amount, 2).' '.($this->order->currency->name ?? 'USD')."\n";
-        $message .= "Payment Method: Crypto Payment\n\n";
-        $message .= 'We’ll notify you again as soon as your payment is confirmed and your order moves to the next stage.'."\n\n";
-        $message .= 'View Your Order: '.route('website.orders.order-view', $this->order->order_no)."\n\n";
-        $message .= 'If you have any questions, feel free to contact our support team, we’re happy to help.';
+        $message .= Trans::get('Thank you for placing your order with us! Your order', $locale)
+          ." #{$this->order->order_no} "
+          .Trans::get('has been successfully created and is currently awaiting confirmation on the blockchain.', $locale)
+          ."\n\n";
+
+        $message .= Trans::get('Once the payment is verified by the network, your order will be automatically confirmed and processed for dispatch. No further action is required from your side at this time.', $locale)."\n\n";
+
+        $message .= '📦 '.Trans::get('Order Details', $locale)."\n";
+
+        $message .= Trans::get('Order Number', $locale).": {$this->order->order_no}\n";
+
+        $message .= Trans::get('Remaining Amount', $locale).': '.number_format($this->order->amount, 2).' '.($currency)."\n";
+
+        $message .= Trans::get('Full Amount', $locale).': '.number_format($this->order->full_amount, 2).' '.($currency)."\n";
+
+        $message .= Trans::get('Payment Method', $locale).': '.Trans::get('Crypto Payment', $locale)."\n\n";
+
+        $message .= Trans::get('We’ll notify you again as soon as your payment is confirmed and your order moves to the next stage.', $locale)."\n\n";
+
+        $message .= Trans::get('View Your Order', $locale).': '.route('website.orders.order-view', $this->order->order_no)."\n\n";
+
+        $message .= Trans::get('If you have any questions, feel free to contact our support team, we’re happy to help.', $locale);
+
+        $internal_id = $this->meta_setting->meta_fb_page_id;
+        $token = $this->meta_setting->meta_fb_page_access_token;
 
         foreach ($this->meta_contacts as $contact) {
             $platform = $contact->platform;
-            $internal_id = $this->meta_setting->meta_fb_page_id;
-            $token = $this->meta_setting->meta_fb_page_access_token;
             $meta_service->sendMessageViaMeta($platform, $token, $internal_id, $contact->platform_user_id, $message);
         }
     }

@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Helpers\Trans;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -34,17 +35,20 @@ class NotifyUserAboutContactSubmission extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
+        $locale = $notifiable->language_locale ?? 'en';
+
         return (new MailMessage)
-            ->subject('We’ve received your message!')
-            ->greeting('Hello '.$this->data['name'].',')
-            ->line('Thank you for contacting us. We’ve received your message and our team will respond soon.')
-            ->line('Here’s a summary of your submission:')
-            ->line('**Subject:** '.$this->data['subject'])
-            ->line('**Message:**')
+            ->subject(Trans::get('We’ve received your message!', $locale))
+            ->greeting(Trans::get('Hello', $locale).' '.$this->data['name'].',')
+            ->line(Trans::get('Thank you for contacting us. We’ve received your message and our team will respond soon.', $locale))
+            ->line(Trans::get('Here’s a summary of your submission:', $locale))
+            ->line('**'.Trans::get('Subject', $locale).':** '.$this->data['subject'])
+            ->line('**'.Trans::get('Message', $locale).':**')
             ->line($this->data['message'])
             ->line('')
-            ->line('You don’t need to reply to this email. We’ll reach out if we need more details.')
+            ->line(Trans::get('You don’t need to reply to this email. We’ll reach out if we need more details.', $locale))
             ->salutation('Warm regards, Support Team');
+
     }
 
     /**

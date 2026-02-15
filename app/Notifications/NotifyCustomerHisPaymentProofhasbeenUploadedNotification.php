@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Helpers\Trans;
 use App\Models\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -34,15 +35,18 @@ class NotifyCustomerHisPaymentProofhasbeenUploadedNotification extends Notificat
      */
     public function toMail(object $notifiable): MailMessage
     {
+        $locale = $notifiable->language_locale ?? 'en';
+
         return (new MailMessage)
-            ->subject('Payment Proof Received — Order #'.$this->order->order_no)
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('We’ve successfully received your payment proof for **Order #'.$this->order->order_no.'**.')
-            ->line('Our team will now review and verify your payment. This process usually takes **2 to 3 business days**.')
-            ->line('Once your payment is approved, you’ll receive another email confirming your order status update.')
-            ->line('If you haven’t heard back from us after 3 business days, please don’t hesitate to reach out to our support team for assistance.')
-            ->action('View Your Order', route('website.orders.order-view', $this->order->order_no))
-            ->line('Thank you for your patience and for choosing ');
+            ->subject(Trans::get('Payment Proof Received — Order', $locale).' #'.$this->order->order_no)
+            ->greeting(Trans::get('Hello', $locale).' '.$notifiable->name.',')
+            ->line(Trans::get('We’ve successfully received your payment proof for', $locale).' **Order #'.$this->order->order_no.'**.')
+            ->line(Trans::get('Our team will now review and verify your payment. This process usually takes **2 to 3 business days**.', $locale))
+            ->line(Trans::get('Once your payment is approved, you’ll receive another email confirming your order status update.', $locale))
+            ->line(Trans::get('If you haven’t heard back from us after 3 business days, please don’t hesitate to reach out to our support team for assistance.', $locale))
+            ->action(Trans::get('View Your Order', $locale), route('website.orders.order-view', $this->order->order_no))
+            ->line(Trans::get('Thank you for your patience and for choosing', $locale).' '.config('app.name'));
+
     }
 
     /**

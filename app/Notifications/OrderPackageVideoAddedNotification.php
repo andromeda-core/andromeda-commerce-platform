@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Helpers\Trans;
 use App\Models\PackageRecording;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -28,12 +29,15 @@ class OrderPackageVideoAddedNotification extends Notification implements ShouldQ
 
     public function toMail(object $notifiable): MailMessage
     {
+        $locale = $notifiable->language_locale ?? 'en';
+
         return (new MailMessage)
-            ->subject('Your Order Packaging Video is Ready')
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('We’ve uploaded the packaging video for your recent order. You can now view how your package was prepared before it was shipped.')
-            ->action('View Packaging Video', url(route('website.orders.order-view', $this->package_recording->order->order_no)))
-            ->line('Thank you for choosing us! We appreciate your trust and look forward to serving you again.');
+            ->subject(Trans::get('Your Order Packaging Video is Ready', $locale))
+            ->greeting(Trans::get('Hello', $locale).' '.$notifiable->name.',')
+            ->line(Trans::get('We’ve uploaded the packaging video for your recent order. You can now view how your package was prepared before it was shipped.', $locale))
+            ->action(Trans::get('View Packaging Video', $locale), url(route('website.orders.order-view', $this->package_recording->order->order_no)))
+            ->line(Trans::get('Thank you for choosing us! We appreciate your trust and look forward to serving you again.', $locale));
+
     }
 
     /**

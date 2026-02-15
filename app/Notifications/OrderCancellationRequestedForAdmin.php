@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Helpers\Trans;
 use App\Models\Order;
 use App\Models\OrderCancelationRequest;
 use Illuminate\Bus\Queueable;
@@ -25,17 +26,20 @@ class OrderCancellationRequestedForAdmin extends Notification implements ShouldQ
 
     public function toMail(object $notifiable): MailMessage
     {
+        $locale = $notifiable->language_locale ?? 'en';
+
         return (new MailMessage)
-            ->subject('Order Cancellation Request Received')
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('A customer has requested to cancel an order.')
-            ->line('Order Number: #'.$this->order->order_no)
-            ->line('Customer Name: '.optional($this->order->customer?->user)->name)
-            ->line('Please review the cancellation request and take the necessary action.')
+            ->subject(Trans::get('Order Cancellation Request Received', $locale))
+            ->greeting(Trans::get('Hello', $locale).' '.$notifiable->name.',')
+            ->line(Trans::get('A customer has requested to cancel an order.', $locale))
+            ->line(Trans::get('Order Number', $locale).': #'.$this->order->order_no)
+            ->line(Trans::get('Customer Name', $locale).': '.optional($this->order->customer?->user)->name)
+            ->line(Trans::get('Please review the cancellation request and take the necessary action.', $locale))
             ->action(
-                'Review Cancellation Request',
+                Trans::get('Review Cancellation Request', $locale),
                 route('dashboard.order-cancelation-requests.edit', $this->cancelationRequest->id)
             )
-            ->line('Thank you.');
+            ->line(Trans::get('Thank you.', $locale));
+
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Helpers\Trans;
 use App\Models\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -34,14 +35,16 @@ class NotifyAdminPaymentProofHasBeenUploadedNotification extends Notification im
      */
     public function toMail(object $notifiable): MailMessage
     {
+        $locale = $notifiable->language_locale ?? 'en';
+
         return (new MailMessage)
-            ->subject('New Payment Proof Uploaded — Order #'.$this->order->order_no)
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('A customer has just uploaded a payment proof for **Order #'.$this->order->order_no.'**.')
-            ->line('Please review and verify the submitted proof to confirm the payment status.')
-            ->line('Once verified, you can update the order status to “Approved” or take the necessary action from the admin dashboard.')
-            ->action('Review Order Payment Proof', route('dashboard.orders.show', $this->order->id))
-            ->line('This notification was sent automatically by '.config('app.name').'.');
+            ->subject(Trans::get('New Payment Proof Uploaded — Order', $locale).' #'.$this->order->order_no)
+            ->greeting(Trans::get('Hello', $locale).' '.$notifiable->name.',')
+            ->line(Trans::get('A customer has just uploaded a payment proof for', $locale).' **Order #'.$this->order->order_no.'**.')
+            ->line(Trans::get('Please review and verify the submitted proof to confirm the payment status.', $locale))
+            ->line(Trans::get('Once verified, you can update the order status to “Approved” or take the necessary action from the admin dashboard.', $locale))
+            ->action(Trans::get('Review Order Payment Proof', $locale), route('dashboard.orders.show', $this->order->id))
+            ->line(Trans::get('This notification was sent automatically by', $locale).' '.config('app.name').'.');
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Helpers\Trans;
 use App\Models\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -31,16 +32,19 @@ class OrderStatusArrivedLocallyNotification extends Notification implements Shou
      */
     public function toMail(object $notifiable): MailMessage
     {
+        $locale = $notifiable->language_locale ?? 'en';
+
         return (new MailMessage)
-            ->subject('Your Order Has Arrived in Your City')
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('We’re excited to let you know that your order has arrived in your city and will be delivered to you very soon.')
-            ->line('**Order Number:** '.$this->order->order_no)
-            ->line('**Current Status:**  Arrived Locally')
-            ->line('Our delivery partner will be reaching out to you shortly to complete the final step of your delivery.')
-            ->line('You can always check the latest status of your order in the *My Orders* section of your account.')
-            ->action('View Your Order', route('website.orders.order-view', $this->order->order_no))
-            ->line('Thank you for your patience and for choosing us! We look forward to delivering your package soon!');
+            ->subject(Trans::get('Your Order Has Arrived in Your City', $locale))
+            ->greeting(Trans::get('Hello', $locale).' '.$notifiable->name.',')
+            ->line(Trans::get('We’re excited to let you know that your order has arrived in your city and will be delivered to you very soon.', $locale))
+            ->line('**'.Trans::get('Order Number', $locale).':** '.$this->order->order_no)
+            ->line('**'.Trans::get('Current Status', $locale).':** '.Trans::get('ARRIVED LOCALLY', $locale))
+            ->line(Trans::get('Our delivery partner will be reaching out to you shortly to complete the final step of your delivery.', $locale))
+            ->line(Trans::get('You can always check the latest status of your order in the My Orders section of your account.', $locale))
+            ->action(Trans::get('View Your Order', $locale), route('website.orders.order-view', $this->order->order_no))
+            ->line(Trans::get('Thank you for your patience and for choosing us! We look forward to delivering your package soon!', $locale));
+
     }
 
     /**

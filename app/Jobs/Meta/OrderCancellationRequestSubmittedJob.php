@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Meta;
 
+use App\Helpers\Trans;
 use App\Models\MetaSetting;
 use App\Models\Order;
 use App\Models\User;
@@ -24,21 +25,31 @@ class OrderCancellationRequestSubmittedJob implements ShouldQueue
     public function handle(): void
     {
         $meta_service = new MetaService($this->meta_setting);
+        $locale = $this->user->language_locale ?? 'en';
 
-        $message = "Hello {$this->user->name},\n\n";
-        $message .= "Your order cancellation request has been successfully submitted.\n";
-        $message .= "Our team will review your request shortly.\n";
-        $message .= "Please wait for confirmation from our side.\n";
-        $message .= "Order Number. #{$this->order->order_no}\n\n";
-        $message .= 'View Order Details: '
+        $message = Trans::get('Hello', $locale)." {$this->user->name},\n\n";
+
+        $message .= Trans::get('Your order cancellation request has been successfully submitted.', $locale)."\n";
+
+        $message .= Trans::get('Our team will review your request shortly.', $locale)."\n";
+
+        $message .= Trans::get('Please wait for confirmation from our side.', $locale)."\n";
+
+        $message .= Trans::get('Order Number', $locale)." #{$this->order->order_no}\n\n";
+
+        $message .= Trans::get('View Order Details', $locale).': '
             .route('website.orders.order-view', $this->order->order_no)."\n\n";
-        $message .= 'Thank you for your patience.';
+
+        $message .= Trans::get('Thank you for your patience.', $locale);
+
+        $internal_id = $this->meta_setting->meta_fb_page_id;
+        $token = $this->meta_setting->meta_fb_page_access_token;
 
         foreach ($this->meta_contacts as $contact) {
             $meta_service->sendMessageViaMeta(
                 $contact->platform,
-                $this->meta_setting->meta_fb_page_access_token,
-                $this->meta_setting->meta_fb_page_id,
+                $token,
+                $internal_id,
                 $contact->platform_user_id,
                 $message
             );

@@ -688,7 +688,7 @@ const GlobalSearch = ({
                                 {/* Backdrop */}
                                 <div
                                     onClick={() => setIsSpatiotemporalFilters(false)}
-                                    className="fixed inset-0 transition-opacity duration-300 bg-black/30 backdrop-blur-sm"
+                                    className="fixed inset-0 transition-opacity duration-300 bg-black/30 "
                                 />
 
                                 {/* Modal Card */}

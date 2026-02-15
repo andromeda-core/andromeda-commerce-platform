@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Helpers\Trans;
 use App\Models\Currency;
 use App\Models\Order;
 use Illuminate\Bus\Queueable;
@@ -42,19 +43,20 @@ class NotifyCustomerAboutAwaitingPaymentOrderFromCrypto extends Notification imp
         $amount = number_format($this->order->amount, 2);
         $currency = strtoupper($this->currency->name ?? 'USD');
         $orderUrl = route('website.orders.order-view', ['order_no' => $orderNo]);
+        $locale = $notifiable->language_locale ?? 'en';
 
         return (new MailMessage)
-            ->subject("Your Order #{$orderNo} Has Been Placed — Awaiting Blockchain Confirmation")
-            ->greeting("Hi {$notifiable->name},")
-            ->line("Thank you for placing your order with us! Your order **#{$orderNo}** has been successfully created and is currently awaiting confirmation on the blockchain.")
-            ->line('Once the payment is verified by the network, your order will be automatically confirmed and processed for dispatch. No further action is required from your side at this time.')
-            ->line('**📦 Order Details:**')
-            ->line("• Order Number: {$orderNo}")
-            ->line("• Remeaning Amount: {$amount} {$currency}")
-            ->line('• Payment Method: Crypto Payment')
-            ->line('We’ll notify you again as soon as your payment is confirmed and your order moves to the next stage.')
-            ->action('View Your Order', $orderUrl)
-            ->line('If you have any questions, feel free to contact our support team — we’re happy to help.');
+            ->subject(Trans::get('Your Order', $locale)." #{$orderNo} ".Trans::get('Has Been Placed — Awaiting Blockchain Confirmation', $locale))
+            ->greeting(Trans::get('Hi', $locale)." {$notifiable->name},")
+            ->line(Trans::get('Thank you for placing your order with us! Your order', $locale)." **#{$orderNo}** ".Trans::get('has been successfully created and is currently awaiting confirmation on the blockchain.', $locale))
+            ->line(Trans::get('Once the payment is verified by the network, your order will be automatically confirmed and processed for dispatch. No further action is required from your side at this time.', $locale))
+            ->line('**📦 '.Trans::get('Order Details', $locale).':**')
+            ->line('• '.Trans::get('Order Number', $locale).": {$orderNo}")
+            ->line('• '.Trans::get('Remaining Amount', $locale).": {$amount} {$currency}")
+            ->line('• '.Trans::get('Payment Method', $locale).': '.Trans::get('Crypto Payment', $locale))
+            ->line(Trans::get('We’ll notify you again as soon as your payment is confirmed and your order moves to the next stage.', $locale))
+            ->action(Trans::get('View Your Order', $locale), $orderUrl)
+            ->line(Trans::get('If you have any questions, feel free to contact our support team — we’re happy to help.', $locale));
     }
 
     /**

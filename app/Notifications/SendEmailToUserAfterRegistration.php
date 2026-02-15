@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Helpers\Trans;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -28,13 +29,16 @@ class SendEmailToUserAfterRegistration extends Notification implements ShouldQue
      */
     public function toMail(object $notifiable): MailMessage
     {
+        $locale = $notifiable->language_locale ?? 'en';
+
         return (new MailMessage)
-            ->subject('Welcome to '.config('app.name'))
-            ->greeting('Welcome, '.$notifiable->name.' 👋')
-            ->line('We are excited to have you on board. Your account has been successfully set up and you are now logged in.')
-            ->line('You can start exploring the platform, manage your profile, and access all available features right away.')
-            ->action('Visit Site', route('home'))
-            ->line('If you need any help or have questions, our support team is always here to assist you.');
+            ->subject(Trans::get('Welcome to', $locale).' '.config('app.name'))
+            ->greeting(Trans::get('Welcome,', $locale).' '.$notifiable->name.' 👋')
+            ->line(Trans::get('We are excited to have you on board. Your account has been successfully set up and you are now logged in.', $locale))
+            ->line(Trans::get('You can start exploring the platform, manage your profile, and access all available features right away.', $locale))
+            ->action(Trans::get('Visit Site', $locale), route('home'))
+            ->line(Trans::get('If you need any help or have questions, our support team is always here to assist you.', $locale));
+
     }
 
     /**

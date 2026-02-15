@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Helpers\Trans;
 use App\Models\Currency;
 use App\Models\Order;
 use Illuminate\Bus\Queueable;
@@ -31,20 +32,22 @@ class NotifyCustomerOrderExpired extends Notification implements ShouldQueue
         $paymentMethod = $this->order->payment_method;
         $currency = strtoupper($this->currency->name ?? 'USD');
         $home = route('home');
+        $locale = $notifiable->language_locale ?? 'en';
 
         return (new MailMessage)
-            ->subject("Order #{$orderNo} Expired — Payment Not Received in Time")
-            ->greeting("Hi {$notifiable->name},")
-            ->line("Your order **#{$orderNo}** was created but we didn’t receive the payment within the allowed time window.")
-            ->line('As a result, the order has now expired automatically. No funds have been deducted from your wallet.')
-            ->line('**Order Details:**')
-            ->line("• Order Number: {$orderNo}")
-            ->line("• Remeaning Amount: {$amount} {$currency}")
-            ->line("• Full Amount: {$fullAmount} {$currency}")
-            ->line('• Payment Method: '.$paymentMethod)
-            ->line('If you still wish to complete your purchase, you can simply place the order again or choose another payment method below.')
-            ->action('Place a New Order', $home)
-            ->line('We’ve released the reserved items back into stock so they remain available for purchase.')
-            ->line('Thank you for your understanding, we’re here if you have any questions or need assistance.');
+            ->subject(Trans::get('Order', $locale)." #{$orderNo} ".Trans::get('Expired — Payment Not Received in Time', $locale))
+            ->greeting(Trans::get('Hi', $locale)." {$notifiable->name},")
+            ->line(Trans::get('Your order', $locale)." **#{$orderNo}** ".Trans::get('was created but we didn’t receive the payment within the allowed time window.', $locale))
+            ->line(Trans::get('As a result, the order has now expired automatically. No funds have been deducted from your wallet.', $locale))
+            ->line('**'.Trans::get('Order Details', $locale).':**')
+            ->line('• '.Trans::get('Order Number', $locale).": {$orderNo}")
+            ->line('• '.Trans::get('Remaining Amount', $locale).": {$amount} {$currency}")
+            ->line('• '.Trans::get('Full Amount', $locale).": {$fullAmount} {$currency}")
+            ->line('• '.Trans::get('Payment Method', $locale).': '.$paymentMethod)
+            ->line(Trans::get('If you still wish to complete your purchase, you can simply place the order again or choose another payment method below.', $locale))
+            ->action(Trans::get('Place a New Order', $locale), $home)
+            ->line(Trans::get('We’ve released the reserved items back into stock so they remain available for purchase.', $locale))
+            ->line(Trans::get('Thank you for your understanding, we’re here if you have any questions or need assistance.', $locale));
+
     }
 }

@@ -182,6 +182,10 @@ class Order extends Model
         static::created(function ($order) {
             $order->order_no = 'ORD-'.str_pad($order->id, 5, '0', STR_PAD_LEFT);
             $currency = Cache::get('currency');
+            $user = $order->customer->user;
+            $is_eligible = SpecialCountry::where('country_id', $order->customer->country_id)->exists();
+            $user_meta_contacts = $order->customer->user->metaContacts;
+            $meta_setting = Cache::get('meta_setting');
 
             $reward_rate = null;
             $total_points = null;
@@ -215,18 +219,46 @@ class Order extends Model
 
             if (Cache::has('smtp_config')) {
                 if ($order->status === 'pending') {
-                    $order->customer->user->notify(new OrderStatusPendingNotification($order, $currency));
+                    $user->notify(new OrderStatusPendingNotification($order, $currency));
+                }
+
+                if ($order->status === 'paid' && empty($order->np_id)) {
+                    $order->load([
+                        'customer.user',
+                        'orderItems' => function ($q) {
+                            $q->with([
+                                'inventoryItem' => function ($q) {
+                                    $q->with([
+                                        'smartphone' => function ($q) {
+                                            $q->with([
+                                                'selling_info.shipping_fee',
+                                                'selling_info.import_tax',
+                                                'model_name',
+                                                'capacity',
+                                            ]);
+                                        },
+                                    ]);
+                                },
+                                'smartphoneAddons',
+                            ]);
+                        },
+                    ]);
+
+                    $user->notify(new OrderStatusPaidNotification($order, $currency));
+
                 }
             }
 
             if (Cache::has('meta_setting')) {
-                $is_eligible = SpecialCountry::where('country_id', $order->customer->country_id)->exists();
-                $user_meta_contacts = $order->customer->user->metaContacts;
+
                 if ($order->status === 'pending' && $is_eligible && $user_meta_contacts->isNotEmpty()) {
-                    $meta_setting = Cache::get('meta_setting');
-                    $user = $order->customer->user;
                     dispatch(new OrderStatusPendingNotificationJob($user_meta_contacts, $order, $currency, $meta_setting, $user))->onQueue('meta');
                 }
+
+                if ($order->status === 'paid' && $is_eligible && $user_meta_contacts->isNotEmpty() && ! empty($meta_setting)) {
+                    dispatch(new OrderStatusPaidNotificationJob($user_meta_contacts, $order, $currency, $meta_setting, $user))->onQueue('meta');
+                }
+
             }
 
             // Distributor Commission Set Event
@@ -239,6 +271,7 @@ class Order extends Model
 
             // Notify Admin About Order
             dispatch(new NotifyAdminAboutOrderPlaced($order, $currency))->afterCommit();
+
         });
 
         static::updated(function ($order) {

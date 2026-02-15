@@ -1801,6 +1801,12 @@ canceled
 114: New Column added Named (alias) To Give alias Upon Those Permissions which were configured Before and Now thier Name is Changed In The Dashboard Menu ✅
 115: Whole Website Unused Imports Removed To Optimize Site a Bit More ✅
 
+116: Meta Notification Jobs Content Wrapped in Trans Helper To get Translation On User Locale Stored in DB ✅
+117: All Meta Notification Jobs Content Keys Added In Translation Seeder ✅
+118: All Email Notifications Wrapped in Trans Helper To get Translation On User Locale Stored in DB  ✅
+119: All Email Notifications Content Keys Added In Translation Seeder ✅
+120: Global Search, Profile Edit , Profile Image Cropper, Change Password Modal Backdrop Blur Removed And Made Backgound Only Little Visible Like Other Modals In The Application
+
 
 
  <- Review Remeaning (Done) ->

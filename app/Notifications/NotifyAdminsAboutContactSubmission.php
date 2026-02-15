@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Helpers\Trans;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -30,18 +31,20 @@ class NotifyAdminsAboutContactSubmission extends Notification implements ShouldQ
      */
     public function toMail(object $notifiable): MailMessage
     {
+        $locale = $notifiable->language_locale ?? 'en';
+
         return (new MailMessage)
-            ->subject('New Contact Form Submission')
-            ->greeting('Hello '.$notifiable->name)
-            ->line('A new contact form has been submitted:')
-            ->line('**Name:** '.$this->data['name'])
-            ->line('**Email:** '.$this->data['email'])
-            ->line('**Phone:** '.$this->data['phone'])
-            ->line('**Subject:** '.$this->data['subject'])
-            ->line('**Message:**')
+            ->subject(Trans::get('New Contact Form Submission', $locale))
+            ->greeting(Trans::get('Hello', $locale).' '.$notifiable->name)
+            ->line(Trans::get('A new contact form has been submitted:', $locale))
+            ->line('**'.Trans::get('Name', $locale).':** '.$this->data['name'])
+            ->line('**'.Trans::get('Email', $locale).':** '.$this->data['email'])
+            ->line('**'.Trans::get('Phone', $locale).':** '.$this->data['phone'])
+            ->line('**'.Trans::get('Subject', $locale).':** '.$this->data['subject'])
+            ->line('**'.Trans::get('Message', $locale).':**')
             ->line($this->data['message'])
             ->line('')
-            ->line('Please review and respond to this contact Form Submission as soon as possible.');
+            ->line(Trans::get('Please review and respond to this contact Form Submission as soon as possible.', $locale));
     }
 
     /**
