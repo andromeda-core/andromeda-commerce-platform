@@ -403,7 +403,7 @@ class OrderRepository implements IOrderRepository
                 throw new Exception('The Status Should Be Changed To Delivered Before Proceesing');
             }
 
-            if (! blank($validated_req['final_attachments'])) {
+            if (isset($validated_req['final_attachments']) && ! blank($validated_req['final_attachments'])) {
                 $final_attachments = [];
                 foreach ($validated_req['final_attachments'] as $key => $attachment) {
 
