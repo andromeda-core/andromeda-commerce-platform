@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Smartphone;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Str;
 
 class HomeController extends Controller
 {
@@ -13,6 +14,12 @@ class HomeController extends Controller
     {
         // dd(Smartphone::whereNull('videos')->whereNull('images')->whereHas('selling_info')->get()->toArray());
 
-        return Inertia::render('Website/Home/index');
+        $previous_url = url()->previous();
+
+        if (! Str::of($previous_url)->contains('shop')) {
+            $previous_url = null;
+        }
+
+        return Inertia::render('Website/Home/index', compact('previous_url'));
     }
 }

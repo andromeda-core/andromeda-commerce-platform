@@ -27,6 +27,7 @@ const MobileFeedGallery = (
         shouldCleanupBrowserHistoryRef,
         setSpatiotemporalInfoModal,
         spatiotemporalInfoModal,
+        previous_url = null,
     }
 
 ) => {
@@ -55,6 +56,7 @@ const MobileFeedGallery = (
                     shouldCleanupBrowserHistoryRef={shouldCleanupBrowserHistoryRef}
                     spatiotemporalInfoModal={spatiotemporalInfoModal}
                     setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
+                    previous_url={previous_url}
                     __={__}
 
                 />

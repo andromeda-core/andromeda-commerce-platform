@@ -30,6 +30,7 @@ const MobileFeedSinglePage = ({
     setBookmarkStatusChanged,
     setSpatiotemporalInfoModal,
     spatiotemporalInfoModal,
+    previous_url,
     __,
 }) => {
     useEffect(() => {
@@ -85,6 +86,7 @@ const MobileFeedSinglePage = ({
                     shouldCleanupBrowserHistoryRef={shouldCleanupBrowserHistoryRef}
                     spatiotemporalInfoModal={spatiotemporalInfoModal}
                     setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
+                    previous_url={previous_url}
                     __={__}
                 />
             )}

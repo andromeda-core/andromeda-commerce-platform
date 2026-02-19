@@ -42,6 +42,7 @@ const DesktopFeed = ({
     isSinglePageRef,
     setSpatiotemporalInfoModal,
     spatiotemporalInfoModal,
+    previous_url,
     __,
 }) => {
     const isDarkMode = useDarkMode();
@@ -1559,11 +1560,16 @@ const DesktopFeed = ({
                             {/* Close Button */}
                             <button
                                 onClick={() => {
-                                    setFeedGallery(null);
-                                    setFeedOpen(false);
-                                    setMediaItems([]);
-                                    mediaThumbRefs.current = {};
-                                    window.history.replaceState({}, '', window.location.pathname);
+                                    if (previous_url) {
+                                        router.visit(previous_url);
+                                    } else {
+                                        setFeedGallery(null);
+                                        setFeedOpen(false);
+                                        setMediaItems([]);
+                                        mediaThumbRefs.current = {};
+                                        window.history.replaceState({}, '', window.location.pathname);
+
+                                    }
                                 }}
                                 className="absolute right-[clamp(35px,2vw,20px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full hover:bg-surface-1-light  transition-all duration-200 dark:hover:bg-surface-2-dark "
                                 aria-label="Close modal"
@@ -3302,11 +3308,16 @@ const DesktopFeed = ({
                             {/* Close Button */}
                             <button
                                 onClick={() => {
-                                    setFeedGallery(null);
-                                    setFeedOpen(false);
-                                    setMediaItems([]);
-                                    mediaThumbRefs.current = {};
-                                    window.history.replaceState({}, '', window.location.pathname);
+                                    if (previous_url) {
+                                        router.visit(previous_url);
+                                    } else {
+                                        setFeedGallery(null);
+                                        setFeedOpen(false);
+                                        setMediaItems([]);
+                                        mediaThumbRefs.current = {};
+                                        window.history.replaceState({}, '', window.location.pathname);
+
+                                    }
                                 }}
                                 className="absolute right-[clamp(35px,2vw,20px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full hover:bg-surface-1-light  transition-all duration-200  dark:hover:bg-surface-2-dark "
                                 aria-label="Close modal"

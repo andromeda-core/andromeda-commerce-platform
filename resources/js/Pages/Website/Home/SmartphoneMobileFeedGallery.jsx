@@ -32,6 +32,7 @@ const SmartphoneMobileGalleryModal = ({
     shouldCleanupBrowserHistoryRef,
     setSpatiotemporalInfoModal,
     spatiotemporalInfoModal,
+    previous_url,
 }) => {
 
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
@@ -704,7 +705,12 @@ const SmartphoneMobileGalleryModal = ({
 
                         <button
                             onClick={() => {
-                                setMobileFeedGalleryOpen(false);
+                                if (previous_url) {
+                                    router.visit(previous_url);
+                                } else {
+                                    setMobileFeedGalleryOpen(false);
+
+                                }
                             }}
                             className="text-[18px] font-semibold"
                         >

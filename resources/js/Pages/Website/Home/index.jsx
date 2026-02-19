@@ -22,8 +22,7 @@ import MobileFeedSkeleton from '@/Components/MobileFeedSkeleton';
 
 
 
-const index = () => {
-
+const index = ({ previous_url }) => {
     // show Skeleton when directly opening Any Feed
     const [showFeedSkeleton, setShowFeedSkeleton] = useState(() => {
         if (typeof window === 'undefined') return false;
@@ -39,6 +38,9 @@ const index = () => {
 
 
     const { currency, auth, smartphone_addon_items } = usePage().props;
+
+    const redirectedPreviousUrl = useRef(previous_url || null);
+
 
 
     // Translation Hook
@@ -944,16 +946,23 @@ const index = () => {
             //  Mobile gallery is currently open OR we just came from mobile gallery
             if (MobileFeedGalleryOpenRef.current || wasOnMobileGallery) {
                 // console.log('🔙 Closing mobile gallery');
-                isClosingMobileGalleryRef.current = true;
-                setMobileFeedGalleryOpen(false);
 
-                // Update previous URL
-                previousUrlRef.current = window.location.href;
+                if (redirectedPreviousUrl.current) {
+                    router.visit(redirectedPreviousUrl.current);
+                } else {
+                    isClosingMobileGalleryRef.current = true;
+                    setMobileFeedGalleryOpen(false);
 
-                // Reset flag after delay
-                setTimeout(() => {
-                    isClosingMobileGalleryRef.current = false;
-                }, 500);
+                    // Update previous URL
+                    previousUrlRef.current = window.location.href;
+
+                    // Reset flag after delay
+                    setTimeout(() => {
+                        isClosingMobileGalleryRef.current = false;
+                    }, 500);
+                }
+
+
                 return;
             }
 
@@ -962,20 +971,26 @@ const index = () => {
                 // console.log('🔙 Closing main feed');
                 e.preventDefault();
 
-                feedGalleryRef.current = null;
-                setFeedGallery(null);
-                setFeedOpen(false);
-                setFeedIndex(0);
+                if (redirectedPreviousUrl.current) {
+                    router.visit(redirectedPreviousUrl.current);
+                } else {
+                    feedGalleryRef.current = null;
+                    setFeedGallery(null);
+                    setFeedOpen(false);
+                    setFeedIndex(0);
 
-                if (isSinglePageRef.current) {
-                    isSinglePageRef.current = false;
+                    if (isSinglePageRef.current) {
+                        isSinglePageRef.current = false;
+                    }
+
+                    const cleanUrl = window.location.pathname;
+                    window.history.replaceState({}, '', cleanUrl);
+
+                    // Update previous URL
+                    previousUrlRef.current = window.location.href;
                 }
 
-                const cleanUrl = window.location.pathname;
-                window.history.replaceState({}, '', cleanUrl);
 
-                // Update previous URL
-                previousUrlRef.current = window.location.href;
                 return;
             }
 
@@ -1060,6 +1075,7 @@ const index = () => {
     const handleItemClick = useCallback(
         (item, index) => {
             feedOpenCountRef.current++;
+            redirectedPreviousUrl.current = null;
             setIsFeedOpeningDirectly(true);
             setFeedGallery(item);
             setFeedIndex(index);
@@ -1087,8 +1103,6 @@ const index = () => {
         },
         [generateURL, generateSmartphoneURL],
     );
-
-
 
     useEffect(() => {
         if (feedOpen && showFeedSkeleton) {
@@ -1369,6 +1383,7 @@ const index = () => {
                                     isSinglePageRef={isSinglePageRef}
                                     spatiotemporalInfoModal={spatiotemporalInfoModal}
                                     setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
+                                    previous_url={redirectedPreviousUrl.current}
                                     __={__}
 
                                 />
@@ -1451,6 +1466,7 @@ const index = () => {
                             setMediaItems={setMediaItems}
                             spatiotemporalInfoModal={spatiotemporalInfoModal}
                             setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
+                            previous_url={redirectedPreviousUrl.current}
                             __={__}
                         />
                     )}
