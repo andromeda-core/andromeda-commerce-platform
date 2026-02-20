@@ -1,30 +1,42 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import SuccessToastModal from './SuccessToastModal';
 import ErrorToastModal from './ErrorToastModal';
 import InfoToastModal from './InfoToastModal';
+
+const SHOWN_FLASH_KEY = 'shown_flash_ids';
+
+function getShownIds() {
+    try {
+        return JSON.parse(sessionStorage.getItem(SHOWN_FLASH_KEY) || '[]');
+    } catch {
+        return [];
+    }
+}
+
+function markIdAsShown(id) {
+    const shown = getShownIds();
+    const updated = [...shown, id].slice(-50);
+    sessionStorage.setItem(SHOWN_FLASH_KEY, JSON.stringify(updated));
+}
 
 const Toast = ({ flash, onClosed }) => {
     const [showSuccess, setShowSuccess] = useState(false);
     const [showError, setShowError] = useState(false);
     const [showInfo, setShowInfo] = useState(false);
 
-    const lastFlashRef = useRef(null);
-
     useEffect(() => {
-        if (flash !== lastFlashRef.current) {
-            lastFlashRef.current = flash;
+        if (!flash?.flashId) return;
 
-            if (flash.success) {
-                setShowSuccess(true);
-            }
-            if (flash.error) {
-                setShowError(true);
-            }
-            if (flash.info) {
-                setShowInfo(true);
-            }
-        }
-    }, [flash]);
+        const shownIds = getShownIds();
+        if (shownIds.includes(flash.flashId)) return;
+
+        markIdAsShown(flash.flashId);
+
+        if (flash.success) setShowSuccess(true);
+        if (flash.error) setShowError(true);
+        if (flash.info) setShowInfo(true);
+
+    }, [flash?.flashId]);
 
     const handleSuccessClose = () => {
         setShowSuccess(false);
@@ -43,7 +55,7 @@ const Toast = ({ flash, onClosed }) => {
 
     return (
         <div className="fixed z-[999999] space-y-3 transform -translate-x-1/2 bottom-6 left-1/2">
-            {showSuccess && flash.success && (
+            {showSuccess && flash?.success && (
                 <SuccessToastModal
                     showSuccess={showSuccess}
                     setShowSuccess={handleSuccessClose}
@@ -51,7 +63,7 @@ const Toast = ({ flash, onClosed }) => {
                 />
             )}
 
-            {showError && flash.error && (
+            {showError && flash?.error && (
                 <ErrorToastModal
                     showError={showError}
                     setShowError={handleErrorClose}
@@ -59,7 +71,7 @@ const Toast = ({ flash, onClosed }) => {
                 />
             )}
 
-            {showInfo && flash.info && (
+            {showInfo && flash?.info && (
                 <InfoToastModal
                     showInfo={showInfo}
                     setShowInfo={handleInfoClose}

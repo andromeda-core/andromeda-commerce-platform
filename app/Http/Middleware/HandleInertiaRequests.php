@@ -34,6 +34,8 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user()?->load(['customer', 'roles']);
 
+        $shouldShareFlash = $request->isMethod('GET') && $request->header('X-Inertia');
+
         return [
             ...parent::share($request),
             'auth' => [
@@ -46,11 +48,26 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
             ],
 
-            'flash' => function () {
+            'flash' => function () use ($request, $shouldShareFlash) {
+                if (! $shouldShareFlash) {
+                    return ['success' => null, 'error' => null, 'info' => null, 'flashId' => null];
+                }
+
+                $success = $request->session()->pull('success');
+                $error = $request->session()->pull('error');
+                $info = $request->session()->pull('info');
+
+                // Only generate a unique ID when there is actual flash content.
+                // This ID is what we use to deduplicate on the frontend.
+                $flashId = ($success || $error || $info)
+                    ? uniqid('flash_', true)
+                    : null;
+
                 return [
-                    'success' => session('success'),
-                    'error' => session('error'),
-                    'info' => session('info'),
+                    'success' => $success,
+                    'error' => $error,
+                    'info' => $info,
+                    'flashId' => $flashId,
                 ];
             },
 

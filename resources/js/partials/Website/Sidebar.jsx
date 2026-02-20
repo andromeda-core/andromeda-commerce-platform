@@ -29,8 +29,9 @@ const Sidebar = ({
         const bookmarkRoute = route().current() === 'website.bookmarks.index';
         const profileRoute = route().current() === 'website.profile.index';
         const ShippingAddressRoute = route().current() === 'website.shipping-addresses.index';
+        const NotificationRoute = route().current() === 'website.notifications.index';
 
-        if (profileRoute || ShippingAddressRoute || ordersRoute || cartRoute || bookmarkRoute) {
+        if (profileRoute || ShippingAddressRoute || ordersRoute || cartRoute || bookmarkRoute || NotificationRoute) {
             setSelectedNavLink(__('My Page'));
         }
 

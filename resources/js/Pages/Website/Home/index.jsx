@@ -47,13 +47,6 @@ const index = ({ previous_url }) => {
     const { __ } = useTranslation();
 
 
-    // Device Recognizer
-    const isMac =
-        typeof window !== 'undefined' &&
-        /Macintosh/i.test(navigator.userAgent) &&
-        navigator.maxTouchPoints === 0;
-
-
 
 
     useLayoutEffect(() => {
@@ -1114,6 +1107,16 @@ const index = ({ previous_url }) => {
 
 
 
+
+
+    // Device Recognizer
+    const isSafariMac =
+        typeof window !== 'undefined' &&
+        /Macintosh/i.test(navigator.userAgent) &&
+        navigator.maxTouchPoints === 0 &&
+        /Safari/i.test(navigator.userAgent) &&
+        !/Chrome|Chromium|CriOS/i.test(navigator.userAgent);
+
     return (
         <MainLayout>
             <Head title={__("Home", true)} />
@@ -1172,7 +1175,7 @@ const index = ({ previous_url }) => {
                         <div className="mx-auto max-w-8xl sm:px-6 lg:px-8"
                         >
 
-                            <div className={`gap-2 columns-2 sm:columns-2 md:columns-3 ${feed.length <= 2 ? 'lg:columns-2 xl:columns-2' : (isMac ? 'lg:columns-3 xl:columns-4' : 'lg:columns-4 xl:columns-5')}`}>
+                            <div className={`gap-2 columns-2 sm:columns-2 md:columns-3 ${feed.length <= 2 ? 'lg:columns-2 xl:columns-2' : (isSafariMac ? 'lg:columns-3 xl:columns-4' : 'lg:columns-4 xl:columns-5')}`}>
                                 {feed.map((item, index) => (
                                     <MasonryFeedItem
                                         key={`${item.type}-${item.id}`}

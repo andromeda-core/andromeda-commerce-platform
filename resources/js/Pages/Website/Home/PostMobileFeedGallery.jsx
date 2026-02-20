@@ -129,8 +129,7 @@ const PostMobileFeedGallery = (
         <>
             {createPortal(
                 <div className="fixed inset-0 z-[70] flex flex-col bg-backgroundLight dark:bg-backgroundDark overscroll-contain">
-                    <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
-
+                    <div className="flex items-center justify-between px-4 pt-6 pb-2 shrink-0">
 
                         <button
                             onClick={() => {
@@ -151,9 +150,6 @@ const PostMobileFeedGallery = (
                         >
                             {post.tag}
                         </button>
-
-
-
 
                     </div>
 

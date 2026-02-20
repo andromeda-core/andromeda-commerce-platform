@@ -76,7 +76,7 @@ const MasonryFeedItem = memo(
                                         setLoaded(true);
                                     }}
                                     style={{
-                                        display: loaded ? 'block' : 'none',
+                                        opacity: loaded ? 1 : 0,
                                         width: '100%',
                                         height: 'auto',
                                     }}
@@ -209,7 +209,7 @@ const MasonryFeedItem = memo(
                                         setLoaded(true);
                                     }}
                                     style={{
-                                        display: loaded ? 'block' : 'none',
+                                        opacity: loaded ? 1 : 0,
                                         width: '100%',
                                         height: 'auto',
                                     }}
@@ -438,7 +438,7 @@ const MasonryFeedItem = memo(
                                     setLoaded(true);
                                 }}
                                 style={{
-                                    display: loaded ? 'block' : 'none',
+                                    opacity: loaded ? 1 : 0,
                                     width: '100%',
                                     height: 'auto',
                                 }}
@@ -516,7 +516,7 @@ const MasonryFeedItem = memo(
                                     setLoaded(true);
                                 }}
                                 style={{
-                                    display: loaded ? 'block' : 'none',
+                                    opacity: loaded ? 1 : 0,
                                     width: '100%',
                                     height: 'auto',
                                 }}

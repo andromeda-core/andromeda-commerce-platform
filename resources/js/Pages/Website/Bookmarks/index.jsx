@@ -10,6 +10,7 @@ import MasonryFeedItem from '../Home/MasonryFeedItem';
 import { useTranslation } from '@/Hooks/useTranslation';
 import BookmarkStatusChangedModal from '@/Components/BookmarkStatusChangedModal';
 import useWindowSize from '@/Hooks/useWindowSize';
+import { ChevronLeft } from 'lucide-react';
 
 
 export default function index() {
@@ -154,6 +155,8 @@ export default function index() {
     };
 
 
+
+
     return (
         <MainLayout>
             <Head title={__("Bookmarks", true)} />
@@ -180,11 +183,30 @@ export default function index() {
             {/* Masonry Layout */}
             {isLoaded && (
                 <div
-                    className={`pb-20 lg:my-9`}
+                    className={`pb-20`}
                 >
                     <div className="px-6 mx-auto max-w-8xl lg:px-8">
 
-                        <div className="gap-2 columns-2 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5">
+                        <div className="my-2 lg:my-7">
+                            <button
+                                onClick={() => window.history.back()}
+                                className="inline-flex items-center gap-2 mb-4 text-sm font-medium transition-colors lg:hidden text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80"
+                            >
+                                <ChevronLeft />
+                            </button>
+
+                            {/* Bookmark Heading */}
+                            <h1 className=' text-[24px] font-semibold text-main-text-light dark:text-main-text-dark'>
+                                {__('Bookmark')}
+                            </h1>
+                            <p className="max-w-3xl mt-1 text-sm text-sub-text-light dark:sub-text-dark">
+                                {__('Access and manage all your saved bookmarks in one convenient place.')}
+                            </p>
+                        </div>
+
+
+
+                        <div className="[column-width:_240px] [column-gap:_8px]">
                             {bookmarkedPosts.map((item, index) => {
                                 return (
                                     <MasonryFeedItem
@@ -205,7 +227,6 @@ export default function index() {
                                 );
                             })}
                         </div>
-
                         {bookmarkedPosts?.length === 0 && (
                             <div className="flex min-h-[50vh] items-center justify-center px-6">
                                 <div className="text-center">

@@ -635,14 +635,14 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                                 {!order?.is_cancelation_requested ? (
                                     <button
                                         onClick={() => router.visit(route('website.order-cancelation.index', { order_no: order.order_no }))}
-                                        className="text-md flex h-[50px] w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-light transition-all bg-[#f7f7f7] lg:hover:bg-[#c8c8c8] border border-surface-3-light dark:border-surface-3-dark text-[16px] dark:bg-main-text-dark dark:text-main-text-light dark:lg:hover:bg-main-text-dark/80">
+                                        className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-light transition-all bg-[#f7f7f7] lg:hover:bg-[#c8c8c8] border border-surface-3-light dark:border-surface-3-dark text-[16px] dark:bg-main-text-dark dark:text-main-text-light dark:lg:hover:bg-main-text-dark/80">
                                         {__('Cancel Order')}
                                     </button>
                                 ) : (
 
                                     <button
                                         onClick={() => handleWithdrawlCancelationRequest(order?.order_no)}
-                                        className="text-sm flex h-[50px] w-[210px] items-center justify-center gap-2 rounded-md font-semibold
+                                        className="text-sm flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md font-semibold
     text-main-text-light transition-all bg-[#f7f7f7] lg:hover:bg-[#c8c8c8]
     border border-surface-3-light dark:border-surface-3-dark
     text-[16px] dark:bg-main-text-dark dark:text-main-text-light dark:lg:hover:bg-main-text-dark/80"
@@ -660,7 +660,7 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
 
                                 <button
                                     onClick={() => handlePayNow()}
-                                    className="text-md flex h-[50px] w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
+                                    className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
                                     {!processing ? (
                                         <span>
                                             {__('Pay Now')}
@@ -677,14 +677,14 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                                 {!order?.is_cancelation_requested ? (
                                     <button
                                         onClick={() => router.visit(route('website.order-cancelation.index', { order_no: order.order_no }))}
-                                        className="text-md flex h-[50px] w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-light transition-all bg-[#f7f7f7] lg:hover:bg-[#c8c8c8] border border-surface-3-light dark:border-surface-3-dark text-[16px] dark:bg-main-text-dark dark:text-main-text-light dark:lg:hover:bg-main-text-dark/80">
+                                        className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-light transition-all bg-[#f7f7f7] lg:hover:bg-[#c8c8c8] border border-surface-3-light dark:border-surface-3-dark text-[16px] dark:bg-main-text-dark dark:text-main-text-light dark:lg:hover:bg-main-text-dark/80">
                                         {__('Cancel Order')}
                                     </button>
                                 ) : (
 
                                     <button
                                         onClick={() => handleWithdrawlCancelationRequest(order?.order_no)}
-                                        className="text-sm flex h-[50px] w-[210px] items-center justify-center gap-2 rounded-md font-semibold
+                                        className="text-sm flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md font-semibold
     text-main-text-light transition-all bg-[#f7f7f7] lg:hover:bg-[#c8c8c8]
     border border-surface-3-light dark:border-surface-3-dark
     text-[16px] dark:bg-main-text-dark dark:text-main-text-light dark:lg:hover:bg-main-text-dark/80"
@@ -704,7 +704,7 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                                     onClick={() => {
                                         router.visit(route('website.orders.order-view', order?.order_no))
                                     }}
-                                    className="text-md flex h-[50px] w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
+                                    className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
                                     {__('Upload Proof')}
                                 </button>
                             </>
@@ -714,7 +714,7 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                             <>
                                 <button
                                     onClick={() => handleReOrder(order?.order_no)}
-                                    className="text-md flex h-[50px] w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
+                                    className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
                                     {!reOrderProcessing ? (
                                         <span>
                                             {__('Reorder')}
@@ -747,14 +747,14 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                                                     route('website.orders.address-change-request.index', order.order_no)
                                                 )
                                             }
-                                            className="text-md flex h-[50px] w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-light transition-all bg-[#f7f7f7] lg:hover:bg-[#c8c8c8] border border-surface-3-light dark:border-surface-3-dark text-[16px] dark:bg-main-text-dark dark:text-main-text-light dark:lg:hover:bg-main-text-dark/80">
+                                            className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-light transition-all bg-[#f7f7f7] lg:hover:bg-[#c8c8c8] border border-surface-3-light dark:border-surface-3-dark text-[16px] dark:bg-main-text-dark dark:text-main-text-light dark:lg:hover:bg-main-text-dark/80">
 
                                             {__('Change Address')}
                                         </button>
                                     ) : (
                                         <button
                                             onClick={() => handleWithdrawlAddressChangeRequest(order?.order_no)}
-                                            className="text-sm flex h-[50px] w-[210px] items-center justify-center gap-2 rounded-md font-semibold
+                                            className="text-sm flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md font-semibold
     text-main-text-light transition-all bg-[#f7f7f7] lg:hover:bg-[#c8c8c8]
     border border-surface-3-light dark:border-surface-3-dark
     text-[16px] dark:bg-main-text-dark dark:text-main-text-light dark:lg:hover:bg-main-text-dark/80"
@@ -769,13 +769,13 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                                             onClick={() =>
                                                 router.visit(route('website.orders.refund.index', order.order_no))
                                             }
-                                            className="text-md flex h-[50px] w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
+                                            className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
                                             {__('Return, Refund')}
                                         </button>
                                     ) : (
                                         <button
                                             onClick={() => handleWithdrawlRefundRequest(order?.order_no)}
-                                            className="text-sm flex h-[50px] w-[210px] items-center justify-center gap-2 rounded-md font-semibold
+                                            className="text-sm flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md font-semibold
     text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80
     dark:bg-main-text-dark dark:text-main-text-light text-[16px]
     dark:lg:hover:bg-main-text-dark/80"
@@ -794,7 +794,7 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                                     onClick={() => {
                                         router.visit(route('website.orders.order-view', order.order_no))
                                     }}
-                                    className="text-md flex h-[50px] w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
+                                    className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
                                     {__('Track Order')}
                                 </button>
                             </>
@@ -804,7 +804,7 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                             <>
                                 <button
                                     onClick={() => handleReOrder(order?.order_no)}
-                                    className="text-md flex h-[50px] w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
+                                    className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
                                     {!reOrderProcessing ? (
                                         <span>
                                             {__('Reorder')}
@@ -819,13 +819,13 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                                         onClick={() =>
                                             router.visit(route('website.orders.refund.index', order.order_no))
                                         }
-                                        className="text-md flex h-[50px] w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
+                                        className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
                                         {__('Return, Refund')}
                                     </button>
                                 ) : (
                                     <button
                                         onClick={() => handleWithdrawlRefundRequest(order?.order_no)}
-                                        className="text-sm flex h-[50px] w-[210px] items-center justify-center gap-2 rounded-md font-semibold
+                                        className="text-sm flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md font-semibold
     text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80
     dark:bg-main-text-dark dark:text-main-text-light text-[16px]
     dark:lg:hover:bg-main-text-dark/80"
@@ -842,7 +842,7 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
 
                                 <button
                                     onClick={() => handleReOrder(order?.order_no)}
-                                    className="text-md flex h-[50px] w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
+                                    className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
                                     {!reOrderProcessing ? (
                                         <span>
                                             {__('Reorder')}
@@ -876,13 +876,13 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                                             onClick={() =>
                                                 router.visit(route('website.orders.refund.index', order.order_no))
                                             }
-                                            className="text-md flex h-[50px] w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
+                                            className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
                                             {__('Return, Refund')}
                                         </button>
                                     ) : (
                                         <button
                                             onClick={() => handleWithdrawlRefundRequest(order?.order_no)}
-                                            className="text-sm flex h-[50px] w-[210px] items-center justify-center gap-2 rounded-md font-semibold
+                                            className="text-sm flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md font-semibold
     text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80
     dark:bg-main-text-dark dark:text-main-text-light text-[16px]
     dark:lg:hover:bg-main-text-dark/80"

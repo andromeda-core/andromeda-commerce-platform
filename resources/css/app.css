@@ -470,7 +470,9 @@ video.feed-video::-webkit-media-controls {
     .feed-page {
         height: -webkit-fill-available !important;
     }
+}
 
+@supports (-webkit-appearance: none) {
     [class*='columns-'] {
         -webkit-column-break-inside: avoid !important;
     }

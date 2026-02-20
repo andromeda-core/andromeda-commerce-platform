@@ -1807,7 +1807,13 @@ canceled
 119: All Email Notifications Content Keys Added In Translation Seeder ✅
 120: Global Search, Profile Edit , Profile Image Cropper, Change Password Modal Backdrop Blur Removed And Made Backgound Only Little Visible Like Other Modals In The Application
 121: SHop Page Redirect Identifier If Customer Coming From Shop Page So Now When Feed Closes it will redirect back to shop page On Desktop and On Mobile Feed Both are Beign Implemented ✅
-
+122: Bookmark Page Title And Description Added And Back Button For Mobile Added ✅
+123: Unnesesary Column Spacing In Mac Safari Issue FIXED ✅
+124: The Same message Appears From Toast Issue Fixed ✅
+125: Masonary Feed Mis arangement Issue Fixed ✅
+126: Mobile Feed back button and hashtag Aligmenet Corrected With the Mobile Feed Single Page ✅
+127: Checkout Page Points Card Unresponsiveness Of points input Fixed ✅
+128: Orders View Page Card Buttons In Mobile Now Takes Full Width  issue (Not taking full width) Fixed ✅
 
 
  <- Review Remeaning (Done) ->
