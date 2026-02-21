@@ -701,7 +701,7 @@ const SmartphoneMobileGalleryModal = ({
 
             {createPortal(
                 <div className="fixed inset-0 z-[70] flex flex-col overscroll-contain bg-backgroundLight dark:bg-backgroundDark">
-                    <div className="flex items-center justify-between px-4 pt-6 pb-2 shrink-0">
+                    <div className="flex items-center justify-between px-4 pt-[1.4rem] pb-2 shrink-0">
 
                         <button
                             onClick={() => {
