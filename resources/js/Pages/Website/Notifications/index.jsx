@@ -179,7 +179,7 @@ const index = ({ notifications }) => {
                                     <BellIcon className="w-8 h-8 dark:text-main-text-dark text-main-text-light" />
                                     {unreadCount > 0 && (
                                         <span className="absolute flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full -top-1 -right-1">
-                                            {unreadCount > 9 ? '9+' : unreadCount}
+                                            {unreadCount}
                                         </span>
                                     )}
                                 </div>

@@ -738,12 +738,15 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Your payment proof is under review', 'created_at' => $now, 'updated_at' => $now],
             ['key' => "We'll notify you once it's approved. This typically takes 2-3 business days.", 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Access and manage all your saved bookmarks in one convenient place.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Confirmation', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Are you sure you want to remove this item?', 'created_at' => $now, 'updated_at' => $now],
 
             // Backend
             ['key' => 'Profile Updated Successfully', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Notification marked as seen successfully', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Notification deleted successfully', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'All notifications marked as seen successfully', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Go To Cart', 'created_at' => $now, 'updated_at' => $now],
 
             ['key' => 'Account Deactivation Successful', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Customer not found', 'created_at' => $now, 'updated_at' => $now],

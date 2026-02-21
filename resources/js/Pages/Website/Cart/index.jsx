@@ -8,6 +8,7 @@ import Spinner from '@/Components/Spinner';
 import useWindowSize from '@/Hooks/useWindowSize';
 import { useTranslation } from '@/Hooks/useTranslation';
 import { ChevronLeft, Trash2 } from 'lucide-react';
+import { useConfirm } from '@/Hooks/useConfirm';
 export default function index({ cart_items, addon_items, total_summary }) {
     const [quantities, setQuantities] = useState(
         cart_items.reduce((acc, item) => ({ ...acc, [item.id]: item.quantity }), {}),
@@ -19,6 +20,8 @@ export default function index({ cart_items, addon_items, total_summary }) {
 
     const { currency } = usePage().props;
     const windowSize = useWindowSize();
+
+    const { confirm, ConfirmDialog } = useConfirm();
 
     // Translation Hook
     const { __ } = useTranslation();
@@ -91,33 +94,44 @@ export default function index({ cart_items, addon_items, total_summary }) {
             });
     };
 
-    const onProductRemove = (itemId, type) => {
-        setRemovingProcessing(true);
-        axios
-            .delete(route('website.carts.remove-item'), {
-                data: { item_id: itemId, type: type, page: 'cart', },
-            })
-            .then((response) => {
-                if (response.data.status === false) {
-                    setErrorMessage(response.data.message);
-                    setShowErrorMessage(true);
-                    return;
-                }
+    const onProductRemove = async (itemId, type) => {
+        const result = await confirm({
+            title: __('Confirmation'),
+            text: __('Are you sure you want to remove this item?'),
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: __('Yes'),
+            cancelButtonText: __('No'),
+        });
 
-                if (response.data.status === true) {
-                    setSuccessMessage(response.data.message);
-                    setShowSuccessMessage(true);
-                    setSummary(response.data.total_summary);
-                    router.reload(['cart_items']);
-                }
-            })
-            .catch((error) => {
-                setErrorMessage(error.message);
-                setShowErrorMessage(true);
-            })
-            .finally(() => {
-                setRemovingProcessing(false);
-            });
+        if (result.isConfirmed) {
+            setRemovingProcessing(true);
+            axios
+                .delete(route('website.carts.remove-item'), {
+                    data: { item_id: itemId, type: type, page: 'cart', },
+                })
+                .then((response) => {
+                    if (response.data.status === false) {
+                        setErrorMessage(response.data.message);
+                        setShowErrorMessage(true);
+                        return;
+                    }
+
+                    if (response.data.status === true) {
+                        setSuccessMessage(response.data.message);
+                        setShowSuccessMessage(true);
+                        setSummary(response.data.total_summary);
+                        router.reload(['cart_items']);
+                    }
+                })
+                .catch((error) => {
+                    setErrorMessage(error.message);
+                    setShowErrorMessage(true);
+                })
+                .finally(() => {
+                    setRemovingProcessing(false);
+                });
+        }
     };
 
     const updateSmartphoneAddon = (itemId, newQuantity) => {
@@ -153,33 +167,44 @@ export default function index({ cart_items, addon_items, total_summary }) {
             });
     };
 
-    const removeSmartphoneAddon = (itemId) => {
-        setRemovingProcessing(true);
-        axios
-            .delete(route('website.carts.remove-smartphone-addon-item'), {
-                data: { item_id: itemId, page: 'cart', },
-            })
-            .then((response) => {
-                if (response.data.status === false) {
-                    setErrorMessage(response.data.message);
-                    setShowErrorMessage(true);
-                    return;
-                }
+    const removeSmartphoneAddon = async (itemId) => {
+        const result = await confirm({
+            title: __('Confirmation'),
+            text: __('Are you sure you want to remove this item?'),
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: __('Yes'),
+            cancelButtonText: __('No'),
+        });
 
-                if (response.data.status === true) {
-                    setSuccessMessage(response.data.message);
-                    setShowSuccessMessage(true);
-                    setSummary(response.data.total_summary);
-                    router.reload(['addon_items']);
-                }
-            })
-            .catch((error) => {
-                setErrorMessage(error.message);
-                setShowErrorMessage(true);
-            })
-            .finally(() => {
-                setRemovingProcessing(false);
-            });
+        if (result.isConfirmed) {
+            setRemovingProcessing(true);
+            axios
+                .delete(route('website.carts.remove-smartphone-addon-item'), {
+                    data: { item_id: itemId, page: 'cart', },
+                })
+                .then((response) => {
+                    if (response.data.status === false) {
+                        setErrorMessage(response.data.message);
+                        setShowErrorMessage(true);
+                        return;
+                    }
+
+                    if (response.data.status === true) {
+                        setSuccessMessage(response.data.message);
+                        setShowSuccessMessage(true);
+                        setSummary(response.data.total_summary);
+                        router.reload(['addon_items']);
+                    }
+                })
+                .catch((error) => {
+                    setErrorMessage(error.message);
+                    setShowErrorMessage(true);
+                })
+                .finally(() => {
+                    setRemovingProcessing(false);
+                });
+        }
     };
     // const calculateShippingCost = (shipping_fee, product, quantity) => {
     //     if (!shipping_fee) return 0;
@@ -219,6 +244,7 @@ export default function index({ cart_items, addon_items, total_summary }) {
     //     return noTaxMessage;
     // };
 
+
     return (
         <MainLayout>
             <Head title={__("Cart", true)} />
@@ -248,6 +274,9 @@ export default function index({ cart_items, addon_items, total_summary }) {
                     }}
                 />
             )}
+
+
+            <ConfirmDialog />
 
             <div className="min-h-screen transition-colors duration-200">
                 {/* Main Content */}

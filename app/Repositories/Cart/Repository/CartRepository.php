@@ -273,7 +273,8 @@ class CartRepository implements ICartRepository
 
             return [
                 'status' => true,
-                'message' => $this->trans->get('Added Succesfully To Cart'),
+                'message' => $this->trans->get('Added Succesfully To Cart').
+                 ' <a href="'.route('website.carts.index').'" class="font-semibold underline">'.$this->trans->get('Go To Cart').'</a>',
             ];
         } catch (Exception $e) {
             DB::rollBack();

@@ -150,6 +150,7 @@ export default function MainLayout({ children }) {
     useEffect(() => {
 
         if (!auth?.user) {
+            setShowEmailVerification(false);
             return;
         }
 

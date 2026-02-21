@@ -42,7 +42,11 @@ export default function InfoToastModal({ showInfo, setShowInfo, message }) {
                     </div>
 
                     {/* Message */}
-                    <p className="text-sm break-words text-main-text-light dark:text-main-text-dark">{message}</p>
+                    <p className="text-sm break-words text-main-text-light dark:text-main-text-dark">
+                        {message?.includes('<a')
+                            ? <span dangerouslySetInnerHTML={{ __html: message }} />
+                            : message}
+                    </p>
                 </div>
             </div>
         </div>,

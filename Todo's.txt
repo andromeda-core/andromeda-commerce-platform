@@ -1814,6 +1814,11 @@ canceled
 126: Mobile Feed back button and hashtag Aligmenet Corrected With the Mobile Feed Single Page ✅
 127: Checkout Page Points Card Unresponsiveness Of points input Fixed ✅
 128: Orders View Page Card Buttons In Mobile Now Takes Full Width  issue (Not taking full width) Fixed ✅
+129: Notifications Page Notifications Count SHowed Fully Before Showing 9+ when greater than 9 ✅
+130: Go to Cart Message Link SHowed in Add item Message When Product Added In Cart  So Now User can Directly Go To Cart after adding the item✅
+131: Confirmation Added Before Removing Cart Item logic added on Cart and checkout page and Applied on Both Product and addon Removal ✅
+132: Email Verification Error Fixed Before there was showing error of undefined is_deactivated key so now its fixed ✅
+
 
 
  <- Review Remeaning (Done) ->

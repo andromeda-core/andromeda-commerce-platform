@@ -14,6 +14,8 @@ import WebInput from '@/Components/WebInput';
 import WebSelectInput from '@/Components/WebSelectInput';
 import { createPortal } from 'react-dom';
 import WebTextArea from '@/Components/WebTextArea';
+import { useConfirm } from '@/Hooks/useConfirm';
+
 
 export default function Checkout({
     cart_items,
@@ -37,6 +39,9 @@ export default function Checkout({
 
     // Translation Hook
     const { __ } = useTranslation();
+
+
+    const { confirm, ConfirmDialog } = useConfirm();
 
     const [infoMessage, setInfoMessage] = useState(null);
     const [showInfoMessage, setShowInfoMessage] = useState(false);
@@ -389,34 +394,44 @@ export default function Checkout({
             });
     };
 
-    const onProductRemove = (itemId, type, temp_id) => {
+    const onProductRemove = async (itemId, type, temp_id) => {
+        const result = await confirm({
+            title: __('Confirmation'),
+            text: __('Are you sure you want to remove this item?'),
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: __('Yes'),
+            cancelButtonText: __('No'),
+        });
 
-        setRemovingProcessing(true);
-        axios
-            .delete(route('website.carts.remove-item'), {
-                data: { item_id: itemId, type: type, page: buy_now ? 'buy_now' : 'cart', temp_id: temp_id },
-            })
-            .then((response) => {
-                if (response.data.status === false) {
-                    setErrorMessage(response.data.message);
+        if (result.isConfirmed) {
+            setRemovingProcessing(true);
+            axios
+                .delete(route('website.carts.remove-item'), {
+                    data: { item_id: itemId, type: type, page: buy_now ? 'buy_now' : 'cart', temp_id: temp_id },
+                })
+                .then((response) => {
+                    if (response.data.status === false) {
+                        setErrorMessage(response.data.message);
+                        setShowErrorMessage(true);
+                        return;
+                    }
+
+                    if (response.data.status === true) {
+                        setSuccessMessage(response.data.message);
+                        setShowSuccessMessage(true);
+                        setSummary(response.data.total_summary);
+                        router.reload(['cart_items']);
+                    }
+                })
+                .catch((error) => {
+                    setErrorMessage(error.message);
                     setShowErrorMessage(true);
-                    return;
-                }
-
-                if (response.data.status === true) {
-                    setSuccessMessage(response.data.message);
-                    setShowSuccessMessage(true);
-                    setSummary(response.data.total_summary);
-                    router.reload(['cart_items']);
-                }
-            })
-            .catch((error) => {
-                setErrorMessage(error.message);
-                setShowErrorMessage(true);
-            })
-            .finally(() => {
-                setRemovingProcessing(false);
-            });
+                })
+                .finally(() => {
+                    setRemovingProcessing(false);
+                });
+        }
     };
 
     const updateSmartphoneAddon = (itemId, newQuantity, temp_id) => {
@@ -458,33 +473,48 @@ export default function Checkout({
             });
     };
 
-    const removeSmartphoneAddon = (itemId, temp_id) => {
-        setRemovingProcessing(true);
-        axios
-            .delete(route('website.carts.remove-smartphone-addon-item'), {
-                data: { item_id: itemId, page: buy_now ? 'buy_now' : 'cart', temp_id: temp_id },
-            })
-            .then((response) => {
-                if (response.data.status === false) {
-                    setErrorMessage(response.data.message);
-                    setShowErrorMessage(true);
-                    return;
-                }
+    const removeSmartphoneAddon = async (itemId, temp_id) => {
 
-                if (response.data.status === true) {
-                    setSuccessMessage(response.data.message);
-                    setShowSuccessMessage(true);
-                    setSummary(response.data.total_summary);
-                    router.reload(['addon_items']);
-                }
-            })
-            .catch((error) => {
-                setErrorMessage(error.message);
-                setShowErrorMessage(true);
-            })
-            .finally(() => {
-                setRemovingProcessing(false);
-            });
+        const result = await confirm({
+            title: __('Confirmation'),
+            text: __('Are you sure you want to remove this item?'),
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: __('Yes'),
+            cancelButtonText: __('No'),
+        });
+
+        if (result.isConfirmed) {
+            setRemovingProcessing(true);
+            axios
+                .delete(route('website.carts.remove-smartphone-addon-item'), {
+                    data: { item_id: itemId, page: buy_now ? 'buy_now' : 'cart', temp_id: temp_id },
+                })
+                .then((response) => {
+                    if (response.data.status === false) {
+                        setErrorMessage(response.data.message);
+                        setShowErrorMessage(true);
+                        return;
+                    }
+
+                    if (response.data.status === true) {
+                        setSuccessMessage(response.data.message);
+                        setShowSuccessMessage(true);
+                        setSummary(response.data.total_summary);
+                        router.reload(['addon_items']);
+                    }
+                })
+                .catch((error) => {
+                    setErrorMessage(error.message);
+                    setShowErrorMessage(true);
+                })
+                .finally(() => {
+                    setRemovingProcessing(false);
+                });
+        }
+
+
+
     };
 
     // Watching When payment method changes
@@ -529,6 +559,10 @@ export default function Checkout({
                     }}
                 />
             )}
+
+
+            <ConfirmDialog />
+
 
             <div className="min-h-screen transition-colors duration-200">
                 <div
