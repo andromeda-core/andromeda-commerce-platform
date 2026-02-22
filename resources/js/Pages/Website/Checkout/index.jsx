@@ -969,16 +969,15 @@ function UsePoints({ points, pointsToUse, setPointsToUse, onUseAllPoints, error,
                     />
 
                     {/* Use All Button */}
-                    {paymentMethod !== 'points' && (
-                        <button
-                            type="button"
-                            onClick={onUseAllPoints}
-                            disabled={!points || points === 0}
-                            className="h-[40px] rounded-md border border-[#c7c7c7] bg-backgroundLight px-6 text-[14px] font-semibold text-main-text-light transition-colors lg:hover:bg-[#ebebeb] disabled:cursor-not-allowed disabled:opacity-50 dark:border-surface-3-dark dark:bg-surface-3-dark dark:text-main-text-dark dark:lg:hover:bg-surface-3-dark/80"
-                        >
-                            {__('Use all')}
-                        </button>
-                    )}
+                    <button
+                        type="button"
+                        onClick={onUseAllPoints}
+                        disabled={!points || points === 0 || paymentMethod === 'points'}
+                        className={`h-[40px] rounded-md border border-[#c7c7c7] bg-backgroundLight px-6 text-[14px] font-semibold text-main-text-light transition-colors lg:hover:bg-[#ebebeb] disabled:cursor-not-allowed disabled:opacity-50 dark:border-surface-3-dark dark:bg-surface-3-dark dark:text-main-text-dark dark:lg:hover:bg-surface-3-dark/80 ${paymentMethod === 'points' ? 'invisible' : 'visible'}`}
+                    >
+                        {__('Use all')}
+                    </button>
+
                 </div>
 
                 {/* Available Points */}

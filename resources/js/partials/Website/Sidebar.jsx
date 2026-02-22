@@ -37,11 +37,12 @@ const Sidebar = ({
 
 
         const privacyRoute = route().current() === 'website.privacy-policy.index';
+        const TermsRoute = route().current() === 'website.terms-of-service.index';
         const dataDeletionRoute = route().current() === 'website.data-deletion.index';
         const contactRoute = route().current() === 'website.contact.index';
 
 
-        if (privacyRoute || dataDeletionRoute || contactRoute) {
+        if (privacyRoute || dataDeletionRoute || contactRoute || TermsRoute) {
             setSelectedNavLink(__('Setting'));
         }
     }, []);
