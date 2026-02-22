@@ -217,7 +217,7 @@ export default function MainLayout({ children }) {
 
     return (
         <>
-            <div className="relative flex w-full h-screen overflow-hidden scrollbar-none bg-backgroundLight dark:bg-backgroundDark"
+            <div className="relative flex w-full h-screen !overflow-hidden scrollbar-none bg-backgroundLight dark:bg-backgroundDark"
                 style={{ '--sidebar-w': 'clamp(200px,15vw,256px)' }}
             >
                 <Preloader loaded={loaded} setLoaded={setLoaded} />
@@ -265,7 +265,7 @@ export default function MainLayout({ children }) {
                 )}
 
                 {/* Main Content Area */}
-                <div className="flex-1 min-h-screen overflow-hidden">
+                <div className="flex-1 min-h-screen !overflow-hidden">
                     <main className="h-full px-3 pt-2 overflow-y-auto scrollbar-none lg:px-6 xl:px-8">
                         {children ?? (
                             <div className="flex h-[80vh] items-center justify-center">

@@ -8,6 +8,7 @@ const PostMobileFeedGallery = (
     { post, setShowQrCode, setLinkCopied, navigateToHashtag, placeholderImage, generateURL, __, auth, setBookmarkStatusChanged, isDarkMode, setMobileFeedGalleryOpen,
         setSpatiotemporalInfoModal,
         spatiotemporalInfoModal,
+        previous_url,
     }) => {
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [actionDropdownOpen, setActionDropdownOpen] = useState(null);
@@ -133,7 +134,12 @@ const PostMobileFeedGallery = (
 
                         <button
                             onClick={() => {
-                                setMobileFeedGalleryOpen(false);
+                                if (previous_url) {
+                                    router.visit(previous_url);
+                                } else {
+                                    setMobileFeedGalleryOpen(false);
+
+                                }
                             }}
                             className="text-[18px] font-semibold"
                         >

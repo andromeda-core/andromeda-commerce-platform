@@ -141,17 +141,7 @@ export default function index() {
 
     const handleOpenPost = (post) => {
         const url = generateURL(post, true, true);
-        window.history.replaceState(
-            {},
-            '',
-            route('home'),
-        )
-        router.visit(route('home') + url, {
-            replace: false,
-            preserveState: true,
-            preserveScroll: true,
-
-        });
+        router.visit(route('home') + url, { replace: true });
     };
 
 

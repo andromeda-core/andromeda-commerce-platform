@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Website;
 
 use App\Http\Controllers\Controller;
-use App\Models\Smartphone;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Str;
@@ -16,7 +15,7 @@ class HomeController extends Controller
 
         $previous_url = url()->previous();
 
-        if (! Str::of($previous_url)->contains('shop')) {
+        if (! Str::of($previous_url)->contains('shop') && ! Str::of($previous_url)->contains('bookmarks')) {
             $previous_url = null;
         }
 

@@ -79,6 +79,7 @@ const MobileFeedGallery = (
                     setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
                     spatiotemporalInfoModal={spatiotemporalInfoModal}
                     setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
+                    previous_url={previous_url}
                 />
             )}
         </>
