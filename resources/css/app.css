@@ -490,6 +490,13 @@ video.feed-video::-webkit-media-controls {
     }
 }
 
+@supports (padding: max(0px)) {
+    .ios-safe {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
 .main-badge {
     position: absolute;
     top: 5px;
