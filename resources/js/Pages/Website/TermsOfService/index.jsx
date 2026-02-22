@@ -39,65 +39,39 @@ const index = ({ terms_of_service }) => {
         { id: 'data_protection_officer', title: __('Data Protection Officer') },
     ]
 
-    useEffect(() => {
-        const handleScroll = () => {
-            if (isProgrammaticScroll.current) return;
-
-            const sections = document.querySelectorAll('[data-section]');
-            let current = null;
-
-            for (let i = 0; i < sections.length; i++) {
-                const section = sections[i];
-                const rect = section.getBoundingClientRect();
-
-                if (rect.top <= 160 && rect.bottom > 160) {
-                    current = section.dataset.section;
-                    break;
-                }
-            }
-
-            if (!current && sections.length > 0) {
-                current = sections[0].dataset.section;
-            }
-
-            setActiveSection(prev => (prev === current ? prev : current));
-        };
-
-        // IMPORTANT: capture phase use karo
-        document.addEventListener('scroll', handleScroll, true);
-
-        return () => {
-            document.removeEventListener('scroll', handleScroll, true);
-        };
-    }, []);
 
 
     const scrollToSection = (id) => {
         isProgrammaticScroll.current = true;
-
-        document.getElementById(id)?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-        });
-
         setActiveSection(id);
-
-        setTimeout(() => {
-            isProgrammaticScroll.current = false;
-        }, 600);
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => (isProgrammaticScroll.current = false), 600);
     };
-
 
     useEffect(() => {
         const el = tocRef.current;
         if (!el) return;
 
         const onWheel = (e) => {
+            const isScrollingDown = e.deltaY > 0;
+            const isScrollingUp = e.deltaY < 0;
+
+            const atTop = window.scrollY === 0;
+            const atBottom =
+                window.innerHeight + window.scrollY >= document.body.scrollHeight;
+
+
+            if (
+                (isScrollingUp && atTop) ||
+                (isScrollingDown && atBottom)
+            ) {
+                return;
+            }
+
             e.preventDefault();
 
             window.scrollBy({
                 top: e.deltaY,
-                left: 0,
                 behavior: "auto",
             });
         };
@@ -176,7 +150,7 @@ const index = ({ terms_of_service }) => {
                                                     }`}
                                             >
 
-                                                <span className="flex-1">{section.title}</span>
+                                                <span className="flex-1 break-all">{section.title}</span>
                                                 <svg
                                                     className={`h-4 w-4 transition-transform ${activeSection === section.id ? 'translate-x-1' : ''}`}
                                                     fill="none"

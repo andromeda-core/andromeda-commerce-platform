@@ -43,64 +43,37 @@ const index = ({ privacy_policy }) => {
     ];
 
 
-
-    useEffect(() => {
-        const handleScroll = () => {
-            if (isProgrammaticScroll.current) return;
-
-            const sections = document.querySelectorAll('[data-section]');
-            let current = null;
-
-            for (let i = 0; i < sections.length; i++) {
-                const section = sections[i];
-                const rect = section.getBoundingClientRect();
-
-                if (rect.top <= 160 && rect.bottom > 160) {
-                    current = section.dataset.section;
-                    break;
-                }
-            }
-
-            if (!current && sections.length > 0) {
-                current = sections[0].dataset.section;
-            }
-
-            setActiveSection(prev => (prev === current ? prev : current));
-        };
-
-        document.addEventListener('scroll', handleScroll, true);
-
-        return () => {
-            document.removeEventListener('scroll', handleScroll, true);
-        };
-    }, []);
-
-
     const scrollToSection = (id) => {
         isProgrammaticScroll.current = true;
-        document.getElementById(id)?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-        });
-
         setActiveSection(id);
-
-        setTimeout(() => {
-            isProgrammaticScroll.current = false;
-        }, 600);
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => (isProgrammaticScroll.current = false), 600);
     };
-
 
     useEffect(() => {
         const el = tocRef.current;
         if (!el) return;
 
         const onWheel = (e) => {
+            const isScrollingDown = e.deltaY > 0;
+            const isScrollingUp = e.deltaY < 0;
+
+            const atTop = window.scrollY === 0;
+            const atBottom =
+                window.innerHeight + window.scrollY >= document.body.scrollHeight;
+
+
+            if (
+                (isScrollingUp && atTop) ||
+                (isScrollingDown && atBottom)
+            ) {
+                return;
+            }
+
             e.preventDefault();
 
             window.scrollBy({
                 top: e.deltaY,
-                left: 0,
                 behavior: "auto",
             });
         };
@@ -112,10 +85,9 @@ const index = ({ privacy_policy }) => {
         };
     }, []);
 
-
     return (
         <MainLayout>
-            <Head title={__('Terms Of Service', true)} />
+            <Head title={__('Privacy Policy', true)} />
             <div className="sm:px-6 lg:px-8">
                 <div className={`px-6 lg:mt-6 mx-auto ${windowSize.width > 1024 ? 'pb-10' : 'pb-24'} lg:max-w-6xl sm:max-w-3xl`}>
 
@@ -197,7 +169,7 @@ const index = ({ privacy_policy }) => {
                                                     }`}
                                             >
 
-                                                <span className="flex-1">{section.title}</span>
+                                                <span className="flex-1 break-all">{section.title}</span>
                                                 <svg
                                                     className={`h-4 w-4 transition-transform ${activeSection === section.id ? 'translate-x-1' : ''}`}
                                                     fill="none"

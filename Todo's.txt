@@ -1820,6 +1820,7 @@ canceled
 132: Email Verification Error Fixed Before there was showing error of undefined is_deactivated key so now its fixed ✅
 133: ORder Checkout page Points Payment Method Related Logic Updated when points are less or 0 from total of order amount so points paynnet method will be disabled and when points payment method selects it will automatically adds total to points just for frontend ✅
 134: Sidebar Menu Updated Unsettled Account Moved To System Group  ✅
+135: All Policies Sidebar (Left Container) Scroll Prevented On Wheel and Full ooage scroll Logic Updates And optimized Sekecting item Logic at all ✅
 
 
  <- Review Remeaning (Done) ->

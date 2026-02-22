@@ -73,22 +73,6 @@ const index = ({ shipping_policy, smartphone_slug }) => {
     }, []);
 
 
-    const scrollToSection = (id) => {
-        isProgrammaticScroll.current = true;
-
-        document.getElementById(id)?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-        });
-
-        setActiveSection(id);
-
-        setTimeout(() => {
-            isProgrammaticScroll.current = false;
-        }, 600);
-    };
-
-
     // Smartphone URL Generation
     const generateSmartphoneURL = (isDirect = false, isSinglePage = false) => {
         return (
@@ -97,16 +81,37 @@ const index = ({ shipping_policy, smartphone_slug }) => {
     }
 
 
+    const scrollToSection = (id) => {
+        isProgrammaticScroll.current = true;
+        setActiveSection(id);
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => (isProgrammaticScroll.current = false), 600);
+    };
+
     useEffect(() => {
         const el = tocRef.current;
         if (!el) return;
 
         const onWheel = (e) => {
+            const isScrollingDown = e.deltaY > 0;
+            const isScrollingUp = e.deltaY < 0;
+
+            const atTop = window.scrollY === 0;
+            const atBottom =
+                window.innerHeight + window.scrollY >= document.body.scrollHeight;
+
+
+            if (
+                (isScrollingUp && atTop) ||
+                (isScrollingDown && atBottom)
+            ) {
+                return;
+            }
+
             e.preventDefault();
 
             window.scrollBy({
                 top: e.deltaY,
-                left: 0,
                 behavior: "auto",
             });
         };
@@ -117,6 +122,10 @@ const index = ({ shipping_policy, smartphone_slug }) => {
             el.removeEventListener("wheel", onWheel);
         };
     }, []);
+
+
+
+
 
 
 
@@ -190,7 +199,7 @@ const index = ({ shipping_policy, smartphone_slug }) => {
                                                     }`}
                                             >
 
-                                                <span className="flex-1">{section.title}</span>
+                                                <span className="flex-1 break-all">{section.title}</span>
                                                 <svg
                                                     className={`h-4 w-4 transition-transform ${activeSection === section.id ? 'translate-x-1' : ''}`}
                                                     fill="none"
