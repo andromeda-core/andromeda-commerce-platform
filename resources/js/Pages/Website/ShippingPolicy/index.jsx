@@ -13,6 +13,9 @@ const index = ({ shipping_policy, smartphone_slug }) => {
     // Translation Hook
     const { __ } = useTranslation();
 
+
+    const tocRef = useRef(null);
+
     const makeId = (title) => {
         const slug = title
             .toLowerCase()
@@ -94,6 +97,29 @@ const index = ({ shipping_policy, smartphone_slug }) => {
     }
 
 
+    useEffect(() => {
+        const el = tocRef.current;
+        if (!el) return;
+
+        const onWheel = (e) => {
+            e.preventDefault();
+
+            window.scrollBy({
+                top: e.deltaY,
+                left: 0,
+                behavior: "auto",
+            });
+        };
+
+        el.addEventListener("wheel", onWheel, { passive: false });
+
+        return () => {
+            el.removeEventListener("wheel", onWheel);
+        };
+    }, []);
+
+
+
 
     return (
         <MainLayout>
@@ -149,7 +175,7 @@ const index = ({ shipping_policy, smartphone_slug }) => {
                         {/* Sticky Table of Contents */}
                         <aside className="hidden shrink-0 lg:block lg:w-80">
                             <div className="sticky top-24">
-                                <div className="p-6 rounded-md bg-surface-1-light dark:bg-surface-1-dark dark:backdrop-blur-xl">
+                                <div ref={tocRef} className="p-6 rounded-md bg-surface-1-light dark:bg-surface-1-dark dark:backdrop-blur-xl">
                                     <h3 className="px-2 mb-4 font-semibold text-main-text-light text-md dark:text-main-text-dark">
                                         {__('Contents')}
                                     </h3>
