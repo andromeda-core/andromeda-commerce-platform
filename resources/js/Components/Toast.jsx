@@ -19,12 +19,22 @@ function markIdAsShown(id) {
     sessionStorage.setItem(SHOWN_FLASH_KEY, JSON.stringify(updated));
 }
 
+function generateFlashID() {
+    return Math.random().toString(36).slice(2);
+}
+
 const Toast = ({ flash, onClosed }) => {
     const [showSuccess, setShowSuccess] = useState(false);
     const [showError, setShowError] = useState(false);
     const [showInfo, setShowInfo] = useState(false);
 
+
+
+
     useEffect(() => {
+
+        if (!flash?.flashId) flash.flashId = generateFlashID();
+
         if (!flash?.flashId) return;
 
         const shownIds = getShownIds();

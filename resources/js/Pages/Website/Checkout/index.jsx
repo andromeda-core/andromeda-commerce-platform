@@ -111,6 +111,7 @@ export default function Checkout({
         const total = parseFloat(total_summary.total);
         const points = parseFloat(auth?.user?.points);
 
+
         if (total > points && points < total) {
             setPointsToUse(points);
             setPointsError('');
@@ -251,8 +252,6 @@ export default function Checkout({
 
     const handlePlaceOrder = async () => {
 
-
-
         if (pointsError !== '') {
             setErrorMessage(__('Please Adjust Your Points Before Placing An Order'));
             setShowErrorMessage(true);
@@ -342,6 +341,7 @@ export default function Checkout({
                 setProcessingOrder(false);
             });
     };
+
 
     const getTotalQtyOfSmartphone = (smartphoneId) => {
         return cart_items
@@ -521,9 +521,19 @@ export default function Checkout({
 
     useEffect(() => {
         if (paymentMethod === 'points') {
-            setPointsToUse('');
+            const total = parseFloat(total_summary.total);
+            const points = parseFloat(auth?.user?.points);
+
+
+            if (total > points && points < total) {
+                setPointsToUse('');
+                setPointsError('');
+                return;
+            }
+
+            setPointsToUse(total);
         }
-    }, [paymentMethod]);
+    }, [paymentMethod, total_summary.total, auth?.user?.points]);
 
     const socialLinks = {
         facebook: `https://m.me/${meta_usernames?.fb_page_username}?ref=user_id=${auth?.user?.id}`,
@@ -606,15 +616,17 @@ export default function Checkout({
                                 paymentMethod={paymentMethod}
                                 setPaymentMethod={setPaymentMethod}
                                 points={auth.user?.points}
+                                total={parseFloat(total_summary.total)}
                                 __={__}
                             />
 
                             {/* Use Points */}
                             <UsePoints
-                                points={auth.user?.points}
+                                points={parseFloat(auth.user?.points)}
                                 pointsToUse={pointsToUse}
                                 setPointsToUse={handlePointsChange}
                                 onUseAllPoints={handleUseAllPoints}
+                                paymentMethod={paymentMethod}
                                 error={pointsError}
                                 __={__}
                             />
@@ -793,7 +805,7 @@ function ShippingInfoCard({
 }
 
 // Payment methods
-function PaymentMethod({ paymentMethod, setPaymentMethod, __, points }) {
+function PaymentMethod({ paymentMethod, setPaymentMethod, __, points, total }) {
     return (
         <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
             <h2 className="mb-4 text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
@@ -885,7 +897,7 @@ function PaymentMethod({ paymentMethod, setPaymentMethod, __, points }) {
 
                 {/* Points */}
                 <label
-                    className={`flex cursor-pointer items-center gap-3 rounded-md px-4 py-3 transition ${!points || points === 0 ? 'pointer-events-none opacity-50' : ''} ${paymentMethod === 'points'
+                    className={`flex cursor-pointer items-center gap-3 rounded-md px-4 py-3 transition ${total > points && points < total ? 'pointer-events-none opacity-50' : ''} ${paymentMethod === 'points'
                         ? 'bg-[#eaeaea] dark:bg-surface-2-dark'
                         : 'dark:hover:bg-surface-2-dark lg:hover:bg-[#eaeaea]'
                         }`}
@@ -928,7 +940,7 @@ function PaymentMethod({ paymentMethod, setPaymentMethod, __, points }) {
 }
 
 // UsePoints
-function UsePoints({ points, pointsToUse, setPointsToUse, onUseAllPoints, error, __ }) {
+function UsePoints({ points, pointsToUse, setPointsToUse, onUseAllPoints, error, __, paymentMethod }) {
     return (
         <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
             {/* Header */}
@@ -946,6 +958,7 @@ function UsePoints({ points, pointsToUse, setPointsToUse, onUseAllPoints, error,
                 <div className="flex flex-wrap items-center gap-5">
                     {/* Input Field */}
                     <input
+                        disabled={paymentMethod === 'points'}
                         type="number"
                         value={pointsToUse}
                         onChange={(e) => setPointsToUse(e.target.value)}
@@ -956,14 +969,16 @@ function UsePoints({ points, pointsToUse, setPointsToUse, onUseAllPoints, error,
                     />
 
                     {/* Use All Button */}
-                    <button
-                        type="button"
-                        onClick={onUseAllPoints}
-                        disabled={!points || points === 0}
-                        className="h-[40px] rounded-md border border-[#c7c7c7] bg-backgroundLight px-6 text-[14px] font-semibold text-main-text-light transition-colors lg:hover:bg-[#ebebeb] disabled:cursor-not-allowed disabled:opacity-50 dark:border-surface-3-dark dark:bg-surface-3-dark dark:text-main-text-dark dark:lg:hover:bg-surface-3-dark/80"
-                    >
-                        {__('Use all')}
-                    </button>
+                    {paymentMethod !== 'points' && (
+                        <button
+                            type="button"
+                            onClick={onUseAllPoints}
+                            disabled={!points || points === 0}
+                            className="h-[40px] rounded-md border border-[#c7c7c7] bg-backgroundLight px-6 text-[14px] font-semibold text-main-text-light transition-colors lg:hover:bg-[#ebebeb] disabled:cursor-not-allowed disabled:opacity-50 dark:border-surface-3-dark dark:bg-surface-3-dark dark:text-main-text-dark dark:lg:hover:bg-surface-3-dark/80"
+                        >
+                            {__('Use all')}
+                        </button>
+                    )}
                 </div>
 
                 {/* Available Points */}
@@ -3242,8 +3257,6 @@ function ShippingAddressModal({
         </>
     );
 }
-
-
 
 // Secondary Payment Option Select modal
 function SecondaryPaymentModal({

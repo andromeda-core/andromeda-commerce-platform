@@ -1818,7 +1818,8 @@ canceled
 130: Go to Cart Message Link SHowed in Add item Message When Product Added In Cart  So Now User can Directly Go To Cart after adding the item✅
 131: Confirmation Added Before Removing Cart Item logic added on Cart and checkout page and Applied on Both Product and addon Removal ✅
 132: Email Verification Error Fixed Before there was showing error of undefined is_deactivated key so now its fixed ✅
-
+133: ORder Checkout page Points Payment Method Related Logic Updated when points are less or 0 from total of order amount so points paynnet method will be disabled and when points payment method selects it will automatically adds total to points just for frontend ✅
+134: Sidebar Menu Updated Unsettled Account Moved To System Group  ✅
 
 
  <- Review Remeaning (Done) ->

@@ -767,7 +767,7 @@ export default function Sidebar({
                                 )}
 
                                 {/* Finance */}
-                                {can(['Supplier Commissions View', 'Collaborator Commissions View', 'Distributor Commissions View', 'Unsettled Accounts View']) && (
+                                {can(['Supplier Commissions View', 'Collaborator Commissions View', 'Distributor Commissions View']) && (
                                     <li>
                                         <a
                                             onClick={() => {
@@ -899,21 +899,6 @@ export default function Sidebar({
                                                         </div>
                                                     </li>
                                                 )}
-
-
-                                                {can('Unsettled Accounts View') && (
-                                                    <li>
-                                                        <Link
-                                                            href={route('dashboard.unsettled-accounts.index')}
-                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.unsettled-accounts.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
-                                                        >
-                                                            Unsettled Accounts
-                                                        </Link>
-                                                    </li>
-                                                )}
-
-
-
 
 
                                             </ul>
@@ -1098,7 +1083,7 @@ export default function Sidebar({
                                 )}
 
                                 {/* System */}
-                                {can(['Admin/Staff View', 'Translation System View', 'SystemLogs View', 'Risk Signals View', 'Data Deletion Requests View']) && (
+                                {can(['Admin/Staff View', 'Translation System View', 'SystemLogs View', 'Risk Signals View', 'Data Deletion Requests View', 'Unsettled Accounts View']) && (
                                     <li>
                                         <a
                                             onClick={() => {
@@ -1231,6 +1216,17 @@ export default function Sidebar({
                                                     </li>
                                                 )}
 
+
+                                                {can('Unsettled Accounts View') && (
+                                                    <li>
+                                                        <Link
+                                                            href={route('dashboard.unsettled-accounts.index')}
+                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.unsettled-accounts.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                        >
+                                                            Unsettled Accounts
+                                                        </Link>
+                                                    </li>
+                                                )}
 
                                                 {can('Risk Signals') && (
                                                     <li>
