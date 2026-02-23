@@ -434,6 +434,13 @@ video.feed-video::-webkit-media-controls {
     border-bottom: 1px solid transparent !important;
 }
 
+/* Safari Specific Css */
+@supports (-webkit-touch-callout: none) {
+    .feed-page {
+        height: -webkit-fill-available !important;
+    }
+}
+
 /* Navigation Prompt Animations  */
 @keyframes fade-scale {
     from {
@@ -463,13 +470,6 @@ video.feed-video::-webkit-media-controls {
 
 .animate-float {
     animation: float 2s ease-in-out infinite;
-}
-
-/* Safari Specific Css */
-@supports (-webkit-touch-callout: none) {
-    .feed-page {
-        height: -webkit-fill-available !important;
-    }
 }
 
 @supports (-webkit-appearance: none) {

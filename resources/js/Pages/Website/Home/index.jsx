@@ -632,6 +632,8 @@ const index = ({ previous_url }) => {
                 setNextPageUrl(next_page_url);
                 nextPageUrlRef.current = next_page_url;
             });
+
+            isfetchingMoreYAxisFeed.current = false;
         } catch (err) {
             setShowErrorMessage(true);
             setErrorMessage(err.message);
@@ -835,7 +837,7 @@ const index = ({ previous_url }) => {
                     fetchMorePostsAndProducts();
                 }
             },
-            { threshold: 1 },
+            { rootMargin: '200px 0px', threshold: 0 },
         );
 
         observer.observe(loaderRef.current);
@@ -1340,6 +1342,7 @@ const index = ({ previous_url }) => {
                             {/* Loader */}
                             {nextPageUrl && (
                                 <div
+                                    key={nextPageUrl}
                                     ref={loaderRef}
                                     className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-[10px] text-gray-700 transition-all duration-100 dark:text-white/80 lg:text-[18px]"
                                 >
