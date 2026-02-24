@@ -1822,6 +1822,11 @@ canceled
 134: Sidebar Menu Updated Unsettled Account Moved To System Group  ✅
 135: All Policies Sidebar (Left Container) Scroll Prevented On Wheel and Full ooage scroll Logic Updates And optimized Sekecting item Logic at all ✅
 136: Bookmark Page Redirect To Feed and opening and than closing feed now will take back again to bookmarks its a UX FIX  ✅
+137: Back Button Added In Website and Dashboard Sidebar In The PWA Desktop Only ✅
+138: Use points Section Hidden When points payment method Selected in checkout page ✅
+139: Order View and Single page  Updated SPecially For view page upload Payment proof button hidden when cancelation requested and same applies for single page to hide payment proof upload and other related sections when Requested ✅
+
+
 
 
  <- Review Remeaning (Done) ->

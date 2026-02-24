@@ -1,3 +1,4 @@
+import DesktopPwaBackButton from '@/Components/DesktopPwaBackButton';
 import DropdownMenuItem from '@/Components/DropdownMenuItem';
 import useDarkMode from '@/Hooks/useDarkMode';
 import { Link, router, usePage } from '@inertiajs/react';
@@ -90,6 +91,9 @@ const Sidebar = ({
         shrink-0
                     `}
             >
+
+                <DesktopPwaBackButton __={__} />
+
                 {/* Logo */}
                 <Link href={route('home')} data-sidebar-link="true" >
                     <div

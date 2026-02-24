@@ -543,6 +543,7 @@ function CourierInfoCard({ order, __ }) {
 
 // Reference Info Component
 function OrderReferenceCard({ order, __, setCopied, setCopiedMessage }) {
+    if (order?.is_cancelation_requested && order?.cancelation_request_status !== 'rejected') return null;
     return (
         <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
             {/* Header with Edit Button */}
@@ -577,6 +578,7 @@ function OrderReferenceCard({ order, __, setCopied, setCopiedMessage }) {
 
 // Bank Details Component
 function BankDetailsCard({ order, __, setCopied, setCopiedMessage }) {
+    if (order?.is_cancelation_requested && order?.cancelation_request_status !== 'rejected') return null;
     return (
         <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
             {/* Header with Edit Button */}
@@ -700,6 +702,8 @@ function BankDetailsCard({ order, __, setCopied, setCopiedMessage }) {
 
 // Payment Proof
 function PaymentProof({ order, __, handleFileSelect, handleFileRemove, paymentProofPreview, paymentProofFile, isUploading, handleUploadPaymentProof, handleImageView }) {
+
+    if (order?.is_cancelation_requested && order?.cancelation_request_status !== 'rejected') return null;
 
     const getRemainingTime = (expiresAt) => {
         if (!expiresAt) return null;

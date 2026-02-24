@@ -658,17 +658,21 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                                     </button>
                                 )}
 
-                                <button
-                                    onClick={() => handlePayNow()}
-                                    className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
-                                    {!processing ? (
-                                        <span>
-                                            {__('Pay Now')}
-                                        </span>
-                                    ) : (
-                                        <Spinner />
-                                    )}
-                                </button>
+
+                                {order?.is_cancelation_requested && order?.cancelation_request_status !== 'rejected' ? null : (
+                                    <button
+                                        onClick={() => handlePayNow()}
+                                        className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
+                                        {!processing ? (
+                                            <span>
+                                                {__('Pay Now')}
+                                            </span>
+                                        ) : (
+                                            <Spinner />
+                                        )}
+                                    </button>
+                                )}
+
                             </>
                         )}
 
@@ -700,13 +704,17 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                                     </button>
                                 )}
 
-                                <button
-                                    onClick={() => {
-                                        router.visit(route('website.orders.order-view', order?.order_no))
-                                    }}
-                                    className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
-                                    {__('Upload Proof')}
-                                </button>
+
+                                {order?.is_cancelation_requested && order?.cancelation_request_status !== 'rejected' ? null : (
+                                    <button
+                                        onClick={() => {
+                                            router.visit(route('website.orders.order-view', order?.order_no))
+                                        }}
+                                        className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
+                                        {__('Upload Proof')}
+                                    </button>
+                                )}
+
                             </>
                         )}
 

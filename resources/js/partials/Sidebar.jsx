@@ -1,4 +1,6 @@
+import DesktopPwaBackButton from '@/Components/DesktopPwaBackButton';
 import can from '@/Hooks/useCan';
+import { useTranslation } from '@/Hooks/useTranslation';
 import useWindowSize from '@/Hooks/useWindowSize';
 import { Link, router } from '@inertiajs/react';
 import React, { useEffect, useRef, useState } from 'react';
@@ -15,6 +17,8 @@ export default function Sidebar({
     const [selectedSubMenu, setSelectedSubMenu] = useState(null);
 
     const { width } = useWindowSize();
+
+    const { __ } = useTranslation();
 
     const isLargeScreen = width > 1024;
     const prevIsLargeScreenRef = useRef(isLargeScreen);
@@ -256,6 +260,9 @@ export default function Sidebar({
                 dark:border-gray-800 dark:bg-deepcharcoal lg:static lg:translate-x-0`}
             >
 
+
+
+
                 {width < 1024 && sidebarToggle && (
                     createPortal(
                         <div
@@ -266,9 +273,18 @@ export default function Sidebar({
                     )
                 )}
 
+
+
+
                 <div
                     className={`flex items-center ${sidebarToggle ? 'justify-center' : 'justify-between'} sidebar-header gap-2 pb-7 pt-8`}
                 >
+
+
+                    <DesktopPwaBackButton __={__} />
+
+
+
                     <Link href={route('home')}>
                         <span className={`logo ${sidebarToggle ? 'hidden' : ''}`}>
                             <img

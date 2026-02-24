@@ -517,23 +517,22 @@ export default function Checkout({
 
     };
 
-    // Watching When payment method changes
+    // Watching When payment method changes (Not Using For Now)
+    // useEffect(() => {
+    //     if (paymentMethod === 'points') {
+    //         const total = parseFloat(total_summary.total);
+    //         const points = parseFloat(auth?.user?.points);
 
-    useEffect(() => {
-        if (paymentMethod === 'points') {
-            const total = parseFloat(total_summary.total);
-            const points = parseFloat(auth?.user?.points);
 
+    //         if (total > points && points < total) {
+    //             setPointsToUse('');
+    //             setPointsError('');
+    //             return;
+    //         }
 
-            if (total > points && points < total) {
-                setPointsToUse('');
-                setPointsError('');
-                return;
-            }
-
-            setPointsToUse(total);
-        }
-    }, [paymentMethod, total_summary.total, auth?.user?.points]);
+    //         setPointsToUse(total);
+    //     }
+    // }, [paymentMethod, total_summary.total, auth?.user?.points]);
 
     const socialLinks = {
         facebook: `https://m.me/${meta_usernames?.fb_page_username}?ref=user_id=${auth?.user?.id}`,
@@ -941,6 +940,9 @@ function PaymentMethod({ paymentMethod, setPaymentMethod, __, points, total }) {
 
 // UsePoints
 function UsePoints({ points, pointsToUse, setPointsToUse, onUseAllPoints, error, __, paymentMethod }) {
+
+    if (paymentMethod === 'points') return null;
+
     return (
         <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
             {/* Header */}
