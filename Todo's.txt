@@ -1825,6 +1825,12 @@ canceled
 137: Back Button Added In Website and Dashboard Sidebar In The PWA Desktop Only ✅
 138: Use points Section Hidden When points payment method Selected in checkout page ✅
 139: Order View and Single page  Updated SPecially For view page upload Payment proof button hidden when cancelation requested and same applies for single page to hide payment proof upload and other related sections when Requested ✅
+140: Migration From Digital Ocean TO AWS Full EC2 Setup With Redis + RDS Database Setup  ✅
+141: Orders Page New Status Tab added Refunded And Prevenmted THe Click From Frontend On Buttons Of Requests Such as Cacnelation, Refund, address Changes when any of them Processed by the admin (Approves or rejected) than user cant withdraw that request ✅
+142: Notifications Page FIXED Now Added COnfirmation On Each Action Read, Delete, All Read ✅
+143: Count Fixed Of Notifications ✅
+144: Filtering Notifications Now Properly FIxed and it sents Filter Type to Backend To Fetch Fresh Results And Dont rely on Initial Result ✅
+145: Packaging Video Upload Issue FIXED Binary Was Missing Of FFMPEG On New EC2 Migrated Server   ✅
 
 
 

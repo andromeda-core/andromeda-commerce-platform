@@ -20,9 +20,27 @@ class NotificationRepository implements INotificationRepository
             return [];
         }
 
-        $notifications = $user->notifications()->orderBy('created_at', 'desc')->limit(50)->get();
+        $filter = $request->get('filter', 'all');
+        $query = $user->notifications()->orderBy('created_at', 'desc');
 
-        return $notifications;
+        if ($filter === 'unread') {
+            $query->whereNull('read_at');
+        } elseif ($filter === 'read') {
+            $query->whereNotNull('read_at');
+        }
+
+        $notifications = $query->paginate(10)->withQueryString();
+
+        return [
+            'totalCounts' => [
+                'all' => $user->notifications()->count(),
+                'unread' => $user->unreadNotifications()->count(),
+                'read' => $user->notifications()->whereNotNull('read_at')->count(),
+            ],
+            'currentFilter' => $filter,
+            'notifications' => $notifications,
+
+        ];
     }
 
     public function markNotificationAsSeen(Request $request)

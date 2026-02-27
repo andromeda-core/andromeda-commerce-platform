@@ -15,9 +15,13 @@ class NotificationController extends Controller
 
     public function index(Request $request)
     {
-        $notifications = $this->notification->getAllNotifications($request);
+        $data = $this->notification->getAllNotifications($request);
 
-        return Inertia::render('Website/Notifications/index', compact('notifications'));
+        return Inertia::render('Website/Notifications/index', [
+            'notifications' => $data['notifications'],
+            'currentFilter' => $data['currentFilter'],
+            'totalCounts' => $data['totalCounts'],
+        ]);
     }
 
     public function markNotificationAsSeen(Request $request)

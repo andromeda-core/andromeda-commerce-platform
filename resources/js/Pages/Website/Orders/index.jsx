@@ -18,7 +18,6 @@ export default function index({ orders, next_page_url }) {
     const { currency } = usePage().props;
     const [allOrders, setAllOrders] = useState(orders || []);
 
-
     const nextPageUrlRef = useRef(next_page_url || null);
 
     const [infoMessage, setInfoMessage] = useState(null);
@@ -28,7 +27,6 @@ export default function index({ orders, next_page_url }) {
     const [successMessage, setSuccessMessage] = useState(null);
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const [linkCopied, setLinkCopied] = useState(false);
-
 
     // Translation Hook
     const { __ } = useTranslation();
@@ -68,7 +66,6 @@ export default function index({ orders, next_page_url }) {
             });
     };
 
-
     useEffect(() => {
         setAllOrders(orders || []);
     }, [orders]);
@@ -98,27 +95,17 @@ export default function index({ orders, next_page_url }) {
     }, []);
 
     const filterOrdersByStatus = (status) => {
-
         if (status === 'all') {
             return allOrders;
         }
 
         if (status === 'to_pay') {
+            const toPayStatuses = ['awaiting_payment', 'pending', 'failed'];
 
-            const toPayStatuses = [
-                'awaiting_payment',
-                'pending',
-                'failed',
-            ];
-
-            return allOrders.filter(order =>
-                toPayStatuses.includes(order.status.toLowerCase())
-            );
+            return allOrders.filter((order) => toPayStatuses.includes(order.status.toLowerCase()));
         }
 
-
         if (status === 'in_progress') {
-
             const toPayStatuses = [
                 'paid',
                 'shipped',
@@ -128,48 +115,37 @@ export default function index({ orders, next_page_url }) {
                 'refund_approved',
             ];
 
-            return allOrders.filter(order =>
-                toPayStatuses.includes(order.status.toLowerCase())
-            );
+            return allOrders.filter((order) => toPayStatuses.includes(order.status.toLowerCase()));
         }
-
 
         if (status === 'order_history') {
+            const orderHistoryStatuses = ['delivered'];
 
-
-            const orderHistoryStatuses = [
-                'delivered',
-                'refund_completed',
-            ];
-
-            return allOrders.filter(order =>
-                orderHistoryStatuses.includes(order.status.toLowerCase())
+            return allOrders.filter((order) =>
+                orderHistoryStatuses.includes(order.status.toLowerCase()),
             );
         }
-
 
         if (status === 'canceled') {
+            const cancelStatuses = ['expired', 'canceled'];
 
-            const toPayStatuses = [
-                'expired',
-                'canceled',
-            ];
-
-            return allOrders.filter(order =>
-                toPayStatuses.includes(order.status.toLowerCase())
-            );
+            return allOrders.filter((order) => cancelStatuses.includes(order.status.toLowerCase()));
         }
 
+        if (status === 'refund_completed') {
+            const refundStatuses = ['refund_completed'];
 
+            return allOrders.filter((order) => refundStatuses.includes(order.status.toLowerCase()));
+        }
+
+        return [];
     };
 
     const filteredOrders = filterOrdersByStatus(activeTab);
 
-
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(false);
     const scrollContainerRef = useRef(null);
-
 
     // Scroll handlers
     const scrollLeft = useCallback(() => {
@@ -180,9 +156,6 @@ export default function index({ orders, next_page_url }) {
         scrollContainerRef.current?.scrollBy({ left: 200, behavior: 'smooth' });
     }, []);
 
-
-
-
     // Optimized scroll button update with debouncing
     const updateScrollButtons = useCallback(() => {
         if (scrollContainerRef.current) {
@@ -192,13 +165,11 @@ export default function index({ orders, next_page_url }) {
 
             // Only update if values changed
             if (newCanScrollLeft !== canScrollLeft || newCanScrollRight !== canScrollRight) {
-
                 setCanScrollLeft(newCanScrollLeft);
                 setCanScrollRight(newCanScrollRight);
             }
         }
     }, [canScrollLeft, canScrollRight]);
-
 
     useEffect(() => {
         const container = scrollContainerRef.current;
@@ -218,11 +189,9 @@ export default function index({ orders, next_page_url }) {
         };
     }, [updateScrollButtons, orders.length]);
 
-
-
     return (
         <MainLayout>
-            <Head title={__("Orders", true)} />
+            <Head title={__('Orders', true)} />
 
             {(showInfoMessage || showErrorMessage || showSuccessMessage) && (
                 <Toast
@@ -250,14 +219,10 @@ export default function index({ orders, next_page_url }) {
                 />
             )}
             <div className="min-h-screen pb-20 my-0 lg:my-3">
-
-                <div className="w-full mx-auto overflow-x-hidden text-black max-w-7xl sm:px-8 dark:text-main-text-dark">
-
-
+                <div className="w-full mx-auto overflow-x-hidden text-black max-w-7xl dark:text-main-text-dark sm:px-8">
                     <div className="px-4 mt-2 sm:px-0">
                         <div className="w-full mt-3 mb-4">
                             <div className="relative grid w-full grid-cols-1 overflow-hidden">
-
                                 <div className="relative flex items-center w-full">
                                     {/* Left Arrow */}
                                     {canScrollLeft && (
@@ -266,58 +231,86 @@ export default function index({ orders, next_page_url }) {
                                             className="absolute left-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-1-light hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
                                             style={{ left: '0px' }}
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="text-sub-text-light size-4 dark:text-sub-text-dark"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={2}
+                                                stroke="currentColor"
+                                                className="size-4 text-sub-text-light dark:text-sub-text-dark"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M15.75 19.5L8.25 12l7.5-7.5"
+                                                />
+                                            </svg>
                                         </button>
                                     )}
 
-
                                     <div
                                         ref={scrollContainerRef}
-                                        className="flex items-center w-full overflow-x-auto gap-7 flex-nowrap scrollbar-none scroll-smooth"
+                                        className="flex items-center w-full overflow-x-auto flex-nowrap gap-7 scroll-smooth scrollbar-none"
                                         style={{
                                             transform: 'translateZ(0)',
                                             WebkitOverflowScrolling: 'touch',
                                             scrollbarWidth: 'none',
                                             msOverflowStyle: 'none',
                                             maxWidth: '100%',
-                                            display: 'flex'
+                                            display: 'flex',
                                         }}
                                     >
-
-
                                         {/* Status Tabs */}
                                         {orders.length > 0 && (
                                             <>
                                                 <TabButton
                                                     label={__('To Pay')}
-                                                    count={filterOrdersByStatus('to_pay').length}
+                                                    count={
+                                                        filterOrdersByStatus('to_pay').length || 0
+                                                    }
                                                     active={activeTab === 'to_pay'}
                                                     onClick={() => setActiveTab('to_pay')}
                                                 />
                                                 <TabButton
                                                     label={__('In Progress')}
-                                                    count={filterOrdersByStatus('in_progress').length}
+                                                    count={
+                                                        filterOrdersByStatus('in_progress')
+                                                            .length || 0
+                                                    }
                                                     active={activeTab === 'in_progress'}
                                                     onClick={() => setActiveTab('in_progress')}
                                                 />
 
                                                 <TabButton
                                                     label={__('Order History')}
-                                                    count={filterOrdersByStatus('order_history').length}
+                                                    count={
+                                                        filterOrdersByStatus('order_history')
+                                                            .length || 0
+                                                    }
                                                     active={activeTab === 'order_history'}
                                                     onClick={() => setActiveTab('order_history')}
                                                 />
 
                                                 <TabButton
                                                     label={__('Canceled')}
-                                                    count={filterOrdersByStatus('canceled').length}
+                                                    count={
+                                                        filterOrdersByStatus('canceled').length || 0
+                                                    }
                                                     active={activeTab === 'canceled'}
                                                     onClick={() => setActiveTab('canceled')}
                                                 />
 
+                                                <TabButton
+                                                    label={__('Refunded')}
+                                                    count={
+                                                        filterOrdersByStatus('refund_completed')
+                                                            .length || 0
+                                                    }
+                                                    active={activeTab === 'refund_completed'}
+                                                    onClick={() => setActiveTab('refund_completed')}
+                                                />
                                             </>
                                         )}
-
                                     </div>
 
                                     {/* Right Arrow */}
@@ -326,11 +319,22 @@ export default function index({ orders, next_page_url }) {
                                             onClick={scrollRight}
                                             className="absolute right-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-1-light hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="text-sub-text-light size-4 dark:text-sub-text-dark"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={2}
+                                                stroke="currentColor"
+                                                className="size-4 text-sub-text-light dark:text-sub-text-dark"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                                                />
+                                            </svg>
                                         </button>
                                     )}
-
-
                                 </div>
                             </div>
                         </div>
@@ -339,7 +343,13 @@ export default function index({ orders, next_page_url }) {
                         ) : (
                             <div className="grid grid-cols-1 gap-4 lg:grid-cols-1">
                                 {filteredOrders.map((order) => (
-                                    <OrderCard key={order.id} order={order} currency={currency} __={__} setLinkCopied={setLinkCopied} />
+                                    <OrderCard
+                                        key={order.id}
+                                        order={order}
+                                        currency={currency}
+                                        __={__}
+                                        setLinkCopied={setLinkCopied}
+                                    />
                                 ))}
                             </div>
                         )}
@@ -351,15 +361,18 @@ export default function index({ orders, next_page_url }) {
             {nextPageUrlRef.current && (
                 <div
                     ref={loaderRef}
-                    className="flex items-center justify-center gap-2 py-10 text-center transition-all duration-100 text-main-text-light animate-pulse dark:text-main-text-dark"
+                    className="flex items-center justify-center gap-2 py-10 text-center transition-all duration-100 animate-pulse text-main-text-light dark:text-main-text-dark"
                 >
                     <Spinner />
                     {__('Loading More')}...
                 </div>
             )}
 
-
-            <LinkCopiedModal linkCopied={linkCopied} setLinkCopied={setLinkCopied} message={__('Order No Copied')} />
+            <LinkCopiedModal
+                linkCopied={linkCopied}
+                setLinkCopied={setLinkCopied}
+                message={__('Order No Copied')}
+            />
         </MainLayout>
     );
 }
@@ -369,28 +382,24 @@ function TabButton({ label, count, active, onClick }) {
     return (
         <button
             onClick={onClick}
-            className={`flex flex-shrink-0 items-center gap-2 whitespace-nowrap
-        border-b-[3px] pl-1   py-3.5 text-sm font-semibold transition-all
-        ${active
-                    ? 'border-main-text-light text-main-text-light dark:text-main-text-dark dark:border-main-text-dark'
-                    : 'border-transparent text-main-text-light hover:lg:border-main-text-light dark:text-main-text-dark dark:lg:hover:border-main-text-dark'
+            className={`flex flex-shrink-0 items-center gap-2 whitespace-nowrap border-b-[3px] py-3.5 pl-1 text-sm font-semibold transition-all ${active
+                    ? 'border-main-text-light text-main-text-light dark:border-main-text-dark dark:text-main-text-dark'
+                    : 'border-transparent text-main-text-light dark:text-main-text-dark hover:lg:border-main-text-light dark:lg:hover:border-main-text-dark'
                 }`}
         >
-            <span className='text-[24px] font-semibold text-main-text-light dark:text-main-text-dark'>{label} {count > 0 ? `(${count})` : ''}</span>
-
+            <span className="text-[24px] font-semibold text-main-text-light dark:text-main-text-dark">
+                {label} {count > 0 ? `(${count})` : ''}
+            </span>
         </button>
     );
 }
 
-
-
 // Order Card Component
 function OrderCard({ order, currency, __, setLinkCopied }) {
-
     const firstProduct = order.order_items?.[0];
-    const productImage = firstProduct?.inventory_item?.smartphone?.smartphone_image_urls?.[0]
-        || firstProduct?.inventory_item?.smartphone?.smartphone_video_urls?.[0]?.thumbnail_url;
-
+    const productImage =
+        firstProduct?.inventory_item?.smartphone?.smartphone_image_urls?.[0] ||
+        firstProduct?.inventory_item?.smartphone?.smartphone_video_urls?.[0]?.thumbnail_url;
 
     const { data, setData, processing, post } = useForm({
         order_id: order?.id,
@@ -408,11 +417,9 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
             onError: () => { },
             onFinish: () => { },
         });
-    }
-
+    };
 
     const handleWithdrawlCancelationRequest = async (orderNo) => {
-
         const result = await confirm({
             title: __('Confirm Cancelation Request Withdraw'),
             text: __('Are you sure you want to withdraw this Cancelation request?'),
@@ -427,17 +434,12 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
             router.post(
                 route('website.order-cancelation.withdrawl'),
                 { order_no: orderNo },
-                { onFinish: () => setIsWithdrawlProcessing(false) }
-
+                { onFinish: () => setIsWithdrawlProcessing(false) },
             );
         }
-
-    }
-
+    };
 
     const handleWithdrawlAddressChangeRequest = async (orderNo) => {
-
-
         const result = await confirm({
             title: __('Confirm Address Change Request Withdraw'),
             text: __('Are you sure you want to withdraw this Address Change Request?'),
@@ -452,15 +454,12 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
             router.post(
                 route('website.orders.address-change.withdrawl'),
                 { order_no: orderNo },
-                { onFinish: () => setIsWithdrawlProcessing(false) }
-
+                { onFinish: () => setIsWithdrawlProcessing(false) },
             );
         }
-    }
-
+    };
 
     const handleWithdrawlRefundRequest = async (orderNo) => {
-
         const result = await confirm({
             title: __('Confirm Refund Request Withdraw'),
             text: __('Are you sure you want to withdraw this Refund Request?'),
@@ -475,24 +474,23 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
             router.post(
                 route('website.orders.refund.withdrawl'),
                 { order_no: orderNo },
-                { onFinish: () => setIsWithdrawlProcessing(false) }
-
+                { onFinish: () => setIsWithdrawlProcessing(false) },
             );
-
         }
-    }
+    };
 
     const generateSmartphoneURL = (smartphone, isDirect = false, isSinglePage = false) => {
-        return (
-            `?m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`
-        );
-    }
-
+        return `?m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`;
+    };
 
     const handleReOrder = (orderNo) => {
         setReOrderProcessing(true);
-        router.post(route('website.orders.re-order'), { order_no: orderNo }, { onFinish: () => setReOrderProcessing(false) });
-    }
+        router.post(
+            route('website.orders.re-order'),
+            { order_no: orderNo },
+            { onFinish: () => setReOrderProcessing(false) },
+        );
+    };
 
     const getRemainingTime = (expiresAt) => {
         if (!expiresAt) return null;
@@ -524,7 +522,7 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
 
             <div className="overflow-hidden transition-all bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
                 {/* Header Section */}
-                <div className="flex flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6 ">
+                <div className="flex flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
                     {/* Status and Expiry */}
                     <div className="flex flex-col gap-1 md:flex-row md:items-center md:gap-3">
                         <h3 className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
@@ -532,39 +530,46 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                         </h3>
                         {['awaiting_payment', 'pending'].includes(order.status.toLowerCase()) && (
                             <span className="text-[14px] font-semibold text-[#ff0000]">
-                                {remainingTime && (
-                                    remainingTime === 'Expired'
+                                {remainingTime &&
+                                    (remainingTime === 'Expired'
                                         ? __('Expired', true)
-                                        : `${__('Expires in', true)} ${remainingTime}`
-                                )}
+                                        : `${__('Expires in', true)} ${remainingTime}`)}
                             </span>
                         )}
                     </div>
 
                     {/* Order Info */}
-                    <div className="flex flex-col gap-2 text-sm md:flex-row md:items-center md:gap-4 text-sub-text-light dark:text-sub-text-dark">
-                        <span className='flex items-center gap-1 '>
-                            {__('Order date')}: <span className='font-medium text-main-text-light dark:text-main-text-dark text-[14px]'> {order.order_placed_date}</span>
+                    <div className="flex flex-col gap-2 text-sm text-sub-text-light dark:text-sub-text-dark md:flex-row md:items-center md:gap-4">
+                        <span className="flex items-center gap-1">
+                            {__('Order date')}:{' '}
+                            <span className="text-[14px] font-medium text-main-text-light dark:text-main-text-dark">
+                                {' '}
+                                {order.order_placed_date}
+                            </span>
                         </span>
-                        <span className="hidden text-gray-400 md:inline dark:text-gray-500">/</span>
+                        <span className="hidden text-gray-400 dark:text-gray-500 md:inline">/</span>
                         <div className="flex items-center gap-2">
-                            <span className='flex items-center gap-1'>
-                                {__('Order ID')}: <span className='font-medium  text-main-text-light dark:text-main-text-dark text-[14px]'> {order.order_no}</span>
-                                <button className='font-semibold text-main-text-light dark:text-main-text-dark lg:hover:text-main-text-light/80 dark:lg:hover:text-main-text-dark/80'
+                            <span className="flex items-center gap-1">
+                                {__('Order ID')}:{' '}
+                                <span className="text-[14px] font-medium text-main-text-light dark:text-main-text-dark">
+                                    {' '}
+                                    {order.order_no}
+                                </span>
+                                <button
+                                    className="font-semibold text-main-text-light dark:text-main-text-dark lg:hover:text-main-text-light/80 dark:lg:hover:text-main-text-dark/80"
                                     onClick={() => {
                                         navigator.clipboard.writeText(order.order_no);
                                         setLinkCopied(true);
                                     }}
                                 >
-                                    <Copy className='size-3' />
+                                    <Copy className="size-3" />
                                 </button>
                             </span>
-
                         </div>
 
                         <Link
                             href={route('website.orders.order-view', order.order_no)}
-                            className="flex items-center gap-1 font-semibold lg:ml-5 text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80 text[14px]"
+                            className="text[14px] flex items-center gap-1 font-semibold text-main-text-light dark:text-main-text-dark lg:ml-5 lg:hover:text-main-text-light/80 dark:lg:hover:text-main-text-dark/80"
                         >
                             <span>{__('Order details')}</span>
                             <svg
@@ -585,7 +590,7 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                     </div>
                 </div>
 
-                <div className="max-w-[calc(100%-32px)] m-auto border-t border-surface-3-light dark:border-surface-3-dark"></div>
+                <div className="m-auto max-w-[calc(100%-32px)] border-t border-surface-3-light dark:border-surface-3-dark"></div>
 
                 {/* Content Section */}
                 <div className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:gap-6 md:p-6">
@@ -593,19 +598,28 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                     <div className="flex flex-1 gap-4">
                         {/* Product Image */}
                         {productImage && (
-                            <div className="flex-shrink-0"
-
-                            >
-                                <div className="relative w-20 h-20 overflow-hidden transition-all duration-300 border rounded-md cursor-pointer md:w-28 md:h-28 lg:hover:scale-105 border-surface-3-light dark:border-surface-3-dark"
+                            <div className="flex-shrink-0">
+                                <div
+                                    className="relative w-20 h-20 overflow-hidden transition-all duration-300 border rounded-md cursor-pointer border-surface-3-light dark:border-surface-3-dark md:h-28 md:w-28 lg:hover:scale-105"
                                     onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        router.get(route('home') + generateSmartphoneURL(firstProduct?.inventory_item?.smartphone, true, true));
+                                        router.get(
+                                            route('home') +
+                                            generateSmartphoneURL(
+                                                firstProduct?.inventory_item?.smartphone,
+                                                true,
+                                                true,
+                                            ),
+                                        );
                                     }}
                                 >
                                     <img
                                         src={productImage}
-                                        alt={firstProduct?.inventory_item?.smartphone?.model_name?.name || 'Product'}
+                                        alt={
+                                            firstProduct?.inventory_item?.smartphone?.model_name
+                                                ?.name || 'Product'
+                                        }
                                         className="object-cover w-full h-full"
                                         onError={(e) => (e.target.src = Placeholder)}
                                     />
@@ -615,15 +629,20 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
 
                         {/* Product Details */}
                         <div className="flex-1">
-                            <h4 className="mb-1 text-[16px] font-semibold  text-main-text-light dark:text-main-text-dark">
-                                {firstProduct?.inventory_item?.smartphone?.model_name?.name || __('Product Name Here')}
+                            <h4 className="mb-1 text-[16px] font-semibold text-main-text-light dark:text-main-text-dark">
+                                {firstProduct?.inventory_item?.smartphone?.model_name?.name ||
+                                    __('Product Name Here')}
                             </h4>
                             <p className="mb-1 text-[14px] text-sub-text-light dark:text-sub-text-dark">
-                                {firstProduct?.inventory_item?.smartphone?.capacity?.name || '512G'}, {firstProduct?.inventory_item?.smartphone?.colors[0]?.name || __('Cosmic Orange')}
+                                {firstProduct?.inventory_item?.smartphone?.capacity?.name || '512G'}
+                                ,{' '}
+                                {firstProduct?.inventory_item?.smartphone?.colors[0]?.name ||
+                                    __('Cosmic Orange')}
                             </p>
 
-                            <p className="lg:mt-10 md:mt-3 text-[17px] font-semibold  text-main-text-light dark:text-main-text-dark">
-                                {__('Total')}: {currency?.name} {" "} {currency?.symbol}{parseFloat(order.full_amount).toFixed(2)}
+                            <p className="text-[17px] font-semibold text-main-text-light dark:text-main-text-dark md:mt-3 lg:mt-10">
+                                {__('Total')}: {currency?.name} {currency?.symbol}
+                                {parseFloat(order.full_amount).toFixed(2)}
                             </p>
                         </div>
                     </div>
@@ -634,45 +653,49 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                             <>
                                 {!order?.is_cancelation_requested ? (
                                     <button
-                                        onClick={() => router.visit(route('website.order-cancelation.index', { order_no: order.order_no }))}
-                                        className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-light transition-all bg-[#f7f7f7] lg:hover:bg-[#c8c8c8] border border-surface-3-light dark:border-surface-3-dark text-[16px] dark:bg-main-text-dark dark:text-main-text-light dark:lg:hover:bg-main-text-dark/80">
+                                        onClick={() =>
+                                            router.visit(
+                                                route('website.order-cancelation.index', {
+                                                    order_no: order.order_no,
+                                                }),
+                                            )
+                                        }
+                                        className="text-md flex h-[50px] w-full items-center justify-center gap-2 rounded-md border border-surface-3-light bg-[#f7f7f7] text-[16px] font-semibold text-main-text-light transition-all dark:border-surface-3-dark dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#c8c8c8] dark:lg:hover:bg-main-text-dark/80"
+                                    >
                                         {__('Cancel Order')}
                                     </button>
                                 ) : (
-
                                     <button
-                                        onClick={() => handleWithdrawlCancelationRequest(order?.order_no)}
-                                        className="text-sm flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md font-semibold
-    text-main-text-light transition-all bg-[#f7f7f7] lg:hover:bg-[#c8c8c8]
-    border border-surface-3-light dark:border-surface-3-dark
-    text-[16px] dark:bg-main-text-dark dark:text-main-text-light dark:lg:hover:bg-main-text-dark/80"
+                                        onClick={() =>
+                                            handleWithdrawlCancelationRequest(order?.order_no)
+                                        }
+                                        className="flex h-[50px] w-full items-center justify-center gap-2 rounded-md border border-surface-3-light bg-[#f7f7f7] text-[16px] text-sm font-semibold text-main-text-light transition-all dark:border-surface-3-dark dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#c8c8c8] dark:lg:hover:bg-main-text-dark/80"
                                     >
                                         {!isWithdrawlProcessing ? (
                                             <span>
-                                                {__('Cancelation')}: {__(order.cancelation_request_status.replace(/_/g, ' ').toUpperCase(), true)}
+                                                {__('Cancelation')}:{' '}
+                                                {__(
+                                                    order.cancelation_request_status
+                                                        .replace(/_/g, ' ')
+                                                        .toUpperCase(),
+                                                    true,
+                                                )}
                                             </span>
                                         ) : (
                                             <Spinner />
                                         )}
-
                                     </button>
                                 )}
 
-
-                                {order?.is_cancelation_requested && order?.cancelation_request_status !== 'rejected' ? null : (
+                                {order?.is_cancelation_requested &&
+                                    order?.cancelation_request_status !== 'rejected' ? null : (
                                     <button
                                         onClick={() => handlePayNow()}
-                                        className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
-                                        {!processing ? (
-                                            <span>
-                                                {__('Pay Now')}
-                                            </span>
-                                        ) : (
-                                            <Spinner />
-                                        )}
+                                        className="text-md flex h-[50px] w-full items-center justify-center gap-2 rounded-md bg-[#282828] text-[16px] font-semibold text-main-text-dark transition-all dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#282828]/80 dark:lg:hover:bg-main-text-dark/80"
+                                    >
+                                        {!processing ? <span>{__('Pay Now')}</span> : <Spinner />}
                                     </button>
                                 )}
-
                             </>
                         )}
 
@@ -680,41 +703,57 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                             <>
                                 {!order?.is_cancelation_requested ? (
                                     <button
-                                        onClick={() => router.visit(route('website.order-cancelation.index', { order_no: order.order_no }))}
-                                        className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-light transition-all bg-[#f7f7f7] lg:hover:bg-[#c8c8c8] border border-surface-3-light dark:border-surface-3-dark text-[16px] dark:bg-main-text-dark dark:text-main-text-light dark:lg:hover:bg-main-text-dark/80">
+                                        onClick={() =>
+                                            router.visit(
+                                                route('website.order-cancelation.index', {
+                                                    order_no: order.order_no,
+                                                }),
+                                            )
+                                        }
+                                        className="text-md flex h-[50px] w-full items-center justify-center gap-2 rounded-md border border-surface-3-light bg-[#f7f7f7] text-[16px] font-semibold text-main-text-light transition-all dark:border-surface-3-dark dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#c8c8c8] dark:lg:hover:bg-main-text-dark/80"
+                                    >
                                         {__('Cancel Order')}
                                     </button>
                                 ) : (
-
                                     <button
-                                        onClick={() => handleWithdrawlCancelationRequest(order?.order_no)}
-                                        className="text-sm flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md font-semibold
-    text-main-text-light transition-all bg-[#f7f7f7] lg:hover:bg-[#c8c8c8]
-    border border-surface-3-light dark:border-surface-3-dark
-    text-[16px] dark:bg-main-text-dark dark:text-main-text-light dark:lg:hover:bg-main-text-dark/80"
+                                        disabled={
+                                            order.cancelation_request_status === 'approved' ||
+                                            order.cancelation_request_status === 'rejected'
+                                        }
+                                        onClick={() =>
+                                            handleWithdrawlCancelationRequest(order?.order_no)
+                                        }
+                                        className="flex h-[50px] w-full items-center justify-center gap-2 rounded-md border border-surface-3-light bg-[#f7f7f7] text-[16px] text-sm font-semibold text-main-text-light transition-all dark:border-surface-3-dark dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#c8c8c8] dark:lg:hover:bg-main-text-dark/80"
                                     >
                                         {!isWithdrawlProcessing ? (
                                             <span>
-                                                {__('Cancelation')}: {__(order.cancelation_request_status.replace(/_/g, ' ').toUpperCase(), true)}
+                                                {__('Cancelation')}:{' '}
+                                                {__(
+                                                    order.cancelation_request_status
+                                                        .replace(/_/g, ' ')
+                                                        .toUpperCase(),
+                                                    true,
+                                                )}
                                             </span>
                                         ) : (
                                             <Spinner />
                                         )}
-
                                     </button>
                                 )}
 
-
-                                {order?.is_cancelation_requested && order?.cancelation_request_status !== 'rejected' ? null : (
+                                {order?.is_cancelation_requested &&
+                                    order?.cancelation_request_status !== 'rejected' ? null : (
                                     <button
                                         onClick={() => {
-                                            router.visit(route('website.orders.order-view', order?.order_no))
+                                            router.visit(
+                                                route('website.orders.order-view', order?.order_no),
+                                            );
                                         }}
-                                        className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
+                                        className="text-md flex h-[50px] w-full items-center justify-center gap-2 rounded-md bg-[#282828] text-[16px] font-semibold text-main-text-dark transition-all dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#282828]/80 dark:lg:hover:bg-main-text-dark/80"
+                                    >
                                         {__('Upload Proof')}
                                     </button>
                                 )}
-
                             </>
                         )}
 
@@ -722,11 +761,10 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                             <>
                                 <button
                                     onClick={() => handleReOrder(order?.order_no)}
-                                    className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
+                                    className="text-md flex h-[50px] w-full items-center justify-center gap-2 rounded-md bg-[#282828] text-[16px] font-semibold text-main-text-dark transition-all dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#282828]/80 dark:lg:hover:bg-main-text-dark/80"
+                                >
                                     {!reOrderProcessing ? (
-                                        <span>
-                                            {__('Reorder')}
-                                        </span>
+                                        <span>{__('Reorder')}</span>
                                     ) : (
                                         <Spinner />
                                     )}
@@ -734,40 +772,45 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                             </>
                         )}
 
-
-                        {
-                            (
-                                order.status?.toLowerCase() !== 'refund_completed'
-                                &&
-                                (
-                                    order.status?.toLowerCase()?.startsWith('refund_')
-                                        ? order.previous_status?.toLowerCase() === 'paid'
-                                        : order.status?.toLowerCase() === 'paid'
-                                )
-                            ) && (
+                        {order.status?.toLowerCase() !== 'refund_completed' &&
+                            (order.status?.toLowerCase()?.startsWith('refund_')
+                                ? order.previous_status?.toLowerCase() === 'paid'
+                                : order.status?.toLowerCase() === 'paid') && (
                                 <>
-
                                     {/* ADDRESS CHANGE */}
                                     {!order.is_address_change_requested ? (
                                         <button
                                             onClick={() =>
                                                 router.visit(
-                                                    route('website.orders.address-change-request.index', order.order_no)
+                                                    route(
+                                                        'website.orders.address-change-request.index',
+                                                        order.order_no,
+                                                    ),
                                                 )
                                             }
-                                            className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-light transition-all bg-[#f7f7f7] lg:hover:bg-[#c8c8c8] border border-surface-3-light dark:border-surface-3-dark text-[16px] dark:bg-main-text-dark dark:text-main-text-light dark:lg:hover:bg-main-text-dark/80">
-
+                                            className="text-md flex h-[50px] w-full items-center justify-center gap-2 rounded-md border border-surface-3-light bg-[#f7f7f7] text-[16px] font-semibold text-main-text-light transition-all dark:border-surface-3-dark dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#c8c8c8] dark:lg:hover:bg-main-text-dark/80"
+                                        >
                                             {__('Change Address')}
                                         </button>
                                     ) : (
                                         <button
-                                            onClick={() => handleWithdrawlAddressChangeRequest(order?.order_no)}
-                                            className="text-sm flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md font-semibold
-    text-main-text-light transition-all bg-[#f7f7f7] lg:hover:bg-[#c8c8c8]
-    border border-surface-3-light dark:border-surface-3-dark
-    text-[16px] dark:bg-main-text-dark dark:text-main-text-light dark:lg:hover:bg-main-text-dark/80"
+                                            disabled={
+                                                order.address_change_request_status ===
+                                                'approved' ||
+                                                order.address_change_request_status === 'rejected'
+                                            }
+                                            onClick={() =>
+                                                handleWithdrawlAddressChangeRequest(order?.order_no)
+                                            }
+                                            className="flex h-[50px] w-full items-center justify-center gap-2 rounded-md border border-surface-3-light bg-[#f7f7f7] text-[16px] text-sm font-semibold text-main-text-light transition-all dark:border-surface-3-dark dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#c8c8c8] dark:lg:hover:bg-main-text-dark/80"
                                         >
-                                            {__('Address Change')}: {__(order.address_change_request_status.replace(/_/g, ' ').toUpperCase(), true)}
+                                            {__('Address Change')}:{' '}
+                                            {__(
+                                                order.address_change_request_status
+                                                    .replace(/_/g, ' ')
+                                                    .toUpperCase(),
+                                                true,
+                                            )}
                                         </button>
                                     )}
 
@@ -775,34 +818,50 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                                     {!order.is_refund_requested ? (
                                         <button
                                             onClick={() =>
-                                                router.visit(route('website.orders.refund.index', order.order_no))
+                                                router.visit(
+                                                    route(
+                                                        'website.orders.refund.index',
+                                                        order.order_no,
+                                                    ),
+                                                )
                                             }
-                                            className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
+                                            className="text-md flex h-[50px] w-full items-center justify-center gap-2 rounded-md bg-[#282828] text-[16px] font-semibold text-main-text-dark transition-all dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#282828]/80 dark:lg:hover:bg-main-text-dark/80"
+                                        >
                                             {__('Return, Refund')}
                                         </button>
                                     ) : (
                                         <button
-                                            onClick={() => handleWithdrawlRefundRequest(order?.order_no)}
-                                            className="text-sm flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md font-semibold
-    text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80
-    dark:bg-main-text-dark dark:text-main-text-light text-[16px]
-    dark:lg:hover:bg-main-text-dark/80"
+                                            disabled={
+                                                order.refund_request_status === 'approved' ||
+                                                order.refund_request_status === 'rejected'
+                                            }
+                                            onClick={() =>
+                                                handleWithdrawlRefundRequest(order?.order_no)
+                                            }
+                                            className="flex h-[50px] w-full items-center justify-center gap-2 rounded-md bg-[#282828] text-[16px] text-sm font-semibold text-main-text-dark transition-all dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#282828]/80 dark:lg:hover:bg-main-text-dark/80"
                                         >
-                                            {__('Refund Request')}: {__(order.refund_request_status.replace(/_/g, ' ').toUpperCase(), true)}
+                                            {__('Refund Request')}:{' '}
+                                            {__(
+                                                order.refund_request_status
+                                                    .replace(/_/g, ' ')
+                                                    .toUpperCase(),
+                                                true,
+                                            )}
                                         </button>
                                     )}
-
                                 </>
                             )}
 
                         {['shipped', 'arrived_locally'].includes(order.status.toLowerCase()) && (
                             <>
-
                                 <button
                                     onClick={() => {
-                                        router.visit(route('website.orders.order-view', order.order_no))
+                                        router.visit(
+                                            route('website.orders.order-view', order.order_no),
+                                        );
                                     }}
-                                    className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
+                                    className="text-md flex h-[50px] w-full items-center justify-center gap-2 rounded-md bg-[#282828] text-[16px] font-semibold text-main-text-dark transition-all dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#282828]/80 dark:lg:hover:bg-main-text-dark/80"
+                                >
                                     {__('Track Order')}
                                 </button>
                             </>
@@ -812,11 +871,10 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                             <>
                                 <button
                                     onClick={() => handleReOrder(order?.order_no)}
-                                    className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
+                                    className="text-md flex h-[50px] w-full items-center justify-center gap-2 rounded-md bg-[#282828] text-[16px] font-semibold text-main-text-dark transition-all dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#282828]/80 dark:lg:hover:bg-main-text-dark/80"
+                                >
                                     {!reOrderProcessing ? (
-                                        <span>
-                                            {__('Reorder')}
-                                        </span>
+                                        <span>{__('Reorder')}</span>
                                     ) : (
                                         <Spinner />
                                     )}
@@ -825,85 +883,98 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                                 {!order.is_refund_requested ? (
                                     <button
                                         onClick={() =>
-                                            router.visit(route('website.orders.refund.index', order.order_no))
+                                            router.visit(
+                                                route(
+                                                    'website.orders.refund.index',
+                                                    order.order_no,
+                                                ),
+                                            )
                                         }
-                                        className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
+                                        className="text-md flex h-[50px] w-full items-center justify-center gap-2 rounded-md bg-[#282828] text-[16px] font-semibold text-main-text-dark transition-all dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#282828]/80 dark:lg:hover:bg-main-text-dark/80"
+                                    >
                                         {__('Return, Refund')}
                                     </button>
                                 ) : (
                                     <button
-                                        onClick={() => handleWithdrawlRefundRequest(order?.order_no)}
-                                        className="text-sm flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md font-semibold
-    text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80
-    dark:bg-main-text-dark dark:text-main-text-light text-[16px]
-    dark:lg:hover:bg-main-text-dark/80"
+                                        disabled={
+                                            order.refund_request_status === 'approved' ||
+                                            order.refund_request_status === 'rejected'
+                                        }
+                                        onClick={() =>
+                                            handleWithdrawlRefundRequest(order?.order_no)
+                                        }
+                                        className="flex h-[50px] w-full items-center justify-center gap-2 rounded-md bg-[#282828] text-[16px] text-sm font-semibold text-main-text-dark transition-all dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#282828]/80 dark:lg:hover:bg-main-text-dark/80"
                                     >
-                                        {__('Refund Request')}: {__(order.refund_request_status.replace(/_/g, ' ').toUpperCase(), true)}
+                                        {__('Refund Request')}:{' '}
+                                        {__(
+                                            order.refund_request_status
+                                                .replace(/_/g, ' ')
+                                                .toUpperCase(),
+                                            true,
+                                        )}
                                     </button>
                                 )}
                             </>
                         )}
 
-                        {['canceled', 'expired', 'refund_completed'].includes(order.status.toLowerCase()) && (
-                            <>
+                        {['canceled', 'expired', 'refund_completed'].includes(
+                            order.status.toLowerCase(),
+                        ) && (
+                                <>
+                                    <button
+                                        onClick={() => handleReOrder(order?.order_no)}
+                                        className="text-md flex h-[50px] w-full items-center justify-center gap-2 rounded-md bg-[#282828] text-[16px] font-semibold text-main-text-dark transition-all dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#282828]/80 dark:lg:hover:bg-main-text-dark/80"
+                                    >
+                                        {!reOrderProcessing ? (
+                                            <span>{__('Reorder')}</span>
+                                        ) : (
+                                            <Spinner />
+                                        )}
+                                    </button>
+                                </>
+                            )}
 
-
-                                <button
-                                    onClick={() => handleReOrder(order?.order_no)}
-                                    className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
-                                    {!reOrderProcessing ? (
-                                        <span>
-                                            {__('Reorder')}
-                                        </span>
-                                    ) : (
-                                        <Spinner />
-                                    )}
-                                </button>
-                            </>
-                        )}
-
-
-
-
-
-                        {
-                            (
-                                order.status?.toLowerCase() !== 'refund_completed'
-                                &&
-                                (
-                                    order.status?.toLowerCase()?.startsWith('refund_')
-                                    && order.previous_status?.toLowerCase() === 'delivered'
-
-                                )
-                            )
-                            && (
+                        {order.status?.toLowerCase() !== 'refund_completed' &&
+                            order.status?.toLowerCase()?.startsWith('refund_') &&
+                            order.previous_status?.toLowerCase() === 'delivered' && (
                                 <>
                                     {/* REFUND */}
                                     {!order.is_refund_requested ? (
                                         <button
                                             onClick={() =>
-                                                router.visit(route('website.orders.refund.index', order.order_no))
+                                                router.visit(
+                                                    route(
+                                                        'website.orders.refund.index',
+                                                        order.order_no,
+                                                    ),
+                                                )
                                             }
-                                            className="text-md flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light text-[16px] dark:lg:hover:bg-main-text-dark/80">
+                                            className="text-md flex h-[50px] w-full items-center justify-center gap-2 rounded-md bg-[#282828] text-[16px] font-semibold text-main-text-dark transition-all dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#282828]/80 dark:lg:hover:bg-main-text-dark/80"
+                                        >
                                             {__('Return, Refund')}
                                         </button>
                                     ) : (
                                         <button
-                                            onClick={() => handleWithdrawlRefundRequest(order?.order_no)}
-                                            className="text-sm flex h-[50px] w-full lg:w-[210px] items-center justify-center gap-2 rounded-md font-semibold
-    text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80
-    dark:bg-main-text-dark dark:text-main-text-light text-[16px]
-    dark:lg:hover:bg-main-text-dark/80"
+                                            disabled={
+                                                order.refund_request_status === 'approved' ||
+                                                order.refund_request_status === 'rejected'
+                                            }
+                                            onClick={() =>
+                                                handleWithdrawlRefundRequest(order?.order_no)
+                                            }
+                                            className="flex h-[50px] w-full items-center justify-center gap-2 rounded-md bg-[#282828] text-[16px] text-sm font-semibold text-main-text-dark transition-all dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#282828]/80 dark:lg:hover:bg-main-text-dark/80"
                                         >
-                                            {__('Refund Request')}: {__(order.refund_request_status.replace(/_/g, ' ').toUpperCase(), true)}
+                                            {__('Refund Request')}:{' '}
+                                            {__(
+                                                order.refund_request_status
+                                                    .replace(/_/g, ' ')
+                                                    .toUpperCase(),
+                                                true,
+                                            )}
                                         </button>
                                     )}
-
                                 </>
                             )}
-
-
-
                     </div>
                 </div>
             </div>
@@ -912,8 +983,6 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
 }
 // Empty Orders Component
 function EmptyOrders({ __ }) {
-
-
     return (
         <div className="flex min-h-[50vh] items-center justify-center px-6">
             <div className="text-center">
@@ -927,7 +996,7 @@ function EmptyOrders({ __ }) {
 
                 <Link
                     href={route('home')}
-                    className="inline-flex items-center justify-center rounded-md bg-main-text-light px-10 py-2.5 text-md font-semibold dark:text-main-text-light  text-main-text-dark transition-colors hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text  dark:hover:bg-main-text-dark/80"
+                    className="text-md dark:text-main-text inline-flex items-center justify-center rounded-md bg-main-text-light px-10 py-2.5 font-semibold text-main-text-dark transition-colors hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
                 >
                     {__('Start shopping')}
                 </Link>
