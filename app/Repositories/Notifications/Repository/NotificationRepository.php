@@ -16,11 +16,11 @@ class NotificationRepository implements INotificationRepository
     public function getAllNotifications(Request $request)
     {
         $user = $request->user();
-        dd([
-            'user_id' => $request->user()->id,
-            'count' => $request->user()->notifications()->count(),
-            'latest' => $request->user()->notifications()->latest()->first(),
-        ]);
+        // dd([
+        //     'user_id' => $request->user()->id,
+        //     'count' => $request->user()->notifications()->count(),
+        //     'latest' => $request->user()->notifications()->latest()->first(),
+        // ]);
 
         if (empty($user)) {
             return [];
