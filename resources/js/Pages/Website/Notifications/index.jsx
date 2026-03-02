@@ -17,11 +17,6 @@ import Spinner from '@/Components/Spinner';
 
 const index = ({ notifications = [], totalCounts, currentFilter }) => {
 
-    console.log('notifications', notifications);
-    console.log('totals', totalCounts);
-    console.log('currentFilter', currentFilter);
-
-
     const windowSize = useWindowSize();
     const { __ } = useTranslation();
     const { confirm, ConfirmDialog } = useConfirm();

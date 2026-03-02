@@ -15,13 +15,12 @@ class NotificationController extends Controller
 
     public function index(Request $request)
     {
-        return response('HIT NEW CODE ✅', 200);
+
         if (empty($request->user())) {
             return to_route('login');
         }
 
         $data = $this->notification->getAllNotifications($request);
-        dd($data);
 
         return Inertia::render('Website/Notifications/index', [
             'notifications' => $data['notifications'],
