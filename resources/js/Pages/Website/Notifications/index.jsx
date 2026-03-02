@@ -15,7 +15,7 @@ import Spinner from '@/Components/Spinner';
 
 
 
-const index = ({ notifications, totalCounts, currentFilter }) => {
+const index = ({ notifications = [], totalCounts, currentFilter }) => {
     const windowSize = useWindowSize();
     const { __ } = useTranslation();
     const { confirm, ConfirmDialog } = useConfirm();
@@ -29,6 +29,8 @@ const index = ({ notifications, totalCounts, currentFilter }) => {
         markAsRead: {},
         delete: {},
     });
+
+    const safeCounts = totalCounts ?? { all: 0, unread: 0, read: 0 };
 
     const isLoadMoreRef = useRef(false);
 
@@ -200,9 +202,9 @@ const index = ({ notifications, totalCounts, currentFilter }) => {
     const grouped = groupNotificationsByDate(localNotifications);
 
     const tabs = [
-        { key: 'all', label: __('All'), count: totalCounts.all },
-        { key: 'unread', label: __('Unread'), count: totalCounts.unread },
-        { key: 'read', label: __('Read'), count: totalCounts.read },
+        { key: 'all', label: __('All'), count: safeCounts.all },
+        { key: 'unread', label: __('Unread'), count: safeCounts.unread },
+        { key: 'read', label: __('Read'), count: safeCounts.read },
     ];
 
     return (
@@ -219,9 +221,9 @@ const index = ({ notifications, totalCounts, currentFilter }) => {
                             <div className="flex items-center gap-4">
                                 <div className="relative">
                                     <BellIcon className="w-8 h-8 text-main-text-light dark:text-main-text-dark" />
-                                    {totalCounts.unread > 0 && (
+                                    {safeCounts.unread > 0 && (
                                         <span className="absolute flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full -right-1 -top-1">
-                                            {totalCounts.unread}
+                                            {safeCounts.unread}
                                         </span>
                                     )}
                                 </div>
@@ -230,14 +232,14 @@ const index = ({ notifications, totalCounts, currentFilter }) => {
                                         {__('Notifications')}
                                     </h1>
                                     <p className="mt-1 text-sm text-sub-text-light dark:text-sub-text-dark">
-                                        {totalCounts.unread > 0
-                                            ? `${totalCounts.unread} ${__('unread notification')}${totalCounts.unread > 1 ? 's' : ''}`
+                                        {safeCounts.unread > 0
+                                            ? `${totalCounts.unread} ${__('unread notification')}${safeCounts.unread > 1 ? 's' : ''}`
                                             : __('All caught up!')}
                                     </p>
                                 </div>
                             </div>
 
-                            {totalCounts.unread > 0 && (
+                            {safeCounts.unread > 0 && (
                                 <button
                                     onClick={markAllAsRead}
                                     disabled={loadingStates.markAllAsRead}
