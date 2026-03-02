@@ -1619,11 +1619,11 @@ class SettingRepository implements ISettingRepository
     public function storeCommissionSetting(Request $request)
     {
         $validated_req = $request->validate([
-            'type' => ['required', 'in:collaborator,distributor,supplier', 'unique:commission_settings,type'],
+            'type' => ['required', 'in:collaborator,distributor,supplier,platform', 'unique:commission_settings,type'],
             'commission_rate' => ['required', 'numeric', 'min:1', 'max:100'],
         ], [
             'type.unique' => 'This Type Already Exists',
-            'type.in' => 'Type Must Be Collaborator, Distributor Or Supplier',
+            'type.in' => 'Type Must Be Collaborator, Distributor Or Supplier Or Platform',
         ]);
 
         try {
@@ -1649,11 +1649,11 @@ class SettingRepository implements ISettingRepository
     public function updateCommissionSetting(Request $request, string $id)
     {
         $validated_req = $request->validate([
-            'type' => ['required', 'in:collaborator,distributor,supplier', 'unique:commission_settings,type,'.$id],
+            'type' => ['required', 'in:collaborator,distributor,supplier,platform', 'unique:commission_settings,type,'.$id],
             'commission_rate' => ['required', 'numeric', 'min:1', 'max:100'],
         ], [
             'type.unique' => 'This Type Already Exists',
-            'type.in' => 'Type Must Be Collaborator, Distributor Or Supplier',
+            'type.in' => 'Type Must Be Collaborator, Distributor Or Supplier Or Platform',
         ]);
 
         try {

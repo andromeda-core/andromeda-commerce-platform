@@ -16,6 +16,8 @@ use App\Repositories\Commissions\CollaboratorCommissions\Interface\ICollaborator
 use App\Repositories\Commissions\CollaboratorCommissions\Repository\CollaboratorCommissionRepository;
 use App\Repositories\Commissions\DistributorCommissions\Interface\IDistributorCommissionRepository;
 use App\Repositories\Commissions\DistributorCommissions\Repository\DistributorCommissionRepository;
+use App\Repositories\Commissions\PlatformCommissions\Interface\IPlatformCommissionRepository;
+use App\Repositories\Commissions\PlatformCommissions\Repository\PlatformCommissionRepository;
 use App\Repositories\Commissions\SupplierCommissions\Interface\ISupplierCommissionRepository;
 use App\Repositories\Commissions\SupplierCommissions\Repository\SupplierCommissionRepository;
 use App\Repositories\Customers\Interface\ICustomerRepository;
@@ -134,6 +136,7 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(IUnsettledAccountsRepository::class, UnsettledAccountsRepository::class);
         $this->app->bind(INotificationRepository::class, NotificationRepository::class);
         $this->app->bind(IOrderCancelationRequestRepository::class, OrderCancelationRequestRepository::class);
+        $this->app->bind(IPlatformCommissionRepository::class, PlatformCommissionRepository::class);
 
     }
 

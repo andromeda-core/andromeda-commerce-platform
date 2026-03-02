@@ -829,7 +829,7 @@ export default function Sidebar({
                                             >
 
 
-                                                {can(['Supplier Commissions View', 'Collaborator Commissions View', 'Distributor Commissions View']) && (
+                                                {can(['Supplier Commissions View', 'Collaborator Commissions View', 'Distributor Commissions View', 'Platform Commissions View']) && (
                                                     <li>
                                                         <a
                                                             onClick={() => {
@@ -904,6 +904,18 @@ export default function Sidebar({
                                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.commissions.distributor-commissions.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                                         >
                                                                             Distributor Commissions
+                                                                        </Link>
+                                                                    </li>
+                                                                )}
+
+
+                                                                {can('Platform Commissions View') && (
+                                                                    <li>
+                                                                        <Link
+                                                                            href={route('dashboard.commissions.platform-commissions.index')}
+                                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.commissions.platform-commissions.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                                        >
+                                                                            Platform Commissions
                                                                         </Link>
                                                                     </li>
                                                                 )}

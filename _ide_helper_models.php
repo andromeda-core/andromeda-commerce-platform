@@ -528,6 +528,8 @@ namespace App\Models{
  * @property-read \App\Models\Country|null $country
  * @property-read mixed $active_shipping_address
  * @property-read mixed $added_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\OrderCancelationRequest> $orderCancelationRequests
+ * @property-read int|null $order_cancelation_requests_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Order> $orders
  * @property-read int|null $orders_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ShippingAddress> $shippingAddresses
@@ -1001,6 +1003,7 @@ namespace App\Models{
  * @property numeric|null $points_used
  * @property numeric|null $full_amount
  * @property string $status
+ * @property string|null $previous_status
  * @property string|null $payment_method
  * @property string|null $secondary_payment_method
  * @property string|null $np_id
@@ -1011,6 +1014,7 @@ namespace App\Models{
  * @property string|null $courier_invoice
  * @property string|null $payment_proof
  * @property int $is_cash_collected
+ * @property array<array-key, mixed>|null $final_attachments
  * @property string|null $expires_at
  * @property string|null $expired_at
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -1020,11 +1024,18 @@ namespace App\Models{
  * @property numeric $shipping_fee
  * @property numeric $addons_sub_total
  * @property-read \App\Models\OrderAddressChangeRequest|null $addressChangeRequest
+ * @property-read \App\Models\OrderCancelationRequest|null $cancelationRequest
  * @property-read \App\Models\Collaborator|null $collaborator
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CollaboratorCommission> $collaboratorCommissions
  * @property-read int|null $collaborator_commissions_count
  * @property-read \App\Models\Customer|null $customer
  * @property-read mixed $added_at
+ * @property-read mixed $address_change_request_status
+ * @property-read mixed $cancelation_request_status
+ * @property-read mixed $is_address_change_requested
+ * @property-read mixed $is_cancelation_requested
+ * @property-read mixed $is_refund_requested
+ * @property-read mixed $refund_request_status
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\OrderItem> $orderItems
  * @property-read int|null $order_items_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageRecording> $orderPackageRecordings
@@ -1044,6 +1055,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereCustomerId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereExpiredAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereExpiresAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereFinalAttachments($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereFullAmount($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereImportTax($value)
@@ -1053,6 +1065,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order wherePaymentMethod($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order wherePaymentProof($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order wherePointsUsed($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order wherePreviousStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereSecondaryPaymentMethod($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereShippingAddressLine1($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereShippingAddressLine2($value)
@@ -1124,9 +1137,34 @@ namespace App\Models{
 
 namespace App\Models{
 /**
+ * @property int $id
+ * @property int $customer_id
+ * @property int $order_id
+ * @property string $reason
+ * @property string|null $note
+ * @property string $status
+ * @property string|null $requested_at
+ * @property string|null $approved_at
+ * @property string|null $rejected_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Customer $customer
+ * @property-read mixed $added_at
+ * @property-read \App\Models\Order $order
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCancelationRequest newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCancelationRequest newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCancelationRequest query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCancelationRequest whereApprovedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCancelationRequest whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCancelationRequest whereCustomerId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCancelationRequest whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCancelationRequest whereNote($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCancelationRequest whereOrderId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCancelationRequest whereReason($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCancelationRequest whereRejectedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCancelationRequest whereRequestedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCancelationRequest whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCancelationRequest whereUpdatedAt($value)
  */
 	class OrderCancelationRequest extends \Eloquent {}
 }
@@ -1248,6 +1286,7 @@ namespace App\Models{
  * @property string $name
  * @property string $guard_name
  * @property string $parent_name
+ * @property string|null $alias
  * @property string $icon
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -1263,6 +1302,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Permission permission($permissions, $without = false)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Permission query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Permission role($roles, $guard = null, $without = false)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Permission whereAlias($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Permission whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Permission whereGuardName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Permission whereIcon($value)
@@ -1274,6 +1314,43 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Permission withoutRole($roles, $guard = null)
  */
 	class Permission extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property int $order_id
+ * @property numeric $commission_rate
+ * @property numeric $commission_amount
+ * @property string $payout_method
+ * @property numeric|null $received_amount
+ * @property string|null $received_method
+ * @property int|null $currency_id
+ * @property string|null $recorded_at
+ * @property int|null $recorded_by
+ * @property string|null $note
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Currency|null $currency
+ * @property-read \App\Models\Order $order
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlatformCommission newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlatformCommission newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlatformCommission query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlatformCommission whereCommissionAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlatformCommission whereCommissionRate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlatformCommission whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlatformCommission whereCurrencyId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlatformCommission whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlatformCommission whereNote($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlatformCommission whereOrderId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlatformCommission wherePayoutMethod($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlatformCommission whereReceivedAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlatformCommission whereReceivedMethod($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlatformCommission whereRecordedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlatformCommission whereRecordedBy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PlatformCommission whereUpdatedAt($value)
+ */
+	class PlatformCommission extends \Eloquent {}
 }
 
 namespace App\Models{

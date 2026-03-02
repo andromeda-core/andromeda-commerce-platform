@@ -75,6 +75,7 @@ export default function edit({ commission_setting }) {
                                                         { name: 'collaborator' },
                                                         { name: 'distributor' },
                                                         { name: 'supplier' },
+                                                        { name: 'platform' },
                                                     ]}
                                                     itemKey={'name'}
                                                     Placeholder={'Select  Type'}
@@ -110,7 +111,7 @@ export default function edit({ commission_setting }) {
                                             <PrimaryButton
                                                 Text={'Update Commission Setting'}
                                                 Type={'submit'}
-                                                CustomClass={'w-[250px] '}
+                                                CustomClass={'w-[300px] '}
                                                 Disabled={
                                                     processing ||
                                                     data.type == '' ||

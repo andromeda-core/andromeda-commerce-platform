@@ -189,7 +189,7 @@ export default function SelectInput({
                                 placeholder: Placeholder,
                             })}
                         styles={isDarkMode ? darkStyles : lightStyles}
-                        className={`react-select-container ${isDisabled && 'opacity-30'}`}
+                        className={`react-select-container ${isDisabled && 'opacity-70'}`}
                         classNamePrefix="react-select"
                     />
                 </div>

@@ -339,6 +339,34 @@ class Order extends Model
                 if ($is_eligible && $user_meta_contacts->isNotEmpty() && ! empty($meta_setting)) {
                     dispatch(new OrderStatusDeliveredNotificationJob($user_meta_contacts, $order, $meta_setting, $user))->onQueue('meta');
                 }
+
+                // Assigning Commission To Platform after order delivered
+                $exists_platform_commission = PlatformCommission::where('order_id', $order->id)->exists();
+                if (! $exists_platform_commission) {
+                    $orderTotal = (float) ($order->full_amount ?? 0);
+
+                    $rate = CommissionSetting::where('type', 'platform')->value('commission_rate');
+                    $rate = (float) ($rate ?? 0);
+
+                    $method = (string) $order->payment_method;
+
+                    // safeguard
+                    if ($orderTotal <= 0 || $rate <= 0) {
+                        return;
+                    }
+
+                    $commissionAmount = round(($orderTotal * $rate) / 100, 2);
+
+                    PlatformCommission::firstOrCreate(
+                        ['order_id' => $order->id],
+                        [
+                            'commission_rate' => $rate,
+                            'commission_amount' => $commissionAmount,
+                            'payout_method' => $method,
+                        ]
+                    );
+                }
+
             }
 
             $reward_rate = null;

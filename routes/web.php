@@ -6,6 +6,7 @@ use App\Http\Controllers\Dashboard\CategoryController;
 use App\Http\Controllers\Dashboard\CollaboratorController;
 use App\Http\Controllers\Dashboard\Commissions\CollaboratorCommissionController;
 use App\Http\Controllers\Dashboard\Commissions\DistributorCommissionController;
+use App\Http\Controllers\Dashboard\Commissions\PlatformCommissionController;
 use App\Http\Controllers\Dashboard\Commissions\SupplierCommissionController;
 use App\Http\Controllers\Dashboard\CustomerController;
 use App\Http\Controllers\Dashboard\DataDeletionRequestController;
@@ -56,6 +57,7 @@ use App\Http\Controllers\Website\ShippingPolicyController;
 use App\Http\Controllers\Website\ShopController;
 use App\Http\Controllers\Website\TermsOfServiceController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 
 // Home
@@ -483,6 +485,15 @@ Route::middleware(['auth'])->group(function () {
                 Route::put('/distributor-commissions/{id?}', 'update')->name('update');
                 Route::delete('/distributor-commissions/{id?}', 'destroy')->name('destroy');
                 Route::delete('/distributor-commissions-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
+            });
+
+            // Platform Commission Route Group
+            Route::controller(PlatformCommissionController::class)->name('platform-commissions.')->group(function () {
+                Route::get('/platform-commissions', 'index')->name('index');
+                Route::get('/platform-commissions/{id?}', 'edit')->name('edit');
+                Route::put('/platform-commissions/{id?}', 'update')->name('update');
+                Route::delete('/platform-commissions/{id?}', 'destroy')->name('destroy');
+                Route::delete('/platform-commissions-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
             });
         });
 

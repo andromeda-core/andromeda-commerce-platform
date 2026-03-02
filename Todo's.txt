@@ -1831,7 +1831,9 @@ canceled
 143: Count Fixed Of Notifications ✅
 144: Filtering Notifications Now Properly FIxed and it sents Filter Type to Backend To Fetch Fresh Results And Dont rely on Initial Result ✅
 145: Packaging Video Upload Issue FIXED Binary Was Missing Of FFMPEG On New EC2 Migrated Server   ✅
-
+146: New Commission Logic Added  And COmmission Module Added in Commissions Named Platform Commission As well as The Permissions Setuped for that ✅
+147: Order Model Event Logic Updated when order Delivered so at that time it will create Platform Commission ✅
+148: Platform Commission Setting Added In Commission settings table on database and Our backend for handling the New Type platform commission type ✅
 
 
 
