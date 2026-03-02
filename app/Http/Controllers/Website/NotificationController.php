@@ -21,6 +21,7 @@ class NotificationController extends Controller
         }
 
         $data = $this->notification->getAllNotifications($request);
+        dd($data);
 
         return Inertia::render('Website/Notifications/index', [
             'notifications' => $data['notifications'],
