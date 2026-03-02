@@ -33,9 +33,9 @@ class NotificationRepository implements INotificationRepository
 
         return [
             'totalCounts' => [
-                'all' => $user->notifications()->count(),
-                'unread' => $user->unreadNotifications()->count(),
-                'read' => $user->notifications()->whereNotNull('read_at')->count(),
+                'all' => $user->notifications()->count() ?? 0,
+                'unread' => $user->unreadNotifications()->count() ?? 0,
+                'read' => $user->notifications()->whereNotNull('read_at')->count() ?? 0,
             ],
             'currentFilter' => $filter,
             'notifications' => $notifications,

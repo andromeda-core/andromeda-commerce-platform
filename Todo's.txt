@@ -1834,7 +1834,10 @@ canceled
 146: New Commission Logic Added  And COmmission Module Added in Commissions Named Platform Commission As well as The Permissions Setuped for that ✅
 147: Order Model Event Logic Updated when order Delivered so at that time it will create Platform Commission ✅
 148: Platform Commission Setting Added In Commission settings table on database and Our backend for handling the New Type platform commission type ✅
-
+149: Frontend Stock Badge On Products  From Cart , Checkout, Product Single Page Removed  ✅
+150: Backend Cart Item Adding Updating Logic Stock Check Removed ✅
+151: Cart , Chcekout Page Quantity Increase, Descrese of Product + Addon Button Fixed Now it wont be Foucable and Mass quantity increase when entering or clicking any keyboard button it only icreases from mouse click to prevent backend mass calls ✅
+152: Notifications Page Issue FIXED✅
 
 
  <- Review Remeaning (Done) ->

@@ -98,8 +98,8 @@ const SmartphoneMobileGalleryModal = ({
     const [buyNowProcessing, setBuyNowProcessing] = useState(false);
     const [canActionOnSmartphone, setCanActionOnSmartphone] = useState(false);
 
-    // Checking Stock
-    const [isInStock, setIsInStock] = useState(smartphone?.inventory_items_count > 0);
+    // Checking Stock // (Not Needed RN)
+    // const [isInStock, setIsInStock] = useState(smartphone?.inventory_items_count > 0);
 
 
 
@@ -438,12 +438,12 @@ const SmartphoneMobileGalleryModal = ({
         });
     };
 
-    // Update Stock When Feed Gallery Changes
-    useEffect(() => {
-        if (smartphone?.type === 'smartphones') {
-            setIsInStock(smartphone?.inventory_items_count > 0);
-        }
-    }, [smartphone?.inventory_items_count, smartphone?.type]);
+    // Update Stock When Feed Gallery Changes // (Not Needed RN)
+    // useEffect(() => {
+    //     if (smartphone?.type === 'smartphones') {
+    //         setIsInStock(smartphone?.inventory_items_count > 0);
+    //     }
+    // }, [smartphone?.inventory_items_count, smartphone?.type]);
 
     // Stock Count Badge
     const StockBadge = ({ smartphone }) => {
@@ -482,28 +482,30 @@ const SmartphoneMobileGalleryModal = ({
                 return;
             }
 
-            if (!isInStock) {
-                setInfoMessage(
-                    __('Sorry, this item is currently out of stock and cannot be added to your cart'),
-                );
-                setShowInfoMessage(true);
-                setCartProcessing(false);
-                return;
-            }
+            // (Not Needed RN)
+            // if (!isInStock) {
+            //     setInfoMessage(
+            //         __('Sorry, this item is currently out of stock and cannot be added to your cart'),
+            //     );
+            //     setShowInfoMessage(true);
+            //     setCartProcessing(false);
+            //     return;
+            // }
 
-            let quantity = 0;
-            smartphones.forEach((smartphone) => {
-                quantity += smartphone.quantity;
-            });
+            // (Not Needed RN)
+            // let quantity = 0;
+            // smartphones.forEach((smartphone) => {
+            //     quantity += smartphone.quantity;
+            // });
 
-            if (quantity > total_stock) {
-                setInfoMessage(
-                    `${'Only'} ${total_stock} ${total_stock === 1 ? __('Item') : __('Items')} ${__('Stock available. For This Smartphone Please adjust your quantity')}`,
-                );
-                setShowInfoMessage(true);
-                setCartProcessing(false);
-                return;
-            }
+            // if (quantity > total_stock) {
+            //     setInfoMessage(
+            //         `${'Only'} ${total_stock} ${total_stock === 1 ? __('Item') : __('Items')} ${__('Stock available. For This Smartphone Please adjust your quantity')}`,
+            //     );
+            //     setShowInfoMessage(true);
+            //     setCartProcessing(false);
+            //     return;
+            // }
 
             let data = {
                 smartphones: [],
@@ -558,28 +560,30 @@ const SmartphoneMobileGalleryModal = ({
                 return;
             }
 
-            if (!isInStock) {
-                setInfoMessage(
-                    __('Sorry, this item is currently out of stock and cannot be added to your cart'),
-                );
-                setShowInfoMessage(true);
-                setBuyNowProcessing(false);
-                return;
-            }
+            // (Not Needed RN)
+            // if (!isInStock) {
+            //     setInfoMessage(
+            //         __('Sorry, this item is currently out of stock and cannot be added to your cart'),
+            //     );
+            //     setShowInfoMessage(true);
+            //     setBuyNowProcessing(false);
+            //     return;
+            // }
 
-            let quantity = 0;
-            smartphones.forEach((smartphone) => {
-                quantity += smartphone.quantity;
-            });
+            // (Not Needed RN)
+            // let quantity = 0;
+            // smartphones.forEach((smartphone) => {
+            //     quantity += smartphone.quantity;
+            // });
 
-            if (quantity > total_stock) {
-                setInfoMessage(
-                    `${'Only'} ${total_stock} ${total_stock === 1 ? __('Item') : __('Items')} ${__('Stock available. For This Smartphone Please adjust your quantity')}`,
-                );
-                setShowInfoMessage(true);
-                setBuyNowProcessing(false);
-                return;
-            }
+            // if (quantity > total_stock) {
+            //     setInfoMessage(
+            //         `${'Only'} ${total_stock} ${total_stock === 1 ? __('Item') : __('Items')} ${__('Stock available. For This Smartphone Please adjust your quantity')}`,
+            //     );
+            //     setShowInfoMessage(true);
+            //     setBuyNowProcessing(false);
+            //     return;
+            // }
 
             const smartphoneFragments = smartphones.filter(
                 s => s.smartphone_id === item_id
@@ -1040,7 +1044,7 @@ const SmartphoneMobileGalleryModal = ({
                                 <div className="flex flex-col items-start gap-4">
                                     <SmartphoneDetails
                                         key={smartphone?.slug}
-                                        StockBadge={StockBadge({ smartphone })}
+                                        // StockBadge={StockBadge({ smartphone })}
                                         currency={currency}
                                         product={smartphone}
                                     />

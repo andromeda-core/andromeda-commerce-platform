@@ -105,7 +105,7 @@ const SmartphoneDetails = ({ currency, product, StockBadge }) => {
 
 
                 {/* Stock */}
-                <DetailRow label={__("Stock")} value={StockBadge || "N/A"} />
+                {/* <DetailRow label={__("Stock")} value={StockBadge || "N/A"} /> */}
 
                 {/* Returns */}
                 {product?.return_policy && <DetailRow label={__("Returns")} value={__("View Return Policy") + " >"} isLink={true} smartphone_slug={product?.slug} policy_slug={product?.return_policy?.slug} return_policy={!!product?.return_policy} />}

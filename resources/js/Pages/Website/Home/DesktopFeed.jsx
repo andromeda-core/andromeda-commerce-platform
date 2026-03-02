@@ -464,8 +464,8 @@ const DesktopFeed = ({
     const [buyNowProcessing, setBuyNowProcessing] = useState(false);
     const [canActionOnSmartphone, setCanActionOnSmartphone] = useState(false);
 
-    // Checking Stock
-    const [isInStock, setIsInStock] = useState(feedGallery?.inventory_items_count > 0);
+    // Checking Stock (Not Needed RN)
+    // const [isInStock, setIsInStock] = useState(feedGallery?.inventory_items_count > 0);
 
 
     useEffect(() => {
@@ -822,12 +822,12 @@ const DesktopFeed = ({
         });
     };
 
-    // Update Stock When Feed Gallery Changes
-    useEffect(() => {
-        if (feedGallery?.type === 'smartphones') {
-            setIsInStock(feedGallery?.inventory_items_count > 0);
-        }
-    }, [feedGallery?.inventory_items_count, feedGallery?.type]);
+    // Update Stock When Feed Gallery Changes (Not Needed RN)
+    // useEffect(() => {
+    //     if (feedGallery?.type === 'smartphones') {
+    //         setIsInStock(feedGallery?.inventory_items_count > 0);
+    //     }
+    // }, [feedGallery?.inventory_items_count, feedGallery?.type]);
 
     // Stock Count Badge
     const StockBadge = ({ feedGallery }) => {
@@ -866,28 +866,30 @@ const DesktopFeed = ({
                 return;
             }
 
-            if (!isInStock) {
-                setInfoMessage(
-                    __('Sorry, this item is currently out of stock and cannot be added to your cart'),
-                );
-                setShowInfoMessage(true);
-                setCartProcessing(false);
-                return;
-            }
+            // (Not Needed RN)
+            // if (!isInStock) {
+            //     setInfoMessage(
+            //         __('Sorry, this item is currently out of stock and cannot be added to your cart'),
+            //     );
+            //     setShowInfoMessage(true);
+            //     setCartProcessing(false);
+            //     return;
+            // }
 
-            let quantity = 0;
-            smartphones.forEach((smartphone) => {
-                quantity += smartphone.quantity;
-            });
+            // let quantity = 0;
+            // smartphones.forEach((smartphone) => {
+            //     quantity += smartphone.quantity;
+            // });
 
-            if (quantity > total_stock) {
-                setInfoMessage(
-                    `${'Only'} ${total_stock} ${total_stock === 1 ? __('Item') : __('Items')} ${__('Stock available. For This Smartphone Please adjust your quantity')}`,
-                );
-                setShowInfoMessage(true);
-                setCartProcessing(false);
-                return;
-            }
+            // (Not Needed RN)
+            // if (quantity > total_stock) {
+            //     setInfoMessage(
+            //         `${'Only'} ${total_stock} ${total_stock === 1 ? __('Item') : __('Items')} ${__('Stock available. For This Smartphone Please adjust your quantity')}`,
+            //     );
+            //     setShowInfoMessage(true);
+            //     setCartProcessing(false);
+            //     return;
+            // }
 
             let data = {
                 smartphones: [],
@@ -946,28 +948,31 @@ const DesktopFeed = ({
                 return;
             }
 
-            if (!isInStock) {
-                setInfoMessage(
-                    __('Sorry, this item is currently out of stock and cannot be added to your cart'),
-                );
-                setShowInfoMessage(true);
-                setBuyNowProcessing(false);
-                return;
-            }
+            // (Not Needed RN)
+            // if (!isInStock) {
+            //     setInfoMessage(
+            //         __('Sorry, this item is currently out of stock and cannot be added to your cart'),
+            //     );
+            //     setShowInfoMessage(true);
+            //     setBuyNowProcessing(false);
+            //     return;
+            // }
 
-            let quantity = 0;
-            smartphones.forEach((smartphone) => {
-                quantity += smartphone.quantity;
-            });
 
-            if (quantity > total_stock) {
-                setInfoMessage(
-                    `${'Only'} ${total_stock} ${total_stock === 1 ? __('Item') : __('Items')} ${__('Stock available. For This Smartphone Please adjust your quantity')}`,
-                );
-                setShowInfoMessage(true);
-                setBuyNowProcessing(false);
-                return;
-            }
+            // let quantity = 0;
+            // smartphones.forEach((smartphone) => {
+            //     quantity += smartphone.quantity;
+            // });
+
+            // (Not Needed RN)
+            // if (quantity > total_stock) {
+            //     setInfoMessage(
+            //         `${'Only'} ${total_stock} ${total_stock === 1 ? __('Item') : __('Items')} ${__('Stock available. For This Smartphone Please adjust your quantity')}`,
+            //     );
+            //     setShowInfoMessage(true);
+            //     setBuyNowProcessing(false);
+            //     return;
+            // }
 
             const smartphoneFragments = smartphones.filter(
                 s => s.smartphone_id === item_id
@@ -2048,9 +2053,9 @@ const DesktopFeed = ({
                                                             <div className="flex flex-col items-start gap-4">
                                                                 <SmartphoneDetails
                                                                     key={feedGallery?.slug}
-                                                                    StockBadge={StockBadge({
-                                                                        feedGallery,
-                                                                    })}
+                                                                    // StockBadge={StockBadge({
+                                                                    //     feedGallery,
+                                                                    // })}
                                                                     currency={currency}
                                                                     product={feedGallery}
                                                                 />
@@ -3887,9 +3892,9 @@ const DesktopFeed = ({
                                                             <div className="flex flex-col items-start gap-4">
                                                                 <SmartphoneDetails
                                                                     key={feedGallery?.slug}
-                                                                    StockBadge={StockBadge({
-                                                                        feedGallery,
-                                                                    })}
+                                                                    // StockBadge={StockBadge({
+                                                                    //     feedGallery,
+                                                                    // })}
                                                                     currency={currency}
                                                                     product={feedGallery}
                                                                 />

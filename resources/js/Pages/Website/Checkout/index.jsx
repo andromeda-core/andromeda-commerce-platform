@@ -343,11 +343,11 @@ export default function Checkout({
     };
 
 
-    const getTotalQtyOfSmartphone = (smartphoneId) => {
-        return cart_items
-            .filter((i) => i.smartphone_id === smartphoneId)
-            .reduce((sum, i) => sum + (quantities[getItemKey(i)] ?? i.quantity), 0);
-    };
+    // const getTotalQtyOfSmartphone = (smartphoneId) => {
+    //     return cart_items
+    //         .filter((i) => i.smartphone_id === smartphoneId)
+    //         .reduce((sum, i) => sum + (quantities[getItemKey(i)] ?? i.quantity), 0);
+    // };
 
     const updateQuantity = (itemId, newQuantity, temp_id) => {
         if (newQuantity < 1) return;
@@ -360,15 +360,15 @@ export default function Checkout({
             return;
         }
 
-        const totalUsedQty = getTotalQtyOfSmartphone(cartItem.smartphone_id);
-        const otherItemsQty = totalUsedQty - (quantities[getItemKey(cartItem)] ?? cartItem.quantity);
-        const maxAllowed = cartItem.smartphone.inventory_items_count - otherItemsQty;
+        // const totalUsedQty = getTotalQtyOfSmartphone(cartItem.smartphone_id);
+        // const otherItemsQty = totalUsedQty - (quantities[getItemKey(cartItem)] ?? cartItem.quantity);
+        // const maxAllowed = cartItem.smartphone.inventory_items_count - otherItemsQty;
 
-        if (newQuantity > maxAllowed) {
-            setInfoMessage(__('Adding more quantity exceeds available stock for this product'));
-            setShowInfoMessage(true);
-            return;
-        }
+        // if (newQuantity > maxAllowed) {
+        //     setInfoMessage(__('Adding more quantity exceeds available stock for this product'));
+        //     setShowInfoMessage(true);
+        //     return;
+        // }
 
         setQuantities((prev) => ({ ...prev, [getItemKey(cartItem)]: newQuantity }));
 
@@ -642,7 +642,7 @@ export default function Checkout({
                                 smartphoneAddonQuantities={smartphoneAddonQuantities}
                                 onUpdateSmartphoneAddon={updateSmartphoneAddon}
                                 onRemoveSmartphoneAddon={removeSmartphoneAddon}
-                                getTotalQtyOfSmartphone={getTotalQtyOfSmartphone}
+                                // getTotalQtyOfSmartphone={getTotalQtyOfSmartphone}
                                 buy_now={buy_now}
                                 getItemKey={getItemKey}
                             />
@@ -1010,7 +1010,7 @@ function Items({
     smartphoneAddonQuantities,
     onUpdateSmartphoneAddon,
     onRemoveSmartphoneAddon,
-    getTotalQtyOfSmartphone,
+    // getTotalQtyOfSmartphone,
     buy_now,
     getItemKey,
 }) {
@@ -1029,10 +1029,10 @@ function Items({
             {cart_items?.map((item, index) => {
                 const quantity = quantities[getItemKey(item)] || item.quantity;
                 const relatedAddons = item?.smartphone_addon_items || [];
-                const currentQty = quantity;
-                const totalUsedQty = getTotalQtyOfSmartphone(item.smartphone_id);
-                const otherItemsQty = totalUsedQty - currentQty;
-                const maxAllowedForThisItem = item.smartphone.inventory_items_count - otherItemsQty;
+                // const currentQty = quantity;
+                // const totalUsedQty = getTotalQtyOfSmartphone(item.smartphone_id);
+                // const otherItemsQty = totalUsedQty - currentQty;
+                // const maxAllowedForThisItem = item.smartphone.inventory_items_count - otherItemsQty;
 
                 return (
                     <div
@@ -1111,8 +1111,17 @@ function Items({
                                     {/* Quantity Controls */}
                                     <div className="flex items-center border rounded-md border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-transparent">
                                         <button
+                                            onKeyDownCapture={(e) => {
+                                                const isEnter = e.key === "Enter" || e.code === "NumpadEnter" || e.code === "Enter";
+                                                const isSpace = e.key === " " || e.code === "Space";
+
+                                                if (isEnter || isSpace) {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                }
+                                            }}
                                             onClick={() => onUpdateQuantity(item.id, quantity - 1, item?.temp_id)}
-                                            className="px-1 py-1 transition-colors text-main-text-light hover:bg-surface-1-light disabled:opacity-50 dark:text-main-text-dark dark:hover:bg-surface-2-dark"
+                                            className="px-1 py-1 transition-colors text-main-text-light focus:outline-none focus:ring-0 hover:bg-surface-1-light disabled:opacity-50 dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                             disabled={quantity <= 1}
                                         >
                                             <svg
@@ -1136,9 +1145,18 @@ function Items({
                                         </span>
 
                                         <button
-                                            disabled={quantity >= maxAllowedForThisItem}
+                                            // disabled={quantity >= maxAllowedForThisItem}
+                                            onKeyDownCapture={(e) => {
+                                                const isEnter = e.key === "Enter" || e.code === "NumpadEnter" || e.code === "Enter";
+                                                const isSpace = e.key === " " || e.code === "Space";
+
+                                                if (isEnter || isSpace) {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                }
+                                            }}
                                             onClick={() => onUpdateQuantity(item.id, quantity + 1, item?.temp_id)}
-                                            className="px-1 py-1 transition-colors text-main-text-light hover:bg-surface-1-light disabled:opacity-50 dark:text-main-text-dark dark:hover:bg-surface-2-dark"
+                                            className="px-1 py-1 transition-colors text-main-text-light focus:outline-none focus:ring-0 hover:bg-surface-1-light disabled:opacity-50 dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -1158,14 +1176,14 @@ function Items({
                                     </div>
 
                                     {/* Stock Status */}
-                                    {maxAllowedForThisItem !== undefined &&
+                                    {/* {maxAllowedForThisItem !== undefined &&
                                         maxAllowedForThisItem <= 10 &&
                                         maxAllowedForThisItem > 0 && (
                                             <span className="text-[13px] font-semibold text-[#ff0000]">
                                                 {__('Only')} {maxAllowedForThisItem}{' '}
                                                 {__('left in stock')}
                                             </span>
-                                        )}
+                                        )} */}
                                 </div>
                             </div>
                         </div>
@@ -1251,9 +1269,18 @@ function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, remov
             {/* Quantity Controls - Screenshot style with rounded square buttons */}
             <div className="flex items-center flex-shrink-0 gap-2">
                 <button
+                    onKeyDownCapture={(e) => {
+                        const isEnter = e.key === "Enter" || e.code === "NumpadEnter" || e.code === "Enter";
+                        const isSpace = e.key === " " || e.code === "Space";
+
+                        if (isEnter || isSpace) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
+                    }}
                     onClick={() => onUpdateQuantity((buy_now ? item?.addon_id : item?.id), quantity - 1, item?.temp_id)}
                     disabled={quantity <= 1}
-                    className="flex h-[27px] w-[27px] items-center justify-center rounded-md border border-main-text-light bg-backgroundLight text-main-text-light transition-colors hover:bg-surface-2-light disabled:cursor-not-allowed disabled:border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark dark:hover:bg-surface-2-dark"
+                    className="flex h-[27px] w-[27px] items-center justify-center rounded-md border border-main-text-light bg-backgroundLight text-main-text-light transition-colors hover:bg-surface-2-light disabled:cursor-not-allowed disabled:border-surface-3-light focus:outline-none focus:ring-0 dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -1272,8 +1299,18 @@ function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, remov
                 </span>
 
                 <button
+                    onKeyDownCapture={(e) => {
+                        const isEnter = e.key === "Enter" || e.code === "NumpadEnter" || e.code === "Enter";
+                        const isSpace = e.key === " " || e.code === "Space";
+
+                        if (isEnter || isSpace) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
+                    }}
                     onClick={() => onUpdateQuantity((buy_now ? item?.addon_id : item?.id), quantity + 1, item?.temp_id)}
-                    className="flex h-[27px] w-[27px] items-center justify-center rounded-md border border-main-text-light bg-backgroundLight text-main-text-light transition-colors hover:bg-surface-2-light disabled:cursor-not-allowed disabled:opacity-60 dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark dark:hover:bg-surface-2-dark"
+                    className="flex h-[27px] w-[27px] focus:outline-none focus:ring-0 items-center justify-center rounded-md border border-main-text-light bg-backgroundLight text-main-text-light transition-colors hover:bg-surface-2-light disabled:cursor-not-allowed disabled:opacity-60 dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark dark:hover:bg-surface-2-dark"
+
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"

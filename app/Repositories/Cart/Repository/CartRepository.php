@@ -186,17 +186,18 @@ class CartRepository implements ICartRepository
                         ->with('smartphoneAddonItems')
                         ->get();
 
-                    $alreadyInCartQty = $existingCartItems->sum('quantity');
-                    $requiredQty = $alreadyInCartQty + $cart_smartphone['quantity'];
+                    // Not Needed RN Because We are Now Not Restricting Items When Not Exists in the Inventory
+                    // $alreadyInCartQty = $existingCartItems->sum('quantity');
+                    // $requiredQty = $alreadyInCartQty + $cart_smartphone['quantity'];
 
-                    if ($smartphone->inventory_items_count < $requiredQty) {
-                        $first_part_message = $this->trans->get('You already have');
-                        $second_part_message = $alreadyInCartQty;
-                        $third_part_message = $this->trans->get('items of this product in your cart. Adding more quantity exceeds available stock.');
-                        throw new Exception(
-                            $first_part_message.' '.$second_part_message.' '.$third_part_message
-                        );
-                    }
+                    // if ($smartphone->inventory_items_count < $requiredQty) {
+                    //     $first_part_message = $this->trans->get('You already have');
+                    //     $second_part_message = $alreadyInCartQty;
+                    //     $third_part_message = $this->trans->get('items of this product in your cart. Adding more quantity exceeds available stock.');
+                    //     throw new Exception(
+                    //         $first_part_message.' '.$second_part_message.' '.$third_part_message
+                    //     );
+                    // }
 
                     $matchedCartItem = null;
 

@@ -15,6 +15,11 @@ class NotificationController extends Controller
 
     public function index(Request $request)
     {
+
+        if (empty($request->user())) {
+            return to_route('login');
+        }
+
         $data = $this->notification->getAllNotifications($request);
 
         return Inertia::render('Website/Notifications/index', [

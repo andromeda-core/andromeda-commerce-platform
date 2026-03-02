@@ -41,11 +41,11 @@ export default function index({ cart_items, addon_items, total_summary }) {
 
 
 
-    const getTotalQtyOfSmartphone = (smartphoneId) => {
-        return cart_items
-            .filter(i => i.smartphone_id === smartphoneId)
-            .reduce((sum, i) => sum + (quantities[i.id] ?? i.quantity), 0);
-    };
+    // const getTotalQtyOfSmartphone = (smartphoneId) => {
+    //     return cart_items
+    //         .filter(i => i.smartphone_id === smartphoneId)
+    //         .reduce((sum, i) => sum + (quantities[i.id] ?? i.quantity), 0);
+    // };
 
 
     const updateQuantity = (itemId, newQuantity) => {
@@ -59,17 +59,17 @@ export default function index({ cart_items, addon_items, total_summary }) {
             return;
         }
 
-        const totalUsedQty = getTotalQtyOfSmartphone(cartItem.smartphone_id);
-        const otherItemsQty = totalUsedQty - (quantities[itemId] ?? cartItem.quantity);
-        const maxAllowed = cartItem.smartphone.inventory_items_count - otherItemsQty;
-
-        if (newQuantity > maxAllowed) {
-            setInfoMessage(
-                __('Adding more quantity exceeds available stock for this product')
-            );
-            setShowInfoMessage(true);
-            return;
-        }
+        // Not Needed RN
+        // const totalUsedQty = getTotalQtyOfSmartphone(cartItem.smartphone_id);
+        // const otherItemsQty = totalUsedQty - (quantities[itemId] ?? cartItem.quantity);
+        // const maxAllowed = cartItem.smartphone.inventory_items_count - otherItemsQty;
+        // if (newQuantity > maxAllowed) {
+        //     setInfoMessage(
+        //         __('Adding more quantity exceeds available stock for this product')
+        //     );
+        //     setShowInfoMessage(true);
+        //     return;
+        // }
 
         setQuantities((prev) => ({ ...prev, [itemId]: newQuantity }));
 
@@ -319,7 +319,7 @@ export default function index({ cart_items, addon_items, total_summary }) {
                                                 smartphoneAddonQuantities={smartphoneAddonQuantities}
                                                 onUpdateSmartphoneAddon={updateSmartphoneAddon}
                                                 onRemoveSmartphoneAddon={removeSmartphoneAddon}
-                                                getTotalQtyOfSmartphone={getTotalQtyOfSmartphone}
+                                            // getTotalQtyOfSmartphone={getTotalQtyOfSmartphone}
                                             />
                                         )
                                     })}
@@ -358,7 +358,7 @@ function CartItem({
     onRemoveSmartphoneAddon,
     // calculateShippingCost,
     // calculateImportCost,
-    getTotalQtyOfSmartphone,
+    // getTotalQtyOfSmartphone,
 }) {
     // const shipping_fee = calculateShippingCost(
     //     item?.smartphone?.selling_info?.shipping_fee,
@@ -372,11 +372,11 @@ function CartItem({
 
     const relatedAddons = addon_items || [];
 
-    const currentQty = quantity;
-    const totalUsedQty = getTotalQtyOfSmartphone(item.smartphone_id);
-    const otherItemsQty = totalUsedQty - currentQty;
-    const maxAllowedForThisItem =
-        item.smartphone.inventory_items_count - otherItemsQty;
+    // const currentQty = quantity;
+    // const totalUsedQty = getTotalQtyOfSmartphone(item.smartphone_id);
+    // const otherItemsQty = totalUsedQty - currentQty;
+    // const maxAllowedForThisItem =
+    //     item.smartphone.inventory_items_count - otherItemsQty;
 
     const generateSmartphoneURL = (smartphone, isDirect = false, isSinglePage = false) => {
         return (
@@ -456,8 +456,17 @@ function CartItem({
                         {/* Quantity Controls */}
                         <div className="flex items-center border rounded-md border-surface-3-light bg-backgroundLight dark:bg-transparent dark:border-surface-3-dark">
                             <button
+                                onKeyDownCapture={(e) => {
+                                    const isEnter = e.key === "Enter" || e.code === "NumpadEnter" || e.code === "Enter";
+                                    const isSpace = e.key === " " || e.code === "Space";
+
+                                    if (isEnter || isSpace) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                    }
+                                }}
                                 onClick={() => onUpdateQuantity(item.id, quantity - 1)}
-                                className="px-1 py-1 transition-colors text-main-text-light hover:bg-surface-1-light disabled:opacity-50 dark:text-main-text-dark dark:hover:bg-surface-2-dark"
+                                className="px-1 py-1 transition-colors focus:outline-none focus:ring-0 text-main-text-light hover:bg-surface-1-light disabled:opacity-50 dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                 disabled={quantity <= 1}
                             >
                                 <svg
@@ -481,9 +490,18 @@ function CartItem({
                             </span>
 
                             <button
-                                disabled={quantity >= maxAllowedForThisItem}
+                                onKeyDownCapture={(e) => {
+                                    const isEnter = e.key === "Enter" || e.code === "NumpadEnter" || e.code === "Enter";
+                                    const isSpace = e.key === " " || e.code === "Space";
+
+                                    if (isEnter || isSpace) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                    }
+                                }}
+                                // disabled={quantity >= maxAllowedForThisItem}
                                 onClick={() => onUpdateQuantity(item.id, quantity + 1)}
-                                className="px-1 py-1 transition-colors text-main-text-light hover:bg-surface-1-light disabled:opacity-50 dark:text-main-text-dark dark:hover:bg-surface-2-dark"
+                                className="px-1 py-1 transition-colors focus:outline-none focus:ring-0 text-main-text-light hover:bg-surface-1-light disabled:opacity-50 dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -503,11 +521,11 @@ function CartItem({
                         </div>
 
                         {/* Stock Status */}
-                        {maxAllowedForThisItem !== undefined && maxAllowedForThisItem <= 10 && maxAllowedForThisItem > 0 && (
+                        {/* {maxAllowedForThisItem !== undefined && maxAllowedForThisItem <= 10 && maxAllowedForThisItem > 0 && (
                             <span className="text-[13px]  font-semibold text-[#ff0000]">
                                 {__('Only')} {maxAllowedForThisItem} {__('left in stock')}
                             </span>
-                        )}
+                        )} */}
                     </div>
                 </div>
             </div>
@@ -590,9 +608,18 @@ function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, remov
             {/* Quantity Controls - Screenshot style with rounded square buttons */}
             <div className="flex items-center flex-shrink-0 gap-2">
                 <button
+                    onKeyDownCapture={(e) => {
+                        const isEnter = e.key === "Enter" || e.code === "NumpadEnter" || e.code === "Enter";
+                        const isSpace = e.key === " " || e.code === "Space";
+
+                        if (isEnter || isSpace) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
+                    }}
                     onClick={() => onUpdateQuantity(item.id, quantity - 1)}
                     disabled={quantity <= 1}
-                    className="flex items-center justify-center w-[27px] h-[27px] transition-colors border rounded-md text-main-text-light dark:text-main-text-dark border-main-text-light bg-backgroundLight dark:bg-surface-1-dark hover:bg-surface-2-light  disabled:border-surface-3-light disabled:cursor-not-allowed dark:border-surface-3-dark dark:hover:bg-surface-2-dark"
+                    className="flex items-center justify-center w-[27px] h-[27px] focus:outline-none focus:ring-0 transition-colors border rounded-md text-main-text-light dark:text-main-text-dark border-main-text-light bg-backgroundLight dark:bg-surface-1-dark hover:bg-surface-2-light  disabled:border-surface-3-light disabled:cursor-not-allowed dark:border-surface-3-dark dark:hover:bg-surface-2-dark"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -615,8 +642,17 @@ function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, remov
                 </span>
 
                 <button
+                    onKeyDownCapture={(e) => {
+                        const isEnter = e.key === "Enter" || e.code === "NumpadEnter" || e.code === "Enter";
+                        const isSpace = e.key === " " || e.code === "Space";
+
+                        if (isEnter || isSpace) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
+                    }}
                     onClick={() => onUpdateQuantity(item.id, quantity + 1)}
-                    className="flex items-center justify-center w-[27px] h-[27px] transition-colors border rounded-md text-main-text-light dark:text-main-text-dark border-main-text-light bg-backgroundLight dark:bg-surface-1-dark hover:bg-surface-2-light disabled:opacity-60 disabled:cursor-not-allowed dark:border-surface-3-dark dark:hover:bg-surface-2-dark"
+                    className="flex items-center justify-center w-[27px] h-[27px] focus:outline-none focus:ring-0 transition-colors border rounded-md text-main-text-light dark:text-main-text-dark border-main-text-light bg-backgroundLight dark:bg-surface-1-dark hover:bg-surface-2-light disabled:opacity-60 disabled:cursor-not-allowed dark:border-surface-3-dark dark:hover:bg-surface-2-dark"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
