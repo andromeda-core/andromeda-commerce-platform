@@ -21,12 +21,18 @@ use App\Models\Smartphone;
 use App\Models\SmartphoneCartAddon;
 use App\Models\SmartphoneOrderItemAddon;
 use App\Models\SpecialCountry;
+use App\Models\StorageLocation;
+use App\Models\Supplier;
+use App\Models\SupplierAssignedOrder;
 use App\Models\User;
 use App\Notifications\NotifyCustomerAboutAwaitingPaymentOrderFromCrypto;
+use App\Notifications\NotifyCustomerAboutHisOrderCanceledByAdmin;
+use App\Notifications\NotifySupplierAboutOrderAssignment;
 use App\Notifications\OrderAddressChangeNotification;
 use App\Notifications\OrderAddressChangeRequestWithdrawnNotification;
 use App\Notifications\OrderRefundNotification;
 use App\Notifications\OrderRefundRequestWithdrawnNotification;
+use App\Repositories\Batches\Interface\IBatchRepository;
 use App\Repositories\Orders\Interface\IOrderRepository;
 use App\Services\CartPriceCalculator;
 use App\Services\NOWPaymentPaymentService;
@@ -53,26 +59,78 @@ class OrderRepository implements IOrderRepository
         private SmartphoneCartAddon $smartphone_cart_addon,
         private SmartphoneOrderItemAddon $smartphone_order_item_addon,
         private CartPriceCalculator $cart_price_calculator,
-        private Inventory $inventory
+        private Inventory $inventory,
+        private Supplier $supplier,
+        private SupplierAssignedOrder $supplier_assigned_order,
+        private IBatchRepository $batch
     ) {}
 
     public function getAllOrders(Request $request)
     {
         $orders = $this->order
-            ->with(['collaborator', 'customer', 'customer.user'])
+            ->with(['collaborator', 'customer', 'customer.user', 'assignedSupplier.supplier.user'])
             ->when(! empty($request->input('search')), function ($query) use ($request) {
                 $query->WhereHas('customer.user', function ($subQ) use ($request) {
                     $subQ->where('name', 'like', '%'.$request->input('search').'%')
                         ->orWhere('email', 'like', '%'.$request->input('search').'%')
                         ->orWhere('phone', 'like', '%'.$request->input('search').'%');
-                });
+                })
+                    ->orWhere('order_no', 'like', '%'.$request->input('search').'%');
             })
             ->when(! empty($request->input('status')), function ($query) use ($request) {
                 $query->where('status', $request->input('status'));
             })
+
             ->latest()
             ->paginate(10)
             ->withQueryString();
+
+        $orders->getCollection()->transform(function ($order) {
+
+            $missingItems = [];
+            $missingTotalQty = 0;
+
+            foreach ($order->orderItems as $item) {
+                $qty = (int) $item->quantity;
+
+                $ids = $item->inventory_item_ids ?? [];
+                if (is_string($ids)) {
+                    $ids = json_decode($ids, true) ?: [];
+                }
+                if (! is_array($ids)) {
+                    $ids = [];
+                }
+                $ids = array_values(array_unique(array_filter($ids)));
+
+                $reserved = count($ids);
+                $missingQty = max(0, $qty - $reserved);
+
+                if ($missingQty > 0) {
+                    $name =
+                        $item->smartphone?->model_name?->name
+                        ?? $item->smartphone?->name
+                        ?? "Smartphone#{$item->smartphone_id}";
+
+                    $missingItems[] = [
+                        'name' => $name,
+                        'smartphone_id' => $item->smartphone_id,
+                        'required' => $qty,
+                        'reserved' => $reserved,
+                        'missing' => $missingQty,
+                    ];
+                    $missingTotalQty += $missingQty;
+                }
+            }
+
+            $order->stock_needed = [
+                'is_complete' => $missingTotalQty === 0,
+                'missing_total_qty' => $missingTotalQty,
+                'missing_items_count' => count($missingItems),
+                'items' => $missingItems,
+            ];
+
+            return $order;
+        });
 
         return $orders;
     }
@@ -85,13 +143,13 @@ class OrderRepository implements IOrderRepository
                 'collaborator',
                 'orderPackageRecordings',
                 'orderItems',
-                'orderItems.inventoryItem.smartphone',
-                'orderItems.inventoryItem.smartphone.model_name',
-                'orderItems.inventoryItem.smartphone.capacity',
-                'orderItems.inventoryItem.smartphone.selling_info',
-                'orderItems.inventoryItem.smartphone.category',
-                'orderItems.inventoryItem.smartphone.category.distributor',
-                'orderItems.inventoryItem.smartphone.category.distributor.user',
+                'orderItems.smartphone',
+                'orderItems.smartphone.model_name',
+                'orderItems.smartphone.capacity',
+                'orderItems.smartphone.selling_info',
+                'orderItems.smartphone.category',
+                'orderItems.smartphone.category.distributor',
+                'orderItems.smartphone.category.distributor.user',
                 'orderItems.color',
                 'orderItems.smartphoneAddons',
             ]
@@ -108,13 +166,13 @@ class OrderRepository implements IOrderRepository
                 'collaborator',
                 'orderPackageRecordings',
                 'orderItems',
-                'orderItems.inventoryItem.smartphone',
-                'orderItems.inventoryItem.smartphone.model_name',
-                'orderItems.inventoryItem.smartphone.capacity',
-                'orderItems.inventoryItem.smartphone.selling_info',
-                'orderItems.inventoryItem.smartphone.category',
-                'orderItems.inventoryItem.smartphone.category.distributor',
-                'orderItems.inventoryItem.smartphone.category.distributor.user',
+                'orderItems.smartphone',
+                'orderItems.smartphone.model_name',
+                'orderItems.smartphone.capacity',
+                'orderItems.smartphone.selling_info',
+                'orderItems.smartphone.category',
+                'orderItems.smartphone.category.distributor',
+                'orderItems.smartphone.category.distributor.user',
                 'orderItems.color',
                 'orderItems.smartphoneAddons',
             ]
@@ -371,6 +429,7 @@ class OrderRepository implements IOrderRepository
                 foreach ($order->orderItems as $item) {
 
                     $inventoryItemsIds = $item->inventory_item_ids;
+
                     if (empty($inventoryItemsIds)) {
                         continue;
                     }
@@ -401,6 +460,14 @@ class OrderRepository implements IOrderRepository
 
             if (isset($validated_req['status']) && $validated_req['status'] === 'arrived_locally' && $order->status === 'arrived_locally') {
                 throw new Exception('The Status Should Be Changed To Delivered Before Proceesing');
+            }
+
+            if ($order->status !== 'pending') {
+                try {
+                    $this->guardFullStockForOrder($order);
+                } catch (Exception $e) {
+                    throw new Exception($e->getMessage());
+                }
             }
 
             if (isset($validated_req['final_attachments']) && ! blank($validated_req['final_attachments'])) {
@@ -461,6 +528,131 @@ class OrderRepository implements IOrderRepository
                 'status' => false,
                 'message' => $e->getMessage(),
             ];
+        }
+    }
+
+    public function assignSupplier(Request $request)
+    {
+
+        $validated_req = $request->validate([
+            'order_id' => ['required', 'exists:orders,id'],
+            'supplier_id' => ['required', 'exists:suppliers,id'],
+            'note' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        try {
+
+            $order = $this->order->with(['assignedSupplier'])->find($validated_req['order_id']);
+
+            if (empty($order)) {
+                throw new Exception('Order Not Found');
+            }
+
+            $supplier = $this->supplier->with('user')->find($validated_req['supplier_id']);
+
+            if (empty($supplier)) {
+                throw new Exception('Supplier Not Found');
+            }
+
+            $user = $supplier->user;
+            if (empty($user)) {
+                throw new Exception('Unknown Supplier Selected');
+            }
+
+            if ($order->assignedSupplier()->exists()) {
+                throw new Exception('Supplier Already Assigned');
+            }
+
+            $order->assignedSupplier()->create([
+                'supplier_id' => $validated_req['supplier_id'],
+                'assigned_by' => $request->user()->id,
+                'note' => $validated_req['note'],
+                'assigned_at' => now(),
+            ]);
+
+            $user->notify(new NotifySupplierAboutOrderAssignment($order));
+
+            return [
+                'status' => true,
+                'message' => 'Supplier Assigned Successfully',
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    private function guardFullStockForOrder($order): void
+    {
+
+        $order->loadMissing([
+            'orderItems.smartphone.model_name',
+        ]);
+
+        $missing = [];
+
+        foreach ($order->orderItems as $item) {
+
+            $qty = (int) $item->quantity;
+
+            $phoneName =
+                $item->smartphone?->model_name?->name
+                ?? $item->smartphone?->name
+                ?? "Smartphone#{$item->smartphone_id}";
+
+            $ids = $item->inventory_item_ids ?? [];
+
+            if (is_string($ids)) {
+                $decoded = json_decode($ids, true);
+                $ids = is_array($decoded) ? $decoded : [];
+            }
+
+            if (! is_array($ids)) {
+                $ids = [];
+            }
+
+            $ids = array_values(array_unique(array_filter($ids)));
+            $have = count($ids);
+
+            if ($qty <= 0) {
+                $missing[] = "{$phoneName} (order_item_id={$item->id}) has invalid qty={$qty}";
+
+                continue;
+            }
+
+            if ($have < $qty) {
+                $missingQty = $qty - $have;
+                $missing[] = "{$phoneName} required={$qty}, reserved={$have}, missing={$missingQty}";
+
+                continue;
+            }
+
+            $neededIds = array_slice($ids, 0, $qty);
+            $existsCount = $this->inventory->whereIn('id', $neededIds)->count();
+
+            if ($existsCount < $qty) {
+                $missing[] = "{$phoneName} reserved inventory ids invalid. required={$qty}, found={$existsCount}";
+
+                continue;
+            }
+
+            $notSoldExists = $this->inventory
+                ->whereIn('id', $neededIds)
+                ->where('status', '!=', 'sold')
+                ->exists();
+
+            if ($notSoldExists) {
+                $missing[] = "{$phoneName} reserved stock is not SOLD yet";
+            }
+        }
+
+        if (! empty($missing)) {
+            throw new Exception(
+                "Order cannot proceed due to missing stock:\n- ".implode("\n- ", $missing)
+            );
         }
     }
 
@@ -644,11 +836,11 @@ class OrderRepository implements IOrderRepository
                         'customer.user',
                         'collaborator',
                         'orderItems',
-                        'orderItems.inventoryItem.smartphone',
-                        'orderItems.inventoryItem.smartphone.model_name',
-                        'orderItems.inventoryItem.smartphone.capacity',
-                        'orderItems.inventoryItem.smartphone.selling_info',
-                        'orderItems.inventoryItem.smartphone.category',
+                        'orderItems.smartphone',
+                        'orderItems.smartphone.model_name',
+                        'orderItems.smartphone.capacity',
+                        'orderItems.smartphone.selling_info',
+                        'orderItems.smartphone.category',
                         'orderItems.smartphoneAddons',
                     ]
                 )
@@ -686,11 +878,11 @@ class OrderRepository implements IOrderRepository
                         'customer.user',
                         'collaborator',
                         'orderItems',
-                        'orderItems.inventoryItem.smartphone',
-                        'orderItems.inventoryItem.smartphone.model_name',
-                        'orderItems.inventoryItem.smartphone.capacity',
-                        'orderItems.inventoryItem.smartphone.selling_info',
-                        'orderItems.inventoryItem.smartphone.category',
+                        'orderItems.smartphone',
+                        'orderItems.smartphone.model_name',
+                        'orderItems.smartphone.capacity',
+                        'orderItems.smartphone.selling_info',
+                        'orderItems.smartphone.category',
                         'orderItems.smartphoneAddons',
                     ]
                 )
@@ -811,17 +1003,17 @@ class OrderRepository implements IOrderRepository
                 $smartphone = $cartItem->smartphone;
                 $quantity = $cartItem->quantity;
 
-                if ($smartphone->inventory_items->isEmpty()) {
-                    throw new Exception(" {$smartphone->model_name->name} {$this->trans::get('Smartphone Is Out Of Stock Please Check')}");
-                }
+                // if ($smartphone->inventory_items->isEmpty()) {
+                //     throw new Exception(" {$smartphone->model_name->name} {$this->trans::get('Smartphone Is Out Of Stock Please Check')}");
+                // }
 
-                if ($smartphone->inventory_items()->where('status', 'in_stock')->doesntExist()) {
-                    throw new Exception("{$smartphone->model_name->name} {$this->trans::get('Smartphone Is Out Of Stock Please Check')}");
-                }
+                // if ($smartphone->inventory_items()->where('status', 'in_stock')->doesntExist()) {
+                //     throw new Exception("{$smartphone->model_name->name} {$this->trans::get('Smartphone Is Out Of Stock Please Check')}");
+                // }
 
-                if ($smartphone->inventory_items()->where('status', 'in_stock')->count() < $quantity) {
-                    throw new Exception("{$smartphone->model_name->name} {$this->trans::get('Smartphone Has Less Stock But You Have Selected More Quantity Please Check')}");
-                }
+                // if ($smartphone->inventory_items()->where('status', 'in_stock')->count() < $quantity) {
+                //     throw new Exception("{$smartphone->model_name->name} {$this->trans::get('Smartphone Has Less Stock But You Have Selected More Quantity Please Check')}");
+                // }
 
                 if (empty($smartphone->selling_info)) {
                     throw new Exception("{$smartphone->model_name->name} {$this->trans::get('Smartphone Dont have Selling Price Please Check')}");
@@ -841,9 +1033,9 @@ class OrderRepository implements IOrderRepository
                     ->limit($quantity)
                     ->get();
 
-                if ($backend_inventoryItems->isEmpty()) {
-                    throw new Exception("{$smartphone->model_name->name} {$this->trans::get('Smartphone Has Less Stock But You Have Selected More Quantity Please Check')}");
-                }
+                // if ($backend_inventoryItems->isEmpty()) {
+                //     throw new Exception("{$smartphone->model_name->name} {$this->trans::get('Smartphone Has Less Stock But You Have Selected More Quantity Please Check')}");
+                // }
 
                 foreach ($backend_inventoryItems as $inventoryItem) {
                     $inventoryItem->status = 'on_hold';
@@ -1212,7 +1404,7 @@ class OrderRepository implements IOrderRepository
         $customer = $user->customer;
 
         $orders = $this->order
-            ->with(['orderItems', 'orderItems.inventoryItem.smartphone.capacity', 'orderItems.inventoryItem.smartphone.model_name'])
+            ->with(['orderItems', 'orderItems.smartphone.capacity', 'orderItems.smartphone.model_name'])
             ->withCount('orderItems')
             ->where('customer_id', $customer->id)
             ->latest()
@@ -1240,13 +1432,13 @@ class OrderRepository implements IOrderRepository
                 'collaborator',
                 'orderPackageRecordings',
                 'orderItems',
-                'orderItems.inventoryItem.smartphone',
-                'orderItems.inventoryItem.smartphone.model_name',
-                'orderItems.inventoryItem.smartphone.capacity',
-                'orderItems.inventoryItem.smartphone.selling_info',
-                'orderItems.inventoryItem.smartphone.category',
-                'orderItems.inventoryItem.smartphone.category.distributor',
-                'orderItems.inventoryItem.smartphone.category.distributor.user',
+                'orderItems.smartphone',
+                'orderItems.smartphone.model_name',
+                'orderItems.smartphone.capacity',
+                'orderItems.smartphone.selling_info',
+                'orderItems.smartphone.category',
+                'orderItems.smartphone.category.distributor',
+                'orderItems.smartphone.category.distributor.user',
                 'orderItems.color',
                 'orderItems.smartphoneAddons',
             ]
@@ -2012,6 +2204,352 @@ class OrderRepository implements IOrderRepository
                 'smartphones' => $smartphones,
             ];
         } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function supplierAssignedOrders(Request $request)
+    {
+        try {
+
+            $user = $request->user();
+
+            if (empty($user)) {
+                throw new Exception($this->trans->get('User Not found'));
+            }
+
+            // dd($user->hasRole('Admin'));
+            if (! $user->hasRole('Admin') && ! $user->hasRole('Supplier')) {
+                throw new Exception($this->trans->get('You are not allowed to access this page'));
+            }
+
+            $supplier = $user->supplier;
+
+            $query = $this->supplier_assigned_order->query();
+
+            $query->when(! empty($supplier), function ($query) use ($supplier) {
+                $query->where('supplier_id', $supplier->id);
+            });
+
+            $query->when(empty($supplier) && $user->hasRole('Admin'), function ($query) {
+                $query->whereNotNull('supplier_id');
+            });
+
+            $search_status = $request->input('status');
+            $search_query = $request->input('search');
+            $query->when(! empty($search_status), function ($query) use ($search_status) {
+                $query->where('status', $search_status);
+            });
+
+            $query->when(! empty($search_query), function ($query) use ($search_query) {
+                $query->whereHas('order', function ($query) use ($search_query) {
+                    $query->where('order_no', 'like', '%'.$search_query.'%');
+                })
+                    ->orWhereHas('assignedBy', function ($query) use ($search_query) {
+                        $query->where('name', 'like', '%'.$search_query.'%');
+                    });
+            });
+
+            $query->with(['order.orderItems', 'assignedBy', 'order.assignedSupplier', 'supplier.user']);
+
+            $orders = $query->latest()->paginate(10)->withQueryString();
+
+            $orders->getCollection()->transform(function ($order) {
+
+                $missingItems = [];
+                $missingTotalQty = 0;
+
+                foreach ($order->order->orderItems as $item) {
+                    $qty = (int) $item->quantity;
+
+                    $ids = $item->inventory_item_ids ?? [];
+                    if (is_string($ids)) {
+                        $ids = json_decode($ids, true) ?: [];
+                    }
+                    if (! is_array($ids)) {
+                        $ids = [];
+                    }
+                    $ids = array_values(array_unique(array_filter($ids)));
+
+                    $reserved = count($ids);
+                    $missingQty = max(0, $qty - $reserved);
+
+                    if ($missingQty > 0) {
+                        $name =
+                            $item->smartphone?->model_name?->name
+                            ?? $item->smartphone?->name
+                            ?? "Smartphone#{$item->smartphone_id}";
+
+                        $missingItems[] = [
+                            'name' => $name,
+                            'smartphone_id' => $item->smartphone_id,
+                            'required' => $qty,
+                            'reserved' => $reserved,
+                            'missing' => $missingQty,
+                        ];
+                        $missingTotalQty += $missingQty;
+                    }
+                }
+
+                $order->stock_needed = [
+                    'is_complete' => $missingTotalQty === 0,
+                    'missing_total_qty' => $missingTotalQty,
+                    'missing_items_count' => count($missingItems),
+                    'items' => $missingItems,
+                ];
+
+                return $order;
+            });
+
+            return [
+                'status' => true,
+                'orders' => $orders,
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function fulfillOrderStockDetails(Request $request, ?string $id = null)
+    {
+        try {
+            if (empty($id)) {
+                throw new Exception('Order Not Found');
+            }
+
+            $assignment = SupplierAssignedOrder::with([
+                'order.orderItems.smartphone.model_name',
+                'supplier.user',
+            ])->findOrFail($id);
+
+            if (! $request->user()->hasRole('Admin') && $request->user()->supplier?->id !== $assignment->supplier_id) {
+                throw new Exception('You are not Allowed To Perform This Action');
+            }
+
+            $required = [];
+            foreach ($assignment->order->orderItems as $item) {
+                $qty = (int) $item->quantity;
+
+                $ids = $item->inventory_item_ids ?? [];
+                if (is_string($ids)) {
+                    $ids = json_decode($ids, true) ?: [];
+                }
+                if (! is_array($ids)) {
+                    $ids = [];
+                }
+
+                $missing = max(0, $qty - count($ids));
+
+                if ($missing > 0) {
+                    $required[] = [
+                        'smartphone_id' => $item->smartphone_id,
+                        'name' => $item->smartphone?->model_name?->name ?? $item->smartphone?->name,
+                        'missing_qty' => $missing,
+                    ];
+                }
+            }
+
+            $allowedIds = collect($required)->pluck('smartphone_id')->unique()->values();
+
+            return [
+                'assignment' => $assignment->only(['id', 'status', 'supplier_id', 'assigned_at']) + [
+                    'supplier' => $assignment->supplier,
+                ],
+                'order' => $assignment->order->only(['id', 'order_no', 'status', 'full_amount']),
+                'required_items' => $required,
+                'smartphones' => $this->smartphone->whereIn('id', $allowedIds)->with(['model_name:id,name'])->get(['id', 'model_name_id', 'created_at']),
+                'storage_locations' => StorageLocation::get(['id', 'name']),
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function fulfillOrderStock(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+
+            $assignmentId = $request->input('supplier_assigned_order_id');
+            if (! $assignmentId) {
+                throw new Exception('Assignment is required');
+            }
+
+            $assignment = $this->supplier_assigned_order->with([
+                'order.orderItems' => function ($q) {
+                    $q->select('id', 'order_id', 'smartphone_id', 'quantity', 'inventory_item_ids')
+                        ->with('smartphone.model_name');
+                },
+            ])->findOrFail($assignmentId);
+
+            $order = $assignment->order;
+            if (! $order) {
+                throw new Exception('Order not found for assignment');
+            }
+
+            if ($request->filled('order_id') && (int) $request->order_id !== (int) $order->id) {
+                throw new Exception('Order mismatch');
+            }
+
+            $batch = $this->batch->storeBatch($request);
+
+            if ($batch['status'] === false) {
+                throw new Exception($batch['message']);
+            }
+
+            $createdItems = collect($batch['inventory_items'] ?? []);
+            if ($createdItems->isEmpty()) {
+                throw new Exception('No inventory items created');
+            }
+
+            $poolByPhone = $createdItems->groupBy('smartphone_id')->map(function ($rows) {
+                return $rows->pluck('id')->values();
+            });
+
+            foreach ($order->orderItems as $item) {
+                $qty = (int) $item->quantity;
+
+                $existingIds = $item->inventory_item_ids ?? [];
+                if (is_string($existingIds)) {
+                    $existingIds = json_decode($existingIds, true) ?: [];
+                }
+                if (! is_array($existingIds)) {
+                    $existingIds = [];
+                }
+
+                $already = count($existingIds);
+                $missing = max(0, $qty - $already);
+
+                if ($missing === 0) {
+                    continue;
+                }
+
+                $sid = (int) $item->smartphone_id;
+                $sname = (string) $item->smartphone->model_name->name;
+
+                $available = $poolByPhone->get($sid, collect());
+                if ($available->count() < $missing) {
+
+                    throw new Exception("Not enough stock for smartphone {$sname}. Need {$missing}, have {$available->count()}");
+                }
+                $take = $available->take($missing)->values();
+                $poolByPhone[$sid] = $available->slice($missing)->values();
+
+                $newIds = array_values(array_unique(array_merge($existingIds, $take->all())));
+
+                $item->inventory_item_ids = $newIds;
+                $item->save();
+
+                $newlyAssignedIds = $take->all();
+
+                if ($order->status === 'paid') {
+                    $this->inventory->whereIn('id', $newlyAssignedIds)->update([
+                        'status' => 'sold',
+                    ]);
+                } else {
+                    $this->inventory->whereIn('id', $newlyAssignedIds)->update([
+                        'status' => 'on_hold',
+                    ]);
+                }
+            }
+
+            $assignment->status = 'fulfilled';
+            $assignment->save();
+
+            DB::commit();
+
+            return [
+                'status' => true,
+                'message' => 'Stock Fulfilled Successfully',
+            ];
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function orderCancelationByAdmin(Request $request)
+    {
+
+        DB::beginTransaction();
+        try {
+            $request->validate([
+                'order_id' => ['required', 'exists:orders,id'],
+                'reason' => ['required', 'string', 'min:30', 'max:1000'],
+            ], [
+                'order_id.required' => 'Order Not Found',
+            ]);
+
+            $order = $this->order->with(['customer', 'orderItems'])->find($request->order_id);
+
+            if (empty($order)) {
+                throw new Exception('Order Not Found');
+            }
+
+            if ($order->status === 'canceled') {
+                throw new Exception('Order Already Canceled');
+            }
+
+            if (in_array($order->status, ['expired', 'refund_requested', 'refund_approved', 'refund_completed', 'refund_rejected', 'delivered', 'failed'])) {
+                throw new Exception('Order Cannot Be Canceled');
+            }
+
+            $order->status = 'canceled';
+            $order->save();
+
+            $customer = $this->customer->with(['user'])->find($order->customer_id);
+
+            if (! empty($order->points_used)) {
+                $customer->user->reward_points()->create([
+                    'points' => $order->points_used,
+                    'expires_at' => now()->addYears(5),
+                ]);
+            }
+
+            foreach ($order->orderItems as $item) {
+
+                $inventoryItemsIds = $item->inventory_item_ids;
+                if (empty($inventoryItemsIds)) {
+                    continue;
+                }
+
+                foreach ($inventoryItemsIds as $inventoryItemId) {
+                    $inventoryItem = $this->inventory->find($inventoryItemId);
+                    if (! empty($inventoryItem)) {
+                        $inventoryItem->update([
+                            'status' => 'in_stock',
+                        ]);
+                    }
+                }
+
+            }
+
+            $customer->user->notify(new NotifyCustomerAboutHisOrderCanceledByAdmin($order, $request->input('reason')));
+
+            DB::commit();
+
+            return [
+                'status' => true,
+                'message' => 'Order Canceled Successfully',
+            ];
+        } catch (Exception $e) {
+            DB::rollBack();
+
             return [
                 'status' => false,
                 'message' => $e->getMessage(),

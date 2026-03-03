@@ -188,9 +188,10 @@ class BatchRepository implements IBatchRepository
                 throw new Exception('Something Went Wrong While Creating Batch');
             }
 
+            $created_inventory_items = [];
             foreach ($validated_req['inventory_items'] as $inventory_item) {
                 $created = $this->inventory->create(array_merge($inventory_item, ['batch_id' => $batch->id]));
-
+                $created_inventory_items[] = $created;
                 if (empty($created)) {
                     throw new Exception('Something Went Wrong While Creating Inventory');
                 }
@@ -231,6 +232,8 @@ class BatchRepository implements IBatchRepository
             return [
                 'status' => true,
                 'message' => 'Batch Created Successfully',
+                'inventory_items' => $created_inventory_items,
+
             ];
         } catch (Exception $e) {
             DB::rollBack();

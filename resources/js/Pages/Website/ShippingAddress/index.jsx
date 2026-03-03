@@ -12,7 +12,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import { useTranslation } from '@/Hooks/useTranslation';
 import { ChevronLeft, Trash2 } from 'lucide-react';
 
-const Index = ({ shipping_addresses, countries }) => {
+const index = ({ shipping_addresses, countries }) => {
 
     const { auth } = usePage().props;
 
@@ -1604,4 +1604,4 @@ const ShippingAddressItem = ({ item, onEdit, onToggle, onRemove, toggleProcessin
     );
 };
 
-export default Index;
+export default index;

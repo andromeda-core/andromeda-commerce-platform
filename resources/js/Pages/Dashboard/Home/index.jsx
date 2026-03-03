@@ -191,11 +191,15 @@ export default function Dashboard({
     };
 
     const statusColors = {
-        paid: 'rgb(59, 130, 246)',
-        pending: 'rgb(234, 179, 8)',
-        shipped: 'rgb(236, 72, 153)',
-        arrived_locally: 'rgb(120, 113, 108)',
-        delivered: 'rgb(34, 197, 94)',
+        PAID: '#2563EB',            // Blue (Payment confirmed)
+        PENDING: '#F59E0B',         // Amber (Waiting / Attention)
+        SHIPPED: '#8B5CF6',         // Violet (In transit)
+        "ARRIVED LOCALLY": '#06B6D4', // Cyan (Reached local hub)
+        DELIVERED: '#16A34A',       // Green (Success)
+        CANCELLED: '#EF4444',        // Red (Stopped)
+        REFUNDED: '#F97316',        // Orange (Money returned)
+        FAILED: '#DC2626',          // Dark Red
+        EXPIRED: '#6B7280',         // Gray
     };
 
     const shipping_statuses_data = {
@@ -205,7 +209,7 @@ export default function Dashboard({
                 label: 'Orders',
                 data: Object.values(shipping_statuses),
                 backgroundColor: Object.keys(shipping_statuses).map(
-                    (status) => statusColors[status],
+                    (status) => statusColors[status] + 'CC'
                 ),
             },
         ],

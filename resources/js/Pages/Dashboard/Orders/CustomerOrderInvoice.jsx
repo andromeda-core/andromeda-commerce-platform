@@ -198,7 +198,7 @@ export default function CustomerOrderInvoice({ order }) {
                                     <p className="mt-2 text-sm">Date: {order.added_at}</p>
                                 </div>
                                 <p className="text-sm">
-                                    Status: <span className="font-medium">{order.status}</span>
+                                    Status: <span className="font-medium">{order.status.replace(/_/g, ' ').toUpperCase()}</span>
                                 </p>
                             </div>
                         </div>
@@ -281,11 +281,11 @@ export default function CustomerOrderInvoice({ order }) {
 
                                             <tr className="border-b border-gray-200">
                                                 <td className="px-2 py-4 text-sm font-medium text-gray-900">
-                                                    {item.inventory_item?.smartphone?.model_name?.name}
+                                                    {item?.smartphone?.model_name?.name}
                                                 </td>
 
                                                 <td className="px-2 py-4 text-sm text-gray-600">
-                                                    {item.inventory_item?.smartphone?.capacity?.name}
+                                                    {item?.smartphone?.capacity?.name}
                                                 </td>
 
                                                 <td className="px-2 py-4 text-sm text-right text-gray-900">

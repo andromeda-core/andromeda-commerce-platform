@@ -6,7 +6,7 @@ export default function ErrorToastModal({ showError, setShowError, message }) {
         if (showError) {
             const timer = setTimeout(() => {
                 setShowError(false);
-            }, 5000);
+            }, 20000);
             return () => clearTimeout(timer);
         }
     }, [showError, setShowError]);

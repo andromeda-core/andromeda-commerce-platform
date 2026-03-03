@@ -23,6 +23,11 @@ class Supplier extends Model
         return $this->hasMany(Batch::class, 'supplier_id', 'id');
     }
 
+    public function assignedOrders(): HasMany
+    {
+        return $this->hasMany(SupplierAssignedOrder::class, 'supplier_id', 'id');
+    }
+
     // Attributes
     public function getAddedAtAttribute()
     {

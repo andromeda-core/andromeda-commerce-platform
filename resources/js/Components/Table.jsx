@@ -382,7 +382,8 @@ export default function Table({
 
                 {/* Table */}
                 <div className="relative z-0 px-5 sm:px-6">
-                    <div className="overflow-x-auto custom-scrollbar">
+                    {/* (custom-scrollbar) its a class that we are not using RN */}
+                    <div className="overflow-x-auto ">
                         <table className="min-h-[200px] min-w-full">
                             <thead className="py-3 border-gray-100 border-y dark:border-gray-800">
                                 <tr>
@@ -546,7 +547,10 @@ export default function Table({
                                                                                                             null,
                                                                                                         ); // Close dropdown after action
                                                                                                     }}
-                                                                                                    className="block w-full px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-zinc-950/50 dark:hover:text-white"
+                                                                                                    className={`${(typeof action.show === 'function' ? Boolean(action.show(item)) : true)
+                                                                                                        ? 'block'
+                                                                                                        : 'hidden'
+                                                                                                        } w-full px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-zinc-950/50 dark:hover:text-white`}
                                                                                                 >
                                                                                                     {
                                                                                                         action.label
@@ -560,7 +564,10 @@ export default function Table({
                                                                                                     href={action.href(
                                                                                                         item,
                                                                                                     )}
-                                                                                                    className="block w-full px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-zinc-950/50 dark:hover:text-white"
+                                                                                                    className={`${(typeof action.show === 'function' ? Boolean(action.show(item)) : true)
+                                                                                                            ? 'block'
+                                                                                                            : 'hidden'
+                                                                                                        } w-full px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-zinc-950/50 dark:hover:text-white`}
                                                                                                 >
                                                                                                     {
                                                                                                         action.label

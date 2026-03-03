@@ -1839,6 +1839,97 @@ canceled
 151: Cart , Chcekout Page Quantity Increase, Descrese of Product + Addon Button Fixed Now it wont be Foucable and Mass quantity increase when entering or clicking any keyboard button it only icreases from mouse click to prevent backend mass calls ✅
 152: Notifications Page Issue FIXED✅
 
+152: Strict Order Stock Guard Implemented ✅
+Order status progression is now strictly controlled. An order cannot move forward (paid → shipped → arrived_locally → delivered) unless every order item has fully reserved inventory equal to its required quantity.
+
+153: Detailed Stock Validation Messages Added ✅
+Stock validation errors now display proper smartphone model names instead of IDs, along with clear required, reserved, and missing quantities.
+
+154: Stock Needed Summary Added to Orders List ✅
+Each order now includes a computed stock summary showing whether it is complete, total missing quantity, and detailed missing items.
+
+155: Expandable Stock Needed UI Implemented ✅
+Orders list now shows first three missing items by default, with a functional “Show more / Show less” toggle per order.
+
+156: React Hook Issues Resolved in Orders Table ✅
+Replaced improper useEffect column setup with useMemo and fixed hook order issues to ensure stable rendering.
+
+157: Supplier Assignment Architecture Designed and Implemented ✅
+Created supplier_assigned_orders table with proper foreign keys and unique constraint to enforce one supplier per order.
+
+158: Assign Supplier Logic Secured ✅
+Supplier assignment now validates backend conditions, prevents duplicate assignments, and enforces database-level protection.
+
+159: Conditional Assign Supplier Button Added ✅
+Assign Supplier button now appears only when the user has permission and the order is not already assigned.
+
+160: Supplier Email Notification Implemented ✅
+When an order is assigned, the supplier receives an email notification containing order details, customer information, missing stock summary, and a direct link to view the order.
+
+161: System Security and Business Rules Strengthened ✅
+All critical validations are enforced at backend level, ensuring no reliance on frontend-only checks and preventing inconsistent order state transitions.
+
+
+168: Allow Orders Without Inventory ✅
+The system must allow customers to place orders even when there is no available inventory. Inventory validation must only block status progression, not order creation.
+
+162: Supplier Orders Module ✅
+163: Supplier Orders View Module ✅
+164: Supplier Orders Module Page For Admin to see all Supplier Assigned Records with Proper Status ✅
+165: Suppliers Assigned Order Action For Going to Batch and Add Those Stocks Which are required for the Assigned Order ✅
+166: Supplier Order Inventory Add Logic +  Auto Syncing With Ordered Items And Saving In The inventory_item_ids section and adding one id in inventory_item_id with proper Status tracking of status if Order already paid than we will update Status Of The Added stock to directly SOLD because Order is Already PAID ✅
+
+167: Supplier Order Assignment Mail Action Needed to be Fixed and Replaced with the actual Supplier Order View Module ✅
+
+168: Restricted Supplier Order View  ✅
+
+
+169: Supplier Inventory Registration Module  ✅
+Suppliers must have access to a controlled inventory registration system that:
+Allows them to add stock
+Restricts stock addition to assigned products only
+Syncs inventory automatically with pending assigned orders
+
+170: Order cancellation by admin implemented ✅
+171: Email notification sent to customer on cancellation ✅
+172: Stock rollback completed (used inventory returned) ✅
+173: Inventory items marked as available again ✅
+174: Reward points restored (if used)  ✅
+175: Order status updated to "canceled" ✅
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
  <- Review Remeaning (Done) ->
 (

@@ -383,8 +383,8 @@ function TabButton({ label, count, active, onClick }) {
         <button
             onClick={onClick}
             className={`flex flex-shrink-0 items-center gap-2 whitespace-nowrap border-b-[3px] py-3.5 pl-1 text-sm font-semibold transition-all ${active
-                    ? 'border-main-text-light text-main-text-light dark:border-main-text-dark dark:text-main-text-dark'
-                    : 'border-transparent text-main-text-light dark:text-main-text-dark hover:lg:border-main-text-light dark:lg:hover:border-main-text-dark'
+                ? 'border-main-text-light text-main-text-light dark:border-main-text-dark dark:text-main-text-dark'
+                : 'border-transparent text-main-text-light dark:text-main-text-dark hover:lg:border-main-text-light dark:lg:hover:border-main-text-dark'
                 }`}
         >
             <span className="text-[24px] font-semibold text-main-text-light dark:text-main-text-dark">
@@ -398,8 +398,8 @@ function TabButton({ label, count, active, onClick }) {
 function OrderCard({ order, currency, __, setLinkCopied }) {
     const firstProduct = order.order_items?.[0];
     const productImage =
-        firstProduct?.inventory_item?.smartphone?.smartphone_image_urls?.[0] ||
-        firstProduct?.inventory_item?.smartphone?.smartphone_video_urls?.[0]?.thumbnail_url;
+        firstProduct?.smartphone?.smartphone_image_urls?.[0] ||
+        firstProduct?.smartphone?.smartphone_video_urls?.[0]?.thumbnail_url;
 
     const { data, setData, processing, post } = useForm({
         order_id: order?.id,
@@ -607,7 +607,7 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                                         router.get(
                                             route('home') +
                                             generateSmartphoneURL(
-                                                firstProduct?.inventory_item?.smartphone,
+                                                firstProduct?.smartphone,
                                                 true,
                                                 true,
                                             ),
@@ -617,7 +617,7 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                                     <img
                                         src={productImage}
                                         alt={
-                                            firstProduct?.inventory_item?.smartphone?.model_name
+                                            firstProduct?.smartphone?.model_name
                                                 ?.name || 'Product'
                                         }
                                         className="object-cover w-full h-full"
@@ -630,13 +630,13 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                         {/* Product Details */}
                         <div className="flex-1">
                             <h4 className="mb-1 text-[16px] font-semibold text-main-text-light dark:text-main-text-dark">
-                                {firstProduct?.inventory_item?.smartphone?.model_name?.name ||
+                                {firstProduct?.smartphone?.model_name?.name ||
                                     __('Product Name Here')}
                             </h4>
                             <p className="mb-1 text-[14px] text-sub-text-light dark:text-sub-text-dark">
-                                {firstProduct?.inventory_item?.smartphone?.capacity?.name || '512G'}
+                                {firstProduct?.smartphone?.capacity?.name || '512G'}
                                 ,{' '}
-                                {firstProduct?.inventory_item?.smartphone?.colors[0]?.name ||
+                                {firstProduct?.smartphone?.colors[0]?.name ||
                                     __('Cosmic Orange')}
                             </p>
 

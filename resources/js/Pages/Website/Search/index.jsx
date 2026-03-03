@@ -259,7 +259,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, generateSmartphoneURL,
 
 });
 
-const Index = ({
+const index = ({
     floors,
     google_map_api_key,
     search_histories,
@@ -1323,4 +1323,4 @@ const Index = ({
     );
 };
 
-export default Index;
+export default index;

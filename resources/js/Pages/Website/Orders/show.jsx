@@ -592,7 +592,7 @@ function BankDetailsCard({ order, __, setCopied, setCopiedMessage }) {
             <div className="space-y-2 break-words">
                 <p className="text-[14px] flex items-center gap-2 font-semibold text-main-text-light dark:text-main-text-dark">
                     <span>
-                        {__("Bank Name")}:   {order?.order_items[0]?.inventory_item?.smartphone
+                        {__("Bank Name")}:   {order?.order_items[0]?.smartphone
                             ?.category?.distributor
                             ?.bank_name || 'N/A'}
                     </span>
@@ -610,7 +610,7 @@ function BankDetailsCard({ order, __, setCopied, setCopiedMessage }) {
 
                 <div className="text-[14px] flex items-center gap-2 font-semibold text-main-text-light dark:text-main-text-dark">
                     <span>
-                        {__("Account Holder")}:   {order?.order_items[0]?.inventory_item?.smartphone
+                        {__("Account Holder")}:   {order?.order_items[0]?.smartphone
                             ?.category?.distributor
                             ?.bank_account_name || 'N/A'}
                     </span>
@@ -631,7 +631,7 @@ function BankDetailsCard({ order, __, setCopied, setCopiedMessage }) {
 
                 <p className="text-[14px] flex items-center gap-2 font-semibold text-main-text-light dark:text-main-text-dark">
                     <span>
-                        {__("Account Number")}:   {order?.order_items[0]?.inventory_item?.smartphone
+                        {__("Account Number")}:   {order?.order_items[0]?.smartphone
                             ?.category?.distributor
                             ?.bank_account_no || 'N/A'}
                     </span>
@@ -649,7 +649,7 @@ function BankDetailsCard({ order, __, setCopied, setCopiedMessage }) {
 
                 <p className="text-[14px] flex items-center gap-2 font-semibold text-main-text-light dark:text-main-text-dark">
                     <span>
-                        {__("IBAN")}:   {order?.order_items[0]?.inventory_item?.smartphone
+                        {__("IBAN")}:   {order?.order_items[0]?.smartphone
                             ?.category?.distributor?.iban ||
                             'N/A'}
                     </span>
@@ -667,7 +667,7 @@ function BankDetailsCard({ order, __, setCopied, setCopiedMessage }) {
 
                 <p className="text-[14px] flex items-center gap-2 font-semibold text-main-text-light dark:text-main-text-dark">
                     <span>
-                        {__("SWIFT Code")}:   {order?.order_items[0]?.inventory_item?.smartphone
+                        {__("SWIFT Code")}:   {order?.order_items[0]?.smartphone
                             ?.category?.distributor?.swift_code ||
                             'N/A'}
                     </span>
@@ -906,13 +906,10 @@ function OrderItems({ order, currency, __ }) {
                         <div
                             key={item.id}
                         >
-
-
-
                             <div className="flex flex-col items-start gap-6 lg:flex-row">
                                 {/* Product Image */}
-                                {(item?.inventory_item?.smartphone?.smartphone_image_urls?.length > 0 ||
-                                    item?.inventory_item?.smartphone?.smartphone_video_urls?.length > 0) && (
+                                {(item?.smartphone?.smartphone_image_urls?.length > 0 ||
+                                    item?.smartphone?.smartphone_video_urls?.length > 0) && (
                                         <div
                                             className="relative overflow-hidden transition-all rounded-md cursor-pointer group/img aspect-square h-28 w-28 shrink-0 bg-surface-2-light dark:bg-surface-2-dark"
                                             onClick={(e) => {
@@ -921,7 +918,7 @@ function OrderItems({ order, currency, __ }) {
                                                 router.get(
                                                     route('home') +
                                                     generateSmartphoneURL(
-                                                        item?.inventory_item?.smartphone,
+                                                        item?.smartphone,
                                                         true,
                                                         true
                                                     )
@@ -930,12 +927,12 @@ function OrderItems({ order, currency, __ }) {
                                         >
                                             <img
                                                 src={
-                                                    item?.inventory_item?.smartphone?.smartphone_image_urls?.[0] ||
-                                                    item?.inventory_item?.smartphone?.smartphone_video_urls?.[0]
+                                                    item?.smartphone?.smartphone_image_urls?.[0] ||
+                                                    item?.smartphone?.smartphone_video_urls?.[0]
                                                         ?.thumbnail_url ||
                                                     Placeholder
                                                 }
-                                                alt={item?.inventory_item?.smartphone?.model_name?.name}
+                                                alt={item?.smartphone?.model_name?.name}
                                                 className="object-cover w-full h-full transition-transform duration-300 lg:group-hover/img:scale-110"
                                                 loading="lazy"
                                                 onError={(e) => (e.target.src = Placeholder)}
@@ -950,16 +947,16 @@ function OrderItems({ order, currency, __ }) {
                                     {/* Item Name */}
                                     <div>
                                         <h3 className="text-sm font-medium text-main-text-light dark:text-main-text-dark">
-                                            {__('Item Name')} : {item?.inventory_item?.smartphone?.model_name?.name || 'N/A'}
+                                            {__('Item Name')} : {item?.smartphone?.model_name?.name || 'N/A'}
                                         </h3>
                                     </div>
 
                                     {/* Product Options */}
-                                    {(item?.inventory_item?.smartphone?.capacity?.name || item?.color?.name) && (
+                                    {(item?.smartphone?.capacity?.name || item?.color?.name) && (
                                         <div className="text-sm font-medium text-main-text-light dark:text-main-text-dark">
                                             <span className="font-medium">{__('Product Options')} : </span>
                                             {[
-                                                item?.inventory_item?.smartphone?.capacity?.name,
+                                                item?.smartphone?.capacity?.name,
                                                 item?.color?.name,
                                             ]
                                                 .filter(Boolean)
@@ -968,10 +965,12 @@ function OrderItems({ order, currency, __ }) {
                                     )}
 
                                     {/* UPC / EAN */}
-                                    <div className="text-sm font-medium text-main-text-light dark:text-main-text-dark">
-                                        <span className="font-medium">{__('UPC / EAN')} : </span>
-                                        {item?.inventory_item?.smartphone?.upc || 'N/A'}
-                                    </div>
+                                    {['shipped', 'arrived_locally', 'delivered'].includes(order.status.toLowerCase()) && (
+                                        <div className="text-sm font-medium text-main-text-light dark:text-main-text-dark">
+                                            <span className="font-medium">{__('UPC / EAN')} : </span>
+                                            {item?.smartphone?.upc || 'N/A'}
+                                        </div>
+                                    )}
 
                                     {/* Quantity */}
                                     <div className="text-sm font-medium text-main-text-light dark:text-main-text-dark">

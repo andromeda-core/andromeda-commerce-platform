@@ -1332,7 +1332,9 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Currency|null $currency
+ * @property-read mixed $added_at
  * @property-read \App\Models\Order $order
+ * @property-read \App\Models\User|null $recordedBy
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlatformCommission newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlatformCommission newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PlatformCommission query()
@@ -1968,6 +1970,33 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Supplier whereUserId($value)
  */
 	class Supplier extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property int $order_id
+ * @property int $supplier_id
+ * @property int|null $assigned_by
+ * @property string|null $assigned_at
+ * @property string $status
+ * @property string|null $note
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder whereAssignedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder whereAssignedBy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder whereNote($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder whereOrderId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder whereSupplierId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder whereUpdatedAt($value)
+ */
+	class SupplierAssignedOrder extends \Eloquent {}
 }
 
 namespace App\Models{

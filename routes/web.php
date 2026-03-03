@@ -27,6 +27,7 @@ use App\Http\Controllers\Dashboard\RiskSignalController;
 use App\Http\Controllers\Dashboard\SettingController;
 use App\Http\Controllers\Dashboard\SmartphoneController;
 use App\Http\Controllers\Dashboard\SmartphoneForSaleController;
+use App\Http\Controllers\Dashboard\SupplierAssignedOrderController;
 use App\Http\Controllers\Dashboard\SupplierController;
 use App\Http\Controllers\Dashboard\SystemLogsController;
 use App\Http\Controllers\Dashboard\TranslationController;
@@ -392,6 +393,16 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/orders-destroy/{id?}', 'destroy')->name('destroy');
             Route::delete('/orders-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
             Route::put('/orders-update-cash-collected-status/{id?}', 'updateCashCollectedStatus')->name('updatecashcollectedstatus');
+            Route::get('/orders-assign-supplier/{order_id?}', 'assignSupplierIndex')->name('assignsupplier.index');
+            Route::post('/orders-assign-supplier', 'assignSupplier')->name('assignsupplier');
+            Route::put('/orders-cancel', 'orderCancelation')->name('cancel');
+        });
+
+        // Supplier Assigned Order Routes
+        Route::controller(SupplierAssignedOrderController::class)->name('supplier-assigned-orders.')->group(function () {
+            Route::get('/supplier-assigned-orders', 'index')->name('index');
+            Route::get('/supplier-assigned-orders/fulfill/{id?}', 'fulfillOrderIndex')->name('fulfill');
+            Route::post('/supplier-assigned-orders/fulfill/{id?}', 'fulfillOrder')->name('fulfill.store');
         });
 
         // Order Refund Routes

@@ -11,6 +11,7 @@ export default function Sidebar({
     setSidebarToggle,
     ApplicationLogoLight,
     ApplicationLogoDark,
+    user,
 }) {
     // For Managing Sidebar Navlinks Selection State
     const [selected, setSelected] = useState(null);
@@ -139,6 +140,7 @@ export default function Sidebar({
             'dashboard.order-cancelation-requests.',
             'dashboard.order-address-change-requests.',
             'dashboard.package-recordings.',
+            'dashboard.supplier-assigned-orders.',
         ].some(prefix => route().current().startsWith(prefix));
 
 
@@ -250,6 +252,7 @@ export default function Sidebar({
 
 
     }, []);
+
 
     return (
         <>
@@ -378,7 +381,7 @@ export default function Sidebar({
 
 
                                 {/* Orders */}
-                                {can(['Orders View', 'Order Refunds View', 'Order Cancelations View', 'Order Address Changes View', 'Package Recordings View']) && (
+                                {(can(['Orders View', 'Order Refunds View', 'Order Cancelations View', 'Order Address Changes View', 'Package Recordings View']) || user?.role === 'Supplier') && (
                                     <li>
                                         <a
                                             onClick={() => {
@@ -433,6 +436,19 @@ export default function Sidebar({
                                                         </Link>
                                                     </li>
                                                 )}
+
+
+                                                {(user?.role === 'Supplier' || user?.role === 'Admin') && (
+                                                    <li>
+                                                        <Link
+                                                            href={route('dashboard.supplier-assigned-orders.index')}
+                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.supplier-assigned-orders.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                        >
+                                                            Supplier Orders List
+                                                        </Link>
+                                                    </li>
+                                                )}
+
 
 
                                                 {can('Order Refunds View') && (

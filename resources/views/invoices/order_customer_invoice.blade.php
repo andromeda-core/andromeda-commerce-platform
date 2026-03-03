@@ -77,7 +77,7 @@
 
                         <p style="margin:6px 0 0; font-size:14px; color:#ffffff;">
                             Date: {{ $order->added_at }}<br>
-                            Status: <strong>{{ ucfirst($order->status) }}</strong>
+                            Status: <strong>{{ strtoupper(str_replace('_', ' ', $order->status)) }}</strong>
                         </p>
                     </td>
                 </tr>
@@ -158,10 +158,10 @@
                             {{-- MAIN ROW --}}
                             <tr style="border-bottom:1px solid #e5e7eb;">
                                 <td style="padding:14px; font-weight:600;">
-                                    {{ $item->inventoryItem->smartphone->model_name->name }}
+                                    {{ $item->smartphone->model_name->name }}
                                 </td>
                                 <td style="padding:14px; color:#6b7280;">
-                                    {{ $item->inventoryItem->smartphone->capacity->name }}
+                                    {{ $item->smartphone->capacity->name }}
                                 </td>
                                 <td align="right" style="padding:14px;">
                                     {{ $currency->symbol }}{{ number_format($item->unit_price, 2) }}

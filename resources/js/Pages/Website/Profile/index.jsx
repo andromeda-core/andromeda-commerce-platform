@@ -14,7 +14,7 @@ import Cropper from 'react-easy-crop';
 import { useTranslation } from '@/Hooks/useTranslation';
 import { ChevronLeft } from 'lucide-react';
 
-const Index = ({ user, countries }) => {
+const index = ({ user, countries }) => {
     const [infoMessage, setInfoMessage] = useState('');
     const [showInfoMessage, setShowInfoMessage] = useState(false);
 
@@ -1690,4 +1690,4 @@ const Index = ({ user, countries }) => {
     );
 };
 
-export default Index;
+export default index;

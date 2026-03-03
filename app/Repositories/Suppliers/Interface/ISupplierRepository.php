@@ -17,4 +17,6 @@ interface ISupplierRepository
     public function destroySupplier(string $id);
 
     public function destroySupplierBySelection(Request $request);
+
+    public function getAllSuppliersWithoutPagination();
 }

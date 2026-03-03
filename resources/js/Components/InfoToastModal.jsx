@@ -6,7 +6,7 @@ export default function InfoToastModal({ showInfo, setShowInfo, message }) {
         if (showInfo) {
             const timer = setTimeout(() => {
                 setShowInfo(false);
-            }, 5000);
+            }, 20000);
             return () => clearTimeout(timer);
         }
     }, [showInfo, setShowInfo]);

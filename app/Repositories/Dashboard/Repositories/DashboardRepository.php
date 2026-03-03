@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Repositories\Dashboard\Interface\IDashboardRepository;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Str;
 
 class DashboardRepository implements IDashboardRepository
 {
@@ -142,13 +143,12 @@ class DashboardRepository implements IDashboardRepository
 
     public function getShippingStatusesCount()
     {
-
         $allStatuses = [
-            'paid' => 0,
-            'pending' => 0,
-            'shipped' => 0,
-            'arrived_locally' => 0,
-            'delivered' => 0,
+            'PAID' => 0,
+            'PENDING' => 0,
+            'SHIPPED' => 0,
+            'ARRIVEDLOCALLY' => 0,
+            'DELIVERED' => 0,
         ];
 
         $dbStatuses = Order::selectRaw('status, COUNT(*) as total')
@@ -156,7 +156,14 @@ class DashboardRepository implements IDashboardRepository
             ->pluck('total', 'status')
             ->toArray();
 
-        $shippingStatus = array_merge($allStatuses, $dbStatuses);
+        $customizedStatuses = [];
+
+        foreach ($dbStatuses as $key => $value) {
+            $customizedKey = Str::of($key)->replace('_', ' ')->upper()->toString();
+            $customizedStatuses[$customizedKey] = $value;
+        }
+
+        $shippingStatus = array_merge($allStatuses, $customizedStatuses);
 
         return $shippingStatus;
     }

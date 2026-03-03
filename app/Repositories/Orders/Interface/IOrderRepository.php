@@ -16,6 +16,8 @@ interface IOrderRepository
 
     public function updateOrder(Request $request, string $id);
 
+    public function assignSupplier(Request $request);
+
     public function destroyOrder(string $id);
 
     public function destroyOrderBySelection(Request $request);
@@ -60,4 +62,12 @@ interface IOrderRepository
     public function RefundRequestWithdrawl(Request $request);
 
     public function reOrder(Request $request);
+
+    public function supplierAssignedOrders(Request $request);
+
+    public function fulfillOrderStockDetails(Request $request, ?string $id = null);
+
+    public function fulfillOrderStock(Request $request);
+
+    public function orderCancelationByAdmin(Request $request);
 }

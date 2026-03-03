@@ -275,4 +275,14 @@ class SupplierRepository implements ISupplierRepository
             ];
         }
     }
+
+    public function getAllSuppliersWithoutPagination()
+    {
+        return $this->supplier->with(['user'])->latest()->get()->map(function ($supplier) {
+            return [
+                'id' => $supplier->id,
+                'name' => $supplier->user->name,
+            ];
+        });
+    }
 }

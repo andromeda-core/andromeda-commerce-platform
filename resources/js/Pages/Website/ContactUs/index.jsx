@@ -8,7 +8,7 @@ import React from 'react';
 import { useTranslation } from '@/Hooks/useTranslation';
 import { ChevronLeft } from 'lucide-react';
 
-const Index = () => {
+const index = () => {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
@@ -227,4 +227,4 @@ const Index = () => {
     );
 };
 
-export default Index;
+export default index;

@@ -76,6 +76,7 @@ export default function AuthenticatedLayout({ children }) {
                     setSidebarToggle={setSidebarToggle}
                     ApplicationLogoLight={ApplicationLogoLight}
                     ApplicationLogoDark={ApplicationLogoDark}
+                    user={auth?.user}
                 />
 
                 <div className="relative flex flex-col flex-1 overflow-x-hidden overflow-y-auto">

@@ -17,7 +17,7 @@ import WebTextArea from '@/Components/WebTextArea';
 import { useConfirm } from '@/Hooks/useConfirm';
 
 
-export default function Checkout({
+export default function index({
     cart_items,
     refferalSessionData,
     shipping_address,

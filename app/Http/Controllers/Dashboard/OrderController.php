@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Repositories\Orders\Interface\IOrderRepository;
 use App\Repositories\PackageRecordings\Interface\IPackageRecordingsRepository;
+use App\Repositories\Suppliers\Interface\ISupplierRepository;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -20,6 +21,9 @@ class OrderController extends Controller implements HasMiddleware
             // new Middleware('permission:Orders Create', ['only' => 'create']),
             new Middleware('permission:Orders Create', ['only' => 'store']),
             new Middleware('permission:Orders Edit', ['only' => 'edit']),
+            new Middleware('permission:Orders Edit', ['only' => 'assignSupplierIndex']),
+            new Middleware('permission:Orders Edit', ['only' => 'assignSupplier']),
+            new Middleware('permission:Orders Edit', ['only' => 'orderCancelation']),
             new Middleware('permission:Orders Edit', ['only' => 'update']),
             new Middleware('permission:Orders Delete', ['only' => 'destroy']),
             new Middleware('permission:Orders Delete', ['only' => 'destroyBySelection']),
@@ -29,6 +33,7 @@ class OrderController extends Controller implements HasMiddleware
     public function __construct(
         private IOrderRepository $order,
         private IPackageRecordingsRepository $package_recording,
+        private ISupplierRepository $supplier
     ) {}
 
     public function index(Request $request)
@@ -235,5 +240,41 @@ class OrderController extends Controller implements HasMiddleware
         }
 
         return Inertia::render('Dashboard/Orders/show', compact('order'));
+    }
+
+    public function assignSupplierIndex(?string $order_id = null)
+    {
+        if (empty($order_id)) {
+            return to_route('dashboard.orders.index')->with('error', 'Order ID not found');
+        }
+
+        $suppliers = $this->supplier->getAllSuppliersWithoutPagination();
+
+        return Inertia::render('Dashboard/Orders/assign-supplier', compact('suppliers', 'order_id'));
+    }
+
+    public function assignSupplier(Request $request)
+    {
+        $assigned = $this->order->assignSupplier($request);
+
+        if ($assigned['status'] === false) {
+            return back()->with('error', $assigned['message']);
+        }
+
+        return to_route('dashboard.orders.index')->with('success', $assigned['message']);
+
+        return Inertia::render('Dashboard/Orders/assign-supplier', compact('suppliers'));
+    }
+
+    public function orderCancelation(Request $request)
+    {
+        $canceled = $this->order->orderCancelationByAdmin($request);
+
+        if ($canceled['status'] === false) {
+            return back()->with('error', $canceled['message']);
+        }
+
+        return back()->with('success', $canceled['message']);
+
     }
 }

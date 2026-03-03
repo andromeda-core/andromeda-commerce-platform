@@ -176,6 +176,11 @@ class Order extends Model
         return $this->hasOne(OrderCancelationRequest::class, 'order_id', 'id');
     }
 
+    public function assignedSupplier(): HasOne
+    {
+        return $this->hasOne(SupplierAssignedOrder::class, 'order_id', 'id');
+    }
+
     // Static Booting
     public static function booted()
     {
@@ -296,16 +301,12 @@ class Order extends Model
                     'customer.user',
                     'orderItems' => function ($q) {
                         $q->with([
-                            'inventoryItem' => function ($q) {
+                            'smartphone' => function ($q) {
                                 $q->with([
-                                    'smartphone' => function ($q) {
-                                        $q->with([
-                                            'selling_info.shipping_fee',
-                                            'selling_info.import_tax',
-                                            'model_name',
-                                            'capacity',
-                                        ]);
-                                    },
+                                    'selling_info.shipping_fee',
+                                    'selling_info.import_tax',
+                                    'model_name',
+                                    'capacity',
                                 ]);
                             },
                             'smartphoneAddons',
