@@ -657,7 +657,7 @@ const DesktopFeed = ({
     const feeAppliedRef = useRef({});
 
 
-    // Calculating Smartphone Total Price
+    // Calculating Smartphone Total Price (With Manual Tax Calculation)
     useEffect(() => {
         if (!feedGallery || feedGallery.type !== 'smartphones') return;
         const smartphoneId = feedGallery.id;
@@ -713,6 +713,8 @@ const DesktopFeed = ({
             [smartphoneId]: total,
         }));
     }, [smartphoneSubtotal, addonSubtotal, feedGallery?.id]);
+
+
 
     // Addon Quantity Increase Handling
     const handleAddonIncrease = (id) => {
@@ -830,29 +832,29 @@ const DesktopFeed = ({
     // }, [feedGallery?.inventory_items_count, feedGallery?.type]);
 
     // Stock Count Badge
-    const StockBadge = ({ feedGallery }) => {
-        const stock = feedGallery?.inventory_items_count || 0;
-        let badgeClass, text;
+    // const StockBadge = ({ feedGallery }) => {
+    //     const stock = feedGallery?.inventory_items_count || 0;
+    //     let badgeClass, text;
 
-        if (stock > 10) {
-            badgeClass = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-            text = `${__('In Stock')}: ${stock}`;
-        } else if (stock > 0) {
-            badgeClass = 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
-            text = `${__('Low Stock')}: ${stock}`;
-        } else {
-            badgeClass = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-            text = __('Out of Stock');
-        }
+    //     if (stock > 10) {
+    //         badgeClass = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+    //         text = `${__('In Stock')}: ${stock}`;
+    //     } else if (stock > 0) {
+    //         badgeClass = 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+    //         text = `${__('Low Stock')}: ${stock}`;
+    //     } else {
+    //         badgeClass = 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+    //         text = __('Out of Stock');
+    //     }
 
-        return (
-            <span
-                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${badgeClass}`}
-            >
-                {text}
-            </span>
-        );
-    };
+    //     return (
+    //         <span
+    //             className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${badgeClass}`}
+    //         >
+    //             {text}
+    //         </span>
+    //     );
+    // };
 
     // Handle Create Cart Item
     const handleAddCartItem = async (smartphones, addons, total_stock) => {

@@ -147,6 +147,7 @@ export default function Sidebar({
         const isProductsRoute = [
             'dashboard.smartphones.',
             'dashboard.smartphone-for-sales.',
+            'dashboard.smartphone-country-prices.',
             'dashboard.batches.',
             'dashboard.inventories.',
             'dashboard.categories.',
@@ -154,7 +155,8 @@ export default function Sidebar({
             'dashboard.settings.colors.',
             'dashboard.settings.capacities.',
             'dashboard.settings.condition-settings.',
-            'dashboard.settings.addon-settings.'
+            'dashboard.settings.addon-settings.',
+            'dashboard.inventory-verifications.',
         ].some(prefix => route().current().startsWith(prefix));
 
         const isUsersRoute = [
@@ -255,7 +257,7 @@ export default function Sidebar({
 
 
     const canSeeProducts = Boolean(
-        can(['Smartphones View', 'Batch View', 'Categories View', 'Inventories View', 'Smartphone For Sales View', 'Colors View', 'Capacity View', 'Conditions View', 'Model Names View', 'Addon Items View'])
+        can(['Smartphones View', 'Batch View', 'Categories View', 'Inventories View', 'Smartphone For Sales View', 'Colors View', 'Capacity View', 'Conditions View', 'Model Names View', 'Addon Items View', 'Smartphone Country Price View'])
         || (user?.role === 'Distributor'
             ? (can('Inventories Verification') && Boolean(user?.distributor?.can_verify_inventory))
             : can('Inventories Verification'))
@@ -575,6 +577,18 @@ export default function Sidebar({
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.smartphone-for-sales.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Sales
+                                                        </Link>
+                                                    </li>
+                                                )}
+
+
+                                                {can('Smartphone Country Price View') && (
+                                                    <li>
+                                                        <Link
+                                                            href={route('dashboard.smartphone-country-prices.index')}
+                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.smartphone-country-prices.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                        >
+                                                            Country Prices
                                                         </Link>
                                                     </li>
                                                 )}

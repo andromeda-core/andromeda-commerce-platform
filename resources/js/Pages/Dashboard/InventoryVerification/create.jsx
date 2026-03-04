@@ -482,7 +482,7 @@ export default function create() {
 
                 {step === STEP.SCANNING && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
-                        <div className="fixed inset-0 backdrop-blur-[28px] bg-black/50" />
+                        <div className="fixed inset-0 backdrop-blur-[5px] bg-black/30" />
 
                         <div className="relative z-10 w-full max-w-md overflow-hidden bg-white shadow-2xl rounded-2xl dark:bg-deepcharcoal">
                             {/* Modal Header */}
@@ -587,7 +587,7 @@ export default function create() {
 
                 {step === STEP.RECORDING && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
-                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+                        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
 
                         <div className="relative z-10 w-full max-w-3xl overflow-hidden bg-white shadow-2xl rounded-2xl dark:bg-deepcharcoal">
                             {/* Modal Header */}

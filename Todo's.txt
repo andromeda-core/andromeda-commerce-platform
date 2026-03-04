@@ -1915,8 +1915,20 @@ This allows administrators to selectively enable or disable inventory verificati
 
 180: Updated verification workflow to ensure that inventory verification is performed only by authorized users, maintaining system integrity and preventing unauthorized distributors from verifying or approving inventory items. ✅
 
+181: New module added under Products → Country Prices to manage country-specific smartphone price overrides. ✅
 
+182: Implemented synchronization logic for smartphone pricing:
+If a country-specific price exists, the system will use that price; otherwise it will fallback to the default selling price. (Aligned with client requirement) ✅
 
+183: Fixed smartphone price calculation issue where taxes were previously being calculated twice. ✅
+
+184: Added new permissions for the Country Prices module. ✅
+
+185: Secured the Country Prices module using the newly created permission guards. ✅
+
+186: Posts edit logic updated to allow editing of Spatiotemporal information. ✅
+
+187: Posts Create and Edit pages now display the selected Spatiotemporal information alongside the Location Detector Method input. ✅
 
 
 

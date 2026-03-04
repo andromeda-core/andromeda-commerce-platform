@@ -91,8 +91,9 @@ class PostController extends Controller implements HasMiddleware
         }
 
         $floors = $this->floor->getAllWithoutPaginateFloors();
+        $googleMapSettings = $this->post->getGoogleMapSettings();
 
-        return Inertia::render('Dashboard/Posts/edit', compact('post', 'floors'));
+        return Inertia::render('Dashboard/Posts/edit', compact('post', 'floors', 'googleMapSettings'));
     }
 
     public function update(Request $request, ?string $slug = null)

@@ -2,7 +2,7 @@ import Card from '@/Components/Card';
 import LinkButton from '@/Components/LinkButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import Table from '@/Components/Table';
 import { useEffect, useState } from 'react';
 
@@ -20,6 +20,22 @@ export default function index({ inventory_verifications }) {
             { key: 'verified_by.phone', label: 'Verified By Phone' },
 
 
+
+            {
+                label: 'View Video', render: (item) => {
+                    if (item?.video) {
+
+                        return (
+                            <a href={item?.video} target='__blank' className="text-blue-500 underline cursor-pointer">
+                                View Video
+                            </a>
+                        )
+                    } else {
+                        return 'N/A'
+                    }
+
+                }
+            },
 
             {
                 key: 'imei',

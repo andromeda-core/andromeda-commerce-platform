@@ -68,6 +68,8 @@ use App\Repositories\ShippingAddress\Interface\IShippingAddressRepository;
 use App\Repositories\ShippingAddress\Repository\ShippingAddressRepository;
 use App\Repositories\ShippingPolicy\Interface\IShippingPolicyRepository;
 use App\Repositories\ShippingPolicy\Repository\ShippingPolicyRepository;
+use App\Repositories\SmartphoneCountryPrice\Interface\ISmartphoneCountryPriceRepository;
+use App\Repositories\SmartphoneCountryPrice\Repository\SmartphoneCountryPriceRepository;
 use App\Repositories\SmartphoneForSales\Interface\ISmartphoneForSaleRepository;
 use App\Repositories\SmartphoneForSales\Repository\SmartphoneForSaleRepository;
 use App\Repositories\Smartphones\Interface\ISmartphoneRepository;
@@ -140,6 +142,7 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(IOrderCancelationRequestRepository::class, OrderCancelationRequestRepository::class);
         $this->app->bind(IPlatformCommissionRepository::class, PlatformCommissionRepository::class);
         $this->app->bind(IInventoryVerificationRepository::class, InventoryVerificationRepository::class);
+        $this->app->bind(ISmartphoneCountryPriceRepository::class, SmartphoneCountryPriceRepository::class);
 
     }
 

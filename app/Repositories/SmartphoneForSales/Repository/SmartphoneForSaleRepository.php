@@ -227,4 +227,18 @@ class SmartphoneForSaleRepository implements ISmartphoneForSaleRepository
                 return $list;
             });
     }
+
+    public function getAllSmartphoneForSalesForCountryPrices()
+    {
+        $currency = Cache::get('currency');
+
+        return $this->smartphone_for_sale->with(['smartphone.model_name'])
+            ->get()
+            ->map(function ($sale) use ($currency) {
+                return [
+                    'id' => $sale->id,
+                    'name' => $sale->smartphone->model_name->name.' - '.($currency?->symbol ?? '').$sale->total_price,
+                ];
+            });
+    }
 }

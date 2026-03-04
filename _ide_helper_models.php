@@ -845,24 +845,26 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
- * @property int $distributor_id
+ * @property int $verified_by_id
  * @property int $inventory_id
  * @property string $imei
- * @property string $video_path
+ * @property string|null $video
  * @property string|null $verified_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Inventory $inventory
+ * @property-read \App\Models\User $verifiedBy
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereDistributorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereImei($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereInventoryId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereVerifiedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereVideoPath($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereVerifiedById($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereVideo($value)
  */
 	class InventoryVerification extends \Eloquent {}
 }
@@ -1839,6 +1841,29 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCartAddon whereUpdatedAt($value)
  */
 	class SmartphoneCartAddon extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property int $country_id
+ * @property int $smartphone_for_sale_id
+ * @property numeric $price
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Country $country
+ * @property-read \App\Models\SmartphoneForSale $selling_info
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCountryPrice newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCountryPrice newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCountryPrice query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCountryPrice whereCountryId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCountryPrice whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCountryPrice whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCountryPrice wherePrice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCountryPrice whereSmartphoneForSaleId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCountryPrice whereUpdatedAt($value)
+ */
+	class SmartphoneCountryPrice extends \Eloquent {}
 }
 
 namespace App\Models{

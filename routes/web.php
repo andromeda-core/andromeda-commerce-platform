@@ -27,6 +27,7 @@ use App\Http\Controllers\Dashboard\RewardPointController;
 use App\Http\Controllers\Dashboard\RiskSignalController;
 use App\Http\Controllers\Dashboard\SettingController;
 use App\Http\Controllers\Dashboard\SmartphoneController;
+use App\Http\Controllers\Dashboard\SmartphoneCountryPriceController;
 use App\Http\Controllers\Dashboard\SmartphoneForSaleController;
 use App\Http\Controllers\Dashboard\SupplierAssignedOrderController;
 use App\Http\Controllers\Dashboard\SupplierController;
@@ -379,6 +380,9 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/inventories-get-smart-phone-by-upc/{upc}', 'getSmartPhoneByUpc')->name('getsmartphonebyupc');
             Route::delete('/inventories-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
         });
+
+        Route::resource('/smartphone-country-prices', SmartphoneCountryPriceController::class)->except(['show']);
+        Route::delete('/smartphone-country-prices/destroy-by-selection', [SmartphoneCountryPriceController::class, 'destroyBySelection'])->name('smartphone-country-prices.destroybyselection');
 
         // Inventory Verification Routes
         Route::controller(InventoryVerificationController::class)->name('inventory-verifications.')->middleware(['permission:Inventories Verification'])->group(function () {

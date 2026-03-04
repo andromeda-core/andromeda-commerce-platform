@@ -23,4 +23,6 @@ interface ISmartphoneForSaleRepository
     public function getAllShippingFeeLists();
 
     public function getAllImportTaxFeeLists();
+
+    public function getAllSmartphoneForSalesForCountryPrices();
 }

@@ -395,6 +395,9 @@ class PostRepository implements IPostRepository
             'post_type' => ['required', 'string', 'in:Review,Inquiry'],
             'status' => ['required', 'boolean'],
             'floor_id' => ['nullable'],
+            'latitude' => ['nullable', 'numeric'],
+            'longitude' => ['nullable', 'numeric'],
+            'location_name' => ['nullable', 'string'],
             'status' => ['required', 'boolean'],
         ], [
             'images.max' => 'The :attribute field must not exceed 35 files.',
@@ -450,6 +453,16 @@ class PostRepository implements IPostRepository
                 $tag = $validated_req['tag'];
                 $concatinated_tag = '#'.$tag;
                 $validated_req['tag'] = $concatinated_tag;
+            }
+
+            // Get Location Name  From Google Api Behalf Of Lat/lng
+            if (empty($validated_req['location_name']) && ! empty($validated_req['latitude']) && ! empty($validated_req['longitude'])) {
+                $response = $this->googleGeoCoderService->getLocationNameFromLatLng($validated_req['latitude'], $validated_req['longitude']);
+                if ($response['status'] === false) {
+                    throw new Exception($response['message']);
+                }
+
+                $validated_req['location_name'] = $response['place_name'] ?? 'No Location Name Found';
             }
 
             $validated_req = array_filter($validated_req, function ($value, $key) {

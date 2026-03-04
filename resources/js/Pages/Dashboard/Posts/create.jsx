@@ -515,6 +515,28 @@ export default function create({ floors, googleMapSettings }) {
                                                     ]}
                                                     itemKey={'name'}
                                                 />
+
+                                                {(data.latitude || data.location_name) && (
+                                                    <div className="flex items-start gap-3 p-3 border border-green-300 rounded-lg bg-green-50 dark:bg-green-900/20 dark:border-green-700">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5 text-green-600 dark:text-green-400 mt-0.5 shrink-0">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                                                        </svg>
+                                                        <div className="text-sm">
+                                                            <p className="font-medium text-green-700 dark:text-green-400">
+                                                                {data.location_name || 'Location Selected'}
+                                                            </p>
+                                                            {data.latitude && data.longitude && (
+                                                                <p className="text-green-600 dark:text-green-500 mt-0.5">
+                                                                    {Number(data.latitude).toFixed(6)}, {Number(data.longitude).toFixed(6)}
+                                                                </p>
+                                                            )}
+                                                            <p className="mt-1 text-xs text-green-500 dark:text-green-600">
+                                                                Select the Location Detector Method from above to make changes.
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
 
                                             <div className="grid grid-cols-1 gap-4">
