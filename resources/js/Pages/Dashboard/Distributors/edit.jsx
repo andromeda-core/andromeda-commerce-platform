@@ -23,6 +23,7 @@ export default function edit({ distributor }) {
         bank_account_no: distributor?.bank_account_no || '',
         iban: distributor?.iban || '',
         swift_code: distributor?.swift_code || '',
+        can_verify_inventory: distributor?.can_verify_inventory ?? 0,
     });
 
     const [togglePassword, setTogglePassword] = useState(false);
@@ -280,6 +281,21 @@ export default function edit({ distributor }) {
                                                     )}
                                                 </div>
 
+                                                <SelectInput
+                                                    InputName={'Can Verify Inventory'}
+                                                    Id={'can_verify_inventory'}
+                                                    Name={'can_verify_inventory'}
+                                                    Error={errors.can_verify_inventory}
+                                                    items={[
+                                                        { id: '0', name: 'NO' },
+                                                        { id: '1', name: 'YES' },
+                                                    ]}
+                                                    itemKey={'name'}
+                                                    Value={data.can_verify_inventory}
+                                                    Required={false}
+                                                    Multiple={false}
+                                                    Action={(value) => setData('can_verify_inventory', value)}
+                                                />
 
                                             </div>
 

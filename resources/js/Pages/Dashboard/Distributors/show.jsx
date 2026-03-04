@@ -275,6 +275,20 @@ export default function edit({ distributor }) {
                                                         )}
                                                     </div>
                                                 </div>
+
+
+
+                                                {/* IOnventory Verification */}
+                                                <div>
+                                                    <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
+                                                        Can Verify Inventory
+                                                    </label>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        <span className="px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full dark:bg-green-900 dark:text-white">
+                                                            {distributor?.can_verify_inventory ? "YES" : "NO"}
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

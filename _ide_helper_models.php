@@ -589,6 +589,7 @@ namespace App\Models{
  * @property string|null $iban
  * @property string|null $swift_code
  * @property string $bank_account_no
+ * @property int $can_verify_inventory
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property numeric|null $commission_rate
@@ -603,6 +604,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereBankAccountName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereBankAccountNo($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereBankName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereCanVerifyInventory($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereCommissionRate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereIban($value)
@@ -843,6 +845,31 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
+ * @property int $distributor_id
+ * @property int $inventory_id
+ * @property string $imei
+ * @property string $video_path
+ * @property string|null $verified_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereDistributorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereImei($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereInventoryId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereVerifiedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereVideoPath($value)
+ */
+	class InventoryVerification extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
  * @property string $name
  * @property string $code
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -1024,6 +1051,7 @@ namespace App\Models{
  * @property numeric $shipping_fee
  * @property numeric $addons_sub_total
  * @property-read \App\Models\OrderAddressChangeRequest|null $addressChangeRequest
+ * @property-read \App\Models\SupplierAssignedOrder|null $assignedSupplier
  * @property-read \App\Models\OrderCancelationRequest|null $cancelationRequest
  * @property-read \App\Models\Collaborator|null $collaborator
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CollaboratorCommission> $collaboratorCommissions
@@ -1956,6 +1984,8 @@ namespace App\Models{
  * @property int $user_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SupplierAssignedOrder> $assignedOrders
+ * @property-read int|null $assigned_orders_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Batch> $batches
  * @property-read int|null $batches_count
  * @property-read mixed $added_at
@@ -1983,6 +2013,10 @@ namespace App\Models{
  * @property string|null $note
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User|null $assignedBy
+ * @property-read mixed $added_at
+ * @property-read \App\Models\Order $order
+ * @property-read \App\Models\Supplier $supplier
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder query()

@@ -50,6 +50,26 @@ export default function index({ distributors }) {
             { key: 'user.email', label: 'Distributor Email' },
             { key: 'user.phone', label: 'Distributor Phone' },
 
+
+            {
+                label: 'Can Verify Inventory',
+                render: (item) => {
+                    if (item.can_verify_inventory) {
+                        return (
+                            <span className="p-2 text-white bg-green-500 rounded-lg">
+                                Yes
+                            </span>
+                        );
+                    } else {
+                        return (
+                            <span className="p-2 text-white bg-red-500 rounded-lg">
+                                No
+                            </span>
+                        );
+                    }
+                },
+            },
+
             {
                 label: 'Distributor Address',
                 render: (item) => {

@@ -34,6 +34,8 @@ use App\Repositories\GlobalSearch\Interface\IGlobalSearchRepository;
 use App\Repositories\GlobalSearch\Repository\GlobalSearchRepository;
 use App\Repositories\Inventories\Interface\IInventoryRepository;
 use App\Repositories\Inventories\Repository\InventoryRepository;
+use App\Repositories\InventoryVerification\Interface\IInventoryVerificationRepository;
+use App\Repositories\InventoryVerification\Repository\InventoryVerificationRepository;
 use App\Repositories\Notifications\Interface\INotificationRepository;
 use App\Repositories\Notifications\Repository\NotificationRepository;
 use App\Repositories\OrderAddressChangeRequest\Interface\IOrderAddressChangeRequestRepository;
@@ -137,6 +139,7 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(INotificationRepository::class, NotificationRepository::class);
         $this->app->bind(IOrderCancelationRequestRepository::class, OrderCancelationRequestRepository::class);
         $this->app->bind(IPlatformCommissionRepository::class, PlatformCommissionRepository::class);
+        $this->app->bind(IInventoryVerificationRepository::class, InventoryVerificationRepository::class);
 
     }
 

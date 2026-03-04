@@ -14,6 +14,7 @@ use App\Http\Controllers\Dashboard\DistributorController;
 use App\Http\Controllers\Dashboard\FloorController;
 use App\Http\Controllers\Dashboard\HomeController;
 use App\Http\Controllers\Dashboard\InventoryController;
+use App\Http\Controllers\Dashboard\InventoryVerificationController;
 use App\Http\Controllers\Dashboard\LanguageController;
 use App\Http\Controllers\Dashboard\OrderAddressChangeRequestController;
 use App\Http\Controllers\Dashboard\OrderCancelationRequestController;
@@ -377,6 +378,14 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/inventories-destroy/{id?}', 'destroy')->name('destroy');
             Route::get('/inventories-get-smart-phone-by-upc/{upc}', 'getSmartPhoneByUpc')->name('getsmartphonebyupc');
             Route::delete('/inventories-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
+        });
+
+        // Inventory Verification Routes
+        Route::controller(InventoryVerificationController::class)->name('inventory-verifications.')->middleware(['permission:Inventories Verification'])->group(function () {
+            Route::get('/inventory-verifications', 'index')->name('index');
+            Route::get('/inventory-verifications-create', 'create')->name('create');
+            Route::post('/inventory-verifications-store', 'store')->name('store');
+            Route::post('/inventory-verifications-verify', 'verify')->name('verify');
         });
 
         // Order Routes

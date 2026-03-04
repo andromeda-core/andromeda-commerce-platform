@@ -61,6 +61,7 @@ class DistributorRepository implements IDistributorRepository
             'iban' => ['required', 'string', 'max:255'],
             'swift_code' => ['required', 'string', 'max:255'],
             'commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'can_verify_inventory' => ['nullable', 'boolean'],
         ]);
 
         if ($validated_req['commission_rate'] == 0) {
@@ -92,6 +93,7 @@ class DistributorRepository implements IDistributorRepository
                 'iban' => $validated_req['iban'],
                 'swift_code' => $validated_req['swift_code'],
                 'commission_rate' => $validated_req['commission_rate'] ?? null,
+                'can_verify_inventory' => $validated_req['can_verify_inventory'] ?? false,
             ]);
 
             if (empty($distributor)) {
@@ -149,6 +151,7 @@ class DistributorRepository implements IDistributorRepository
             'iban' => ['required', 'string', 'max:255'],
             'swift_code' => ['required', 'string', 'max:255'],
             'commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'can_verify_inventory' => ['nullable', 'boolean'],
         ]);
 
         if ($validated_req['commission_rate'] == 0) {
@@ -177,6 +180,7 @@ class DistributorRepository implements IDistributorRepository
                 'iban' => $validated_req['iban'],
                 'swift_code' => $validated_req['swift_code'],
                 'commission_rate' => $validated_req['commission_rate'] ?? null,
+                'can_verify_inventory' => $validated_req['can_verify_inventory'] ?? false,
             ]);
 
             if (! $distributor_updated) {

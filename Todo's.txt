@@ -1897,9 +1897,23 @@ Syncs inventory automatically with pending assigned orders
 174: Reward points restored (if used)  ✅
 175: Order status updated to "canceled" ✅
 
+176: Inventory Verification Module implemented to allow verification of inventory items before they are made available in the system ✅
+
+177: Inventory Verification module visibility now controlled through a combination of Role Permissions and a Distributor-specific flag.
+If the user role is Distributor, the module will only be visible when:
+
+The user has the Inventories Verification permission, AND
+
+The Distributor → Can Verify Inventory flag is enabled for that distributor.
+Both conditions must be satisfied for access. This restriction applies only to distributor accounts. ✅
+
+178: Added “Can Verify Inventory” flag in the Distributor module to control verification capability on a per-distributor basis.
+This allows administrators to selectively enable or disable inventory verification for individual distributors instead of applying it globally to all users with the verification permission. ✅
 
 
+179: Updated frontend authorization logic to correctly evaluate the distributor verification flag together with the permission check, ensuring the Inventory Verification module is only rendered when both backend conditions are satisfied. This prevents the module from appearing in the sidebar when the distributor does not have verification rights. ✅
 
+180: Updated verification workflow to ensure that inventory verification is performed only by authorized users, maintaining system integrity and preventing unauthorized distributors from verifying or approving inventory items. ✅
 
 
 

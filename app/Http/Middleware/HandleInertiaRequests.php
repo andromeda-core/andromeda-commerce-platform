@@ -32,7 +32,7 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $user = $request->user()?->load(['customer', 'roles']);
+        $user = $request->user()?->load(['customer', 'roles', 'distributor']);
 
         $shouldShareFlash = $request->isMethod('GET') && $request->header('X-Inertia');
 

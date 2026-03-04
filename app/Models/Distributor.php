@@ -16,6 +16,7 @@ class Distributor extends Model
         'iban',
         'swift_code',
         'bank_account_no',
+        'can_verify_inventory',
         'commission_rate',
     ];
 

@@ -254,6 +254,13 @@ export default function Sidebar({
     }, []);
 
 
+    const canSeeProducts = Boolean(
+        can(['Smartphones View', 'Batch View', 'Categories View', 'Inventories View', 'Smartphone For Sales View', 'Colors View', 'Capacity View', 'Conditions View', 'Model Names View', 'Addon Items View'])
+        || (user?.role === 'Distributor'
+            ? (can('Inventories Verification') && Boolean(user?.distributor?.can_verify_inventory))
+            : can('Inventories Verification'))
+    );
+
     return (
         <>
             <aside
@@ -505,7 +512,7 @@ export default function Sidebar({
 
 
                                 {/* Products */}
-                                {can(['Smartphones View', 'Batch View', 'Categories View', 'Inventories View', 'Smartphone For Sales View', 'Colors View', 'Capacity View', 'Conditions View', 'Model Names View', 'Addon Items View']) && (
+                                {canSeeProducts && (
                                     <li>
                                         <a
                                             onClick={() => {
@@ -591,6 +598,18 @@ export default function Sidebar({
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.inventories.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Inventories
+                                                        </Link>
+                                                    </li>
+                                                )}
+
+
+                                                {(user?.role === 'Distributor' ? (can('Inventories Verification') && user?.distributor?.can_verify_inventory) : can('Inventories Verification')) && (
+                                                    <li>
+                                                        <Link
+                                                            href={route('dashboard.inventory-verifications.index')}
+                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.inventory-verifications.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                        >
+                                                            Inventory Verification
                                                         </Link>
                                                     </li>
                                                 )}
