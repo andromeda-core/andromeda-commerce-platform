@@ -51,7 +51,12 @@ export default function EmailVerificationPopup({ user }) {
                         return;
                     }
 
-                    setIsMinimized(true);
+                    setIsClosing(true);
+
+                    setTimeout(() => {
+                        setIsMinimized(true);
+                        setIsClosing(false);
+                    }, 300);
                 }}
             >
                 {/* Popup box */}
