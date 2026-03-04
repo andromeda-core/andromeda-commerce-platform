@@ -39,13 +39,20 @@ export default function EmailVerificationPopup({ user }) {
             {/* Overlay wrapper */}
             <div
                 className={`
-                    fixed z-[9999] animate-in fade-in duration-300
+                    fixed z-[50] animate-in fade-in duration-300
                     ${isMinimized
                         ? 'pointer-events-none'
                         : 'inset-0 flex items-center justify-center p-4'}
                     lg:inset-auto lg:top-4 lg:right-4 lg:flex
                     lg:items-start lg:justify-end lg:pointer-events-auto lg:p-0
                 `}
+                onClick={(e) => {
+                    if (e.target !== e.currentTarget) {
+                        return;
+                    }
+
+                    setIsMinimized(true);
+                }}
             >
                 {/* Popup box */}
                 <div
@@ -99,7 +106,7 @@ export default function EmailVerificationPopup({ user }) {
                                         setIsClosing(false);
                                     }, 300); // same as transition duration
                                 }}
-                                className="px-2 py-1 text-xs rounded-md lg:hidden bg-surface-1-light dark:bg-surface-2-dark"
+                                className="px-2 py-1 text-xs rounded-md lg:hidden bg-surface-1-light text-main-text-light dark:text-main-text-dark dark:bg-surface-3-dark"
                             >
                                 {__('Hide')}
                             </button>

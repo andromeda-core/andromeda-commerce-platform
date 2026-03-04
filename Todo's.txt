@@ -1929,7 +1929,8 @@ If a country-specific price exists, the system will use that price; otherwise it
 186: Posts edit logic updated to allow editing of Spatiotemporal information. ✅
 
 187: Posts Create and Edit pages now display the selected Spatiotemporal information alongside the Location Detector Method input. ✅
-
+188: Bottom Bar Dashboard Shortcut added before it was only showing For The Admin Role ✅
+189: Bottom Bar Email Verification Popup Fixed Auto closing When clicked Outside from The POPUP On Mobile And Hide button Of Mobile Email Verification PopUp Style FIXED ✅
 
 
 

@@ -229,7 +229,7 @@ const BottomBar = ({
 
                                     {user && (
                                         <>
-                                            {user?.role === 'Admin' && (
+                                            {user?.role !== 'Customer' && (
                                                 <li>
                                                     <Link
                                                         href={route('dashboard')}
