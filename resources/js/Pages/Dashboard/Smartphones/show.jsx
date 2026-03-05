@@ -141,13 +141,13 @@ export default function Show({ smartphone }) {
 
                                         <div className="flex justify-between py-3">
                                             <dt className="text-gray-600 dark:text-gray-400">
-                                                Selling Price
+                                                Price
                                             </dt>
                                             <dd className="font-medium text-gray-900 dark:text-gray-100">
                                                 {(smartphone?.selling_info &&
                                                     currency.symbol +
-                                                    ' ' +
-                                                    smartphone?.selling_info?.total_price) ||
+                                                    '' +
+                                                    Number(smartphone?.selling_info?.total_price)).toLocaleString('en-US') ||
                                                     'N/A'}
                                             </dd>
                                         </div>
@@ -209,6 +209,24 @@ export default function Show({ smartphone }) {
                                             </dt>
                                             <dd className="font-medium text-gray-900 dark:text-gray-100">
                                                 {smartphone?.delivery_days || 'N/A'}
+                                            </dd>
+                                        </div>
+
+                                        <div className="flex justify-between py-3">
+                                            <dt className="text-gray-600 dark:text-gray-400">
+                                                Location Name
+                                            </dt>
+                                            <dd className="font-medium text-gray-900 dark:text-gray-100">
+                                                {smartphone?.location_name || 'N/A'}
+                                            </dd>
+                                        </div>
+
+                                        <div className="flex justify-between py-3">
+                                            <dt className="text-gray-600 dark:text-gray-400">
+                                                Floor
+                                            </dt>
+                                            <dd className="font-medium text-gray-900 dark:text-gray-100">
+                                                {smartphone?.floor?.name || 'N/A'}
                                             </dd>
                                         </div>
                                     </dl>

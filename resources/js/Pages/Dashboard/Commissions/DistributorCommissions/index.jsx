@@ -71,7 +71,7 @@ export default function index({ distributor_commissions }) {
                 label: 'Commission Rate',
                 render: (item) => {
                     return (
-                        <span className="rounded-lg bg-blue-500 p-2 text-sm text-white">
+                        <span className="p-2 text-sm text-white bg-blue-500 rounded-lg">
                             {item.commission_rate}%
                         </span>
                     );
@@ -82,8 +82,8 @@ export default function index({ distributor_commissions }) {
                 label: 'Commission Amount',
                 render: (item) => {
                     return (
-                        <span className="rounded-lg bg-blue-500 p-2 text-sm text-white">
-                            {currency?.symbol} {item.commission_amount}
+                        <span className="p-2 text-sm text-white bg-blue-500 rounded-lg">
+                            {currency?.symbol}{Number(item.commission_amount).toLocaleString('en-US')}
                         </span>
                     );
                 },

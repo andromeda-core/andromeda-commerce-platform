@@ -8,11 +8,11 @@ import { Head, useForm } from '@inertiajs/react';
 import React, { useEffect, useRef, useState } from 'react';
 import SelectInput from '@/Components/SelectInput';
 import FileUploaderInput from '@/Components/FileUploaderInput';
-import BarcodeScannerComponent from 'react-qr-barcode-scanner';
 import Toast from '@/Components/Toast';
 import TipTapEditor from '@/Components/TipTapEditor';
 import { Loader } from '@googlemaps/js-api-loader';
 import Swal from 'sweetalert2';
+import { useScanner } from '@/Hooks/useScanner';
 
 export default function create({ colors, model_names, capacities, shipping_policies, categories, conditions, countries, return_policies, courier_companies, addons, floors, googleMapSettings }) {
     // Create Data Form Data
@@ -48,7 +48,33 @@ export default function create({ colors, model_names, capacities, shipping_polic
 
     const [showProgressModal, setShowProgressModal] = useState(false);
 
-    const [scannerOpen, setScannerOpen] = useState(false);
+    const [activeScanner, setActiveScanner] = useState(null);
+
+
+
+    const openScanner = (field, index) => {
+        setActiveScanner({ field, index });
+    };
+
+    const closeScanner = () => {
+        setActiveScanner(null);
+    };
+
+
+
+    const { videoRef: scannerVideoRef } = useScanner({
+        active: activeScanner,
+        onScan: (text) => handleScanResult(text),
+    });
+
+
+    const handleScanResult = async (text) => {
+        if (!activeScanner) return;
+        const { field } = activeScanner;
+        setData(field, text);
+        closeScanner();
+    };
+
 
     const addProductDetails = () => {
         setProductDetails([...productDetails, { title: '', value: '' }]);
@@ -503,7 +529,7 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                                 />
                                                             </svg>
                                                         }
-                                                        Action={() => setScannerOpen(true)}
+                                                        Action={() => openScanner('upc')}
                                                     />
                                                     <Input
                                                         InputName={'UPC/EAN'}
@@ -688,6 +714,29 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                     ]}
                                                     itemKey={'name'}
                                                 />
+
+
+                                                {(data.latitude || data.location_name) && (
+                                                    <div className="flex items-start gap-3 p-3 border border-green-300 rounded-lg bg-green-50 dark:bg-green-900/20 dark:border-green-700">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5 text-green-600 dark:text-green-400 mt-0.5 shrink-0">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                                                        </svg>
+                                                        <div className="text-sm">
+                                                            <p className="font-medium text-green-700 dark:text-green-400">
+                                                                {data.location_name || 'Location Selected'}
+                                                            </p>
+                                                            {data.latitude && data.longitude && (
+                                                                <p className="text-green-600 dark:text-green-500 mt-0.5">
+                                                                    {Number(data.latitude).toFixed(6)}, {Number(data.longitude).toFixed(6)}
+                                                                </p>
+                                                            )}
+                                                            <p className="mt-1 text-xs text-green-500 dark:text-green-600">
+                                                                Select the Location Detector Method from above to make changes.
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                )}
 
 
                                             </div>
@@ -954,68 +1003,73 @@ export default function create({ colors, model_names, capacities, shipping_polic
                             </form>
 
                             {/* Cam */}
-                            {scannerOpen && (
-                                <>
-                                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
-                                        <div className="fixed inset-0 backdrop-blur-[32px]"></div>
+                            {activeScanner && (
+                                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
+                                    <div className="fixed inset-0 backdrop-blur-[32px]" />
 
-                                        {/* Modal content */}
-                                        <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
-                                            <div className="text-center">
-                                                <h2 className="text-lg font-medium text-gray-800 dark:text-white">
-                                                    Place The Camera On The UPC Barcode
-                                                </h2>
+                                    <div className="relative z-10 w-full max-w-md overflow-hidden bg-white shadow-2xl rounded-2xl dark:bg-deepcharcoal">
+                                        {/* Header */}
+                                        <div className="flex items-center justify-between px-6 py-4 border-b dark:border-white/10">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                                                <h3 className="text-sm font-semibold text-gray-800 dark:text-white">
+                                                    Scanning: <span className="text-blue-600 capitalize dark:text-blue-400">
+                                                        {activeScanner.field === 'upc' ? 'UPC'
+                                                            : 'Serial No'}
+                                                    </span>
+                                                </h3>
+                                            </div>
+                                            <button
+                                                onClick={closeScanner}
+                                                className="flex items-center justify-center text-gray-400 rounded-lg w-7 h-7 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-4">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </div>
 
-                                                {scannerOpen && (
-                                                    <div className="flex items-center justify-center">
-                                                        <div
-                                                            className="rounded-2xl"
-                                                            style={{ marginTop: 20 }}
-                                                        >
-                                                            <BarcodeScannerComponent
-                                                                width={400}
-                                                                height={400}
-                                                                onUpdate={(err, result) => {
-                                                                    if (result) {
-                                                                        setData('upc', result.text);
-                                                                        setScannerOpen(false);
-                                                                    }
-                                                                }}
-                                                            />
+                                        <div className="p-6">
+                                            <p className="mb-4 text-xs text-center text-gray-500 dark:text-white/50">
+                                                Point the camera at the barcode. It will be captured automatically.
+                                            </p>
 
-                                                            <div className="flex items-center justify-center">
-                                                                <PrimaryButton
-                                                                    Action={() =>
-                                                                        setScannerOpen(false)
-                                                                    }
-                                                                    Text={'Close Scanner'}
-                                                                    Type={'button'}
-                                                                    CustomClass={'mt-4'}
-                                                                    Icon={
-                                                                        <svg
-                                                                            xmlns="http://www.w3.org/2000/svg"
-                                                                            fill="none"
-                                                                            viewBox="0 0 24 24"
-                                                                            strokeWidth={1.5}
-                                                                            stroke="currentColor"
-                                                                            className="size-6"
-                                                                        >
-                                                                            <path
-                                                                                strokeLinecap="round"
-                                                                                strokeLinejoin="round"
-                                                                                d="M6 18 18 6M6 6l12 12"
-                                                                            />
-                                                                        </svg>
-                                                                    }
-                                                                />
-                                                            </div>
-                                                        </div>
+                                            {/* Viewport */}
+                                            <div className="relative overflow-hidden bg-gray-950 rounded-xl" style={{ aspectRatio: '4/3' }}>
+                                                <video
+                                                    ref={scannerVideoRef}
+                                                    className="object-cover w-full h-full"
+                                                    muted
+                                                    playsInline
+                                                />
+
+                                                {/* Scan corners */}
+                                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                    <div className="relative w-48 h-28">
+                                                        <span className="absolute w-5 h-5 border-t-2 border-l-2 border-blue-400 -top-px -left-px rounded-tl-md" />
+                                                        <span className="absolute w-5 h-5 border-t-2 border-r-2 border-blue-400 -top-px -right-px rounded-tr-md" />
+                                                        <span className="absolute w-5 h-5 border-b-2 border-l-2 border-blue-400 -bottom-px -left-px rounded-bl-md" />
+                                                        <span className="absolute w-5 h-5 border-b-2 border-r-2 border-blue-400 -bottom-px -right-px rounded-br-md" />
+                                                        <div className="absolute h-px left-2 right-2 bg-blue-400/50 top-1/2 animate-pulse" />
                                                     </div>
-                                                )}
+                                                </div>
+                                            </div>
+
+                                            <div className="flex justify-center mt-4">
+                                                <PrimaryButton
+                                                    Action={closeScanner}
+                                                    Text={'Close Scanner'}
+                                                    Type={'button'}
+                                                    Icon={
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                                        </svg>
+                                                    }
+                                                />
                                             </div>
                                         </div>
                                     </div>
-                                </>
+                                </div>
                             )}
 
 

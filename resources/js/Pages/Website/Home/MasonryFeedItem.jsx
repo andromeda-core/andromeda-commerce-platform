@@ -458,7 +458,7 @@ const MasonryFeedItem = memo(
                                     <div className="mt-2 flex flex-col font-semibold items-start text-[13px] lg:text-[14px] leading-[17px] w-full">
                                         <p className="w-full text-white truncate">
                                             {item.selling_info?.total_price
-                                                ? `${currency?.symbol}${item.selling_info.total_price}`
+                                                ? `${currency?.symbol}${Number(item.selling_info.total_price).toLocaleString('en-US')}`
                                                 : ''}
                                         </p>
 
@@ -568,7 +568,7 @@ const MasonryFeedItem = memo(
                                 <div className="flex flex-col font-semibold items-start text-[13px] lg:text-[14px] leading-[17px] w-full">
                                     <p className="w-full truncate">
                                         {item.selling_info?.total_price
-                                            ? `${currency?.symbol}${item.selling_info.total_price}`
+                                            ? `${currency?.symbol}${Number(item.selling_info.total_price).toLocaleString('en-US')}`
                                             : ''}
                                     </p>
                                 </div>

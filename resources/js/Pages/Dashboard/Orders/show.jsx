@@ -603,7 +603,7 @@ export default function show({ order }) {
                                                                             </span>
                                                                             <span className="text-main-text-light dark:text-main-text-dark">
                                                                                 {currency?.symbol}
-                                                                                {Number(item.unit_price).toFixed(2)}
+                                                                                {Number(item.unit_price).toLocaleString('en-US')}
                                                                             </span>
                                                                         </div>
 
@@ -613,7 +613,7 @@ export default function show({ order }) {
                                                                             </span>
                                                                             <span className="text-main-text-light dark:text-main-text-dark">
                                                                                 {currency?.symbol}
-                                                                                {(item.unit_price * item.quantity).toFixed(2)}
+                                                                                {(item.unit_price * item.quantity).toLocaleString('en-US')}
                                                                             </span>
                                                                         </div>
 
@@ -623,7 +623,7 @@ export default function show({ order }) {
                                                                             </span>
                                                                             <span className="text-main-text-light dark:text-main-text-dark">
                                                                                 {currency?.symbol}
-                                                                                {Number(item.shipping_cost || 0).toFixed(2)}
+                                                                                {Number(item.shipping_cost || 0).toLocaleString('en-US')}
                                                                             </span>
                                                                         </div>
 
@@ -633,7 +633,7 @@ export default function show({ order }) {
                                                                             </span>
                                                                             <span className="text-main-text-light dark:text-main-text-dark">
                                                                                 {currency?.symbol}
-                                                                                {Number(item.import_cost || 0).toFixed(2)}
+                                                                                {Number(item.import_cost || 0).toLocaleString('en-US')}
                                                                             </span>
                                                                         </div>
                                                                     </div>
@@ -656,7 +656,7 @@ export default function show({ order }) {
                                                                                         </span>
                                                                                         <span className="text-main-text-light dark:text-main-text-dark">
                                                                                             {currency?.symbol}
-                                                                                            {Number(addon.total_price).toFixed(2)}
+                                                                                            {Number(addon.total_price).toLocaleString('en-US')}
                                                                                         </span>
                                                                                     </div>
                                                                                 ))}
@@ -665,7 +665,7 @@ export default function show({ order }) {
                                                                                     <span className="text-sub-text-light dark:text-sub-text-dark">Add-ons Total</span>
                                                                                     <span className="text-main-text-light dark:text-main-text-dark">
                                                                                         {currency?.symbol}
-                                                                                        {addonsTotal.toFixed(2)}
+                                                                                        {Number(addonsTotal).toLocaleString('en-US')}
                                                                                     </span>
                                                                                 </div>
                                                                             </div>
@@ -679,7 +679,7 @@ export default function show({ order }) {
                                                                         </span>
                                                                         <span className="text-base font-bold text-main-text-light dark:text-main-text-dark">
                                                                             {currency?.symbol}
-                                                                            {finalItemTotal.toFixed(2)}
+                                                                            {Number(finalItemTotal).toLocaleString('en-US')}
                                                                         </span>
                                                                     </div>
 
@@ -1450,7 +1450,7 @@ export default function show({ order }) {
                                             <div className="flex justify-between text-sm">
                                                 <span className="text-sub-text-light dark:text-sub-text-dark">{__('Product SubTotal')}</span>
                                                 <span className="font-semibold text-sub-text-ight dark:text-sub-text-dark">
-                                                    {currency?.symbol}{parseFloat(Number(order.sub_total)).toFixed(2) || '0.00'}
+                                                    {currency?.symbol}{Number(order.sub_total).toLocaleString('en-US') || '0.00'}
                                                 </span>
                                             </div>
 
@@ -1458,7 +1458,7 @@ export default function show({ order }) {
                                             <div className="flex justify-between text-sm">
                                                 <span className="text-sub-text-light dark:text-sub-text-dark">{__('Addons SubTotal')}</span>
                                                 <span className="font-semibold text-sub-text-ight dark:text-sub-text-dark">
-                                                    {currency?.symbol}{parseFloat(Number(order.addons_sub_total)).toFixed(2) || '0.00'}
+                                                    {currency?.symbol}{Number(order.addons_sub_total).toLocaleString('en-US') || '0.00'}
                                                 </span>
                                             </div>
 
@@ -1467,7 +1467,7 @@ export default function show({ order }) {
                                             <div className="flex justify-between text-sm">
                                                 <span className="text-sub-text-light dark:text-sub-text-dark">{__('Shipping Fee')}</span>
                                                 <span className="font-semibold text-sub-text-ight dark:text-sub-text-dark">
-                                                    {currency?.symbol}{parseFloat(Number(order.shipping_fee)).toFixed(2) || '0.00'}
+                                                    {currency?.symbol}{Number(order.shipping_fee).toLocaleString('en-US') || '0.00'}
                                                 </span>
                                             </div>
 
@@ -1475,7 +1475,7 @@ export default function show({ order }) {
                                             <div className="flex justify-between text-sm">
                                                 <span className="text-sub-text-light dark:text-sub-text-dark">{__('Import Tax')}</span>
                                                 <span className="font-semibold text-sub-text-ight dark:text-sub-text-dark">
-                                                    {currency?.symbol}{parseFloat(Number(order.import_tax)).toFixed(2) || '0.00'}
+                                                    {currency?.symbol}{Number(order.import_tax).toLocaleString('en-US') || '0.00'}
                                                 </span>
                                             </div>
 
@@ -1487,7 +1487,7 @@ export default function show({ order }) {
                                                     </span>
                                                     <span className="font-semibold text-green-600 dark:text-green-400">
                                                         -{currency?.symbol}
-                                                        {parseFloat(order.discount).toFixed(2)}
+                                                        {Number(order.discount).toLocaleString('en-US')}
                                                     </span>
                                                 </div>
                                             )}
@@ -1497,13 +1497,13 @@ export default function show({ order }) {
 
                                                 <div className="flex items-center justify-between mb-1">
                                                     <span className="text-base font-semibold text-sub-text-light dark:text-sub-text-dark">
-                                                        {__('Remeaning Amount')}
+                                                        {__('Remaining Amount')}
                                                     </span>
                                                     <span className="text-xl font-semibold text-sub-text-light dark:text-sub-text-dark">
                                                         {currency?.symbol}
-                                                        {parseFloat(
+                                                        {Number(
                                                             (order.amount || 0),
-                                                        ).toFixed(2)}
+                                                        ).toLocaleString('en-US')}
                                                     </span>
                                                 </div>
 
@@ -1513,9 +1513,9 @@ export default function show({ order }) {
                                                     </span>
                                                     <span className="text-xl font-semibold text-sub-text-light dark:text-sub-text-dark">
                                                         {currency?.symbol}
-                                                        {parseFloat(
+                                                        {Number(
                                                             (order.points_used || 0),
-                                                        ).toFixed(2)}
+                                                        ).toLocaleString('en-US')}
                                                     </span>
                                                 </div>
 
@@ -1525,9 +1525,9 @@ export default function show({ order }) {
                                                     </span>
                                                     <span className="text-xl font-semibold text-sub-text-light dark:text-sub-text-dark">
                                                         {currency?.symbol}
-                                                        {parseFloat(
+                                                        {Number(
                                                             order.full_amount,
-                                                        ).toFixed(2)}
+                                                        ).toLocaleString('en-US')}
                                                     </span>
                                                 </div>
                                             </div>

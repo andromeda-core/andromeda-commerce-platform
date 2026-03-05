@@ -641,7 +641,7 @@ const MobileFeed = ({
                                         <div className='flex items-center justify-between'>
                                             <span className="text-[20px] text-main-text-light font-semibold dark:text-main-text-dark ">
                                                 {currency?.symbol}
-                                                {item.selling_info?.total_price}
+                                                {Number(item.selling_info?.total_price).toLocaleString('en-US')}
                                             </span>
                                             <button
                                                 onClick={() => {
@@ -686,7 +686,7 @@ const MobileFeed = ({
                                     <div className="flex items-center justify-between">
                                         <span className="text-[20px] font-semibold ">
                                             {currency?.symbol}
-                                            {item.selling_info?.total_price}
+                                            {Number(item.selling_info?.total_price).toLocaleString('en-US')}
                                         </span>
                                         <button
                                             onClick={() => {

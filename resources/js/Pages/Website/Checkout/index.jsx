@@ -3447,7 +3447,7 @@ function SecondaryPaymentModal({
                                                     {__('Total Amount')}
                                                 </span>
                                                 <span className="font-semibold text-[18px] text-main-text-light dark:text-main-text-dark">
-                                                    {currency?.symbol}{totalAmount}
+                                                    {currency?.symbol}{Number(totalAmount).toLocaleString('en-US')}
                                                 </span>
                                             </div>
                                             <div className="flex items-center justify-between text-sm">
@@ -3455,7 +3455,7 @@ function SecondaryPaymentModal({
                                                     {__('Points Discount')}
                                                 </span>
                                                 <span className="font-semibold text-[18px] text-main-text-light dark:text-main-text-dark">
-                                                    -{currency?.symbol}{(totalAmount - remainingAmount).toFixed(2)}
+                                                    -{currency?.symbol}{(totalAmount - remainingAmount).toLocaleString('en-US')}
                                                 </span>
                                             </div>
                                             <div className="pt-3 border-t border-surface-2-light dark:border-surface-3-dark">
@@ -3464,7 +3464,7 @@ function SecondaryPaymentModal({
                                                         {__('Remaining to Pay')}
                                                     </span>
                                                     <span className="font-semibold text-[18px] text-main-text-light dark:text-main-text-dark">
-                                                        {currency?.symbol}{remainingAmount}
+                                                        {currency?.symbol}{Number(remainingAmount).toLocaleString('en-US')}
                                                     </span>
                                                 </div>
                                             </div>
@@ -3610,7 +3610,7 @@ function SecondaryPaymentModal({
                                                 {__('Total Amount')}
                                             </span>
                                             <span className="font-semibold text-[18px] text-main-text-light dark:text-main-text-dark">
-                                                {currency?.symbol}{totalAmount}
+                                                {currency?.symbol}{Number(totalAmount).toLocaleString('en-US')}
                                             </span>
                                         </div>
                                         <div className="flex items-center justify-between text-sm">
@@ -3618,7 +3618,7 @@ function SecondaryPaymentModal({
                                                 {__('Points Discount')}
                                             </span>
                                             <span className="font-semibold text-[18px] text-main-text-light dark:text-main-text-dark">
-                                                -{currency?.symbol}{(totalAmount - remainingAmount).toFixed(2)}
+                                                -{currency?.symbol}{(totalAmount - remainingAmount).toLocaleString('en-US')}
                                             </span>
                                         </div>
                                         <div className="pt-3 border-t border-surface-2-light dark:border-surface-3-dark">
@@ -3627,7 +3627,7 @@ function SecondaryPaymentModal({
                                                     {__('Remaining to Pay')}
                                                 </span>
                                                 <span className="font-semibold text-[18px] text-main-text-light dark:text-main-text-dark">
-                                                    {currency?.symbol}{remainingAmount}
+                                                    {currency?.symbol}{Number(remainingAmount).toLocaleString('en-US')}
                                                 </span>
                                             </div>
                                         </div>

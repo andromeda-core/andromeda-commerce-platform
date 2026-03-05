@@ -49,9 +49,14 @@ export default function index({ reward_points }) {
             },
 
             {
-                key: 'points',
+
                 label: 'Points',
-                badge: (value) => 'p-2 bg-blue-500 rounded-lg text-white',
+                render: (item) => {
+                    return (
+                        <span className="p-2 text-white rounded-lg bg-violet-500">{Number(item?.points).toLocaleString('en-US')}</span>
+                    );
+                }
+
             },
             {
                 key: 'expires_at',
@@ -90,7 +95,7 @@ export default function index({ reward_points }) {
                     Content={
                         <>
                             {can('Reward Points Create') && (
-                                <div className="my-3 flex flex-wrap justify-end">
+                                <div className="flex flex-wrap justify-end my-3">
                                     <LinkButton
                                         Text={'Create Reward point'}
                                         URL={route('dashboard.reward-points.create')}

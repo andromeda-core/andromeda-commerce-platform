@@ -70,4 +70,6 @@ interface IOrderRepository
     public function fulfillOrderStock(Request $request);
 
     public function orderCancelationByAdmin(Request $request);
+
+    public function orderProductIMEIVerification(Request $request);
 }

@@ -703,7 +703,7 @@ function OrderSummary({
                             {__('Items total')}
                         </span>
                         <span className="text-[20px] font-semibold text-main-text-light dark:text-main-text-dark">
-                            {currency?.symbol}{parseFloat(Number(summary.items_total)).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                            {currency?.symbol}{Number(summary.items_total).toLocaleString('en-US')}
                         </span>
                     </div>
 
@@ -721,7 +721,7 @@ function OrderSummary({
                         {__('Estimated total')}
                     </span>
                     <span className="text-[28px] font-semibold text-main-text-light dark:text-main-text-dark">
-                        {currency?.symbol}{parseFloat(Number(summary.items_total)).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                        {currency?.symbol}{Number(summary.items_total).toLocaleString('en-US')}
                     </span>
                 </div>
 

@@ -32,6 +32,7 @@ class SmartphoneController extends Controller implements HasMiddleware
         private ISmartphoneRepository $smartphone,
         private IFloorRepostitory $floor,
         private IPostRepository $post,
+
     ) {}
 
     public function index(Request $request)
@@ -113,7 +114,10 @@ class SmartphoneController extends Controller implements HasMiddleware
         $return_policies = $this->smartphone->getReturnPolicies();
         $addons = $this->smartphone->getAddons();
 
-        return Inertia::render('Dashboard/Smartphones/edit', compact('colors', 'model_names', 'capacities', 'shipping_policies', 'categories', 'countries', 'conditions', 'courier_companies', 'return_policies', 'smartphone', 'addons'));
+        $floors = $this->floor->getAllWithoutPaginateFloors();
+        $googleMapSettings = $this->post->getGoogleMapSettings();
+
+        return Inertia::render('Dashboard/Smartphones/edit', compact('colors', 'floors', 'googleMapSettings', 'model_names', 'capacities', 'shipping_policies', 'categories', 'countries', 'conditions', 'courier_companies', 'return_policies', 'smartphone', 'addons'));
     }
 
     public function update(Request $request, ?string $id = null)

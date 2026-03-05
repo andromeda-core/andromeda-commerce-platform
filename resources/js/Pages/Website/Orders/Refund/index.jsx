@@ -5,25 +5,89 @@ import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ChevronLeft } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useScanner } from '@/Hooks/useScanner';
+import axios from 'axios';
+import { useVideoRecorder } from '@/Hooks/useVideoRecorder';
 
-
-const index = ({ order_no }) => {
+const index = ({ order_no, order }) => {
 
     const { confirm, ConfirmDialog } = useConfirm();
     const { data, setData, post, processing, errors } = useForm({
         refund_reason: '',
+        scanned_imei: '',
+        return_Packaging_video: '',
+        defect_evidence_video: ''
     });
 
 
+    const [activeRecorder, setActiveRecorder] = useState(null);
     // Translation Hook
     const { __ } = useTranslation();
 
     const [isDisabled, setIsDisabled] = useState(false);
+
+
+    const [imeiVerified, setImeiVerified] = useState(false);
+    const [showIMEIModal, setShowIMEIModal] = useState(false);
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [scanCooldown, setScanCooldown] = useState(false);
+    const [scanError, setScanError] = useState(null);
+    const cooldownRef = useRef(null);
+
+    const { videoRef: scannerVideoRef } = useScanner({
+        active: showIMEIModal && !scanCooldown && !isVerifying,
+        onScan: (text) => handleIMEIScan(text),
+    });
+
     const windowSize = useWindowSize();
     useEffect(() => {
         setIsDisabled(data.refund_reason === '');
     }, [data]);
+
+    const handleIMEIScan = async (scannedValue) => {
+        if (scanCooldown || isVerifying) return;
+
+        const lines = scannedValue.trim().split(/[\n\r\s,;|]+/);
+        const imei = lines[0]?.trim();
+
+
+        if (!imei) {
+            setScanError('Could not read a valid IMEI. Please try again.');
+            setScanCooldown(true);
+            cooldownRef.current = setTimeout(() => { setScanCooldown(false); setScanError(null); }, 2500);
+            return;
+        }
+
+        setScanCooldown(true);
+        setIsVerifying(true);
+        setScanError(null);
+
+        try {
+            await axios.post(
+                route('website.orders.verify.imei'),
+                { imei: imei, order_no: order_no },
+            ).then((res) => {
+                if (res.data.status) {
+                    setData('scanned_imei', imei);
+                    setImeiVerified(true);
+                    setShowIMEIModal(false);
+                }
+
+                const msg = res?.data?.message || __('IMEI not found. Device not registered in inventory.');
+                setScanError(msg);
+                cooldownRef.current = setTimeout(() => { setScanCooldown(false); setScanError(null); }, 3000);
+            });
+
+        } catch (err) {
+            const msg = err?.response?.data?.message || __('IMEI not found. Device not registered in inventory.');
+            setScanError(msg);
+            cooldownRef.current = setTimeout(() => { setScanCooldown(false); setScanError(null); }, 3000);
+        } finally {
+            setIsVerifying(false);
+        }
+    };
+
 
     const submit = async (e) => {
         e.preventDefault();
@@ -51,6 +115,14 @@ const index = ({ order_no }) => {
 
 
     };
+
+
+    useEffect(() => {
+        if (order?.status === 'delivered' && !imeiVerified) {
+            setShowIMEIModal(true);
+        }
+        return () => clearTimeout(cooldownRef.current);
+    }, []);
 
     return (
         <MainLayout>
@@ -139,6 +211,29 @@ const index = ({ order_no }) => {
                                             Placeholder={__('Please briefly explain why you are requesting a refund')}
                                             ClassName={'dark:bg-surface-1-dark'}
                                         />
+
+
+                                        {order?.status === 'delivered' && (
+                                            <>
+                                                <VideoRecorderPanel
+                                                    label={__('Defect Evidence Video')}
+                                                    onFileSaved={(file) => setData('defect_evidence_video', file)}
+                                                    isActive={activeRecorder === 'defect'}
+                                                    onOpen={() => setActiveRecorder('defect')}
+                                                    onClose={() => setActiveRecorder(null)}
+                                                    __={__}
+                                                />
+
+                                                <VideoRecorderPanel
+                                                    label={__('Return Packaging Video')}
+                                                    onFileSaved={(file) => setData('return_Packaging_video', file)}
+                                                    isActive={activeRecorder === 'packaging'}
+                                                    onOpen={() => setActiveRecorder('packaging')}
+                                                    onClose={() => setActiveRecorder(null)}
+                                                    __={__}
+                                                />
+                                            </>
+                                        )}
                                     </div>
 
                                     {/* Info Box */}
@@ -151,11 +246,11 @@ const index = ({ order_no }) => {
                                     </div>
 
                                     {/* Submit Button */}
-                                    <div className="flex justify-end pt-4">
+                                    <div className="flex justify-end py-4">
                                         <button
-                                            disabled={processing || isDisabled}
+                                            disabled={processing || isDisabled || (!imeiVerified && order?.status === 'delivered')}
                                             type="submit"
-                                            className={`text-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md bg-black font-semibold text-white transition-all hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80 ${(processing || isDisabled) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
+                                            className={`text-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md bg-black font-semibold text-white transition-all hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80 ${(processing || isDisabled || (!imeiVerified && order?.status === 'delivered')) && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
                                         >
                                             <div className="flex items-center justify-center gap-2">
                                                 {processing && (
@@ -192,8 +287,370 @@ const index = ({ order_no }) => {
 
                 </div>
             </div>
+
+
+            {showIMEIModal && (
+                <div className="absolute inset-0 z-40 flex items-start overflow-y-auto lg:items-center scrollbar-none">
+                    <div className="absolute inset-0 bg-backgroundLight/80 dark:bg-backgroundDark/90 backdrop-blur-sm" />
+
+                    {/* Panel */}
+                    <div className="relative z-10 flex flex-col w-full max-w-2xl gap-0 mx-auto mb-20 overflow-hidden border rounded-md shadow-xl sm:mb-8 border-surface-3-light dark:border-surface-3-dark bg-backgroundLight dark:bg-surface-1-dark">
+
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-surface-3-light dark:border-surface-3-dark">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                                <h3 className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+                                    {__('Step Required Before Submitting')}
+                                </h3>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-6 p-6 lg:grid-cols-2">
+
+                            {/* LEFT: Explanation */}
+                            <div className="flex flex-col justify-between gap-5">
+
+                                {/* What is this */}
+                                <div>
+                                    <h2 className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
+                                        {__('Verify Your Device First')}
+                                    </h2>
+                                    <p className="mt-1.5 text-sm leading-relaxed text-sub-text-light dark:text-sub-text-dark">
+                                        {__('Before you can submit a refund request, we need to verify the IMEI of the device included in this order. This helps us confirm the device condition and process your refund accurately.')}
+                                    </p>
+                                </div>
+
+                                {/* Steps */}
+                                <div className="space-y-3">
+                                    {[
+                                        {
+                                            num: '1',
+                                            title: __('Scan Device Barcode'),
+                                            desc: __('Point your camera at the barcode printed on the device or its box.'),
+                                        },
+                                        {
+                                            num: '2',
+                                            title: __('IMEI Auto-Verified'),
+                                            desc: __('IMEI 1 is extracted and matched against your order automatically.'),
+                                        },
+                                        {
+                                            num: '3',
+                                            title: __('Submit Your Request'),
+                                            desc: __('Once verified, you can fill in the reason and submit your refund.'),
+                                        },
+                                    ].map((s) => (
+                                        <div key={s.num} className="flex items-start gap-3">
+                                            <div className={`flex items-center justify-center w-7 h-7 rounded-md text-xs font-semibold shrink-0 text-main-text-light dark:text-main-text-dark`}>
+                                                {s.num}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-main-text-light dark:text-main-text-dark">{s.title}</p>
+                                                <p className="mt-0.5 text-xs text-sub-text-light dark:text-sub-text-dark">{s.desc}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Info note */}
+                                <div className="flex items-start gap-2 p-3 border rounded-md border-surface-3-light bg-surface-1-light dark:bg-surface-1-dark dark:border-surface-3-dark">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="mt-0.5 size-4 shrink-0 text-sub-text-light dark:text-sub-text-dark">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                                    </svg>
+                                    <p className="text-xs leading-relaxed text-sub-text-light dark:text-sub-text-dark">
+                                        {__('Only IMEI 1 is used for verification. Make sure the barcode is clean and well-lit for best results.')}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* RIGHT: Scanner */}
+                            <div className="flex flex-col gap-3">
+                                <p className="text-xs font-medium tracking-wide uppercase text-sub-text-light dark:text-sub-text-dark">
+                                    {__('Scanner')}
+                                </p>
+
+                                {/* Viewport */}
+                                <div className="relative overflow-y-auto rounded-md bg-gray-950" style={{ aspectRatio: '4/3' }}>
+
+                                    <video
+                                        ref={scannerVideoRef}
+                                        className="object-cover w-full h-full"
+                                        muted
+                                        playsInline
+                                    />
+                                    {/* Scan guide corners */}
+                                    {!isVerifying && !scanCooldown && (
+                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                            <div className="relative h-24 w-44">
+                                                <span className="absolute w-5 h-5 border-t-2 border-l-2 rounded-tl border-white/60 -top-px -left-px" />
+                                                <span className="absolute w-5 h-5 border-t-2 border-r-2 rounded-tr border-white/60 -top-px -right-px" />
+                                                <span className="absolute w-5 h-5 border-b-2 border-l-2 rounded-bl border-white/60 -bottom-px -left-px" />
+                                                <span className="absolute w-5 h-5 border-b-2 border-r-2 rounded-br border-white/60 -bottom-px -right-px" />
+                                                <div className="absolute h-px left-2 right-2 bg-white/30 top-1/2 animate-pulse" />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Verifying overlay */}
+                                    {isVerifying && (
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gray-950">
+                                            <svg className="w-9 h-9 text-white/60 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                                                <path className="opacity-80" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                            </svg>
+                                            <p className="text-sm font-medium text-white/80">{__('Verifying IMEI...')}</p>
+                                            <p className="text-xs text-white/30">{__('Checking order records')}</p>
+                                        </div>
+                                    )}
+
+                                    {/* Error cooldown overlay */}
+                                    {scanCooldown && !isVerifying && scanError && (
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-5 bg-gray-950/95">
+                                            <div className="flex items-center justify-center border border-red-800 rounded-full w-11 h-11 bg-red-900/30">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="text-red-400 size-5">
+                                                    <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
+                                                </svg>
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-sm font-semibold text-red-300">{__('Verification Failed')}</p>
+                                                <p className="mt-1 text-xs text-center text-white/40 max-w-[180px]">{scanError}</p>
+                                            </div>
+                                            <p className="text-xs animate-pulse text-white/25">{__('Scanner restarting...')}</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Active indicator */}
+                                {!isVerifying && !scanCooldown && (
+                                    <div className="flex items-center gap-2">
+                                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                                        <span className="text-xs text-sub-text-light dark:text-sub-text-dark">{__('Scanner active - align barcode within the frame')}</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </MainLayout >
     );
 };
 
 export default index;
+
+
+function formatTime(secs) {
+    const m = String(Math.floor(secs / 60)).padStart(2, '0');
+    const s = String(secs % 60).padStart(2, '0');
+    return `${m}:${s}`;
+}
+
+function VideoRecorderPanel({ label, onFileSaved, isActive, onOpen, onClose, __ }) {
+    const {
+        recordingVideoRef, isReady, isRecording, recordedFile,
+        recordedUrl, cameraError, elapsed,
+        startCamera, stopCamera, startRecording, stopRecording, retake,
+    } = useVideoRecorder();
+
+    const [saved, setSaved] = useState(false);
+
+    useEffect(() => {
+        if (!isActive && isReady) {
+            stopCamera();
+        }
+    }, [isActive]);
+
+    const handleOpenCamera = () => {
+        onOpen();
+        startCamera();
+    };
+
+    const handleSave = () => {
+        onFileSaved(recordedFile);
+        setSaved(true);
+        stopCamera();
+        onClose();
+    };
+
+    const handleCancel = () => {
+        stopCamera();
+        onFileSaved(null);
+        onClose();
+    };
+
+    const handleRetake = () => {
+        setSaved(false);
+        onFileSaved(null);
+        retake();
+        if (!isReady) {
+            onOpen();
+            startCamera();
+        }
+    };
+
+    return (
+        <div className="p-4 mt-3 border rounded-md border-surface-3-light dark:border-surface-3-dark bg-surface-1-light dark:bg-surface-1-dark">
+
+            {/* Label + status */}
+            <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+                    {label}
+                </p>
+                {saved && recordedFile && (
+                    <span className="flex items-center gap-1.5 text-xs font-medium text-green-600 dark:text-green-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-4">
+                            <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
+                        </svg>
+                        {__('Video saved')}
+                    </span>
+                )}
+            </div>
+
+            {/* Saved state - compact */}
+            {saved && recordedFile ? (
+                <div className="flex items-center justify-between p-3 border rounded-md border-surface-3-light dark:border-surface-3-dark">
+                    <div className="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="text-sub-text-light dark:text-sub-text-dark size-5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+                        </svg>
+                        <p className="font-mono text-xs text-sub-text-light dark:text-sub-text-dark truncate max-w-[180px]">
+                            {recordedFile.name}
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={handleRetake}
+                        className="text-xs font-medium text-amber-600 dark:text-amber-400 hover:underline"
+                    >
+                        {__('Re-record')}
+                    </button>
+                </div>
+            ) : (
+                <>
+                    {!isReady && !cameraError ? (
+                        /* ── Open Camera button ── */
+                        <button
+                            type="button"
+                            onClick={handleOpenCamera}
+                            className="flex items-center justify-center w-full gap-2 py-8 text-sm font-medium transition-colors border-2 border-dashed rounded-md border-surface-3-light dark:border-surface-3-dark text-sub-text-light dark:text-sub-text-dark hover:border-main-text-light dark:hover:border-main-text-dark"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+                            </svg>
+                            {__('Open Camera')}
+                        </button>
+                    ) : cameraError ? (
+                        <div className="p-3 border border-red-200 rounded-md bg-red-50 dark:bg-red-900/20 dark:border-red-800">
+                            <p className="text-sm text-red-700 dark:text-red-400">{cameraError}</p>
+                            <button
+                                type="button"
+                                onClick={handleOpenCamera}
+                                className="mt-1 text-xs font-medium text-red-600 underline dark:text-red-400"
+                            >
+                                {__('Retry')}
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {/* Video viewport */}
+                            <div className="relative overflow-hidden rounded-md bg-gray-950" style={{ aspectRatio: '16/9' }}>
+
+                                {isReady && (
+                                    <video
+                                        ref={recordingVideoRef}
+                                        className={`object-cover w-full h-full ${recordedUrl ? 'hidden' : 'block'}`}
+                                        muted
+                                        playsInline
+                                        autoPlay
+                                    />
+                                )}
+
+                                {recordedUrl && (
+                                    <video
+                                        key={recordedUrl}
+                                        src={recordedUrl}
+                                        controls
+                                        autoPlay
+                                        playsInline
+                                        className="object-cover w-full h-full"
+                                        onLoadedMetadata={(e) => e.currentTarget.play().catch(() => { })}
+                                    />
+                                )}
+
+                                {isRecording && (
+                                    <div className="absolute top-2 left-2 flex items-center gap-1.5 px-2.5 py-1 bg-red-600 rounded-full shadow">
+                                        <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping" style={{ animationDuration: '1s' }} />
+                                        <span className="text-xs font-bold tracking-widest text-white uppercase">REC</span>
+                                        <span className="font-mono text-xs text-white/80">{formatTime(elapsed)}</span>
+                                    </div>
+                                )}
+
+                                {isRecording && elapsed >= 270 && (
+                                    <div className="absolute flex items-center justify-center bottom-2 left-2 right-2">
+                                        <span className="px-2 py-1 text-xs font-medium text-white rounded-full bg-amber-600/90">
+                                            {__('Max 5 min')} — {formatTime(300 - elapsed)} {__('remaining')}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Controls */}
+                            <div className="flex flex-wrap gap-2">
+                                {!recordedUrl ? (
+                                    <>
+                                        {!isRecording ? (
+                                            <button
+                                                type="button"
+                                                onClick={startRecording}
+                                                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition-colors bg-red-600 rounded-md hover:bg-red-700"
+                                            >
+                                                <span className="w-2 h-2 bg-white rounded-full" />
+                                                {__('Start Recording')}
+                                            </button>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                onClick={stopRecording}
+                                                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition-colors bg-gray-700 rounded-md hover:bg-gray-800"
+                                            >
+                                                <span className="w-2 h-2 bg-white rounded-sm" />
+                                                {__('Stop Recording')}
+                                            </button>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={handleCancel}
+                                            className="px-4 py-2 text-sm font-medium transition-colors border rounded-md border-surface-3-light dark:border-surface-3-dark text-sub-text-light dark:text-sub-text-dark hover:bg-surface-1-light dark:hover:bg-surface-3-dark"
+                                        >
+                                            {__('Cancel')}
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={handleSave}
+                                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition-colors bg-black rounded-md dark:bg-white dark:text-black hover:bg-black/80 dark:hover:bg-white/80"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-4">
+                                                <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
+                                            </svg>
+                                            {__('Save Video')}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={handleRetake}
+                                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white transition-colors rounded-md bg-amber-500 hover:bg-amber-600"
+                                        >
+                                            {__('Retake')}
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </>
+            )}
+        </div>
+    );
+}

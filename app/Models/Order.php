@@ -36,6 +36,9 @@ class Order extends Model
         'shipping_fee',
         'addons_sub_total',
         'status',
+        'is_delivery_confirmed',
+        'delivered_at',
+        'delivery_confirmed_at',
         'previous_status',
         'collaborator_id',
         'courier_company',
@@ -409,6 +412,8 @@ class Order extends Model
     // Casting
     protected $casts = [
         'shipping_date' => 'date:Y-m-d',
+        'is_delivery_confirmed' => 'boolean',
+        'delivery_confirmed_at' => 'datetime',
         'final_attachments' => 'array',
     ];
 

@@ -1,3 +1,9 @@
+@php
+    $fmt = new \NumberFormatter('en_US', \NumberFormatter::DECIMAL);
+    $fmt->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, 0);
+    $fmt->setAttribute(\NumberFormatter::MAX_FRACTION_DIGITS, 2);
+@endphp
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -164,13 +170,13 @@
                                     {{ $item->smartphone->capacity->name }}
                                 </td>
                                 <td align="right" style="padding:14px;">
-                                    {{ $currency->symbol }}{{ number_format($item->unit_price, 2) }}
+                                    {{ $currency->symbol }}{{ $fmt->format((float) $item->unit_price) }}
                                 </td>
                                 <td align="center" style="padding:14px;">
                                     {{ $item->quantity }}
                                 </td>
                                 <td align="right" style="padding:14px; font-weight:700;">
-                                    {{ $currency->symbol }}{{ number_format($itemGrandTotal, 2) }}
+                                    {{ $currency->symbol }}{{ $fmt->format((float) $itemGrandTotal) }}
                                 </td>
                             </tr>
 
@@ -183,19 +189,19 @@
                                                 {{ $item->quantity }})
                                             </td>
                                             <td align="right">
-                                                {{ $currency->symbol }}{{ number_format($item->unit_price * $item->quantity, 2) }}
+                                                {{ $currency->symbol }}{{ $fmt->format((float) $item->unit_price * $item->quantity) }}
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>Shipping</td>
                                             <td align="right">
-                                                {{ $currency->symbol }}{{ number_format($item->shipping_cost, 2) }}
+                                                {{ $currency->symbol }}{{ $fmt->format((float) $item->shipping_cost) }}
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>Import Tax</td>
                                             <td align="right">
-                                                {{ $currency->symbol }}{{ number_format($item->import_cost, 2) }}
+                                                {{ $currency->symbol }}{{ $fmt->format((float) $item->import_cost) }}
                                             </td>
                                         </tr>
 
@@ -216,7 +222,7 @@
                                                         {{ $addon?->quantity ?? 'N/A' }}
                                                     </td>
                                                     <td align="right">
-                                                        {{ $currency->symbol }}{{ number_format($addon?->total_price, 2) }}
+                                                        {{ $currency->symbol }}{{ $fmt->format((float) $addon?->total_price) }}
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -224,7 +230,7 @@
                                             <tr style="font-weight:600;">
                                                 <td>Add-ons total</td>
                                                 <td align="right">
-                                                    {{ $currency->symbol }}{{ number_format($addonsTotal, 2) }}
+                                                    {{ $currency->symbol }}{{ $fmt->format((float) $addonsTotal) }}
                                                 </td>
                                             </tr>
                                         @endif
@@ -240,7 +246,7 @@
                     <strong style="font-size:18px;">
                         Total:
                         <span style="color:#2563eb;">
-                            {{ $currency->symbol }}{{ number_format($order->amount, 2) }}
+                            {{ $currency->symbol }}{{ $fmt->format((float) $order->full_amount) }}
                         </span>
                     </strong>
                 </div>

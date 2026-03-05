@@ -9,8 +9,9 @@ import React, { useEffect, useState } from 'react';
 import SelectInput from '@/Components/SelectInput';
 import Toast from '@/Components/Toast';
 import Swal from 'sweetalert2';
-import BarcodeScannerComponent from 'react-qr-barcode-scanner';
+
 import FileUploaderInput from '@/Components/FileUploaderInput';
+import { useScanner } from '@/Hooks/useScanner';
 export default function edit({ batch, suppliers, smartphones, storage_locations }) {
     // Edit Data Form Data
     const { data, setData, reset } = useForm({
@@ -93,23 +94,57 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
         setInventoryItems(updatedInventoryItems);
     };
 
-    // Scanners
-    const [smartphoneScannerOpen, setSmartphoneScannerOpen] = useState(false);
-    const [imei1ScannerOpen, setImei1ScannerOpen] = useState(false);
-    const [imei2ScannerOpen, setImei2ScannerOpen] = useState(false);
-    const [eidScannerOpen, setEidScannerOpen] = useState(false);
-    const [serialScannerOpen, setSerialScannerOpen] = useState(false);
 
-    // Storing IDS For Scannners
-    const [openedSmartphoneScannerId, setOpenedSmartphoneScannerId] = useState(null);
-    const [openedImei1ScannerId, setOpenedImei1ScannerId] = useState(null);
-    const [openedImei2ScannerId, setOpenedImei2ScannerId] = useState(null);
-    const [openedEidScannerId, setOpenedEidScannerId] = useState(null);
-    const [openedSerialScannerId, setOpenedSerialScannerId] = useState(null);
 
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState(false);
     const [showProgressModal, setShowProgressModal] = useState(false);
+
+    const [activeScanner, setActiveScanner] = useState(null);
+
+
+    const openScanner = (field, index) => {
+        setActiveScanner({ field, index });
+    };
+
+    const closeScanner = () => {
+        setActiveScanner(null);
+    };
+
+
+
+    const { videoRef: scannerVideoRef } = useScanner({
+        active: !!activeScanner,
+        onScan: (text) => handleScanResult(text),
+    });
+
+
+    const handleScanResult = async (text) => {
+        if (!activeScanner) return;
+        const { field, index } = activeScanner;
+
+        if (field === 'smartphone') {
+            try {
+                const response = await axios.get(
+                    route('dashboard.inventories.getsmartphonebyupc', text)
+                );
+                if (response.data.status === false) {
+                    Swal.fire({ icon: 'info', title: 'Oops...', text: response.data.message });
+                } else {
+                    handleInventoryChange(index, 'smartphone_id', response.data.smartphone.id);
+                }
+            } catch (err) {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Could not find smartphone.' });
+            }
+        } else {
+            // imei1, imei2, eid, serial_no - direct fill
+            handleInventoryChange(index, field, text);
+        }
+
+        closeScanner();
+    };
+
+
 
     useEffect(() => {
         if (errors?.file_error) {
@@ -191,7 +226,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Batches'}
                                     URL={route('dashboard.batches.index')}
@@ -305,18 +340,21 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                     MaxFileSize={'5MB'}
                                                     onUpdate={(files) => {
                                                         if (files.length > 0) {
-                                                            setData('invoices', files);
+                                                            const newFiles = files
+                                                                .filter((f) => f.isNew)
+                                                                .map((f) => f.file);
+
+                                                            setData('invoices', newFiles);
                                                         } else {
                                                             setData('invoices', []);
                                                         }
                                                     }}
                                                     MaxFiles={30}
                                                     Multiple={true}
-                                                    DefaultFile={batch?.invoice_urls}
                                                 />
                                             </div>
 
-                                            <div className="flex w-full items-center justify-end">
+                                            <div className="flex items-center justify-end w-full">
                                                 <PrimaryButton
                                                     Text={'Add More Items'}
                                                     Type={'button'}
@@ -381,7 +419,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                             Type={'button'}
                                                                             Id={'scan_smartphone'}
                                                                             ClassName={
-                                                                                'dark:bg-deepcharcoal mt-2 dark:text-white p-2  rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
+                                                                                'dark:bg-deepcharcoal mt-6 dark:text-white p-2  rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
                                                                             }
                                                                             Icon={
                                                                                 <svg
@@ -406,14 +444,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                                     />
                                                                                 </svg>
                                                                             }
-                                                                            Action={() => {
-                                                                                setOpenedSmartphoneScannerId(
-                                                                                    idx,
-                                                                                );
-                                                                                setSmartphoneScannerOpen(
-                                                                                    true,
-                                                                                );
-                                                                            }}
+                                                                            Action={() => openScanner('smartphone', idx)}
                                                                         />
 
                                                                         {/* Smartphone */}
@@ -463,7 +494,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                             Type={'button'}
                                                                             Id={'scan_smartphone'}
                                                                             ClassName={
-                                                                                'dark:bg-deepcharcoal dark:text-white p-2  rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
+                                                                                'dark:bg-deepcharcoal dark:text-white p-2  mt-6 rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
                                                                             }
                                                                             Icon={
                                                                                 <svg
@@ -488,14 +519,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                                     />
                                                                                 </svg>
                                                                             }
-                                                                            Action={() => {
-                                                                                setOpenedImei1ScannerId(
-                                                                                    idx,
-                                                                                );
-                                                                                setImei1ScannerOpen(
-                                                                                    true,
-                                                                                );
-                                                                            }}
+                                                                            Action={() => openScanner('imei1', idx)}
                                                                         />
 
                                                                         {/* IMEI 1 */}
@@ -521,7 +545,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                             Type={'button'}
                                                                             Id={'scan_smartphone'}
                                                                             ClassName={
-                                                                                'dark:bg-deepcharcoal dark:text-white p-2  rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
+                                                                                'dark:bg-deepcharcoal dark:text-white p-2  mt-6 rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
                                                                             }
                                                                             Icon={
                                                                                 <svg
@@ -546,14 +570,8 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                                     />
                                                                                 </svg>
                                                                             }
-                                                                            Action={() => {
-                                                                                setOpenedImei2ScannerId(
-                                                                                    idx,
-                                                                                );
-                                                                                setImei2ScannerOpen(
-                                                                                    true,
-                                                                                );
-                                                                            }}
+                                                                            Action={() => openScanner('imei2', idx)}
+
                                                                         />
 
                                                                         {/* IMEI 2 */}
@@ -579,7 +597,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                             Type={'button'}
                                                                             Id={'scan_smartphone'}
                                                                             ClassName={
-                                                                                'dark:bg-deepcharcoal dark:text-white p-2  rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
+                                                                                'dark:bg-deepcharcoal dark:text-white p-2 mt-6  rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
                                                                             }
                                                                             Icon={
                                                                                 <svg
@@ -604,14 +622,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                                     />
                                                                                 </svg>
                                                                             }
-                                                                            Action={() => {
-                                                                                setOpenedEidScannerId(
-                                                                                    idx,
-                                                                                );
-                                                                                setEidScannerOpen(
-                                                                                    true,
-                                                                                );
-                                                                            }}
+                                                                            Action={() => openScanner('eid', idx)}
                                                                         />
 
                                                                         {/* EID */}
@@ -637,7 +648,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                             Type={'button'}
                                                                             Id={'scan_smartphone'}
                                                                             ClassName={
-                                                                                'dark:bg-deepcharcoal dark:text-white p-2  rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
+                                                                                'dark:bg-deepcharcoal dark:text-white p-2  mt-6 rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
                                                                             }
                                                                             Icon={
                                                                                 <svg
@@ -662,14 +673,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                                     />
                                                                                 </svg>
                                                                             }
-                                                                            Action={() => {
-                                                                                setOpenedSerialScannerId(
-                                                                                    idx,
-                                                                                );
-                                                                                setSerialScannerOpen(
-                                                                                    true,
-                                                                                );
-                                                                            }}
+                                                                            Action={() => openScanner('serial_no', idx)}
                                                                         />
 
                                                                         {/* Serial No */}
@@ -696,7 +700,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                 ))}
                                             </div>
 
-                                            <div className="flex w-full items-center justify-end">
+                                            <div className="flex items-center justify-end w-full">
                                                 <PrimaryButton
                                                     Text={'Add Extra Cost'}
                                                     Type={'button'}
@@ -723,17 +727,17 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                             </div>
 
                                             {extraCosts.length > 0 && (
-                                                <div className="col-span-1 grid grid-cols-1 gap-5 overflow-x-auto scrollbar-thin dark:scrollbar-track-slate-900 dark:scrollbar-thumb-slate-700">
+                                                <div className="grid grid-cols-1 col-span-1 gap-5 overflow-x-auto scrollbar-thin dark:scrollbar-track-slate-900 dark:scrollbar-thumb-slate-700">
                                                     <table className="w-full border-collapse">
                                                         <thead>
                                                             <tr>
-                                                                <th className="border p-2 text-left text-gray-700 dark:border-gray-700 dark:text-gray-400">
+                                                                <th className="p-2 text-left text-gray-700 border dark:border-gray-700 dark:text-gray-400">
                                                                     Cost Type
                                                                 </th>
-                                                                <th className="border p-2 text-left text-gray-700 dark:border-gray-700 dark:text-gray-400">
+                                                                <th className="p-2 text-left text-gray-700 border dark:border-gray-700 dark:text-gray-400">
                                                                     Amount
                                                                 </th>
-                                                                <th className="border p-2 text-center text-gray-700 dark:border-gray-700 dark:text-gray-400">
+                                                                <th className="p-2 text-center text-gray-700 border dark:border-gray-700 dark:text-gray-400">
                                                                     Action
                                                                 </th>
                                                             </tr>
@@ -741,14 +745,14 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                         <tbody>
                                                             {extraCosts.map((item, idx) => (
                                                                 <tr key={idx}>
-                                                                    <td className="border p-2 dark:border-gray-700">
+                                                                    <td className="p-2 border dark:border-gray-700">
                                                                         <Input
                                                                             InputName={'Cost Type'}
                                                                             Id={'cost_type'}
                                                                             Name={'cost_type'}
                                                                             Error={
                                                                                 errors[
-                                                                                    `extra_costs.${idx}.cost_type`
+                                                                                `extra_costs.${idx}.cost_type`
                                                                                 ]
                                                                             }
                                                                             Value={item.cost_type}
@@ -766,14 +770,14 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                             }
                                                                         />
                                                                     </td>
-                                                                    <td className="border p-2 dark:border-gray-700">
+                                                                    <td className="p-2 border dark:border-gray-700">
                                                                         <Input
                                                                             InputName={'Amount'}
                                                                             Id={'amount'}
                                                                             Name={'amount'}
                                                                             Error={
                                                                                 errors[
-                                                                                    `extra_costs.${idx}.amount`
+                                                                                `extra_costs.${idx}.amount`
                                                                                 ]
                                                                             }
                                                                             Value={item.amount}
@@ -792,7 +796,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                         />
                                                                     </td>
 
-                                                                    <td className="border p-2 dark:border-gray-700">
+                                                                    <td className="p-2 border dark:border-gray-700">
                                                                         <div className="flex items-center justify-center">
                                                                             <PrimaryButton
                                                                                 Type={'button'}
@@ -836,7 +840,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                             )}
 
                                             <PrimaryButton
-                                                Text={'Update Batch'}
+                                                Text={'Create Batch'}
                                                 Type={'submit'}
                                                 CustomClass={'w-[250px] '}
                                                 Disabled={
@@ -873,7 +877,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                         <path
                                                             strokeLinecap="round"
                                                             strokeLinejoin="round"
-                                                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+                                                            d="M12 4.5v15m7.5-7.5h-15"
                                                         />
                                                     </svg>
                                                 }
@@ -886,391 +890,95 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                     }
                 />
 
-                {smartphoneScannerOpen && (
-                    <>
-                        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
-                            <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
-                            {/* Modal content */}
-                            <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
-                                <div className="text-center">
-                                    <h2 className="text-lg font-medium text-gray-800 dark:text-white">
-                                        Place The Camera On The Barcode
-                                    </h2>
+                {activeScanner && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
+                        <div className="fixed inset-0 backdrop-blur-[32px]" />
 
-                                    {smartphoneScannerOpen && (
-                                        <div className="flex items-center justify-center">
-                                            <div className="rounded-2xl" style={{ marginTop: 20 }}>
-                                                <BarcodeScannerComponent
-                                                    width={400}
-                                                    height={400}
-                                                    onUpdate={(err, result) => {
-                                                        if (result) {
-                                                            axios
-                                                                .get(
-                                                                    route(
-                                                                        'dashboard.inventories.getsmartphonebyupc',
-                                                                        result.text,
-                                                                    ),
-                                                                )
-                                                                .then((response) => {
-                                                                    if (
-                                                                        response.data.status ==
-                                                                        false
-                                                                    ) {
-                                                                        Swal.fire({
-                                                                            icon: 'info',
-                                                                            title: 'Oops...',
-                                                                            text: response.data
-                                                                                .message,
-                                                                        });
-                                                                    } else {
-                                                                        handleInventoryChange(
-                                                                            openedSmartphoneScannerId,
-                                                                            'smartphone_id',
-                                                                            response.data.smartphone
-                                                                                .id,
-                                                                        );
-                                                                    }
-                                                                    setOpenedSmartphoneScannerId(
-                                                                        null,
-                                                                    );
-                                                                })
-                                                                .catch((error) => {
-                                                                    Swal.fire({
-                                                                        icon: 'info',
-                                                                        title: 'Oops...',
-                                                                        text: error,
-                                                                    });
-                                                                });
+                        <div className="relative z-10 w-full max-w-md overflow-hidden bg-white shadow-2xl rounded-2xl dark:bg-deepcharcoal">
+                            {/* Header */}
+                            <div className="flex items-center justify-between px-6 py-4 border-b dark:border-white/10">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                                    <h3 className="text-sm font-semibold text-gray-800 dark:text-white">
+                                        Scanning: <span className="text-blue-600 capitalize dark:text-blue-400">
+                                            {activeScanner.field === 'smartphone' ? 'Smartphone'
+                                                : activeScanner.field === 'imei1' ? 'IMEI 1'
+                                                    : activeScanner.field === 'imei2' ? 'IMEI 2'
+                                                        : activeScanner.field === 'eid' ? 'EID'
+                                                            : 'Serial No'} — Item #{activeScanner.index + 1}
+                                        </span>
+                                    </h3>
+                                </div>
+                                <button
+                                    onClick={closeScanner}
+                                    className="flex items-center justify-center text-gray-400 rounded-lg w-7 h-7 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-4">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
 
-                                                            setOpenedSmartphoneScannerId(null);
-                                                            setSmartphoneScannerOpen(false);
-                                                        }
-                                                    }}
-                                                />
+                            <div className="p-6">
+                                <p className="mb-4 text-xs text-center text-gray-500 dark:text-white/50">
+                                    Point the camera at the barcode. It will be captured automatically.
+                                </p>
 
-                                                <div className="flex items-center justify-center">
-                                                    <PrimaryButton
-                                                        Action={() => {
-                                                            setOpenedSmartphoneScannerId(null);
-                                                            setSmartphoneScannerOpen(false);
-                                                        }}
-                                                        Text={'Close Scanner'}
-                                                        Type={'button'}
-                                                        CustomClass={'mt-4'}
-                                                        Icon={
-                                                            <svg
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                fill="none"
-                                                                viewBox="0 0 24 24"
-                                                                strokeWidth={1.5}
-                                                                stroke="currentColor"
-                                                                className="size-6"
-                                                            >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    d="M6 18 18 6M6 6l12 12"
-                                                                />
-                                                            </svg>
-                                                        }
-                                                    />
-                                                </div>
-                                            </div>
+                                {/* Viewport */}
+                                <div className="relative overflow-hidden bg-gray-950 rounded-xl" style={{ aspectRatio: '4/3' }}>
+                                    <video
+                                        ref={scannerVideoRef}
+                                        className="object-cover w-full h-full"
+                                        muted
+                                        playsInline
+                                    />
+
+                                    {/* Scan corners */}
+                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        <div className="relative w-48 h-28">
+                                            <span className="absolute w-5 h-5 border-t-2 border-l-2 border-blue-400 -top-px -left-px rounded-tl-md" />
+                                            <span className="absolute w-5 h-5 border-t-2 border-r-2 border-blue-400 -top-px -right-px rounded-tr-md" />
+                                            <span className="absolute w-5 h-5 border-b-2 border-l-2 border-blue-400 -bottom-px -left-px rounded-bl-md" />
+                                            <span className="absolute w-5 h-5 border-b-2 border-r-2 border-blue-400 -bottom-px -right-px rounded-br-md" />
+                                            <div className="absolute h-px left-2 right-2 bg-blue-400/50 top-1/2 animate-pulse" />
                                         </div>
-                                    )}
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-center mt-4">
+                                    <PrimaryButton
+                                        Action={closeScanner}
+                                        Text={'Close Scanner'}
+                                        Type={'button'}
+                                        Icon={
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                            </svg>
+                                        }
+                                    />
                                 </div>
                             </div>
                         </div>
-                    </>
-                )}
-
-                {imei1ScannerOpen && (
-                    <>
-                        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
-                            <div className="fixed inset-0 backdrop-blur-[32px]"></div>
-
-                            {/* Modal content */}
-                            <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
-                                <div className="text-center">
-                                    <h2 className="text-lg font-medium text-gray-800 dark:text-white">
-                                        Place The Camera On The Barcode
-                                    </h2>
-
-                                    {imei1ScannerOpen && (
-                                        <div className="flex items-center justify-center">
-                                            <div className="rounded-2xl" style={{ marginTop: 20 }}>
-                                                <BarcodeScannerComponent
-                                                    width={400}
-                                                    height={400}
-                                                    onUpdate={(err, result) => {
-                                                        if (result) {
-                                                            handleInventoryChange(
-                                                                openedImei1ScannerId,
-                                                                'imei1',
-                                                                result.text,
-                                                            );
-                                                            setOpenedImei1ScannerId(null);
-                                                            setImei1ScannerOpen(false);
-                                                        }
-                                                    }}
-                                                />
-
-                                                <div className="flex items-center justify-center">
-                                                    <PrimaryButton
-                                                        Action={() => {
-                                                            setImei1ScannerOpen(false);
-                                                            setOpenedImei1ScannerId(null);
-                                                        }}
-                                                        Text={'Close Scanner'}
-                                                        Type={'button'}
-                                                        CustomClass={'mt-4'}
-                                                        Icon={
-                                                            <svg
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                fill="none"
-                                                                viewBox="0 0 24 24"
-                                                                strokeWidth={1.5}
-                                                                stroke="currentColor"
-                                                                className="size-6"
-                                                            >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    d="M6 18 18 6M6 6l12 12"
-                                                                />
-                                                            </svg>
-                                                        }
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </>
-                )}
-
-                {imei2ScannerOpen && (
-                    <>
-                        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
-                            <div className="fixed inset-0 backdrop-blur-[32px]"></div>
-
-                            {/* Modal content */}
-                            <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
-                                <div className="text-center">
-                                    <h2 className="text-lg font-medium text-gray-800 dark:text-white">
-                                        Place The Camera On The Barcode
-                                    </h2>
-
-                                    {imei2ScannerOpen && (
-                                        <div className="flex items-center justify-center">
-                                            <div className="rounded-2xl" style={{ marginTop: 20 }}>
-                                                <BarcodeScannerComponent
-                                                    width={400}
-                                                    height={400}
-                                                    onUpdate={(err, result) => {
-                                                        if (result) {
-                                                            handleInventoryChange(
-                                                                openedImei2ScannerId,
-                                                                'imei2',
-                                                                result.text,
-                                                            );
-
-                                                            setOpenedImei2ScannerId(null);
-                                                            setImei2ScannerOpen(false);
-                                                        }
-                                                    }}
-                                                />
-
-                                                <div className="flex items-center justify-center">
-                                                    <PrimaryButton
-                                                        Action={() => {
-                                                            setOpenedImei2ScannerId(null);
-                                                            setImei2ScannerOpen(false);
-                                                        }}
-                                                        Text={'Close Scanner'}
-                                                        Type={'button'}
-                                                        CustomClass={'mt-4'}
-                                                        Icon={
-                                                            <svg
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                fill="none"
-                                                                viewBox="0 0 24 24"
-                                                                strokeWidth={1.5}
-                                                                stroke="currentColor"
-                                                                className="size-6"
-                                                            >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    d="M6 18 18 6M6 6l12 12"
-                                                                />
-                                                            </svg>
-                                                        }
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </>
-                )}
-
-                {eidScannerOpen && (
-                    <>
-                        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
-                            <div className="fixed inset-0 backdrop-blur-[32px]"></div>
-
-                            {/* Modal content */}
-                            <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
-                                <div className="text-center">
-                                    <h2 className="text-lg font-medium text-gray-800 dark:text-white">
-                                        Place The Camera On The Barcode
-                                    </h2>
-
-                                    {eidScannerOpen && (
-                                        <div className="flex items-center justify-center">
-                                            <div className="rounded-2xl" style={{ marginTop: 20 }}>
-                                                <BarcodeScannerComponent
-                                                    width={400}
-                                                    height={400}
-                                                    onUpdate={(err, result) => {
-                                                        if (result) {
-                                                            handleInventoryChange(
-                                                                openedEidScannerId,
-                                                                'eid',
-                                                                result.text,
-                                                            );
-                                                            setOpenedEidScannerId(null);
-                                                            setEidScannerOpen(false);
-                                                        }
-                                                    }}
-                                                />
-
-                                                <div className="flex items-center justify-center">
-                                                    <PrimaryButton
-                                                        Action={() => {
-                                                            setOpenedEidScannerId(null);
-                                                            setEidScannerOpen(false);
-                                                        }}
-                                                        Text={'Close Scanner'}
-                                                        Type={'button'}
-                                                        CustomClass={'mt-4'}
-                                                        Icon={
-                                                            <svg
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                fill="none"
-                                                                viewBox="0 0 24 24"
-                                                                strokeWidth={1.5}
-                                                                stroke="currentColor"
-                                                                className="size-6"
-                                                            >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    d="M6 18 18 6M6 6l12 12"
-                                                                />
-                                                            </svg>
-                                                        }
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </>
-                )}
-
-                {serialScannerOpen && (
-                    <>
-                        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
-                            <div className="fixed inset-0 backdrop-blur-[32px]"></div>
-
-                            {/* Modal content */}
-                            <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
-                                <div className="text-center">
-                                    <h2 className="text-lg font-medium text-gray-800 dark:text-white">
-                                        Place The Camera On The Barcode
-                                    </h2>
-
-                                    {serialScannerOpen && (
-                                        <div className="flex items-center justify-center">
-                                            <div className="rounded-2xl" style={{ marginTop: 20 }}>
-                                                <BarcodeScannerComponent
-                                                    width={400}
-                                                    height={400}
-                                                    onUpdate={(err, result) => {
-                                                        if (result) {
-                                                            handleInventoryChange(
-                                                                openedSerialScannerId,
-                                                                'serial_no',
-                                                                result.text,
-                                                            );
-                                                            setOpenedSerialScannerId(null);
-                                                            setSerialScannerOpen(false);
-                                                        }
-                                                    }}
-                                                />
-
-                                                <div className="flex items-center justify-center">
-                                                    <PrimaryButton
-                                                        Action={() => {
-                                                            setOpenedSerialScannerId(null);
-                                                            setSerialScannerOpen(false);
-                                                        }}
-                                                        Text={'Close Scanner'}
-                                                        Type={'button'}
-                                                        CustomClass={'mt-4'}
-                                                        Icon={
-                                                            <svg
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                fill="none"
-                                                                viewBox="0 0 24 24"
-                                                                strokeWidth={1.5}
-                                                                stroke="currentColor"
-                                                                className="size-6"
-                                                            >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    d="M6 18 18 6M6 6l12 12"
-                                                                />
-                                                            </svg>
-                                                        }
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </>
+                    </div>
                 )}
 
                 {showProgressModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                         <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                         {/* Modal content */}
-                        <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
+                        <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
                             <div className="text-center">
                                 <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                     Please Wait While We Are Uploading Your Files
                                 </h2>
 
-                                <div className="mt-5 flex items-center justify-center">
+                                <div className="flex items-center justify-center mt-5">
                                     <div role="status">
                                         <svg
                                             aria-hidden="true"
-                                            className="h-8 w-8 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"
+                                            className="w-8 h-8 text-gray-200 animate-spin fill-blue-600 dark:text-gray-600"
                                             viewBox="0 0 100 101"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"

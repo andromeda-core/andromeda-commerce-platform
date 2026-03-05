@@ -47,7 +47,7 @@ export default function index({ batches }) {
                     return (
                         <span className="text-sm">
                             {currency?.symbol}
-                            {item.base_purchase_unit_price}
+                            {Number(item.base_purchase_unit_price).toLocaleString('en-US')}
                         </span>
                     );
                 },
@@ -59,7 +59,7 @@ export default function index({ batches }) {
                     return (
                         <span className="text-sm">
                             {currency?.symbol}
-                            {item.total_batch_cost}
+                            {Number(item.total_batch_cost).toLocaleString('en-US')}
                         </span>
                     );
                 },
@@ -68,9 +68,9 @@ export default function index({ batches }) {
                 label: 'Final Unit Price',
                 render: (item) => {
                     return (
-                        <span className="rounded-lg bg-blue-500 p-2 text-sm text-white">
+                        <span className="p-2 text-sm text-white bg-blue-500 rounded-lg">
                             {currency?.symbol}
-                            {item.final_unit_price}
+                            {Number(item.final_unit_price).toLocaleString('en-US')}
                         </span>
                     );
                 },
@@ -98,7 +98,7 @@ export default function index({ batches }) {
                     Content={
                         <>
                             {can('Batches Create') && (
-                                <div className="my-3 flex flex-wrap justify-end">
+                                <div className="flex flex-wrap justify-end my-3">
                                     <LinkButton
                                         Text={'Create batch'}
                                         URL={route('dashboard.batches.create')}

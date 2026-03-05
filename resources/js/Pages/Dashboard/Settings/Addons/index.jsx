@@ -44,7 +44,7 @@ export default function index({ addons }) {
                     return (
                         <>
                             <span className="text-sm font-medium text-gray-900 ms-3 dark:text-gray-300">
-                                {props?.currency?.symbol}{item.price}
+                                {props?.currency?.symbol}{Number(item.price).toLocaleString('en-US')}
                             </span>
                         </>
                     );

@@ -10,6 +10,7 @@ use App\Console\Commands\DestroyLast24HoursActionLogs;
 use App\Console\Commands\DetectUnSettledAccounts;
 use App\Console\Commands\ExpireOldEmailChangeRequests;
 use App\Console\Commands\MarkExpireOldAccountRiskSignal;
+use App\Console\Commands\MarkingOrdersAsDeliveryConfirmedAfterSevenDays;
 use App\Console\Commands\MarkUserAsDormant;
 use App\Console\Commands\MetaPageTokenRefresh;
 use App\Console\Commands\NOWPaymentInvoiceStatusCheck;
@@ -44,5 +45,6 @@ class SchedularServiceProvider extends ServiceProvider
         $schedule->command(MarkExpireOldAccountRiskSignal::class)->everyFifteenMinutes()->withoutOverlapping();
         $schedule->command(DetectUnSettledAccounts::class)->everyFifteenMinutes()->withoutOverlapping(10);
         $schedule->command(SendUnsettledAccountNotifications::class)->everyTenMinutes()->withoutOverlapping(5);
+        $schedule->command(MarkingOrdersAsDeliveryConfirmedAfterSevenDays::class)->everyFifteenMinutes();
     }
 }

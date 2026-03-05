@@ -8,6 +8,7 @@ use App\Jobs\CourierInvoiceStoreOnAWS;
 use App\Jobs\Meta\NotifyCustomerAboutAwaitingPaymentOrderFromCryptoJob;
 use App\Jobs\Meta\OrderPaymentProofUploadedNotificationJob;
 use App\Jobs\NotifyPaymentProofHasBeenUploaded;
+use App\Jobs\OrderRefundProofUploadOnAWS;
 use App\Jobs\PayemntProofStoreOnAWS;
 use App\Jobs\PaymentProofDestroyOnAWS;
 use App\Jobs\UploadFinalAttachmentsToAWS;
@@ -492,6 +493,11 @@ class OrderRepository implements IOrderRepository
                 unset($validated_req['final_attachments']);
             }
             $oldStatus = $order->status;
+
+            if (isset($validated_req['status']) && $validated_req['status'] === 'delivered') {
+                $validated_req['delivered_at'] = now();
+            }
+
             $updated = $order->update($validated_req);
 
             if (! $updated) {
@@ -1413,6 +1419,8 @@ class OrderRepository implements IOrderRepository
         $orders->setCollection(
             $orders->getCollection()->transform(function ($order) {
                 $order->order_placed_date = $order->created_at->format('M d, Y');
+                $order->delivery_confirmed_at = optional($order->delivery_confirmed_at)?->toIso8601String();
+                $order->refund_expires_at = optional($order->delivery_confirmed_at)?->copy()?->addHours(72)->toIso8601String();
 
                 return $order;
             })
@@ -1669,10 +1677,21 @@ class OrderRepository implements IOrderRepository
                 throw new Exception($this->trans->get('Order Not Found'));
             }
 
+            // dd($order->delivery_confirmed_at->lte(now()->subHours(72)), $order->delivery_confirmed_at->format('Y-m-d H:i:s'), now()->subHours(72)->format('Y-m-d H:i:s'));
             if (
-                ! in_array($order->status, ['paid', 'delivered'])
+                $order->is_delivery_confirmed &&
+                $order->delivery_confirmed_at &&
+                $order->delivery_confirmed_at->lte(now()->subHours(72))
             ) {
-                throw new Exception($this->trans->get('Only Paid Status orders Can be Request For a Refund'));
+                throw new Exception(
+                    $this->trans->get('This Order Cannot Be Requested For A Refund Because The Refund Period Has Expired')
+                );
+            }
+
+            if (
+                ! in_array($order->status, ['paid', 'delivered', 'withdrawn'])
+            ) {
+                throw new Exception($this->trans->get('Refund Cannot Be Requested For This Order'));
             }
 
             if ($order->refund()->exists()) {
@@ -1681,11 +1700,13 @@ class OrderRepository implements IOrderRepository
 
             return [
                 'status' => true,
+                'order' => $order,
             ];
         } catch (Exception $e) {
             return [
                 'status' => false,
                 'message' => $e->getMessage(),
+                'order' => null,
             ];
         }
 
@@ -1695,6 +1716,7 @@ class OrderRepository implements IOrderRepository
     {
         $validated_req = $request->validate([
             'refund_reason' => ['required', 'string', 'min:30', 'max:1000'],
+            'scanned_imei' => ['string', 'nullable', 'max:255'],
         ], [
             'refund_reason.required' => $this->trans->get('The Refund Reason Field Is Required.'),
             'refund_reason.min' => $this->trans->get('The Refund Reason Must Be At Least 30 Characters.'),
@@ -1729,6 +1751,29 @@ class OrderRepository implements IOrderRepository
                 throw new Exception($this->trans->get('Order Not Found'));
             }
 
+            if ($order->status === 'delivered') {
+                $request->validate([
+                    'defect_evidence_video' => ['required', 'mimes:mp4,mov,ogg,qt,wmv,webm'],
+                    'return_Packaging_video' => ['required', 'mimes:mp4,mov,ogg,qt,wmv,webm'],
+                ], [
+                    'defect_evidence_video.required' => $this->trans->get('Defect Evidence Video Is Required'),
+                    'return_Packaging_video.required' => $this->trans->get('Return Packaging Video Is Required'),
+
+                    'defect_evidence_video.mimes' => $this->trans->get('Defect Evidence Video Must Be Mp4, Mov, Ogg, Qt, Wmv, Webm'),
+                    'return_Packaging_video.mimes' => $this->trans->get('Return Packaging Video Must Be Mp4, Mov, Ogg, Qt, Wmv, Webm'),
+                ]);
+            }
+
+            if (
+                $order->is_delivery_confirmed &&
+                $order->delivery_confirmed_at &&
+                $order->delivery_confirmed_at->lte(now()->subHours(72))
+            ) {
+                throw new Exception(
+                    $this->trans->get('This Order Cannot Be Requested For A Refund Because The Refund Period Has Expired')
+                );
+            }
+
             if (
                 ! in_array($order->status, ['paid', 'delivered'])
             ) {
@@ -1741,7 +1786,7 @@ class OrderRepository implements IOrderRepository
                 throw new Exception($this->trans->get('Order Refund Request Already Exists'));
             }
 
-            DB::transaction(function () use ($order, $customer, $validated_req) {
+            $order_refund = DB::transaction(function () use ($order, $customer, $validated_req) {
                 $old_status = $order->status;
                 $order->updateQuietly([
                     'previous_status' => $old_status,
@@ -1753,6 +1798,7 @@ class OrderRepository implements IOrderRepository
                     'refund_reason' => $validated_req['refund_reason'],
                     'refund_amount' => $order->full_amount,
                     'refund_status' => 'requested',
+                    'scanned_imei' => $validated_req['scanned_imei'],
                     'requested_at' => now(),
                 ]);
 
@@ -1763,7 +1809,23 @@ class OrderRepository implements IOrderRepository
                 $order_refund->load(['customer.user']);
                 $order->customer->user->notify(new OrderRefundNotification($order_refund, 'requested'));
 
+                return $order_refund;
+
             });
+
+            if ($request->hasFile('defect_evidence_video') && $request->hasFile('return_Packaging_video')) {
+                $defect_video = $request->file('defect_evidence_video');
+                $return_packaging_video = $request->file('return_Packaging_video');
+
+                $new_defect_video_name = time().uniqid().'.'.$defect_video->getClientOriginalExtension();
+                $new_return_packaging_video_name = time().uniqid().'.'.$return_packaging_video->getClientOriginalExtension();
+
+                $tempPaths = [];
+                $tempPaths['defect_evidence_video'] = $defect_video->storeAs('temp/uploads', $new_defect_video_name, 'local');
+                $tempPaths['return_Packaging_video'] = $return_packaging_video->storeAs('temp/uploads', $new_return_packaging_video_name, 'local');
+
+                dispatch(new OrderRefundProofUploadOnAWS($order_refund, $tempPaths))->afterCommit();
+            }
 
             return [
                 'status' => true,
@@ -2113,15 +2175,18 @@ class OrderRepository implements IOrderRepository
                 throw new Exception($this->trans->get('Only Unprocessed Refund Request Can Be Withdrawn'));
             }
 
-            $deleted = $order->refund()->delete();
+            if ($order->refund->refund_status === 'withdrawn') {
+                throw new Exception($this->trans->get('Order Refund Request Cannot Be Withdrawn'));
+            }
+
+            $order->refund()->update([
+                'refund_status' => 'withdrawn',
+                'withdrawn_at' => now(),
+            ]);
 
             $order->updateQuietly([
                 'status' => $order->previous_status,
             ]);
-
-            if (! $deleted) {
-                throw new Exception($this->trans->get('Order Refund request not withdrawn'));
-            }
 
             DB::commit();
 
@@ -2550,6 +2615,93 @@ class OrderRepository implements IOrderRepository
         } catch (Exception $e) {
             DB::rollBack();
 
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function orderProductIMEIVerification(Request $request)
+    {
+
+        try {
+            $request->validate([
+                'imei' => ['required', 'string', 'max:255'],
+                'order_no' => ['required', 'exists:orders,order_no'],
+            ], [
+                'imei.required' => $this->trans->get('IMEI is required.'),
+                'imei.max' => $this->trans->get('IMEI must not exceed 255 characters.'),
+                'order_no.required' => $this->trans->get('Order Not Found'),
+                'order_no.exists' => $this->trans->get('Order Not Found'),
+            ]);
+
+            $user = $request->user();
+
+            if (empty($user)) {
+                throw new Exception($this->trans->get('User Not found'));
+            }
+
+            $user->load('customer');
+
+            if (empty($user->customer)) {
+                throw new Exception($this->trans->get('Customer Not found'));
+            }
+
+            $order = $this->order
+                ->with(['orderItems.inventoryItem'])
+                ->where('customer_id', $user->customer->id)
+                ->where('order_no', $request->order_no)
+                ->first();
+
+            if (empty($order)) {
+                throw new Exception($this->trans->get('Order Not Found'));
+            }
+
+            $allIds = $order->orderItems
+                ->flatMap(function ($item) {
+                    $ids = $item->inventory_item_ids;
+
+                    if (is_string($ids)) {
+                        $ids = json_decode($ids, true);
+                    }
+                    if (! is_array($ids)) {
+                        $ids = [];
+                    }
+
+                    return $ids;
+                })
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+
+            if (empty($allIds)) {
+                throw new Exception($this->trans->get('Order items not found'));
+            }
+
+            $exists = $this->inventory
+                ->whereIn('id', $allIds)
+                ->where('imei1', $request->imei)
+                ->exists();
+
+            if (! $exists) {
+                throw new Exception($this->trans->get('Please Scan A Valid IMEI'));
+            }
+
+            if (! $order->is_delivery_confirmed) {
+                $order->update([
+                    'is_delivery_confirmed' => true,
+                    'delivery_confirmed_at' => now(),
+                ]);
+            }
+
+            return [
+                'status' => true,
+                'message' => $this->trans->get('IMEI Found Now You Can Submit Refund Request'),
+            ];
+
+        } catch (Exception $e) {
             return [
                 'status' => false,
                 'message' => $e->getMessage(),

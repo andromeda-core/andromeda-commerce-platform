@@ -42,7 +42,7 @@ export default function index({ smartphone_country_prices }) {
                 label: 'Default Price',
                 render: (item) => {
                     return (
-                        <span className="p-3 text-white rounded-lg bg-violet-500">{props.currency?.symbol ?? '$'}{item?.selling_info?.total_price} </span>
+                        <span className="p-3 text-white rounded-lg bg-violet-500">{props.currency?.symbol ?? '$'}{Number(item?.selling_info?.total_price).toLocaleString('en-US')} </span>
                     );
                 },
             },
@@ -51,7 +51,7 @@ export default function index({ smartphone_country_prices }) {
                 label: 'New Price',
                 render: (item) => {
                     return (
-                        <span className="p-3 text-white bg-purple-500 rounded-lg">{props.currency?.symbol ?? '$'}{item?.price} </span>
+                        <span className="p-3 text-white bg-purple-500 rounded-lg">{props.currency?.symbol ?? '$'}{Number(item?.price).toLocaleString('en-US')} </span>
                     );
                 },
             },

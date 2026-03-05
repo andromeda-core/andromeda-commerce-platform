@@ -76,7 +76,7 @@ export default function index({ inventories, batches, storage_locations, smartph
                     return (
                         <span className="p-2 text-white bg-blue-500 rounded-lg">
                             {currency?.symbol}
-                            {item.batch.final_unit_price}
+                            {Number(item.batch.final_unit_price).toLocaleString('en-US')}
                         </span>
                     );
                 },

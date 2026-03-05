@@ -261,7 +261,7 @@ export default function OrderView({ order, countries }) {
                                 <span
                                     className={`inline-flex items-center self-start rounded-full px-5 py-1 text-sm font-semibold uppercase sm:self-center text-main-text-dark  bg-main-text-light  dark:bg-main-text-dark dark:text-main-text-light text-[16px]`}
                                 >
-                                    {order.status.replace(/_/g, ' ')}
+                                    {order.status.replace(/_/g, ' ')} {order?.is_delivery_confirmed ? `(${__("Delivery Confirmed")}) ` : ""}
                                 </span>
 
                             </div>
@@ -982,14 +982,14 @@ function OrderItems({ order, currency, __ }) {
                                     <div className="text-sm font-medium text-main-text-light dark:text-main-text-dark">
                                         <span className="font-medium">{__('Unit Price')} : </span>
                                         {currency?.symbol}
-                                        {Number(item.unit_price).toFixed(2)}
+                                        {Number(item.unit_price).toLocaleString('en-US')}
                                     </div>
 
                                     {/* Product Total */}
                                     <div className="text-sm font-medium text-main-text-light dark:text-main-text-dark">
                                         <span className="font-medium">{__('Product Total')} : </span>
                                         {currency?.symbol}
-                                        {productTotal.toFixed(2)}
+                                        {productTotal.toLocaleString('en-US')}
                                     </div>
 
                                     {/* Shipping */}
@@ -997,14 +997,14 @@ function OrderItems({ order, currency, __ }) {
                                         <span className="font-medium">{__('Shipping')} : </span>
                                         {Number(item.shipping_cost || 0) === 0
                                             ? __('Free')
-                                            : `${currency?.symbol}${Number(item.shipping_cost).toFixed(2)}`}
+                                            : `${currency?.symbol}${Number(item.shipping_cost).toLocaleString('en-US')}`}
                                     </div>
 
                                     {/* Import Tax */}
                                     <div className="pb-4 text-sm font-medium text-main-text-light dark:text-main-text-dark">
                                         <span className="font-medium">{__('Import Tax')} : </span>
                                         {currency?.symbol}
-                                        {Number(item.import_cost || 0).toFixed(2)}
+                                        {Number(item.import_cost || 0).toLocaleString('en-US')}
                                     </div>
 
 
@@ -1035,7 +1035,7 @@ function OrderItems({ order, currency, __ }) {
                                     {/* Final Item Total */}
                                     <div className="pt-4 text-[16px] font-semibold  text-main-text-light dark:text-main-text-dark">
                                         {__('Final Item Total')} : {currency?.symbol}
-                                        {finalItemTotal.toFixed(2)}
+                                        {Number(finalItemTotal).toLocaleString('en-US')}
                                     </div>
                                 </div>
                             </div>

@@ -753,7 +753,7 @@ const index = (
                                     </p>
 
                                     <p className="text-base font-semibold text-main-text-light dark:text-main-text-dark">
-                                        {currency?.name} {currency?.symbol}{product?.total_price}
+                                        {currency?.name} {currency?.symbol}{Number(product?.total_price).toLocaleString('en-US')}
                                     </p>
                                 </div>
                             </div>

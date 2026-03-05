@@ -37,6 +37,46 @@ export default function index({ order_refunds }) {
 
 
             {
+                label: 'Defect Evidance Video',
+                render: (item) => {
+                    if (item?.defect_evidence_video) {
+                        return <a target={"__blank"} href={item?.defect_evidence_video} className="p-2 text-indigo-500 underline rounded-lg">
+                            View View
+                        </a>
+                    } else {
+                        return "N/A";
+                    }
+                },
+            },
+
+            {
+                label: 'Return Packaging Video',
+                render: (item) => {
+                    if (item?.return_packaging_video) {
+                        return <a target={"__blank"} href={item?.return_packaging_video} className="p-2 text-indigo-500 underline rounded-lg">
+                            View View
+                        </a>
+                    } else {
+                        return "N/A";
+                    }
+                },
+            },
+
+
+
+            {
+                label: 'Order Status',
+                render: (item) => {
+                    return (
+                        <span className="p-2 text-white bg-indigo-500 rounded-lg">
+                            {item.order?.previous_status ? item.order?.previous_status.replace(/_/g, ' ').toUpperCase() : item.order?.status.replace(/_/g, ' ').toUpperCase()}
+                        </span>
+                    )
+                },
+            },
+
+
+            {
                 label: 'Status',
                 render: (item) => {
                     return (
@@ -65,7 +105,7 @@ export default function index({ order_refunds }) {
                     return (
                         <span className="p-2 text-white bg-gray-500 rounded-lg">
                             {currency?.symbol}
-                            {item.refund_amount}
+                            {Number(item.refund_amount).toLocaleString('en-US')}
                         </span>
                     );
                 },
@@ -75,6 +115,7 @@ export default function index({ order_refunds }) {
             { key: 'approved_at', label: 'Approved At' },
             { key: 'rejected_at', label: 'Rejected At' },
             { key: 'completed_at', label: 'Completed At' },
+            { key: 'withdrawn_at', label: 'Withdrawn At' },
             { key: 'added_at', label: 'Added At' },
         ];
 

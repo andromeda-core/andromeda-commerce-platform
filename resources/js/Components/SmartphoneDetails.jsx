@@ -17,13 +17,13 @@ const SmartphoneDetails = ({ currency, product, StockBadge }) => {
 
 
         if (value_type === 'fixed') {
-            return `${currency?.symbol}${parseFloat(default_value).toFixed(2)}`;
+            return `${currency?.symbol}${Number(default_value).toLocaleString('en-US')}`;
         }
 
 
         if (value_type === 'percentage') {
             const shippingCost = (product.selling_info?.total_price * default_value) / 100;
-            return `${currency?.symbol}${shippingCost.toFixed(2)} (${default_value}%)`;
+            return `${currency?.symbol}${Number(shippingCost).toLocaleString('en-US')} (${default_value}%)`;
         }
 
         return __('Free');
@@ -41,13 +41,13 @@ const SmartphoneDetails = ({ currency, product, StockBadge }) => {
 
 
         if (value_type === 'fixed') {
-            return `${currency?.symbol}${parseFloat(default_value).toFixed(2)}`;
+            return `${currency?.symbol}${Number(default_value).toLocaleString('en-US')}`;
         }
 
 
         if (value_type === 'percentage') {
             const shippingCost = (product.selling_info?.total_price * default_value) / 100;
-            return `${currency?.symbol}${shippingCost.toFixed(2)} (${default_value}%)`;
+            return `${currency?.symbol}${Number(shippingCost).toLocaleString('en-US')} (${default_value}%)`;
         }
 
         return noTaxMessage;
@@ -78,7 +78,7 @@ const SmartphoneDetails = ({ currency, product, StockBadge }) => {
 
             {/* Price */}
             <h2 className="mb-6 xl:text-3xl text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
-                {currency?.name} {currency?.symbol}{product.selling_info?.total_price || "N/A"}
+                {currency?.name} {currency?.symbol}{Number(product.selling_info?.total_price).toLocaleString('en-US') || "N/A"}
             </h2>
 
             <div className="space-y-4">

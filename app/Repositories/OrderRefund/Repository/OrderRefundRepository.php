@@ -51,6 +51,10 @@ class OrderRefundRepository implements IOrderRefundRepository
                 throw new Exception('Completed refunds cannot be modified.');
             }
 
+            if ($orderRefund->refund_status === 'withdrawn') {
+                throw new Exception('Withdrawn refunds cannot be modified.');
+            }
+
             if ($validated['refund_status'] === 'completed') {
 
                 if ($validated['refund_method'] === 'crypto' && empty($validated['refund_reference'])) {

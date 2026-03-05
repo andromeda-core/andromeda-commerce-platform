@@ -5,9 +5,10 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, useForm } from '@inertiajs/react';
 import React, { useEffect, useRef, useState } from 'react';
-import BarcodeScannerComponent from 'react-qr-barcode-scanner';
+
 import Swal from 'sweetalert2';
 import axios from 'axios';
+import { useScanner } from '@/Hooks/useScanner';
 
 // ─── Step Constants ─────────────────────────────────────────────────────────
 const STEP = {
@@ -100,6 +101,7 @@ export default function create() {
         verification_video: '',
     });
 
+
     const submit = (e) => {
         e.preventDefault();
         post(route('dashboard.inventory-verifications.store'), {
@@ -130,6 +132,13 @@ export default function create() {
 
     const videoRef = useRef(null);
     const cooldownRef = useRef(null);
+
+    const { videoRef: scannerVideoRef } = useScanner({
+        active: step === STEP.SCANNING && !scanCooldown && !isVerifying,
+        onScan: (text) => handleIMEIScan(text),
+    });
+
+
     const handleIMEIScan = async (scannedValue) => {
         if (scanCooldown || isVerifying) return;
 
@@ -515,17 +524,12 @@ export default function create() {
 
                                 {/* Scanner Viewport */}
                                 <div className="relative overflow-hidden bg-gray-900 rounded-2xl" style={{ aspectRatio: '4/3' }}>
-                                    {!scanCooldown && !isVerifying && (
-                                        <BarcodeScannerComponent
-                                            width={400}
-                                            height={300}
-                                            onUpdate={(err, result) => {
-                                                if (result && !scanCooldown && !isVerifying) {
-                                                    handleIMEIScan(result.text);
-                                                }
-                                            }}
-                                        />
-                                    )}
+                                    <video
+                                        ref={scannerVideoRef}
+                                        className="object-cover w-full h-full"
+                                        muted
+                                        playsInline
+                                    />
 
                                     {/* Scan Guide Corners */}
                                     {!isVerifying && !scanCooldown && (

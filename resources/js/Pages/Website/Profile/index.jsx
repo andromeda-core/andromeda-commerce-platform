@@ -463,11 +463,11 @@ const index = ({ user, countries }) => {
                             <div>
                                 <div className="flex flex-wrap items-center justify-between gap-1 mt-3 font-medium">
                                     <p className="px-2 py-1 mt-1 text-xs rounded-full bg-surface-1-light text-main-text-light dark:bg-surface-1-dark dark:text-main-text-dark">
-                                        {user?.customer?.orders_count || 0} {__('Orders')}
+                                        {(Number(user?.customer?.orders_count) || 0).toLocaleString('en-US')} {__('Orders')}
                                     </p>
 
                                     <p className="px-2 py-1 mt-1 text-xs rounded-full bg-surface-1-light text-main-text-light dark:bg-surface-1-dark dark:text-main-text-dark">
-                                        {user?.points || 0} {__('Points')}
+                                        {(Number(user?.points) || 0).toLocaleString('en-US')} {__('Points')}
                                     </p>
                                 </div>
                             </div>

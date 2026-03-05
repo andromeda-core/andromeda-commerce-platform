@@ -202,7 +202,7 @@ export default function index({ orders }) {
                     return (
                         <span className="p-2 text-white bg-gray-500 rounded-lg">
                             {currency?.symbol}
-                            {item?.order?.full_amount}
+                            {Number(item?.order?.full_amount).toLocaleString('en-US')}
                         </span>
                     );
                 },

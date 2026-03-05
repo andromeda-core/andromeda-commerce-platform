@@ -92,7 +92,9 @@ class OrderController extends Controller
             return to_route('website.orders.order-view', ['order_no' => $order_no])->with('info', $notExists['message']);
         }
 
-        return Inertia::render('Website/Orders/Refund/index', compact('order_no'));
+        $order = $notExists['order'];
+
+        return Inertia::render('Website/Orders/Refund/index', compact('order_no', 'order'));
     }
 
     public function refundRequestStore(Request $request, ?string $order_no = null)
@@ -192,5 +194,12 @@ class OrderController extends Controller
 
         return to_route('website.checkout.index', ['buy_now' => true]);
 
+    }
+
+    public function verifyOrderProductIMEI(Request $request)
+    {
+        $response = $this->order->orderProductIMEIVerification($request);
+
+        return response()->json($response);
     }
 }

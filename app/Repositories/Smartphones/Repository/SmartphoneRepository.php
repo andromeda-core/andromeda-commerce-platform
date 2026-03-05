@@ -59,7 +59,7 @@ class SmartphoneRepository implements ISmartphoneRepository
                         });
                 });
             })
-            ->with(['model_name', 'capacity', 'selling_info', 'category', 'selling_info.shipping_fee', 'selling_info.import_tax', 'addons'])
+            ->with(['model_name', 'capacity', 'selling_info', 'category', 'selling_info.shipping_fee', 'selling_info.import_tax', 'addons', 'floor'])
             ->latest()
             ->paginate(10)
             ->withQueryString();
@@ -69,7 +69,7 @@ class SmartphoneRepository implements ISmartphoneRepository
 
     public function getSingleSmartphone(string $id)
     {
-        $smartphone = $this->smartphone->with(['model_name', 'capacity', 'category', 'country', 'condition', 'courier_company', 'return_policy', 'selling_info', 'selling_info.shipping_fee', 'selling_info.import_tax', 'addons:id'])->find($id);
+        $smartphone = $this->smartphone->with(['model_name', 'capacity', 'category', 'country', 'condition', 'courier_company', 'return_policy', 'selling_info', 'selling_info.shipping_fee', 'selling_info.import_tax', 'addons:id', 'floor'])->find($id);
 
         if (! empty($smartphone)) {
             $smartphone->addon_ids = ! blank($smartphone->addons) ? $smartphone->addons->pluck('id')->toArray() : [];
@@ -291,6 +291,10 @@ class SmartphoneRepository implements ISmartphoneRepository
             'return_policy_id' => ['required', 'exists:return_policies,id'],
             'shipping_policy_id' => ['required', 'exists:shipping_policies,id'],
             'upc' => ['required', 'max:255', 'unique:smartphones,upc,'.$id],
+            'floor_id' => ['nullable', 'exists:floors,id'],
+            'latitude' => ['nullable', 'numeric'],
+            'longitude' => ['nullable', 'numeric'],
+            'location_name' => ['nullable', 'string'],
             'images' => ['nullable', 'array', 'max:5'],
             'videos' => ['nullable', 'array', 'max:5'],
             'tag' => ['nullable', 'string', 'max:30', function ($attribute, $value, $fail) {
@@ -372,6 +376,16 @@ class SmartphoneRepository implements ISmartphoneRepository
             $smartphone = $this->smartphone->find($id);
             if (empty($smartphone)) {
                 throw new Exception('Smartphone Not Found');
+            }
+
+            // Get Location Name  From Google Api Behalf Of Lat/lng
+            if (empty($validated_req['location_name']) && ! empty($validated_req['latitude']) && ! empty($validated_req['longitude'])) {
+                $response = $this->googleGeoCoderService->getLocationNameFromLatLng($validated_req['latitude'], $validated_req['longitude']);
+                if ($response['status'] === false) {
+                    throw new Exception($response['message']);
+                }
+
+                $validated_req['location_name'] = $response['place_name'] ?? 'No Location Name Found';
             }
 
             if ($request->has('addon_ids')) {

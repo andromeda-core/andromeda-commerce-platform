@@ -1099,8 +1099,8 @@ const SmartphoneMobileGalleryModal = ({
                                                         {/* Price */}
                                                         <div className="flex-shrink-0">
                                                             <p className="font-medium text-md text-main-text-light dark:text-main-text-dark">
-                                                                {currency?.name} {currency?.symbol}{' '}
-                                                                {smartphone?.price}
+                                                                {currency?.name} {currency?.symbol}{''}
+                                                                {Number(smartphone?.price).toLocaleString('en-US')}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -1211,8 +1211,8 @@ const SmartphoneMobileGalleryModal = ({
                                                         {/* Price */}
                                                         <div className="flex-shrink-0">
                                                             <p className="font-medium text-md text-main-text-light dark:text-main-text-dark">
-                                                                {currency?.name} {currency?.symbol}{' '}
-                                                                {addon?.price}
+                                                                {currency?.name} {currency?.symbol}{''}
+                                                                {Number(addon?.price).toLocaleString('en-US')}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -1289,7 +1289,7 @@ const SmartphoneMobileGalleryModal = ({
                                         </span>
                                         <span className="ml-auto text-right text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                                             {currency?.symbol}
-                                            {smartphoneTotalPrice[smartphone?.id] || 0}
+                                            {Number(smartphoneTotalPrice[smartphone?.id]).toLocaleString('en-US') || 0}
                                         </span>
                                     </div>
 

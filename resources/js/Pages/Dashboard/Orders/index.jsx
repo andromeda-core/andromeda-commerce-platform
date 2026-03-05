@@ -381,6 +381,26 @@ export default function index({ orders }) {
                 },
             },
 
+
+            {
+                label: 'Delivery Confirmed',
+                render: (item) => {
+                    if (item.is_delivery_confirmed) {
+                        return (
+                            <span className="p-2 text-white bg-green-500 rounded-lg">
+                                YES
+                            </span>
+                        );
+                    } else {
+                        return (
+                            <span className="p-2 text-white bg-red-500 rounded-lg">
+                                NO
+                            </span>
+                        )
+                    }
+                },
+            },
+
             {
                 label: 'Default Payment Method',
                 render: (item) => {
@@ -409,7 +429,7 @@ export default function index({ orders }) {
                     return (
                         <span className="p-2 text-white bg-gray-500 rounded-lg">
                             {currency?.symbol}
-                            {item.amount}
+                            {Number(item.amount).toLocaleString('en-US')}
                         </span>
                     );
                 },
@@ -422,7 +442,7 @@ export default function index({ orders }) {
                     return (
                         <span className="p-2 text-white bg-gray-500 rounded-lg">
                             {currency?.symbol}
-                            {item.points_used || 0}
+                            {(Number(item.points_used) || 0).toLocaleString('en-US')}
                         </span>
                     );
                 },
@@ -435,7 +455,7 @@ export default function index({ orders }) {
                     return (
                         <span className="p-2 text-white bg-gray-500 rounded-lg">
                             {currency?.symbol}
-                            {item.full_amount}
+                            {Number(item.full_amount).toLocaleString('en-US')}
                         </span>
                     );
                 },

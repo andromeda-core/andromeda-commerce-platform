@@ -290,7 +290,7 @@ export default function CustomerOrderInvoice({ order }) {
 
                                                 <td className="px-2 py-4 text-sm text-right text-gray-900">
                                                     {currency?.symbol}
-                                                    {item.unit_price}
+                                                    {Number(item.unit_price).toLocaleString('en-US')}
                                                 </td>
 
                                                 <td className="px-2 py-4 text-sm text-center text-gray-900">
@@ -299,7 +299,7 @@ export default function CustomerOrderInvoice({ order }) {
 
                                                 <td className="px-2 py-4 text-sm font-bold text-right text-gray-900">
                                                     {currency?.symbol}
-                                                    {itemGrandTotal.toFixed(2)}
+                                                    {Number(itemGrandTotal).toLocaleString('en-US')}
                                                 </td>
                                             </tr>
 
@@ -313,7 +313,7 @@ export default function CustomerOrderInvoice({ order }) {
                                                             </span>
                                                             <span>
                                                                 {currency?.symbol}
-                                                                {(item.unit_price * item.quantity).toFixed(2)}
+                                                                {(Number(item.unit_price) * Number(item.quantity)).toLocaleString('en-US')}
                                                             </span>
                                                         </div>
 
@@ -321,7 +321,7 @@ export default function CustomerOrderInvoice({ order }) {
                                                             <span>Shipping</span>
                                                             <span>
                                                                 {currency?.symbol}
-                                                                {Number(item.shipping_cost || 0).toFixed(2)}
+                                                                {Number(item.shipping_cost || 0).toLocaleString('en-US')}
                                                             </span>
                                                         </div>
 
@@ -329,7 +329,7 @@ export default function CustomerOrderInvoice({ order }) {
                                                             <span>Import Tax</span>
                                                             <span>
                                                                 {currency?.symbol}
-                                                                {Number(item.import_cost || 0).toFixed(2)}
+                                                                {Number(item.import_cost || 0).toLocaleString('en-US')}
                                                             </span>
                                                         </div>
 
@@ -351,7 +351,7 @@ export default function CustomerOrderInvoice({ order }) {
                                                                             </span>
                                                                             <span>
                                                                                 {currency?.symbol}
-                                                                                {Number(addon.total_price).toFixed(2)}
+                                                                                {Number(addon.total_price).toLocaleString('en-US')}
                                                                             </span>
                                                                         </div>
                                                                     ))}
@@ -360,7 +360,7 @@ export default function CustomerOrderInvoice({ order }) {
                                                                         <span>Add-ons total</span>
                                                                         <span>
                                                                             {currency?.symbol}
-                                                                            {addonsTotal.toFixed(2)}
+                                                                            {Number(addonsTotal).toLocaleString('en-US')}
                                                                         </span>
                                                                     </div>
                                                                 </div>
@@ -388,7 +388,7 @@ export default function CustomerOrderInvoice({ order }) {
                                         </span>
                                         <span className="text-base font-bold text-blue-600 break-words sm:text-lg">
                                             {currency?.symbol}
-                                            {order.full_amount}
+                                            {Number(order.full_amount).toLocaleString('en-US')}
                                         </span>
                                     </div>
                                 </div>

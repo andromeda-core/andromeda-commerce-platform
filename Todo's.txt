@@ -1932,8 +1932,24 @@ If a country-specific price exists, the system will use that price; otherwise it
 188: Bottom Bar Dashboard Shortcut added before it was only showing For The Admin Role ✅
 189: Bottom Bar Email Verification Popup Fixed Auto closing When clicked Outside from The POPUP On Mobile And Hide button Of Mobile Email Verification PopUp Style FIXED ✅
 
+190: New Columns Added In ORders Table To Track When Delivered And When Delivery Confirmed and its TimeStamp ✅
+191: Auto Delivery Confirm When 7 Days Passed Of Status Delivered ✅
+192: Return Refund Restriction: When Delievry Confirmed After That 72 Hours Till Refund Will be acceptable Otherwise the Refund window Will be Closed And No Longer Refund will be  Proceeded  Frontend  + Backend Restriction Implemented✅
+193: Prices Showing Logic Improved For Frontend To make Consistency Between Prices Of Orders Module ✅
+194: Desktop Feed, Mobile Feed, Cart, Checkout, Shop, Search Page, Hashtag Page, on all places The Dispalying Price Of Product Is Improved And Consistent Accross the Site Website  ✅
 
-
+195: DB Table Update refund_requests to take 2 videos defected_video refund_packageing_video ✅
+196: Website refund Request Module First will ask IMEI For Scan When order status is Delivered To MArk Auto Delivery Cofnirmed if user scans it ✅
+197: Live Recording Logic For Both Videos in Refund Request Page ✅
+198: And SHowing Those Videos In Refund Requets Module Of Dashboard For Admin ✅
+199: FIX All Dashboard + invoices Amount Styling To Make Consistency Between Dashboard + Website Price Display Of Products ✅
+200: After One Time Refund Withdrawl Again Refund WOnt be Requested And For Preventing that I added NMew Status For refund_status as withdrawn whihc indicates This request has already been Withdrawn ✅
+201:  Prevention Added After One time withdrawal to again withdrawl on Frontend + Backend ✅
+202: Barcode Scanner Changes Due to Low Scanning From Previous Scanner ✅
+203: New Indication added For Identifying The Order has Confirmed Delivery Or not in Backend + Website ✅
+204: Auto Marking delivery confirmed after Order status reaches to delivered after 7 days ✅
+205: Auto Disabling Refund Request When 72 Hours Passed From delivery confirmed ✅
+206: Smartphone Edit Module Updated And Added Spatiotemporal Info Update Logic There similarly Like POST EDIT MODULE  ✅
 
 
 

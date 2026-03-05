@@ -2203,9 +2203,9 @@ const DesktopFeed = ({
                                                                                             }{' '}
                                                                                             {
                                                                                                 currency?.symbol
-                                                                                            }{' '}
+                                                                                            }{''}
                                                                                             {
-                                                                                                smartphone?.price
+                                                                                                Number(smartphone?.price).toLocaleString('en-US')
                                                                                             }
                                                                                         </p>
                                                                                     </div>
@@ -2334,9 +2334,9 @@ const DesktopFeed = ({
                                                                                             }{' '}
                                                                                             {
                                                                                                 currency?.symbol
-                                                                                            }{' '}
+                                                                                            }{''}
                                                                                             {
-                                                                                                addon?.price
+                                                                                                Number(addon?.price).toLocaleString('en-US')
                                                                                             }
                                                                                         </p>
                                                                                     </div>
@@ -2354,9 +2354,9 @@ const DesktopFeed = ({
                                                                     </span>
                                                                     <span className="ml-auto text-3xl font-semibold text-right text-main-text-light dark:text-main-text-dark">
                                                                         {currency?.symbol}
-                                                                        {smartphoneTotalPrice[
+                                                                        {Number(smartphoneTotalPrice[
                                                                             feedGallery?.id
-                                                                        ] || 0}
+                                                                        ]).toLocaleString('en-US') || 0}
                                                                     </span>
                                                                 </div>
 
@@ -4042,9 +4042,9 @@ const DesktopFeed = ({
                                                                                             }{' '}
                                                                                             {
                                                                                                 currency?.symbol
-                                                                                            }{' '}
+                                                                                            }{''}
                                                                                             {
-                                                                                                smartphone?.price
+                                                                                                Number(smartphone?.price).toLocaleString('en-US')
                                                                                             }
                                                                                         </p>
                                                                                     </div>
@@ -4173,9 +4173,9 @@ const DesktopFeed = ({
                                                                                             }{' '}
                                                                                             {
                                                                                                 currency?.symbol
-                                                                                            }{' '}
+                                                                                            }{''}
                                                                                             {
-                                                                                                addon?.price
+                                                                                                Number(addon?.price).toLocaleString('en-US')
                                                                                             }
                                                                                         </p>
                                                                                     </div>
@@ -4193,9 +4193,9 @@ const DesktopFeed = ({
                                                                     </span>
                                                                     <span className="ml-auto text-3xl font-semibold text-right text-main-text-light dark:text-main-text-dark">
                                                                         {currency?.symbol}
-                                                                        {smartphoneTotalPrice[
+                                                                        {Number(smartphoneTotalPrice[
                                                                             feedGallery?.id
-                                                                        ] || 0}
+                                                                        ]).toLocaleString('en-US') || 0}
                                                                     </span>
                                                                 </div>
 

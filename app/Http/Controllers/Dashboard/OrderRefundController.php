@@ -41,8 +41,17 @@ class OrderRefundController extends Controller implements HasMiddleware
         }
 
         $order_refund = $this->order_refund->getSingleOrderRefund($id);
+
         if (empty($order_refund)) {
             return back()->with('error', $this->trans->get('Order Refund Not Found'));
+        }
+
+        if ($order_refund->refund_status === 'completed') {
+            return back()->with('error', $this->trans->get('Completed refunds cannot be modified.'));
+        }
+
+        if ($order_refund->refund_status === 'withdrawn') {
+            return back()->with('error', $this->trans->get('Withdrawn refunds cannot be modified.'));
         }
 
         return Inertia::render('Dashboard/OrderRefunds/edit', compact('order_refund'));

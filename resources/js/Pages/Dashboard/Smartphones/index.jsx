@@ -50,6 +50,9 @@ export default function index({ smartphones }) {
                     );
                 },
             },
+
+            { key: 'location_name', label: 'Location Name' },
+            { key: 'floor.name', label: 'Floor' },
             {
                 key: 'category.name',
                 label: 'Category',
@@ -90,13 +93,13 @@ export default function index({ smartphones }) {
             },
 
             {
-                label: 'Selling Price',
+                label: 'Price',
                 render: (item) => {
                     if (item?.selling_info) {
                         return (
                             <span className="p-2 text-white bg-blue-500 rounded-lg">
                                 {currency?.symbol}
-                                {item?.selling_info?.total_price}
+                                {Number(item?.selling_info?.total_price).toLocaleString('en-US')}
                             </span>
                         );
                     }
@@ -106,21 +109,7 @@ export default function index({ smartphones }) {
             },
 
 
-            {
-                label: 'Total Price',
-                render: (item) => {
-                    if (item?.selling_info) {
-                        return (
-                            <span className="p-2 text-white bg-blue-500 rounded-lg">
-                                {currency?.symbol}
-                                {item?.selling_info?.total_price}
-                            </span>
-                        );
-                    }
 
-                    return 'N/A';
-                },
-            },
 
             {
                 label: 'Tag',

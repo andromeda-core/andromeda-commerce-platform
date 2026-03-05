@@ -70,7 +70,7 @@ export default function Index({ platform_commissions }) {
                 render: (item) => {
                     return (
                         <span className="p-2 text-sm text-white bg-blue-500 rounded-lg">
-                            {currency?.symbol}{item?.commission_amount ?? 0}
+                            {currency?.symbol}{(Number(item?.commission_amount) || 0).toLocaleString('en-US')}
                         </span>
                     );
                 },
@@ -98,7 +98,7 @@ export default function Index({ platform_commissions }) {
                     const symbol = item?.currency?.symbol ?? '';
                     return (
                         <span className="p-2 text-sm text-white bg-green-600 rounded-lg">
-                            {symbol}{val}
+                            {symbol}{Number(val).toLocaleString('en-US')}
                         </span>
                     );
                 },

@@ -281,11 +281,11 @@ export default function ShippingInvoice({ order }) {
                                                 </td>
 
                                                 <td className="px-4 py-3 text-right text-gray-900 border">
-                                                    {currency?.symbol}{Number(item.unit_price).toFixed(2)}
+                                                    {currency?.symbol}{Number(item.unit_price).toLocaleString('en-US')}
                                                 </td>
 
                                                 <td className="px-4 py-3 font-semibold text-right text-gray-900 border">
-                                                    {currency?.symbol}{declaredValue.toFixed(2)}
+                                                    {currency?.symbol}{Number(declaredValue).toLocaleString('en-US')}
                                                 </td>
                                             </tr>
 
@@ -299,7 +299,7 @@ export default function ShippingInvoice({ order }) {
                                                             <span>Product Value</span>
                                                             <span>
                                                                 {currency?.symbol}
-                                                                {Number(item.unit_price * item.quantity).toFixed(2)}
+                                                                {Number(item.unit_price * item.quantity).toLocaleString('en-US')}
                                                             </span>
                                                         </div>
 
@@ -309,7 +309,7 @@ export default function ShippingInvoice({ order }) {
                                                                 <span>Shipping Cost</span>
                                                                 <span>
                                                                     {currency?.symbol}
-                                                                    {Number(item.shipping_cost).toFixed(2)}
+                                                                    {Number(item.shipping_cost).toLocaleString('en-US')}
                                                                 </span>
                                                             </div>
                                                         )}
@@ -320,7 +320,7 @@ export default function ShippingInvoice({ order }) {
                                                                 <span>Import / Customs Tax</span>
                                                                 <span>
                                                                     {currency?.symbol}
-                                                                    {Number(item.import_cost).toFixed(2)}
+                                                                    {Number(item.import_cost).toLocaleString('en-US')}
                                                                 </span>
                                                             </div>
                                                         )}
@@ -342,7 +342,7 @@ export default function ShippingInvoice({ order }) {
                                                                         </span>
                                                                         <span>
                                                                             {currency?.symbol}
-                                                                            {Number(addon.total_price).toFixed(2)}
+                                                                            {Number(addon.total_price).toLocaleString('en-US')}
                                                                         </span>
                                                                     </div>
                                                                 ))}
@@ -351,7 +351,7 @@ export default function ShippingInvoice({ order }) {
                                                                     <span>Add-ons Total</span>
                                                                     <span>
                                                                         {currency?.symbol}
-                                                                        {addonsTotal.toFixed(2)}
+                                                                        {Number(addonsTotal).toLocaleString('en-US')}
                                                                     </span>
                                                                 </div>
                                                             </div>

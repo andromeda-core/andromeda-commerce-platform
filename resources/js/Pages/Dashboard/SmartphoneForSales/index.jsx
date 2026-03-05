@@ -41,7 +41,7 @@ export default function index({ smartphone_for_sales }) {
                     return (
                         <span className="p-2 text-white bg-blue-500 rounded-lg">
                             {currency?.symbol}
-                            {item.selling_price}
+                            {Number(item.selling_price).toLocaleString('en-US')}
                         </span>
                     );
                 },
@@ -52,7 +52,7 @@ export default function index({ smartphone_for_sales }) {
                     return (
                         <span className="p-2 text-white bg-blue-500 rounded-lg">
                             {currency?.symbol}
-                            {item.total_price}
+                            {Number(item.total_price).toLocaleString('en-US')}
                         </span>
                     );
                 },

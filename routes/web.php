@@ -171,6 +171,7 @@ Route::group(['as' => 'website.'], function () {
         Route::post('/orders/address-change/withdrawl', 'addressChangeWithdrawl')->name('address-change.withdrawl');
         Route::post('/orders/refund/withdrawl', 'refundWithdrawl')->name('refund.withdrawl');
         Route::post('/orders/re-order', 'reOrder')->name('re-order');
+        Route::post('/orders/verify-imei', 'verifyOrderProductIMEI')->name('verify.imei');
     });
 
     // Profile Routes

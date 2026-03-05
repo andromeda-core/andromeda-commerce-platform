@@ -462,7 +462,7 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
     const handleWithdrawlRefundRequest = async (orderNo) => {
         const result = await confirm({
             title: __('Confirm Refund Request Withdraw'),
-            text: __('Are you sure you want to withdraw this Refund Request?'),
+            text: __('Are you sure you want to withdraw this Refund Request You wont Be Able to Request Again'),
             icon: 'info',
             showCancelButton: true,
             confirmButtonText: __('Yes'),
@@ -516,6 +516,19 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
     };
 
     const remainingTime = getRemainingTime(order?.expires_at);
+    const shouldShowRefundButton = () => {
+
+        if (!order?.is_delivery_confirmed) return true;
+
+        if (!order?.refund_expires_at) return true;
+
+        const expiresAt = dayjs(order.refund_expires_at);
+        if (!expiresAt.isValid()) return true;
+
+        return dayjs().isBefore(expiresAt);
+    };
+
+
     return (
         <>
             <ConfirmDialog />
@@ -526,7 +539,7 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                     {/* Status and Expiry */}
                     <div className="flex flex-col gap-1 md:flex-row md:items-center md:gap-3">
                         <h3 className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
-                            {__(order.status.replace(/_/g, ' ').toUpperCase(), true)}
+                            {__(order.status.replace(/_/g, ' ').toUpperCase(), true)} {order?.is_delivery_confirmed ? `(${__("Delivery Confirmed")}) ` : ""}
                         </h3>
                         {['awaiting_payment', 'pending'].includes(order.status.toLowerCase()) && (
                             <span className="text-[14px] font-semibold text-[#ff0000]">
@@ -642,7 +655,7 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
 
                             <p className="text-[17px] font-semibold text-main-text-light dark:text-main-text-dark md:mt-3 lg:mt-10">
                                 {__('Total')}: {currency?.name} {currency?.symbol}
-                                {parseFloat(order.full_amount).toFixed(2)}
+                                {Number(order.full_amount).toLocaleString('en-US')}
                             </p>
                         </div>
                     </div>
@@ -833,7 +846,8 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                                         <button
                                             disabled={
                                                 order.refund_request_status === 'approved' ||
-                                                order.refund_request_status === 'rejected'
+                                                order.refund_request_status === 'rejected' ||
+                                                order.refund_request_status === 'withdrawn'
                                             }
                                             onClick={() =>
                                                 handleWithdrawlRefundRequest(order?.order_no)
@@ -880,40 +894,48 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                                     )}
                                 </button>
                                 {/* REFUND */}
-                                {!order.is_refund_requested ? (
-                                    <button
-                                        onClick={() =>
-                                            router.visit(
-                                                route(
-                                                    'website.orders.refund.index',
-                                                    order.order_no,
-                                                ),
-                                            )
-                                        }
-                                        className="text-md flex h-[50px] w-full items-center justify-center gap-2 rounded-md bg-[#282828] text-[16px] font-semibold text-main-text-dark transition-all dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#282828]/80 dark:lg:hover:bg-main-text-dark/80"
-                                    >
-                                        {__('Return, Refund')}
-                                    </button>
-                                ) : (
-                                    <button
-                                        disabled={
-                                            order.refund_request_status === 'approved' ||
-                                            order.refund_request_status === 'rejected'
-                                        }
-                                        onClick={() =>
-                                            handleWithdrawlRefundRequest(order?.order_no)
-                                        }
-                                        className="flex h-[50px] w-full items-center justify-center gap-2 rounded-md bg-[#282828] text-[16px] text-sm font-semibold text-main-text-dark transition-all dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#282828]/80 dark:lg:hover:bg-main-text-dark/80"
-                                    >
-                                        {__('Refund Request')}:{' '}
-                                        {__(
-                                            order.refund_request_status
-                                                .replace(/_/g, ' ')
-                                                .toUpperCase(),
-                                            true,
+
+
+                                {shouldShowRefundButton() && (
+                                    <>
+                                        {!order.is_refund_requested ? (
+                                            <button
+                                                onClick={() =>
+                                                    router.visit(
+                                                        route(
+                                                            'website.orders.refund.index',
+                                                            order.order_no,
+                                                        ),
+                                                    )
+                                                }
+                                                className="text-md flex h-[50px] w-full items-center justify-center gap-2 rounded-md bg-[#282828] text-[16px] font-semibold text-main-text-dark transition-all dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#282828]/80 dark:lg:hover:bg-main-text-dark/80"
+                                            >
+                                                {__('Return, Refund')}
+                                            </button>
+                                        ) : (
+                                            <button
+                                                disabled={
+                                                    order.refund_request_status === 'approved' ||
+                                                    order.refund_request_status === 'rejected' ||
+                                                    order.refund_request_status === 'withdrawn'
+                                                }
+                                                onClick={() =>
+                                                    handleWithdrawlRefundRequest(order?.order_no)
+                                                }
+                                                className="flex h-[50px] w-full items-center justify-center gap-2 rounded-md bg-[#282828] text-[16px] text-sm font-semibold text-main-text-dark transition-all dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#282828]/80 dark:lg:hover:bg-main-text-dark/80"
+                                            >
+                                                {__('Refund Request')}:{' '}
+                                                {__(
+                                                    order.refund_request_status
+                                                        .replace(/_/g, ' ')
+                                                        .toUpperCase(),
+                                                    true,
+                                                )}
+                                            </button>
                                         )}
-                                    </button>
+                                    </>
                                 )}
+
                             </>
                         )}
 
@@ -957,7 +979,9 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                                         <button
                                             disabled={
                                                 order.refund_request_status === 'approved' ||
-                                                order.refund_request_status === 'rejected'
+                                                order.refund_request_status === 'rejected' ||
+                                                order.refund_request_status === 'withdrawn'
+
                                             }
                                             onClick={() =>
                                                 handleWithdrawlRefundRequest(order?.order_no)

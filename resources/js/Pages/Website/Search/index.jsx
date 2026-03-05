@@ -177,7 +177,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, generateSmartphoneURL,
                             <div className="flex flex-col items-start font-semibold text-[14px] space-y-1">
                                 <p className="w-full overflow-hidden text-white truncate">
                                     {item.selling_info?.total_price
-                                        ? `${currency?.symbol}${item.selling_info.total_price}`
+                                        ? `${currency?.symbol}${Number(item.selling_info.total_price).toLocaleString('en-US')}`
                                         : ''}
                                 </p>
                                 <p className="w-full overflow-hidden text-white truncate">
@@ -243,7 +243,7 @@ const ResultItem = memo(({ item, onCopyLink, generateURL, generateSmartphoneURL,
                                     <div className="flex flex-col items-start space-y-1 font-semibold">
                                         <p className="w-full text-[14px] text-main-text-light dark:text-main-text-dark truncate">
                                             {item.selling_info?.total_price
-                                                ? `${currency?.symbol}${item.selling_info.total_price}`
+                                                ? `${currency?.symbol}${Number(item.selling_info.total_price).toLocaleString('en-US')}`
                                                 : ''}
                                         </p>
 

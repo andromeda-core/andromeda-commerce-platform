@@ -16,12 +16,16 @@ class OrderRefund extends Model
         'refund_method',
         'refund_reason',
         'refund_reference',
+        'defect_evidence_video',
+        'return_packaging_video',
+        'scanned_imei',
         'note',
         'refund_amount',
         'requested_at',
         'approved_at',
         'rejected_at',
         'completed_at',
+        'withdrawn_at',
     ];
 
     // Attributes
