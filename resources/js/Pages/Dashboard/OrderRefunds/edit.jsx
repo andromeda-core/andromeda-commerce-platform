@@ -216,8 +216,8 @@ export default function edit({ order_refund, currency }) {
                                                 CustomClass={'w-[250px] '}
                                                 Disabled={
                                                     processing ||
-                                                    data?.refund_method === '' ||
-                                                    data?.refund_status === ''
+                                                    data?.refund_status === '' ||
+                                                    (data.refund_status !== 'rejected' && data?.refund_method === '')
 
                                                 }
                                                 Spinner={processing}

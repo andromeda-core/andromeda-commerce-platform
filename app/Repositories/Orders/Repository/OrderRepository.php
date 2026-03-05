@@ -364,7 +364,7 @@ class OrderRepository implements IOrderRepository
             ];
         }
 
-        if ($order->refund()->exists()) {
+        if ($order->refund()->exists() && ($order?->refund?->refund_status !== 'withdrawn' && $order?->refund?->refund_status !== 'rejected')) {
 
             return [
                 'status' => false,
