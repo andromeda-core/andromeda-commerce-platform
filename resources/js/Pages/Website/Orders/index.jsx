@@ -541,7 +541,7 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                         <h3 className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                             {__(order.status.replace(/_/g, ' ').toUpperCase(), true)} {order?.is_delivery_confirmed ? `(${__("Delivery Confirmed")}) ` : ""}
                         </h3>
-                        {['awaiting_payment', 'pending'].includes(order.status.toLowerCase()) && (
+                        {(['awaiting_payment', 'pending'].includes(order.status.toLowerCase()) && order?.payment_proof === null) && (
                             <span className="text-[14px] font-semibold text-[#ff0000]">
                                 {remainingTime &&
                                     (remainingTime === 'Expired'
@@ -756,16 +756,27 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
 
                                 {order?.is_cancelation_requested &&
                                     order?.cancelation_request_status !== 'rejected' ? null : (
-                                    <button
-                                        onClick={() => {
-                                            router.visit(
-                                                route('website.orders.order-view', order?.order_no),
-                                            );
-                                        }}
-                                        className="text-md flex h-[50px] w-full items-center justify-center gap-2 rounded-md bg-[#282828] text-[16px] font-semibold text-main-text-dark transition-all dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#282828]/80 dark:lg:hover:bg-main-text-dark/80"
-                                    >
-                                        {__('Upload Proof')}
-                                    </button>
+                                    <>
+                                        {order?.payment_proof === null ? (
+                                            <button
+                                                onClick={() => {
+                                                    router.visit(
+                                                        route('website.orders.order-view', order?.order_no),
+                                                    );
+                                                }}
+                                                className="text-md flex h-[50px] w-full items-center justify-center gap-2 rounded-md bg-[#282828] text-[16px] font-semibold text-main-text-dark transition-all dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#282828]/80 dark:lg:hover:bg-main-text-dark/80"
+                                            >
+                                                {__('Upload Proof')}
+                                            </button>
+                                        ) : (
+                                            <button
+                                                disabled={true}
+                                                className="text-md flex h-[50px] w-full items-center justify-center gap-2 rounded-md bg-[#282828] text-[16px] font-semibold text-main-text-dark transition-all dark:bg-main-text-dark dark:text-main-text-light lg:w-[210px] lg:hover:bg-[#282828]/80 dark:lg:hover:bg-main-text-dark/80"
+                                            >
+                                                {__('Under Admin Review')}
+                                            </button>
+                                        )}
+                                    </>
                                 )}
                             </>
                         )}

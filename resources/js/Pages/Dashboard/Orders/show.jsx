@@ -808,12 +808,20 @@ export default function show({ order }) {
                                                                 />
                                                             </svg>
                                                         </div>
-                                                        <p className="text-sm font-medium text-gray-500 dark:text-white/60">
-                                                            No payment proof
-                                                        </p>
-                                                        <p className="mt-1 text-xs text-gray-400 dark:text-white/50">
-                                                            Payment proof Upload pending
-                                                        </p>
+                                                        {Number(order?.points_used) === Number(order?.full_amount) ? (
+                                                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                                Payment Proof Not Required (Paid With Points)
+                                                            </p>
+                                                        ) : (
+                                                            <>
+                                                                <p className="text-sm font-medium text-gray-500 dark:text-white/60">
+                                                                    No payment proof
+                                                                </p>
+                                                                <p className="mt-1 text-xs text-gray-400 dark:text-white/50">
+                                                                    Payment proof Upload pending
+                                                                </p>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>

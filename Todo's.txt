@@ -1954,9 +1954,9 @@ If a country-specific price exists, the system will use that price; otherwise it
     1: When Order Refund Exists And its status is requested , approved, completed than the order cannot be Modified at all
     2: If Status is Withdrawn Or Rejected than order can be proceed Because The Request has Been withdrawn OR Rejected
 208: ORder Refund Edit Page Restriction For Asking Refund Method When selected rejected Status Restriction Removed Now it wont ask for  refund method when request is rejected ✅
-    
 
-
+209: In ORders Details Page Of Dashboard Payment Proof Updated So when Order Fully Paid Via POints than it will tell Viewer That it was paid via Points thats why its not ✅
+210: All Over The Dashboard Table Action Button Moved TO Far Left From Far Right   ✅
 
 
 

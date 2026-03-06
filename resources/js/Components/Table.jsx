@@ -403,6 +403,17 @@ export default function Table({
                                             </div>
                                         </th>
                                     )}
+
+                                    {(customActions.length > 0 || DeleteAction || EditRoute) && (
+                                        <th className="px-5 py-3 font-normal text-left whitespace-nowrap sm:px-6">
+                                            <div className="flex items-center justify-center w-full">
+                                                <p className="text-gray-500 text-theme-sm dark:text-gray-400">
+                                                    Action
+                                                </p>
+                                            </div>
+                                        </th>
+                                    )}
+
                                     {columns?.map((column, index) => (
                                         <th
                                             key={index}
@@ -416,15 +427,7 @@ export default function Table({
                                         </th>
                                     ))}
 
-                                    {(customActions.length > 0 || DeleteAction || EditRoute) && (
-                                        <th className="px-5 py-3 font-normal text-right whitespace-nowrap sm:px-6">
-                                            <div className="flex items-center justify-end w-full">
-                                                <p className="text-gray-500 text-theme-sm dark:text-gray-400">
-                                                    Action
-                                                </p>
-                                            </div>
-                                        </th>
-                                    )}
+
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -446,24 +449,12 @@ export default function Table({
                                             </td>
                                         )}
 
-                                        {columns.map((column, index) => (
-                                            <td
-                                                key={index}
-                                                className="py-3 pr-5 whitespace-nowrap sm:pr-5"
-                                            >
-                                                <div className="flex items-center col-span-3">
-                                                    <div className="flex items-center gap-3 text-sm font-medium text-gray-700 text-wrap dark:text-gray-400">
-                                                        {renderCell(item, column)}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        ))}
 
                                         {(customActions.length > 0 ||
                                             DeleteAction ||
                                             EditRoute) && (
                                                 <td className="px-5 py-3 whitespace-nowrap sm:px-6">
-                                                    <div className="flex items-center justify-end w-full">
+                                                    <div className="flex items-center justify-center w-full">
                                                         <div
                                                             ref={(el) =>
                                                                 (dropdownRefs.current[item.id] = el)
@@ -565,8 +556,8 @@ export default function Table({
                                                                                                         item,
                                                                                                     )}
                                                                                                     className={`${(typeof action.show === 'function' ? Boolean(action.show(item)) : true)
-                                                                                                            ? 'block'
-                                                                                                            : 'hidden'
+                                                                                                        ? 'block'
+                                                                                                        : 'hidden'
                                                                                                         } w-full px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-zinc-950/50 dark:hover:text-white`}
                                                                                                 >
                                                                                                     {
@@ -612,6 +603,21 @@ export default function Table({
                                                     </div>
                                                 </td>
                                             )}
+
+                                        {columns.map((column, index) => (
+                                            <td
+                                                key={index}
+                                                className="py-3 pr-5 whitespace-nowrap sm:pr-5"
+                                            >
+                                                <div className="flex items-center col-span-3">
+                                                    <div className="flex items-center gap-3 text-sm font-medium text-gray-700 text-wrap dark:text-gray-400">
+                                                        {renderCell(item, column)}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        ))}
+
+
                                     </tr>
                                 ))}
                             </tbody>

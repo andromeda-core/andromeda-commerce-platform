@@ -740,7 +740,7 @@ function PaymentProof({ order, __, handleFileSelect, handleFileRemove, paymentPr
 
                 </h2>
 
-                {['pending'].includes(order.status.toLowerCase()) && (
+                {(['pending'].includes(order.status.toLowerCase()) && order?.payment_proof === null) && (
                     <span className="text-[14px] font-semibold text-[#ff0000]">
                         {remainingTime && (
                             remainingTime === 'Expired'
@@ -790,7 +790,7 @@ function PaymentProof({ order, __, handleFileSelect, handleFileRemove, paymentPr
                                             {__('Your payment proof is under review')}
                                         </p>
                                         <p className="mt-1 text-xs text-main-text-light dark:text-main-text-dark">
-                                            {__("We'll notify you once it's approved. This typically takes 2-3 business days.")}
+                                            {__("We'll notify you once it's approved.")}
                                         </p>
                                     </div>
                                 </div>
