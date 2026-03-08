@@ -50,4 +50,15 @@ class SupplierAssignedOrderController extends Controller
 
         return to_route('dashboard.supplier-assigned-orders.index')->with('success', $created['message']);
     }
+
+    public function saveDraft(Request $request, ?string $id = null)
+    {
+        $saved = $this->order->fulfillOrdersaveDraft($request, $id);
+
+        if (isset($saved['status']) && $saved['status'] === false) {
+            return back()->with('error', $saved['message']);
+        }
+
+        return to_route('dashboard.supplier-assigned-orders.index')->with('success', $saved['message']);
+    }
 }

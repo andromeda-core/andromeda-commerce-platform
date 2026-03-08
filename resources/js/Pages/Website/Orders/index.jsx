@@ -539,7 +539,7 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                     {/* Status and Expiry */}
                     <div className="flex flex-col gap-1 md:flex-row md:items-center md:gap-3">
                         <h3 className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
-                            {__(order.status.replace(/_/g, ' ').toUpperCase(), true)} {order?.is_delivery_confirmed ? `(${__("Delivery Confirmed")}) ` : ""}
+                            {__(order.status.replace(/_/g, ' ').toUpperCase(), true)} {order?.is_purchase_confirmed ? `(${__("Purchase Confirmed")}) ` : order?.is_delivery_confirmed ? `(${__("Delivery Confirmed")}) ` : ""}
                         </h3>
                         {(['awaiting_payment', 'pending'].includes(order.status.toLowerCase()) && order?.payment_proof === null) && (
                             <span className="text-[14px] font-semibold text-[#ff0000]">

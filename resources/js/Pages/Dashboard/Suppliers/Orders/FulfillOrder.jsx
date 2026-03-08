@@ -4,13 +4,16 @@ import LinkButton from '@/Components/LinkButton';
 import PrimaryButton from '@/Components/PrimaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import React, { useEffect, useMemo, useState } from 'react';
 import SelectInput from '@/Components/SelectInput';
 import Toast from '@/Components/Toast';
 
 import FileUploaderInput from '@/Components/FileUploaderInput';
 import { useScanner } from '@/Hooks/useScanner';
+
+
+
 export default function fulFillOrder({
     assignment,
     order,
@@ -18,6 +21,11 @@ export default function fulFillOrder({
     smartphones,
     storage_locations,
 }) {
+
+
+    const [draftSaving, setDraftSaving] = useState(false);
+    const [draftSaved, setDraftSaved] = useState(false);
+    const [draftError, setDraftError] = useState(false);
 
 
     // Create Data Form Data
@@ -153,6 +161,107 @@ export default function fulFillOrder({
     }, [assignment?.id, order?.id, JSON.stringify(required_items)]);
 
 
+    // Draft Restoring
+    useEffect(() => {
+        if (assignment?.draft_data) return;
+
+        const req = required_items || [];
+        if (!assignment?.id || !order?.id) return;
+
+        const rows = [];
+        req.forEach((r) => {
+            const missing = Number(r?.missing_qty || 0);
+            if (missing > 0) {
+                for (let i = 0; i < missing; i++) {
+                    rows.push({
+                        smartphone_id: r?.smartphone_id || '',
+                        storage_location_id: '',
+                        imei1: '', imei2: '', eid: '', serial_no: '',
+                    });
+                }
+            }
+        });
+
+        const finalRows = rows.length > 0 ? rows : [{
+            smartphone_id: '', storage_location_id: '',
+            imei1: '', imei2: '', eid: '', serial_no: '',
+        }];
+
+        setInventoryItems(finalRows);
+        setData('inventory_items', finalRows);
+        if (assignment?.supplier_id) setData('supplier_id', assignment.supplier_id);
+
+    }, [assignment?.id, order?.id, JSON.stringify(required_items)]);
+
+    useEffect(() => {
+        if (!assignment?.draft_data) return;
+
+        try {
+            const draft = typeof assignment.draft_data === 'string'
+                ? JSON.parse(assignment.draft_data)
+                : assignment.draft_data;
+
+            if (!draft) return;
+
+            if (draft.batch_name) setData('batch_name', draft.batch_name);
+            if (draft.vat) setData('vat', draft.vat);
+            if (draft.base_purchase_unit_price) setData('base_purchase_unit_price', draft.base_purchase_unit_price);
+
+            if (Array.isArray(draft.extra_costs) && draft.extra_costs.length > 0) {
+                setExtraCosts(draft.extra_costs);
+                setData('extra_costs', draft.extra_costs);
+            }
+
+            if (Array.isArray(draft.inventory_items) && draft.inventory_items.length > 0) {
+                const normalized = draft.inventory_items.map(item => ({
+                    smartphone_id: item.smartphone_id || '',
+                    storage_location_id: item.storage_location_id || '',
+                    imei1: item.imei1 || '',
+                    imei2: item.imei2 || '',
+                    eid: item.eid || '',
+                    serial_no: item.serial_no || '',
+                }));
+                setInventoryItems(normalized);
+                setData('inventory_items', normalized);
+            }
+
+        } catch (e) {
+
+        }
+    }, [assignment?.id]);
+
+    const handleSaveDraft = () => {
+        setDraftSaving(true);
+        setDraftSaved(false);
+        setDraftError(false);
+
+        router.post(
+            route('dashboard.supplier-assigned-orders.fulfill.save-draft', assignment?.id),
+            {
+                batch_name: data.batch_name,
+                vat: data.vat,
+                base_purchase_unit_price: data.base_purchase_unit_price,
+                extra_costs: extraCosts,
+                inventory_items: inventoryItems,
+            },
+            {
+                preserveScroll: true,
+                preserveState: true,
+                onSuccess: () => {
+                    setDraftSaved(true);
+                    setTimeout(() => setDraftSaved(false), 3000);
+                },
+                onError: () => {
+                    setDraftError(true);
+                    setTimeout(() => setDraftError(false), 3000);
+                },
+                onFinish: () => {
+                    setDraftSaving(false);
+                },
+            }
+        );
+    };
+
 
     const [showProgressModal, setShowProgressModal] = useState(false);
 
@@ -222,6 +331,159 @@ export default function fulFillOrder({
                     parent_link={route('dashboard.supplier-assigned-orders.index')}
                     child={'FulFill Order'}
                 />
+
+
+                {/* Required Stock Summary */}
+                {(order || required_items?.length > 0) && (
+                    <div className="p-5 mb-6 bg-white border border-gray-200 rounded-lg dark:bg-zinc-900 dark:border-zinc-700">
+
+                        {/* Header Row */}
+                        <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+                            <div>
+                                <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+                                    Order Requirements Summary
+                                </h3>
+                                <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                                    Review the required stock before fulfilling
+                                </p>
+                            </div>
+
+                            {/* Destination Country */}
+                            {order?.destination_country && (
+                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800/40">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-violet-600 dark:text-violet-400">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                                    </svg>
+                                    <span className="text-xs font-semibold text-violet-700 dark:text-violet-300">
+                                        {order.destination_country}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Stats Row */}
+                        <div className="grid grid-cols-2 gap-3 mb-5 md:grid-cols-3">
+                            {[
+                                {
+                                    label: 'Total Items Required',
+                                    value: required_items?.reduce((sum, r) => sum + Number(r?.missing_qty || 0), 0) ?? 0,
+                                    suffix: 'units',
+                                    color: 'text-gray-900 dark:text-white',
+                                    bg: 'bg-gray-50 dark:bg-zinc-800',
+                                },
+                                {
+                                    label: 'Order Total',
+                                    value: order?.total_amount ? `${currency?.symbol ?? ''}${Number(order.total_amount).toLocaleString('en-US')}` : 'N/A',
+                                    color: 'text-green-600 dark:text-green-400',
+                                    bg: 'bg-green-50 dark:bg-green-900/10',
+                                },
+
+                                {
+                                    label: 'Distinct Models',
+                                    value: required_items?.length ?? 0,
+                                    suffix: 'models',
+                                    color: 'text-violet-600 dark:text-violet-400',
+                                    bg: 'bg-violet-50 dark:bg-violet-900/10',
+                                },
+                            ].map(({ label, value, suffix, color, bg }) => (
+                                <div key={label} className={`rounded-lg p-3 ${bg}`}>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+                                    <p className={`mt-1 text-lg font-bold ${color}`}>
+                                        {value}
+                                        {suffix && <span className="ml-1 text-xs font-normal text-gray-400">{suffix}</span>}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Admin Memo */}
+                        {assignment?.note && (
+                            <div className="flex gap-3 p-4 mb-5 border rounded-lg border-amber-200 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-800/40">
+                                <div className="mt-0.5 shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-amber-600 dark:text-amber-400">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+                                    </svg>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="mb-1 text-xs font-semibold text-amber-700 dark:text-amber-400">
+                                        Note from Administrator
+                                    </p>
+                                    <p className="text-sm break-words text-amber-800 dark:text-amber-300">
+                                        {assignment.note}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Per Item Breakdown Table */}
+                        {required_items?.length > 0 && (
+                            <div className="overflow-hidden border border-gray-200 rounded-lg dark:border-zinc-700">
+                                <table className="w-full text-sm">
+                                    <thead className="bg-gray-100 dark:bg-zinc-800">
+                                        <tr>
+                                            <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400">#</th>
+                                            <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400">Model</th>
+                                            <th className="px-4 py-2.5 text-center text-xs font-semibold text-gray-600 dark:text-gray-400">Ordered</th>
+
+                                            <th className="px-4 py-2.5 text-center text-xs font-semibold text-gray-600 dark:text-gray-400">Missing</th>
+                                            <th className="px-4 py-2.5 text-right text-xs font-semibold text-gray-600 dark:text-gray-400">Unit Price</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100 dark:divide-zinc-700">
+                                        {required_items.map((item, idx) => {
+                                            const missing = Number(item?.missing_qty || 0);
+                                            return (
+                                                <tr key={idx} className="transition-colors bg-white dark:bg-zinc-900 hover:bg-gray-50 dark:hover:bg-zinc-800">
+                                                    <td className="px-4 py-2.5 text-xs text-gray-500 dark:text-gray-400">
+                                                        {idx + 1}
+                                                    </td>
+                                                    <td className="px-4 py-2.5">
+                                                        <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                                            {item?.model_name ?? item?.name ?? `Item #${idx + 1}`}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-2.5 text-center">
+                                                        <span className="text-sm text-gray-700 dark:text-gray-300">
+                                                            {item?.ordered_qty ?? 'N/A'}
+                                                        </span>
+                                                    </td>
+
+                                                    <td className="px-4 py-2.5 text-center">
+                                                        <div className="flex flex-col items-center gap-1">
+                                                            <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-semibold ${missing > 0
+                                                                ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                                                : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                                                }`}>
+                                                                {missing > 0 ? `${missing} still needed` : 'Fully Covered'}
+                                                            </span>
+
+                                                            {item?.fulfilled_qty > 0 && missing > 0 && (
+                                                                <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                                                                    {item.fulfilled_qty} of {item.ordered_qty} assigned
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-2.5 text-right">
+                                                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                                                            {item?.unit_price
+                                                                ? `${currency?.symbol ?? ''}${Number(item.unit_price).toLocaleString("en-US")}`
+                                                                : 'N/A'
+                                                            }
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+
 
                 {file_error != null && <Toast flash={{ info: file_error }} />}
                 <Card
@@ -314,7 +576,7 @@ export default function fulFillOrder({
                                                     InputName={'Supplier'}
                                                     Id={'supplier_id'}
                                                     Name={'supplier_id'}
-                                                    Value={assignment.supplier?.name}
+                                                    Value={assignment.supplier?.user?.name}
                                                     readOnly={true}
                                                     Required={true}
                                                     Type={'text'}
@@ -805,49 +1067,85 @@ export default function fulFillOrder({
                                                 </div>
                                             )}
 
-                                            <PrimaryButton
-                                                Text={'FulFill Stock'}
-                                                Type={'submit'}
-                                                CustomClass={'w-[250px] '}
-                                                Disabled={
-                                                    processing ||
-                                                    data.batch_name.trim() === '' ||
-                                                    data.vat === '' ||
-                                                    data.base_purchase_unit_price === '' ||
-                                                    data.base_purchase_unit_price == 0 ||
-                                                    data.supplier_id === '' ||
-                                                    (extraCosts.length > 0 &&
-                                                        extraCosts.some(
-                                                            (cost) =>
-                                                                cost.cost_type === '' ||
-                                                                cost.amount == 0 ||
-                                                                cost.amount === '',
-                                                        )) ||
-                                                    inventoryItems.some(
-                                                        (item) =>
-                                                            item.smartphone_id === '' ||
-                                                            item.storage_location_id === '' ||
-                                                            item.imei1 === '',
-                                                    )
-                                                }
-                                                Spinner={processing}
-                                                Icon={
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        strokeWidth={1.5}
-                                                        stroke="currentColor"
-                                                        className="size-6"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            d="M12 4.5v15m7.5-7.5h-15"
-                                                        />
+                                            {assignment?.draft_data && (
+                                                <div className="flex items-center gap-2 px-3 py-2 mb-3 text-xs text-blue-700 border border-blue-200 rounded-lg bg-blue-50 dark:bg-blue-900/10 dark:border-blue-800/40 dark:text-blue-400">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 shrink-0">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
                                                     </svg>
-                                                }
-                                            />
+                                                    A previously saved draft has been restored. You can continue from where you left off.
+                                                </div>
+                                            )}
+
+                                            <div className="flex flex-wrap items-center gap-3 mt-2">
+                                                <PrimaryButton
+                                                    Text={'FulFill Stock'}
+                                                    Type={'submit'}
+                                                    CustomClass={'w-[250px] '}
+                                                    Disabled={
+                                                        processing ||
+                                                        data.batch_name.trim() === '' ||
+                                                        data.vat === '' ||
+                                                        data.base_purchase_unit_price === '' ||
+                                                        data.base_purchase_unit_price == 0 ||
+                                                        data.supplier_id === '' ||
+                                                        (extraCosts.length > 0 &&
+                                                            extraCosts.some(
+                                                                (cost) =>
+                                                                    cost.cost_type === '' ||
+                                                                    cost.amount == 0 ||
+                                                                    cost.amount === '',
+                                                            )) ||
+                                                        inventoryItems.some(
+                                                            (item) =>
+                                                                item.smartphone_id === '' ||
+                                                                item.storage_location_id === '' ||
+                                                                item.imei1 === '',
+                                                        )
+                                                    }
+                                                    Spinner={processing}
+                                                    Icon={
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            strokeWidth={1.5}
+                                                            stroke="currentColor"
+                                                            className="size-6"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M12 4.5v15m7.5-7.5h-15"
+                                                            />
+                                                        </svg>
+                                                    }
+                                                />
+
+
+                                                <PrimaryButton
+                                                    Text={'Save Progress'}
+                                                    Type={'button'}
+                                                    CustomClass={'w-[250px] '}
+                                                    Disabled={draftSaving}
+                                                    Spinner={draftSaving}
+                                                    Action={handleSaveDraft}
+                                                    Icon={
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+                                                        </svg>
+                                                    }
+                                                />
+
+
+
+                                                {/* Error feedback */}
+                                                {draftError && (
+                                                    <span className="text-xs text-red-500 dark:text-red-400">
+                                                        Failed to save. Please try again.
+                                                    </span>
+                                                )}
+                                            </div>
+
                                         </>
                                     }
                                 />

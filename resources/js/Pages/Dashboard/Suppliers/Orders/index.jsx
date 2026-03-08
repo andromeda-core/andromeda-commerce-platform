@@ -127,6 +127,22 @@ export default function index({ orders }) {
                 },
             },
 
+            { key: 'order.shipping_country', label: 'Destination Country' },
+
+            {
+                label: 'Total Amount',
+                render: (item) => {
+                    return (
+                        <span className="p-2 text-white bg-gray-500 rounded-lg">
+                            {currency?.symbol}
+                            {Number(item?.order?.full_amount).toLocaleString('en-US')}
+                        </span>
+                    );
+                },
+            },
+
+
+
             {
                 label: 'Assigned By',
                 render: (item) => {
@@ -196,17 +212,7 @@ export default function index({ orders }) {
                 },
             },
 
-            {
-                label: 'Total Amount',
-                render: (item) => {
-                    return (
-                        <span className="p-2 text-white bg-gray-500 rounded-lg">
-                            {currency?.symbol}
-                            {Number(item?.order?.full_amount).toLocaleString('en-US')}
-                        </span>
-                    );
-                },
-            },
+
 
             { key: 'added_at', label: 'Added At' },
         ];

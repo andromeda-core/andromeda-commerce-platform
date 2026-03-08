@@ -3,14 +3,12 @@
 namespace App\Models;
 
 use App\Jobs\CollaboratorCommissionSet;
-use App\Jobs\DistributorCommissionSet;
 use App\Jobs\Meta\OrderStatusArrivedLocallyNotificationJob;
 use App\Jobs\Meta\OrderStatusDeliveredNotificationJob;
 use App\Jobs\Meta\OrderStatusPaidNotificationJob;
 use App\Jobs\Meta\OrderStatusPendingNotificationJob;
 use App\Jobs\Meta\OrderStatusShippedNotificationJob;
 use App\Jobs\NotifyAdminAboutOrderPlaced;
-use App\Jobs\SupplierCommissionSet;
 use App\Notifications\OrderStatusArrivedLocallyNotification;
 use App\Notifications\OrderStatusDeliveredNotification;
 use App\Notifications\OrderStatusPaidNotification;
@@ -37,8 +35,10 @@ class Order extends Model
         'addons_sub_total',
         'status',
         'is_delivery_confirmed',
+        'is_purchase_confirmed',
         'delivered_at',
         'delivery_confirmed_at',
+        'purchase_confirmed_at',
         'previous_status',
         'collaborator_id',
         'courier_company',
@@ -221,8 +221,7 @@ class Order extends Model
                     $reward_point->points += round($total_points);
                     $reward_point->save();
                 }
-                // Collaborator Commission Set Event
-                dispatch(new CollaboratorCommissionSet($order));
+
             }
 
             if (Cache::has('smtp_config')) {
@@ -268,12 +267,6 @@ class Order extends Model
                 }
 
             }
-
-            // Distributor Commission Set Event
-            dispatch(new DistributorCommissionSet($order))->afterCommit();
-
-            // Supplier Commission Set Event
-            dispatch(new SupplierCommissionSet($order))->afterCommit();
 
             $order->updateQuietly(['expires_at' => now()->addDays(1)]);
 
@@ -413,6 +406,7 @@ class Order extends Model
     protected $casts = [
         'shipping_date' => 'date:Y-m-d',
         'is_delivery_confirmed' => 'boolean',
+        'is_purchase_confirmed' => 'boolean',
         'delivery_confirmed_at' => 'datetime',
         'final_attachments' => 'array',
     ];

@@ -67,6 +67,8 @@ interface IOrderRepository
 
     public function fulfillOrderStockDetails(Request $request, ?string $id = null);
 
+    public function fulfillOrdersaveDraft(Request $request, ?string $id = null);
+
     public function fulfillOrderStock(Request $request);
 
     public function orderCancelationByAdmin(Request $request);

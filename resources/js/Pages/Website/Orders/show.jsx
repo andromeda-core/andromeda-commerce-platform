@@ -261,7 +261,8 @@ export default function OrderView({ order, countries }) {
                                 <span
                                     className={`inline-flex items-center self-start rounded-full px-5 py-1 text-sm font-semibold uppercase sm:self-center text-main-text-dark  bg-main-text-light  dark:bg-main-text-dark dark:text-main-text-light text-[16px]`}
                                 >
-                                    {order.status.replace(/_/g, ' ')} {order?.is_delivery_confirmed ? `(${__("Delivery Confirmed")}) ` : ""}
+                                    {__(order.status.replace(/_/g, ' ').toUpperCase(), true)} {order?.is_purchase_confirmed ? `(${__("Purchase Confirmed")}) ` : order?.is_delivery_confirmed ? `(${__("Delivery Confirmed")}) ` : ""}
+
                                 </span>
 
                             </div>

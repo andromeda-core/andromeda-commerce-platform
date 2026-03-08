@@ -1957,6 +1957,15 @@ If a country-specific price exists, the system will use that price; otherwise it
 
 209: In ORders Details Page Of Dashboard Payment Proof Updated So when Order Fully Paid Via POints than it will tell Viewer That it was paid via Points thats why its not ✅
 210: All Over The Dashboard Table Action Button Moved TO Far Left From Far Right   ✅
+211: Orders table Columns Order Changed ✅
+212:  Stock Registration List Page: (1) Missing Country Information: (Added),  (2)  Display Order:  (i) Country Information, (ii)  Total Amount (Added) ✅
+213: 3. Stock Registration Detail Page Displayed Missing Items Summary in Stock Adding Page For Supplier ✅
+214: Memo Not Visible on the Stock Fulfillment Page (Added)  ✅
+215: Inventory For Supplier Temporary Save Function Needed  (Added) ✅
+216: Supplier Field Display FIXED ✅
+217: Supplier Email Notification FIXED ✅
+218: New Order Status Indicator Added Purchase Confirmed and setuped its background Job to Monitor Orders Which ever passed 72 hours till delivbery confirmed date  it will auto mark those orders as purchase confirmed and also fire the Commission set Jobs When Purchase Confirmed ✅
+
 
 
 

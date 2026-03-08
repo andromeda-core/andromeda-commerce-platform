@@ -2391,6 +2391,7 @@ class OrderRepository implements IOrderRepository
 
             $assignment = SupplierAssignedOrder::with([
                 'order.orderItems.smartphone.model_name',
+                'order.orderItems.smartphone.selling_info',
                 'supplier.user',
             ])->findOrFail($id);
 
@@ -2410,26 +2411,43 @@ class OrderRepository implements IOrderRepository
                     $ids = [];
                 }
 
-                $missing = max(0, $qty - count($ids));
+                $fulfilledQty = count($ids);
+                $missing = max(0, $qty - $fulfilledQty);
 
-                if ($missing > 0) {
-                    $required[] = [
-                        'smartphone_id' => $item->smartphone_id,
-                        'name' => $item->smartphone?->model_name?->name ?? $item->smartphone?->name,
-                        'missing_qty' => $missing,
-                    ];
-                }
+                $required[] = [
+                    'smartphone_id' => $item->smartphone_id,
+                    'model_name' => $item->smartphone?->model_name?->name ?? 'N/A',
+                    'ordered_qty' => $qty,
+                    'fulfilled_qty' => $fulfilledQty,
+                    'missing_qty' => $missing,
+                    'unit_price' => $item->smartphone?->selling_info?->total_price ?? null,
+                ];
             }
 
-            $allowedIds = collect($required)->pluck('smartphone_id')->unique()->values();
+            $allowedIds = collect($required)
+                ->where('missing_qty', '>', 0)
+                ->pluck('smartphone_id')
+                ->unique()
+                ->values();
+
+            $order = $assignment->order;
 
             return [
-                'assignment' => $assignment->only(['id', 'status', 'supplier_id', 'assigned_at']) + [
+                'assignment' => $assignment->only(['id', 'status', 'supplier_id', 'note', 'assigned_at', 'draft_data']) + [
                     'supplier' => $assignment->supplier,
                 ],
-                'order' => $assignment->order->only(['id', 'order_no', 'status', 'full_amount']),
+                'order' => [
+                    'id' => $order->id,
+                    'order_no' => $order->order_no,
+                    'status' => $order->status,
+                    'total_amount' => $order->full_amount,
+                    'destination_country' => $order->shipping_country ?? null,
+                ],
                 'required_items' => $required,
-                'smartphones' => $this->smartphone->whereIn('id', $allowedIds)->with(['model_name:id,name'])->get(['id', 'model_name_id', 'created_at']),
+                'smartphones' => $this->smartphone
+                    ->whereIn('id', $allowedIds)
+                    ->with(['model_name:id,name'])
+                    ->get(['id', 'model_name_id', 'created_at']),
                 'storage_locations' => StorageLocation::get(['id', 'name']),
             ];
 
@@ -2541,6 +2559,52 @@ class OrderRepository implements IOrderRepository
         } catch (Exception $e) {
             DB::rollBack();
 
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function fulfillOrdersaveDraft(Request $request, ?string $id = null)
+    {
+        try {
+            if (empty($id)) {
+                throw new Exception('Assignment ID is required');
+            }
+
+            $request->validate([
+                'batch_name' => ['nullable', 'string'],
+                'vat' => ['nullable', 'string'],
+                'base_purchase_unit_price' => ['nullable', 'numeric'],
+                'extra_costs' => ['nullable', 'array'],
+                'inventory_items' => ['nullable', 'array'],
+                'inventory_items.*.smartphone_id' => ['nullable'],
+                'inventory_items.*.storage_location_id' => ['nullable'],
+                'inventory_items.*.imei1' => ['nullable', 'string'],
+                'inventory_items.*.imei2' => ['nullable', 'string'],
+                'inventory_items.*.eid' => ['nullable', 'string'],
+                'inventory_items.*.serial_no' => ['nullable', 'string'],
+            ]);
+
+            $assignment = SupplierAssignedOrder::findOrFail($id);
+
+            $assignment->update([
+                'draft_data' => [
+                    'batch_name' => $request->input('batch_name'),
+                    'vat' => $request->input('vat'),
+                    'base_purchase_unit_price' => $request->input('base_purchase_unit_price'),
+                    'extra_costs' => $request->input('extra_costs', []),
+                    'inventory_items' => $request->input('inventory_items', []),
+                ],
+            ]);
+
+            return [
+                'status' => true,
+                'message' => 'Progress saved successfully',
+            ];
+
+        } catch (Exception $e) {
             return [
                 'status' => false,
                 'message' => $e->getMessage(),

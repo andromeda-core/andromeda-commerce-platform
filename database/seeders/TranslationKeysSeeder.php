@@ -286,6 +286,7 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Your payment proof is under review', 'created_at' => $now, 'updated_at' => $now],
             ['key' => "We'll notify you once it's approved.", 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Under Admin Review', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Purchase Confirmed', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Upload Payment Proof', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Copied', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Important Instructions', 'created_at' => $now, 'updated_at' => $now],

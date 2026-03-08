@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SupplierAssignedOrder extends Model
 {
     protected $fillable = [
-        'supplier_id', 'order_id', 'assigned_by', 'assigned_at', 'status', 'note',
+        'supplier_id', 'order_id', 'assigned_by', 'assigned_at', 'status', 'note', 'draft_data',
     ];
 
     protected $appends = ['added_at'];
@@ -34,4 +34,8 @@ class SupplierAssignedOrder extends Model
     {
         return $this->belongsTo(User::class, 'assigned_by', 'id');
     }
+
+    protected $casts = [
+        'draft_data' => 'array',
+    ];
 }

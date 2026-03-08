@@ -26,6 +26,9 @@ class CollaboratorCommissionSet implements ShouldQueue
 
     public function handle(): void
     {
+        if (empty($order->collaborator_id)) {
+            return;
+        }
 
         $collaborator_commission_rate = 0;
         if (! empty($this->order->collaborator->commission_rate)) {

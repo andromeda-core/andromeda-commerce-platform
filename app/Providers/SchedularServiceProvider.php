@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Console\Commands\AutoMarkingOrderExpiredIfNotPaid;
 use App\Console\Commands\CheckRewardPointExpiry;
 use App\Console\Commands\ClearPreviousOrderPackageRecordings;
+use App\Console\Commands\ConfirmPurchaseOrders;
 use App\Console\Commands\DestroyDeactiveAccounts;
 use App\Console\Commands\DestroyLast24HoursActionLogs;
 use App\Console\Commands\DetectUnSettledAccounts;
@@ -46,5 +47,6 @@ class SchedularServiceProvider extends ServiceProvider
         $schedule->command(DetectUnSettledAccounts::class)->everyFifteenMinutes()->withoutOverlapping(10);
         $schedule->command(SendUnsettledAccountNotifications::class)->everyTenMinutes()->withoutOverlapping(5);
         $schedule->command(MarkingOrdersAsDeliveryConfirmedAfterSevenDays::class)->everyFifteenMinutes();
+        $schedule->command(ConfirmPurchaseOrders::class)->everyFifteenMinutes();
     }
 }
