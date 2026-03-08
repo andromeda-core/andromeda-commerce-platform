@@ -22,7 +22,10 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
         vat: batch.vat || '',
         extra_costs: batch.extra_costs || [],
         inventory_items: batch.inventory_items || [],
-        invoices: [],
+        invoices: (batch.invoices || []).map((inv) => ({
+            source: inv.url,
+            isNew: false,
+        })),
         deleted_invoices: [],
         new_invoices: [],
     });
@@ -181,10 +184,13 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
         e.preventDefault();
 
         const deletedInvoices = getDeletedFiles(batch.invoices, data.invoices || []);
-        const newInvoices = (data.invoices || []).filter((f) => f.isNew).map((f) => f.file);
+        const newInvoices = (data.invoices || [])
+            .filter((f) => f.isNew)
+            .map((f) => f.file);
 
         const formData = {
             ...data,
+            invoices: [],
             deleted_invoices: deletedInvoices,
             new_invoices: newInvoices,
         };
@@ -338,19 +344,13 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                         'application/pdf',
                                                     ]}
                                                     MaxFileSize={'5MB'}
-                                                    onUpdate={(files) => {
-                                                        if (files.length > 0) {
-                                                            const newFiles = files
-                                                                .filter((f) => f.isNew)
-                                                                .map((f) => f.file);
 
-                                                            setData('invoices', newFiles);
-                                                        } else {
-                                                            setData('invoices', []);
-                                                        }
+                                                    onUpdate={(files) => {
+                                                        setData('invoices', files.length > 0 ? files : []);
                                                     }}
                                                     MaxFiles={30}
                                                     Multiple={true}
+                                                    DefaultFile={batch.invoice_urls}
                                                 />
                                             </div>
 
@@ -840,7 +840,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                             )}
 
                                             <PrimaryButton
-                                                Text={'Create Batch'}
+                                                Text={'Update Batch'}
                                                 Type={'submit'}
                                                 CustomClass={'w-[250px] '}
                                                 Disabled={
@@ -877,7 +877,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                         <path
                                                             strokeLinecap="round"
                                                             strokeLinejoin="round"
-                                                            d="M12 4.5v15m7.5-7.5h-15"
+                                                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
                                                         />
                                                     </svg>
                                                 }

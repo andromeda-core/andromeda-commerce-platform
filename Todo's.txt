@@ -1965,8 +1965,8 @@ If a country-specific price exists, the system will use that price; otherwise it
 216: Supplier Field Display FIXED ✅
 217: Supplier Email Notification FIXED ✅
 218: New Order Status Indicator Added Purchase Confirmed and setuped its background Job to Monitor Orders Which ever passed 72 hours till delivbery confirmed date  it will auto mark those orders as purchase confirmed and also fire the Commission set Jobs When Purchase Confirmed ✅
-
-
+219: Batch Invoice Upload Issue FIXED For Edit  ✅
+220: Batch Invoice Required For Supplier Inventory Add Logic Added ✅
 
 
 

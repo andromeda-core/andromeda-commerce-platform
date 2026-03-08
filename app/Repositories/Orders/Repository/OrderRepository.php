@@ -2464,6 +2464,10 @@ class OrderRepository implements IOrderRepository
         DB::beginTransaction();
         try {
 
+            $request->validate([
+                'invoices' => ['required', 'array'],
+            ]);
+
             $assignmentId = $request->input('supplier_assigned_order_id');
             if (! $assignmentId) {
                 throw new Exception('Assignment is required');
