@@ -299,7 +299,7 @@ export default function create({ suppliers, smartphones, storage_locations }) {
                                                             setData('invoices', []);
                                                         }
                                                     }}
-                                                    MaxFiles={30}
+                                                    MaxFiles={1}
                                                     Multiple={true}
                                                 />
                                             </div>

@@ -65,7 +65,7 @@ export default function index({ inventories, batches, storage_locations, smartph
                         <span
                             className={`rounded-lg ${item.status == 'in_stock' && 'bg-green-500'} ${item.status == 'returned' && 'bg-red-500'} ${item.status == 'on_hold' && 'bg-yellow-500'} ${item.status == 'sold' && 'bg-blue-500'} p-2 text-white`}
                         >
-                            {item.status}
+                            {item.status?.replace(/_/g, ' ').toUpperCase()}
                         </span>
                     );
                 },
@@ -207,10 +207,10 @@ export default function index({ inventories, batches, storage_locations, smartph
                                                 Name={'status'}
                                                 InputName={'Status'}
                                                 items={[
-                                                    { name: 'in_stock' },
-                                                    { name: 'returned' },
-                                                    { name: 'on_hold' },
-                                                    { name: 'sold' },
+                                                    { id: 'in_stock', name: "IN STOCK" },
+                                                    { id: 'sold', name: "SOLD" },
+                                                    { id: 'returned', name: "RETURNED" },
+                                                    { id: 'on_hold', name: "ON HOLD" },
                                                 ]}
                                                 itemKey={'name'}
                                                 Value={status}

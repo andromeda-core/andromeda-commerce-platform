@@ -41,6 +41,19 @@ export default function index({ batches }) {
                 label: 'Total Quantity',
                 badge: (value) => 'rounded-lg bg-blue-500 p-2 text-sm text-white',
             },
+
+            {
+                label: 'Batch Invoice',
+                render: (item) => {
+                    if (item?.invoices?.length === 0) return 'No Invoice';
+                    return (
+                        <a target='__blank' href={item?.invoices?.[0]?.url} className="text-sm underline text-violet-600">
+                            View Invoice
+                        </a>
+                    );
+                },
+            },
+
             {
                 label: 'Base Purchase Unit Price',
                 render: (item) => {

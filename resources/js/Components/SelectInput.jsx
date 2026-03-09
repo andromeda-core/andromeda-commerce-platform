@@ -1,5 +1,5 @@
 import useDarkMode from '@/Hooks/useDarkMode';
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import Select from 'react-select';
 
 export default function SelectInput({
@@ -18,7 +18,7 @@ export default function SelectInput({
     isDisabled = false,
     customPlaceHolder = false,
 }) {
-    const [options, setOptions] = useState([]);
+
     const isDarkMode = useDarkMode();
     const darkStyles = {
         control: (base, state) => ({
@@ -135,15 +135,22 @@ export default function SelectInput({
         }),
     };
 
-    useEffect(() => {
-        const modified_options = items.map((item) => ({
+    const options = useMemo(() => {
+        if (!items?.length) return [];
+        return items.map((item) => ({
             value: item.id ?? item[itemKey],
-            label: item[itemKey].length > 50 ? item[itemKey].slice(0, 50) + '...' : item[itemKey],
+            label: item[itemKey]?.length > 50
+                ? item[itemKey].slice(0, 50) + '...'
+                : item[itemKey],
         }));
+    }, [items, itemKey]);
 
-        setOptions(modified_options);
-    }, []);
 
+
+    const styles = useMemo(() => {
+        return isDarkMode ? darkStyles : lightStyles;
+
+    }, [isDarkMode]);
     return (
         <>
             <div className={`${CustomCss ? CustomCss : ''} w-full`}>
@@ -157,6 +164,7 @@ export default function SelectInput({
 
                 <div className="relative">
                     <Select
+                        key={`${Id}-${isDarkMode ? 'dark' : 'light'}`}
                         name={Name}
                         inputId={Id}
                         options={options}
@@ -188,7 +196,7 @@ export default function SelectInput({
                             : {
                                 placeholder: Placeholder,
                             })}
-                        styles={isDarkMode ? darkStyles : lightStyles}
+                        styles={styles}
                         className={`react-select-container ${isDisabled && 'opacity-70'}`}
                         classNamePrefix="react-select"
                     />

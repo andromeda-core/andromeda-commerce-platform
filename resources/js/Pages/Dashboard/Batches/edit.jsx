@@ -348,7 +348,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                     onUpdate={(files) => {
                                                         setData('invoices', files.length > 0 ? files : []);
                                                     }}
-                                                    MaxFiles={30}
+                                                    MaxFiles={1}
                                                     Multiple={true}
                                                     DefaultFile={batch.invoice_urls}
                                                 />

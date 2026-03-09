@@ -45,9 +45,7 @@ class InventoryVerificationRepository implements IInventoryVerificationRepositor
                 throw new Exception('IMEI Not Found');
             }
 
-            $exists = $this->inventory->where(function ($query) use ($imei) {
-                $query->where('imei1', $imei)->orWhere('imei2', $imei);
-            })->first();
+            $exists = $this->inventory->where('imei1', $imei)->first();
 
             if (! empty($exists)) {
                 return [

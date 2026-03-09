@@ -417,9 +417,8 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/supplier-assigned-orders', 'index')->name('index');
             Route::get('/supplier-assigned-orders/fulfill/{id?}', 'fulfillOrderIndex')->name('fulfill');
             Route::post('/supplier-assigned-orders/fulfill/{id?}', 'fulfillOrder')->name('fulfill.store');
-            Route::post('/supplier-assigned-orders/fulfill/{id}/save-draft',
-                [SupplierAssignedOrderController::class, 'saveDraft']
-            )->name('fulfill.save-draft');
+            Route::post('/supplier-assigned-orders/fulfill/{id}/save-draft', 'saveDraft')->name('fulfill.save-draft');
+            Route::post('supplier-assigned-orders/{id}/log', 'addLog')->name('log.store');
         });
 
         // Order Refund Routes

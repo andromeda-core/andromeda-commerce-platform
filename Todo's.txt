@@ -1967,7 +1967,87 @@ If a country-specific price exists, the system will use that price; otherwise it
 218: New Order Status Indicator Added Purchase Confirmed and setuped its background Job to Monitor Orders Which ever passed 72 hours till delivbery confirmed date  it will auto mark those orders as purchase confirmed and also fire the Commission set Jobs When Purchase Confirmed ✅
 219: Batch Invoice Upload Issue FIXED For Edit  ✅
 220: Batch Invoice Required For Supplier Inventory Add Logic Added ✅
+221. FileUploaderInput DefaultFile prop was only accepting plain URL strings but draft_data was storing objects with path, url, name, size fields. Fixed draftInvoiceUrls useMemo to properly extract only the url field from each object before passing to DefaultFile.
 
+222. FulfillOrder.jsx was throwing map is not a function error because DefaultFile was sometimes receiving a non-array value. Fixed by adding Array.isArray check with fallback to empty array. ✅
+
+223. Added is_invoice_removed flag to useForm and backend. This handles the case where supplier had a previously uploaded draft invoice, removes it before submitting, and sends no new invoice. Backend needed a way to distinguish between no invoice sent and invoice intentionally removed. ✅
+
+224. $request->files->all() was not returning proper Laravel UploadedFile instances. Fixed by using $request->file('invoices') which is the correct Laravel helper and returns UploadedFile objects that work properly with storeAs(). ✅
+
+225. Draft invoices were stored on S3. When fulfilling stock, the code was calling Storage::disk('s3')->path() to get the file path which returns a local filesystem path that does not exist on S3. Fixed by using Storage::disk('s3')->get() to download the file contents, creating a temp file with tempnam(), writing contents with file_put_contents(), then wrapping in Illuminate\Http\UploadedFile and injecting into request via $request->files->set('invoices', $uploadedFiles). ✅
+
+
+227. Did a full requirements review of supplier screen and admin screen. Supplier side was fully done. Admin side had two things missing: fulfilled order detail view access was blocked, and admin had no ability to edit inventory after fulfillment. ✅
+
+228. isReadOnly condition was only checking $assignment->status === 'fulfilled' which blocked everyone including admin. Fixed to $assignment->status === 'fulfilled' && !$user->hasRole('Admin') so admin can still access and edit fulfilled orders. ✅
+
+229. Implemented admin edit mode. Frontend sends is_edit_mode flag when admin submits on a fulfilled assignment. Backend fulfillOrderStock method checks this flag and routes to updateBatch when true and storeBatch when false. ✅
+
+230. There was no direct link between SupplierAssignedOrder and Batch. Created a migration to add batch_id as a nullable foreign key column on supplier_assigned_orders table so the system knows which batch belongs to which assignment when admin opens edit mode. ✅
+
+231. Added invoice rename logic for edit mode. updateBatch expects invoices under the new_invoices key. So when is_edit_mode is true and invoices are present in the request, renamed them by calling $request->files->set('new_invoices', $request->file('invoices')) and removing the original invoices key. ✅
+
+232. Updated fulfillOrderStockDetails controller to return batchData for admin edit mode. Added batch.inventory_items relation and built a batchData object containing id, batch_name, vat, base_purchase_unit_price, extra_costs, invoice URLs, and inventory_items so the frontend can pre-populate the edit form. ✅
+
+233. Added isEditMode and batchData props to FulfillOrder.jsx component signature. Added is_edit_mode field to useForm initial state. ✅
+
+234. Added edit mode populate useEffect that only runs when isEditMode is true and batchData is available. It sets batch_name, vat, base_purchase_unit_price, extra_costs and normalizes inventory_items with id field so existing items get updated rather than recreated on submit. ✅
+
+235. Added isEditMode early return guard to the three other useEffects (auto-generate, draft restore without draft_data, draft restore with draft_data) so they do not run in edit mode and do not overwrite the batchData that was populated. ✅
+
+236. Updated draftInvoiceUrls useMemo. In edit mode use batchData.invoices, in normal mode use assignment.draft_data.invoices. ✅
+
+237. Updated submit button condition to (!isReadOnly || isEditMode) so the button shows for admin in edit mode. ✅
+
+238. Save Progress button now only shows when !isEditMode. Admin edit mode does not need draft saving. ✅
+
+239. Draft restored banner condition updated to also check !isEditMode so it does not show when admin is editing. ✅
+
+240. updateBatch had a delete and recreate pattern for inventory items which was dangerous because it would delete items regardless of their order status. Replaced with an upsert pattern: compare existing IDs against incoming IDs, only delete items not present in incoming list, update existing items, create new items. ✅
+
+241. In the upsert update logic, status field is intentionally not touched. Only editable fields are updated: smartphone_id, storage_location_id, imei1, imei2, eid, serial_no, batch_id. This preserves whatever status the inventory item had. ✅
+
+242. Added protection for sold and on_hold items. If any item in the toDelete list has status sold or on_hold, throw a ValidationException with a message listing the affected IMEI numbers and their statuses, telling the user these items cannot be removed because they are already assigned to an order. ✅
+
+243. The status string formatting had a bug where a PHP function call was being used inside string interpolation which does not work. Fixed by extracting to a variable first: $status = ucwords(str_replace('_', ' ', $i->status)) and then using $status inside the interpolated string. ✅
+
+244. $this->inventory->whereIn()->delete() does not fire Eloquent model events on bulk delete. Fixed by using ->get()->each->delete() to delete each item individually so the deleted boot event fires for every item. ✅
+
+245. Added deleted boot event to the Inventory model. When an inventory item is deleted, it finds all OrderItem records that have this item's ID in their inventory_item_ids JSON array and removes that ID from the array. Uses saveQuietly to avoid triggering other events and causing loops. ✅
+
+
+247. In updateBatch, invoice validation was still requiring a file even in edit mode because it was sharing the same validation with storeBatch. Split the validation so when is_edit_mode is true the invoice field becomes optional, and only validate it if a new file is actually present. ✅
+
+248. Created supplier_assignment_logs migration with columns: id, supplier_assigned_order_id, user_id, memo, file_path, file_name, timestamps. No softDeletes because logs are meant to be permanent. ✅
+
+249. Added boot method to SupplierAssignmentLog model that blocks updating and deleting events entirely, making log records immutable after creation. updateQuietly is the only way to update a log record (used internally by the upload job to set file_path after S3 upload). ✅
+
+250. Created UploadSupplierBatchMemoLogAttachmentOnAWS job. It uploads the file to S3 under the assignment_logs/ path, then calls updateQuietly on the log record to store file_path and file_name. ✅
+
+251. Created addLogForAssignment controller method. It accepts memo and attachment, creates the log record, and if an attachment is present it dispatches the upload job using dispatchSync so it runs immediately in the same request. ✅
+
+252. Added Activity Log section to FulfillOrder.jsx inside the isReadOnly block. Built a timeline style UI with a vertical line and dot per entry. Each log shows author name, timestamp, memo text, and a clickable file attachment link if one exists. ✅
+
+253. Added log entry form below the timeline in the same isReadOnly block. Has a Textarea for memo, FileUploaderInput for optional attachment, and an Add to Log button. Manages logMemo, logFile, and logSubmitting state. Submits via router.post with preserveScroll true and preserveState false. ✅
+
+254. Added key prop to the Smartphone SelectInput: key={`smartphone-${idx}-${item.smartphone_id}`} so the component remounts when smartphone_id changes and shows the correct selected value. ✅
+
+254. Added key prop to the Smartphone SelectInput: key={`smartphone-${idx}-${item.smartphone_id}`} so the component remounts when smartphone_id changes and shows the correct selected value. ✅
+255. SelectInput component had useState initialized to empty array and useEffect to set options. When multiple inventory rows are dynamically generated, the new rows mount fresh with options as empty array, then on next tick the useEffect fires and sets options. This two-step render caused react-select to briefly render without styles, showing a white background flash. Fixed by removing useState and useEffect entirely and replacing with useMemo so options are computed synchronously on the same render with no intermediate empty state.
+
+254. Added key prop to the Smartphone SelectInput: key={`smartphone-${idx}-${item.smartphone_id}`} so the component remounts when smartphone_id changes and shows the correct selected value. ✅
+256. Also wrapped SelectInput styles inside useMemo with isDarkMode as dependency so styles reactively update if dark mode is toggled.  ✅
+
+257. Confirmed IMEI field requirements: imei1 is required, imei2 is nullable, serial_no is nullable, eid is nullable. Backend validation was already matching this.   ✅
+
+258: Added isViewMode prop to FulfillOrder component signature alongside the existing isAdmin and isEditMode props, so the component knows when a non-admin supplier is viewing a fulfilled order.✅
+259: Updated the batchData populate useEffect to run for both isEditMode and isViewMode instead of only isEditMode. Also added isViewMode to the dependency array so it triggers correctly when the mode is determined on mount.✅
+260: Added if (isViewMode) return guard to the auto-generate useEffect so it does not overwrite batchData populated inventory items with empty rows when a supplier views a fulfilled order.✅
+261: Added if (isViewMode) return guard to the draft restore useEffect that runs when assignment.draft_data is absent, for the same reason.✅
+262: Added if (isViewMode) return guard to the draft restore useEffect that runs when assignment.draft_data is present, so it does not overwrite fulfilled batch data with draft data in view mode.✅
+263: Updated draftInvoiceUrls useMemo to check isEditMode or isViewMode when deciding to use batchData.invoices, so the invoice file shows correctly for supplier in view mode as well as admin in edit mode.✅
+264: Fixed extra costs table visibility. The outer condition was !isReadOnly which hid the table entirely in view mode and edit mode. Changed to always render the table when extraCosts.length > 0, and moved the !isReadOnly check to only wrap the Action column header and the delete button cell, so costs are visible to everyone but only editable and deletable when not in read-only mode. ✅
 
 
 

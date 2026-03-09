@@ -59,6 +59,17 @@ class SupplierAssignedOrderController extends Controller
             return back()->with('error', $saved['message']);
         }
 
-        return to_route('dashboard.supplier-assigned-orders.index')->with('success', $saved['message']);
+        return back()->with('success', $saved['message']);
+    }
+
+    public function addLog(Request $request, ?string $id = null)
+    {
+        $added = $this->order->addLogForAssignment($request, $id);
+
+        if (isset($added['status']) && $added['status'] === false) {
+            return back()->with('error', $added['message']);
+        }
+
+        return back()->with('success', $added['message']);
     }
 }

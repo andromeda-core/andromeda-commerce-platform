@@ -377,10 +377,10 @@ export default function edit({ batches, smartphones, storage_locations, inventor
                                                     Name={'status'}
                                                     Id={'status'}
                                                     items={[
-                                                        { name: 'in_stock' },
-                                                        { name: 'sold' },
-                                                        { name: 'returned' },
-                                                        { name: 'on_hold' },
+                                                        { id: 'in_stock', name:"IN STOCK" },
+                                                        { id: 'sold', name: "SOLD" },
+                                                        { id: 'returned', name: "RETURNED" },
+                                                        { id: 'on_hold', name: "ON HOLD" },
                                                     ]}
                                                     itemKey={'name'}
                                                     Required={true}

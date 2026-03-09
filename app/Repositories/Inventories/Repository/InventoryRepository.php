@@ -180,6 +180,9 @@ class InventoryRepository implements IInventoryRepository
                 throw new Exception('Inventory Not Found');
             }
 
+            if (in_array($inventory->status, ['sold', 'on_hold'])) {
+                throw new Exception('Cannot Delete Inventory Items That Are Sold Or On Hold');
+            }
             $deleted = $inventory->delete();
             if (! $deleted) {
                 throw new Exception('Something Went Wrong While Deleting Inventory Items');
@@ -203,6 +206,11 @@ class InventoryRepository implements IInventoryRepository
             $ids = $request->array('ids');
             if (blank($ids)) {
                 throw new Exception('Please Select Atleast One Inventory Item');
+            }
+
+            $items = $this->inventory->whereIn('id', $ids)->whereIn('status', ['sold', 'on_hold'])->get();
+            if ($items->isNotEmpty()) {
+                throw new Exception('Cannot Delete Inventory Items That Are Sold Or On Hold');
             }
 
             $deleted = $this->inventory->destroy($ids);

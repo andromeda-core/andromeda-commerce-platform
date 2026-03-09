@@ -31,7 +31,7 @@ export default function index({ inventory_verifications }) {
                             </a>
                         )
                     } else {
-                        return 'N/A'
+                        return 'Processing...'
                     }
 
                 }

@@ -21,7 +21,8 @@ class updateBatchInvoiceOnAWS implements ShouldQueue
     public function __construct(
         private array $files,
         private Batch $batch,
-        private string $batch_invoices_dir = 'Batch/Invoices'
+        private ?string $batch_invoices_dir,
+
     ) {}
 
     public function handle(): void
@@ -45,9 +46,9 @@ class updateBatchInvoiceOnAWS implements ShouldQueue
 
                 $url = Storage::disk('s3')->url($this->batch_invoices_dir.$new_name);
 
-                if (! blank($this->batch?->invoices)) {
-                    $invoices = $this->batch?->invoices;
-                }
+                // if (! blank($this->batch?->invoices)) {
+                //     $invoices = $this->batch?->invoices;
+                // }
 
                 $invoices[] = [
                     'name' => $new_name,

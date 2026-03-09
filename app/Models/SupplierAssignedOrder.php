@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SupplierAssignedOrder extends Model
 {
     protected $fillable = [
-        'supplier_id', 'order_id', 'assigned_by', 'assigned_at', 'status', 'note', 'draft_data',
+        'supplier_id', 'order_id', 'assigned_by', 'assigned_at', 'status', 'note', 'draft_data', 'batch_id',
     ];
 
     protected $appends = ['added_at'];
@@ -30,9 +30,22 @@ class SupplierAssignedOrder extends Model
 
     }
 
+    public function batch(): BelongsTo
+    {
+        return $this->belongsTo(Batch::class, 'batch_id', 'id');
+
+    }
+
     public function assignedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_by', 'id');
+    }
+
+    public function logs()
+    {
+        return $this->hasMany(SupplierAssignmentLog::class, 'supplier_assigned_order_id')
+            ->with('author')
+            ->orderBy('created_at', 'asc');
     }
 
     protected $casts = [

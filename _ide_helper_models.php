@@ -1032,6 +1032,8 @@ namespace App\Models{
  * @property numeric|null $points_used
  * @property numeric|null $full_amount
  * @property string $status
+ * @property bool $is_delivery_confirmed
+ * @property bool $is_purchase_confirmed
  * @property string|null $previous_status
  * @property string|null $payment_method
  * @property string|null $secondary_payment_method
@@ -1044,6 +1046,9 @@ namespace App\Models{
  * @property string|null $payment_proof
  * @property int $is_cash_collected
  * @property array<array-key, mixed>|null $final_attachments
+ * @property string|null $delivered_at
+ * @property \Illuminate\Support\Carbon|null $delivery_confirmed_at
+ * @property string|null $purchase_confirmed_at
  * @property string|null $expires_at
  * @property string|null $expired_at
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -1083,6 +1088,8 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereCourierInvoice($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereCustomerId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereDeliveredAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereDeliveryConfirmedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereExpiredAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereExpiresAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereFinalAttachments($value)
@@ -1090,12 +1097,15 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereImportTax($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereIsCashCollected($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereIsDeliveryConfirmed($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereIsPurchaseConfirmed($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereNpId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereOrderNo($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order wherePaymentMethod($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order wherePaymentProof($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order wherePointsUsed($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order wherePreviousStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order wherePurchaseConfirmedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereSecondaryPaymentMethod($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereShippingAddressLine1($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereShippingAddressLine2($value)
@@ -1249,6 +1259,9 @@ namespace App\Models{
  * @property string $refund_status
  * @property string|null $refund_method
  * @property string $refund_reason
+ * @property string|null $defect_evidence_video
+ * @property string|null $return_packaging_video
+ * @property string|null $scanned_imei
  * @property string|null $refund_reference
  * @property string|null $note
  * @property numeric $refund_amount
@@ -1256,6 +1269,7 @@ namespace App\Models{
  * @property string|null $approved_at
  * @property string|null $rejected_at
  * @property string|null $completed_at
+ * @property string|null $withdrawn_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Customer $customer
@@ -1268,6 +1282,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereCompletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereCustomerId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereDefectEvidenceVideo($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereNote($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereOrderId($value)
@@ -1278,7 +1293,10 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereRefundStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereRejectedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereRequestedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereReturnPackagingVideo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereScannedImei($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereWithdrawnAt($value)
  */
 	class OrderRefund extends \Eloquent {}
 }
@@ -1852,6 +1870,7 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Country $country
+ * @property-read mixed $added_at
  * @property-read \App\Models\SmartphoneForSale $selling_info
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCountryPrice newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCountryPrice newQuery()
@@ -1877,9 +1896,12 @@ namespace App\Models{
  * @property int|null $shipping_fee_id
  * @property int|null $import_tax_id
  * @property-read mixed $added_at
+ * @property-read string $total_price_with_tax
  * @property-read \App\Models\AdditionalFeeList|null $import_tax
  * @property-read \App\Models\AdditionalFeeList|null $shipping_fee
  * @property-read \App\Models\Smartphone $smartphone
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SmartphoneCountryPrice> $territory_prices
+ * @property-read int|null $territory_prices_count
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneForSale newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneForSale newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneForSale query()
@@ -2036,6 +2058,7 @@ namespace App\Models{
  * @property string|null $assigned_at
  * @property string $status
  * @property string|null $note
+ * @property array<array-key, mixed>|null $draft_data
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\User|null $assignedBy
@@ -2048,6 +2071,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder whereAssignedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder whereAssignedBy($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder whereDraftData($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder whereNote($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder whereOrderId($value)
@@ -2056,6 +2080,36 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder whereUpdatedAt($value)
  */
 	class SupplierAssignedOrder extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property int $supplier_assigned_order_id
+ * @property int $created_by
+ * @property string|null $memo
+ * @property string|null $file_path
+ * @property string|null $file_name
+ * @property string|null $file_type
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\SupplierAssignedOrder $assignment
+ * @property-read \App\Models\User $author
+ * @property-read string|null $file_url
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignmentLog newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignmentLog newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignmentLog query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignmentLog whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignmentLog whereCreatedBy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignmentLog whereFileName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignmentLog whereFilePath($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignmentLog whereFileType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignmentLog whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignmentLog whereMemo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignmentLog whereSupplierAssignedOrderId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignmentLog whereUpdatedAt($value)
+ */
+	class SupplierAssignmentLog extends \Eloquent {}
 }
 
 namespace App\Models{

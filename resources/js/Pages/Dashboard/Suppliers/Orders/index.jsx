@@ -63,7 +63,14 @@ export default function index({ orders }) {
                     const canFulfill = item?.status === 'assigned' && stock && !stock.is_complete;
 
                     if (!canFulfill) {
-                        return <span className="text-gray-500">—</span>;
+                        return <span className="text-gray-500">
+                            <Link
+                                className="inline-block px-3 py-1 text-purple-600 underline rounded-lg"
+                                href={route("dashboard.supplier-assigned-orders.fulfill", item?.id)}
+                            >
+                                View Details
+                            </Link>
+                        </span>;
                     }
 
 

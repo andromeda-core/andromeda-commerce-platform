@@ -30,7 +30,8 @@ export default function FileUploaderInput({
     MaxFileSize,
     MaxFiles,
     reOrder = false,
-    canMarkMainImage = false
+    canMarkMainImage = false,
+    Disabled = false
 }) {
     const [files, setFiles] = useState(() => {
         if (!DefaultFile || !Array.isArray(DefaultFile)) return [];
@@ -115,6 +116,7 @@ export default function FileUploaderInput({
                 )}
                 <div className="relative cursor-pointer">
                     <FilePond
+                        disabled={Disabled}
                         ref={pondRef}
                         allowMultiple={Multiple}
                         credits={false}

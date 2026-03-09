@@ -51,6 +51,22 @@ class Inventory extends Model
         static::saving(function () {
             Cache::tags(['feed'])->flush();
         });
+
+        static::deleted(function ($item) {
+            OrderItem::whereNotNull('inventory_item_ids')
+                ->whereJsonContains('inventory_item_ids', $item->id)
+                ->each(function ($orderItem) use ($item) {
+                    $existing = $orderItem->inventory_item_ids ?? [];
+
+                    if (is_string($existing)) {
+                        $existing = json_decode($existing, true) ?: [];
+                    }
+
+                    $cleaned = array_values(array_diff($existing, [$item->id]));
+                    $orderItem->inventory_item_ids = $cleaned;
+                    $orderItem->saveQuietly();
+                });
+        });
     }
 
     // Casting

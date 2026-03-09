@@ -72,7 +72,10 @@ class BatchRepository implements IBatchRepository
             'supplier_id' => ['required', 'exists:suppliers,id'],
             'extra_costs' => ['nullable', 'array'],
             'inventory_items' => ['required', 'array'],
-            'invoices' => ['nullable', 'array', 'max:30'],
+            'invoices' => ['nullable', 'array', 'max:1'],
+
+        ], [
+            'invoices.max' => 'Please Upload Only One Invoice At A Time',
         ]);
 
         $validator = Validator::make($request->all(), [
@@ -199,9 +202,10 @@ class BatchRepository implements IBatchRepository
 
             DB::commit();
 
-            if ($request->hasFile('invoices')) {
+            if ($request->hasFile('invoices') || ! blank($request->files->all('invoices'))) {
                 $paths = [];
-                foreach ($validated_req['invoices'] as $invoice) {
+                $invoices = $validated_req['invoices'] ?? $request->files->all('invoices') ?? [];
+                foreach ($invoices as $invoice) {
                     $ext = strtolower($invoice->getClientOriginalExtension());
 
                     if ($ext === 'pdf') {
@@ -232,6 +236,7 @@ class BatchRepository implements IBatchRepository
             return [
                 'status' => true,
                 'message' => 'Batch Created Successfully',
+                'batch' => $batch,
                 'inventory_items' => $created_inventory_items,
 
             ];
@@ -255,6 +260,7 @@ class BatchRepository implements IBatchRepository
             'supplier_id' => ['required', 'exists:suppliers,id'],
             'extra_costs' => ['nullable', 'array'],
             'inventory_items' => ['required', 'array'],
+
         ]);
 
         $validator = Validator::make($request->all(), [
@@ -266,6 +272,7 @@ class BatchRepository implements IBatchRepository
             'inventory_items.*.imei2' => ['nullable', 'string', 'max:255'],
             'inventory_items.*.eid' => ['nullable', 'string', 'max:255'],
             'inventory_items.*.serial_no' => ['nullable', 'string', 'max:255'],
+            'new_invoices' => ['nullable', 'array', 'max:1'],
         ], [
             'extra_costs.*.cost_type.required' => 'Cost type is required',
             'extra_costs.*.cost_type.max' => 'Cost type Should Not Exceed 255 Characters',
@@ -287,6 +294,7 @@ class BatchRepository implements IBatchRepository
             'inventory_items.*.eid.string' => 'EID Must Be A String',
             'inventory_items.*.serial_no.max' => 'Serial Number Should Not Exceed 255 Characters',
             'inventory_items.*.serial_no.string' => 'Serial Number Must Be A String',
+            'new_invoices.max' => 'Please Upload Only One Invoice At A Time',
 
         ]);
 
@@ -463,30 +471,75 @@ class BatchRepository implements IBatchRepository
                 throw new Exception('Something Went Wrong While Updating Batch');
             }
 
-            // Delete all inventory items
-            $this->inventory->where('batch_id', $batch->id)->delete();
+            $existingIds = $this->inventory
+                ->where('batch_id', $batch->id)
+                ->pluck('id')
+                ->toArray();
 
-            // Creating New Inventory Items From The Request Data
-            foreach ($validated_req['inventory_items'] as $inventory_item) {
-                $this->inventory->create([
-                    'batch_id' => $batch->id,
-                    'smartphone_id' => $inventory_item['smartphone_id'],
-                    'storage_location_id' => $inventory_item['storage_location_id'],
-                    'imei1' => $inventory_item['imei1'],
-                    'imei2' => $inventory_item['imei2'],
-                    'eid' => $inventory_item['eid'],
-                    'serial_no' => $inventory_item['serial_no'],
-                    'status' => $inventory_item['status'] ?? 'in_stock',
-                    'returned_date' => $inventory_item['returned_date'] ?? null,
-                ]);
+            $incomingIds = collect($validated_req['inventory_items'])
+                ->pluck('id')
+                ->filter()
+                ->toArray();
+
+            $toDelete = array_diff($existingIds, $incomingIds);
+            if (! empty($toDelete)) {
+
+                $protectedItems = $this->inventory
+                    ->whereIn('id', $toDelete)
+                    ->whereIn('status', ['sold', 'on_hold'])
+                    ->get(['id', 'imei1', 'status']);
+
+                if ($protectedItems->isNotEmpty()) {
+                    $details = $protectedItems->map(function ($i) {
+                        $status = ucwords(str_replace('_', ' ', $i->status));
+
+                        return "IMEI: {$i->imei1} (Status: {$status})";
+                    })->join(', ');
+                    throw ValidationException::withMessages([
+                        'file_error' => "Cannot remove item(s) already assigned to an order: {$details}",
+                    ]);
+                }
+
+                $this->inventory->whereIn('id', $toDelete)->get()->each->delete();
             }
 
+            foreach ($validated_req['inventory_items'] as $inventory_item) {
+                $itemId = $inventory_item['id'] ?? null;
+
+                if ($itemId) {
+                    // Existing item
+                    $this->inventory->where('id', $itemId)->update([
+                        'smartphone_id' => $inventory_item['smartphone_id'],
+                        'storage_location_id' => $inventory_item['storage_location_id'],
+                        'imei1' => $inventory_item['imei1'],
+                        'imei2' => $inventory_item['imei2'] ?? null,
+                        'eid' => $inventory_item['eid'] ?? null,
+                        'serial_no' => $inventory_item['serial_no'] ?? null,
+                        'returned_date' => $inventory_item['returned_date'] ?? null,
+                    ]);
+                } else {
+                    // New item
+                    $this->inventory->create([
+                        'batch_id' => $batch->id,
+                        'smartphone_id' => $inventory_item['smartphone_id'],
+                        'storage_location_id' => $inventory_item['storage_location_id'],
+                        'imei1' => $inventory_item['imei1'],
+                        'imei2' => $inventory_item['imei2'] ?? null,
+                        'eid' => $inventory_item['eid'] ?? null,
+                        'serial_no' => $inventory_item['serial_no'] ?? null,
+                        'status' => 'in_stock',
+                        'returned_date' => $inventory_item['returned_date'] ?? null,
+                    ]);
+                }
+            }
             DB::commit();
 
-            if ($request->hasFile('new_invoices')) {
+            if ($request->hasFile('new_invoices') || ! blank($request->files->all('new_invoices'))) {
                 $paths = [];
 
-                foreach ($request->file('new_invoices') as $invoice) {
+                $invoices = $request->file('new_invoices') ?? $request->files->all('new_invoices') ?? [];
+
+                foreach ($invoices as $invoice) {
                     $ext = strtolower($invoice->getClientOriginalExtension());
 
                     if ($ext === 'pdf') {
@@ -510,7 +563,7 @@ class BatchRepository implements IBatchRepository
                     $paths[] = $tempPath;
                 }
 
-                dispatch(new updateBatchInvoiceOnAWS(['invoices' => $paths], $batch));
+                dispatch(new updateBatchInvoiceOnAWS(['invoices' => $paths], $batch, null));
             }
 
             return [

@@ -11,7 +11,7 @@ import Toast from '@/Components/Toast';
 
 import FileUploaderInput from '@/Components/FileUploaderInput';
 import { useScanner } from '@/Hooks/useScanner';
-
+import Textarea from '@/Components/Textarea';
 
 
 export default function fulFillOrder({
@@ -20,7 +20,39 @@ export default function fulFillOrder({
     required_items,
     smartphones,
     storage_locations,
+    isReadOnly,
+    logs,
+    isEditMode = false,
+    batchData = null,
+    isAdmin,
+    isViewMode
 }) {
+
+    const [logMemo, setLogMemo] = useState('');
+    const [logFile, setLogFile] = useState(null);
+    const [logSubmitting, setLogSubmitting] = useState(false);
+
+    const handleAddLog = () => {
+        if (!logMemo.trim() && !logFile) return;
+
+        setLogSubmitting(true);
+
+        router.post(
+            route('dashboard.supplier-assigned-orders.log.store', assignment?.id),
+            { memo: logMemo, attachment: logFile },
+            {
+                preserveScroll: true,
+                preserveState: false,
+                onSuccess: (page) => {
+                    if (page?.props.flash?.success) {
+                        setLogMemo('');
+                        setLogFile(null);
+                    }
+                },
+                onFinish: () => setLogSubmitting(false),
+            }
+        );
+    };
 
 
     const [draftSaving, setDraftSaving] = useState(false);
@@ -38,10 +70,27 @@ export default function fulFillOrder({
         extra_costs: [],
         inventory_items: [],
         invoices: [],
-
         supplier_assigned_order_id: assignment?.id || null,
         order_id: order?.id || null,
+        is_invoice_removed: false,
+        is_edit_mode: isEditMode
+
     });
+
+    const draftInvoiceUrls = useMemo(() => {
+
+        if ((isEditMode || isViewMode) && batchData?.invoices) {
+            return Array.isArray(batchData.invoices) ? batchData.invoices : [];
+        }
+
+        // Normal draft mode
+        const invoices = assignment?.draft_data?.invoices;
+        if (!invoices) return [];
+        const arr = typeof invoices === 'string' ? JSON.parse(invoices) : invoices;
+        return Array.isArray(arr) ? arr.map((inv) => inv?.url ?? inv) : [];
+    }, [assignment?.id, isEditMode, batchData?.id]);
+
+
 
     const { currency } = usePage().props;
     const [file_error, setFileError] = useState(null);
@@ -117,8 +166,40 @@ export default function fulFillOrder({
     };
 
 
+    // Edit Mode Data Population
+    useEffect(() => {
+        if (!batchData) return;
+        if (!isEditMode && !isViewMode) return;
+
+        if (batchData.batch_name) setData('batch_name', batchData.batch_name);
+        if (batchData.vat) setData('vat', batchData.vat);
+        if (batchData.base_purchase_unit_price) setData('base_purchase_unit_price', batchData.base_purchase_unit_price);
+
+        if (Array.isArray(batchData.extra_costs) && batchData.extra_costs.length > 0) {
+            setExtraCosts(batchData.extra_costs);
+            setData('extra_costs', batchData.extra_costs);
+        }
+
+        if (Array.isArray(batchData.inventory_items) && batchData.inventory_items.length > 0) {
+            const normalized = batchData.inventory_items.map(item => ({
+                id: item.id,
+                smartphone_id: item.smartphone_id || '',
+                storage_location_id: item.storage_location_id || '',
+                imei1: item.imei1 || '',
+                imei2: item.imei2 || '',
+                eid: item.eid || '',
+                serial_no: item.serial_no || '',
+            }));
+            setInventoryItems(normalized);
+            setData('inventory_items', normalized);
+        }
+
+    }, [isEditMode, batchData?.id, isViewMode]);
+
     //  Auto-generate items based on required_items (1 entry = 1 stock)
     useEffect(() => {
+        if (isEditMode) return;
+        if (isViewMode) return;
         const req = required_items || [];
 
         if (!assignment?.id || !order?.id) return;
@@ -163,6 +244,8 @@ export default function fulFillOrder({
 
     // Draft Restoring
     useEffect(() => {
+        if (isEditMode) return;
+        if (isViewMode) return;
         if (assignment?.draft_data) return;
 
         const req = required_items || [];
@@ -193,7 +276,11 @@ export default function fulFillOrder({
 
     }, [assignment?.id, order?.id, JSON.stringify(required_items)]);
 
+
+    // Draft Restoring (with draft_data)
     useEffect(() => {
+        if (isEditMode) return;
+        if (isViewMode) return;
         if (!assignment?.draft_data) return;
 
         try {
@@ -220,10 +307,13 @@ export default function fulFillOrder({
                     imei2: item.imei2 || '',
                     eid: item.eid || '',
                     serial_no: item.serial_no || '',
+
                 }));
                 setInventoryItems(normalized);
                 setData('inventory_items', normalized);
             }
+
+            if (draft?.invoices) setData('invoices', draft.invoices);
 
         } catch (e) {
 
@@ -243,6 +333,8 @@ export default function fulFillOrder({
                 base_purchase_unit_price: data.base_purchase_unit_price,
                 extra_costs: extraCosts,
                 inventory_items: inventoryItems,
+                invoices: data.invoices,
+                is_invoice_removed: data.is_invoice_removed
             },
             {
                 preserveScroll: true,
@@ -313,11 +405,17 @@ export default function fulFillOrder({
             clearTimeout(timeout);
         };
     }, [errors]);
+
+
     // Create Data Form Request
     const submit = (e) => {
         e.preventDefault();
         post(route('dashboard.supplier-assigned-orders.fulfill.store', assignment?.id));
     };
+
+
+
+
 
 
     return (
@@ -333,155 +431,166 @@ export default function fulFillOrder({
                 />
 
 
+
+
                 {/* Required Stock Summary */}
                 {(order || required_items?.length > 0) && (
-                    <div className="p-5 mb-6 bg-white border border-gray-200 rounded-lg dark:bg-zinc-900 dark:border-zinc-700">
 
-                        {/* Header Row */}
-                        <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
-                            <div>
-                                <h3 className="text-base font-semibold text-gray-900 dark:text-white">
-                                    Order Requirements Summary
-                                </h3>
-                                <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                                    Review the required stock before fulfilling
-                                </p>
-                            </div>
 
-                            {/* Destination Country */}
-                            {order?.destination_country && (
-                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800/40">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-violet-600 dark:text-violet-400">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-                                    </svg>
-                                    <span className="text-xs font-semibold text-violet-700 dark:text-violet-300">
-                                        {order.destination_country}
-                                    </span>
+                    <Card
+                        Content={
+                            <>
+                                {/* Header Row */}
+                                <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+                                    <div>
+                                        <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+                                            Order Requirements Summary
+                                        </h3>
+                                        <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                                            Review the required stock before fulfilling
+                                        </p>
+                                    </div>
+
+                                    {/* Destination Country */}
+                                    {order?.destination_country && (
+                                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800/40">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-violet-600 dark:text-violet-400">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                                            </svg>
+                                            <span className="text-xs font-semibold text-violet-700 dark:text-violet-300">
+                                                {order.destination_country}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                        </div>
 
-                        {/* Stats Row */}
-                        <div className="grid grid-cols-2 gap-3 mb-5 md:grid-cols-3">
-                            {[
-                                {
-                                    label: 'Total Items Required',
-                                    value: required_items?.reduce((sum, r) => sum + Number(r?.missing_qty || 0), 0) ?? 0,
-                                    suffix: 'units',
-                                    color: 'text-gray-900 dark:text-white',
-                                    bg: 'bg-gray-50 dark:bg-zinc-800',
-                                },
-                                {
-                                    label: 'Order Total',
-                                    value: order?.total_amount ? `${currency?.symbol ?? ''}${Number(order.total_amount).toLocaleString('en-US')}` : 'N/A',
-                                    color: 'text-green-600 dark:text-green-400',
-                                    bg: 'bg-green-50 dark:bg-green-900/10',
-                                },
+                                {/* Stats Row */}
+                                <div className="grid grid-cols-2 gap-3 mb-5 md:grid-cols-3">
+                                    {[
+                                        {
+                                            label: 'Total Items Required',
+                                            value: required_items?.reduce((sum, r) => sum + Number(r?.missing_qty || 0), 0) ?? 0,
+                                            suffix: 'units',
+                                            color: 'text-gray-900 dark:text-white',
+                                            bg: 'bg-gray-50 dark:bg-zinc-900',
+                                        },
+                                        {
+                                            label: 'Order Total',
+                                            value: order?.total_amount ? `${currency?.symbol ?? ''}${Number(order.total_amount).toLocaleString('en-US')}` : 'N/A',
+                                            color: 'text-green-600 dark:text-green-400',
+                                            bg: 'bg-green-50 dark:bg-green-900/10',
+                                        },
 
-                                {
-                                    label: 'Distinct Models',
-                                    value: required_items?.length ?? 0,
-                                    suffix: 'models',
-                                    color: 'text-violet-600 dark:text-violet-400',
-                                    bg: 'bg-violet-50 dark:bg-violet-900/10',
-                                },
-                            ].map(({ label, value, suffix, color, bg }) => (
-                                <div key={label} className={`rounded-lg p-3 ${bg}`}>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
-                                    <p className={`mt-1 text-lg font-bold ${color}`}>
-                                        {value}
-                                        {suffix && <span className="ml-1 text-xs font-normal text-gray-400">{suffix}</span>}
-                                    </p>
+                                        {
+                                            label: 'Distinct Models',
+                                            value: required_items?.length ?? 0,
+                                            suffix: 'models',
+                                            color: 'text-violet-600 dark:text-violet-400',
+                                            bg: 'bg-violet-50 dark:bg-violet-900/10',
+                                        },
+                                    ].map(({ label, value, suffix, color, bg }) => (
+                                        <div key={label} className={`rounded-lg p-3 ${bg}`}>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+                                            <p className={`mt-1 text-lg font-bold ${color}`}>
+                                                {value}
+                                                {suffix && <span className="ml-1 text-xs font-normal text-gray-400">{suffix}</span>}
+                                            </p>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
 
-                        {/* Admin Memo */}
-                        {assignment?.note && (
-                            <div className="flex gap-3 p-4 mb-5 border rounded-lg border-amber-200 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-800/40">
-                                <div className="mt-0.5 shrink-0">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-amber-600 dark:text-amber-400">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
-                                    </svg>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="mb-1 text-xs font-semibold text-amber-700 dark:text-amber-400">
-                                        Note from Administrator
-                                    </p>
-                                    <p className="text-sm break-words text-amber-800 dark:text-amber-300">
-                                        {assignment.note}
-                                    </p>
-                                </div>
-                            </div>
-                        )}
+                                {/* Admin Memo */}
+                                {assignment?.note && (
+                                    <div className="flex gap-3 p-4 mb-5 border rounded-lg border-amber-200 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-800/40">
+                                        <div className="mt-0.5 shrink-0">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-amber-600 dark:text-amber-400">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+                                            </svg>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="mb-1 text-xs font-semibold text-amber-700 dark:text-amber-400">
+                                                Note from Administrator
+                                            </p>
+                                            <p className="text-sm break-words text-amber-800 dark:text-amber-300">
+                                                {assignment.note}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
 
-                        {/* Per Item Breakdown Table */}
-                        {required_items?.length > 0 && (
-                            <div className="overflow-hidden border border-gray-200 rounded-lg dark:border-zinc-700">
-                                <table className="w-full text-sm">
-                                    <thead className="bg-gray-100 dark:bg-zinc-800">
-                                        <tr>
-                                            <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400">#</th>
-                                            <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400">Model</th>
-                                            <th className="px-4 py-2.5 text-center text-xs font-semibold text-gray-600 dark:text-gray-400">Ordered</th>
+                                {/* Per Item Breakdown Table */}
+                                {required_items?.length > 0 && (
+                                    <div className="overflow-hidden border border-gray-200 rounded-lg dark:border-zinc-700">
+                                        <table className="w-full text-sm">
+                                            <thead className="bg-gray-100 dark:bg-zinc-800">
+                                                <tr>
+                                                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400">#</th>
+                                                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400">Model</th>
+                                                    <th className="px-4 py-2.5 text-center text-xs font-semibold text-gray-600 dark:text-gray-400">Ordered</th>
 
-                                            <th className="px-4 py-2.5 text-center text-xs font-semibold text-gray-600 dark:text-gray-400">Missing</th>
-                                            <th className="px-4 py-2.5 text-right text-xs font-semibold text-gray-600 dark:text-gray-400">Unit Price</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100 dark:divide-zinc-700">
-                                        {required_items.map((item, idx) => {
-                                            const missing = Number(item?.missing_qty || 0);
-                                            return (
-                                                <tr key={idx} className="transition-colors bg-white dark:bg-zinc-900 hover:bg-gray-50 dark:hover:bg-zinc-800">
-                                                    <td className="px-4 py-2.5 text-xs text-gray-500 dark:text-gray-400">
-                                                        {idx + 1}
-                                                    </td>
-                                                    <td className="px-4 py-2.5">
-                                                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                                            {item?.model_name ?? item?.name ?? `Item #${idx + 1}`}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-4 py-2.5 text-center">
-                                                        <span className="text-sm text-gray-700 dark:text-gray-300">
-                                                            {item?.ordered_qty ?? 'N/A'}
-                                                        </span>
-                                                    </td>
-
-                                                    <td className="px-4 py-2.5 text-center">
-                                                        <div className="flex flex-col items-center gap-1">
-                                                            <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-semibold ${missing > 0
-                                                                ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                                                                : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                                                }`}>
-                                                                {missing > 0 ? `${missing} still needed` : 'Fully Covered'}
-                                                            </span>
-
-                                                            {item?.fulfilled_qty > 0 && missing > 0 && (
-                                                                <span className="text-[10px] text-gray-400 dark:text-gray-500">
-                                                                    {item.fulfilled_qty} of {item.ordered_qty} assigned
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 py-2.5 text-right">
-                                                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                                                            {item?.unit_price
-                                                                ? `${currency?.symbol ?? ''}${Number(item.unit_price).toLocaleString("en-US")}`
-                                                                : 'N/A'
-                                                            }
-                                                        </span>
-                                                    </td>
+                                                    <th className="px-4 py-2.5 text-center text-xs font-semibold text-gray-600 dark:text-gray-400">Missing</th>
+                                                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-gray-600 dark:text-gray-400">Unit Price</th>
                                                 </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </div>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-100 dark:divide-zinc-700">
+                                                {required_items.map((item, idx) => {
+                                                    const missing = Number(item?.missing_qty || 0);
+                                                    return (
+                                                        <tr key={idx} className="transition-colors bg-white dark:bg-zinc-900 hover:bg-gray-50 dark:hover:bg-zinc-800">
+                                                            <td className="px-4 py-2.5 text-xs text-gray-500 dark:text-gray-400">
+                                                                {idx + 1}
+                                                            </td>
+                                                            <td className="px-4 py-2.5">
+                                                                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                                                    {item?.model_name ?? item?.name ?? `Item #${idx + 1}`}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-4 py-2.5 text-center">
+                                                                <span className="text-sm text-gray-700 dark:text-gray-300">
+                                                                    {item?.ordered_qty ?? 'N/A'}
+                                                                </span>
+                                                            </td>
+
+                                                            <td className="px-4 py-2.5 text-center">
+                                                                <div className="flex flex-col items-center gap-1">
+                                                                    <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-semibold ${missing > 0
+                                                                        ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                                                        : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                                                        }`}>
+                                                                        {missing > 0 ? `${missing} still needed` : 'Fully Covered'}
+                                                                    </span>
+
+                                                                    {item?.fulfilled_qty > 0 && missing > 0 && (
+                                                                        <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                                                                            {item.fulfilled_qty} of {item.ordered_qty} assigned
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-4 py-2.5 text-right">
+                                                                <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                                                                    {item?.unit_price
+                                                                        ? `${currency?.symbol ?? ''}${Number(item.unit_price).toLocaleString("en-US")}`
+                                                                        : 'N/A'
+                                                                    }
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+
+                            </>
+                        }
+                    />
+
                 )}
+
+
 
 
 
@@ -529,6 +638,7 @@ export default function fulFillOrder({
                                                     Action={(e) => {
                                                         setData('batch_name', e.target.value);
                                                     }}
+                                                    Disabled={isReadOnly}
                                                 />
 
                                                 <Input
@@ -543,6 +653,7 @@ export default function fulFillOrder({
                                                     Action={(e) => {
                                                         setData('vat', e.target.value);
                                                     }}
+                                                    Disabled={isReadOnly}
                                                 />
 
                                                 <div className="flex items-center">
@@ -569,6 +680,7 @@ export default function fulFillOrder({
                                                         Type={'number'}
                                                         Decimal={true}
                                                         Required={true}
+                                                        Disabled={isReadOnly}
                                                     />
                                                 </div>
 
@@ -581,10 +693,11 @@ export default function fulFillOrder({
                                                     Required={true}
                                                     Type={'text'}
                                                     Placeholder={'Supplier'}
+                                                    Disabled={isReadOnly}
                                                 />
                                             </div>
 
-                                            <div className="grid grid-cols-1 gap-4">
+                                            <div className="grid grid-cols-1 gap-4 mt-3">
                                                 <FileUploaderInput
                                                     Label={
                                                         'Drag & Drop your Batch Invoice or <span class="filepond--label-action">Browse</span>'
@@ -592,6 +705,8 @@ export default function fulFillOrder({
                                                     Error={errors.invoices}
                                                     Id={'invoices'}
                                                     InputName={'Batch Invoices'}
+                                                    Disabled={isReadOnly}
+                                                    Required={true}
                                                     acceptedFileTypes={[
                                                         'image/*',
                                                         'application/pdf',
@@ -603,13 +718,16 @@ export default function fulFillOrder({
                                                                 .filter((f) => f.isNew)
                                                                 .map((f) => f.file);
 
+                                                            setData('is_invoice_removed', false);
                                                             setData('invoices', newFiles);
                                                         } else {
+                                                            setData('is_invoice_removed', true);
                                                             setData('invoices', []);
                                                         }
                                                     }}
-                                                    MaxFiles={30}
+                                                    MaxFiles={1}
                                                     Multiple={true}
+                                                    DefaultFile={draftInvoiceUrls}
                                                 />
                                             </div>
 
@@ -677,7 +795,7 @@ export default function fulFillOrder({
 
                                                                         {/* Smartphone */}
                                                                         <SelectInput
-                                                                            key={idx}
+                                                                            key={`smartphone-${idx}-${item.smartphone_id}`}
                                                                             InputName="Smartphone"
                                                                             Id="smartphone_id"
                                                                             Name="smartphone_id"
@@ -688,6 +806,7 @@ export default function fulFillOrder({
                                                                             isDisabled={true}
                                                                             itemKey={'name'}
                                                                             Required={true}
+                                                                            Disabled={isReadOnly}
                                                                             Action={(value) => {
                                                                                 handleInventoryChange(
                                                                                     idx,
@@ -703,6 +822,7 @@ export default function fulFillOrder({
                                                                         InputName="Storage Location"
                                                                         Id="storage_location_id"
                                                                         Name="storage_location_id"
+                                                                        isDisabled={isReadOnly}
                                                                         items={storage_locations}
                                                                         Value={
                                                                             item.storage_location_id
@@ -749,6 +869,7 @@ export default function fulFillOrder({
                                                                                 </svg>
                                                                             }
                                                                             Action={() => openScanner('imei1', idx)}
+                                                                            Disabled={isReadOnly}
                                                                         />
 
                                                                         {/* IMEI 1 */}
@@ -759,6 +880,7 @@ export default function fulFillOrder({
                                                                             Value={item.imei1}
                                                                             Required={true}
                                                                             Placeholder="Enter IMEI 1"
+                                                                            Disabled={isReadOnly}
                                                                             Action={(e) =>
                                                                                 handleInventoryChange(
                                                                                     idx,
@@ -800,6 +922,7 @@ export default function fulFillOrder({
                                                                                 </svg>
                                                                             }
                                                                             Action={() => openScanner('imei2', idx)}
+                                                                            Disabled={isReadOnly}
                                                                         />
 
                                                                         {/* IMEI 2 */}
@@ -810,6 +933,7 @@ export default function fulFillOrder({
                                                                             Value={item.imei2}
                                                                             Required={false}
                                                                             Placeholder="Enter IMEI 2"
+                                                                            Disabled={isReadOnly}
                                                                             Action={(e) =>
                                                                                 handleInventoryChange(
                                                                                     idx,
@@ -827,6 +951,7 @@ export default function fulFillOrder({
                                                                             ClassName={
                                                                                 'dark:bg-deepcharcoal dark:text-white p-2 mt-6  rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
                                                                             }
+                                                                            Disabled={isReadOnly}
                                                                             Icon={
                                                                                 <svg
                                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -861,6 +986,7 @@ export default function fulFillOrder({
                                                                             Value={item.eid}
                                                                             Required={false}
                                                                             Placeholder="Enter EID"
+                                                                            Disabled={isReadOnly}
                                                                             Action={(e) =>
                                                                                 handleInventoryChange(
                                                                                     idx,
@@ -878,6 +1004,7 @@ export default function fulFillOrder({
                                                                             ClassName={
                                                                                 'dark:bg-deepcharcoal dark:text-white p-2  mt-6 rounded-lg text-center dark:hover:bg-gray-700 transition duration-200 ease-in-out hover:bg-blue-700 hover:text-white bg-slate-100'
                                                                             }
+                                                                            Disabled={isReadOnly}
                                                                             Icon={
                                                                                 <svg
                                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -911,6 +1038,7 @@ export default function fulFillOrder({
                                                                             Name="serial_no"
                                                                             Value={item.serial_no}
                                                                             Required={false}
+                                                                            Disabled={isReadOnly}
                                                                             Placeholder="Enter Serial No"
                                                                             Action={(e) =>
                                                                                 handleInventoryChange(
@@ -928,46 +1056,49 @@ export default function fulFillOrder({
                                                 ))}
                                             </div>
 
-                                            <div className="flex items-center justify-end w-full">
-                                                <PrimaryButton
-                                                    Text={'Add Extra Cost'}
-                                                    Type={'button'}
-                                                    Id={'add_extra_cost'}
-                                                    CustomClass={'w-[200px] '}
-                                                    Action={addExtraCost}
-                                                    Icon={
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            strokeWidth={1.5}
-                                                            stroke="currentColor"
-                                                            className="size-6"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                d="m4.5 5.25 7.5 7.5 7.5-7.5m-15 6 7.5 7.5 7.5-7.5"
-                                                            />
-                                                        </svg>
-                                                    }
-                                                />
-                                            </div>
+                                            {!isReadOnly && (
+                                                <div className="flex items-center justify-end w-full">
+                                                    <PrimaryButton
+                                                        Text={'Add Extra Cost'}
+                                                        Type={'button'}
+                                                        Disabled={isReadOnly}
+                                                        Id={'add_extra_cost'}
+                                                        CustomClass={'w-[200px] '}
+                                                        Action={addExtraCost}
+                                                        Icon={
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                strokeWidth={1.5}
+                                                                stroke="currentColor"
+                                                                className="size-6"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="m4.5 5.25 7.5 7.5 7.5-7.5m-15 6 7.5 7.5 7.5-7.5"
+                                                                />
+                                                            </svg>
+                                                        }
+                                                    />
+                                                </div>
+                                            )}
 
                                             {extraCosts.length > 0 && (
                                                 <div className="grid grid-cols-1 col-span-1 gap-5 overflow-x-auto scrollbar-thin dark:scrollbar-track-slate-900 dark:scrollbar-thumb-slate-700">
                                                     <table className="w-full border-collapse">
                                                         <thead>
                                                             <tr>
-                                                                <th className="p-2 text-left text-gray-700 border dark:border-gray-700 dark:text-gray-400">
-                                                                    Cost Type
+                                                                <th colSpan={2} className="p-2 text-left text-gray-700 border dark:border-gray-700 dark:text-gray-400">
+                                                                    Extra Costs
                                                                 </th>
-                                                                <th className="p-2 text-left text-gray-700 border dark:border-gray-700 dark:text-gray-400">
-                                                                    Amount
-                                                                </th>
-                                                                <th className="p-2 text-center text-gray-700 border dark:border-gray-700 dark:text-gray-400">
-                                                                    Action
-                                                                </th>
+
+                                                                {!isReadOnly && (
+                                                                    <th className="p-2 text-center text-gray-700 border dark:border-gray-700 dark:text-gray-400">
+                                                                        Action
+                                                                    </th>
+                                                                )}
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -978,6 +1109,7 @@ export default function fulFillOrder({
                                                                             InputName={'Cost Type'}
                                                                             Id={'cost_type'}
                                                                             Name={'cost_type'}
+                                                                            Disabled={isReadOnly}
                                                                             Error={
                                                                                 errors[
                                                                                 `extra_costs.${idx}.cost_type`
@@ -1003,6 +1135,7 @@ export default function fulFillOrder({
                                                                             InputName={'Amount'}
                                                                             Id={'amount'}
                                                                             Name={'amount'}
+                                                                            Disabled={isReadOnly}
                                                                             Error={
                                                                                 errors[
                                                                                 `extra_costs.${idx}.amount`
@@ -1024,42 +1157,44 @@ export default function fulFillOrder({
                                                                         />
                                                                     </td>
 
-                                                                    <td className="p-2 border dark:border-gray-700">
-                                                                        <div className="flex items-center justify-center">
-                                                                            <PrimaryButton
-                                                                                Type={'button'}
-                                                                                Id={
-                                                                                    'delete_extra_cost'
-                                                                                }
-                                                                                Action={() =>
-                                                                                    removeExtraCost(
-                                                                                        idx,
-                                                                                    )
-                                                                                }
-                                                                                CustomClass={
-                                                                                    'w-[50px] bg-red-500 hover:bg-red-600'
-                                                                                }
-                                                                                Icon={
-                                                                                    <svg
-                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                        fill="none"
-                                                                                        viewBox="0 0 24 24"
-                                                                                        strokeWidth={
-                                                                                            1.5
-                                                                                        }
-                                                                                        stroke="currentColor"
-                                                                                        className="size-6"
-                                                                                    >
-                                                                                        <path
-                                                                                            strokeLinecap="round"
-                                                                                            strokeLinejoin="round"
-                                                                                            d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                                                                                        />
-                                                                                    </svg>
-                                                                                }
-                                                                            />
-                                                                        </div>
-                                                                    </td>
+                                                                    {!isReadOnly && (
+                                                                        <td className="p-2 border dark:border-gray-700">
+                                                                            <div className="flex items-center justify-center">
+                                                                                <PrimaryButton
+                                                                                    Type={'button'}
+                                                                                    Id={
+                                                                                        'delete_extra_cost'
+                                                                                    }
+                                                                                    Action={() =>
+                                                                                        removeExtraCost(
+                                                                                            idx,
+                                                                                        )
+                                                                                    }
+                                                                                    CustomClass={
+                                                                                        'w-[50px] bg-red-500 hover:bg-red-600'
+                                                                                    }
+                                                                                    Icon={
+                                                                                        <svg
+                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                            fill="none"
+                                                                                            viewBox="0 0 24 24"
+                                                                                            strokeWidth={
+                                                                                                1.5
+                                                                                            }
+                                                                                            stroke="currentColor"
+                                                                                            className="size-6"
+                                                                                        >
+                                                                                            <path
+                                                                                                strokeLinecap="round"
+                                                                                                strokeLinejoin="round"
+                                                                                                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                                                                                            />
+                                                                                        </svg>
+                                                                                    }
+                                                                                />
+                                                                            </div>
+                                                                        </td>
+                                                                    )}
                                                                 </tr>
                                                             ))}
                                                         </tbody>
@@ -1067,7 +1202,7 @@ export default function fulFillOrder({
                                                 </div>
                                             )}
 
-                                            {assignment?.draft_data && (
+                                            {assignment?.draft_data && !isEditMode && !isReadOnly && (
                                                 <div className="flex items-center gap-2 px-3 py-2 mb-3 text-xs text-blue-700 border border-blue-200 rounded-lg bg-blue-50 dark:bg-blue-900/10 dark:border-blue-800/40 dark:text-blue-400">
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 shrink-0">
                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
@@ -1076,80 +1211,197 @@ export default function fulFillOrder({
                                                 </div>
                                             )}
 
-                                            <div className="flex flex-wrap items-center gap-3 mt-2">
-                                                <PrimaryButton
-                                                    Text={'FulFill Stock'}
-                                                    Type={'submit'}
-                                                    CustomClass={'w-[250px] '}
-                                                    Disabled={
-                                                        processing ||
-                                                        data.batch_name.trim() === '' ||
-                                                        data.vat === '' ||
-                                                        data.base_purchase_unit_price === '' ||
-                                                        data.base_purchase_unit_price == 0 ||
-                                                        data.supplier_id === '' ||
-                                                        (extraCosts.length > 0 &&
-                                                            extraCosts.some(
-                                                                (cost) =>
-                                                                    cost.cost_type === '' ||
-                                                                    cost.amount == 0 ||
-                                                                    cost.amount === '',
-                                                            )) ||
-                                                        inventoryItems.some(
-                                                            (item) =>
-                                                                item.smartphone_id === '' ||
-                                                                item.storage_location_id === '' ||
-                                                                item.imei1 === '',
-                                                        )
-                                                    }
-                                                    Spinner={processing}
-                                                    Icon={
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            strokeWidth={1.5}
-                                                            stroke="currentColor"
-                                                            className="size-6"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                d="M12 4.5v15m7.5-7.5h-15"
-                                                            />
-                                                        </svg>
-                                                    }
-                                                />
+                                            {!isReadOnly && (
+                                                <div className="flex flex-wrap items-center gap-3 mt-2">
+                                                    <PrimaryButton
+                                                        Text={'FulFill Stock'}
+                                                        Type={'submit'}
+                                                        CustomClass={'w-[250px] '}
+                                                        Disabled={
+                                                            processing ||
+                                                            data.batch_name.trim() === '' ||
+                                                            data.vat === '' ||
+                                                            data.base_purchase_unit_price === '' ||
+                                                            data.base_purchase_unit_price == 0 ||
+                                                            data.supplier_id === '' ||
+                                                            (extraCosts.length > 0 &&
+                                                                extraCosts.some(
+                                                                    (cost) =>
+                                                                        cost.cost_type === '' ||
+                                                                        cost.amount == 0 ||
+                                                                        cost.amount === '',
+                                                                )) ||
+                                                            inventoryItems.some(
+                                                                (item) =>
+                                                                    item.smartphone_id === '' ||
+                                                                    item.storage_location_id === '' ||
+                                                                    item.imei1 === '',
+                                                            )
+                                                        }
+                                                        Spinner={processing}
+                                                        Icon={
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                strokeWidth={1.5}
+                                                                stroke="currentColor"
+                                                                className="size-6"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="M12 4.5v15m7.5-7.5h-15"
+                                                                />
+                                                            </svg>
+                                                        }
+                                                    />
 
 
-                                                <PrimaryButton
-                                                    Text={'Save Progress'}
-                                                    Type={'button'}
-                                                    CustomClass={'w-[250px] '}
-                                                    Disabled={draftSaving}
-                                                    Spinner={draftSaving}
-                                                    Action={handleSaveDraft}
-                                                    Icon={
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
-                                                        </svg>
-                                                    }
-                                                />
+                                                    {!isEditMode && (
+                                                        <PrimaryButton
+                                                            Text={'Save Progress'}
+                                                            Type={'button'}
+                                                            CustomClass={'w-[250px] '}
+                                                            Disabled={draftSaving}
+                                                            Spinner={draftSaving}
+                                                            Action={handleSaveDraft}
+                                                            Icon={
+                                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+                                                                </svg>
+                                                            }
+                                                        />
+
+                                                    )}
 
 
-
-                                                {/* Error feedback */}
-                                                {draftError && (
-                                                    <span className="text-xs text-red-500 dark:text-red-400">
-                                                        Failed to save. Please try again.
-                                                    </span>
-                                                )}
-                                            </div>
+                                                    {/* Error feedback */}
+                                                    {draftError && (
+                                                        <span className="text-xs text-red-500 dark:text-red-400">
+                                                            Failed to save. Please try again.
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )}
 
                                         </>
                                     }
                                 />
                             </form>
+
+                            {(isAdmin || isReadOnly) && (
+                                <Card
+                                    Content={
+                                        <>
+                                            <h3 className="mb-1 text-base font-semibold text-gray-900 dark:text-white">
+                                                Activity Log
+                                            </h3>
+                                            <p className="mb-5 text-xs text-gray-500 dark:text-gray-400">
+                                                Additional memos and files added after fulfillment
+                                            </p>
+
+                                            {/* Timeline */}
+                                            <div className="space-y-3">
+                                                {logs.length === 0 && (
+                                                    <p className="text-xs text-gray-400 dark:text-gray-500">
+                                                        No logs yet.
+                                                    </p>
+                                                )}
+                                                {logs.map((log, idx) => (
+                                                    <div key={idx} className="flex gap-3">
+                                                        {/* Line + dot */}
+                                                        <div className="flex flex-col items-center">
+                                                            <div className="w-2 h-2 mt-1 bg-blue-500 rounded-full shrink-0" />
+                                                            {idx !== logs.length - 1 && (
+                                                                <div className="flex-1 w-px mt-1 bg-gray-200 dark:bg-zinc-700" />
+                                                            )}
+                                                        </div>
+
+                                                        {/* Content */}
+                                                        <div className="flex-1 pb-4">
+                                                            <div className="flex flex-wrap items-center gap-2 mb-1">
+                                                                <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                                                    {log.author?.name ?? 'Supplier'}
+                                                                </span>
+                                                                <span className="text-xs text-gray-400 dark:text-gray-500">
+                                                                    {new Date(log.created_at).toLocaleString()}
+                                                                </span>
+                                                            </div>
+
+                                                            {log.memo && (
+                                                                <p className="mb-2 text-sm text-gray-700 dark:text-gray-300">
+                                                                    {log.memo}
+                                                                </p>
+                                                            )}
+
+                                                            {log.file_path && (
+                                                                <a
+                                                                    href={log.file_path}
+                                                                    target="_blank"
+                                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 border border-blue-200 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/10 dark:border-blue-800/40 dark:text-blue-400"
+                                                                >
+                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" />
+                                                                    </svg>
+                                                                    {log.file_name}
+                                                                </a>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {/* Append new log */}
+                                            <div className="pt-4 mt-4 border-t border-gray-200 dark:border-zinc-700">
+                                                <p className="mb-3 text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                                    Add to Log
+                                                </p>
+                                                <Textarea
+                                                    Action={(e) => setLogMemo(e.target.value)}
+                                                    Value={logMemo}
+                                                    Rows={3}
+                                                    Placeholder='Write a memo...'
+
+                                                />
+
+
+                                                <FileUploaderInput
+                                                    InputName="Attachment (optional)"
+                                                    Label={
+                                                        'Drag & Drop your Attachment or <span class="filepond--label-action">Browse</span>'
+                                                    }
+                                                    Id="log_attachment"
+                                                    acceptedFileTypes={['image/*', 'application/pdf', 'video/*']}
+                                                    MaxFileSize={'5MB'}
+                                                    MaxFiles={1}
+                                                    Multiple={false}
+                                                    onUpdate={(files) => {
+                                                        setLogFile(files.length > 0 ? files[0].file : null);
+                                                    }}
+                                                />
+
+                                                <div className="flex items-center gap-3 mt-3">
+                                                    <PrimaryButton
+                                                        CustomClass={"w-[200px]"}
+                                                        Text={'Add to Log'}
+                                                        Type={'button'}
+                                                        Disabled={logSubmitting || (!logMemo.trim() && !logFile)}
+                                                        Spinner={logSubmitting}
+                                                        Action={handleAddLog}
+                                                        Icon={
+                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                                            </svg>
+                                                        }
+                                                    />
+                                                </div>
+                                            </div>
+
+                                        </>
+                                    }
+                                />
+                            )}
                         </>
                     }
                 />

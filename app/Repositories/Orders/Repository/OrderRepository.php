@@ -12,6 +12,7 @@ use App\Jobs\OrderRefundProofUploadOnAWS;
 use App\Jobs\PayemntProofStoreOnAWS;
 use App\Jobs\PaymentProofDestroyOnAWS;
 use App\Jobs\UploadFinalAttachmentsToAWS;
+use App\Jobs\UploadSupplierBatchMemoLogAttachmentOnAWS;
 use App\Models\CartItem;
 use App\Models\Collaborator;
 use App\Models\Customer;
@@ -25,6 +26,7 @@ use App\Models\SpecialCountry;
 use App\Models\StorageLocation;
 use App\Models\Supplier;
 use App\Models\SupplierAssignedOrder;
+use App\Models\SupplierAssignmentLog;
 use App\Models\User;
 use App\Notifications\NotifyCustomerAboutAwaitingPaymentOrderFromCrypto;
 use App\Notifications\NotifyCustomerAboutHisOrderCanceledByAdmin;
@@ -41,7 +43,9 @@ use Cache;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Str;
 use Validator;
 
 class OrderRepository implements IOrderRepository
@@ -63,7 +67,8 @@ class OrderRepository implements IOrderRepository
         private Inventory $inventory,
         private Supplier $supplier,
         private SupplierAssignedOrder $supplier_assigned_order,
-        private IBatchRepository $batch
+        private IBatchRepository $batch,
+        private SupplierAssignmentLog $supplier_assignment_log
     ) {}
 
     public function getAllOrders(Request $request)
@@ -2393,6 +2398,7 @@ class OrderRepository implements IOrderRepository
                 'order.orderItems.smartphone.model_name',
                 'order.orderItems.smartphone.selling_info',
                 'supplier.user',
+                'batch.inventory_items',
             ])->findOrFail($id);
 
             if (! $request->user()->hasRole('Admin') && $request->user()->supplier?->id !== $assignment->supplier_id) {
@@ -2430,12 +2436,54 @@ class OrderRepository implements IOrderRepository
                 ->unique()
                 ->values();
 
+            $allSmartphoneIds = collect($required)
+                ->pluck('smartphone_id')
+                ->unique()
+                ->values();
+
+            $smartphoneIds = ($assignment->status === 'fulfilled')
+            ? $allSmartphoneIds
+            : $allowedIds;
+
             $order = $assignment->order;
+
+            $user = $request->user();
+
+            $batchData = null;
+            if ($assignment->status === 'fulfilled' && $assignment->batch_id) {
+                $batch = $assignment->batch;
+                $batchData = [
+                    'id' => $batch->id,
+                    'batch_name' => $batch->batch_name,
+                    'vat' => $batch->vat,
+                    'base_purchase_unit_price' => $batch->base_purchase_unit_price,
+                    'extra_costs' => $batch->extra_costs ?? [],
+                    'invoices' => collect($batch->invoices ?? [])->map(fn ($inv) => is_array($inv) ? $inv['url'] : $inv
+                    )->filter()->values(),
+                    'inventory_items' => $batch->inventory_items->map(fn ($inv) => [
+                        'id' => $inv->id,
+                        'smartphone_id' => $inv->smartphone_id,
+                        'storage_location_id' => $inv->storage_location_id,
+                        'imei1' => $inv->imei1,
+                        'imei2' => $inv->imei2,
+                        'eid' => $inv->eid,
+                        'serial_no' => $inv->serial_no,
+                    ])->values(),
+                ];
+            }
 
             return [
                 'assignment' => $assignment->only(['id', 'status', 'supplier_id', 'note', 'assigned_at', 'draft_data']) + [
                     'supplier' => $assignment->supplier,
                 ],
+                'isReadOnly' => $assignment->status === 'fulfilled' && ! $user->hasRole('Admin'),
+                'isEditMode' => $assignment->status === 'fulfilled' && $user->hasRole('Admin'),
+                'isViewMode' => $assignment->status === 'fulfilled' && ! $user->hasRole('Admin'),
+                'isAdmin' => $user->hasRole('Admin'),
+                'batchData' => $batchData,
+                'logs' => $assignment->status === 'fulfilled'
+                    ? $assignment->logs
+                    : [],
                 'order' => [
                     'id' => $order->id,
                     'order_no' => $order->order_no,
@@ -2445,7 +2493,7 @@ class OrderRepository implements IOrderRepository
                 ],
                 'required_items' => $required,
                 'smartphones' => $this->smartphone
-                    ->whereIn('id', $allowedIds)
+                    ->whereIn('id', $smartphoneIds)
                     ->with(['model_name:id,name'])
                     ->get(['id', 'model_name_id', 'created_at']),
                 'storage_locations' => StorageLocation::get(['id', 'name']),
@@ -2461,12 +2509,9 @@ class OrderRepository implements IOrderRepository
 
     public function fulfillOrderStock(Request $request)
     {
+
         DB::beginTransaction();
         try {
-
-            $request->validate([
-                'invoices' => ['required', 'array'],
-            ]);
 
             $assignmentId = $request->input('supplier_assigned_order_id');
             if (! $assignmentId) {
@@ -2480,6 +2525,11 @@ class OrderRepository implements IOrderRepository
                 },
             ])->findOrFail($assignmentId);
 
+            $user = $request->user();
+            if ($assignment->status === 'fulfilled' && ! $user->hasRole('Admin')) {
+                throw new Exception('Order already fulfilled');
+            }
+
             $order = $assignment->order;
             if (! $order) {
                 throw new Exception('Order not found for assignment');
@@ -2489,69 +2539,156 @@ class OrderRepository implements IOrderRepository
                 throw new Exception('Order mismatch');
             }
 
-            $batch = $this->batch->storeBatch($request);
+            $draftInvoicePaths = [];
 
-            if ($batch['status'] === false) {
-                throw new Exception($batch['message']);
-            }
-
-            $createdItems = collect($batch['inventory_items'] ?? []);
-            if ($createdItems->isEmpty()) {
-                throw new Exception('No inventory items created');
-            }
-
-            $poolByPhone = $createdItems->groupBy('smartphone_id')->map(function ($rows) {
-                return $rows->pluck('id')->values();
-            });
-
-            foreach ($order->orderItems as $item) {
-                $qty = (int) $item->quantity;
-
-                $existingIds = $item->inventory_item_ids ?? [];
-                if (is_string($existingIds)) {
-                    $existingIds = json_decode($existingIds, true) ?: [];
-                }
-                if (! is_array($existingIds)) {
-                    $existingIds = [];
-                }
-
-                $already = count($existingIds);
-                $missing = max(0, $qty - $already);
-
-                if ($missing === 0) {
-                    continue;
-                }
-
-                $sid = (int) $item->smartphone_id;
-                $sname = (string) $item->smartphone->model_name->name;
-
-                $available = $poolByPhone->get($sid, collect());
-                if ($available->count() < $missing) {
-
-                    throw new Exception("Not enough stock for smartphone {$sname}. Need {$missing}, have {$available->count()}");
-                }
-                $take = $available->take($missing)->values();
-                $poolByPhone[$sid] = $available->slice($missing)->values();
-
-                $newIds = array_values(array_unique(array_merge($existingIds, $take->all())));
-
-                $item->inventory_item_ids = $newIds;
-                $item->save();
-
-                $newlyAssignedIds = $take->all();
-
-                if ($order->status === 'paid') {
-                    $this->inventory->whereIn('id', $newlyAssignedIds)->update([
-                        'status' => 'sold',
-                    ]);
-                } else {
-                    $this->inventory->whereIn('id', $newlyAssignedIds)->update([
-                        'status' => 'on_hold',
+            if ($request->boolean('is_edit_mode')) {
+                if ($request->hasFile('invoices')) {
+                    $request->validate([
+                        'invoices' => ['array', 'max:1'],
                     ]);
                 }
+
+            } elseif ($request->hasFile('invoices')) {
+                $request->validate([
+                    'invoices' => ['required', 'array', 'max:1'],
+                ], [
+                    'invoices.required' => 'Invoice is required',
+                    'invoices.max' => 'Only 1 invoice is allowed',
+                ]);
+
+            } else {
+                $draft = $assignment->draft_data ?? [];
+                $storedInvoices = $draft['invoices'] ?? [];
+
+                if (empty($storedInvoices)) {
+                    throw new Exception('Invoice is required. Please upload an invoice.');
+                }
+
+                $uploadedFiles = [];
+                foreach ($storedInvoices as $inv) {
+                    $storagePath = is_array($inv) ? $inv['path'] : $inv;
+
+                    if (! Storage::disk('s3')->exists($storagePath)) {
+                        throw new Exception('Draft invoice file not found. Please re-upload.');
+                    }
+
+                    $tmpPath = tempnam(sys_get_temp_dir(), 'invoice_');
+                    file_put_contents($tmpPath, Storage::disk('s3')->get($storagePath));
+
+                    $originalName = is_array($inv) ? ($inv['name'] ?? basename($storagePath)) : basename($storagePath);
+                    $mimeType = Storage::disk('s3')->mimeType($storagePath);
+
+                    $uploadedFiles[] = new \Illuminate\Http\UploadedFile(
+                        $tmpPath,
+                        $originalName,
+                        $mimeType,
+                        UPLOAD_ERR_OK,
+                        false
+                    );
+
+                    $draftInvoicePaths[] = $storagePath;
+                }
+
+                $request->files->set('invoices', $uploadedFiles);
+                $request->request->remove('invoices');
+            }
+
+            if ($request->boolean('is_edit_mode')) {
+                if ($request->hasFile('invoices')) {
+                    $request->validate([
+                        'invoices' => ['array', 'max:1'],
+                    ]);
+
+                    $request->files->set('new_invoices', $request->file('invoices'));
+                    $request->files->remove('invoices');
+                }
+
+                $updated = $this->batch->updateBatch($request, $assignment->batch_id);
+                if ($updated['status'] === false) {
+                    throw new Exception($updated['message']);
+                }
+            }
+
+            if (! $request->boolean('is_edit_mode')) {
+                $created = $this->batch->storeBatch($request);
+
+                if ($created['status'] === false) {
+                    throw new Exception($created['message']);
+                }
+
+                $assignment->batch_id = $created['batch']['id'];
+
+                $createdItems = collect($created['inventory_items'] ?? []);
+                if ($createdItems->isEmpty()) {
+                    throw new Exception('No inventory items created');
+                }
+
+                $poolByPhone = $createdItems->groupBy('smartphone_id')->map(function ($rows) {
+                    return $rows->pluck('id')->values();
+                });
+
+                foreach ($order->orderItems as $item) {
+                    $qty = (int) $item->quantity;
+
+                    $existingIds = $item->inventory_item_ids ?? [];
+                    if (is_string($existingIds)) {
+                        $existingIds = json_decode($existingIds, true) ?: [];
+                    }
+                    if (! is_array($existingIds)) {
+                        $existingIds = [];
+                    }
+
+                    $already = count($existingIds);
+                    $missing = max(0, $qty - $already);
+
+                    if ($missing === 0) {
+                        continue;
+                    }
+
+                    $sid = (int) $item->smartphone_id;
+                    $sname = (string) $item->smartphone->model_name->name;
+
+                    $available = $poolByPhone->get($sid, collect());
+                    if ($available->count() < $missing) {
+
+                        throw new Exception("Not enough stock for smartphone {$sname}. Need {$missing}, have {$available->count()}");
+                    }
+                    $take = $available->take($missing)->values();
+                    $poolByPhone[$sid] = $available->slice($missing)->values();
+
+                    $newIds = array_values(array_unique(array_merge($existingIds, $take->all())));
+
+                    $item->inventory_item_ids = $newIds;
+                    $item->save();
+
+                    $newlyAssignedIds = $take->all();
+
+                    if ($order->status === 'paid') {
+                        $this->inventory->whereIn('id', $newlyAssignedIds)->update([
+                            'status' => 'sold',
+                        ]);
+                    } else {
+                        $this->inventory->whereIn('id', $newlyAssignedIds)->update([
+                            'status' => 'on_hold',
+                        ]);
+                    }
+                }
+
             }
 
             $assignment->status = 'fulfilled';
+
+            foreach ($assignment->draft_data['invoices'] ?? [] as $old) {
+                $oldPath = is_array($old) ? $old['path'] : $old;
+                $relative_path = Str::replaceFirst(config('filesystems.disks.s3.url').'/', '', $oldPath);
+                if (Storage::disk('s3')->exists($relative_path)) {
+                    Storage::disk('s3')->delete($relative_path);
+                }
+            }
+
+            $draftData = $assignment->draft_data ?? [];
+            $draftData['invoices'] = [];
+            $assignment->draft_data = $draftData;
             $assignment->save();
 
             DB::commit();
@@ -2589,9 +2726,68 @@ class OrderRepository implements IOrderRepository
                 'inventory_items.*.imei2' => ['nullable', 'string'],
                 'inventory_items.*.eid' => ['nullable', 'string'],
                 'inventory_items.*.serial_no' => ['nullable', 'string'],
+                'invoices' => ['nullable', 'array', 'max:1'],
+            ], [
+                'invoices.max' => 'Only 1 invoice is allowed',
             ]);
 
             $assignment = SupplierAssignedOrder::findOrFail($id);
+
+            $user = $request->user();
+            if ($assignment->status === 'fulfilled' && ! $user->hasRole('Admin')) {
+                throw new Exception('Order already fulfilled');
+            }
+
+            $existingDraft = $assignment->draft_data ?? [];
+
+            $invoicePaths = [];
+
+            if ($request->hasFile('invoices')) {
+
+                foreach ($existingDraft['invoices'] ?? [] as $old) {
+                    $oldPath = is_array($old) ? $old['path'] : $old;
+                    $relative_path = Str::replaceFirst(config('filesystems.disks.s3.url').'/', '', $oldPath);
+                    if (Storage::disk('s3')->exists($relative_path)) {
+                        Storage::disk('s3')->delete($relative_path);
+                    }
+                }
+
+                $invoicePaths = [];
+                foreach ($request->file('invoices') as $file) {
+                    $localPath = $file->store("temp/draft_invoices/{$id}", 'local');
+                    $fullLocalPath = Storage::disk('local')->path($localPath);
+                    $extension = $file->getClientOriginalExtension();
+                    $new_name = time().uniqid().'-'.Str::random(10).'.'.$extension;
+                    $s3Path = 'Batch/Draft/Invoices/'.$new_name;
+
+                    Storage::disk('s3')->put($s3Path, file_get_contents($fullLocalPath), [
+                        'CacheControl' => 'public, max-age=31536000',
+                        'ContentType' => mime_content_type($fullLocalPath),
+                    ]);
+
+                    Storage::disk('local')->delete($localPath);
+
+                    $invoicePaths[] = [
+                        'path' => $s3Path,
+                        'url' => Storage::disk('s3')->url($s3Path),
+                        'name' => $file->getClientOriginalName(),
+                        'size' => $file->getSize(),
+                    ];
+                }
+            } else {
+                if ($request->boolean('is_invoice_removed')) {
+                    foreach ($existingDraft['invoices'] ?? [] as $old) {
+                        $oldPath = is_array($old) ? $old['path'] : $old;
+                        $relative_path = Str::replaceFirst(config('filesystems.disks.s3.url').'/', '', $oldPath);
+                        if (Storage::disk('s3')->exists($relative_path)) {
+                            Storage::disk('s3')->delete($relative_path);
+                        }
+                    }
+                    $invoicePaths = [];
+                } else {
+                    $invoicePaths = $existingDraft['invoices'] ?? [];
+                }
+            }
 
             $assignment->update([
                 'draft_data' => [
@@ -2600,6 +2796,7 @@ class OrderRepository implements IOrderRepository
                     'base_purchase_unit_price' => $request->input('base_purchase_unit_price'),
                     'extra_costs' => $request->input('extra_costs', []),
                     'inventory_items' => $request->input('inventory_items', []),
+                    'invoices' => $invoicePaths,
                 ],
             ]);
 
@@ -2613,6 +2810,51 @@ class OrderRepository implements IOrderRepository
                 'status' => false,
                 'message' => $e->getMessage(),
             ];
+        }
+    }
+
+    public function addLogForAssignment(Request $request, $assignmentId)
+    {
+
+        try {
+            $request->validate([
+                'memo' => ['nullable', 'string', 'max:1000'],
+                'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,mp4,mov,avi', 'max:5048'],
+            ]);
+
+            if (! $request->filled('memo') && ! $request->hasFile('attachment')) {
+                throw new Exception('One of memo or attachment is required');
+            }
+
+            $assignment = SupplierAssignedOrder::findOrFail($assignmentId);
+
+            if ($assignment->status !== 'fulfilled') {
+                throw new Exception('Order is not fulfilled Yet Cannot Add Log');
+            }
+
+            $log = $this->supplier_assignment_log->create([
+                'supplier_assigned_order_id' => $assignmentId,
+                'created_by' => $request->user()->id,
+                'memo' => $request->input('memo'),
+            ]);
+
+            if (empty($log)) {
+                throw new Exception('Log not added');
+            }
+
+            if ($request->hasFile('attachment')) {
+                $file = $request->file('attachment');
+                $filePath = $file->storeAs('temp/uploads', $file->getClientOriginalName(), 'local');
+                dispatch_sync(new UploadSupplierBatchMemoLogAttachmentOnAWS($log, $filePath));
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Log added successfully',
+            ];
+
+        } catch (Exception $e) {
+            return ['status' => false, 'message' => $e->getMessage()];
         }
     }
 
