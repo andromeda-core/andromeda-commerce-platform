@@ -521,7 +521,7 @@ export default function fulFillOrder({
 
                                 {/* Per Item Breakdown Table */}
                                 {required_items?.length > 0 && (
-                                    <div className="overflow-hidden border border-gray-200 rounded-lg dark:border-zinc-700">
+                                    <div className="overflow-x-auto border border-gray-200 rounded-lg dark:border-zinc-700">
                                         <table className="w-full text-sm">
                                             <thead className="bg-gray-100 dark:bg-zinc-800">
                                                 <tr>
