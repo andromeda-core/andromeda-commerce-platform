@@ -581,7 +581,7 @@ export default function create() {
                                         <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
                                     </svg>
                                     <p className="text-xs leading-relaxed text-blue-700 dark:text-blue-300">
-                                        The device barcode contains IMEI 1 and IMEI 2. Only <strong>IMEI 1 And IMEI 2</strong> (value) is used for matching.
+                                        The device barcode contains IMEI 1 and IMEI 2. Only <strong>IMEI 1</strong> (value) is used for matching.
                                     </p>
                                 </div>
                             </div>
