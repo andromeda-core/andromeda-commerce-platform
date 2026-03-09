@@ -2754,7 +2754,7 @@ class OrderRepository implements IOrderRepository
 
                 $invoicePaths = [];
                 foreach ($request->file('invoices') as $file) {
-                    $localPath = $file->store("temp/draft_invoices/{$id}", 'local');
+                    $localPath = $file->store('temp/draft_invoices', 'local');
                     $fullLocalPath = Storage::disk('local')->path($localPath);
                     $extension = $file->getClientOriginalExtension();
                     $new_name = time().uniqid().'-'.Str::random(10).'.'.$extension;
