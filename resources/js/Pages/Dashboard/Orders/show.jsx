@@ -128,7 +128,7 @@ export default function show({ order }) {
         try {
             const { data } = await axios.post(route('dashboard.orders.verify'), {
                 order_no: order.order_no,
-                imei: trimmed,
+                code: trimmed,
             });
 
             const isSuccess =
@@ -140,11 +140,11 @@ export default function show({ order }) {
                 setVerificationStatus('success');
                 setVerificationMessage(
                     data?.message ||
-                    `Verification successful. IMEI ${trimmed} matched and recorded.`
+                    `Verification successful. CODE ${trimmed} matched and recorded.`
                 );
             } else {
                 setVerificationStatus('mismatch');
-                setVerificationMessage(data?.message || `IMEI does not match: ${trimmed}`);
+                setVerificationMessage(data?.message || `CODE does not match: ${trimmed}`);
                 _doClose(false);
             }
         } catch (err) {
@@ -950,7 +950,7 @@ export default function show({ order }) {
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                                         </svg>
                                         <p className="text-sm font-medium text-green-800 dark:text-green-300">
-                                            IMEI verified successfully. Save or retake the video below.
+                                            CODE verified successfully. Save or retake the video below.
                                         </p>
                                     </div>
                                 )}
@@ -990,7 +990,7 @@ export default function show({ order }) {
                                     {isRecording && scanActive && (
                                         <div className="absolute flex items-center gap-2 px-3 py-1 text-xs text-white -translate-x-1/2 rounded-full bottom-3 left-1/2 bg-black/60">
                                             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                                            Scanning for IMEI...
+                                            Scanning for CODE...
                                         </div>
                                     )}
 

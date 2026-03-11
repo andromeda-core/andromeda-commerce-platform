@@ -3029,11 +3029,11 @@ class OrderRepository implements IOrderRepository
 
         try {
             $request->validate([
-                'imei' => ['required', 'string', 'max:255'],
+                'code' => ['required', 'string', 'max:255'],
                 'order_no' => ['required', 'exists:orders,order_no'],
             ], [
-                'imei.required' => $this->trans->get('IMEI is required.'),
-                'imei.max' => $this->trans->get('IMEI must not exceed 255 characters.'),
+                'code.required' => $this->trans->get('CODE is required.'),
+                'code.max' => $this->trans->get('CODE must not exceed 255 characters.'),
                 'order_no.required' => $this->trans->get('Order Not Found'),
                 'order_no.exists' => $this->trans->get('Order Not Found'),
             ]);
@@ -3071,16 +3071,21 @@ class OrderRepository implements IOrderRepository
 
             $exists = $this->inventory
                 ->whereIn('id', $allIds)
-                ->where('imei1', $request->imei)
+                ->where(function ($query) use ($request) {
+                    $query->where('imei1', $request->code)
+                        ->orWhere('imei2', $request->code)
+                        ->orWhere('eid', $request->code)
+                        ->orWhere('serial_no', $request->code);
+                })
                 ->exists();
 
             if (! $exists) {
-                throw new Exception($this->trans->get('Please Scan A Valid IMEI'));
+                throw new Exception($this->trans->get('Please Scan A Valid CODE'));
             }
 
             return [
                 'status' => true,
-                'message' => $this->trans->get("Verification Successful For IMEI $request->imei "),
+                'message' => $this->trans->get("Verification Successful For CODE $request->code "),
             ];
 
         } catch (Exception $e) {
