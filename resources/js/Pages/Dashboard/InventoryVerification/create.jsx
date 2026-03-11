@@ -83,10 +83,10 @@ function VerifiedBadge({ item }) {
                 </svg>
             </div>
             <div className="min-w-0">
-                <p className="text-xs font-semibold tracking-wide text-green-700 uppercase dark:text-green-400">IMEI Verified</p>
+                <p className="text-xs font-semibold tracking-wide text-green-700 uppercase dark:text-green-400">Code Verified</p>
                 <p className="text-sm font-medium text-green-800 truncate dark:text-green-300">{item.name}</p>
-                {item.imei_1 && (
-                    <p className="font-mono text-xs text-green-600 dark:text-green-500">{item.imei_1}</p>
+                {item.code && (
+                    <p className="font-mono text-xs text-green-600 dark:text-green-500">{item.code}</p>
                 )}
             </div>
         </div>
@@ -97,7 +97,7 @@ export default function create() {
 
     const { data, setData, post, processing, errors, reset } = useForm({
         inventory_id: '',
-        imei: '',
+        scanned_code: '',
         verification_video: '',
     });
 
@@ -144,12 +144,12 @@ export default function create() {
 
         // IMEI 1 is always the first value in multi-line barcode formats
         const lines = scannedValue.trim().split(/[\n\r\s,;|]+/);
-        const imei = lines[0]?.trim();
+        const code = lines[0]?.trim();
 
 
 
-        if (!imei) {
-            setScanError('Could not read a valid IMEI from the barcode. Please try again.');
+        if (!code) {
+            setScanError('Could not read a valid Code from the barcode. Please try again.');
             setScanCooldown(true);
             cooldownRef.current = setTimeout(() => { setScanCooldown(false); setScanError(null); }, 2500);
             return;
@@ -162,18 +162,18 @@ export default function create() {
         try {
             const response = await axios.post(
                 route('dashboard.inventory-verifications.verify'),
-                { imei },
+                { code: code },
             );
 
             const item = response.data?.data;
             if (!item) throw new Error('Item not found.');
 
-            setVerifiedItem({ ...item, imei_1: imei });
-            setData((prev) => ({ ...prev, inventory_id: item?.id, imei }));
+            setVerifiedItem({ ...item, code: code });
+            setData((prev) => ({ ...prev, inventory_id: item?.id, scanned_code: code }));
             setStep(STEP.RECORDING);
 
         } catch (err) {
-            const msg = err?.response?.data?.message || 'IMEI not found. This device may not be registered in inventory.';
+            const msg = err?.response?.data?.message || 'Code not found. This device may not be registered in inventory.';
             setScanError(msg);
             cooldownRef.current = setTimeout(() => { setScanCooldown(false); setScanError(null); }, 3000);
         } finally {
@@ -359,7 +359,7 @@ export default function create() {
                                                     Inventory Verification
                                                 </h2>
                                                 <p className="max-w-md mb-3 text-sm leading-relaxed text-gray-500 dark:text-white/50">
-                                                    Scan the device barcode to match <span className="font-semibold text-blue-600 dark:text-blue-400">IMEI 1</span>, confirm the item is valid, then record a verification video as proof of condition.
+                                                    Scan the device barcode to match <span className="font-semibold text-blue-600 dark:text-blue-400">Code</span>, confirm the item is valid, then record a verification video as proof of condition.
                                                 </p>
 
                                                 {/* Process Preview */}
@@ -440,8 +440,8 @@ export default function create() {
                                                             <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 8.25h3m-3 3h3m-3 3h3" />
                                                         </svg>
                                                         <div>
-                                                            <p className="text-xs tracking-wider text-gray-400 uppercase dark:text-white/40">IMEI 1</p>
-                                                            <p className="font-mono text-sm font-semibold text-gray-800 dark:text-white">{data.imei}</p>
+                                                            <p className="text-xs tracking-wider text-gray-400 uppercase dark:text-white/40">Code</p>
+                                                            <p className="font-mono text-sm font-semibold text-gray-800 dark:text-white">{data.scanned_code}</p>
                                                         </div>
                                                     </div>
 
@@ -498,7 +498,7 @@ export default function create() {
                             <div className="flex items-center justify-between px-6 py-4 border-b dark:border-white/10">
                                 <div className="flex items-center gap-2">
                                     <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-                                    <h3 className="text-sm font-semibold text-gray-800 dark:text-white">IMEI Scanner Active</h3>
+                                    <h3 className="text-sm font-semibold text-gray-800 dark:text-white">Scanner Active</h3>
                                 </div>
                                 <button
                                     onClick={handleFullReset}
@@ -581,7 +581,7 @@ export default function create() {
                                         <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
                                     </svg>
                                     <p className="text-xs leading-relaxed text-blue-700 dark:text-blue-300">
-                                        The device barcode contains IMEI 1 and IMEI 2. Only <strong>IMEI 1</strong> (value) is used for matching.
+                                        The device barcode contains IMEI 1 And Other Codes use Those Codes for matching.
                                     </p>
                                 </div>
                             </div>

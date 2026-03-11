@@ -15,7 +15,7 @@ const index = ({ order_no, order }) => {
     const { confirm, ConfirmDialog } = useConfirm();
     const { data, setData, post, processing, errors } = useForm({
         refund_reason: '',
-        scanned_imei: '',
+        scanned_code: '',
         return_Packaging_video: '',
         defect_evidence_video: ''
     });
@@ -49,11 +49,11 @@ const index = ({ order_no, order }) => {
         if (scanCooldown || isVerifying) return;
 
         const lines = scannedValue.trim().split(/[\n\r\s,;|]+/);
-        const imei = lines[0]?.trim();
+        const code = lines[0]?.trim();
 
 
-        if (!imei) {
-            setScanError('Could not read a valid IMEI. Please try again.');
+        if (!code) {
+            setScanError('Could not read a valid CODE. Please try again.');
             setScanCooldown(true);
             cooldownRef.current = setTimeout(() => { setScanCooldown(false); setScanError(null); }, 2500);
             return;
@@ -63,24 +63,26 @@ const index = ({ order_no, order }) => {
         setIsVerifying(true);
         setScanError(null);
 
+
+
         try {
             await axios.post(
-                route('website.orders.verify.imei'),
-                { imei: imei, order_no: order_no },
+                route('website.orders.verify'),
+                { code: code, order_no: order_no },
             ).then((res) => {
                 if (res.data.status) {
-                    setData('scanned_imei', imei);
+                    setData('scanned_code', code);
                     setImeiVerified(true);
                     setShowIMEIModal(false);
                 }
 
-                const msg = res?.data?.message || __('IMEI not found. Device not registered in inventory.');
+                const msg = res?.data?.message || __('CODE not found. Device not registered in inventory.');
                 setScanError(msg);
                 cooldownRef.current = setTimeout(() => { setScanCooldown(false); setScanError(null); }, 3000);
             });
 
         } catch (err) {
-            const msg = err?.response?.data?.message || __('IMEI not found. Device not registered in inventory.');
+            const msg = err?.response?.data?.message || __('CODE not found. Device not registered in inventory.');
             setScanError(msg);
             cooldownRef.current = setTimeout(() => { setScanCooldown(false); setScanError(null); }, 3000);
         } finally {
@@ -331,8 +333,8 @@ const index = ({ order_no, order }) => {
                                         },
                                         {
                                             num: '2',
-                                            title: __('IMEI Auto-Verified'),
-                                            desc: __('IMEI 1 is extracted and matched against your order automatically.'),
+                                            title: __('Auto Verification'),
+                                            desc: __('Scanned Code is extracted and matched against your order automatically.'),
                                         },
                                         {
                                             num: '3',
@@ -358,7 +360,7 @@ const index = ({ order_no, order }) => {
                                         <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
                                     </svg>
                                     <p className="text-xs leading-relaxed text-sub-text-light dark:text-sub-text-dark">
-                                        {__('Only IMEI 1 is used for verification. Make sure the barcode is clean and well-lit for best results.')}
+                                        {__('IMEI 1, IMEI 2, SERIAL NO., EID Codes Are used for verification. Make sure the barcode is clean and well-lit for best results')}
                                     </p>
                                 </div>
                             </div>

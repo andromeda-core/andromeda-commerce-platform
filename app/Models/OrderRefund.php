@@ -18,7 +18,7 @@ class OrderRefund extends Model
         'refund_reference',
         'defect_evidence_video',
         'return_packaging_video',
-        'scanned_imei',
+        'scanned_code',
         'note',
         'refund_amount',
         'requested_at',

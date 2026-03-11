@@ -36,15 +36,15 @@ class InventoryVerificationController extends Controller
     public function verify(Request $request)
     {
 
-        $imei = $request->input('imei');
-        if (empty($imei)) {
+        $code = $request->input('code');
+        if (empty($code)) {
             return response()->json([
                 'status' => false,
-                'message' => 'IMEI Not Found',
+                'message' => 'Code Not Found',
             ]);
         }
 
-        $verified = $this->inventory_verification->verifyInventory($request, $imei);
+        $verified = $this->inventory_verification->verifyInventory($request);
 
         return response()->json($verified);
     }

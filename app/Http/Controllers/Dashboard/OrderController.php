@@ -277,4 +277,12 @@ class OrderController extends Controller implements HasMiddleware
         return back()->with('success', $canceled['message']);
 
     }
+
+    public function orderSecondaryVerification(Request $request)
+    {
+
+        $response = $this->order->orderSecondaryVerification($request);
+
+        return response()->json($response);
+    }
 }

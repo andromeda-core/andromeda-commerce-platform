@@ -75,5 +75,7 @@ interface IOrderRepository
 
     public function orderCancelationByAdmin(Request $request);
 
-    public function orderProductIMEIVerification(Request $request);
+    public function orderProductVerification(Request $request);
+
+    public function orderSecondaryVerification(Request $request);
 }

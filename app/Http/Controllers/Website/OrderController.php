@@ -196,9 +196,9 @@ class OrderController extends Controller
 
     }
 
-    public function verifyOrderProductIMEI(Request $request)
+    public function verifyOrderProduct(Request $request)
     {
-        $response = $this->order->orderProductIMEIVerification($request);
+        $response = $this->order->orderProductVerification($request);
 
         return response()->json($response);
     }

@@ -162,6 +162,7 @@ export function useVideoRecorder() {
         isReady,
         isRecording,
         recordedFile,
+        setRecordedUrl,
         recordedUrl,
         cameraError,
         elapsed,

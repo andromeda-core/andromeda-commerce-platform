@@ -38,8 +38,8 @@ export default function index({ inventory_verifications }) {
             },
 
             {
-                key: 'imei',
-                label: 'IMEI',
+                key: 'scanned_code',
+                label: 'Scanned Code',
             },
 
             {

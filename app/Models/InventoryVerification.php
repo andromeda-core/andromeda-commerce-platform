@@ -10,7 +10,7 @@ class InventoryVerification extends Model
     protected $fillable = [
         'verified_by_id',
         'inventory_id',
-        'imei',
+        'scanned_code',
         'video',
         'verified_at',
     ];

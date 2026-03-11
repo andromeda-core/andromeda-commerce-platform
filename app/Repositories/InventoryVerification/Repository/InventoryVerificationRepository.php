@@ -37,15 +37,20 @@ class InventoryVerificationRepository implements IInventoryVerificationRepositor
 
     }
 
-    public function verifyInventory(Request $request, ?string $imei = null)
+    public function verifyInventory(Request $request)
     {
         try {
+            $request->validate([
+                'code' => ['required', 'string', 'max:255'],
+            ]);
 
-            if (empty($imei)) {
-                throw new Exception('IMEI Not Found');
-            }
-
-            $exists = $this->inventory->where('imei1', $imei)->first();
+            $exists = $this->inventory
+                ->where(function ($query) use ($request) {
+                    $query->where('imei1', $request->code)
+                        ->orWhere('imei2', $request->code)
+                        ->orWhere('eid', $request->code)
+                        ->orWhere('serial_no', $request->code);
+                })->first();
 
             if (! empty($exists)) {
                 return [
@@ -71,7 +76,7 @@ class InventoryVerificationRepository implements IInventoryVerificationRepositor
 
             $request->validate([
                 'inventory_id' => ['required', 'exists:inventories,id'],
-                'imei' => ['required', 'string', 'max:255'],
+                'scanned_code' => ['required', 'string', 'max:255'],
                 'verification_video' => ['nullable', 'mimes:mp4,mov,ogg,qt,wmv,webm', 'max:10000'],
             ]);
 
@@ -80,7 +85,7 @@ class InventoryVerificationRepository implements IInventoryVerificationRepositor
             $created = $this->inventory_verification->create([
                 'inventory_id' => $request->input('inventory_id'),
                 'verified_by_id' => $user->id,
-                'imei' => $request->input('imei'),
+                'scanned_code' => $request->input('scanned_code'),
                 'verified_at' => now(),
             ]);
 

@@ -2048,6 +2048,13 @@ If a country-specific price exists, the system will use that price; otherwise it
 262: Added if (isViewMode) return guard to the draft restore useEffect that runs when assignment.draft_data is present, so it does not overwrite fulfilled batch data with draft data in view mode.✅
 263: Updated draftInvoiceUrls useMemo to check isEditMode or isViewMode when deciding to use batchData.invoices, so the invoice file shows correctly for supplier in view mode as well as admin in edit mode.✅
 264: Fixed extra costs table visibility. The outer condition was !isReadOnly which hid the table entirely in view mode and edit mode. Changed to always render the table when extraCosts.length > 0, and moved the !isReadOnly check to only wrap the Action column header and the delete button cell, so costs are visible to everyone but only editable and deletable when not in read-only mode. ✅
+265: Secondary verification recording flow implemented on the Order Details page via the Begin Verification button in the Package Video section. ✅
+266: Secondary Verfication Implement With New Approach During Recording Scanning barcode Logic Implemented ✅
+267: Beep Sound Implemented on successfull barcode Scanned ✅
+268: All Over system Verification With Barcodes Logic Improved Now It Scans With ALl Codes IMEI 1,2 Serial_no, eid (if applicable) ✅
+269: Order Refund + Inventory verification Column Removed OF Specific IMEI And ADDED scanned_code Column to Store verification scanned code ✅
+270: Video Recorder + Scanner Optimized So it wont feel Laagy or hang the device ✅
+271: same Secondary verification also implemented on package recording Module where we create package recordings to customer orders Just Like in Order View Module We Created ✅
 
 
 

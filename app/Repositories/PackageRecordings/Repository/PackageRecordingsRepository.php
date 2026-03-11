@@ -213,11 +213,13 @@ class PackageRecordingsRepository implements IPackageRecordingsRepository
         return $this->order
             ->whereHas('customer')
             ->with(['customer.user'])
+            ->latest()
             ->get()
             ->map(function ($order) {
                 return [
                     'id' => $order?->id,
                     'name' => $order?->order_no.' - '.$order?->customer?->user?->name ?? 'Unknown Customer',
+                    'order_no' => $order?->order_no,
                 ];
             });
     }

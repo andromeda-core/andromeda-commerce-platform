@@ -1721,7 +1721,7 @@ class OrderRepository implements IOrderRepository
     {
         $validated_req = $request->validate([
             'refund_reason' => ['required', 'string', 'min:30', 'max:1000'],
-            'scanned_imei' => ['string', 'nullable', 'max:255'],
+            'scanned_code' => ['string', 'nullable', 'max:255'],
         ], [
             'refund_reason.required' => $this->trans->get('The Refund Reason Field Is Required.'),
             'refund_reason.min' => $this->trans->get('The Refund Reason Must Be At Least 30 Characters.'),
@@ -1803,7 +1803,7 @@ class OrderRepository implements IOrderRepository
                     'refund_reason' => $validated_req['refund_reason'],
                     'refund_amount' => $order->full_amount,
                     'refund_status' => 'requested',
-                    'scanned_imei' => $validated_req['scanned_imei'],
+                    'scanned_code' => $validated_req['scanned_code'],
                     'requested_at' => now(),
                 ]);
 
@@ -2932,16 +2932,16 @@ class OrderRepository implements IOrderRepository
         }
     }
 
-    public function orderProductIMEIVerification(Request $request)
+    public function orderProductVerification(Request $request)
     {
 
         try {
             $request->validate([
-                'imei' => ['required', 'string', 'max:255'],
+                'code' => ['required', 'string', 'max:255'],
                 'order_no' => ['required', 'exists:orders,order_no'],
             ], [
-                'imei.required' => $this->trans->get('IMEI is required.'),
-                'imei.max' => $this->trans->get('IMEI must not exceed 255 characters.'),
+                'code.required' => $this->trans->get('Code is required.'),
+                'code.max' => $this->trans->get('Code must not exceed 255 characters.'),
                 'order_no.required' => $this->trans->get('Order Not Found'),
                 'order_no.exists' => $this->trans->get('Order Not Found'),
             ]);
@@ -2992,11 +2992,16 @@ class OrderRepository implements IOrderRepository
 
             $exists = $this->inventory
                 ->whereIn('id', $allIds)
-                ->where('imei1', $request->imei)
+                ->where(function ($query) use ($request) {
+                    $query->where('imei1', $request->code)
+                        ->orWhere('imei2', $request->code)
+                        ->orWhere('eid', $request->code)
+                        ->orWhere('serial_no', $request->code);
+                })
                 ->exists();
 
             if (! $exists) {
-                throw new Exception($this->trans->get('Please Scan A Valid IMEI'));
+                throw new Exception($this->trans->get('Please Scan A Valid Code'));
             }
 
             if (! $order->is_delivery_confirmed) {
@@ -3008,7 +3013,74 @@ class OrderRepository implements IOrderRepository
 
             return [
                 'status' => true,
-                'message' => $this->trans->get('IMEI Found Now You Can Submit Refund Request'),
+                'message' => $this->trans->get('Code Found Now You Can Submit Refund Request'),
+            ];
+
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function orderSecondaryVerification(Request $request)
+    {
+
+        try {
+            $request->validate([
+                'imei' => ['required', 'string', 'max:255'],
+                'order_no' => ['required', 'exists:orders,order_no'],
+            ], [
+                'imei.required' => $this->trans->get('IMEI is required.'),
+                'imei.max' => $this->trans->get('IMEI must not exceed 255 characters.'),
+                'order_no.required' => $this->trans->get('Order Not Found'),
+                'order_no.exists' => $this->trans->get('Order Not Found'),
+            ]);
+
+            $order = $this->order
+                ->with(['orderItems.inventoryItem'])
+                ->where('order_no', $request->order_no)
+                ->first();
+
+            if (empty($order)) {
+                throw new Exception($this->trans->get('Order Not Found'));
+            }
+
+            $allIds = $order->orderItems
+                ->flatMap(function ($item) {
+                    $ids = $item->inventory_item_ids;
+
+                    if (is_string($ids)) {
+                        $ids = json_decode($ids, true);
+                    }
+                    if (! is_array($ids)) {
+                        $ids = [];
+                    }
+
+                    return $ids;
+                })
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+
+            if (empty($allIds)) {
+                throw new Exception($this->trans->get('Order items not found'));
+            }
+
+            $exists = $this->inventory
+                ->whereIn('id', $allIds)
+                ->where('imei1', $request->imei)
+                ->exists();
+
+            if (! $exists) {
+                throw new Exception($this->trans->get('Please Scan A Valid IMEI'));
+            }
+
+            return [
+                'status' => true,
+                'message' => $this->trans->get("Verification Successful For IMEI $request->imei "),
             ];
 
         } catch (Exception $e) {
