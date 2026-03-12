@@ -177,18 +177,13 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         }
     }, [getLiveVideoTrack, initImageCapture]);
 
-    // Converts the first argument into normalized [0–1] {x, y} coordinates.
-    // Three calling conventions:
-    //   resolvePoint()              → center {0.5, 0.5}
-    //   resolvePoint(event)         → extracted from touch/click event via getBoundingClientRect
-    //   resolvePoint(normX, normY)  → passed through as-is
+
     const resolvePoint = useCallback((tapXOrEvent, tapY) => {
         if (tapXOrEvent === undefined || tapXOrEvent === null) {
             return { x: 0.5, y: 0.5 };
         }
 
         if (typeof tapXOrEvent === 'object') {
-            // In sourceVideoRef mode, bounding rect is on the recorder's video element
             const videoEl = sourceVideoRef ? sourceVideoRef.current : videoRef.current;
             let clientX, clientY;
 
@@ -221,18 +216,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         return { x: 0.5, y: 0.5 };
     }, [sourceVideoRef]);
 
-    // refocus(tapXOrEvent?, tapY?)
-    //
-    // Safe to pass directly as onTouchStart={refocus} / onClick={refocus}.
-    // Works in both direct-camera mode and sourceVideoRef mode.
-    // The browser event is auto-resolved into tap coordinates via resolvePoint.
-    //
-    // Strategy waterfall:
-    //   S0: grabFrame() — triggers hardware autofocus on Android Chrome (cannot be silently ignored)
-    //   S1: single-shot + pointsOfInterest, advanced form
-    //   S2: single-shot + pointsOfInterest, flat form
-    //   S3: continuous toggle (advanced then flat) — forces re-evaluation
-    //   S4: focusDistance sweep — last resort
+
     const refocus = useCallback(async (tapXOrEvent, tapY) => {
         if (isIOSDevice.current) return false;
         if (isApplyingFocusRef.current) return false;
