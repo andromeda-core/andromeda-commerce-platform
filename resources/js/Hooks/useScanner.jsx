@@ -39,7 +39,6 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
     const refocusTimeoutRef = useRef(null);
     const retryTimeoutsRef = useRef([]);
     const onScanRef = useRef(onScan);
-    const imageCaptureRef = useRef(null);
 
     const autofocusReadyRef = useRef(false);
     const focusSupportedRef = useRef(false);
@@ -104,56 +103,9 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         return { stream, track: liveTrack };
     }, [sourceVideoRef]);
 
-    // S3 fallback only — kept for browsers where ImageCapture is unavailable
-    const applyFocusMode = useCallback(async (track, mode) => {
-        try {
-            await track.applyConstraints({ focusMode: mode });
-            return true;
-        } catch {
-            try {
-                await track.applyConstraints({ advanced: [{ focusMode: mode }] });
-                return true;
-            } catch {
-                return false;
-            }
-        }
-    }, []);
-
-    // S3 fallback only
-    const applyFocusDistance = useCallback(async (track, value) => {
-        try {
-            await track.applyConstraints({ focusDistance: value });
-            return true;
-        } catch {
-            try {
-                await track.applyConstraints({ advanced: [{ focusDistance: value }] });
-                return true;
-            } catch {
-                return false;
-            }
-        }
-    }, []);
-
-    // Creates the ImageCapture instance from a live track.
-    // Returns true on success, false if ImageCapture is unavailable or creation fails.
-    const initImageCapture = useCallback((track) => {
-        if (typeof ImageCapture === 'undefined') {
-            console.warn('[Scanner] ImageCapture API not available on this browser');
-            return false;
-        }
-        try {
-            imageCaptureRef.current = new ImageCapture(track);
-            return true;
-        } catch (err) {
-            console.warn('[Scanner] Failed to create ImageCapture instance:', err);
-            return false;
-        }
-    }, []);
-
     // Called once after the camera stream is ready.
-    // Primary: ImageCapture.setOptions() — the correct hardware-level focus API on Android Chrome.
-    // Fallback (S3): applyConstraints for browsers without ImageCapture.
-    // iOS guard kept; sourceVideoRef guard removed (focus works in both modes now).
+    // Calls applyConstraints blindly (no capability check) — the correct approach on Android Chrome 87+.
+    // ImageCapture.setOptions() was removed from the W3C spec before shipping and always throws.
     const tryEnableAutoFocus = useCallback(async () => {
         if (isIOSDevice.current) return false;
         if (isApplyingFocusRef.current) return false;
@@ -164,56 +116,39 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
             const { track } = getLiveVideoTrack();
             if (!track || track.readyState !== 'live') return false;
 
-            // Ensure ImageCapture is initialized
-            if (!imageCaptureRef.current) {
-                initImageCapture(track);
-            }
-
-            if (imageCaptureRef.current) {
-                try {
-                    await imageCaptureRef.current.setOptions({ focusMode: 'continuous' });
-                    focusSupportedRef.current = true;
-                    return true;
-                } catch { }
-
-                try {
-                    await imageCaptureRef.current.setOptions({ focusMode: 'single-shot' });
-                    focusSupportedRef.current = true;
-                    return true;
-                } catch { }
-            }
-
-            // S3: applyConstraints fallback for browsers without ImageCapture
-            if (await applyFocusMode(track, 'continuous')) {
-                focusSupportedRef.current = true;
-                return true;
-            }
-            if (await applyFocusMode(track, 'single-shot')) {
-                focusSupportedRef.current = true;
-                return true;
-            }
-
-            // S3: focusDistance midpoint
+            // Try continuous directly — no capability check
             try {
-                const capabilities = track.getCapabilities?.() || {};
-                if (capabilities.focusDistance) {
-                    const { min = 0, max = 1 } = capabilities.focusDistance;
-                    const mid = min + (max - min) * 0.5;
-                    if (await applyFocusDistance(track, mid)) {
-                        focusSupportedRef.current = true;
-                        return true;
-                    }
-                }
-            } catch { }
+                await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+                console.log('[Scanner] Focus applied via: tryEnableAutoFocus advanced continuous');
+                focusSupportedRef.current = true;
+                return true;
+            } catch (err) {
+                console.log('[Scanner] Strategy failed: tryEnableAutoFocus advanced continuous', err?.message);
+            }
 
-            return false;
-        } catch (err) {
-            console.warn('[Scanner] AutoFocus init failed:', err);
+            try {
+                await track.applyConstraints({ focusMode: 'continuous' });
+                console.log('[Scanner] Focus applied via: tryEnableAutoFocus flat continuous');
+                focusSupportedRef.current = true;
+                return true;
+            } catch (err) {
+                console.log('[Scanner] Strategy failed: tryEnableAutoFocus flat continuous', err?.message);
+            }
+
+            try {
+                await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] });
+                console.log('[Scanner] Focus applied via: tryEnableAutoFocus advanced single-shot');
+                focusSupportedRef.current = true;
+                return true;
+            } catch (err) {
+                console.log('[Scanner] Strategy failed: tryEnableAutoFocus advanced single-shot', err?.message);
+            }
+
             return false;
         } finally {
             isApplyingFocusRef.current = false;
         }
-    }, [applyFocusDistance, applyFocusMode, getLiveVideoTrack, initImageCapture]);
+    }, [getLiveVideoTrack]);
 
     // Converts the first argument into normalized [0–1] {x, y} coordinates.
     // Three calling conventions:
@@ -265,11 +200,11 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
     // Works in both direct-camera mode and sourceVideoRef mode.
     // The browser event is auto-resolved into tap coordinates via resolvePoint.
     //
-    // Strategy waterfall:
-    //   S1: ImageCapture.setOptions({ focusMode: 'single-shot', pointsOfInterest })
-    //       → after 500ms hand back to continuous via ImageCapture
-    //   S2: ImageCapture.setOptions({ focusMode: 'continuous' }) toggle
-    //   S3: applyConstraints waterfall (last resort for browsers without ImageCapture)
+    // Strategy waterfall (all via track.applyConstraints — no ImageCapture):
+    //   S1: single-shot + pointsOfInterest, advanced form
+    //   S2: single-shot + pointsOfInterest, flat form
+    //   S3: continuous toggle (advanced then flat) — forces re-evaluation
+    //   S4: focusDistance sweep — last resort
     const refocus = useCallback(async (tapXOrEvent, tapY) => {
         if (isIOSDevice.current) return false;
         if (isApplyingFocusRef.current) return false;
@@ -285,89 +220,79 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
 
             const { x, y } = resolvePoint(tapXOrEvent, tapY);
 
-            // Ensure ImageCapture is initialized
-            if (!imageCaptureRef.current) {
-                initImageCapture(track);
-            }
-
-            if (imageCaptureRef.current) {
-                // S1: single-shot + pointsOfInterest via ImageCapture
-                try {
-                    await imageCaptureRef.current.setOptions({
-                        focusMode: 'single-shot',
-                        pointsOfInterest: [{ x, y }],
-                    });
-                    // Hand back to continuous so the camera isn't locked on the tap point indefinitely
-                    setTimeout(async () => {
-                        if (imageCaptureRef.current && track.readyState === 'live') {
-                            try {
-                                await imageCaptureRef.current.setOptions({ focusMode: 'continuous' });
-                            } catch { }
-                        }
-                    }, 500);
-                    focusSupportedRef.current = true;
-                    return true;
-                } catch { }
-
-                // S2: continuous toggle via ImageCapture — forces re-evaluation of focus point
-                try {
-                    await imageCaptureRef.current.setOptions({ focusMode: 'continuous' });
-                    focusSupportedRef.current = true;
-                    return true;
-                } catch { }
-            }
-
-            // S3: applyConstraints waterfall — last resort for browsers without ImageCapture
-
-            // S3a: single-shot + pointsOfInterest
-            const poiOk = await (async () => {
-                try {
-                    await track.applyConstraints({
-                        advanced: [{ focusMode: 'single-shot', pointsOfInterest: [{ x, y }] }],
-                    });
-                    return true;
-                } catch {
+            // S1: single-shot + pointsOfInterest, advanced form
+            try {
+                await track.applyConstraints({
+                    advanced: [{ focusMode: 'single-shot', pointsOfInterest: [{ x, y }] }],
+                });
+                console.log('[Scanner] Focus applied via: S1 advanced single-shot + pointsOfInterest');
+                setTimeout(async () => {
                     try {
-                        await track.applyConstraints({
-                            focusMode: 'single-shot',
-                            pointsOfInterest: [{ x, y }],
-                        });
-                        return true;
-                    } catch {
-                        return false;
-                    }
-                }
-            })();
-
-            if (poiOk) {
-                setTimeout(() => applyFocusMode(track, 'continuous'), 300);
+                        await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+                    } catch { }
+                }, 500);
                 focusSupportedRef.current = true;
                 return true;
+            } catch (err) {
+                console.log('[Scanner] Strategy failed: S1 advanced single-shot + pointsOfInterest', err?.message);
             }
 
-            // S3b: continuous toggle
-            if (await applyFocusMode(track, 'continuous')) {
+            // S2: single-shot + pointsOfInterest, flat form
+            try {
+                await track.applyConstraints({
+                    focusMode: 'single-shot',
+                    pointsOfInterest: [{ x, y }],
+                });
+                console.log('[Scanner] Focus applied via: S2 flat single-shot + pointsOfInterest');
+                setTimeout(async () => {
+                    try {
+                        await track.applyConstraints({ focusMode: 'continuous' });
+                    } catch { }
+                }, 500);
                 focusSupportedRef.current = true;
                 return true;
+            } catch (err) {
+                console.log('[Scanner] Strategy failed: S2 flat single-shot + pointsOfInterest', err?.message);
             }
 
-            // S3c: focusDistance sweep
+            // S3: continuous toggle without poi (forces re-evaluation)
+            try {
+                await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+                console.log('[Scanner] Focus applied via: S3 advanced continuous toggle');
+                focusSupportedRef.current = true;
+                return true;
+            } catch (err) {
+                console.log('[Scanner] Strategy failed: S3 advanced continuous toggle', err?.message);
+            }
+
+            try {
+                await track.applyConstraints({ focusMode: 'continuous' });
+                console.log('[Scanner] Focus applied via: S3 flat continuous toggle');
+                focusSupportedRef.current = true;
+                return true;
+            } catch (err) {
+                console.log('[Scanner] Strategy failed: S3 flat continuous toggle', err?.message);
+            }
+
+            // S4: focusDistance sweep — last resort
             try {
                 const capabilities = track.getCapabilities?.() || {};
                 if (capabilities.focusDistance) {
                     const { min = 0, max = 1, step = 0.1 } = capabilities.focusDistance;
                     const near = Math.max(min, Math.min(max, min + step));
                     const mid = Math.max(min, Math.min(max, min + (max - min) * 0.5));
-                    if (await applyFocusDistance(track, near)) {
-                        await new Promise(r => setTimeout(r, 150));
-                        await applyFocusDistance(track, mid);
-                        focusSupportedRef.current = true;
-                        return true;
-                    }
+                    await track.applyConstraints({ advanced: [{ focusDistance: near }] });
+                    await new Promise(r => setTimeout(r, 150));
+                    await track.applyConstraints({ advanced: [{ focusDistance: mid }] });
+                    console.log('[Scanner] Focus applied via: S4 focusDistance sweep');
+                    focusSupportedRef.current = true;
+                    return true;
                 }
-            } catch { }
+            } catch (err) {
+                console.log('[Scanner] Strategy failed: S4 focusDistance sweep', err?.message);
+            }
 
-            console.warn('[Scanner] All refocus strategies failed on this device');
+            console.warn('[Scanner] All refocus strategies failed');
             return false;
         } catch (err) {
             console.warn('[Scanner] Refocus error:', err);
@@ -375,7 +300,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         } finally {
             isApplyingFocusRef.current = false;
         }
-    }, [applyFocusDistance, applyFocusMode, getLiveVideoTrack, initImageCapture, resolvePoint]);
+    }, [getLiveVideoTrack, resolvePoint]);
 
     const clearRetryTimeouts = useCallback(() => {
         retryTimeoutsRef.current.forEach((id) => clearTimeout(id));
@@ -446,10 +371,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
             try { readerRef.current?.reset?.(); } catch { }
             readerRef.current = null;
 
-            // Release ImageCapture instance.
             // Never stop the track in sourceVideoRef mode — the recorder component owns the stream.
-            imageCaptureRef.current = null;
-
             if (!sourceVideoRef) {
                 try {
                     const stream = streamRef.current || videoRef.current?.srcObject;
@@ -511,8 +433,6 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
                 }, 600);
 
                 // Initialize focus in sourceVideoRef mode (iOS skipped).
-                // The hook reads frames from canvas and applies focus via ImageCapture —
-                // neither operation interferes with the recorder that owns the stream.
                 if (!isIOSDevice.current) {
                     const videoEl = sourceVideoRef.current;
 
@@ -525,11 +445,6 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
                     // after the video element reports ready state
                     await new Promise(r => setTimeout(r, 300));
                     if (cancelled) return;
-
-                    const { track } = getLiveVideoTrack();
-                    if (track) {
-                        initImageCapture(track);
-                    }
 
                     autofocusReadyRef.current = true;
 
@@ -600,11 +515,6 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
                     console.warn('[Scanner] Scanner started but no live video track found');
                 }
 
-                // Initialize ImageCapture before any focus calls
-                if (track) {
-                    initImageCapture(track);
-                }
-
                 autofocusReadyRef.current = true;
 
                 if (!isIOSDevice.current) {
@@ -645,7 +555,6 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         active,
         clearRetryTimeouts,
         getLiveVideoTrack,
-        initImageCapture,
         refocus,
         sourceVideoRef,
         startAutoRefocus,
