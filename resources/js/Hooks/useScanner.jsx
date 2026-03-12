@@ -39,6 +39,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
     const refocusTimeoutRef = useRef(null);
     const retryTimeoutsRef = useRef([]);
     const onScanRef = useRef(onScan);
+    const imageCaptureRef = useRef(null);
 
     const autofocusReadyRef = useRef(false);
     const focusSupportedRef = useRef(false);
@@ -91,15 +92,19 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         });
     }, []);
 
+    // When sourceVideoRef is provided the recorder owns the stream — read from there.
+    // Otherwise fall back to streamRef / videoRef.
     const getLiveVideoTrack = useCallback(() => {
-        const stream = streamRef.current || videoRef.current?.srcObject || null;
+        const stream = sourceVideoRef
+            ? (sourceVideoRef.current?.srcObject || null)
+            : (streamRef.current || videoRef.current?.srcObject || null);
         if (!stream?.getVideoTracks) return { stream: null, track: null };
         const tracks = stream.getVideoTracks();
         const liveTrack = tracks.find((t) => t.readyState === 'live') || tracks[0] || null;
         return { stream, track: liveTrack };
-    }, []);
+    }, [sourceVideoRef]);
 
-    // Tries flat form first, then advanced:[{}] form — never throws to caller
+    // S3 fallback only — kept for browsers where ImageCapture is unavailable
     const applyFocusMode = useCallback(async (track, mode) => {
         try {
             await track.applyConstraints({ focusMode: mode });
@@ -114,7 +119,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         }
     }, []);
 
-    // Tries flat form first, then advanced:[{}] form — never throws to caller
+    // S3 fallback only
     const applyFocusDistance = useCallback(async (track, value) => {
         try {
             await track.applyConstraints({ focusDistance: value });
@@ -129,31 +134,66 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         }
     }, []);
 
-    // Called once after camera stream is ready to put the track into a known good focus state.
-    // Uses helpers — no capability gates, direct waterfall try/catch.
+    // Creates the ImageCapture instance from a live track.
+    // Returns true on success, false if ImageCapture is unavailable or creation fails.
+    const initImageCapture = useCallback((track) => {
+        if (typeof ImageCapture === 'undefined') {
+            console.warn('[Scanner] ImageCapture API not available on this browser');
+            return false;
+        }
+        try {
+            imageCaptureRef.current = new ImageCapture(track);
+            return true;
+        } catch (err) {
+            console.warn('[Scanner] Failed to create ImageCapture instance:', err);
+            return false;
+        }
+    }, []);
+
+    // Called once after the camera stream is ready.
+    // Primary: ImageCapture.setOptions() — the correct hardware-level focus API on Android Chrome.
+    // Fallback (S3): applyConstraints for browsers without ImageCapture.
+    // iOS guard kept; sourceVideoRef guard removed (focus works in both modes now).
     const tryEnableAutoFocus = useCallback(async () => {
-        if (isIOSDevice.current || sourceVideoRef) return false;
+        if (isIOSDevice.current) return false;
         if (isApplyingFocusRef.current) return false;
 
         try {
             isApplyingFocusRef.current = true;
 
             const { track } = getLiveVideoTrack();
-            if (!track) return false;
+            if (!track || track.readyState !== 'live') return false;
 
-            // S1: continuous (ideal — keeps camera focused as user moves)
+            // Ensure ImageCapture is initialized
+            if (!imageCaptureRef.current) {
+                initImageCapture(track);
+            }
+
+            if (imageCaptureRef.current) {
+                try {
+                    await imageCaptureRef.current.setOptions({ focusMode: 'continuous' });
+                    focusSupportedRef.current = true;
+                    return true;
+                } catch { }
+
+                try {
+                    await imageCaptureRef.current.setOptions({ focusMode: 'single-shot' });
+                    focusSupportedRef.current = true;
+                    return true;
+                } catch { }
+            }
+
+            // S3: applyConstraints fallback for browsers without ImageCapture
             if (await applyFocusMode(track, 'continuous')) {
                 focusSupportedRef.current = true;
                 return true;
             }
-
-            // S2: single-shot fallback
             if (await applyFocusMode(track, 'single-shot')) {
                 focusSupportedRef.current = true;
                 return true;
             }
 
-            // S3: focusDistance midpoint — last resort for devices that expose distance but not mode
+            // S3: focusDistance midpoint
             try {
                 const capabilities = track.getCapabilities?.() || {};
                 if (capabilities.focusDistance) {
@@ -173,7 +213,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         } finally {
             isApplyingFocusRef.current = false;
         }
-    }, [applyFocusDistance, applyFocusMode, getLiveVideoTrack, sourceVideoRef]);
+    }, [applyFocusDistance, applyFocusMode, getLiveVideoTrack, initImageCapture]);
 
     // Converts the first argument into normalized [0–1] {x, y} coordinates.
     // Three calling conventions:
@@ -186,7 +226,8 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         }
 
         if (typeof tapXOrEvent === 'object') {
-            const videoEl = videoRef.current;
+            // In sourceVideoRef mode, bounding rect is on the recorder's video element
+            const videoEl = sourceVideoRef ? sourceVideoRef.current : videoRef.current;
             let clientX, clientY;
 
             if (tapXOrEvent.touches?.length > 0) {
@@ -216,22 +257,21 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         }
 
         return { x: 0.5, y: 0.5 };
-    }, []);
+    }, [sourceVideoRef]);
 
     // refocus(tapXOrEvent?, tapY?)
     //
     // Safe to pass directly as onTouchStart={refocus} / onClick={refocus}.
-    // The browser event is auto-resolved into tap coordinates and forwarded to
-    // pointsOfInterest for true tap-to-focus on Android Chrome.
+    // Works in both direct-camera mode and sourceVideoRef mode.
+    // The browser event is auto-resolved into tap coordinates via resolvePoint.
     //
-    // Strategy waterfall — moves to next only on failure, uses helpers where possible:
-    //   S1: single-shot + pointsOfInterest (direct applyConstraints — helpers don't carry poi param)
-    //       → after 300 ms switch back to continuous via applyFocusMode helper
-    //   S2: continuous toggle via applyFocusMode helper
-    //   S3: focusDistance sweep via applyFocusDistance helper
+    // Strategy waterfall:
+    //   S1: ImageCapture.setOptions({ focusMode: 'single-shot', pointsOfInterest })
+    //       → after 500ms hand back to continuous via ImageCapture
+    //   S2: ImageCapture.setOptions({ focusMode: 'continuous' }) toggle
+    //   S3: applyConstraints waterfall (last resort for browsers without ImageCapture)
     const refocus = useCallback(async (tapXOrEvent, tapY) => {
         if (isIOSDevice.current) return false;
-        if (sourceVideoRef) return false;
         if (isApplyingFocusRef.current) return false;
 
         try {
@@ -245,9 +285,41 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
 
             const { x, y } = resolvePoint(tapXOrEvent, tapY);
 
-            // S1: single-shot + pointsOfInterest
-            // Must use applyConstraints directly since the mode helper doesn't accept a poi param.
-            // Tries advanced:[{}] form first, then flat form.
+            // Ensure ImageCapture is initialized
+            if (!imageCaptureRef.current) {
+                initImageCapture(track);
+            }
+
+            if (imageCaptureRef.current) {
+                // S1: single-shot + pointsOfInterest via ImageCapture
+                try {
+                    await imageCaptureRef.current.setOptions({
+                        focusMode: 'single-shot',
+                        pointsOfInterest: [{ x, y }],
+                    });
+                    // Hand back to continuous so the camera isn't locked on the tap point indefinitely
+                    setTimeout(async () => {
+                        if (imageCaptureRef.current && track.readyState === 'live') {
+                            try {
+                                await imageCaptureRef.current.setOptions({ focusMode: 'continuous' });
+                            } catch { }
+                        }
+                    }, 500);
+                    focusSupportedRef.current = true;
+                    return true;
+                } catch { }
+
+                // S2: continuous toggle via ImageCapture — forces re-evaluation of focus point
+                try {
+                    await imageCaptureRef.current.setOptions({ focusMode: 'continuous' });
+                    focusSupportedRef.current = true;
+                    return true;
+                } catch { }
+            }
+
+            // S3: applyConstraints waterfall — last resort for browsers without ImageCapture
+
+            // S3a: single-shot + pointsOfInterest
             const poiOk = await (async () => {
                 try {
                     await track.applyConstraints({
@@ -268,19 +340,18 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
             })();
 
             if (poiOk) {
-                // Hand back to continuous so the camera isn't locked on the tap point indefinitely
                 setTimeout(() => applyFocusMode(track, 'continuous'), 300);
                 focusSupportedRef.current = true;
                 return true;
             }
 
-            // S2: continuous toggle — forces the camera to re-evaluate the focus point
+            // S3b: continuous toggle
             if (await applyFocusMode(track, 'continuous')) {
                 focusSupportedRef.current = true;
                 return true;
             }
 
-            // S3: focusDistance sweep — for devices that expose distance but not mode switching
+            // S3c: focusDistance sweep
             try {
                 const capabilities = track.getCapabilities?.() || {};
                 if (capabilities.focusDistance) {
@@ -304,7 +375,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         } finally {
             isApplyingFocusRef.current = false;
         }
-    }, [applyFocusDistance, applyFocusMode, getLiveVideoTrack, resolvePoint, sourceVideoRef]);
+    }, [applyFocusDistance, applyFocusMode, getLiveVideoTrack, initImageCapture, resolvePoint]);
 
     const clearRetryTimeouts = useCallback(() => {
         retryTimeoutsRef.current.forEach((id) => clearTimeout(id));
@@ -312,7 +383,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
     }, []);
 
     const startAutoRefocus = useCallback(() => {
-        if (isIOSDevice.current || sourceVideoRef) return;
+        if (isIOSDevice.current) return;
 
         if (refocusTimeoutRef.current) {
             clearTimeout(refocusTimeoutRef.current);
@@ -343,7 +414,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         };
 
         refocusTimeoutRef.current = setTimeout(run, 3000);
-    }, [getLiveVideoTrack, refocus, sourceVideoRef]);
+    }, [getLiveVideoTrack, refocus]);
 
     useEffect(() => {
         let cancelled = false;
@@ -374,6 +445,10 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
 
             try { readerRef.current?.reset?.(); } catch { }
             readerRef.current = null;
+
+            // Release ImageCapture instance.
+            // Never stop the track in sourceVideoRef mode — the recorder component owns the stream.
+            imageCaptureRef.current = null;
 
             if (!sourceVideoRef) {
                 try {
@@ -435,6 +510,57 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
                     }
                 }, 600);
 
+                // Initialize focus in sourceVideoRef mode (iOS skipped).
+                // The hook reads frames from canvas and applies focus via ImageCapture —
+                // neither operation interferes with the recorder that owns the stream.
+                if (!isIOSDevice.current) {
+                    const videoEl = sourceVideoRef.current;
+
+                    // The recorder video may already be playing; wait if not yet ready
+                    if (videoEl) {
+                        await waitForVideoReady(videoEl);
+                    }
+
+                    // Small safety delay — recorder may set srcObject on the track slightly
+                    // after the video element reports ready state
+                    await new Promise(r => setTimeout(r, 300));
+                    if (cancelled) return;
+
+                    const { track } = getLiveVideoTrack();
+                    if (track) {
+                        initImageCapture(track);
+                    }
+
+                    autofocusReadyRef.current = true;
+
+                    // Attach tap-to-focus listener to the recorder's video element
+                    if (videoEl) {
+                        const onTap = (e) => { if (!cancelled) refocus(e); };
+                        videoEl.addEventListener('touchstart', onTap, { passive: true });
+                        videoEl.addEventListener('click', onTap);
+                        removeTapListenersRef.current = () => {
+                            videoEl.removeEventListener('touchstart', onTap);
+                            videoEl.removeEventListener('click', onTap);
+                        };
+                    }
+
+                    await tryEnableAutoFocus();
+
+                    retryTimeoutsRef.current.push(
+                        setTimeout(async () => {
+                            if (!cancelled) await refocus();
+                        }, 700)
+                    );
+
+                    retryTimeoutsRef.current.push(
+                        setTimeout(async () => {
+                            if (!cancelled) await refocus();
+                        }, 1600)
+                    );
+
+                    startAutoRefocus();
+                }
+
                 return;
             }
 
@@ -474,22 +600,16 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
                     console.warn('[Scanner] Scanner started but no live video track found');
                 }
 
+                // Initialize ImageCapture before any focus calls
+                if (track) {
+                    initImageCapture(track);
+                }
+
                 autofocusReadyRef.current = true;
 
                 if (!isIOSDevice.current) {
-                    // Attach internal tap-to-focus listeners (Android only).
-                    // Parent may also call refocus() via onTouchStart/onClick — isApplyingFocusRef
-                    // ensures only the first caller proceeds; the second is dropped silently.
-                    const videoEl = videoRef.current;
-                    if (videoEl) {
-                        const onTap = (e) => { if (!cancelled) refocus(e); };
-                        videoEl.addEventListener('touchstart', onTap, { passive: true });
-                        videoEl.addEventListener('click', onTap);
-                        removeTapListenersRef.current = () => {
-                            videoEl.removeEventListener('touchstart', onTap);
-                            videoEl.removeEventListener('click', onTap);
-                        };
-                    }
+                    // Parent handles tap via onTouchStart/onClick on the video element directly.
+                    // No internal tap listeners here — attaching both would double-fire refocus().
 
                     await tryEnableAutoFocus();
 
@@ -525,6 +645,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         active,
         clearRetryTimeouts,
         getLiveVideoTrack,
+        initImageCapture,
         refocus,
         sourceVideoRef,
         startAutoRefocus,
