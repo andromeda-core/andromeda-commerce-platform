@@ -132,8 +132,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
     // Called once after camera stream is ready to put the track into a known good focus state.
     // Uses helpers — no capability gates, direct waterfall try/catch.
     const tryEnableAutoFocus = useCallback(async () => {
-        // if (isIOSDevice.current || sourceVideoRef) return false;
-        if (sourceVideoRef) return false;
+        if (isIOSDevice.current || sourceVideoRef) return false;
         if (isApplyingFocusRef.current) return false;
 
         try {
@@ -231,7 +230,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
     //   S2: continuous toggle via applyFocusMode helper
     //   S3: focusDistance sweep via applyFocusDistance helper
     const refocus = useCallback(async (tapXOrEvent, tapY) => {
-        // if (isIOSDevice.current) return false;
+        if (isIOSDevice.current) return false;
         if (sourceVideoRef) return false;
         if (isApplyingFocusRef.current) return false;
 
@@ -313,8 +312,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
     }, []);
 
     const startAutoRefocus = useCallback(() => {
-        // if (isIOSDevice.current || sourceVideoRef) return;
-        if (sourceVideoRef) return;
+        if (isIOSDevice.current || sourceVideoRef) return;
 
         if (refocusTimeoutRef.current) {
             clearTimeout(refocusTimeoutRef.current);
@@ -478,37 +476,37 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
 
                 autofocusReadyRef.current = true;
 
-                // if (!isIOSDevice.current) {
-                // Attach internal tap-to-focus listeners (Android only).
-                // Parent may also call refocus() via onTouchStart/onClick — isApplyingFocusRef
-                // ensures only the first caller proceeds; the second is dropped silently.
-                const videoEl = videoRef.current;
-                if (videoEl) {
-                    const onTap = (e) => { if (!cancelled) refocus(e); };
-                    videoEl.addEventListener('touchstart', onTap, { passive: true });
-                    videoEl.addEventListener('click', onTap);
-                    removeTapListenersRef.current = () => {
-                        videoEl.removeEventListener('touchstart', onTap);
-                        videoEl.removeEventListener('click', onTap);
-                    };
+                if (!isIOSDevice.current) {
+                    // Attach internal tap-to-focus listeners (Android only).
+                    // Parent may also call refocus() via onTouchStart/onClick — isApplyingFocusRef
+                    // ensures only the first caller proceeds; the second is dropped silently.
+                    const videoEl = videoRef.current;
+                    if (videoEl) {
+                        const onTap = (e) => { if (!cancelled) refocus(e); };
+                        videoEl.addEventListener('touchstart', onTap, { passive: true });
+                        videoEl.addEventListener('click', onTap);
+                        removeTapListenersRef.current = () => {
+                            videoEl.removeEventListener('touchstart', onTap);
+                            videoEl.removeEventListener('click', onTap);
+                        };
+                    }
+
+                    await tryEnableAutoFocus();
+
+                    retryTimeoutsRef.current.push(
+                        setTimeout(async () => {
+                            if (!cancelled) await refocus();
+                        }, 700)
+                    );
+
+                    retryTimeoutsRef.current.push(
+                        setTimeout(async () => {
+                            if (!cancelled) await refocus();
+                        }, 1600)
+                    );
+
+                    startAutoRefocus();
                 }
-
-                await tryEnableAutoFocus();
-
-                retryTimeoutsRef.current.push(
-                    setTimeout(async () => {
-                        if (!cancelled) await refocus();
-                    }, 700)
-                );
-
-                retryTimeoutsRef.current.push(
-                    setTimeout(async () => {
-                        if (!cancelled) await refocus();
-                    }, 1600)
-                );
-
-                startAutoRefocus();
-                // }
             } catch (err) {
                 if (!cancelled) {
                     console.error('[Scanner] Error starting camera:', err);
