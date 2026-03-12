@@ -1,6 +1,35 @@
 import { useEffect, useRef, useCallback } from 'react';
 import beepSound from "../../assets/sounds/Beep.mp3";
 
+// iOS does not support programmatic focus control via WebRTC constraints.
+// Attempting it causes errors and warnings. We detect iOS and skip all focus logic.
+const isIOS = () =>
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+// All ZXing "no barcode found" exception types
+const ZXING_NO_RESULT_ERRORS = new Set([
+    'NotFoundException',
+    'NotFoundException2',
+    'ChecksumException',
+    'FormatException',
+    'ReedSolomonException',
+]);
+
+const isZxingDecodeError = (err) => {
+    if (!err) return true; // null/undefined - treat as no-result
+    const name = err?.name || err?.constructor?.name || '';
+    if (ZXING_NO_RESULT_ERRORS.has(name)) return true;
+    const msg = err?.message || '';
+    if (
+        msg.includes('No MultiFormat') ||
+        msg.includes('NotFoundException') ||
+        msg.includes('ChecksumException') ||
+        msg.includes('FormatException')
+    ) return true;
+    return false;
+};
+
 export function useScanner({ active, onScan, sourceVideoRef = null }) {
     const videoRef = useRef(null);
     const readerRef = useRef(null);
@@ -14,6 +43,9 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
     const autofocusReadyRef = useRef(false);
     const isApplyingFocusRef = useRef(false);
     const audioRef = useRef(null);
+
+    // Cache iOS check so we don't call it on every render
+    const isIOSDevice = useRef(isIOS());
 
     useEffect(() => {
         onScanRef.current = onScan;
@@ -36,46 +68,31 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
 
     const waitForVideoReady = useCallback((videoEl) => {
         return new Promise((resolve) => {
-            if (!videoEl) {
-                resolve(false);
-                return;
-            }
-
-            if (videoEl.readyState >= 2 && videoEl.videoWidth > 0) {
-                resolve(true);
-                return;
-            }
+            if (!videoEl) { resolve(false); return; }
+            if (videoEl.readyState >= 2 && videoEl.videoWidth > 0) { resolve(true); return; }
 
             let doneCalled = false;
-
             const done = () => {
                 if (doneCalled) return;
                 doneCalled = true;
-
                 videoEl.removeEventListener('loadedmetadata', done);
                 videoEl.removeEventListener('canplay', done);
                 videoEl.removeEventListener('playing', done);
-
                 resolve(true);
             };
 
             videoEl.addEventListener('loadedmetadata', done, { once: true });
             videoEl.addEventListener('canplay', done, { once: true });
             videoEl.addEventListener('playing', done, { once: true });
-
-            setTimeout(done, 2000);
+            setTimeout(done, 3000); // extended timeout for slow iOS devices
         });
     }, []);
 
     const getLiveVideoTrack = useCallback(() => {
-        const stream =
-            streamRef.current ||
-            videoRef.current?.srcObject ||
-            null;
+        // Try streamRef first, then fall back to srcObject
+        const stream = streamRef.current || videoRef.current?.srcObject || null;
 
-        if (!stream?.getVideoTracks) {
-            return { stream: null, track: null };
-        }
+        if (!stream?.getVideoTracks) return { stream: null, track: null };
 
         const tracks = stream.getVideoTracks();
         const liveTrack = tracks.find((t) => t.readyState === 'live') || tracks[0] || null;
@@ -89,9 +106,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
             return true;
         } catch {
             try {
-                await track.applyConstraints({
-                    advanced: [{ focusMode: mode }],
-                });
+                await track.applyConstraints({ advanced: [{ focusMode: mode }] });
                 return true;
             } catch {
                 return false;
@@ -105,9 +120,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
             return true;
         } catch {
             try {
-                await track.applyConstraints({
-                    advanced: [{ focusDistance: value }],
-                });
+                await track.applyConstraints({ advanced: [{ focusDistance: value }] });
                 return true;
             } catch {
                 return false;
@@ -116,14 +129,15 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
     }, []);
 
     const tryEnableAutoFocus = useCallback(async () => {
-        if (sourceVideoRef) return false;
+        // iOS does not support focus constraints at all - skip entirely
+        // iOS camera handles autofocus natively and continuously
+        if (isIOSDevice.current || sourceVideoRef) return false;
         if (isApplyingFocusRef.current) return false;
 
         try {
             isApplyingFocusRef.current = true;
 
             const { track } = getLiveVideoTrack();
-
             if (!track) {
                 console.warn('[Scanner] No video track found for autofocus');
                 return false;
@@ -135,29 +149,21 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
             if (supported.focusMode && capabilities.focusMode?.includes?.('continuous')) {
                 return await applyFocusMode(track, 'continuous');
             }
-
             if (supported.focusMode && capabilities.focusMode?.includes?.('single-shot')) {
                 return await applyFocusMode(track, 'single-shot');
             }
-
             if (supported.focusDistance && capabilities.focusDistance) {
-                const min = typeof capabilities.focusDistance.min === 'number' ? capabilities.focusDistance.min : 0;
-                const max = typeof capabilities.focusDistance.max === 'number' ? capabilities.focusDistance.max : 1;
-                const step = typeof capabilities.focusDistance.step === 'number' ? capabilities.focusDistance.step : 0.1;
-                const idealFocus = Math.max(min, Math.min(max, min + ((max - min) * 0.6)));
-
+                const { min = 0, max = 1, step = 0.1 } = capabilities.focusDistance;
+                const idealFocus = Math.max(min, Math.min(max, min + (max - min) * 0.6));
                 const firstApplied = await applyFocusDistance(track, idealFocus);
                 if (!firstApplied) return false;
-
                 if (max > min) {
                     const secondFocus = Math.max(min, Math.min(max, idealFocus + step));
                     await applyFocusDistance(track, secondFocus);
                 }
-
                 return true;
             }
 
-            console.warn('[Scanner] No supported autofocus capability found');
             return false;
         } catch (err) {
             console.warn('[Scanner] Failed to enable autofocus:', err);
@@ -168,18 +174,20 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
     }, [applyFocusDistance, applyFocusMode, getLiveVideoTrack, sourceVideoRef]);
 
     const refocus = useCallback(async () => {
+        // iOS: native autofocus is always active, no manual control available
+        // Calling applyConstraints on iOS throws or does nothing, skip silently
+        if (isIOSDevice.current) return false;
+
         if (sourceVideoRef) {
-            console.warn('[Scanner] Refocus skipped: sourceVideoRef mode does not own the live camera track');
+            console.warn('[Scanner] Refocus skipped: sourceVideoRef mode does not own the camera track');
             return false;
         }
-
         if (isApplyingFocusRef.current) return false;
 
         try {
             isApplyingFocusRef.current = true;
 
             const { stream, track } = getLiveVideoTrack();
-
             if (!track) {
                 console.warn('[Scanner] No video track found for refocus', {
                     hasStreamRef: !!streamRef.current,
@@ -187,7 +195,6 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
                     streamTracks: stream?.getTracks?.()?.map?.((t) => ({
                         kind: t.kind,
                         readyState: t.readyState,
-                        enabled: t.enabled,
                         label: t.label,
                     })) || [],
                 });
@@ -199,15 +206,11 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
 
             if (supported.focusMode && capabilities.focusMode?.includes?.('single-shot')) {
                 const ok = await applyFocusMode(track, 'single-shot');
-
                 if (ok && capabilities.focusMode?.includes?.('continuous')) {
                     setTimeout(async () => {
-                        try {
-                            await applyFocusMode(track, 'continuous');
-                        } catch { }
+                        try { await applyFocusMode(track, 'continuous'); } catch { }
                     }, 250);
                 }
-
                 return ok;
             }
 
@@ -216,18 +219,13 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
             }
 
             if (supported.focusDistance && capabilities.focusDistance) {
-                const min = typeof capabilities.focusDistance.min === 'number' ? capabilities.focusDistance.min : 0;
-                const max = typeof capabilities.focusDistance.max === 'number' ? capabilities.focusDistance.max : 1;
-                const step = typeof capabilities.focusDistance.step === 'number' ? capabilities.focusDistance.step : 0.1;
-
+                const { min = 0, max = 1, step = 0.1 } = capabilities.focusDistance;
                 const nearFocus = Math.max(min, Math.min(max, min + step));
-                const midFocus = Math.max(min, Math.min(max, min + ((max - min) * 0.6)));
+                const midFocus = Math.max(min, Math.min(max, min + (max - min) * 0.6));
 
                 const firstApplied = await applyFocusDistance(track, nearFocus);
                 if (!firstApplied) return false;
-
                 await new Promise((r) => setTimeout(r, 120));
-
                 return await applyFocusDistance(track, midFocus);
             }
 
@@ -242,12 +240,13 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
     }, [applyFocusDistance, applyFocusMode, getLiveVideoTrack, sourceVideoRef]);
 
     const clearRetryTimeouts = useCallback(() => {
-        retryTimeoutsRef.current.forEach((timeoutId) => clearTimeout(timeoutId));
+        retryTimeoutsRef.current.forEach((id) => clearTimeout(id));
         retryTimeoutsRef.current = [];
     }, []);
 
     const startAutoRefocus = useCallback(() => {
-        if (sourceVideoRef) return;
+        // iOS: no-op, native autofocus handles everything
+        if (isIOSDevice.current || sourceVideoRef) return;
 
         if (refocusTimeoutRef.current) {
             clearTimeout(refocusTimeoutRef.current);
@@ -256,12 +255,10 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
 
         const run = async () => {
             const { track } = getLiveVideoTrack();
-
             if (!autofocusReadyRef.current || !track) {
                 refocusTimeoutRef.current = setTimeout(run, 1800);
                 return;
             }
-
             try {
                 await refocus();
             } finally {
@@ -350,16 +347,11 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
                             onScanRef.current(result.getText());
                         }
                     } catch (err) {
-                        const errorName = err?.name || err?.constructor?.name || '';
-
-                        if (
-                            errorName === 'NotFoundException' ||
-                            errorName === 'NotFoundException2'
-                        ) {
-                            return;
+                        // ZXing throws when no barcode is found - this is EXPECTED, not an error
+                        // Only log truly unexpected errors
+                        if (!isZxingDecodeError(err)) {
+                            console.warn('[Scanner] Canvas decode error:', err);
                         }
-
-                        console.warn('[Scanner] Canvas decode error:', err);
                     }
                 }, 600);
 
@@ -390,35 +382,43 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
                 const ready = await waitForVideoReady(videoRef.current);
                 if (!ready || cancelled) return;
 
+                // Store stream reference BEFORE any focus attempts
                 const resolvedStream = videoRef.current?.srcObject || null;
                 streamRef.current = resolvedStream;
 
+                if (!resolvedStream) {
+                    console.warn('[Scanner] Stream not available after video ready');
+                }
+
                 const { track } = getLiveVideoTrack();
                 if (!track) {
-                    console.warn('[Scanner] Scanner started but no live video track was found');
-                    return;
+                    console.warn('[Scanner] Scanner started but no live video track found');
+                    // Still mark as ready - scanning works, just no focus control
                 }
 
                 autofocusReadyRef.current = true;
 
-                await tryEnableAutoFocus();
+                // iOS: skip all focus manipulation, native handles it
+                if (!isIOSDevice.current) {
+                    await tryEnableAutoFocus();
 
-                retryTimeoutsRef.current.push(
-                    setTimeout(async () => {
-                        if (!cancelled) await refocus();
-                    }, 700)
-                );
+                    retryTimeoutsRef.current.push(
+                        setTimeout(async () => {
+                            if (!cancelled) await refocus();
+                        }, 700)
+                    );
 
-                retryTimeoutsRef.current.push(
-                    setTimeout(async () => {
-                        if (!cancelled) await refocus();
-                    }, 1600)
-                );
+                    retryTimeoutsRef.current.push(
+                        setTimeout(async () => {
+                            if (!cancelled) await refocus();
+                        }, 1600)
+                    );
 
-                startAutoRefocus();
+                    startAutoRefocus();
+                }
             } catch (err) {
                 if (!cancelled) {
-                    console.error('[Scanner] Error:', err);
+                    console.error('[Scanner] Error starting camera:', err);
                 }
                 stopAll();
             }
