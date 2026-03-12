@@ -91,7 +91,7 @@ export default function create({ orders }) {
         try {
             const { data: resData } = await axios.post(route('dashboard.orders.verify'), {
                 order_no: orderNo,
-                imei: trimmed,
+                code: trimmed,
             });
 
 
@@ -102,12 +102,12 @@ export default function create({ orders }) {
                 setVerificationStatus('success');
                 setVerificationMessage(
                     resData?.message ||
-                    `Verification successful. IMEI ${trimmed} matched and recorded.`
+                    `Verification successful. CODE ${trimmed} matched and recorded.`
                 );
 
             } else {
                 setVerificationStatus('mismatch');
-                setVerificationMessage(resData?.message || `IMEI does not match: ${trimmed}`);
+                setVerificationMessage(resData?.message || `CODE does not match: ${trimmed}`);
                 _doClose(false);
             }
         } catch (err) {
@@ -463,7 +463,7 @@ export default function create({ orders }) {
                                     {isRecording && scanActive && (
                                         <div className="absolute flex items-center gap-2 px-3 py-1 text-xs text-white -translate-x-1/2 rounded-full bottom-3 left-1/2 bg-black/60">
                                             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                                            Scanning for IMEI...
+                                            Scanning for CODE...
                                         </div>
                                     )}
 
@@ -507,7 +507,7 @@ export default function create({ orders }) {
                                         <>
                                             <button
                                                 onClick={handleSave}
-                                                disabled={recordingSaving}
+                                                disabled={recordingSaving || !isVerifiedRef.current}
                                                 className="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
                                             >
                                                 {recordingSaving ? 'Saving...' : 'Use This Video'}

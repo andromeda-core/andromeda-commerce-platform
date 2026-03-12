@@ -81,6 +81,7 @@ export default function show({ order }) {
         isRecording,
         recordedFile,
         recordedUrl,
+        setRecordedUrl,
         cameraError,
         elapsed,
         startCamera,
@@ -120,8 +121,6 @@ export default function show({ order }) {
         if (!trimmed) return;
 
 
-
-        isVerifiedRef.current = true;
         stopScanning();
         stopRecording();
 
@@ -137,6 +136,7 @@ export default function show({ order }) {
                 data.status === 'success';
 
             if (isSuccess) {
+                isVerifiedRef.current = true;
                 setVerificationStatus('success');
                 setVerificationMessage(
                     data?.message ||
@@ -166,6 +166,7 @@ export default function show({ order }) {
     };
 
     const handleStopRecording = () => {
+        isVerifiedRef.current = false;
         manualStopRef.current = true;
         stopScanning();
         stopRecording();
@@ -1039,7 +1040,7 @@ export default function show({ order }) {
                                             {/* Upload Video */}
                                             <button
                                                 onClick={handleSave}
-                                                disabled={recordingSaving}
+                                                disabled={recordingSaving || !isVerifiedRef.current}
                                                 className="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
                                             >
                                                 {recordingSaving ? 'Uploading...' : 'Upload Video'}
