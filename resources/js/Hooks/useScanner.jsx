@@ -2,16 +2,18 @@ import { useEffect, useRef, useCallback } from 'react';
 import beepSound from "../../assets/sounds/Beep.mp3";
 
 export function useScanner({ active, onScan, sourceVideoRef = null }) {
-
     const videoRef = useRef(null);
     const readerRef = useRef(null);
+    const controlsRef = useRef(null);
     const streamRef = useRef(null);
     const intervalRef = useRef(null);
+    const refocusTimeoutRef = useRef(null);
+    const retryTimeoutsRef = useRef([]);
     const onScanRef = useRef(onScan);
 
-
+    const autofocusReadyRef = useRef(false);
+    const isApplyingFocusRef = useRef(false);
     const audioRef = useRef(null);
-
 
     useEffect(() => {
         onScanRef.current = onScan;
@@ -32,49 +34,126 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         }
     };
 
+    const waitForVideoReady = useCallback((videoEl) => {
+        return new Promise((resolve) => {
+            if (!videoEl) {
+                resolve(false);
+                return;
+            }
+
+            if (videoEl.readyState >= 2 && videoEl.videoWidth > 0) {
+                resolve(true);
+                return;
+            }
+
+            let doneCalled = false;
+
+            const done = () => {
+                if (doneCalled) return;
+                doneCalled = true;
+
+                videoEl.removeEventListener('loadedmetadata', done);
+                videoEl.removeEventListener('canplay', done);
+                videoEl.removeEventListener('playing', done);
+
+                resolve(true);
+            };
+
+            videoEl.addEventListener('loadedmetadata', done, { once: true });
+            videoEl.addEventListener('canplay', done, { once: true });
+            videoEl.addEventListener('playing', done, { once: true });
+
+            setTimeout(done, 2000);
+        });
+    }, []);
+
+    const getLiveVideoTrack = useCallback(() => {
+        const stream =
+            streamRef.current ||
+            videoRef.current?.srcObject ||
+            null;
+
+        if (!stream?.getVideoTracks) {
+            return { stream: null, track: null };
+        }
+
+        const tracks = stream.getVideoTracks();
+        const liveTrack = tracks.find((t) => t.readyState === 'live') || tracks[0] || null;
+
+        return { stream, track: liveTrack };
+    }, []);
+
+    const applyFocusMode = useCallback(async (track, mode) => {
+        try {
+            await track.applyConstraints({ focusMode: mode });
+            return true;
+        } catch {
+            try {
+                await track.applyConstraints({
+                    advanced: [{ focusMode: mode }],
+                });
+                return true;
+            } catch {
+                return false;
+            }
+        }
+    }, []);
+
+    const applyFocusDistance = useCallback(async (track, value) => {
+        try {
+            await track.applyConstraints({ focusDistance: value });
+            return true;
+        } catch {
+            try {
+                await track.applyConstraints({
+                    advanced: [{ focusDistance: value }],
+                });
+                return true;
+            } catch {
+                return false;
+            }
+        }
+    }, []);
 
     const tryEnableAutoFocus = useCallback(async () => {
-        try {
-            const stream = streamRef.current;
-            // console.log('[Scanner] streamRef.current =>', stream);
+        if (sourceVideoRef) return false;
+        if (isApplyingFocusRef.current) return false;
 
-            const track = stream?.getVideoTracks?.()[0];
-            // console.log('[Scanner] video track =>', track);
+        try {
+            isApplyingFocusRef.current = true;
+
+            const { track } = getLiveVideoTrack();
 
             if (!track) {
                 console.warn('[Scanner] No video track found for autofocus');
                 return false;
             }
 
+            const supported = navigator.mediaDevices?.getSupportedConstraints?.() || {};
             const capabilities = track.getCapabilities?.() || {};
-            const settings = track.getSettings?.() || {};
-            const constraints = track.getConstraints?.() || {};
 
-            // console.log('[Scanner] Camera capabilities =>', capabilities);
-            // console.log('[Scanner] Camera settings =>', settings);
-            // console.log('[Scanner] Camera constraints =>', constraints);
-
-            if (capabilities.focusMode?.includes?.('continuous')) {
-                await track.applyConstraints({
-                    advanced: [{ focusMode: 'continuous' }],
-                });
-
-                // console.log('[Scanner] Continuous autofocus enabled');
-                return true;
+            if (supported.focusMode && capabilities.focusMode?.includes?.('continuous')) {
+                return await applyFocusMode(track, 'continuous');
             }
 
-            if ('focusDistance' in capabilities) {
-                const max = capabilities.focusDistance?.max;
-                const min = capabilities.focusDistance?.min;
-                const idealFocus = typeof max === 'number' && typeof min === 'number'
-                    ? (min + max) / 2
-                    : 1;
+            if (supported.focusMode && capabilities.focusMode?.includes?.('single-shot')) {
+                return await applyFocusMode(track, 'single-shot');
+            }
 
-                await track.applyConstraints({
-                    advanced: [{ focusDistance: idealFocus }],
-                });
+            if (supported.focusDistance && capabilities.focusDistance) {
+                const min = typeof capabilities.focusDistance.min === 'number' ? capabilities.focusDistance.min : 0;
+                const max = typeof capabilities.focusDistance.max === 'number' ? capabilities.focusDistance.max : 1;
+                const step = typeof capabilities.focusDistance.step === 'number' ? capabilities.focusDistance.step : 0.1;
+                const idealFocus = Math.max(min, Math.min(max, min + ((max - min) * 0.6)));
 
-                // console.log('[Scanner] focusDistance applied =>', idealFocus);
+                const firstApplied = await applyFocusDistance(track, idealFocus);
+                if (!firstApplied) return false;
+
+                if (max > min) {
+                    const secondFocus = Math.max(min, Math.min(max, idealFocus + step));
+                    await applyFocusDistance(track, secondFocus);
+                }
+
                 return true;
             }
 
@@ -83,57 +162,73 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         } catch (err) {
             console.warn('[Scanner] Failed to enable autofocus:', err);
             return false;
+        } finally {
+            isApplyingFocusRef.current = false;
         }
-    }, []);
+    }, [applyFocusDistance, applyFocusMode, getLiveVideoTrack, sourceVideoRef]);
 
     const refocus = useCallback(async () => {
-        try {
-            const stream = streamRef.current;
-            // console.log('[Scanner] refocus stream =>', stream);
+        if (sourceVideoRef) {
+            console.warn('[Scanner] Refocus skipped: sourceVideoRef mode does not own the live camera track');
+            return false;
+        }
 
-            const track = stream?.getVideoTracks?.()[0];
-            // console.log('[Scanner] refocus track =>', track);
+        if (isApplyingFocusRef.current) return false;
+
+        try {
+            isApplyingFocusRef.current = true;
+
+            const { stream, track } = getLiveVideoTrack();
 
             if (!track) {
-                console.warn('[Scanner] No video track found for refocus');
+                console.warn('[Scanner] No video track found for refocus', {
+                    hasStreamRef: !!streamRef.current,
+                    hasVideoSrcObject: !!videoRef.current?.srcObject,
+                    streamTracks: stream?.getTracks?.()?.map?.((t) => ({
+                        kind: t.kind,
+                        readyState: t.readyState,
+                        enabled: t.enabled,
+                        label: t.label,
+                    })) || [],
+                });
                 return false;
             }
 
+            const supported = navigator.mediaDevices?.getSupportedConstraints?.() || {};
             const capabilities = track.getCapabilities?.() || {};
-            const settings = track.getSettings?.() || {};
 
-            // console.log('[Scanner] Refocus capabilities =>', capabilities);
-            // console.log('[Scanner] Refocus settings =>', settings);
+            if (supported.focusMode && capabilities.focusMode?.includes?.('single-shot')) {
+                const ok = await applyFocusMode(track, 'single-shot');
 
-            if (capabilities.focusMode?.includes?.('single-shot')) {
-                await track.applyConstraints({
-                    advanced: [{ focusMode: 'single-shot' }],
-                });
-                // console.log('[Scanner] Single-shot refocus triggered');
-                return true;
+                if (ok && capabilities.focusMode?.includes?.('continuous')) {
+                    setTimeout(async () => {
+                        try {
+                            await applyFocusMode(track, 'continuous');
+                        } catch { }
+                    }, 250);
+                }
+
+                return ok;
             }
 
-            if (capabilities.focusMode?.includes?.('continuous')) {
-                await track.applyConstraints({
-                    advanced: [{ focusMode: 'continuous' }],
-                });
-                // console.log('[Scanner] Continuous refocus triggered');
-                return true;
+            if (supported.focusMode && capabilities.focusMode?.includes?.('continuous')) {
+                return await applyFocusMode(track, 'continuous');
             }
 
-            if ('focusDistance' in capabilities) {
-                const max = capabilities.focusDistance?.max;
-                const min = capabilities.focusDistance?.min;
-                const idealFocus = typeof max === 'number' && typeof min === 'number'
-                    ? (min + max) / 2
-                    : 1;
+            if (supported.focusDistance && capabilities.focusDistance) {
+                const min = typeof capabilities.focusDistance.min === 'number' ? capabilities.focusDistance.min : 0;
+                const max = typeof capabilities.focusDistance.max === 'number' ? capabilities.focusDistance.max : 1;
+                const step = typeof capabilities.focusDistance.step === 'number' ? capabilities.focusDistance.step : 0.1;
 
-                await track.applyConstraints({
-                    advanced: [{ focusDistance: idealFocus }],
-                });
+                const nearFocus = Math.max(min, Math.min(max, min + step));
+                const midFocus = Math.max(min, Math.min(max, min + ((max - min) * 0.6)));
 
-                // console.log('[Scanner] focusDistance refocus applied =>', idealFocus);
-                return true;
+                const firstApplied = await applyFocusDistance(track, nearFocus);
+                if (!firstApplied) return false;
+
+                await new Promise((r) => setTimeout(r, 120));
+
+                return await applyFocusDistance(track, midFocus);
             }
 
             console.warn('[Scanner] Refocus not supported on this device/browser');
@@ -141,29 +236,81 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         } catch (err) {
             console.warn('[Scanner] Refocus failed:', err);
             return false;
+        } finally {
+            isApplyingFocusRef.current = false;
         }
+    }, [applyFocusDistance, applyFocusMode, getLiveVideoTrack, sourceVideoRef]);
+
+    const clearRetryTimeouts = useCallback(() => {
+        retryTimeoutsRef.current.forEach((timeoutId) => clearTimeout(timeoutId));
+        retryTimeoutsRef.current = [];
     }, []);
+
+    const startAutoRefocus = useCallback(() => {
+        if (sourceVideoRef) return;
+
+        if (refocusTimeoutRef.current) {
+            clearTimeout(refocusTimeoutRef.current);
+            refocusTimeoutRef.current = null;
+        }
+
+        const run = async () => {
+            const { track } = getLiveVideoTrack();
+
+            if (!autofocusReadyRef.current || !track) {
+                refocusTimeoutRef.current = setTimeout(run, 1800);
+                return;
+            }
+
+            try {
+                await refocus();
+            } finally {
+                refocusTimeoutRef.current = setTimeout(run, 1800);
+            }
+        };
+
+        refocusTimeoutRef.current = setTimeout(run, 1800);
+    }, [getLiveVideoTrack, refocus, sourceVideoRef]);
 
     useEffect(() => {
         let cancelled = false;
 
         const stopAll = () => {
+            autofocusReadyRef.current = false;
+
+            if (refocusTimeoutRef.current) {
+                clearTimeout(refocusTimeoutRef.current);
+                refocusTimeoutRef.current = null;
+            }
+
+            clearRetryTimeouts();
+
             if (intervalRef.current) {
                 clearInterval(intervalRef.current);
                 intervalRef.current = null;
             }
-            try { readerRef.current?.reset(); } catch { }
+
+            try { controlsRef.current?.stop?.(); } catch { }
+            controlsRef.current = null;
+
+            try { readerRef.current?.reset?.(); } catch { }
             readerRef.current = null;
 
             if (!sourceVideoRef) {
                 try {
-                    const stream = streamRef.current;
-                    if (stream) stream.getTracks().forEach(t => t.stop());
+                    const stream = streamRef.current || videoRef.current?.srcObject;
+                    if (stream) stream.getTracks().forEach((t) => t.stop());
+
                     const v = videoRef.current;
-                    if (v) { v.pause?.(); v.srcObject = null; v.load?.(); }
+                    if (v) {
+                        v.pause?.();
+                        v.srcObject = null;
+                        v.load?.();
+                    }
                 } catch { }
-                streamRef.current = null;
             }
+
+            streamRef.current = null;
         };
 
         if (!active) {
@@ -171,28 +318,16 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
             return () => stopAll();
         }
 
-
-
         const start = async () => {
             stopAll();
             if (cancelled) return;
 
             const { BrowserMultiFormatReader } = await import('@zxing/browser');
-            // const { DecodeHintType, BarcodeFormat } = await import('@zxing/library');
             if (cancelled) return;
-
-            // const hints = new Map();
-            // hints.set(DecodeHintType.POSSIBLE_FORMATS, [
-            //     BarcodeFormat.CODE_128,
-            //     BarcodeFormat.CODE_39,
-            //     BarcodeFormat.EAN_13,
-            //     BarcodeFormat.ITF,
-            // ]);
 
             const hints = new Map();
             const reader = new BrowserMultiFormatReader(hints);
             readerRef.current = reader;
-
 
             if (sourceVideoRef) {
                 const canvas = document.createElement('canvas');
@@ -202,82 +337,109 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
 
                 intervalRef.current = setInterval(async () => {
                     if (cancelled) return;
+
                     const videoEl = sourceVideoRef.current;
                     if (!videoEl?.videoWidth) return;
+
                     try {
                         ctx.drawImage(videoEl, 0, 0, 640, 360);
                         const result = reader.decodeFromCanvas(canvas);
+
                         if (result && !cancelled) {
                             await playBeep();
                             onScanRef.current(result.getText());
-                        };
-                    } catch (err) {
-
-                        if (err?.name !== 'NotFoundException') {
-                            console.log('');
                         }
+                    } catch (err) {
+                        const errorName = err?.name || err?.constructor?.name || '';
+
+                        if (
+                            errorName === 'NotFoundException' ||
+                            errorName === 'NotFoundException2'
+                        ) {
+                            return;
+                        }
+
+                        console.warn('[Scanner] Canvas decode error:', err);
                     }
                 }, 600);
 
-                if (cancelled) stopAll();
                 return;
             }
 
-
             try {
-                const devices = await BrowserMultiFormatReader.listVideoInputDevices();
-                if (cancelled) return;
-
-                const device =
-                    devices.find(d => /(back|rear|environment)/i.test(d.label || '')) ||
-                    devices[devices.length - 1] ||
-                    devices[0];
-
-                if (!device || cancelled) return;
-
                 const controls = await reader.decodeFromConstraints(
                     {
                         audio: false,
                         video: {
-                            deviceId: device.deviceId ? { exact: device.deviceId } : undefined,
                             facingMode: { ideal: 'environment' },
                             width: { ideal: 1920 },
                             height: { ideal: 1080 },
                         },
                     },
                     videoRef.current,
-                    async (result, err) => {
+                    async (result) => {
                         if (result && !cancelled) {
                             await playBeep();
                             onScanRef.current(result.getText());
-                        };
+                        }
                     }
                 );
 
+                controlsRef.current = controls;
 
+                const ready = await waitForVideoReady(videoRef.current);
+                if (!ready || cancelled) return;
 
-                if (videoRef.current?.srcObject) {
-                    streamRef.current = videoRef.current.srcObject;
+                const resolvedStream = videoRef.current?.srcObject || null;
+                streamRef.current = resolvedStream;
 
-                    // console.log('[Scanner] srcObject attached =>', videoRef.current.srcObject);
-
-                    setTimeout(async () => {
-                        if (!cancelled) {
-                            await tryEnableAutoFocus();
-                        }
-                    }, 500);
+                const { track } = getLiveVideoTrack();
+                if (!track) {
+                    console.warn('[Scanner] Scanner started but no live video track was found');
+                    return;
                 }
-                if (cancelled) { try { controls.stop(); } catch { } stopAll(); }
+
+                autofocusReadyRef.current = true;
+
+                await tryEnableAutoFocus();
+
+                retryTimeoutsRef.current.push(
+                    setTimeout(async () => {
+                        if (!cancelled) await refocus();
+                    }, 700)
+                );
+
+                retryTimeoutsRef.current.push(
+                    setTimeout(async () => {
+                        if (!cancelled) await refocus();
+                    }, 1600)
+                );
+
+                startAutoRefocus();
             } catch (err) {
-                if (!cancelled) console.error('[Scanner] Error:', err);
+                if (!cancelled) {
+                    console.error('[Scanner] Error:', err);
+                }
                 stopAll();
             }
         };
 
         start();
-        return () => { cancelled = true; stopAll(); };
 
-    }, [active, tryEnableAutoFocus]);
+        return () => {
+            cancelled = true;
+            stopAll();
+        };
+    }, [
+        active,
+        clearRetryTimeouts,
+        getLiveVideoTrack,
+        refocus,
+        sourceVideoRef,
+        startAutoRefocus,
+        tryEnableAutoFocus,
+        waitForVideoReady,
+    ]);
 
     return { videoRef, refocus };
 }
