@@ -134,7 +134,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
                     if (!imageCaptureRef.current) initImageCapture(track);
                     if (imageCaptureRef.current) {
                         await imageCaptureRef.current.grabFrame();
-                        console.log('[Scanner] AutoFocus triggered via: grabFrame()');
+                        // console.log('[Scanner] AutoFocus triggered via: grabFrame()');
                         focusSupportedRef.current = true;
                         return true;
                     }
@@ -146,7 +146,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
             // Try continuous directly — no capability check
             try {
                 await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
-                console.log('[Scanner] Focus applied via: tryEnableAutoFocus advanced continuous');
+                // console.log('[Scanner] Focus applied via: tryEnableAutoFocus advanced continuous');
                 focusSupportedRef.current = true;
                 return true;
             } catch (err) {
@@ -155,7 +155,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
 
             try {
                 await track.applyConstraints({ focusMode: 'continuous' });
-                console.log('[Scanner] Focus applied via: tryEnableAutoFocus flat continuous');
+                // console.log('[Scanner] Focus applied via: tryEnableAutoFocus flat continuous');
                 focusSupportedRef.current = true;
                 return true;
             } catch (err) {
@@ -164,7 +164,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
 
             try {
                 await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] });
-                console.log('[Scanner] Focus applied via: tryEnableAutoFocus advanced single-shot');
+                // console.log('[Scanner] Focus applied via: tryEnableAutoFocus advanced single-shot');
                 focusSupportedRef.current = true;
                 return true;
             } catch (err) {
@@ -256,7 +256,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
                     if (!imageCaptureRef.current) initImageCapture(track);
                     if (imageCaptureRef.current) {
                         await imageCaptureRef.current.grabFrame();
-                        console.log('[Scanner] Focus triggered via: S0 grabFrame()');
+                        // console.log('[Scanner] Focus triggered via: S0 grabFrame()');
                         focusSupportedRef.current = true;
                         autoRefocusAttemptsRef.current = 0;
                         return true;
@@ -271,7 +271,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
                 await track.applyConstraints({
                     advanced: [{ focusMode: 'single-shot', pointsOfInterest: [{ x, y }] }],
                 });
-                console.log('[Scanner] Focus applied via: S1 advanced single-shot + pointsOfInterest');
+                // console.log('[Scanner] Focus applied via: S1 advanced single-shot + pointsOfInterest');
                 setTimeout(async () => {
                     try {
                         await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
@@ -289,7 +289,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
                     focusMode: 'single-shot',
                     pointsOfInterest: [{ x, y }],
                 });
-                console.log('[Scanner] Focus applied via: S2 flat single-shot + pointsOfInterest');
+                // console.log('[Scanner] Focus applied via: S2 flat single-shot + pointsOfInterest');
                 setTimeout(async () => {
                     try {
                         await track.applyConstraints({ focusMode: 'continuous' });
@@ -304,7 +304,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
             // S3: continuous toggle without poi (forces re-evaluation)
             try {
                 await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
-                console.log('[Scanner] Focus applied via: S3 advanced continuous toggle');
+                // console.log('[Scanner] Focus applied via: S3 advanced continuous toggle');
                 focusSupportedRef.current = true;
                 return true;
             } catch (err) {
@@ -313,7 +313,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
 
             try {
                 await track.applyConstraints({ focusMode: 'continuous' });
-                console.log('[Scanner] Focus applied via: S3 flat continuous toggle');
+                // console.log('[Scanner] Focus applied via: S3 flat continuous toggle');
                 focusSupportedRef.current = true;
                 return true;
             } catch (err) {
@@ -330,7 +330,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
                     await track.applyConstraints({ advanced: [{ focusDistance: near }] });
                     await new Promise(r => setTimeout(r, 150));
                     await track.applyConstraints({ advanced: [{ focusDistance: mid }] });
-                    console.log('[Scanner] Focus applied via: S4 focusDistance sweep');
+                    // console.log('[Scanner] Focus applied via: S4 focusDistance sweep');
                     focusSupportedRef.current = true;
                     return true;
                 }
