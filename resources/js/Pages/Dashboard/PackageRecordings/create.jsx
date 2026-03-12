@@ -55,7 +55,7 @@ export default function create({ orders }) {
     const [scanActive, setScanActive] = useState(false);
 
 
-    useScanner({
+    const { refocus } = useScanner({
         active: scanActive,
         sourceVideoRef: recordingVideoRef,
         onScan: (text) => {
@@ -437,6 +437,8 @@ export default function create({ orders }) {
                                         muted
                                         playsInline
                                         className={`object-cover w-full h-full ${recordedUrl ? 'hidden' : 'block'}`}
+                                        onTouchStart={refocus}
+                                        onClick={refocus}
                                     />
 
                                     {recordedUrl && (

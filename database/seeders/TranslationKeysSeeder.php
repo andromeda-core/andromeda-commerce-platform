@@ -744,6 +744,7 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Are you sure you want to remove this item?', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Refunded', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Confirm Notification Deletion', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Shipping Country Cannot Be Changed', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Are you sure you want to Delete this Notification?', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Confirm Marking as Read', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Are you sure you want to mark this Notification as Read?', 'created_at' => $now, 'updated_at' => $now],

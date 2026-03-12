@@ -133,7 +133,7 @@ export default function create() {
     const videoRef = useRef(null);
     const cooldownRef = useRef(null);
 
-    const { videoRef: scannerVideoRef } = useScanner({
+    const { videoRef: scannerVideoRef, refocus } = useScanner({
         active: step === STEP.SCANNING && !scanCooldown && !isVerifying,
         onScan: (text) => handleIMEIScan(text),
     });
@@ -529,6 +529,8 @@ export default function create() {
                                         className="object-cover w-full h-full"
                                         muted
                                         playsInline
+                                        onClick={refocus}
+                                        onTouchStart={refocus}
                                     />
 
                                     {/* Scan Guide Corners */}

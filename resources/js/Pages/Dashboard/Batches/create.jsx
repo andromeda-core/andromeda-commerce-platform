@@ -103,7 +103,7 @@ export default function create({ suppliers, smartphones, storage_locations }) {
 
 
 
-    const { videoRef: scannerVideoRef } = useScanner({
+    const { videoRef: scannerVideoRef, refocus } = useScanner({
         active: !!activeScanner,
         onScan: (text) => handleScanResult(text),
     });
@@ -881,6 +881,8 @@ export default function create({ suppliers, smartphones, storage_locations }) {
                                         className="object-cover w-full h-full"
                                         muted
                                         playsInline
+                                        onClick={refocus}
+                                        onTouchStart={refocus}
                                     />
 
                                     {/* Scan corners */}

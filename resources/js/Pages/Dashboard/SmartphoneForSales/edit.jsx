@@ -37,7 +37,7 @@ export default function edit({ smartphone_for_sale, shipping_fee_lists, import_t
 
 
 
-    const { videoRef: scannerVideoRef } = useScanner({
+    const { videoRef: scannerVideoRef, refocus } = useScanner({
         active: activeScanner,
         onScan: (text) => handleScanResult(text),
     });
@@ -403,6 +403,8 @@ export default function edit({ smartphone_for_sale, shipping_fee_lists, import_t
                                         className="object-cover w-full h-full"
                                         muted
                                         playsInline
+                                        onTouchStart={refocus}
+                                        onClick={refocus}
                                     />
 
                                     {/* Scan corners */}

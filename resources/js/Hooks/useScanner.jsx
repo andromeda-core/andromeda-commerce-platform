@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import beepSound from "../../assets/sounds/Beep.mp3";
 
 export function useScanner({ active, onScan, sourceVideoRef = null }) {
@@ -31,6 +31,118 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
             console.warn('[Scanner] Beep play blocked:', err);
         }
     };
+
+
+    const tryEnableAutoFocus = useCallback(async () => {
+        try {
+            const stream = streamRef.current;
+            // console.log('[Scanner] streamRef.current =>', stream);
+
+            const track = stream?.getVideoTracks?.()[0];
+            // console.log('[Scanner] video track =>', track);
+
+            if (!track) {
+                console.warn('[Scanner] No video track found for autofocus');
+                return false;
+            }
+
+            const capabilities = track.getCapabilities?.() || {};
+            const settings = track.getSettings?.() || {};
+            const constraints = track.getConstraints?.() || {};
+
+            // console.log('[Scanner] Camera capabilities =>', capabilities);
+            // console.log('[Scanner] Camera settings =>', settings);
+            // console.log('[Scanner] Camera constraints =>', constraints);
+
+            if (capabilities.focusMode?.includes?.('continuous')) {
+                await track.applyConstraints({
+                    advanced: [{ focusMode: 'continuous' }],
+                });
+
+                // console.log('[Scanner] Continuous autofocus enabled');
+                return true;
+            }
+
+            if ('focusDistance' in capabilities) {
+                const max = capabilities.focusDistance?.max;
+                const min = capabilities.focusDistance?.min;
+                const idealFocus = typeof max === 'number' && typeof min === 'number'
+                    ? (min + max) / 2
+                    : 1;
+
+                await track.applyConstraints({
+                    advanced: [{ focusDistance: idealFocus }],
+                });
+
+                // console.log('[Scanner] focusDistance applied =>', idealFocus);
+                return true;
+            }
+
+            console.warn('[Scanner] No supported autofocus capability found');
+            return false;
+        } catch (err) {
+            console.warn('[Scanner] Failed to enable autofocus:', err);
+            return false;
+        }
+    }, []);
+
+    const refocus = useCallback(async () => {
+        try {
+            const stream = streamRef.current;
+            // console.log('[Scanner] refocus stream =>', stream);
+
+            const track = stream?.getVideoTracks?.()[0];
+            // console.log('[Scanner] refocus track =>', track);
+
+            if (!track) {
+                console.warn('[Scanner] No video track found for refocus');
+                return false;
+            }
+
+            const capabilities = track.getCapabilities?.() || {};
+            const settings = track.getSettings?.() || {};
+
+            // console.log('[Scanner] Refocus capabilities =>', capabilities);
+            // console.log('[Scanner] Refocus settings =>', settings);
+
+            if (capabilities.focusMode?.includes?.('single-shot')) {
+                await track.applyConstraints({
+                    advanced: [{ focusMode: 'single-shot' }],
+                });
+                // console.log('[Scanner] Single-shot refocus triggered');
+                return true;
+            }
+
+            if (capabilities.focusMode?.includes?.('continuous')) {
+                await track.applyConstraints({
+                    advanced: [{ focusMode: 'continuous' }],
+                });
+                // console.log('[Scanner] Continuous refocus triggered');
+                return true;
+            }
+
+            if ('focusDistance' in capabilities) {
+                const max = capabilities.focusDistance?.max;
+                const min = capabilities.focusDistance?.min;
+                const idealFocus = typeof max === 'number' && typeof min === 'number'
+                    ? (min + max) / 2
+                    : 1;
+
+                await track.applyConstraints({
+                    advanced: [{ focusDistance: idealFocus }],
+                });
+
+                // console.log('[Scanner] focusDistance refocus applied =>', idealFocus);
+                return true;
+            }
+
+            console.warn('[Scanner] Refocus not supported on this device/browser');
+            return false;
+        } catch (err) {
+            console.warn('[Scanner] Refocus failed:', err);
+            return false;
+        }
+    }, []);
 
     useEffect(() => {
         let cancelled = false;
@@ -128,9 +240,9 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
                         audio: false,
                         video: {
                             deviceId: device.deviceId ? { exact: device.deviceId } : undefined,
-                            facingMode: 'environment',
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 },
+                            facingMode: { ideal: 'environment' },
+                            width: { ideal: 1920 },
+                            height: { ideal: 1080 },
                         },
                     },
                     videoRef.current,
@@ -142,7 +254,19 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
                     }
                 );
 
-                if (videoRef.current?.srcObject) streamRef.current = videoRef.current.srcObject;
+
+
+                if (videoRef.current?.srcObject) {
+                    streamRef.current = videoRef.current.srcObject;
+
+                    // console.log('[Scanner] srcObject attached =>', videoRef.current.srcObject);
+
+                    setTimeout(async () => {
+                        if (!cancelled) {
+                            await tryEnableAutoFocus();
+                        }
+                    }, 500);
+                }
                 if (cancelled) { try { controls.stop(); } catch { } stopAll(); }
             } catch (err) {
                 if (!cancelled) console.error('[Scanner] Error:', err);
@@ -153,7 +277,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         start();
         return () => { cancelled = true; stopAll(); };
 
-    }, [active]);
+    }, [active, tryEnableAutoFocus]);
 
-    return { videoRef };
+    return { videoRef, refocus };
 }

@@ -99,7 +99,7 @@ export default function show({ order }) {
 
 
 
-    useScanner({
+    const { refocus } = useScanner({
         active: scanActive,
         sourceVideoRef: recordingVideoRef,
         onScan: (text) => {
@@ -965,6 +965,8 @@ export default function show({ order }) {
                                         muted
                                         playsInline
                                         className={`object-cover w-full h-full ${recordedUrl ? 'hidden' : 'block'}`}
+                                        onTouchStart={refocus}
+                                        onClick={refocus}
                                     />
 
                                     {/* Playback after recording completes */}

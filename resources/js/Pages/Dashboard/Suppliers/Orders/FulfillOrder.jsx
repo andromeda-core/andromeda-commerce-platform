@@ -370,7 +370,7 @@ export default function fulFillOrder({
 
 
 
-    const { videoRef: scannerVideoRef } = useScanner({
+    const { videoRef: scannerVideoRef, refocus } = useScanner({
         active: !!activeScanner,
         onScan: (text) => handleScanResult(text),
     });
@@ -1446,6 +1446,8 @@ export default function fulFillOrder({
                                         className="object-cover w-full h-full"
                                         muted
                                         playsInline
+                                        onTouchStart={refocus}
+                                        onClick={refocus}
                                     />
 
                                     {/* Scan corners */}

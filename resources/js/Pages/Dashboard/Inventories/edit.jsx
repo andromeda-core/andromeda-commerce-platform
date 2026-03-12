@@ -37,7 +37,7 @@ export default function edit({ batches, smartphones, storage_locations, inventor
 
 
 
-    const { videoRef: scannerVideoRef } = useScanner({
+    const { videoRef: scannerVideoRef, refocus } = useScanner({
         active: !!activeScanner,
         onScan: (text) => handleScanResult(text),
     });
@@ -218,7 +218,7 @@ export default function edit({ batches, smartphones, storage_locations, inventor
                                                                 />
                                                             </svg>
                                                         }
-                                                        Action={() => setImei1ScannerOpen(true)}
+                                                        Action={() => openScanner('imei1')}
                                                     />
 
                                                     <Input
@@ -230,7 +230,10 @@ export default function edit({ batches, smartphones, storage_locations, inventor
                                                         Value={data.imei1}
                                                         Type={'text'}
                                                         Required={true}
-                                                        Action={() => openScanner('imei1')}
+
+                                                        Action={(e) =>
+                                                            setData('imei1', e.target.value)
+                                                        }
                                                     />
                                                 </div>
 
@@ -377,7 +380,7 @@ export default function edit({ batches, smartphones, storage_locations, inventor
                                                     Name={'status'}
                                                     Id={'status'}
                                                     items={[
-                                                        { id: 'in_stock', name:"IN STOCK" },
+                                                        { id: 'in_stock', name: "IN STOCK" },
                                                         { id: 'sold', name: "SOLD" },
                                                         { id: 'returned', name: "RETURNED" },
                                                         { id: 'on_hold', name: "ON HOLD" },
@@ -479,6 +482,8 @@ export default function edit({ batches, smartphones, storage_locations, inventor
                                         className="object-cover w-full h-full"
                                         muted
                                         playsInline
+                                        onClick={refocus}
+                                        onTouchStart={refocus}
                                     />
 
                                     {/* Scan corners */}

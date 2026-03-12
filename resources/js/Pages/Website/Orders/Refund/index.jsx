@@ -35,7 +35,7 @@ const index = ({ order_no, order }) => {
     const [scanError, setScanError] = useState(null);
     const cooldownRef = useRef(null);
 
-    const { videoRef: scannerVideoRef } = useScanner({
+    const { videoRef: scannerVideoRef, refocus } = useScanner({
         active: showIMEIModal && !scanCooldown && !isVerifying,
         onScan: (text) => handleIMEIScan(text),
     });
@@ -379,6 +379,8 @@ const index = ({ order_no, order }) => {
                                         className="object-cover w-full h-full"
                                         muted
                                         playsInline
+                                        onTouchStart={refocus}
+                                        onClick={refocus}
                                     />
                                     {/* Scan guide corners */}
                                     {!isVerifying && !scanCooldown && (

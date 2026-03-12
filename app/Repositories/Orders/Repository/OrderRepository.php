@@ -1968,6 +1968,10 @@ class OrderRepository implements IOrderRepository
                 throw new Exception($this->trans->get('Order Not Found'));
             }
 
+            if ($order->shipping_country !== $validated_req['shipping_country']) {
+                throw new Exception($this->trans->get('Shipping Country Cannot Be Changed'));
+            }
+
             if (in_array($order->status, ['shipped', 'arrived_locally', 'delivered'])) {
                 throw new Exception($this->trans->get('This Order Address Cannot Be Created Because It Has Already Been Shipped'));
             }
