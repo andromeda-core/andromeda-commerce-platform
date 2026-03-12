@@ -17,7 +17,7 @@ const ZXING_NO_RESULT_ERRORS = new Set([
 ]);
 
 const isZxingDecodeError = (err) => {
-    if (!err) return true; // null/undefined - treat as no-result
+    if (!err) return true;
     const name = err?.name || err?.constructor?.name || '';
     if (ZXING_NO_RESULT_ERRORS.has(name)) return true;
     const msg = err?.message || '';
@@ -43,6 +43,8 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
     const autofocusReadyRef = useRef(false);
     const focusSupportedRef = useRef(false);
     const isApplyingFocusRef = useRef(false);
+    const autoRefocusAttemptsRef = useRef(0);   // stops the auto loop after 3 unsupported attempts
+    const removeTapListenersRef = useRef(null);  // cleanup fn for internal tap listeners
     const audioRef = useRef(null);
 
     // Cache iOS check so we don't call it on every render
@@ -85,22 +87,19 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
             videoEl.addEventListener('loadedmetadata', done, { once: true });
             videoEl.addEventListener('canplay', done, { once: true });
             videoEl.addEventListener('playing', done, { once: true });
-            setTimeout(done, 3000); // extended timeout for slow iOS devices
+            setTimeout(done, 3000);
         });
     }, []);
 
     const getLiveVideoTrack = useCallback(() => {
-        // Try streamRef first, then fall back to srcObject
         const stream = streamRef.current || videoRef.current?.srcObject || null;
-
         if (!stream?.getVideoTracks) return { stream: null, track: null };
-
         const tracks = stream.getVideoTracks();
         const liveTrack = tracks.find((t) => t.readyState === 'live') || tracks[0] || null;
-
         return { stream, track: liveTrack };
     }, []);
 
+    // Tries flat form first, then advanced:[{}] form — never throws to caller
     const applyFocusMode = useCallback(async (track, mode) => {
         try {
             await track.applyConstraints({ focusMode: mode });
@@ -115,6 +114,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         }
     }, []);
 
+    // Tries flat form first, then advanced:[{}] form — never throws to caller
     const applyFocusDistance = useCallback(async (track, value) => {
         try {
             await track.applyConstraints({ focusDistance: value });
@@ -129,6 +129,8 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         }
     }, []);
 
+    // Called once after camera stream is ready to put the track into a known good focus state.
+    // Uses helpers — no capability gates, direct waterfall try/catch.
     const tryEnableAutoFocus = useCallback(async () => {
         if (isIOSDevice.current || sourceVideoRef) return false;
         if (isApplyingFocusRef.current) return false;
@@ -139,24 +141,29 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
             const { track } = getLiveVideoTrack();
             if (!track) return false;
 
-            // Try continuous directly without capability check
-            try {
-                await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+            // S1: continuous (ideal — keeps camera focused as user moves)
+            if (await applyFocusMode(track, 'continuous')) {
                 focusSupportedRef.current = true;
                 return true;
-            } catch { }
+            }
 
-            try {
-                await track.applyConstraints({ focusMode: 'continuous' });
+            // S2: single-shot fallback
+            if (await applyFocusMode(track, 'single-shot')) {
                 focusSupportedRef.current = true;
                 return true;
-            } catch { }
+            }
 
-            // Fallback to single-shot if continuous not available
+            // S3: focusDistance midpoint — last resort for devices that expose distance but not mode
             try {
-                await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] });
-                focusSupportedRef.current = true;
-                return true;
+                const capabilities = track.getCapabilities?.() || {};
+                if (capabilities.focusDistance) {
+                    const { min = 0, max = 1 } = capabilities.focusDistance;
+                    const mid = min + (max - min) * 0.5;
+                    if (await applyFocusDistance(track, mid)) {
+                        focusSupportedRef.current = true;
+                        return true;
+                    }
+                }
             } catch { }
 
             return false;
@@ -166,13 +173,65 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         } finally {
             isApplyingFocusRef.current = false;
         }
-    }, [getLiveVideoTrack, sourceVideoRef]);
+    }, [applyFocusDistance, applyFocusMode, getLiveVideoTrack, sourceVideoRef]);
 
-    const refocus = useCallback(async () => {
+    // Converts the first argument into normalized [0–1] {x, y} coordinates.
+    // Three calling conventions:
+    //   resolvePoint()              → center {0.5, 0.5}
+    //   resolvePoint(event)         → extracted from touch/click event via getBoundingClientRect
+    //   resolvePoint(normX, normY)  → passed through as-is
+    const resolvePoint = useCallback((tapXOrEvent, tapY) => {
+        if (tapXOrEvent === undefined || tapXOrEvent === null) {
+            return { x: 0.5, y: 0.5 };
+        }
+
+        if (typeof tapXOrEvent === 'object') {
+            const videoEl = videoRef.current;
+            let clientX, clientY;
+
+            if (tapXOrEvent.touches?.length > 0) {
+                clientX = tapXOrEvent.touches[0].clientX;
+                clientY = tapXOrEvent.touches[0].clientY;
+            } else if (typeof tapXOrEvent.clientX === 'number') {
+                clientX = tapXOrEvent.clientX;
+                clientY = tapXOrEvent.clientY;
+            }
+
+            if (videoEl && typeof clientX === 'number') {
+                const rect = videoEl.getBoundingClientRect();
+                return {
+                    x: Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)),
+                    y: Math.max(0, Math.min(1, (clientY - rect.top) / rect.height)),
+                };
+            }
+
+            return { x: 0.5, y: 0.5 };
+        }
+
+        if (typeof tapXOrEvent === 'number') {
+            return {
+                x: Math.max(0, Math.min(1, tapXOrEvent)),
+                y: Math.max(0, Math.min(1, typeof tapY === 'number' ? tapY : 0.5)),
+            };
+        }
+
+        return { x: 0.5, y: 0.5 };
+    }, []);
+
+    // refocus(tapXOrEvent?, tapY?)
+    //
+    // Safe to pass directly as onTouchStart={refocus} / onClick={refocus}.
+    // The browser event is auto-resolved into tap coordinates and forwarded to
+    // pointsOfInterest for true tap-to-focus on Android Chrome.
+    //
+    // Strategy waterfall — moves to next only on failure, uses helpers where possible:
+    //   S1: single-shot + pointsOfInterest (direct applyConstraints — helpers don't carry poi param)
+    //       → after 300 ms switch back to continuous via applyFocusMode helper
+    //   S2: continuous toggle via applyFocusMode helper
+    //   S3: focusDistance sweep via applyFocusDistance helper
+    const refocus = useCallback(async (tapXOrEvent, tapY) => {
         if (isIOSDevice.current) return false;
-
-        if (sourceVideoRef) return false; // sourceVideoRef mode doesn't own the track
-
+        if (sourceVideoRef) return false;
         if (isApplyingFocusRef.current) return false;
 
         try {
@@ -184,66 +243,68 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
                 return false;
             }
 
-            // Strategy 1: single-shot then back to continuous
-            // Most reliable on Android Chrome - don't check capabilities first, just try
-            try {
-                await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] });
+            const { x, y } = resolvePoint(tapXOrEvent, tapY);
 
-                // After single-shot triggers, switch back to continuous
-                setTimeout(async () => {
+            // S1: single-shot + pointsOfInterest
+            // Must use applyConstraints directly since the mode helper doesn't accept a poi param.
+            // Tries advanced:[{}] form first, then flat form.
+            const poiOk = await (async () => {
+                try {
+                    await track.applyConstraints({
+                        advanced: [{ focusMode: 'single-shot', pointsOfInterest: [{ x, y }] }],
+                    });
+                    return true;
+                } catch {
                     try {
-                        await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
-                    } catch { }
-                }, 300);
+                        await track.applyConstraints({
+                            focusMode: 'single-shot',
+                            pointsOfInterest: [{ x, y }],
+                        });
+                        return true;
+                    } catch {
+                        return false;
+                    }
+                }
+            })();
 
+            if (poiOk) {
+                // Hand back to continuous so the camera isn't locked on the tap point indefinitely
+                setTimeout(() => applyFocusMode(track, 'continuous'), 300);
                 focusSupportedRef.current = true;
                 return true;
-            } catch { }
+            }
 
-            // Strategy 2: flat focusMode (some Android versions need this form)
-            try {
-                await track.applyConstraints({ focusMode: 'single-shot' });
-                setTimeout(async () => {
-                    try {
-                        await track.applyConstraints({ focusMode: 'continuous' });
-                    } catch { }
-                }, 300);
+            // S2: continuous toggle — forces the camera to re-evaluate the focus point
+            if (await applyFocusMode(track, 'continuous')) {
                 focusSupportedRef.current = true;
                 return true;
-            } catch { }
+            }
 
-            // Strategy 3: continuous toggle (force re-evaluate focus point)
-            try {
-                await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
-                focusSupportedRef.current = true;
-                return true;
-            } catch { }
-
-            // Strategy 4: focusDistance sweep (devices that expose distance but not mode)
+            // S3: focusDistance sweep — for devices that expose distance but not mode switching
             try {
                 const capabilities = track.getCapabilities?.() || {};
                 if (capabilities.focusDistance) {
                     const { min = 0, max = 1, step = 0.1 } = capabilities.focusDistance;
                     const near = Math.max(min, Math.min(max, min + step));
-                    const mid = Math.max(min, Math.min(max, min + (max - min) * 0.5));
-
-                    await track.applyConstraints({ advanced: [{ focusDistance: near }] });
-                    await new Promise(r => setTimeout(r, 150));
-                    await track.applyConstraints({ advanced: [{ focusDistance: mid }] });
-                    return true;
+                    const mid  = Math.max(min, Math.min(max, min + (max - min) * 0.5));
+                    if (await applyFocusDistance(track, near)) {
+                        await new Promise(r => setTimeout(r, 150));
+                        await applyFocusDistance(track, mid);
+                        focusSupportedRef.current = true;
+                        return true;
+                    }
                 }
             } catch { }
 
             console.warn('[Scanner] All refocus strategies failed on this device');
             return false;
-
         } catch (err) {
             console.warn('[Scanner] Refocus error:', err);
             return false;
         } finally {
             isApplyingFocusRef.current = false;
         }
-    }, [getLiveVideoTrack, sourceVideoRef]);
+    }, [applyFocusDistance, applyFocusMode, getLiveVideoTrack, resolvePoint, sourceVideoRef]);
 
     const clearRetryTimeouts = useCallback(() => {
         retryTimeoutsRef.current.forEach((id) => clearTimeout(id));
@@ -251,7 +312,6 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
     }, []);
 
     const startAutoRefocus = useCallback(() => {
-        // iOS: no-op, native autofocus handles everything
         if (isIOSDevice.current || sourceVideoRef) return;
 
         if (refocusTimeoutRef.current) {
@@ -265,12 +325,19 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
                 refocusTimeoutRef.current = setTimeout(run, 3000);
                 return;
             }
-            try {
-                // Only attempt auto-refocus if focus constraints are known to work on this device
-                if (focusSupportedRef.current) {
-                    await refocus();
+
+            if (focusSupportedRef.current) {
+                // Focus confirmed working on this device — keep running the loop
+                await refocus();
+                refocusTimeoutRef.current = setTimeout(run, 3000);
+            } else {
+                // Haven't confirmed focus support yet — try, but give up after 3 misses
+                autoRefocusAttemptsRef.current++;
+                if (autoRefocusAttemptsRef.current >= 3) {
+                    // Device does not support programmatic focus — stop the loop entirely
+                    return;
                 }
-            } finally {
+                await refocus();
                 refocusTimeoutRef.current = setTimeout(run, 3000);
             }
         };
@@ -284,6 +351,11 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         const stopAll = () => {
             autofocusReadyRef.current = false;
             focusSupportedRef.current = false;
+            autoRefocusAttemptsRef.current = 0;
+
+            // Remove internal tap-to-focus listeners
+            removeTapListenersRef.current?.();
+            removeTapListenersRef.current = null;
 
             if (refocusTimeoutRef.current) {
                 clearTimeout(refocusTimeoutRef.current);
@@ -329,7 +401,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
             stopAll();
             if (cancelled) return;
 
-            const { BrowserMultiFormatReader, } = await import('@zxing/browser');
+            const { BrowserMultiFormatReader } = await import('@zxing/browser');
             if (cancelled) return;
 
             const hints = new Map();
@@ -357,8 +429,6 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
                             onScanRef.current(result.getText());
                         }
                     } catch (err) {
-                        // ZXing throws when no barcode is found - this is EXPECTED, not an error
-                        // Only log truly unexpected errors
                         if (!isZxingDecodeError(err)) {
                             console.warn('[Scanner] Canvas decode error:', err);
                         }
@@ -392,7 +462,6 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
                 const ready = await waitForVideoReady(videoRef.current);
                 if (!ready || cancelled) return;
 
-                // Store stream reference BEFORE any focus attempts
                 const resolvedStream = videoRef.current?.srcObject || null;
                 streamRef.current = resolvedStream;
 
@@ -403,13 +472,25 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
                 const { track } = getLiveVideoTrack();
                 if (!track) {
                     console.warn('[Scanner] Scanner started but no live video track found');
-                    // Still mark as ready - scanning works, just no focus control
                 }
 
                 autofocusReadyRef.current = true;
 
-                // iOS: skip all focus manipulation, native handles it
                 if (!isIOSDevice.current) {
+                    // Attach internal tap-to-focus listeners (Android only).
+                    // Parent may also call refocus() via onTouchStart/onClick — isApplyingFocusRef
+                    // ensures only the first caller proceeds; the second is dropped silently.
+                    const videoEl = videoRef.current;
+                    if (videoEl) {
+                        const onTap = (e) => { if (!cancelled) refocus(e); };
+                        videoEl.addEventListener('touchstart', onTap, { passive: true });
+                        videoEl.addEventListener('click', onTap);
+                        removeTapListenersRef.current = () => {
+                            videoEl.removeEventListener('touchstart', onTap);
+                            videoEl.removeEventListener('click', onTap);
+                        };
+                    }
+
                     await tryEnableAutoFocus();
 
                     retryTimeoutsRef.current.push(
