@@ -41,6 +41,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
     const onScanRef = useRef(onScan);
 
     const autofocusReadyRef = useRef(false);
+    const focusSupportedRef = useRef(false);
     const isApplyingFocusRef = useRef(false);
     const audioRef = useRef(null);
 
@@ -141,17 +142,20 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
             // Try continuous directly without capability check
             try {
                 await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+                focusSupportedRef.current = true;
                 return true;
             } catch { }
 
             try {
                 await track.applyConstraints({ focusMode: 'continuous' });
+                focusSupportedRef.current = true;
                 return true;
             } catch { }
 
             // Fallback to single-shot if continuous not available
             try {
                 await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] });
+                focusSupportedRef.current = true;
                 return true;
             } catch { }
 
@@ -192,6 +196,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
                     } catch { }
                 }, 300);
 
+                focusSupportedRef.current = true;
                 return true;
             } catch { }
 
@@ -203,12 +208,14 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
                         await track.applyConstraints({ focusMode: 'continuous' });
                     } catch { }
                 }, 300);
+                focusSupportedRef.current = true;
                 return true;
             } catch { }
 
             // Strategy 3: continuous toggle (force re-evaluate focus point)
             try {
                 await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+                focusSupportedRef.current = true;
                 return true;
             } catch { }
 
@@ -255,17 +262,20 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         const run = async () => {
             const { track } = getLiveVideoTrack();
             if (!autofocusReadyRef.current || !track) {
-                refocusTimeoutRef.current = setTimeout(run, 1800);
+                refocusTimeoutRef.current = setTimeout(run, 3000);
                 return;
             }
             try {
-                await refocus();
+                // Only attempt auto-refocus if focus constraints are known to work on this device
+                if (focusSupportedRef.current) {
+                    await refocus();
+                }
             } finally {
-                refocusTimeoutRef.current = setTimeout(run, 1800);
+                refocusTimeoutRef.current = setTimeout(run, 3000);
             }
         };
 
-        refocusTimeoutRef.current = setTimeout(run, 1800);
+        refocusTimeoutRef.current = setTimeout(run, 3000);
     }, [getLiveVideoTrack, refocus, sourceVideoRef]);
 
     useEffect(() => {
@@ -273,6 +283,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
 
         const stopAll = () => {
             autofocusReadyRef.current = false;
+            focusSupportedRef.current = false;
 
             if (refocusTimeoutRef.current) {
                 clearTimeout(refocusTimeoutRef.current);
