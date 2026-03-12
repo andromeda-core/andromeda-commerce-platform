@@ -46,6 +46,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
     const autoRefocusAttemptsRef = useRef(0);   // stops the auto loop after 3 unsupported attempts
     const removeTapListenersRef = useRef(null);  // cleanup fn for internal tap listeners
     const audioRef = useRef(null);
+    const imageCaptureRef = useRef(null);
 
     // Cache iOS check so we don't call it on every render
     const isIOSDevice = useRef(isIOS());
@@ -91,6 +92,17 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         });
     }, []);
 
+    const initImageCapture = useCallback((track) => {
+        if (typeof ImageCapture === 'undefined') return false;
+        try {
+            imageCaptureRef.current = new ImageCapture(track);
+            return true;
+        } catch (err) {
+            console.warn('[Scanner] ImageCapture init failed:', err);
+            return false;
+        }
+    }, []);
+
     // When sourceVideoRef is provided the recorder owns the stream — read from there.
     // Otherwise fall back to streamRef / videoRef.
     const getLiveVideoTrack = useCallback(() => {
@@ -104,8 +116,8 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
     }, [sourceVideoRef]);
 
     // Called once after the camera stream is ready.
-    // Calls applyConstraints blindly (no capability check) — the correct approach on Android Chrome 87+.
-    // ImageCapture.setOptions() was removed from the W3C spec before shipping and always throws.
+    // S0: grabFrame() — triggers hardware autofocus on Android Chrome (the only reliable method).
+    // Falls back to applyConstraints strategies on devices without ImageCapture support.
     const tryEnableAutoFocus = useCallback(async () => {
         if (isIOSDevice.current) return false;
         if (isApplyingFocusRef.current) return false;
@@ -115,6 +127,21 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
 
             const { track } = getLiveVideoTrack();
             if (!track || track.readyState !== 'live') return false;
+
+            // S0: grabFrame() — triggers hardware autofocus on Android Chrome
+            if (typeof ImageCapture !== 'undefined') {
+                try {
+                    if (!imageCaptureRef.current) initImageCapture(track);
+                    if (imageCaptureRef.current) {
+                        await imageCaptureRef.current.grabFrame();
+                        console.log('[Scanner] AutoFocus triggered via: grabFrame()');
+                        focusSupportedRef.current = true;
+                        return true;
+                    }
+                } catch (err) {
+                    console.log('[Scanner] grabFrame autofocus failed:', err?.message);
+                }
+            }
 
             // Try continuous directly — no capability check
             try {
@@ -148,7 +175,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         } finally {
             isApplyingFocusRef.current = false;
         }
-    }, [getLiveVideoTrack]);
+    }, [getLiveVideoTrack, initImageCapture]);
 
     // Converts the first argument into normalized [0–1] {x, y} coordinates.
     // Three calling conventions:
@@ -200,7 +227,8 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
     // Works in both direct-camera mode and sourceVideoRef mode.
     // The browser event is auto-resolved into tap coordinates via resolvePoint.
     //
-    // Strategy waterfall (all via track.applyConstraints — no ImageCapture):
+    // Strategy waterfall:
+    //   S0: grabFrame() — triggers hardware autofocus on Android Chrome (cannot be silently ignored)
     //   S1: single-shot + pointsOfInterest, advanced form
     //   S2: single-shot + pointsOfInterest, flat form
     //   S3: continuous toggle (advanced then flat) — forces re-evaluation
@@ -219,6 +247,24 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
             }
 
             const { x, y } = resolvePoint(tapXOrEvent, tapY);
+
+            // S0: grabFrame() — triggers hardware autofocus on Android Chrome
+            // This is the only reliable way to force physical lens movement.
+            // Unlike applyConstraints, it cannot be silently ignored by the driver.
+            if (typeof ImageCapture !== 'undefined') {
+                try {
+                    if (!imageCaptureRef.current) initImageCapture(track);
+                    if (imageCaptureRef.current) {
+                        await imageCaptureRef.current.grabFrame();
+                        console.log('[Scanner] Focus triggered via: S0 grabFrame()');
+                        focusSupportedRef.current = true;
+                        autoRefocusAttemptsRef.current = 0;
+                        return true;
+                    }
+                } catch (err) {
+                    console.log('[Scanner] S0 grabFrame failed:', err?.message);
+                }
+            }
 
             // S1: single-shot + pointsOfInterest, advanced form
             try {
@@ -300,7 +346,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         } finally {
             isApplyingFocusRef.current = false;
         }
-    }, [getLiveVideoTrack, resolvePoint]);
+    }, [getLiveVideoTrack, initImageCapture, resolvePoint]);
 
     const clearRetryTimeouts = useCallback(() => {
         retryTimeoutsRef.current.forEach((id) => clearTimeout(id));
@@ -348,6 +394,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
             autofocusReadyRef.current = false;
             focusSupportedRef.current = false;
             autoRefocusAttemptsRef.current = 0;
+            imageCaptureRef.current = null;
 
             // Remove internal tap-to-focus listeners
             removeTapListenersRef.current?.();
@@ -448,6 +495,9 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
 
                     autofocusReadyRef.current = true;
 
+                    const { track: srcTrack } = getLiveVideoTrack();
+                    if (srcTrack) initImageCapture(srcTrack);
+
                     // Attach tap-to-focus listener to the recorder's video element
                     if (videoEl) {
                         const onTap = (e) => { if (!cancelled) refocus(e); };
@@ -515,6 +565,8 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
                     console.warn('[Scanner] Scanner started but no live video track found');
                 }
 
+                if (track) initImageCapture(track);
+
                 autofocusReadyRef.current = true;
 
                 if (!isIOSDevice.current) {
@@ -555,6 +607,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
         active,
         clearRetryTimeouts,
         getLiveVideoTrack,
+        initImageCapture,
         refocus,
         sourceVideoRef,
         startAutoRefocus,
