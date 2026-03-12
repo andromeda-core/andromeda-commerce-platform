@@ -129,8 +129,6 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
     }, []);
 
     const tryEnableAutoFocus = useCallback(async () => {
-        // iOS does not support focus constraints at all - skip entirely
-        // iOS camera handles autofocus natively and continuously
         if (isIOSDevice.current || sourceVideoRef) return false;
         if (isApplyingFocusRef.current) return false;
 
@@ -138,106 +136,107 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
             isApplyingFocusRef.current = true;
 
             const { track } = getLiveVideoTrack();
-            if (!track) {
-                console.warn('[Scanner] No video track found for autofocus');
-                return false;
-            }
+            if (!track) return false;
 
-            const supported = navigator.mediaDevices?.getSupportedConstraints?.() || {};
-            const capabilities = track.getCapabilities?.() || {};
-
-            if (supported.focusMode && capabilities.focusMode?.includes?.('continuous')) {
-                return await applyFocusMode(track, 'continuous');
-            }
-            if (supported.focusMode && capabilities.focusMode?.includes?.('single-shot')) {
-                return await applyFocusMode(track, 'single-shot');
-            }
-            if (supported.focusDistance && capabilities.focusDistance) {
-                const { min = 0, max = 1, step = 0.1 } = capabilities.focusDistance;
-                const idealFocus = Math.max(min, Math.min(max, min + (max - min) * 0.6));
-                const firstApplied = await applyFocusDistance(track, idealFocus);
-                if (!firstApplied) return false;
-                if (max > min) {
-                    const secondFocus = Math.max(min, Math.min(max, idealFocus + step));
-                    await applyFocusDistance(track, secondFocus);
-                }
+            // Try continuous directly without capability check
+            try {
+                await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
                 return true;
-            }
+            } catch { }
+
+            try {
+                await track.applyConstraints({ focusMode: 'continuous' });
+                return true;
+            } catch { }
+
+            // Fallback to single-shot if continuous not available
+            try {
+                await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] });
+                return true;
+            } catch { }
 
             return false;
         } catch (err) {
-            console.warn('[Scanner] Failed to enable autofocus:', err);
+            console.warn('[Scanner] AutoFocus init failed:', err);
             return false;
         } finally {
             isApplyingFocusRef.current = false;
         }
-    }, [applyFocusDistance, applyFocusMode, getLiveVideoTrack, sourceVideoRef]);
+    }, [getLiveVideoTrack, sourceVideoRef]);
 
     const refocus = useCallback(async () => {
-        // iOS: native autofocus is always active, no manual control available
-        // Calling applyConstraints on iOS throws or does nothing, skip silently
         if (isIOSDevice.current) return false;
 
-        if (sourceVideoRef) {
-            console.warn('[Scanner] Refocus skipped: sourceVideoRef mode does not own the camera track');
-            return false;
-        }
+        if (sourceVideoRef) return false; // sourceVideoRef mode doesn't own the track
+
         if (isApplyingFocusRef.current) return false;
 
         try {
             isApplyingFocusRef.current = true;
 
-            const { stream, track } = getLiveVideoTrack();
-            if (!track) {
-                console.warn('[Scanner] No video track found for refocus', {
-                    hasStreamRef: !!streamRef.current,
-                    hasVideoSrcObject: !!videoRef.current?.srcObject,
-                    streamTracks: stream?.getTracks?.()?.map?.((t) => ({
-                        kind: t.kind,
-                        readyState: t.readyState,
-                        label: t.label,
-                    })) || [],
-                });
+            const { track } = getLiveVideoTrack();
+            if (!track || track.readyState !== 'live') {
+                console.warn('[Scanner] Refocus: no live track available');
                 return false;
             }
 
-            const supported = navigator.mediaDevices?.getSupportedConstraints?.() || {};
-            const capabilities = track.getCapabilities?.() || {};
+            // Strategy 1: single-shot then back to continuous
+            // Most reliable on Android Chrome - don't check capabilities first, just try
+            try {
+                await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] });
 
-            if (supported.focusMode && capabilities.focusMode?.includes?.('single-shot')) {
-                const ok = await applyFocusMode(track, 'single-shot');
-                if (ok && capabilities.focusMode?.includes?.('continuous')) {
-                    setTimeout(async () => {
-                        try { await applyFocusMode(track, 'continuous'); } catch { }
-                    }, 250);
+                // After single-shot triggers, switch back to continuous
+                setTimeout(async () => {
+                    try {
+                        await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+                    } catch { }
+                }, 300);
+
+                return true;
+            } catch { }
+
+            // Strategy 2: flat focusMode (some Android versions need this form)
+            try {
+                await track.applyConstraints({ focusMode: 'single-shot' });
+                setTimeout(async () => {
+                    try {
+                        await track.applyConstraints({ focusMode: 'continuous' });
+                    } catch { }
+                }, 300);
+                return true;
+            } catch { }
+
+            // Strategy 3: continuous toggle (force re-evaluate focus point)
+            try {
+                await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+                return true;
+            } catch { }
+
+            // Strategy 4: focusDistance sweep (devices that expose distance but not mode)
+            try {
+                const capabilities = track.getCapabilities?.() || {};
+                if (capabilities.focusDistance) {
+                    const { min = 0, max = 1, step = 0.1 } = capabilities.focusDistance;
+                    const near = Math.max(min, Math.min(max, min + step));
+                    const mid = Math.max(min, Math.min(max, min + (max - min) * 0.5));
+
+                    await track.applyConstraints({ advanced: [{ focusDistance: near }] });
+                    await new Promise(r => setTimeout(r, 150));
+                    await track.applyConstraints({ advanced: [{ focusDistance: mid }] });
+                    return true;
                 }
-                return ok;
-            }
+            } catch { }
 
-            if (supported.focusMode && capabilities.focusMode?.includes?.('continuous')) {
-                return await applyFocusMode(track, 'continuous');
-            }
-
-            if (supported.focusDistance && capabilities.focusDistance) {
-                const { min = 0, max = 1, step = 0.1 } = capabilities.focusDistance;
-                const nearFocus = Math.max(min, Math.min(max, min + step));
-                const midFocus = Math.max(min, Math.min(max, min + (max - min) * 0.6));
-
-                const firstApplied = await applyFocusDistance(track, nearFocus);
-                if (!firstApplied) return false;
-                await new Promise((r) => setTimeout(r, 120));
-                return await applyFocusDistance(track, midFocus);
-            }
-
-            console.warn('[Scanner] Refocus not supported on this device/browser');
+            console.warn('[Scanner] All refocus strategies failed on this device');
             return false;
+
         } catch (err) {
-            console.warn('[Scanner] Refocus failed:', err);
+            console.warn('[Scanner] Refocus error:', err);
             return false;
         } finally {
             isApplyingFocusRef.current = false;
         }
-    }, [applyFocusDistance, applyFocusMode, getLiveVideoTrack, sourceVideoRef]);
+    }, [getLiveVideoTrack, sourceVideoRef]);
 
     const clearRetryTimeouts = useCallback(() => {
         retryTimeoutsRef.current.forEach((id) => clearTimeout(id));
@@ -319,7 +318,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null }) {
             stopAll();
             if (cancelled) return;
 
-            const { BrowserMultiFormatReader } = await import('@zxing/browser');
+            const { BrowserMultiFormatReader, } = await import('@zxing/browser');
             if (cancelled) return;
 
             const hints = new Map();
