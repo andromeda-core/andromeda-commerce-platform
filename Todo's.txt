@@ -2065,7 +2065,8 @@ If a country-specific price exists, the system will use that price; otherwise it
 
 276: Countries Sorted By Alphabets and Changed Some Of COuntries Fetching Logic which wasnt using Setting Repository to fetch getCountries now they are using that ✅
 
-
+277: Scanner FOCUS ISSUE FIXED AND ALSO OPTIMIZED SCANNING LOGIC AND UPDATED ALL SCANNER CODES Across the SITE ✅
+278: Spinner Hiding Issue FIXED WHEN OPENING SIDEBAR OF DASHBOARD On MOBILE Zindex FIXED and its CSS ADDED TO MAKE it More Good ✅
 
 
 

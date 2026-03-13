@@ -3,7 +3,7 @@ import { useConfirm } from '@/Hooks/useConfirm';
 import { useTranslation } from '@/Hooks/useTranslation';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { ChevronLeft } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useScanner } from '@/Hooks/useScanner';
@@ -29,17 +29,85 @@ const index = ({ order_no, order }) => {
 
 
     const [imeiVerified, setImeiVerified] = useState(false);
-    const [showIMEIModal, setShowIMEIModal] = useState(false);
+    const [showVerificationModal, setShowVerificationModal] = useState(false);
     const [isVerifying, setIsVerifying] = useState(false);
     const [scanCooldown, setScanCooldown] = useState(false);
     const [scanError, setScanError] = useState(null);
     const cooldownRef = useRef(null);
+    const scanOverlayRef = useRef(null);
+    const [scanRegion, setScanRegion] = useState(null);
+
+
+    useEffect(() => {
+        if (!showVerificationModal) {
+            setScanRegion(null);
+            return;
+        }
+
+        const calculate = () => {
+            const videoEl = scannerVideoRef.current;
+            const overlayEl = scanOverlayRef.current;
+            if (!videoEl || !overlayEl) return;
+
+            const vRect = videoEl.getBoundingClientRect();
+            if (vRect.width === 0 || vRect.height === 0) return;
+
+            const videoW = videoEl.videoWidth;
+            const videoH = videoEl.videoHeight;
+            if (!videoW || !videoH) return;
+
+            const scaleX = vRect.width / videoW;
+            const scaleY = vRect.height / videoH;
+            const scale = Math.max(scaleX, scaleY);
+
+            const renderedW = videoW * scale;
+            const renderedH = videoH * scale;
+
+            const offsetX = (vRect.width - renderedW) / 2;
+            const offsetY = (vRect.height - renderedH) / 2;
+
+            const oRect = overlayEl.getBoundingClientRect();
+            const relLeft = oRect.left - vRect.left;
+            const relTop = oRect.top - vRect.top;
+
+            const x = (relLeft - offsetX) / renderedW;
+            const y = (relTop - offsetY) / renderedH;
+            const w = oRect.width / renderedW;
+            const h = oRect.height / renderedH;
+
+            setScanRegion({
+                x: Math.max(0, Math.min(1, x)),
+                y: Math.max(0, Math.min(1, y)),
+                width: Math.max(0.05, Math.min(1, w)),
+                height: Math.max(0.05, Math.min(1, h)),
+            });
+        };
+
+        let retryCount = 0;
+        const tryCalculate = () => {
+            const videoEl = scannerVideoRef.current;
+            if (videoEl?.videoWidth > 0) {
+                calculate();
+            } else if (retryCount < 20) {
+                retryCount++;
+                setTimeout(tryCalculate, 100);
+            }
+        };
+
+        const t = setTimeout(tryCalculate, 200);
+        window.addEventListener('resize', calculate);
+
+        return () => {
+            clearTimeout(t);
+            window.removeEventListener('resize', calculate);
+        };
+    }, [showVerificationModal]);
 
     const { videoRef: scannerVideoRef, refocus } = useScanner({
-        active: showIMEIModal && !scanCooldown && !isVerifying,
+        active: showVerificationModal && !scanCooldown && !isVerifying,
         onScan: (text) => handleIMEIScan(text),
+        scanRegion,
     });
-
     const windowSize = useWindowSize();
     useEffect(() => {
         setIsDisabled(data.refund_reason === '');
@@ -73,7 +141,7 @@ const index = ({ order_no, order }) => {
                 if (res.data.status) {
                     setData('scanned_code', code);
                     setImeiVerified(true);
-                    setShowIMEIModal(false);
+                    setShowVerificationModal(false);
                 }
 
                 const msg = res?.data?.message || __('CODE not found. Device not registered in inventory.');
@@ -121,7 +189,7 @@ const index = ({ order_no, order }) => {
 
     useEffect(() => {
         if (order?.status === 'delivered' && !imeiVerified) {
-            setShowIMEIModal(true);
+            setShowVerificationModal(true);
         }
         return () => clearTimeout(cooldownRef.current);
     }, []);
@@ -291,150 +359,348 @@ const index = ({ order_no, order }) => {
             </div>
 
 
-            {showIMEIModal && (
-                <div className="absolute inset-0 z-40 flex items-start overflow-y-auto lg:items-center scrollbar-none">
-                    <div className="absolute inset-0 bg-backgroundLight/80 dark:bg-backgroundDark/90 backdrop-blur-sm" />
+            {showVerificationModal && (
+                <>
+                    {windowSize.width <= 1024 ? (
+                        <>
+                            <div className="absolute inset-0 z-40 flex items-start overflow-y-auto lg:items-center scrollbar-none">
+                                <div className="absolute inset-0 bg-backgroundLight/80 dark:bg-backgroundDark/90 backdrop-blur-sm" />
 
-                    {/* Panel */}
-                    <div className="relative z-10 flex flex-col w-full max-w-2xl gap-0 mx-auto mb-20 overflow-hidden border rounded-md shadow-xl sm:mb-8 border-surface-3-light dark:border-surface-3-dark bg-backgroundLight dark:bg-surface-1-dark">
+                                {/* Panel */}
+                                <div className="relative z-10 flex flex-col w-full gap-0 mb-16 overflow-hidden border rounded-sm shadow-xl sm:mb-8 border-surface-3-light dark:border-surface-3-dark bg-backgroundLight dark:bg-surface-1-dark">
 
-                        {/* Header */}
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-surface-3-light dark:border-surface-3-dark">
-                            <div className="flex items-center gap-2.5">
-                                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-                                <h3 className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
-                                    {__('Step Required Before Submitting')}
-                                </h3>
-                            </div>
-                        </div>
+                                    {/* Header */}
+                                    <div className="flex items-center justify-between px-4 py-4 ">
+                                        <button
+                                            onClick={() => {
+                                                router.get(route('website.orders.index'));
 
-                        <div className="grid gap-6 p-6 lg:grid-cols-2">
+                                            }}
+                                            className="inline-flex items-center text-sm font-medium transition-colors lg:hidden text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80"
 
-                            {/* LEFT: Explanation */}
-                            <div className="flex flex-col justify-between gap-5">
+                                        >
+                                            <ChevronLeft />
 
-                                {/* What is this */}
-                                <div>
-                                    <h2 className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
-                                        {__('Verify Your Device First')}
-                                    </h2>
-                                    <p className="mt-1.5 text-sm leading-relaxed text-sub-text-light dark:text-sub-text-dark">
-                                        {__('Before you can submit a refund request, we need to verify the IMEI of the device included in this order. This helps us confirm the device condition and process your refund accurately.')}
-                                    </p>
-                                </div>
+                                        </button>
 
-                                {/* Steps */}
-                                <div className="space-y-3">
-                                    {[
-                                        {
-                                            num: '1',
-                                            title: __('Scan Device Barcode'),
-                                            desc: __('Point your camera at the barcode printed on the device or its box.'),
-                                        },
-                                        {
-                                            num: '2',
-                                            title: __('Auto Verification'),
-                                            desc: __('Scanned Code is extracted and matched against your order automatically.'),
-                                        },
-                                        {
-                                            num: '3',
-                                            title: __('Submit Your Request'),
-                                            desc: __('Once verified, you can fill in the reason and submit your refund.'),
-                                        },
-                                    ].map((s) => (
-                                        <div key={s.num} className="flex items-start gap-3">
-                                            <div className={`flex items-center justify-center w-7 h-7 rounded-md text-xs font-semibold shrink-0 text-main-text-light dark:text-main-text-dark`}>
-                                                {s.num}
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-medium text-main-text-light dark:text-main-text-dark">{s.title}</p>
-                                                <p className="mt-0.5 text-xs text-sub-text-light dark:text-sub-text-dark">{s.desc}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Info note */}
-                                <div className="flex items-start gap-2 p-3 border rounded-md border-surface-3-light bg-surface-1-light dark:bg-surface-1-dark dark:border-surface-3-dark">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="mt-0.5 size-4 shrink-0 text-sub-text-light dark:text-sub-text-dark">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                                    </svg>
-                                    <p className="text-xs leading-relaxed text-sub-text-light dark:text-sub-text-dark">
-                                        {__('IMEI 1, IMEI 2, SERIAL NO., EID Codes Are used for verification. Make sure the barcode is clean and well-lit for best results')}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* RIGHT: Scanner */}
-                            <div className="flex flex-col gap-3">
-                                <p className="text-xs font-medium tracking-wide uppercase text-sub-text-light dark:text-sub-text-dark">
-                                    {__('Scanner')}
-                                </p>
-
-                                {/* Viewport */}
-                                <div className="relative overflow-y-auto rounded-md bg-gray-950" style={{ aspectRatio: '4/3' }}>
-
-                                    <video
-                                        ref={scannerVideoRef}
-                                        className="object-cover w-full h-full"
-                                        muted
-                                        playsInline
-                                        onTouchStart={refocus}
-                                        onClick={refocus}
-                                    />
-                                    {/* Scan guide corners */}
-                                    {!isVerifying && !scanCooldown && (
-                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                            <div className="relative h-24 w-44">
-                                                <span className="absolute w-5 h-5 border-t-2 border-l-2 rounded-tl border-white/60 -top-px -left-px" />
-                                                <span className="absolute w-5 h-5 border-t-2 border-r-2 rounded-tr border-white/60 -top-px -right-px" />
-                                                <span className="absolute w-5 h-5 border-b-2 border-l-2 rounded-bl border-white/60 -bottom-px -left-px" />
-                                                <span className="absolute w-5 h-5 border-b-2 border-r-2 rounded-br border-white/60 -bottom-px -right-px" />
-                                                <div className="absolute h-px left-2 right-2 bg-white/30 top-1/2 animate-pulse" />
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Verifying overlay */}
-                                    {isVerifying && (
-                                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gray-950">
-                                            <svg className="w-9 h-9 text-white/60 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-                                                <path className="opacity-80" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                            </svg>
-                                            <p className="text-sm font-medium text-white/80">{__('Verifying IMEI...')}</p>
-                                            <p className="text-xs text-white/30">{__('Checking order records')}</p>
-                                        </div>
-                                    )}
-
-                                    {/* Error cooldown overlay */}
-                                    {scanCooldown && !isVerifying && scanError && (
-                                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-5 bg-gray-950/95">
-                                            <div className="flex items-center justify-center border border-red-800 rounded-full w-11 h-11 bg-red-900/30">
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="text-red-400 size-5">
-                                                    <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
-                                                </svg>
-                                            </div>
-                                            <div className="text-center">
-                                                <p className="text-sm font-semibold text-red-300">{__('Verification Failed')}</p>
-                                                <p className="mt-1 text-xs text-center text-white/40 max-w-[180px]">{scanError}</p>
-                                            </div>
-                                            <p className="text-xs animate-pulse text-white/25">{__('Scanner restarting...')}</p>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Active indicator */}
-                                {!isVerifying && !scanCooldown && (
-                                    <div className="flex items-center gap-2">
-                                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                                        <span className="text-xs text-sub-text-light dark:text-sub-text-dark">{__('Scanner active - align barcode within the frame')}</span>
                                     </div>
-                                )}
+
+
+
+                                    <div className="grid gap-6 px-6 lg:grid-cols-2">
+
+                                        {/* LEFT: Explanation */}
+                                        <div className="flex flex-col justify-between gap-5">
+
+                                            {/* What is this */}
+                                            <div>
+                                                <h2 className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
+                                                    {__('Verify Your Device First')}
+                                                </h2>
+                                                <p className="mt-1.5 text-sm leading-relaxed text-sub-text-light dark:text-sub-text-dark">
+                                                    {__('Before you can submit a refund request, we need to verify the IMEI of the device included in this order. This helps us confirm the device condition and process your refund accurately.')}
+                                                </p>
+                                            </div>
+
+                                            {/* Steps */}
+                                            <div className="space-y-3">
+                                                {[
+                                                    {
+                                                        num: '1',
+                                                        title: __('Scan Device Barcode'),
+                                                        desc: __('Point your camera at the barcode printed on the device or its box.'),
+                                                    },
+                                                    {
+                                                        num: '2',
+                                                        title: __('Auto Verification'),
+                                                        desc: __('Scanned Code is extracted and matched against your order automatically.'),
+                                                    },
+                                                    {
+                                                        num: '3',
+                                                        title: __('Submit Your Request'),
+                                                        desc: __('Once verified, you can fill in the reason and submit your refund.'),
+                                                    },
+                                                ].map((s) => (
+                                                    <div key={s.num} className="flex items-start gap-3">
+                                                        <div className={`flex items-center justify-center w-7 h-7 rounded-md text-xs font-semibold shrink-0 text-main-text-light dark:text-main-text-dark`}>
+                                                            {s.num}
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-medium text-main-text-light dark:text-main-text-dark">{s.title}</p>
+                                                            <p className="mt-0.5 text-xs text-sub-text-light dark:text-sub-text-dark">{s.desc}</p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {/* Info note */}
+                                            <div className="flex items-start gap-2 p-3 border rounded-md border-surface-3-light bg-surface-1-light dark:bg-surface-1-dark dark:border-surface-3-dark">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="mt-0.5 size-4 shrink-0 text-sub-text-light dark:text-sub-text-dark">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                                                </svg>
+                                                <p className="text-xs leading-relaxed text-sub-text-light dark:text-sub-text-dark">
+                                                    {__('IMEI 1, IMEI 2, SERIAL NO., EID Codes Are used for verification. Make sure the barcode is clean and well-lit for best results')}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* RIGHT: Scanner */}
+                                        <div className="flex flex-col gap-3">
+                                            <p className="text-xs font-medium tracking-wide uppercase text-sub-text-light dark:text-sub-text-dark">
+                                                {__('Scanner')}
+                                            </p>
+
+                                            {/* Viewport */}
+                                            <div className="relative overflow-y-auto rounded-md bg-gray-950" style={{ aspectRatio: '4/3' }}>
+
+                                                <video
+                                                    ref={scannerVideoRef}
+                                                    className="object-cover w-full h-full"
+                                                    muted
+                                                    playsInline
+                                                    onTouchStart={refocus}
+                                                    onClick={refocus}
+                                                />
+                                                {/* Scan guide corners */}
+                                                {!isVerifying && !scanCooldown && (
+                                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                        <div
+                                                            ref={scanOverlayRef}
+                                                            className="relative h-24 w-72"
+                                                            style={{
+                                                                boxShadow: '0 0 0 9999px rgba(0,0,0,0.6)',
+                                                                borderRadius: '4px',
+                                                            }}
+                                                        >
+                                                            <span className="absolute w-5 h-5 border-t-[3px] border-l-[3px] border-blue-400 -top-px -left-px rounded-tl-sm" />
+                                                            <span className="absolute w-5 h-5 border-t-[3px] border-r-[3px] border-blue-400 -top-px -right-px rounded-tr-sm" />
+                                                            <span className="absolute w-5 h-5 border-b-[3px] border-l-[3px] border-blue-400 -bottom-px -left-px rounded-bl-sm" />
+                                                            <span className="absolute w-5 h-5 border-b-[3px] border-r-[3px] border-blue-400 -bottom-px -right-px rounded-br-sm" />
+                                                            <div
+                                                                className="absolute left-1 right-1 h-0.5 bg-blue-400"
+                                                                style={{ animation: 'scanLine 1.8s ease-in-out infinite', top: '10%' }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Verifying overlay */}
+                                                {isVerifying && (
+                                                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gray-950">
+                                                        <svg className="w-9 h-9 text-white/60 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                            <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                                                            <path className="opacity-80" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                                        </svg>
+                                                        <p className="text-sm font-medium text-white/80">{__('Verifying IMEI...')}</p>
+                                                        <p className="text-xs text-white/30">{__('Checking order records')}</p>
+                                                    </div>
+                                                )}
+
+                                                {/* Error cooldown overlay */}
+                                                {scanCooldown && !isVerifying && scanError && (
+                                                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-5 bg-gray-950/95">
+                                                        <div className="flex items-center justify-center border border-red-800 rounded-full w-11 h-11 bg-red-900/30">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="text-red-400 size-5">
+                                                                <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
+                                                            </svg>
+                                                        </div>
+                                                        <div className="text-center">
+                                                            <p className="text-sm font-semibold text-red-300">{__('Verification Failed')}</p>
+                                                            <p className="mt-1 text-xs text-center text-white/40 max-w-[180px]">{scanError}</p>
+                                                        </div>
+                                                        <p className="text-xs animate-pulse text-white/25">{__('Scanner restarting...')}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Active indicator */}
+                                            {!isVerifying && !scanCooldown && (
+                                                <div className="flex items-center gap-2 mb-5">
+                                                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                                                    <span className="text-xs text-sub-text-light dark:text-sub-text-dark">{__('Scanner active - align barcode within the frame')}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
+                        </>
+                    ) :
+                        (
+                            <>
+                                <div className="absolute inset-0 z-40 flex items-start overflow-y-auto lg:items-center scrollbar-none">
+                                    <div className="absolute inset-0 bg-backgroundLight/80 dark:bg-backgroundDark/90 backdrop-blur-sm" />
+
+                                    {/* Panel */}
+                                    <div className="relative z-10 flex flex-col w-full max-w-2xl gap-0 mx-auto mb-16 overflow-hidden border rounded-md shadow-xl sm:mb-8 border-surface-3-light dark:border-surface-3-dark bg-backgroundLight dark:bg-surface-1-dark">
+
+                                        {/* Header */}
+                                        <div className="flex items-center justify-between px-6 py-4 border-b border-surface-3-light dark:border-surface-3-dark">
+                                            <div className="flex items-center gap-2.5">
+                                                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                                                <h3 className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+                                                    {__('Step Required Before Submitting')}
+                                                </h3>
+                                            </div>
+
+                                        </div>
+
+
+
+                                        <div className="grid gap-6 p-6 lg:grid-cols-2">
+
+                                            {/* LEFT: Explanation */}
+                                            <div className="flex flex-col justify-between gap-5">
+
+                                                {/* What is this */}
+                                                <div>
+                                                    <h2 className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
+                                                        {__('Verify Your Device First')}
+                                                    </h2>
+                                                    <p className="mt-1.5 text-sm leading-relaxed text-sub-text-light dark:text-sub-text-dark">
+                                                        {__('Before you can submit a refund request, we need to verify the IMEI of the device included in this order. This helps us confirm the device condition and process your refund accurately.')}
+                                                    </p>
+                                                </div>
+
+                                                {/* Steps */}
+                                                <div className="space-y-3">
+                                                    {[
+                                                        {
+                                                            num: '1',
+                                                            title: __('Scan Device Barcode'),
+                                                            desc: __('Point your camera at the barcode printed on the device or its box.'),
+                                                        },
+                                                        {
+                                                            num: '2',
+                                                            title: __('Auto Verification'),
+                                                            desc: __('Scanned Code is extracted and matched against your order automatically.'),
+                                                        },
+                                                        {
+                                                            num: '3',
+                                                            title: __('Submit Your Request'),
+                                                            desc: __('Once verified, you can fill in the reason and submit your refund.'),
+                                                        },
+                                                    ].map((s) => (
+                                                        <div key={s.num} className="flex items-start gap-3">
+                                                            <div className={`flex items-center justify-center w-7 h-7 rounded-md text-xs font-semibold shrink-0 text-main-text-light dark:text-main-text-dark`}>
+                                                                {s.num}
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-medium text-main-text-light dark:text-main-text-dark">{s.title}</p>
+                                                                <p className="mt-0.5 text-xs text-sub-text-light dark:text-sub-text-dark">{s.desc}</p>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                {/* Info note */}
+                                                <div className="flex items-start gap-2 p-3 border rounded-md border-surface-3-light bg-surface-1-light dark:bg-surface-1-dark dark:border-surface-3-dark">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="mt-0.5 size-4 shrink-0 text-sub-text-light dark:text-sub-text-dark">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                                                    </svg>
+                                                    <p className="text-xs leading-relaxed text-sub-text-light dark:text-sub-text-dark">
+                                                        {__('IMEI 1, IMEI 2, SERIAL NO., EID Codes Are used for verification. Make sure the barcode is clean and well-lit for best results')}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {/* RIGHT: Scanner */}
+                                            <div className="flex flex-col gap-3">
+                                                <p className="text-xs font-medium tracking-wide uppercase text-sub-text-light dark:text-sub-text-dark">
+                                                    {__('Scanner')}
+                                                </p>
+
+                                                {/* Viewport */}
+                                                <div className="relative overflow-y-auto rounded-md bg-gray-950" style={{ aspectRatio: '4/3' }}>
+
+                                                    <video
+                                                        ref={scannerVideoRef}
+                                                        className="object-cover w-full h-full"
+                                                        muted
+                                                        playsInline
+                                                        onTouchStart={refocus}
+                                                        onClick={refocus}
+                                                    />
+                                                    {/* Scan guide corners */}
+                                                    {!isVerifying && !scanCooldown && (
+                                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                            <div
+                                                                ref={scanOverlayRef}
+                                                                className="relative w-56 h-32"
+                                                                style={{
+                                                                    boxShadow: '0 0 0 9999px rgba(0,0,0,0.6)',
+                                                                    borderRadius: '4px',
+                                                                }}
+                                                            >
+                                                                <span className="absolute w-5 h-5 border-t-[3px] border-l-[3px] border-blue-400 -top-px -left-px rounded-tl-sm" />
+                                                                <span className="absolute w-5 h-5 border-t-[3px] border-r-[3px] border-blue-400 -top-px -right-px rounded-tr-sm" />
+                                                                <span className="absolute w-5 h-5 border-b-[3px] border-l-[3px] border-blue-400 -bottom-px -left-px rounded-bl-sm" />
+                                                                <span className="absolute w-5 h-5 border-b-[3px] border-r-[3px] border-blue-400 -bottom-px -right-px rounded-br-sm" />
+                                                                <div
+                                                                    className="absolute left-1 right-1 h-0.5 bg-blue-400"
+                                                                    style={{ animation: 'scanLine 1.8s ease-in-out infinite', top: '10%' }}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Verifying overlay */}
+                                                    {isVerifying && (
+                                                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gray-950">
+                                                            <svg className="w-9 h-9 text-white/60 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                                                                <path className="opacity-80" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                                            </svg>
+                                                            <p className="text-sm font-medium text-white/80">{__('Verifying IMEI...')}</p>
+                                                            <p className="text-xs text-white/30">{__('Checking order records')}</p>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Error cooldown overlay */}
+                                                    {scanCooldown && !isVerifying && scanError && (
+                                                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-5 bg-gray-950/95">
+                                                            <div className="flex items-center justify-center border border-red-800 rounded-full w-11 h-11 bg-red-900/30">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="text-red-400 size-5">
+                                                                    <path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" />
+                                                                </svg>
+                                                            </div>
+                                                            <div className="text-center">
+                                                                <p className="text-sm font-semibold text-red-300">{__('Verification Failed')}</p>
+                                                                <p className="mt-1 text-xs text-center text-white/40 max-w-[180px]">{scanError}</p>
+                                                            </div>
+                                                            <p className="text-xs animate-pulse text-white/25">{__('Scanner restarting...')}</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Active indicator */}
+                                                {!isVerifying && !scanCooldown && (
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                                                        <span className="text-xs text-sub-text-light dark:text-sub-text-dark">{__('Scanner active - align barcode within the frame')}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
+                        )
+
+                    }
+
+                    <style>{`
+                                    @keyframes scanLine {
+                                        0%   { top: 10%; opacity: 1; }
+                                        45%  { top: 85%; opacity: 1; }
+                                        50%  { top: 85%; opacity: 0; }
+                                        51%  { top: 10%; opacity: 0; }
+                                        55%  { top: 10%; opacity: 1; }
+                                        100% { top: 10%; opacity: 1; }
+                                    }
+                    `}</style>
+
+                </>
             )}
         </MainLayout >
     );

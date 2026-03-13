@@ -516,7 +516,7 @@ export default function Table({
                                                                                                 ]
                                                                                                 : item.id,
                                                                                         )}
-                                                                                        className="block px-3 py-2 transition-colors hover:bg-gray-100 dark:hover:bg-zinc-950/50 dark:hover:text-white"
+                                                                                        className="block px-3 py-2 transition-colors lg:hover:bg-gray-100 dark:lg:hover:bg-zinc-950/50 dark:hover:text-white"
                                                                                     >
                                                                                         Edit
                                                                                     </Link>
@@ -541,7 +541,7 @@ export default function Table({
                                                                                                     className={`${(typeof action.show === 'function' ? Boolean(action.show(item)) : true)
                                                                                                         ? 'block'
                                                                                                         : 'hidden'
-                                                                                                        } w-full px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-zinc-950/50 dark:hover:text-white`}
+                                                                                                        } w-full px-3 py-2 text-left transition-colors lg:hover:bg-gray-100 dark:lg:hover:bg-zinc-950/50 dark:hover:text-white`}
                                                                                                 >
                                                                                                     {
                                                                                                         action.label
@@ -558,7 +558,7 @@ export default function Table({
                                                                                                     className={`${(typeof action.show === 'function' ? Boolean(action.show(item)) : true)
                                                                                                         ? 'block'
                                                                                                         : 'hidden'
-                                                                                                        } w-full px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-zinc-950/50 dark:hover:text-white`}
+                                                                                                        } w-full px-3 py-2 text-left transition-colors lg:hover:bg-gray-100 dark:lg:hover:bg-zinc-950/50 dark:hover:text-white`}
                                                                                                 >
                                                                                                     {
                                                                                                         action.label
@@ -573,7 +573,7 @@ export default function Table({
                                                                                 <li>
                                                                                     <button
                                                                                         type="button"
-                                                                                        className="block w-full px-3 py-2 text-left text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                                                                                        className="block w-full px-3 py-2 text-left text-red-600 transition-colors lg:hover:bg-red-50 dark:text-red-400 dark:lg:hover:bg-red-900/20"
                                                                                         onClick={() => {
                                                                                             setSelectedIds(
                                                                                                 [],

@@ -328,7 +328,6 @@ const index = ({ return_policy, smartphone_slug }) => {
                                 })}
 
 
-
                             </section>
 
 
@@ -354,6 +353,7 @@ const index = ({ return_policy, smartphone_slug }) => {
                     </div>
                 </div>
             </div>
+
         </MainLayout>
     );
 };

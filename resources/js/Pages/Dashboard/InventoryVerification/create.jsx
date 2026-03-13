@@ -132,10 +132,79 @@ export default function create() {
 
     const videoRef = useRef(null);
     const cooldownRef = useRef(null);
+    const scanOverlayRef = useRef(null);
+    const [scanRegion, setScanRegion] = useState(null);
+
+    useEffect(() => {
+        if (step !== STEP.SCANNING) {
+            setScanRegion(null);
+            return;
+        }
+
+        const calculate = () => {
+            const videoEl = scannerVideoRef.current;
+            const overlayEl = scanOverlayRef.current;
+            if (!videoEl || !overlayEl) return;
+
+            const vRect = videoEl.getBoundingClientRect();
+            if (vRect.width === 0 || vRect.height === 0) return;
+
+            const videoW = videoEl.videoWidth;
+            const videoH = videoEl.videoHeight;
+            if (!videoW || !videoH) return;
+
+            const scaleX = vRect.width / videoW;
+            const scaleY = vRect.height / videoH;
+            const scale = Math.max(scaleX, scaleY);
+
+            const renderedW = videoW * scale;
+            const renderedH = videoH * scale;
+
+            const offsetX = (vRect.width - renderedW) / 2;
+            const offsetY = (vRect.height - renderedH) / 2;
+
+            const oRect = overlayEl.getBoundingClientRect();
+            const relLeft = oRect.left - vRect.left;
+            const relTop = oRect.top - vRect.top;
+
+            const x = (relLeft - offsetX) / renderedW;
+            const y = (relTop - offsetY) / renderedH;
+            const w = oRect.width / renderedW;
+            const h = oRect.height / renderedH;
+
+            setScanRegion({
+                x: Math.max(0, Math.min(1, x)),
+                y: Math.max(0, Math.min(1, y)),
+                width: Math.max(0.05, Math.min(1, w)),
+                height: Math.max(0.05, Math.min(1, h)),
+            });
+        };
+
+        let retryCount = 0;
+        const tryCalculate = () => {
+            const videoEl = scannerVideoRef.current;
+            if (videoEl?.videoWidth > 0) {
+                calculate();
+            } else if (retryCount < 20) {
+                retryCount++;
+                setTimeout(tryCalculate, 100);
+            }
+        };
+
+        const t = setTimeout(tryCalculate, 200);
+        window.addEventListener('resize', calculate);
+
+        return () => {
+            clearTimeout(t);
+            window.removeEventListener('resize', calculate);
+        };
+    }, [step]);
+
 
     const { videoRef: scannerVideoRef, refocus } = useScanner({
         active: step === STEP.SCANNING && !scanCooldown && !isVerifying,
         onScan: (text) => handleIMEIScan(text),
+        scanRegion,
     });
 
 
@@ -493,7 +562,7 @@ export default function create() {
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                         <div className="fixed inset-0 backdrop-blur-[5px] bg-black/30" />
 
-                        <div className="relative z-10 w-full max-w-md overflow-hidden bg-white shadow-2xl rounded-2xl dark:bg-deepcharcoal">
+                        <div className="relative z-10 w-full max-w-2xl overflow-hidden bg-white shadow-2xl rounded-2xl dark:bg-deepcharcoal">
                             {/* Modal Header */}
                             <div className="flex items-center justify-between px-6 py-4 border-b dark:border-white/10">
                                 <div className="flex items-center gap-2">
@@ -536,12 +605,22 @@ export default function create() {
                                     {/* Scan Guide Corners */}
                                     {!isVerifying && !scanCooldown && (
                                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                            <div className="relative w-48 h-28">
-                                                <span className="absolute w-5 h-5 border-t-2 border-l-2 border-blue-400 -top-px -left-px rounded-tl-md" />
-                                                <span className="absolute w-5 h-5 border-t-2 border-r-2 border-blue-400 -top-px -right-px rounded-tr-md" />
-                                                <span className="absolute w-5 h-5 border-b-2 border-l-2 border-blue-400 -bottom-px -left-px rounded-bl-md" />
-                                                <span className="absolute w-5 h-5 border-b-2 border-r-2 border-blue-400 -bottom-px -right-px rounded-br-md" />
-                                                <div className="absolute h-px left-2 right-2 bg-blue-400/50 top-1/2 animate-pulse" />
+                                            <div
+                                                ref={scanOverlayRef}
+                                                className="relative h-32 w-72"
+                                                style={{
+                                                    boxShadow: '0 0 0 9999px rgba(0,0,0,0.6)',
+                                                    borderRadius: '4px',
+                                                }}
+                                            >
+                                                <span className="absolute w-5 h-5 border-t-[3px] border-l-[3px] border-blue-400 -top-px -left-px rounded-tl-sm" />
+                                                <span className="absolute w-5 h-5 border-t-[3px] border-r-[3px] border-blue-400 -top-px -right-px rounded-tr-sm" />
+                                                <span className="absolute w-5 h-5 border-b-[3px] border-l-[3px] border-blue-400 -bottom-px -left-px rounded-bl-sm" />
+                                                <span className="absolute w-5 h-5 border-b-[3px] border-r-[3px] border-blue-400 -bottom-px -right-px rounded-br-sm" />
+                                                <div
+                                                    className="absolute left-1 right-1 h-0.5 bg-blue-400"
+                                                    style={{ animation: 'scanLine 1.8s ease-in-out infinite', top: '10%' }}
+                                                />
                                             </div>
                                         </div>
                                     )}
@@ -588,6 +667,17 @@ export default function create() {
                                 </div>
                             </div>
                         </div>
+
+                        <style>{`
+                                    @keyframes scanLine {
+                                        0%   { top: 10%; opacity: 1; }
+                                        45%  { top: 85%; opacity: 1; }
+                                        50%  { top: 85%; opacity: 0; }
+                                        51%  { top: 10%; opacity: 0; }
+                                        55%  { top: 10%; opacity: 1; }
+                                        100% { top: 10%; opacity: 1; }
+                                    }
+                                `}</style>
                     </div>
                 )}
 

@@ -90,6 +90,25 @@
         @apply font-outfit;
     }
 
+    #nprogress {
+        pointer-events: none;
+        z-index: 999999 !important;
+    }
+
+    #nprogress .bar {
+        background: var(--primary-progress-color);
+        position: fixed;
+        z-index: 999999 !important;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+    }
+
+    #nprogress .spinner {
+        z-index: 999999 !important;
+    }
+
     html,
     body {
         overscroll-behavior-y: contain;
