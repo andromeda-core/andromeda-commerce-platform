@@ -2059,8 +2059,9 @@ If a country-specific price exists, the system will use that price; otherwise it
 273: Scanner Code Updated Added Auto Refocus Logic + Manual Click Or Touch Auto Refocus Logic added IF Supported By the Device ✅
 
 
-274: Guard Added AT Checkout that is Checkes Same Country From personal info and Shipping if than Proceed otherwise it will prevent Submiting Order ✅
+274: Guard Added AT Checkout that is Checkes Same Country From GEO IP info and Shipping Address Country IDS if Okay than Proceed otherwise it will prevent Submiting Order ✅
 
+275: GEO IP Detection ADDED For Showing Country Wise PRices Of Smartphones If Applicable and Verification At checkout of Country ID to chekc country coming from Ip and from the active shipping address matches or not if matches than proceed otherwise return and shows error ✅
 
 
 

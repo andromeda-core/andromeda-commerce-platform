@@ -38,6 +38,7 @@ use App\Notifications\OrderRefundRequestWithdrawnNotification;
 use App\Repositories\Batches\Interface\IBatchRepository;
 use App\Repositories\Orders\Interface\IOrderRepository;
 use App\Services\CartPriceCalculator;
+use App\Services\IPResolverService;
 use App\Services\NOWPaymentPaymentService;
 use Cache;
 use Exception;
@@ -68,7 +69,8 @@ class OrderRepository implements IOrderRepository
         private Supplier $supplier,
         private SupplierAssignedOrder $supplier_assigned_order,
         private IBatchRepository $batch,
-        private SupplierAssignmentLog $supplier_assignment_log
+        private SupplierAssignmentLog $supplier_assignment_log,
+        private IPResolverService $ip_resolver
     ) {}
 
     public function getAllOrders(Request $request)
@@ -955,8 +957,12 @@ class OrderRepository implements IOrderRepository
                 throw new Exception($this->trans::get('Please Add Shipping Address First'));
             }
 
-            if ($customer->country_id != $shipping_address->country_id) {
-                throw new Exception($this->trans::get('Shipping Address Country Must Match The Personal Information Country To Place Order'));
+            // dd($this->ip_resolver->resolveCountryIDFromIP($request->ip()) != $shipping_address->country_id,
+            // $this->ip_resolver->resolveCountryIDFromIP($request->ip()),
+            // $shipping_address->country_id
+            // );
+            if ($this->ip_resolver->resolveCountryIDFromIP($request->ip()) != $shipping_address->country_id) {
+                throw new Exception($this->trans::get('For security reasons, the shipping address country must match your current detected location to place the order.'));
             }
 
             $buy_now = (bool) $request->has('buy_now');

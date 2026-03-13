@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\IPResolverService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -44,8 +45,7 @@ class SmartphoneForSale extends Model
     {
         $basePrice = $this->selling_price ?? 0;
 
-        $user = auth()->user();
-        $countryId = $user?->customer?->country_id;
+        $countryId = IPResolverService::resolveCountryIDFromIP(request()->ip());
 
         if ($countryId) {
             if ($this->relationLoaded('territory_prices')) {
@@ -81,9 +81,7 @@ class SmartphoneForSale extends Model
     public function getTotalPriceAttribute(): string
     {
         $basePrice = $this->selling_price ?? 0;
-
-        $user = auth()->user();
-        $countryId = $user?->customer?->country_id;
+        $countryId = IPResolverService::resolveCountryIDFromIP(request()->ip());
 
         if ($countryId) {
             if ($this->relationLoaded('territory_prices')) {
