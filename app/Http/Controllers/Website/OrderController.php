@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Website;
 
 use App\Http\Controllers\Controller;
 use App\Repositories\Cart\Interface\ICartRepository;
-use App\Repositories\Customers\Interface\ICustomerRepository;
 use App\Repositories\Orders\Interface\IOrderRepository;
+use App\Repositories\Settings\Interface\ISettingRepository;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -13,7 +13,7 @@ class OrderController extends Controller
 {
     public function __construct(
         private IOrderRepository $order,
-        private ICustomerRepository $customer,
+        private ISettingRepository $setting,
         private ICartRepository $cart,
     ) {}
 
@@ -53,7 +53,7 @@ class OrderController extends Controller
             return to_route('website.orders.index');
         }
 
-        $countries = $this->customer->getCountries();
+        $countries = $this->setting->getCountries();
 
         return Inertia::render('Website/Orders/show', compact('order', 'countries'));
     }
@@ -120,7 +120,7 @@ class OrderController extends Controller
             return to_route('website.orders.order-view', ['order_no' => $order_no])->with('info', $notExists['message']);
         }
 
-        $countries = collect($this->customer->getCountries())
+        $countries = collect($this->setting->getCountries())
             ->map(fn ($country) => [
                 'name' => $country->name,
             ])

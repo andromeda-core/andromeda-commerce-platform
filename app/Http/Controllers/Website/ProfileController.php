@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Website;
 use App\Helpers\Trans;
 use App\Http\Controllers\Controller;
 use App\Repositories\Customers\Interface\ICustomerRepository;
+use App\Repositories\Settings\Interface\ISettingRepository;
 use App\Repositories\Users\Interface\IUserRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,6 +16,7 @@ class ProfileController extends Controller
     public function __construct(
         private IUserRepository $user,
         private ICustomerRepository $customer,
+        private ISettingRepository $setting,
         private Trans $trans,
     ) {}
 
@@ -23,7 +25,7 @@ class ProfileController extends Controller
 
         $user = $this->user->getSingleCustomer(Auth::id());
 
-        $countries = $this->customer->getCountries();
+        $countries = $this->setting->getCountries();
 
         if (empty($user)) {
             return to_route('login');

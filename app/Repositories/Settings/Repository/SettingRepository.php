@@ -1987,7 +1987,10 @@ class SettingRepository implements ISettingRepository
 
     public function getCountries()
     {
-        return $this->country->where('is_active', true)->get();
+        return $this->country
+            ->where('is_active', true)
+            ->orderBy('name', 'asc')
+            ->get();
     }
 
     // AWS Settings
