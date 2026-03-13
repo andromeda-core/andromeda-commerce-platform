@@ -961,7 +961,7 @@ export default function create({ suppliers, smartphones, storage_locations }) {
                                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                             <div
                                                 ref={scanOverlayRef}
-                                                className="relative w-56 h-32"
+                                                className="relative h-32 w-72"
                                                 style={{
                                                     boxShadow: '0 0 0 9999px rgba(0,0,0,0.6)',
                                                     borderRadius: '4px',
