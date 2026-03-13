@@ -955,6 +955,10 @@ class OrderRepository implements IOrderRepository
                 throw new Exception($this->trans::get('Please Add Shipping Address First'));
             }
 
+            if ($customer->country_id != $shipping_address->country_id) {
+                throw new Exception($this->trans::get('Shipping Address Country Must Match The Personal Information Country To Place Order'));
+            }
+
             $buy_now = (bool) $request->has('buy_now');
 
             $sessionKey = 'single_product_checkout_'.$user->id;

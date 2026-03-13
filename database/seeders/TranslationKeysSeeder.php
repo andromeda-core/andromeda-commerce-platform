@@ -739,6 +739,7 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Processing time: 2–3 business days', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Your payment proof is under review', 'created_at' => $now, 'updated_at' => $now],
             ['key' => "We'll notify you once it's approved. This typically takes 2-3 business days.", 'created_at' => $now, 'updated_at' => $now],
+            ['key' => "Shipping Address Country Must Match The Personal Information Country To Place Order", 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Access and manage all your saved bookmarks in one convenient place.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Confirmation', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Are you sure you want to remove this item?', 'created_at' => $now, 'updated_at' => $now],
