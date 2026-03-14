@@ -5,7 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import SelectInput from '@/Components/SelectInput';
 import Toast from '@/Components/Toast';
 
@@ -357,8 +357,10 @@ export default function fulFillOrder({
 
     const [showProgressModal, setShowProgressModal] = useState(false);
 
-    const [activeScanner, setActiveScanner] = useState(null);
+    const scanOverlayRef = useRef(null);
+    const [scanRegion, setScanRegion] = useState(null);
 
+    const [activeScanner, setActiveScanner] = useState(null);
 
     const openScanner = (field, index) => {
         setActiveScanner({ field, index });
@@ -370,9 +372,81 @@ export default function fulFillOrder({
 
 
 
+    useEffect(() => {
+        if (!activeScanner) {
+            setScanRegion(null);
+            return;
+        }
+
+        const calculate = () => {
+            const videoEl = scannerVideoRef.current;
+            const overlayEl = scanOverlayRef.current;
+            if (!videoEl || !overlayEl) return;
+
+            const vRect = videoEl.getBoundingClientRect();
+            if (vRect.width === 0 || vRect.height === 0) return;
+
+            // Need actual video dimensions — wait if not loaded yet
+            const videoW = videoEl.videoWidth;
+            const videoH = videoEl.videoHeight;
+            if (!videoW || !videoH) return;
+
+            // object-fit: cover scale factor
+            // The video is scaled so BOTH dimensions >= element dimensions
+            const scaleX = vRect.width / videoW;
+            const scaleY = vRect.height / videoH;
+            const scale = Math.max(scaleX, scaleY);
+
+            // Actual rendered video size (always >= element size)
+            const renderedW = videoW * scale;
+            const renderedH = videoH * scale;
+
+            // Offset — how much video extends beyond element edge (negative = cropped)
+            const offsetX = (vRect.width - renderedW) / 2;
+            const offsetY = (vRect.height - renderedH) / 2;
+
+
+            const oRect = overlayEl.getBoundingClientRect();
+            const relLeft = oRect.left - vRect.left;
+            const relTop = oRect.top - vRect.top;
+
+            const x = (relLeft - offsetX) / renderedW;
+            const y = (relTop - offsetY) / renderedH;
+            const w = oRect.width / renderedW;
+            const h = oRect.height / renderedH;
+
+            setScanRegion({
+                x: Math.max(0, Math.min(1, x)),
+                y: Math.max(0, Math.min(1, y)),
+                width: Math.max(0.05, Math.min(1, w)),
+                height: Math.max(0.05, Math.min(1, h)),
+            });
+        };
+
+        let retryCount = 0;
+        const tryCalculate = () => {
+            const videoEl = scannerVideoRef.current;
+            if (videoEl?.videoWidth > 0) {
+                calculate();
+            } else if (retryCount < 20) {
+                retryCount++;
+                setTimeout(tryCalculate, 100);
+            }
+        };
+
+        const t = setTimeout(tryCalculate, 200);
+        window.addEventListener('resize', calculate);
+
+        return () => {
+            clearTimeout(t);
+            window.removeEventListener('resize', calculate);
+        };
+    }, [activeScanner]);
+
     const { videoRef: scannerVideoRef, refocus } = useScanner({
         active: !!activeScanner,
         onScan: (text) => handleScanResult(text),
+        scanRegion,
     });
 
 
@@ -1407,76 +1481,95 @@ export default function fulFillOrder({
                 />
 
                 {activeScanner && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
-                        <div className="fixed inset-0 backdrop-blur-[32px]" />
-
-                        <div className="relative z-10 w-full max-w-md overflow-hidden bg-white shadow-2xl rounded-2xl dark:bg-deepcharcoal">
-                            {/* Header */}
-                            <div className="flex items-center justify-between px-6 py-4 border-b dark:border-white/10">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-                                    <h3 className="text-sm font-semibold text-gray-800 dark:text-white">
-                                        Scanning: <span className="text-blue-600 capitalize dark:text-blue-400">
-                                            {activeScanner.field === 'imei1' ? 'IMEI 1'
-                                                : activeScanner.field === 'imei2' ? 'IMEI 2'
-                                                    : activeScanner.field === 'eid' ? 'EID'
-                                                        : 'Serial No'} — Item #{activeScanner.index + 1}
-                                        </span>
-                                    </h3>
+                    <>
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
+                            <div className="fixed inset-0 backdrop-blur-[32px]" />
+                            <div className="relative z-10 w-full max-w-md overflow-hidden bg-white shadow-2xl rounded-2xl dark:bg-deepcharcoal">
+                                <div className="flex items-center justify-between px-6 py-4 border-b dark:border-white/10">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                                        <h3 className="text-sm font-semibold text-gray-800 dark:text-white">
+                                            Scanning: <span className="text-blue-600 capitalize dark:text-blue-400">
+                                                {activeScanner.field === 'smartphone' ? 'Smartphone'
+                                                    : activeScanner.field === 'imei1' ? 'IMEI 1'
+                                                        : activeScanner.field === 'imei2' ? 'IMEI 2'
+                                                            : activeScanner.field === 'eid' ? 'EID'
+                                                                : 'Serial No'} — Item #{activeScanner.index + 1}
+                                            </span>
+                                        </h3>
+                                    </div>
+                                    <button
+                                        onClick={closeScanner}
+                                        className="flex items-center justify-center text-gray-400 rounded-lg w-7 h-7 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-4">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
                                 </div>
-                                <button
-                                    onClick={closeScanner}
-                                    className="flex items-center justify-center text-gray-400 rounded-lg w-7 h-7 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-4">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
-
-                            <div className="p-6">
-                                <p className="mb-4 text-xs text-center text-gray-500 dark:text-white/50">
-                                    Point the camera at the barcode. It will be captured automatically.
-                                </p>
-
-                                {/* Viewport */}
-                                <div className="relative overflow-hidden bg-gray-950 rounded-xl" style={{ aspectRatio: '4/3' }}>
-                                    <video
-                                        ref={scannerVideoRef}
-                                        className="object-cover w-full h-full"
-                                        muted
-                                        playsInline
-                                        onTouchStart={refocus}
-                                        onClick={refocus}
-                                    />
-
-                                    {/* Scan corners */}
-                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                        <div className="relative w-48 h-28">
-                                            <span className="absolute w-5 h-5 border-t-2 border-l-2 border-blue-400 -top-px -left-px rounded-tl-md" />
-                                            <span className="absolute w-5 h-5 border-t-2 border-r-2 border-blue-400 -top-px -right-px rounded-tr-md" />
-                                            <span className="absolute w-5 h-5 border-b-2 border-l-2 border-blue-400 -bottom-px -left-px rounded-bl-md" />
-                                            <span className="absolute w-5 h-5 border-b-2 border-r-2 border-blue-400 -bottom-px -right-px rounded-br-md" />
-                                            <div className="absolute h-px left-2 right-2 bg-blue-400/50 top-1/2 animate-pulse" />
+                                <div className="p-6">
+                                    <div
+                                        className="relative overflow-hidden bg-gray-950 rounded-xl"
+                                        style={{ aspectRatio: '4/3' }}
+                                    >
+                                        <video
+                                            ref={scannerVideoRef}
+                                            className="object-cover w-full h-full"
+                                            muted
+                                            playsInline
+                                            onClick={refocus}
+                                            onTouchStart={refocus}
+                                        />
+                                        {/* Dark vignette with bright scan hole — desktop */}
+                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                            <div
+                                                ref={scanOverlayRef}
+                                                className="relative h-32 w-72"
+                                                style={{
+                                                    boxShadow: '0 0 0 9999px rgba(0,0,0,0.6)',
+                                                    borderRadius: '4px',
+                                                }}
+                                            >
+                                                <span className="absolute w-5 h-5 border-t-[3px] border-l-[3px] border-blue-400 -top-px -left-px rounded-tl-sm" />
+                                                <span className="absolute w-5 h-5 border-t-[3px] border-r-[3px] border-blue-400 -top-px -right-px rounded-tr-sm" />
+                                                <span className="absolute w-5 h-5 border-b-[3px] border-l-[3px] border-blue-400 -bottom-px -left-px rounded-bl-sm" />
+                                                <span className="absolute w-5 h-5 border-b-[3px] border-r-[3px] border-blue-400 -bottom-px -right-px rounded-br-sm" />
+                                                <div
+                                                    className="absolute left-1 right-1 h-0.5 bg-blue-400"
+                                                    style={{ animation: 'scanLine 1.8s ease-in-out infinite', top: '10%' }}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-
-                                <div className="flex justify-center mt-4">
-                                    <PrimaryButton
-                                        Action={closeScanner}
-                                        Text={'Close Scanner'}
-                                        Type={'button'}
-                                        Icon={
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                            </svg>
-                                        }
-                                    />
+                                    <p className="mt-3 text-xs text-center text-gray-400 dark:text-white/40">
+                                        Align barcode within the frame
+                                    </p>
+                                    <div className="flex justify-center mt-3">
+                                        <PrimaryButton
+                                            Action={closeScanner}
+                                            Text={'Close Scanner'}
+                                            Type={'button'}
+                                            Icon={
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                                </svg>
+                                            }
+                                        />
+                                    </div>
                                 </div>
                             </div>
+                            <style>{`
+                                                    @keyframes scanLine {
+                                                        0%   { top: 10%; opacity: 1; }
+                                                        45%  { top: 85%; opacity: 1; }
+                                                        50%  { top: 85%; opacity: 0; }
+                                                        51%  { top: 10%; opacity: 0; }
+                                                        55%  { top: 10%; opacity: 1; }
+                                                        100% { top: 10%; opacity: 1; }
+                                                    }
+                                                `}</style>
                         </div>
-                    </div>
+                    </>
                 )}
 
                 {showProgressModal && (
