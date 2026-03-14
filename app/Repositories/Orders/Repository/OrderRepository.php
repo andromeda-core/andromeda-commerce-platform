@@ -2772,7 +2772,7 @@ class OrderRepository implements IOrderRepository
                     $fullLocalPath = Storage::disk('local')->path($localPath);
                     $extension = $file->getClientOriginalExtension();
                     $new_name = time().uniqid().'-'.Str::random(10).'.'.$extension;
-                    $s3Path = 'Batch/Draft/Invoices/'.$new_name;
+                    $s3Path = 'Batch/Invoices/Draft/'.$new_name;
 
                     Storage::disk('s3')->put($s3Path, file_get_contents($fullLocalPath), [
                         'CacheControl' => 'public, max-age=31536000',
