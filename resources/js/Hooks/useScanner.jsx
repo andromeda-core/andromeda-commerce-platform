@@ -849,6 +849,9 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
     const isDecodingRef = useRef(false);
 
     const isIOSDevice = useRef(isIOS());
+    const MANUAL_TAP_COOLDOWN = 5000;
+    const lastManualTapRef = useRef(0);
+    const focusOpIdRef = useRef(0);
     const scanRegionRef = useRef(scanRegion);
 
 
@@ -1173,11 +1176,18 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
         }
 
         const isManualTap = tapXOrEvent !== undefined && tapXOrEvent !== null;
+
         if (isManualTap) {
+            focusOpIdRef.current++;
             isApplyingFocusRef.current = false;
+            lastManualTapRef.current = Date.now();
         } else {
+
+            if (Date.now() - lastManualTapRef.current < MANUAL_TAP_COOLDOWN) return false;
             if (isApplyingFocusRef.current) return false;
         }
+
+        const opId = ++focusOpIdRef.current;
 
         try {
             isApplyingFocusRef.current = true;
@@ -1185,12 +1195,37 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
             const { x, y } = resolvePoint(tapXOrEvent, tapY);
             const hasSpecificPoint = isManualTap && !(x === 0.5 && y === 0.5);
 
+            if (isManualTap) {
+                const videoEl = sourceVideoRef ? sourceVideoRef.current : videoRef.current;
+                if (videoEl?.videoWidth) {
+                    const chkCanvas = document.createElement('canvas');
+                    chkCanvas.width = 120;
+                    chkCanvas.height = 120;
+                    const chkCtx = chkCanvas.getContext('2d', { willReadFrequently: true });
+                    const cx = Math.round(x * videoEl.videoWidth);
+                    const cy = Math.round(y * videoEl.videoHeight);
+                    const cropX = Math.max(0, Math.min(videoEl.videoWidth - 120, cx - 60));
+                    const cropY = Math.max(0, Math.min(videoEl.videoHeight - 120, cy - 60));
+                    chkCtx.drawImage(videoEl, cropX, cropY, 120, 120, 0, 0, 120, 120);
+                    const sharp = calculateSharpness(chkCtx.getImageData(0, 0, 120, 120));
+                    if (sharp >= SHARPNESS_THRESHOLD * 2) {
+                        return true;
+                    }
+                }
+            }
+
+
+            if (opId !== focusOpIdRef.current) return false;
+
+
             if (hasSpecificPoint) {
                 const swept = await softwareTapToFocus(x, y);
                 if (swept) return true;
             }
 
-            if (!hasSpecificPoint && typeof ImageCapture !== 'undefined') {
+            if (opId !== focusOpIdRef.current) return false;
+
+            if (isManualTap && typeof ImageCapture !== 'undefined') {
                 try {
                     if (!imageCaptureRef.current) initImageCapture(getLiveVideoTrack().track);
                     if (imageCaptureRef.current) {
@@ -1203,6 +1238,9 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
                 }
             }
 
+            if (opId !== focusOpIdRef.current) return false;
+
+            // Final fallback: toggle continuous to force driver re-evaluation
             const { track } = getLiveVideoTrack();
             if (track) {
                 try {
@@ -1223,6 +1261,8 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
         retryTimeoutsRef.current = [];
     }, []);
 
+
+
     const startAutoRefocus = useCallback(() => {
         if (isIOSDevice.current) return;
 
@@ -1238,15 +1278,21 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
                 return;
             }
 
-            if (focusSupportedRef.current) {
-                await refocus();
-                refocusTimeoutRef.current = setTimeout(run, 3000);
-            } else {
-                autoRefocusAttemptsRef.current++;
-                if (autoRefocusAttemptsRef.current >= 3) return;
-                await refocus();
-                refocusTimeoutRef.current = setTimeout(run, 3000);
+            if (Date.now() - lastManualTapRef.current < MANUAL_TAP_COOLDOWN) {
+                refocusTimeoutRef.current = setTimeout(run, 1000); // check again in 1s
+                return;
             }
+
+            if (focusSupportedRef.current) {
+                return;
+            }
+
+
+            autoRefocusAttemptsRef.current++;
+            if (autoRefocusAttemptsRef.current >= 5) return;
+
+            await refocus();
+            refocusTimeoutRef.current = setTimeout(run, 3000);
         };
 
         refocusTimeoutRef.current = setTimeout(run, 3000);
@@ -1262,6 +1308,8 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
             isScannedRef.current = false;
             isDecodingRef.current = false;
             imageCaptureRef.current = null;
+            lastManualTapRef.current = 0;
+            focusOpIdRef.current = 0;
 
             removeTapListenersRef.current?.();
             removeTapListenersRef.current = null;
