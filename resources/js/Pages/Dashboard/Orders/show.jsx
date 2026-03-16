@@ -97,16 +97,21 @@ export default function show({ order }) {
     const [verificationStatus, setVerificationStatus] = useState(null);
     const [verificationMessage, setVerificationMessage] = useState('');
     const [scanActive, setScanActive] = useState(false);
+    const [torchOn, setTorchOn] = useState(false);
 
 
 
-    const { refocus } = useScanner({
+    const { refocus, toggleTorch } = useScanner({
         active: scanActive,
         sourceVideoRef: recordingVideoRef,
         onScan: (text) => {
             if (!isVerifiedRef.current) handleScannedCode(text);
         },
     });
+    const handleTorchToggle = async () => {
+        const result = await toggleTorch();
+        if (result !== null) setTorchOn(result);
+    };
 
 
     const stopScanning = () => setScanActive(false);
@@ -203,6 +208,7 @@ export default function show({ order }) {
         manualStopRef.current = false;
         pendingCloseRef.current = false;
         setOpenRecorder(false);
+        setTorchOn(false);
         setRecordingSaving(false);
         if (canClearBanner) {
             setVerificationStatus(null);
@@ -902,9 +908,6 @@ export default function show({ order }) {
                     </div>
                 )}
 
-                {/* ────────────────────────────────────────────────────────────────
-                    Recorder / Verification Modal
-                    ──────────────────────────────────────────────────────────────── */}
                 {openRecorder && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
 
@@ -920,16 +923,39 @@ export default function show({ order }) {
                             {/* Header */}
                             <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b dark:border-white/10">
                                 <h3 className="text-base font-semibold">Package Verification Recorder</h3>
-                                {!isRecording && (
-                                    <button
-                                        onClick={handleClose}
-                                        className="flex items-center justify-center w-8 h-8 text-gray-400 rounded-full hover:bg-gray-100 dark:hover:bg-white/10"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                )}
+
+                                <div className="flex items-center gap-2">
+                                    {/* Torch button — live feed pe hi dikhao, playback pe nahi */}
+                                    {!recordedUrl && (
+                                        <button
+                                            onClick={handleTorchToggle}
+                                            title={torchOn ? 'Turn off flashlight' : 'Turn on flashlight'}
+                                            className={`flex items-center justify-center rounded-lg w-8 h-8 transition-colors
+                    ${torchOn
+                                                    ? 'bg-yellow-400 text-gray-900 hover:bg-yellow-300'
+                                                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10'
+                                                }`}
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                strokeWidth={1.8} stroke="currentColor" className="size-5">
+                                                <path strokeLinecap="round" strokeLinejoin="round"
+                                                    d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+                                            </svg>
+                                        </button>
+                                    )}
+
+                                    {/* Close button */}
+                                    {!isRecording && (
+                                        <button
+                                            onClick={handleClose}
+                                            className="flex items-center justify-center w-8 h-8 text-gray-400 rounded-full hover:bg-gray-100 dark:hover:bg-white/10"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="p-5">
@@ -994,6 +1020,18 @@ export default function show({ order }) {
                                         <div className="absolute flex items-center gap-2 px-3 py-1 text-xs text-white -translate-x-1/2 rounded-full bottom-3 left-1/2 bg-black/60">
                                             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
                                             Scanning for CODE...
+                                        </div>
+                                    )}
+
+
+                                    {torchOn && !recordedUrl && (
+                                        <div className="absolute flex items-center gap-1 px-2 py-1 text-xs font-semibold text-gray-900 rounded-full pointer-events-none top-2 right-2 bg-yellow-400/90">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                strokeWidth={2} stroke="currentColor" className="size-3">
+                                                <path strokeLinecap="round" strokeLinejoin="round"
+                                                    d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+                                            </svg>
+                                            Flash ON
                                         </div>
                                     )}
 

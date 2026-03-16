@@ -4,7 +4,7 @@ import { useTranslation } from '@/Hooks/useTranslation';
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Flashlight, FlashlightOff } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { useScanner } from '@/Hooks/useScanner';
 import axios from 'axios';
@@ -36,6 +36,20 @@ const index = ({ order_no, order }) => {
     const cooldownRef = useRef(null);
     const scanOverlayRef = useRef(null);
     const [scanRegion, setScanRegion] = useState(null);
+    const [torchOn, setTorchOn] = useState(false);
+
+
+    const { videoRef: scannerVideoRef, refocus, toggleTorch } = useScanner({
+        active: showVerificationModal && !scanCooldown && !isVerifying,
+        onScan: (text) => handleIMEIScan(text),
+        scanRegion,
+    });
+
+    // Add handler near other handlers:
+    const handleTorchToggle = async () => {
+        const result = await toggleTorch();
+        if (result !== null) setTorchOn(result);
+    };
 
 
     useEffect(() => {
@@ -103,11 +117,7 @@ const index = ({ order_no, order }) => {
         };
     }, [showVerificationModal]);
 
-    const { videoRef: scannerVideoRef, refocus } = useScanner({
-        active: showVerificationModal && !scanCooldown && !isVerifying,
-        onScan: (text) => handleIMEIScan(text),
-        scanRegion,
-    });
+
     const windowSize = useWindowSize();
     useEffect(() => {
         setIsDisabled(data.refund_reason === '');
@@ -142,6 +152,7 @@ const index = ({ order_no, order }) => {
                     setData('scanned_code', code);
                     setImeiVerified(true);
                     setShowVerificationModal(false);
+                    setTorchOn(false);
                 }
 
                 const msg = res?.data?.message || __('CODE not found. Device not registered in inventory.');
@@ -363,36 +374,44 @@ const index = ({ order_no, order }) => {
                 <>
                     {windowSize.width <= 1024 ? (
                         <>
-                            <div className="absolute inset-0 z-40 flex items-start overflow-y-auto lg:items-center scrollbar-none">
-                                <div className="absolute inset-0 bg-backgroundLight/80 dark:bg-backgroundDark/90 backdrop-blur-sm" />
+                            <div className="fixed inset-0 z-40 bg-backgroundLight/80 dark:bg-backgroundDark/90 backdrop-blur-sm" />
 
-                                {/* Panel */}
-                                <div className="relative z-10 flex flex-col w-full gap-0 mb-16 overflow-hidden border rounded-sm shadow-xl sm:mb-8 border-surface-3-light dark:border-surface-3-dark bg-backgroundLight dark:bg-surface-1-dark">
+                            <div
+                                className="fixed inset-0 z-40 flex items-start overflow-y-scroll scrollbar-none"
+                                style={{ WebkitOverflowScrolling: 'touch' }}
+                            >
+
+                                <div className="relative flex flex-col w-full gap-0 mb-16 overflow-hidden border rounded-sm shadow-xl sm:mb-8 border-surface-3-light dark:border-surface-3-dark bg-backgroundLight dark:bg-surface-1-dark">
 
                                     {/* Header */}
-                                    <div className="flex items-center justify-between px-4 py-4 ">
+                                    <div className="flex items-center justify-between px-4 py-4">
                                         <button
-                                            onClick={() => {
-                                                router.get(route('website.orders.index'));
-
-                                            }}
+                                            onClick={() => router.get(route('website.orders.index'))}
                                             className="inline-flex items-center text-sm font-medium transition-colors lg:hidden text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80"
-
                                         >
                                             <ChevronLeft />
-
                                         </button>
 
+                                        <button
+                                            onClick={handleTorchToggle}
+                                            title={torchOn ? __('Turn off flashlight') : __('Turn on flashlight')}
+                                            className={`flex items-center justify-center w-9 h-9 rounded-md transition-colors
+                        ${torchOn
+                                                    ? 'bg-yellow-400 text-gray-900'
+                                                    : 'text-sub-text-light dark:text-sub-text-dark hover:bg-surface-1-light dark:hover:bg-surface-1-dark'
+                                                }`}
+                                        >
+                                            {torchOn
+                                                ? <Flashlight className="size-5" />
+                                                : <FlashlightOff className="size-5" />
+                                            }
+                                        </button>
                                     </div>
-
-
 
                                     <div className="grid gap-6 px-6 lg:grid-cols-2">
 
                                         {/* LEFT: Explanation */}
                                         <div className="flex flex-col justify-between gap-5">
-
-                                            {/* What is this */}
                                             <div>
                                                 <h2 className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
                                                     {__('Verify Your Device First')}
@@ -402,7 +421,6 @@ const index = ({ order_no, order }) => {
                                                 </p>
                                             </div>
 
-                                            {/* Steps */}
                                             <div className="space-y-3">
                                                 {[
                                                     {
@@ -422,7 +440,7 @@ const index = ({ order_no, order }) => {
                                                     },
                                                 ].map((s) => (
                                                     <div key={s.num} className="flex items-start gap-3">
-                                                        <div className={`flex items-center justify-center w-7 h-7 rounded-md text-xs font-semibold shrink-0 text-main-text-light dark:text-main-text-dark`}>
+                                                        <div className="flex items-center justify-center text-xs font-semibold rounded-md w-7 h-7 shrink-0 text-main-text-light dark:text-main-text-dark">
                                                             {s.num}
                                                         </div>
                                                         <div>
@@ -433,7 +451,6 @@ const index = ({ order_no, order }) => {
                                                 ))}
                                             </div>
 
-                                            {/* Info note */}
                                             <div className="flex items-start gap-2 p-3 border rounded-md border-surface-3-light bg-surface-1-light dark:bg-surface-1-dark dark:border-surface-3-dark">
                                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="mt-0.5 size-4 shrink-0 text-sub-text-light dark:text-sub-text-dark">
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
@@ -445,14 +462,13 @@ const index = ({ order_no, order }) => {
                                         </div>
 
                                         {/* RIGHT: Scanner */}
-                                        <div className="flex flex-col gap-3">
+                                        <div className="flex flex-col gap-3 pb-8">
                                             <p className="text-xs font-medium tracking-wide uppercase text-sub-text-light dark:text-sub-text-dark">
                                                 {__('Scanner')}
                                             </p>
 
                                             {/* Viewport */}
-                                            <div className="relative overflow-y-auto rounded-md bg-gray-950" style={{ aspectRatio: '4/3' }}>
-
+                                            <div className="relative overflow-hidden rounded-md bg-gray-950" style={{ aspectRatio: '4/3' }}>
                                                 <video
                                                     ref={scannerVideoRef}
                                                     className="object-cover w-full h-full"
@@ -461,7 +477,7 @@ const index = ({ order_no, order }) => {
                                                     onTouchStart={refocus}
                                                     onClick={refocus}
                                                 />
-                                                {/* Scan guide corners */}
+
                                                 {!isVerifying && !scanCooldown && (
                                                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                                         <div
@@ -484,7 +500,6 @@ const index = ({ order_no, order }) => {
                                                     </div>
                                                 )}
 
-                                                {/* Verifying overlay */}
                                                 {isVerifying && (
                                                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gray-950">
                                                         <svg className="w-9 h-9 text-white/60 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -496,7 +511,6 @@ const index = ({ order_no, order }) => {
                                                     </div>
                                                 )}
 
-                                                {/* Error cooldown overlay */}
                                                 {scanCooldown && !isVerifying && scanError && (
                                                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-5 bg-gray-950/95">
                                                         <div className="flex items-center justify-center border border-red-800 rounded-full w-11 h-11 bg-red-900/30">
@@ -511,13 +525,22 @@ const index = ({ order_no, order }) => {
                                                         <p className="text-xs animate-pulse text-white/25">{__('Scanner restarting...')}</p>
                                                     </div>
                                                 )}
+
+                                                {/* Flash ON badge */}
+                                                {torchOn && (
+                                                    <div className="absolute flex items-center gap-1 px-2 py-1 text-xs font-semibold text-gray-900 rounded-full pointer-events-none top-2 right-2 bg-yellow-400/90">
+                                                        <Flashlight className="size-3" />
+                                                        {__('Flash ON')}
+                                                    </div>
+                                                )}
                                             </div>
 
-                                            {/* Active indicator */}
                                             {!isVerifying && !scanCooldown && (
-                                                <div className="flex items-center gap-2 mb-5">
+                                                <div className="flex items-center gap-2">
                                                     <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                                                    <span className="text-xs text-sub-text-light dark:text-sub-text-dark">{__('Scanner active - align barcode within the frame')}</span>
+                                                    <span className="text-xs text-sub-text-light dark:text-sub-text-dark">
+                                                        {__('Scanner active - align barcode within the frame')}
+                                                    </span>
                                                 </div>
                                             )}
                                         </div>
@@ -543,6 +566,22 @@ const index = ({ order_no, order }) => {
                                                 </h3>
                                             </div>
 
+                                            {/* ← Torch button add karo */}
+                                            <button
+                                                onClick={handleTorchToggle}
+                                                title={torchOn ? __('Turn off flashlight') : __('Turn on flashlight')}
+                                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors
+            ${torchOn
+                                                        ? 'bg-yellow-400 text-gray-900 hover:bg-yellow-300'
+                                                        : 'border border-surface-3-light dark:border-surface-3-dark text-sub-text-light dark:text-sub-text-dark hover:bg-surface-1-light dark:hover:bg-surface-1-dark'
+                                                    }`}
+                                            >
+                                                {torchOn
+                                                    ? <Flashlight className="size-3.5" />
+                                                    : <FlashlightOff className="size-3.5" />
+                                                }
+                                                {torchOn ? __('Flash ON') : __('Flash')}
+                                            </button>
                                         </div>
 
 
@@ -671,7 +710,17 @@ const index = ({ order_no, order }) => {
                                                             <p className="text-xs animate-pulse text-white/25">{__('Scanner restarting...')}</p>
                                                         </div>
                                                     )}
+
                                                 </div>
+
+
+                                                {/* Flash ON badge */}
+                                                {torchOn && (
+                                                    <div className="absolute flex items-center gap-1 px-2 py-1 text-xs font-semibold text-gray-900 rounded-full pointer-events-none top-2 right-2 bg-yellow-400/90">
+                                                        <Flashlight className="size-3" />
+                                                        {__('Flash ON')}
+                                                    </div>
+                                                )}
 
                                                 {/* Active indicator */}
                                                 {!isVerifying && !scanCooldown && (

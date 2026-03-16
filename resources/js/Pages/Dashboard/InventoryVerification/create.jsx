@@ -134,6 +134,7 @@ export default function create() {
     const cooldownRef = useRef(null);
     const scanOverlayRef = useRef(null);
     const [scanRegion, setScanRegion] = useState(null);
+    const [torchOn, setTorchOn] = useState(false);
 
     useEffect(() => {
         if (step !== STEP.SCANNING) {
@@ -201,12 +202,16 @@ export default function create() {
     }, [step]);
 
 
-    const { videoRef: scannerVideoRef, refocus } = useScanner({
+    const { videoRef: scannerVideoRef, refocus, toggleTorch } = useScanner({
         active: step === STEP.SCANNING && !scanCooldown && !isVerifying,
         onScan: (text) => handleIMEIScan(text),
         scanRegion,
     });
 
+    const handleTorchToggle = async () => {
+        const result = await toggleTorch();
+        if (result !== null) setTorchOn(result);
+    };
 
     const handleIMEIScan = async (scannedValue) => {
         if (scanCooldown || isVerifying) return;
@@ -364,6 +369,7 @@ export default function create() {
         setCameraError(null);
         setScanError(null);
         setVerifiedItem(null);
+        setTorchOn(false);
         setScanCooldown(false);
         setIsVerifying(false);
         setStep(STEP.IDLE);
@@ -569,14 +575,37 @@ export default function create() {
                                     <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
                                     <h3 className="text-sm font-semibold text-gray-800 dark:text-white">Scanner Active</h3>
                                 </div>
-                                <button
-                                    onClick={handleFullReset}
-                                    className="flex items-center justify-center text-gray-400 rounded-lg w-7 h-7 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-4">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
+
+
+                                <div className="flex items-center gap-2">
+                                    {/* Torch / Flashlight toggle */}
+                                    <button
+                                        onClick={handleTorchToggle}
+                                        title={torchOn ? 'Turn off flashlight' : 'Turn on flashlight'}
+                                        className={`flex items-center justify-center rounded-lg w-8 h-8 transition-colors
+                                                ${torchOn
+                                                ? 'bg-yellow-400 text-gray-900 hover:bg-yellow-300'
+                                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10'
+                                            }`}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            strokeWidth={1.8} stroke="currentColor" className="size-5">
+                                            <path strokeLinecap="round" strokeLinejoin="round"
+                                                d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+                                        </svg>
+                                    </button>
+
+                                    {/* Close button */}
+                                    <button
+                                        onClick={handleFullReset}
+                                        className="flex items-center justify-center text-gray-400 rounded-lg w-7 h-7 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            strokeWidth={2} stroke="currentColor" className="size-4">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="p-6">
@@ -607,7 +636,7 @@ export default function create() {
                                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                             <div
                                                 ref={scanOverlayRef}
-                                                className="relative h-32 w-72"
+                                                className="relative h-32 lg:w-96 w-72"
                                                 style={{
                                                     boxShadow: '0 0 0 9999px rgba(0,0,0,0.6)',
                                                     borderRadius: '4px',
@@ -625,6 +654,18 @@ export default function create() {
                                         </div>
                                     )}
 
+                                    {/* Torch active indicator */}
+                                    {torchOn && (
+                                        <div className="absolute flex items-center gap-1 px-2 py-1 text-xs font-semibold text-gray-900 rounded-full pointer-events-none top-2 right-2 bg-yellow-400/90">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                strokeWidth={2} stroke="currentColor" className="size-3">
+                                                <path strokeLinecap="round" strokeLinejoin="round"
+                                                    d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+                                            </svg>
+                                            Flash ON
+                                        </div>
+                                    )}
+
                                     {/* Verifying Overlay */}
                                     {isVerifying && (
                                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gray-900">
@@ -638,6 +679,8 @@ export default function create() {
                                             </div>
                                         </div>
                                     )}
+
+
 
                                     {/* Error Cooldown Overlay */}
                                     {scanCooldown && !isVerifying && scanError && (
