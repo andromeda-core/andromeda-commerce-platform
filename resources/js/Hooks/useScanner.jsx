@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import beepSound from "../../assets/sounds/Beep.mp3";
+// import "./../Components/dubugOverlay";
 
 const isIOS = () =>
     /iPad|iPhone|iPod/.test(navigator.userAgent) ||
@@ -365,48 +366,122 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
     }, [getLiveVideoTrack]);
 
 
+
     const initializeFocus = useCallback(async (track, isCancelled) => {
         if (isIOSDevice.current || !track) return;
 
-        // Preferred: single-shot kick then continuous
         const capabilities = track.getCapabilities?.() || {};
+        // console.log('[Scanner] Focus capabilities:', JSON.stringify(capabilities.focusMode ?? 'none'));
+
+        // Priority 1: continuous autofocus directly (preferred for Android)
+        if (capabilities.focusMode?.includes('continuous')) {
+            try {
+                await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+                console.log('[Scanner] Continuous AF applied (immediate)');
+
+                await new Promise(r => setTimeout(r, 800));
+                if (isCancelled?.()) return;
+
+                await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+                console.log('[Scanner] Continuous AF re-applied (800ms delay)');
+                return;
+            } catch (err) {
+                console.log('[Scanner] Continuous AF failed:', err?.message);
+            }
+        }
+
+        if (isCancelled?.()) return;
+
+        // Priority 2: single-shot kick to trigger HW AF, then switch to continuous
         if (capabilities.focusMode?.includes('single-shot')) {
             try {
                 await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] });
+                // console.log('[Scanner] single-shot kick applied, switching to continuous...');
                 await new Promise(r => setTimeout(r, 600));
                 if (isCancelled?.()) return;
-                await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+                try {
+                    await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+                    // console.log('[Scanner] Continuous AF applied after single-shot kick');
+                } catch { }
                 return;
-            } catch { }
+            } catch (err) {
+                console.log('[Scanner] single-shot kick failed:', err?.message);
+            }
         }
 
         if (isCancelled?.()) return;
 
-        // grabFrame once to kick HW AF
+        // Priority 3: grabFrame to trigger HW AF pipeline (ImageCapture API)
         if (typeof ImageCapture !== 'undefined' && imageCaptureRef.current) {
             try {
                 await imageCaptureRef.current.grabFrame();
+                // console.log('[Scanner] grabFrame triggered for AF');
                 await new Promise(r => setTimeout(r, 400));
-            } catch { }
+            } catch (err) {
+                console.log('[Scanner] grabFrame failed:', err?.message);
+            }
         }
 
         if (isCancelled?.()) return;
 
-        // Set continuous directly
+        // Last resort: try setting continuous without advanced wrapper
         try {
             await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+            // console.log('[Scanner] Continuous AF applied (last resort advanced)');
             return;
         } catch { }
 
         try {
             await track.applyConstraints({ focusMode: 'continuous' });
+            // console.log('[Scanner] Continuous AF applied (last resort direct)');
         } catch { }
     }, []);
 
     const clearRetryTimeouts = useCallback(() => {
-        retryTimeoutsRef.current.forEach((id) => clearTimeout(id));
+        retryTimeoutsRef.current.forEach((id) => {
+            clearTimeout(id);
+            clearInterval(id);
+        });
         retryTimeoutsRef.current = [];
     }, []);
+
+    const FOCUS_INTERVAL_MS = 800;
+
+    const startFocusRetryLoop = useCallback((isCancelled) => {
+        let attempt = 0;
+
+        const id = setInterval(async () => {
+            if (isCancelled?.()) {
+                clearInterval(id);
+                return;
+            }
+
+            const { track } = getLiveVideoTrack();
+            if (!track || track.readyState !== 'live') return;
+
+            const capabilities = track.getCapabilities?.() || {};
+            attempt++;
+            // console.log(`[Scanner] Continuous focus kick #${attempt}`);
+
+            try {
+                if (capabilities.focusMode?.includes('single-shot')) {
+                    await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] });
+                    await new Promise(r => setTimeout(r, 300));
+                    if (isCancelled?.()) return;
+                }
+
+                if (capabilities.focusMode?.includes('continuous')) {
+                    await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+                    // console.log(`[Scanner] Continuous AF re-enforced on kick #${attempt}`);
+                }
+            } catch (err) {
+                console.log(`[Scanner] Focus kick #${attempt} failed:`, err?.message);
+            }
+        }, FOCUS_INTERVAL_MS);
+
+
+        retryTimeoutsRef.current.push(id);
+    }, [getLiveVideoTrack]);
 
 
     useEffect(() => {
@@ -499,16 +574,16 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
             const hints = new Map();
             hints.set(DecodeHintType.POSSIBLE_FORMATS, [
                 BarcodeFormat.CODE_128,
-                BarcodeFormat.CODE_39,
-                BarcodeFormat.CODE_93,
                 BarcodeFormat.EAN_13,
-                BarcodeFormat.EAN_8,
-                BarcodeFormat.UPC_A,
-                BarcodeFormat.UPC_E,
-                BarcodeFormat.ITF,
-                BarcodeFormat.CODABAR,
                 BarcodeFormat.QR_CODE,
-                BarcodeFormat.DATA_MATRIX,
+                // BarcodeFormat.CODE_39,
+                // BarcodeFormat.CODE_93,
+                // BarcodeFormat.EAN_8,
+                // BarcodeFormat.UPC_A,
+                // BarcodeFormat.UPC_E,
+                // BarcodeFormat.ITF,
+                // BarcodeFormat.CODABAR,
+                // BarcodeFormat.DATA_MATRIX,
             ]);
             hints.set(DecodeHintType.TRY_HARDER, true);
 
@@ -531,6 +606,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
                         initImageCapture(srcTrack);
                         await applyZoomForCloseRange(srcTrack);
                         await initializeFocus(srcTrack, isCancelled);
+                        startFocusRetryLoop(isCancelled);
                     }
 
                     const onTap = (e) => { if (!cancelled) refocus(e); };
@@ -548,23 +624,25 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
             try {
                 let stream;
                 try {
+                    // Primary: full constraints with rear camera + resolution + AF hint
                     stream = await navigator.mediaDevices.getUserMedia({
                         audio: false,
                         video: {
                             facingMode: { ideal: 'environment' },
-                            width: { ideal: 1920 },
-                            height: { ideal: 1080 },
-                            focusMode: 'continuous',
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 },
+                            frameRate: { ideal: 24, max: 30 },
                             advanced: [{ focusMode: 'continuous' }, { focusMode: 'auto' }],
                         },
                     });
                 } catch {
+                    // FIX: Fallback was previously identical to primary (copy-paste bug).
+                    // Now falls back to minimal constraints so at least the camera opens.
+                    console.warn('[Scanner] Full getUserMedia failed, retrying with minimal constraints');
                     stream = await navigator.mediaDevices.getUserMedia({
                         audio: false,
                         video: {
                             facingMode: { ideal: 'environment' },
-                            width: { ideal: 1920 },
-                            height: { ideal: 1080 },
                         },
                     });
                 }
@@ -592,6 +670,9 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
                 if (!isIOSDevice.current) {
                     if (track) await initializeFocus(track, isCancelled);
                     if (cancelled) return;
+
+
+                    if (track) startFocusRetryLoop(isCancelled);
 
                     // Attach tap listeners to the video element
                     if (videoEl) {
@@ -624,6 +705,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
         initializeFocus,
         refocus,
         sourceVideoRef,
+        startFocusRetryLoop,
         waitForVideoReady,
     ]);
 
