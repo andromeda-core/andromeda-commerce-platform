@@ -1,6 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
 import beepSound from "../../assets/sounds/Beep.mp3";
-// import "./../Components/dubugOverlay";
 
 const isIOS = () =>
     /iPad|iPhone|iPod/.test(navigator.userAgent) ||
@@ -48,87 +47,120 @@ const calculateSharpness = (imageData) => {
 
 const SHARPNESS_THRESHOLD = 8;
 const SHARPNESS_THRESHOLD_REGION = 3;
-
 const MANUAL_TAP_COOLDOWN_MS = 6000;
 
 
+const tryTorchOnTrack = async (track) => {
+    try {
+        await track.applyConstraints({ advanced: [{ torch: true }] });
+        await track.applyConstraints({ advanced: [{ torch: false }] });
+        return true;
+    } catch { }
+    try {
+        await track.applyConstraints({ torch: true });
+        await track.applyConstraints({ torch: false });
+        return true;
+    } catch { }
+    return false;
+};
+
 const acquireBestRearCamera = async () => {
+    console.log('[Scanner:Cam] Starting camera acquisition...');
+
     let stream;
     try {
         stream = await navigator.mediaDevices.getUserMedia({
             audio: false,
             video: {
                 facingMode: { ideal: 'environment' },
-                width: { ideal: 1280 },
-                height: { ideal: 720 },
+                width: { ideal: 1920 },
+                height: { ideal: 1080 },
                 frameRate: { ideal: 24, max: 30 },
                 advanced: [{ focusMode: 'continuous' }, { focusMode: 'auto' }],
             },
         });
     } catch {
-        stream = await navigator.mediaDevices.getUserMedia({
-            audio: false,
-            video: { facingMode: { ideal: 'environment' } },
-        });
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                audio: false,
+                video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+            });
+        } catch {
+            stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: 'environment' } } });
+        }
     }
 
-    const initialTrack = stream.getVideoTracks()[0];
-    if (!initialTrack) return stream;
-    await new Promise(r => setTimeout(r, 300));
+    const track = stream.getVideoTracks()[0];
+    if (!track) return stream;
 
-    const caps = initialTrack.getCapabilities?.() || {};
+    await new Promise(r => setTimeout(r, 400));
 
-    // Check 1: capabilities report torch (works on non-Samsung devices)
+    const caps = track.getCapabilities?.() || {};
+    const settings = track.getSettings?.() || {};
+
+    console.log('[Scanner:Cam] Initial camera:', {
+        label: track.label,
+        resolution: `${settings.width}x${settings.height}`,
+        hasTorch: !!caps.torch,
+        focusModes: caps.focusMode || 'none',
+        zoomRange: caps.zoom ? `${caps.zoom.min}-${caps.zoom.max}` : 'none',
+    });
+
+    // ── Fast path: torch already available (non-Samsung)
     if (caps.torch) {
+        console.log('[Scanner:Cam] Torch in capabilities. Done.');
         return stream;
     }
 
-    // Check 2: Samsung never reports torch in capabilities,
-    // so try actually APPLYING torch to see if this camera accepts it.
-    let torchWorksOnInitial = false;
-    try {
-        await initialTrack.applyConstraints({ advanced: [{ torch: true }] });
-        // If we reach here, torch worked! Turn it back off and return this stream.
-        await initialTrack.applyConstraints({ advanced: [{ torch: false }] });
-        torchWorksOnInitial = true;
-        console.log('[Scanner] Samsung fix: torch works on initial camera (applied directly)');
-    } catch {
-        // Torch didn't work on this camera, need to try others
-    }
-
-    if (torchWorksOnInitial) {
+    // ── Blind torch test on initial camera
+    if (await tryTorchOnTrack(track)) {
+        console.log('[Scanner:Cam] Blind torch PASSED on initial camera');
         return stream;
     }
 
-    // Step 3: Enumerate devices and find a camera where torch actually works.
+    // ── Zoom to force main sensor on Samsung logical camera
+    if (caps.zoom && caps.zoom.max >= 2.0) {
+        const targetZoom = Math.min(caps.zoom.max, 2.0);
+        console.log('[Scanner:Cam] Zooming to', targetZoom, 'to force main sensor...');
+        try {
+            await track.applyConstraints({ advanced: [{ zoom: targetZoom }] });
+            await new Promise(r => setTimeout(r, 600));
+
+            const capsAfterZoom = track.getCapabilities?.() || {};
+            console.log('[Scanner:Cam] After zoom - torch:', !!capsAfterZoom.torch, 'focus:', capsAfterZoom.focusMode || 'none');
+
+            if (capsAfterZoom.torch || await tryTorchOnTrack(track)) {
+                console.log('[Scanner:Cam] Torch works after zoom!');
+                return stream;
+            }
+        } catch (err) {
+            console.log('[Scanner:Cam] Zoom failed:', err?.message);
+        }
+    }
+
+    // ── Enumerate devices and try alternatives
     let devices;
-    try {
-        devices = await navigator.mediaDevices.enumerateDevices();
-    } catch {
-        return stream;
-    }
+    try { devices = await navigator.mediaDevices.enumerateDevices(); } catch { return stream; }
 
     const videoDevices = devices.filter(d => d.kind === 'videoinput');
+    console.log('[Scanner:Cam] Devices:', videoDevices.map(d => d.label || d.deviceId?.substring(0, 12)));
 
-    if (videoDevices.length <= 1) {
-        return stream;
-    }
+    if (videoDevices.length <= 1) return stream;
 
-    const currentSettings = initialTrack.getSettings?.() || {};
-    const currentDeviceId = currentSettings.deviceId;
-
+    const currentDeviceId = settings.deviceId;
     const candidates = videoDevices.filter(d => {
         if (d.deviceId === currentDeviceId) return false;
         const label = (d.label || '').toLowerCase();
         if (label.includes('front') || label.includes('facing front')) return false;
         return true;
     });
+
     candidates.sort((a, b) => {
-        const aLabel = (a.label || '').toLowerCase();
-        const bLabel = (b.label || '').toLowerCase();
-        const aScore = (aLabel.includes('camera2 0') ? 2 : 0) + (aLabel.includes('back') ? 1 : 0);
-        const bScore = (bLabel.includes('camera2 0') ? 2 : 0) + (bLabel.includes('back') ? 1 : 0);
-        return bScore - aScore;
+        const aL = (a.label || '').toLowerCase();
+        const bL = (b.label || '').toLowerCase();
+        const aS = (aL.includes('camera2 0') ? 2 : 0) + (aL.includes('back') ? 1 : 0);
+        const bS = (bL.includes('camera2 0') ? 2 : 0) + (bL.includes('back') ? 1 : 0);
+        return bS - aS;
     });
 
     for (const device of candidates) {
@@ -136,51 +168,52 @@ const acquireBestRearCamera = async () => {
         try {
             testStream = await navigator.mediaDevices.getUserMedia({
                 audio: false,
-                video: {
-                    deviceId: { exact: device.deviceId },
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 },
-                    frameRate: { ideal: 24, max: 30 },
-                },
+                video: { deviceId: { exact: device.deviceId }, width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 24, max: 30 } },
             });
 
             const testTrack = testStream.getVideoTracks()[0];
-            if (!testTrack) {
-                testStream.getTracks().forEach(t => t.stop());
-                continue;
-            }
+            if (!testTrack) { testStream.getTracks().forEach(t => t.stop()); continue; }
 
-            await new Promise(r => setTimeout(r, 200));
+            await new Promise(r => setTimeout(r, 300));
+            const tc = testTrack.getCapabilities?.() || {};
 
-            const testCaps = testTrack.getCapabilities?.() || {};
+            console.log('[Scanner:Cam] Testing:', { label: device.label, torch: !!tc.torch, focus: tc.focusMode || 'none' });
 
-            // Method A: capabilities report torch
-            if (testCaps.torch) {
-                console.log('[Scanner] Samsung fix: switched to camera with torch (caps):', device.label);
+            // caps check
+            if (tc.torch) {
+                console.log('[Scanner:Cam] MATCH (caps):', device.label);
                 stream.getTracks().forEach(t => t.stop());
                 return testStream;
             }
 
-            // Method B: try actually applying torch constraint
-            try {
-                await testTrack.applyConstraints({ advanced: [{ torch: true }] });
-                // Torch accepted! Turn off and use this camera.
-                await testTrack.applyConstraints({ advanced: [{ torch: false }] });
-                console.log('[Scanner] Samsung fix: switched to camera with torch (applied):', device.label);
+            // blind apply
+            if (await tryTorchOnTrack(testTrack)) {
+                console.log('[Scanner:Cam] MATCH (blind):', device.label);
                 stream.getTracks().forEach(t => t.stop());
                 return testStream;
-            } catch {
-                // Torch didn't work on this camera either
+            }
+
+            // zoom + retry on this camera
+            if (tc.zoom && tc.zoom.max >= 2.0) {
+                try {
+                    await testTrack.applyConstraints({ advanced: [{ zoom: Math.min(tc.zoom.max, 2.0) }] });
+                    await new Promise(r => setTimeout(r, 400));
+                    if (await tryTorchOnTrack(testTrack)) {
+                        console.log('[Scanner:Cam] MATCH (zoom+blind):', device.label);
+                        stream.getTracks().forEach(t => t.stop());
+                        return testStream;
+                    }
+                } catch { }
             }
 
             testStream.getTracks().forEach(t => t.stop());
-        } catch {
-            continue;
-        }
+        } catch { continue; }
     }
-    console.log('[Scanner] Samsung fix: no torch-capable camera found, using default');
+
+    console.log('[Scanner:Cam] No torch camera found. Using default.');
     return stream;
 };
+
 
 export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion = null }) {
     const videoRef = useRef(null);
@@ -204,7 +237,6 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
     const torchOnRef = useRef(false);
     const scanRegionRef = useRef(scanRegion);
 
-
     const drawVideoToCanvas = (videoEl, ctx, canvasW, canvasH) => {
         const region = scanRegionRef.current;
         if (region && videoEl.videoWidth > 0) {
@@ -220,31 +252,20 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
 
     useEffect(() => { onScanRef.current = onScan; }, [onScan]);
     useEffect(() => { scanRegionRef.current = scanRegion; }, [scanRegion]);
-
-    useEffect(() => {
-        audioRef.current = new Audio(beepSound);
-        audioRef.current.preload = 'auto';
-    }, []);
+    useEffect(() => { audioRef.current = new Audio(beepSound); audioRef.current.preload = 'auto'; }, []);
 
     const playBeep = async () => {
-        try {
-            if (!audioRef.current) return;
-            audioRef.current.currentTime = 0;
-            await audioRef.current.play();
-        } catch (err) {
-            console.warn('[Scanner] Beep play blocked:', err);
-        }
+        try { if (!audioRef.current) return; audioRef.current.currentTime = 0; await audioRef.current.play(); }
+        catch (err) { console.warn('[Scanner] Beep play blocked:', err); }
     };
 
     const waitForVideoReady = useCallback((videoEl) => {
         return new Promise((resolve) => {
             if (!videoEl) { resolve(false); return; }
             if (videoEl.readyState >= 2 && videoEl.videoWidth > 0) { resolve(true); return; }
-
             let doneCalled = false;
             const done = () => {
-                if (doneCalled) return;
-                doneCalled = true;
+                if (doneCalled) return; doneCalled = true;
                 videoEl.removeEventListener('loadedmetadata', done);
                 videoEl.removeEventListener('canplay', done);
                 videoEl.removeEventListener('playing', done);
@@ -259,13 +280,8 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
 
     const initImageCapture = useCallback((track) => {
         if (typeof ImageCapture === 'undefined') return false;
-        try {
-            imageCaptureRef.current = new ImageCapture(track);
-            return true;
-        } catch (err) {
-            console.warn('[Scanner] ImageCapture init failed:', err);
-            return false;
-        }
+        try { imageCaptureRef.current = new ImageCapture(track); return true; }
+        catch (err) { console.warn('[Scanner] ImageCapture init failed:', err); return false; }
     }, []);
 
     const getLiveVideoTrack = useCallback(() => {
@@ -278,6 +294,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
         return { stream, track: liveTrack };
     }, [sourceVideoRef]);
 
+    // Zoom to 2.0 on Samsung to force main sensor activation
     const applyZoomForCloseRange = useCallback(async (track) => {
         if (!track || track.readyState !== 'live') return;
         if (isIOSDevice.current) return;
@@ -285,25 +302,23 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
             const capabilities = track.getCapabilities?.() || {};
             if (!capabilities.zoom) return;
             const { min = 1, max = 10 } = capabilities.zoom;
-            const targetZoom = Math.min(max, Math.max(min, 1.5));
+            const targetZoom = Math.min(max, Math.max(min, 2.0));
             await track.applyConstraints({ advanced: [{ zoom: targetZoom }] });
+            console.log('[Scanner] Zoom applied:', targetZoom);
         } catch (err) {
-            console.log('[Scanner] Zoom trick failed (non-critical):', err?.message);
+            console.log('[Scanner] Zoom failed (non-critical):', err?.message);
         }
     }, []);
 
-
     const measureSharpnessAtPoint = useCallback((videoEl, normX, normY) => {
         if (!videoEl?.videoWidth) return 0;
-        const cropW = 160;
-        const cropH = 160;
+        const cropW = 160; const cropH = 160;
         const cx = Math.round(normX * videoEl.videoWidth);
         const cy = Math.round(normY * videoEl.videoHeight);
         const cropX = Math.max(0, Math.min(videoEl.videoWidth - cropW, cx - cropW / 2));
         const cropY = Math.max(0, Math.min(videoEl.videoHeight - cropH, cy - cropH / 2));
         const offCanvas = document.createElement('canvas');
-        offCanvas.width = cropW;
-        offCanvas.height = cropH;
+        offCanvas.width = cropW; offCanvas.height = cropH;
         const offCtx = offCanvas.getContext('2d', { willReadFrequently: true });
         offCtx.drawImage(videoEl, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
         return calculateSharpness(offCtx.getImageData(0, 0, cropW, cropH));
@@ -320,34 +335,20 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
 
     const resolvePoint = useCallback((tapXOrEvent, tapY) => {
         if (tapXOrEvent === undefined || tapXOrEvent === null) return { x: 0.5, y: 0.5 };
-
         if (typeof tapXOrEvent === 'object') {
             const videoEl = sourceVideoRef ? sourceVideoRef.current : videoRef.current;
             let clientX, clientY;
-            if (tapXOrEvent.touches?.length > 0) {
-                clientX = tapXOrEvent.touches[0].clientX;
-                clientY = tapXOrEvent.touches[0].clientY;
-            } else if (typeof tapXOrEvent.clientX === 'number') {
-                clientX = tapXOrEvent.clientX;
-                clientY = tapXOrEvent.clientY;
-            }
+            if (tapXOrEvent.touches?.length > 0) { clientX = tapXOrEvent.touches[0].clientX; clientY = tapXOrEvent.touches[0].clientY; }
+            else if (typeof tapXOrEvent.clientX === 'number') { clientX = tapXOrEvent.clientX; clientY = tapXOrEvent.clientY; }
             if (videoEl && typeof clientX === 'number') {
                 const rect = videoEl.getBoundingClientRect();
-                return {
-                    x: Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)),
-                    y: Math.max(0, Math.min(1, (clientY - rect.top) / rect.height)),
-                };
+                return { x: Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)), y: Math.max(0, Math.min(1, (clientY - rect.top) / rect.height)) };
             }
             return { x: 0.5, y: 0.5 };
         }
-
         if (typeof tapXOrEvent === 'number') {
-            return {
-                x: Math.max(0, Math.min(1, tapXOrEvent)),
-                y: Math.max(0, Math.min(1, typeof tapY === 'number' ? tapY : 0.5)),
-            };
+            return { x: Math.max(0, Math.min(1, tapXOrEvent)), y: Math.max(0, Math.min(1, typeof tapY === 'number' ? tapY : 0.5)) };
         }
-
         return { x: 0.5, y: 0.5 };
     }, [sourceVideoRef]);
 
@@ -355,130 +356,72 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
         const videoEl = sourceVideoRef ? sourceVideoRef.current : videoRef.current;
         if (!videoEl?.videoWidth) return false;
         const baseline = measureSharpnessAtPoint(videoEl, normX, normY);
-        if (baseline >= SHARPNESS_THRESHOLD * 2) return true; // already sharp
+        if (baseline >= SHARPNESS_THRESHOLD * 2) return true;
         return await pollForSharpness(videoEl, normX, normY, baseline, 2000);
     }, [sourceVideoRef, measureSharpnessAtPoint, pollForSharpness]);
 
-
     const refocus = useCallback(async (tapXOrEvent, tapY) => {
-
         if (isIOSDevice.current) {
             const isManualTap = tapXOrEvent !== undefined && tapXOrEvent !== null;
             if (!isManualTap) return false;
             const { x, y } = resolvePoint(tapXOrEvent, tapY);
             return await iosTapToFocus(x, y);
         }
-
         const isManualTap = tapXOrEvent !== undefined && tapXOrEvent !== null;
-
-        if (isManualTap) {
-            focusOpIdRef.current += 2;
-            isApplyingFocusRef.current = false;
-            lastManualTapRef.current = Date.now();
-        } else {
-            // Auto-refocus path: respect cooldown and in-flight guard.
-            if (Date.now() - lastManualTapRef.current < MANUAL_TAP_COOLDOWN_MS) return false;
-            if (isApplyingFocusRef.current) return false;
-        }
+        if (isManualTap) { focusOpIdRef.current += 2; isApplyingFocusRef.current = false; lastManualTapRef.current = Date.now(); }
+        else { if (Date.now() - lastManualTapRef.current < MANUAL_TAP_COOLDOWN_MS) return false; if (isApplyingFocusRef.current) return false; }
 
         const opId = ++focusOpIdRef.current;
-
         try {
             isApplyingFocusRef.current = true;
-
             const { x, y } = resolvePoint(tapXOrEvent, tapY);
             const videoEl = sourceVideoRef ? sourceVideoRef.current : videoRef.current;
 
-
             if (isManualTap && videoEl?.videoWidth) {
-                const current = measureSharpnessAtPoint(videoEl, x, y);
-                if (current >= SHARPNESS_THRESHOLD * 2) {
-                    return true;
-                }
+                if (measureSharpnessAtPoint(videoEl, x, y) >= SHARPNESS_THRESHOLD * 2) return true;
             }
-
             if (opId !== focusOpIdRef.current) return false;
 
             const { track } = getLiveVideoTrack();
             if (!track || track.readyState !== 'live') return false;
-
             const capabilities = track.getCapabilities?.() || {};
-
 
             if (capabilities.focusMode?.includes('single-shot')) {
                 try {
                     await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] });
-
                     if (opId !== focusOpIdRef.current) return false;
-
-                    // Poll up to 2s for the driver to converge
-                    if (videoEl?.videoWidth) {
-                        await pollForSharpness(videoEl, x, y, SHARPNESS_THRESHOLD, 2000);
-                    } else {
-                        await new Promise(r => setTimeout(r, 800));
-                    }
-
+                    if (videoEl?.videoWidth) await pollForSharpness(videoEl, x, y, SHARPNESS_THRESHOLD, 2000);
+                    else await new Promise(r => setTimeout(r, 800));
                     if (opId !== focusOpIdRef.current) return false;
-
-
-                    try {
-                        await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
-                    } catch { }
-
+                    try { await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }); } catch { }
                     return true;
-                } catch (err) {
-                    console.log('[Scanner] single-shot failed:', err?.message);
-                }
+                } catch { }
             }
-
             if (opId !== focusOpIdRef.current) return false;
-
 
             if (isManualTap && typeof ImageCapture !== 'undefined') {
                 try {
                     if (!imageCaptureRef.current) initImageCapture(track);
                     if (imageCaptureRef.current) {
                         await imageCaptureRef.current.grabFrame();
-
                         if (opId !== focusOpIdRef.current) return false;
-
-                        // Give the driver up to 2s to converge after grabFrame trigger
-                        if (videoEl?.videoWidth) {
-                            await pollForSharpness(videoEl, x, y, SHARPNESS_THRESHOLD, 2000);
-                        } else {
-                            await new Promise(r => setTimeout(r, 800));
-                        }
-
+                        if (videoEl?.videoWidth) await pollForSharpness(videoEl, x, y, SHARPNESS_THRESHOLD, 2000);
+                        else await new Promise(r => setTimeout(r, 800));
                         return true;
                     }
-                } catch (err) {
-                    console.log('[Scanner] grabFrame failed:', err?.message);
-                }
+                } catch { }
             }
-
             if (opId !== focusOpIdRef.current) return false;
 
-
-            try {
-                await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
-                return true;
-            } catch { }
-
+            // Samsung blind focus
+            try { await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }); return true; } catch { }
+            try { await track.applyConstraints({ focusMode: 'continuous' }); return true; } catch { }
             return false;
-        } finally {
-            isApplyingFocusRef.current = false;
-        }
-    }, [
-        getLiveVideoTrack,
-        initImageCapture,
-        resolvePoint,
-        iosTapToFocus,
-        measureSharpnessAtPoint,
-        pollForSharpness,
-        sourceVideoRef,
-    ]);
+        } finally { isApplyingFocusRef.current = false; }
+    }, [getLiveVideoTrack, initImageCapture, resolvePoint, iosTapToFocus, measureSharpnessAtPoint, pollForSharpness, sourceVideoRef]);
 
 
+    // ── TORCH: Multi-strategy toggle ──
     const toggleTorch = useCallback(async () => {
         const { track } = getLiveVideoTrack();
         if (!track || track.readyState !== 'live') return null;
@@ -486,121 +429,101 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
         const capabilities = track.getCapabilities?.() || {};
         const newState = !torchOnRef.current;
 
-
+        // Method 1: capabilities report torch
         if (capabilities.torch) {
             try {
                 await track.applyConstraints({ advanced: [{ torch: newState }] });
                 torchOnRef.current = newState;
                 return newState;
-            } catch (err) {
-                console.log('[Scanner] Torch toggle failed (reported):', err?.message);
-                return null;
-            }
+            } catch { }
         }
 
+        // Method 2: blind apply with advanced wrapper
         try {
             await track.applyConstraints({ advanced: [{ torch: newState }] });
             torchOnRef.current = newState;
-            console.log('[Scanner] Torch applied via blind fallback');
+            console.log('[Scanner] Torch via blind advanced');
             return newState;
-        } catch (err) {
-            console.log('[Scanner] Torch toggle failed (blind fallback):', err?.message);
+        } catch { }
+
+        // Method 3: direct constraint (no advanced wrapper)
+        try {
+            await track.applyConstraints({ torch: newState });
+            torchOnRef.current = newState;
+            console.log('[Scanner] Torch via direct constraint');
+            return newState;
+        } catch { }
+
+        // Method 4: ImageCapture photo capabilities check
+        if (imageCaptureRef.current) {
+            try {
+                const photoCaps = await imageCaptureRef.current.getPhotoCapabilities();
+                console.log('[Scanner] Photo fillLightModes:', photoCaps.fillLightMode);
+            } catch { }
         }
 
+        console.log('[Scanner] All torch methods failed. Samsung may block torch via WebRTC.');
         return null;
     }, [getLiveVideoTrack]);
 
 
-
+    // ── FOCUS INITIALIZATION ──
     const initializeFocus = useCallback(async (track, isCancelled) => {
         if (isIOSDevice.current || !track) return;
-
         const capabilities = track.getCapabilities?.() || {};
-        // console.log('[Scanner] Focus capabilities:', JSON.stringify(capabilities.focusMode ?? 'none'));
 
-        // Priority 1: continuous autofocus directly (preferred for Android)
+        console.log('[Scanner] initializeFocus:', {
+            focusModes: capabilities.focusMode || 'none',
+            torch: !!capabilities.torch,
+        });
+
         if (capabilities.focusMode?.includes('continuous')) {
             try {
                 await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
-                console.log('[Scanner] Continuous AF applied (immediate)');
-
                 await new Promise(r => setTimeout(r, 800));
                 if (isCancelled?.()) return;
-
                 await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
-                console.log('[Scanner] Continuous AF re-applied (800ms delay)');
+                console.log('[Scanner] Continuous AF applied');
                 return;
-            } catch (err) {
-                console.log('[Scanner] Continuous AF failed:', err?.message);
-            }
+            } catch { }
         }
-
         if (isCancelled?.()) return;
 
-        // Priority 2: single-shot kick to trigger HW AF, then switch to continuous
         if (capabilities.focusMode?.includes('single-shot')) {
             try {
                 await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] });
-                // console.log('[Scanner] single-shot kick applied, switching to continuous...');
                 await new Promise(r => setTimeout(r, 600));
                 if (isCancelled?.()) return;
-                try {
-                    await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
-                    // console.log('[Scanner] Continuous AF applied after single-shot kick');
-                } catch { }
+                try { await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }); } catch { }
                 return;
-            } catch (err) {
-                console.log('[Scanner] single-shot kick failed:', err?.message);
-            }
+            } catch { }
         }
-
         if (isCancelled?.()) return;
 
-        // Priority 3: grabFrame to trigger HW AF pipeline (ImageCapture API)
         if (typeof ImageCapture !== 'undefined' && imageCaptureRef.current) {
-            try {
-                await imageCaptureRef.current.grabFrame();
-                // console.log('[Scanner] grabFrame triggered for AF');
-                await new Promise(r => setTimeout(r, 400));
-            } catch (err) {
-                console.log('[Scanner] grabFrame failed:', err?.message);
-            }
+            try { await imageCaptureRef.current.grabFrame(); await new Promise(r => setTimeout(r, 400)); } catch { }
         }
-
         if (isCancelled?.()) return;
 
+        // Samsung blind fallback
         if (!capabilities.focusMode || capabilities.focusMode.length === 0) {
+            console.log('[Scanner] Samsung blind focus fallback...');
+            try { await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }); return; } catch { }
+            try { await track.applyConstraints({ focusMode: 'continuous' }); return; } catch { }
             try {
-                await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
-                console.log('[Scanner] Continuous AF applied (Samsung blind fallback)');
-                return;
-            } catch { }
-
-            try {
-                await track.applyConstraints({ focusMode: 'continuous' });
-                console.log('[Scanner] Continuous AF applied (Samsung blind fallback, direct)');
+                await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] });
+                await new Promise(r => setTimeout(r, 500));
+                try { await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }); } catch { }
                 return;
             } catch { }
         }
 
-        // Last resort: try setting continuous without advanced wrapper
-        try {
-            await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
-            // console.log('[Scanner] Continuous AF applied (last resort advanced)');
-            return;
-        } catch { }
-
-        try {
-            await track.applyConstraints({ focusMode: 'continuous' });
-            // console.log('[Scanner] Continuous AF applied (last resort direct)');
-        } catch { }
+        try { await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }); return; } catch { }
+        try { await track.applyConstraints({ focusMode: 'continuous' }); } catch { }
     }, []);
 
     const clearRetryTimeouts = useCallback(() => {
-        retryTimeoutsRef.current.forEach((id) => {
-            clearTimeout(id);
-            clearInterval(id);
-        });
+        retryTimeoutsRef.current.forEach((id) => { clearTimeout(id); clearInterval(id); });
         retryTimeoutsRef.current = [];
     }, []);
 
@@ -608,45 +531,26 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
 
     const startFocusRetryLoop = useCallback((isCancelled) => {
         let attempt = 0;
-
         const id = setInterval(async () => {
-            if (isCancelled?.()) {
-                clearInterval(id);
-                return;
-            }
-
+            if (isCancelled?.()) { clearInterval(id); return; }
             const { track } = getLiveVideoTrack();
             if (!track || track.readyState !== 'live') return;
-
             const capabilities = track.getCapabilities?.() || {};
             attempt++;
-            // console.log(`[Scanner] Continuous focus kick #${attempt}`);
-
             try {
                 if (capabilities.focusMode?.includes('single-shot')) {
                     await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] });
                     await new Promise(r => setTimeout(r, 300));
                     if (isCancelled?.()) return;
                 }
-
                 if (capabilities.focusMode?.includes('continuous')) {
                     await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
-                    // console.log(`[Scanner] Continuous AF re-enforced on kick #${attempt}`);
                 }
-
-
                 if (!capabilities.focusMode || capabilities.focusMode.length === 0) {
-                    try {
-                        await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
-                    } catch { }
+                    try { await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }); } catch { }
                 }
-
-            } catch (err) {
-                console.log(`[Scanner] Focus kick #${attempt} failed:`, err?.message);
-            }
+            } catch { }
         }, FOCUS_INTERVAL_MS);
-
-
         retryTimeoutsRef.current.push(id);
     }, [getLiveVideoTrack]);
 
@@ -664,20 +568,12 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
             lastManualTapRef.current = 0;
             focusOpIdRef.current = 0;
             torchOnRef.current = false;
-
             removeTapListenersRef.current?.();
             removeTapListenersRef.current = null;
-
             clearRetryTimeouts();
-
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-                intervalRef.current = null;
-            }
-
+            if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
             try { readerRef.current?.reset?.(); } catch { }
             readerRef.current = null;
-
             if (!sourceVideoRef) {
                 try {
                     const stream = streamRef.current || videoRef.current?.srcObject;
@@ -686,31 +582,23 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
                     if (v) { v.pause?.(); v.srcObject = null; v.load?.(); }
                 } catch { }
             }
-
             streamRef.current = null;
         };
 
-        if (!active) {
-            stopAll();
-            return () => stopAll();
-        }
+        if (!active) { stopAll(); return () => stopAll(); }
 
         const buildScanInterval = (reader, videoEl, intervalMs) => {
             const canvas = document.createElement('canvas');
-            canvas.width = 640;
-            canvas.height = 360;
+            canvas.width = 640; canvas.height = 360;
             const ctx = canvas.getContext('2d', { willReadFrequently: true });
-
             return setInterval(async () => {
                 if (cancelled || !videoEl?.videoWidth || isScannedRef.current) return;
-
                 try {
                     drawVideoToCanvas(videoEl, ctx, 640, 360);
                     const imageData = ctx.getImageData(0, 0, 640, 360);
                     const threshold = scanRegionRef.current ? SHARPNESS_THRESHOLD_REGION : SHARPNESS_THRESHOLD;
                     if (calculateSharpness(imageData) < threshold) return;
                     if (isDecodingRef.current) return;
-
                     isDecodingRef.current = true;
                     try {
                         const result = reader.decodeFromCanvas(canvas);
@@ -721,9 +609,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
                         }
                     } catch (decodeErr) {
                         if (!isZxingDecodeError(decodeErr)) console.warn('[Scanner] Decode error:', decodeErr);
-                    } finally {
-                        isDecodingRef.current = false;
-                    }
+                    } finally { isDecodingRef.current = false; }
                 } catch (err) {
                     if (!isZxingDecodeError(err)) console.warn('[Scanner] Canvas error:', err);
                 }
@@ -740,17 +626,7 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
 
             const hints = new Map();
             hints.set(DecodeHintType.POSSIBLE_FORMATS, [
-                BarcodeFormat.CODE_128,
-                BarcodeFormat.EAN_13,
-                BarcodeFormat.QR_CODE,
-                // BarcodeFormat.CODE_39,
-                // BarcodeFormat.CODE_93,
-                // BarcodeFormat.EAN_8,
-                // BarcodeFormat.UPC_A,
-                // BarcodeFormat.UPC_E,
-                // BarcodeFormat.ITF,
-                // BarcodeFormat.CODABAR,
-                // BarcodeFormat.DATA_MATRIX,
+                BarcodeFormat.CODE_128, BarcodeFormat.EAN_13, BarcodeFormat.QR_CODE,
             ]);
             hints.set(DecodeHintType.TRY_HARDER, true);
 
@@ -760,14 +636,11 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
             if (sourceVideoRef) {
                 const videoEl = sourceVideoRef.current;
                 intervalRef.current = buildScanInterval(reader, videoEl, 250);
-
                 if (!isIOSDevice.current && videoEl) {
                     await waitForVideoReady(videoEl);
                     await new Promise(r => setTimeout(r, 300));
                     if (cancelled) return;
-
                     autofocusReadyRef.current = true;
-
                     const { track: srcTrack } = getLiveVideoTrack();
                     if (srcTrack) {
                         initImageCapture(srcTrack);
@@ -775,7 +648,6 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
                         await initializeFocus(srcTrack, isCancelled);
                         startFocusRetryLoop(isCancelled);
                     }
-
                     const onTap = (e) => { if (!cancelled) refocus(e); };
                     videoEl.addEventListener('touchstart', onTap, { passive: true });
                     videoEl.addEventListener('click', onTap);
@@ -787,18 +659,15 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
                 return;
             }
 
-
+            // ── SELF-MANAGED CAMERA ──
             try {
-
                 const stream = await acquireBestRearCamera();
-
                 if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
 
                 streamRef.current = stream;
                 const videoEl = videoRef.current;
                 videoEl.srcObject = stream;
                 await videoEl.play().catch(() => { });
-
                 const ready = await waitForVideoReady(videoEl);
                 if (!ready || cancelled) return;
 
@@ -807,7 +676,22 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
                 const { track } = getLiveVideoTrack();
                 if (track) {
                     initImageCapture(track);
+
+                    // Apply zoom AFTER video is playing (important for Samsung sensor switch)
                     await applyZoomForCloseRange(track);
+                    await new Promise(r => setTimeout(r, 500));
+                    if (cancelled) return;
+
+                    // Re-init ImageCapture after zoom (sensor may have changed)
+                    initImageCapture(track);
+
+                    const postCaps = track.getCapabilities?.() || {};
+                    console.log('[Scanner] Final capabilities:', {
+                        torch: !!postCaps.torch,
+                        focus: postCaps.focusMode || 'none',
+                        zoom: track.getSettings?.()?.zoom || 'N/A',
+                        resolution: `${track.getSettings?.()?.width}x${track.getSettings?.()?.height}`,
+                    });
                 }
 
                 autofocusReadyRef.current = true;
@@ -815,11 +699,8 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
                 if (!isIOSDevice.current) {
                     if (track) await initializeFocus(track, isCancelled);
                     if (cancelled) return;
-
-
                     if (track) startFocusRetryLoop(isCancelled);
 
-                    // Attach tap listeners to the video element
                     if (videoEl) {
                         const onTap = (e) => { if (!cancelled) refocus(e); };
                         videoEl.addEventListener('touchstart', onTap, { passive: true });
@@ -837,21 +718,11 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
         };
 
         start();
-        return () => {
-            cancelled = true;
-            stopAll();
-        };
+        return () => { cancelled = true; stopAll(); };
     }, [
-        active,
-        applyZoomForCloseRange,
-        clearRetryTimeouts,
-        getLiveVideoTrack,
-        initImageCapture,
-        initializeFocus,
-        refocus,
-        sourceVideoRef,
-        startFocusRetryLoop,
-        waitForVideoReady,
+        active, applyZoomForCloseRange, clearRetryTimeouts, getLiveVideoTrack,
+        initImageCapture, initializeFocus, refocus, sourceVideoRef,
+        startFocusRetryLoop, waitForVideoReady,
     ]);
 
     return { videoRef, refocus, toggleTorch };
