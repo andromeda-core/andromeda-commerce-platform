@@ -51,6 +51,105 @@ const SHARPNESS_THRESHOLD_REGION = 3;
 
 const MANUAL_TAP_COOLDOWN_MS = 6000;
 
+
+const acquireBestRearCamera = async () => {
+    let stream;
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({
+            audio: false,
+            video: {
+                facingMode: { ideal: 'environment' },
+                width: { ideal: 1280 },
+                height: { ideal: 720 },
+                frameRate: { ideal: 24, max: 30 },
+                advanced: [{ focusMode: 'continuous' }, { focusMode: 'auto' }],
+            },
+        });
+    } catch {
+        stream = await navigator.mediaDevices.getUserMedia({
+            audio: false,
+            video: { facingMode: { ideal: 'environment' } },
+        });
+    }
+
+    const initialTrack = stream.getVideoTracks()[0];
+    if (!initialTrack) return stream;
+    await new Promise(r => setTimeout(r, 300));
+
+    const caps = initialTrack.getCapabilities?.() || {};
+
+    if (caps.torch) {
+        return stream;
+    }
+
+    let devices;
+    try {
+        devices = await navigator.mediaDevices.enumerateDevices();
+    } catch {
+        return stream;
+    }
+
+    const videoDevices = devices.filter(d => d.kind === 'videoinput');
+
+    if (videoDevices.length <= 1) {
+        return stream;
+    }
+
+    const currentSettings = initialTrack.getSettings?.() || {};
+    const currentDeviceId = currentSettings.deviceId;
+
+    const candidates = videoDevices.filter(d => {
+        if (d.deviceId === currentDeviceId) return false;
+        const label = (d.label || '').toLowerCase();
+        if (label.includes('front') || label.includes('facing front')) return false;
+        return true;
+    });
+    candidates.sort((a, b) => {
+        const aLabel = (a.label || '').toLowerCase();
+        const bLabel = (b.label || '').toLowerCase();
+        const aScore = (aLabel.includes('camera2 0') ? 2 : 0) + (aLabel.includes('back') ? 1 : 0);
+        const bScore = (bLabel.includes('camera2 0') ? 2 : 0) + (bLabel.includes('back') ? 1 : 0);
+        return bScore - aScore;
+    });
+
+    for (const device of candidates) {
+        let testStream;
+        try {
+            testStream = await navigator.mediaDevices.getUserMedia({
+                audio: false,
+                video: {
+                    deviceId: { exact: device.deviceId },
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    frameRate: { ideal: 24, max: 30 },
+                },
+            });
+
+            const testTrack = testStream.getVideoTracks()[0];
+            if (!testTrack) {
+                testStream.getTracks().forEach(t => t.stop());
+                continue;
+            }
+
+            await new Promise(r => setTimeout(r, 200));
+
+            const testCaps = testTrack.getCapabilities?.() || {};
+
+            if (testCaps.torch) {
+                console.log('[Scanner] Samsung fix: switched to main camera with torch:', device.label);
+                stream.getTracks().forEach(t => t.stop());
+                return testStream;
+            }
+
+            testStream.getTracks().forEach(t => t.stop());
+        } catch {
+            continue;
+        }
+    }
+    console.log('[Scanner] Samsung fix: no torch-capable camera found, using default');
+    return stream;
+};
+
 export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion = null }) {
     const videoRef = useRef(null);
     const readerRef = useRef(null);
@@ -351,18 +450,32 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
     const toggleTorch = useCallback(async () => {
         const { track } = getLiveVideoTrack();
         if (!track || track.readyState !== 'live') return null;
-        const capabilities = track.getCapabilities?.() || {};
-        if (!capabilities.torch) return null;
 
+        const capabilities = track.getCapabilities?.() || {};
         const newState = !torchOnRef.current;
+
+
+        if (capabilities.torch) {
+            try {
+                await track.applyConstraints({ advanced: [{ torch: newState }] });
+                torchOnRef.current = newState;
+                return newState;
+            } catch (err) {
+                console.log('[Scanner] Torch toggle failed (reported):', err?.message);
+                return null;
+            }
+        }
+
         try {
             await track.applyConstraints({ advanced: [{ torch: newState }] });
             torchOnRef.current = newState;
+            console.log('[Scanner] Torch applied via blind fallback');
             return newState;
         } catch (err) {
-            console.log('[Scanner] Torch toggle failed:', err?.message);
-            return null;
+            console.log('[Scanner] Torch toggle failed (blind fallback):', err?.message);
         }
+
+        return null;
     }, [getLiveVideoTrack]);
 
 
@@ -424,6 +537,20 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
 
         if (isCancelled?.()) return;
 
+        if (!capabilities.focusMode || capabilities.focusMode.length === 0) {
+            try {
+                await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+                console.log('[Scanner] Continuous AF applied (Samsung blind fallback)');
+                return;
+            } catch { }
+
+            try {
+                await track.applyConstraints({ focusMode: 'continuous' });
+                console.log('[Scanner] Continuous AF applied (Samsung blind fallback, direct)');
+                return;
+            } catch { }
+        }
+
         // Last resort: try setting continuous without advanced wrapper
         try {
             await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
@@ -474,6 +601,14 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
                     await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
                     // console.log(`[Scanner] Continuous AF re-enforced on kick #${attempt}`);
                 }
+
+
+                if (!capabilities.focusMode || capabilities.focusMode.length === 0) {
+                    try {
+                        await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+                    } catch { }
+                }
+
             } catch (err) {
                 console.log(`[Scanner] Focus kick #${attempt} failed:`, err?.message);
             }
@@ -622,30 +757,8 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
 
 
             try {
-                let stream;
-                try {
-                    // Primary: full constraints with rear camera + resolution + AF hint
-                    stream = await navigator.mediaDevices.getUserMedia({
-                        audio: false,
-                        video: {
-                            facingMode: { ideal: 'environment' },
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 },
-                            frameRate: { ideal: 24, max: 30 },
-                            advanced: [{ focusMode: 'continuous' }, { focusMode: 'auto' }],
-                        },
-                    });
-                } catch {
-                    // FIX: Fallback was previously identical to primary (copy-paste bug).
-                    // Now falls back to minimal constraints so at least the camera opens.
-                    console.warn('[Scanner] Full getUserMedia failed, retrying with minimal constraints');
-                    stream = await navigator.mediaDevices.getUserMedia({
-                        audio: false,
-                        video: {
-                            facingMode: { ideal: 'environment' },
-                        },
-                    });
-                }
+
+                const stream = await acquireBestRearCamera();
 
                 if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
 
