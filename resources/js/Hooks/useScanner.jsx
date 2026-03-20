@@ -78,10 +78,29 @@ const acquireBestRearCamera = async () => {
 
     const caps = initialTrack.getCapabilities?.() || {};
 
+    // Check 1: capabilities report torch (works on non-Samsung devices)
     if (caps.torch) {
         return stream;
     }
 
+    // Check 2: Samsung never reports torch in capabilities,
+    // so try actually APPLYING torch to see if this camera accepts it.
+    let torchWorksOnInitial = false;
+    try {
+        await initialTrack.applyConstraints({ advanced: [{ torch: true }] });
+        // If we reach here, torch worked! Turn it back off and return this stream.
+        await initialTrack.applyConstraints({ advanced: [{ torch: false }] });
+        torchWorksOnInitial = true;
+        console.log('[Scanner] Samsung fix: torch works on initial camera (applied directly)');
+    } catch {
+        // Torch didn't work on this camera, need to try others
+    }
+
+    if (torchWorksOnInitial) {
+        return stream;
+    }
+
+    // Step 3: Enumerate devices and find a camera where torch actually works.
     let devices;
     try {
         devices = await navigator.mediaDevices.enumerateDevices();
@@ -135,10 +154,23 @@ const acquireBestRearCamera = async () => {
 
             const testCaps = testTrack.getCapabilities?.() || {};
 
+            // Method A: capabilities report torch
             if (testCaps.torch) {
-                console.log('[Scanner] Samsung fix: switched to main camera with torch:', device.label);
+                console.log('[Scanner] Samsung fix: switched to camera with torch (caps):', device.label);
                 stream.getTracks().forEach(t => t.stop());
                 return testStream;
+            }
+
+            // Method B: try actually applying torch constraint
+            try {
+                await testTrack.applyConstraints({ advanced: [{ torch: true }] });
+                // Torch accepted! Turn off and use this camera.
+                await testTrack.applyConstraints({ advanced: [{ torch: false }] });
+                console.log('[Scanner] Samsung fix: switched to camera with torch (applied):', device.label);
+                stream.getTracks().forEach(t => t.stop());
+                return testStream;
+            } catch {
+                // Torch didn't work on this camera either
             }
 
             testStream.getTracks().forEach(t => t.stop());
