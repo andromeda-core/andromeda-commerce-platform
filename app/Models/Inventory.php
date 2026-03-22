@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\NotifyDistributorAboutStockAdd;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Cache;
@@ -50,6 +51,12 @@ class Inventory extends Model
     {
         static::saving(function () {
             Cache::tags(['feed'])->flush();
+        });
+
+        static::created(function ($item) {
+            $item->load(['smartphone.category.distributor.user','smartphone.model_name','batch']);
+            $item->smartphone->category?->distributor->user?->notify(new NotifyDistributorAboutStockAdd($item));
+
         });
 
         static::deleted(function ($item) {

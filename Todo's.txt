@@ -2069,7 +2069,7 @@ If a country-specific price exists, the system will use that price; otherwise it
 278: Spinner Hiding Issue FIXED WHEN OPENING SIDEBAR OF DASHBOARD On MOBILE Zindex FIXED and its CSS ADDED TO MAKE it More Good ✅
 
 
-
+279: NEW Email Notification Added TO Notify Related Distributor Of the Product when its stock adds ✅
 
 
 
