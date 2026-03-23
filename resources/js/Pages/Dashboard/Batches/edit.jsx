@@ -4,14 +4,14 @@ import LinkButton from '@/Components/LinkButton';
 import PrimaryButton from '@/Components/PrimaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
-import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import React, { useEffect, useRef, useState } from 'react';
 import SelectInput from '@/Components/SelectInput';
 import Toast from '@/Components/Toast';
 import Swal from 'sweetalert2';
-
 import FileUploaderInput from '@/Components/FileUploaderInput';
 import { useScanner } from '@/Hooks/useScanner';
+import NativeScannerPreview from '@/Components/NativeScannerPreview';
 export default function edit({ batch, suppliers, smartphones, storage_locations }) {
     // Edit Data Form Data
     const { data, setData, reset } = useForm({
@@ -203,14 +203,11 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
     }, [activeScanner]);
 
 
-    const handleScanResult = async (text) => {
-        if (!activeScanner) return;
-        const { field, index } = activeScanner;
-
+    const processScanText = async (text, field, index) => {
         if (field === 'smartphone') {
             try {
                 const response = await axios.get(
-                    route('dashboard.inventories.getsmartphonebyupc', text)
+                    route('dashboard.inventories.getsmartphonebyupc', text),
                 );
                 if (response.data.status === false) {
                     Swal.fire({ icon: 'info', title: 'Oops...', text: response.data.message });
@@ -221,11 +218,35 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                 Swal.fire({ icon: 'error', title: 'Error', text: 'Could not find smartphone.' });
             }
         } else {
-            // imei1, imei2, eid, serial_no - direct fill
             handleInventoryChange(index, field, text);
         }
+    };
 
+    const handleScanResult = async (text) => {
+        if (!activeScanner) return;
+        const { field, index } = activeScanner;
+        await processScanText(text, field, index);
         closeScanner();
+    };
+
+    const [nativeScan, setNativeScan] = useState(null);
+
+    const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+        || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    // Updated trigger
+    const openScannerOrNative = (field, index) => {
+        if (isMobileDevice) {
+            setNativeScan({ field, index });
+        } else {
+            openScanner(field, index);
+        }
+    };
+
+
+    const getFieldLabel = (field) => {
+        const map = { smartphone: 'Smartphone', imei1: 'IMEI 1', imei2: 'IMEI 2', eid: 'EID', serial_no: 'Serial No' };
+        return map[field] || field;
     };
 
 
@@ -525,7 +546,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                                     />
                                                                                 </svg>
                                                                             }
-                                                                            Action={() => openScanner('smartphone', idx)}
+                                                                            Action={() => openScannerOrNative('smartphone', idx)}
                                                                         />
 
                                                                         {/* Smartphone */}
@@ -600,7 +621,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                                     />
                                                                                 </svg>
                                                                             }
-                                                                            Action={() => openScanner('imei1', idx)}
+                                                                            Action={() => openScannerOrNative('imei1', idx)}
                                                                         />
 
                                                                         {/* IMEI 1 */}
@@ -651,7 +672,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                                     />
                                                                                 </svg>
                                                                             }
-                                                                            Action={() => openScanner('imei2', idx)}
+                                                                            Action={() => openScannerOrNative('imei2', idx)}
 
                                                                         />
 
@@ -703,7 +724,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                                     />
                                                                                 </svg>
                                                                             }
-                                                                            Action={() => openScanner('eid', idx)}
+                                                                            Action={() => openScannerOrNative('eid', idx)}
                                                                         />
 
                                                                         {/* EID */}
@@ -754,7 +775,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                                     />
                                                                                 </svg>
                                                                             }
-                                                                            Action={() => openScanner('serial_no', idx)}
+                                                                            Action={() => openScannerOrNative('serial_no', idx)}
                                                                         />
 
                                                                         {/* Serial No */}
@@ -1107,6 +1128,17 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                         </div>
                     </>
                 )}
+
+
+                <NativeScannerPreview
+                    isOpen={!!nativeScan}
+                    fieldLabel={nativeScan ? getFieldLabel(nativeScan.field) : ''}
+                    itemNumber={nativeScan ? nativeScan.index + 1 : 1}
+                    onResult={async (text) => {
+                        if (nativeScan) await processScanText(text, nativeScan.field, nativeScan.index);
+                    }}
+                    onClose={() => setNativeScan(null)}
+                />
 
                 {showProgressModal && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">

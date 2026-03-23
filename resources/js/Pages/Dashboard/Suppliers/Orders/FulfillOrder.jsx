@@ -12,6 +12,7 @@ import Toast from '@/Components/Toast';
 import FileUploaderInput from '@/Components/FileUploaderInput';
 import { useScanner } from '@/Hooks/useScanner';
 import Textarea from '@/Components/Textarea';
+import NativeScannerPreview from '@/Components/NativeScannerPreview';
 
 
 export default function fulFillOrder({
@@ -362,6 +363,25 @@ export default function fulFillOrder({
     const [torchOn, setTorchOn] = useState(false);
 
     const [activeScanner, setActiveScanner] = useState(null);
+
+    const [nativeScan, setNativeScan] = useState(null);
+
+    const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+        || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    const getFieldLabel = (field) => {
+        const map = { imei1: 'IMEI 1', imei2: 'IMEI 2', eid: 'EID', serial_no: 'Serial No' };
+        return map[field] || field;
+    };
+
+    const openScannerOrNative = (field, index) => {
+        if (isMobileDevice) {
+            setNativeScan({ field, index });
+        } else {
+            openScanner(field, index);
+        }
+    };
+
 
     const openScanner = (field, index) => {
         setActiveScanner({ field, index });
@@ -949,7 +969,7 @@ export default function fulFillOrder({
                                                                                     />
                                                                                 </svg>
                                                                             }
-                                                                            Action={() => openScanner('imei1', idx)}
+                                                                            Action={() => openScannerOrNative('imei1', idx)}
                                                                             Disabled={isReadOnly}
                                                                         />
 
@@ -1002,7 +1022,7 @@ export default function fulFillOrder({
                                                                                     />
                                                                                 </svg>
                                                                             }
-                                                                            Action={() => openScanner('imei2', idx)}
+                                                                            Action={() => openScannerOrNative('imei2', idx)}
                                                                             Disabled={isReadOnly}
                                                                         />
 
@@ -1056,7 +1076,7 @@ export default function fulFillOrder({
                                                                                     />
                                                                                 </svg>
                                                                             }
-                                                                            Action={() => openScanner('eid', idx)}
+                                                                            Action={() => openScannerOrNative('eid', idx)}
                                                                         />
 
                                                                         {/* EID */}
@@ -1109,7 +1129,7 @@ export default function fulFillOrder({
                                                                                     />
                                                                                 </svg>
                                                                             }
-                                                                            Action={() => openScanner('serial_no', idx)}
+                                                                            Action={() => openScannerOrNative('serial_no', idx)}
                                                                         />
 
                                                                         {/* Serial No */}
@@ -1612,6 +1632,19 @@ export default function fulFillOrder({
                         </div>
                     </>
                 )}
+
+
+                <NativeScannerPreview
+                    isOpen={!!nativeScan}
+                    fieldLabel={nativeScan ? getFieldLabel(nativeScan.field) : ''}
+                    itemNumber={nativeScan ? nativeScan.index + 1 : 1}
+                    onResult={(text) => {
+                        if (nativeScan) {
+                            handleInventoryChange(nativeScan.index, nativeScan.field, text);
+                        }
+                    }}
+                    onClose={() => setNativeScan(null)}
+                />
 
                 {showProgressModal && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">

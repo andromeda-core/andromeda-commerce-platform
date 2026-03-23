@@ -10,6 +10,7 @@ import SelectInput from '@/Components/SelectInput';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useScanner } from '@/Hooks/useScanner';
+import NativeScannerPreview from '@/Components/NativeScannerPreview';
 
 export default function edit({ batches, smartphones, storage_locations, inventory }) {
     // Edit Data Form Data
@@ -30,6 +31,24 @@ export default function edit({ batches, smartphones, storage_locations, inventor
     const [torchOn, setTorchOn] = useState(false);
 
     const [activeScanner, setActiveScanner] = useState(null);
+
+    const [nativeScan, setNativeScan] = useState(null);
+
+    const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+        || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    const getFieldLabel = (field) => {
+        const map = { smartphone_id: 'UPC/EAN', imei1: 'IMEI 1', imei2: 'IMEI 2', eid: 'EID', serial_no: 'Serial No' };
+        return map[field] || field;
+    };
+
+    const openScannerOrNative = (field) => {
+        if (isMobileDevice) {
+            setNativeScan({ field });
+        } else {
+            openScanner(field);
+        }
+    };
 
     const openScanner = (field, index) => {
         setActiveScanner({ field, index });
@@ -149,6 +168,9 @@ export default function edit({ batches, smartphones, storage_locations, inventor
 
         closeScanner();
     };
+
+
+
     // Edit Data Form Request
     const submit = (e) => {
         e.preventDefault();
@@ -239,7 +261,7 @@ export default function edit({ batches, smartphones, storage_locations, inventor
                                                                 />
                                                             </svg>
                                                         }
-                                                        Action={() => openScanner('smartphone_id')}
+                                                        Action={() => openScannerOrNative('smartphone_id')}
                                                     />
 
                                                     <SelectInput
@@ -300,7 +322,7 @@ export default function edit({ batches, smartphones, storage_locations, inventor
                                                                 />
                                                             </svg>
                                                         }
-                                                        Action={() => openScanner('imei1')}
+                                                        Action={() => openScannerOrNative('imei1')}
                                                     />
 
                                                     <Input
@@ -347,7 +369,7 @@ export default function edit({ batches, smartphones, storage_locations, inventor
                                                                 />
                                                             </svg>
                                                         }
-                                                        Action={() => openScanner('imei2')}
+                                                        Action={() => openScannerOrNative('imei2')}
                                                     />
 
                                                     <Input
@@ -393,7 +415,7 @@ export default function edit({ batches, smartphones, storage_locations, inventor
                                                                 />
                                                             </svg>
                                                         }
-                                                        Action={() => openScanner('eid')}
+                                                        Action={() => openScannerOrNative('eid')}
                                                     />
 
                                                     <Input
@@ -439,7 +461,7 @@ export default function edit({ batches, smartphones, storage_locations, inventor
                                                                 />
                                                             </svg>
                                                         }
-                                                        Action={() => openScanner('serial_no')}
+                                                        Action={() => openScannerOrNative('serial_no')}
                                                     />
 
                                                     <Input
@@ -647,6 +669,34 @@ export default function edit({ batches, smartphones, storage_locations, inventor
                         </div>
                     </>
                 )}
+
+
+                <NativeScannerPreview
+                    isOpen={!!nativeScan}
+                    fieldLabel={nativeScan ? getFieldLabel(nativeScan.field) : ''}
+                    itemNumber={null}
+                    onResult={async (text) => {
+                        if (!nativeScan) return;
+                        const { field } = nativeScan;
+                        if (field === 'smartphone_id') {
+                            try {
+                                const response = await axios.get(
+                                    route('dashboard.inventories.getsmartphonebyupc', text)
+                                );
+                                if (response.data.status === false) {
+                                    Swal.fire({ icon: 'info', title: 'Oops...', text: response.data.message });
+                                } else {
+                                    setData('smartphone_id', response.data.smartphone.id);
+                                }
+                            } catch (err) {
+                                Swal.fire({ icon: 'error', title: 'Error', text: 'Could not find smartphone.' });
+                            }
+                        } else {
+                            setData(field, text);
+                        }
+                    }}
+                    onClose={() => setNativeScan(null)}
+                />
             </AuthenticatedLayout>
         </>
     );

@@ -13,6 +13,7 @@ import TipTapEditor from '@/Components/TipTapEditor';
 import { Loader } from '@googlemaps/js-api-loader';
 import Swal from 'sweetalert2';
 import { useScanner } from '@/Hooks/useScanner';
+import NativeScannerPreview from '@/Components/NativeScannerPreview';
 
 export default function create({ colors, model_names, capacities, shipping_policies, categories, conditions, countries, return_policies, courier_companies, addons, floors, googleMapSettings }) {
     // Create Data Form Data
@@ -53,6 +54,19 @@ export default function create({ colors, model_names, capacities, shipping_polic
     const [torchOn, setTorchOn] = useState(false);
 
     const [activeScanner, setActiveScanner] = useState(null);
+
+    const [nativeScan, setNativeScan] = useState(null);
+
+    const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+        || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    const openScannerOrNative = (field) => {
+        if (isMobileDevice) {
+            setNativeScan({ field });
+        } else {
+            openScanner(field);
+        }
+    };
 
     const openScanner = (field, index) => {
         setActiveScanner({ field, index });
@@ -608,7 +622,7 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                                 />
                                                             </svg>
                                                         }
-                                                        Action={() => openScanner('upc')}
+                                                        Action={() => openScannerOrNative('upc')}
                                                     />
                                                     <Input
                                                         InputName={'UPC/EAN'}
@@ -1204,6 +1218,21 @@ export default function create({ colors, model_names, capacities, shipping_polic
                             )}
 
 
+                            <NativeScannerPreview
+                                isOpen={!!nativeScan}
+                                fieldLabel="UPC/EAN"
+                                itemNumber={null}
+                                onResult={async (text) => {
+                                    try {
+                                        setData('upc', text);
+                                    } catch (err) {
+                                        Swal.fire({ icon: 'error', title: 'Error', text: 'Could not find smartphone.' });
+                                    }
+                                }}
+                                onClose={() => setNativeScan(null)}
+                            />
+
+
 
                             {showProgressModal && (
                                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
@@ -1423,6 +1452,7 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                     </div>
                                 </div>
                             )}
+
                         </>
                     }
                 />

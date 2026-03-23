@@ -9,6 +9,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import SelectInput from '@/Components/SelectInput';
 import Swal from 'sweetalert2';
 import { useScanner } from '@/Hooks/useScanner';
+import NativeScannerPreview from '@/Components/NativeScannerPreview';
 export default function create({ smartphones, shipping_fee_lists, import_tax_lists }) {
     // Create Data Form Data
     const { data, setData, post, processing, errors } = useForm({
@@ -38,6 +39,20 @@ export default function create({ smartphones, shipping_fee_lists, import_tax_lis
     const [torchOn, setTorchOn] = useState(false);
 
     const [activeScanner, setActiveScanner] = useState(null);
+
+
+    const [nativeScan, setNativeScan] = useState(null);
+
+    const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+        || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    const openScannerOrNative = (field) => {
+        if (isMobileDevice) {
+            setNativeScan({ field });
+        } else {
+            openScanner(field);
+        }
+    };
 
     const openScanner = (field, index) => {
         setActiveScanner({ field, index });
@@ -131,8 +146,6 @@ export default function create({ smartphones, shipping_fee_lists, import_tax_lis
             window.removeEventListener('resize', calculate);
         };
     }, [activeScanner]);
-
-
 
     const handleScanResult = async (text) => {
         if (!activeScanner) return;
@@ -229,7 +242,7 @@ export default function create({ smartphones, shipping_fee_lists, import_tax_lis
                                                                 />
                                                             </svg>
                                                         }
-                                                        Action={() => openScanner('smartphone_id')}
+                                                        Action={() => openScannerOrNative('smartphone_id')}
                                                     />
 
                                                     <SelectInput
@@ -568,6 +581,28 @@ export default function create({ smartphones, shipping_fee_lists, import_tax_lis
                         </div>
                     </>
                 )}
+
+
+                <NativeScannerPreview
+                    isOpen={!!nativeScan}
+                    fieldLabel="UPC/EAN"
+                    itemNumber={null}
+                    onResult={async (text) => {
+                        try {
+                            const response = await axios.get(
+                                route('dashboard.inventories.getsmartphonebyupc', text)
+                            );
+                            if (response.data.status === false) {
+                                Swal.fire({ icon: 'info', title: 'Oops...', text: response.data.message });
+                            } else {
+                                setData('smartphone_id', response.data.smartphone.id);
+                            }
+                        } catch (err) {
+                            Swal.fire({ icon: 'error', title: 'Error', text: 'Could not find smartphone.' });
+                        }
+                    }}
+                    onClose={() => setNativeScan(null)}
+                />
             </AuthenticatedLayout>
         </>
     );
