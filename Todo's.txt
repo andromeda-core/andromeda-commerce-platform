@@ -2070,8 +2070,12 @@ If a country-specific price exists, the system will use that price; otherwise it
 
 
 279: NEW Email Notification Added TO Notify Related Distributor Of the Product when its stock adds ✅
-
-
+280: Back Button Of Customer Invoice Redirection at Home When viewing From Non Admin Role Now i have made it wider to check if not cusotme rthan will redirect back and onl;y for customers it will redirect to home   ✅
+281: Shipping Invoice View Page was restricted And Only Admin can view that due to OUR OLD Initial Requirements But  now Distributor Also can view that so i have removed the restrction ✅
+282: Video Recording Verification + Snapshot Taking and Scanning It Using Custom HEAVY LOGIC ADDED also added crop functionality when image taken to adjust the Captured image ✅
+283: NEW Component added PackageVerificationRecorder.jsx to Reuse the Same code in Multiple Places ✅
+284: FIXED THE BATCH EDIT PAGE router dep missing issue ✅
+285: Customer Order Invoice Back Nutton fixed and shipping invoice view mode as well ✅
 
 
 

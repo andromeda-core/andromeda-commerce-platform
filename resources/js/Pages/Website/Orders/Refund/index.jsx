@@ -9,6 +9,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useScanner } from '@/Hooks/useScanner';
 import axios from 'axios';
 import { useVideoRecorder } from '@/Hooks/useVideoRecorder';
+import NativeScannerPreview from '@/Components/NativeScannerPreview';
 
 const index = ({ order_no, order }) => {
 
@@ -37,11 +38,13 @@ const index = ({ order_no, order }) => {
     const scanOverlayRef = useRef(null);
     const [scanRegion, setScanRegion] = useState(null);
     const [torchOn, setTorchOn] = useState(false);
+    const [nativeScanOpen, setNativeScanOpen] = useState(false);
 
+    const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
     const { videoRef: scannerVideoRef, refocus, toggleTorch } = useScanner({
-        active: showVerificationModal && !scanCooldown && !isVerifying,
-        onScan: (text) => handleIMEIScan(text),
+        active: showVerificationModal && !scanCooldown && !isVerifying && !isMobileDevice,
         scanRegion,
     });
 
@@ -168,7 +171,6 @@ const index = ({ order_no, order }) => {
             setIsVerifying(false);
         }
     };
-
 
     const submit = async (e) => {
         e.preventDefault();
@@ -392,20 +394,7 @@ const index = ({ order_no, order }) => {
                                             <ChevronLeft />
                                         </button>
 
-                                        <button
-                                            onClick={handleTorchToggle}
-                                            title={torchOn ? __('Turn off flashlight') : __('Turn on flashlight')}
-                                            className={`flex items-center justify-center w-9 h-9 rounded-md transition-colors
-                        ${torchOn
-                                                    ? 'bg-yellow-400 text-gray-900'
-                                                    : 'text-sub-text-light dark:text-sub-text-dark hover:bg-surface-1-light dark:hover:bg-surface-1-dark'
-                                                }`}
-                                        >
-                                            {torchOn
-                                                ? <Flashlight className="size-5" />
-                                                : <FlashlightOff className="size-5" />
-                                            }
-                                        </button>
+
                                     </div>
 
                                     <div className="grid gap-6 px-6 lg:grid-cols-2">
@@ -467,39 +456,29 @@ const index = ({ order_no, order }) => {
                                                 {__('Scanner')}
                                             </p>
 
-                                            {/* Viewport */}
+                                            {/* Viewport — Mobile: tap to open NativeScannerPreview */}
                                             <div className="relative overflow-hidden rounded-md bg-gray-950" style={{ aspectRatio: '4/3' }}>
-                                                <video
-                                                    ref={scannerVideoRef}
-                                                    className="object-cover w-full h-full"
-                                                    muted
-                                                    playsInline
-                                                    onTouchStart={refocus}
-                                                    onClick={refocus}
-                                                />
 
-                                                {!isVerifying && !scanCooldown && (
-                                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                                        <div
-                                                            ref={scanOverlayRef}
-                                                            className="relative h-24 w-72"
-                                                            style={{
-                                                                boxShadow: '0 0 0 9999px rgba(0,0,0,0.6)',
-                                                                borderRadius: '4px',
-                                                            }}
-                                                        >
-                                                            <span className="absolute w-5 h-5 border-t-[3px] border-l-[3px] border-blue-400 -top-px -left-px rounded-tl-sm" />
-                                                            <span className="absolute w-5 h-5 border-t-[3px] border-r-[3px] border-blue-400 -top-px -right-px rounded-tr-sm" />
-                                                            <span className="absolute w-5 h-5 border-b-[3px] border-l-[3px] border-blue-400 -bottom-px -left-px rounded-bl-sm" />
-                                                            <span className="absolute w-5 h-5 border-b-[3px] border-r-[3px] border-blue-400 -bottom-px -right-px rounded-br-sm" />
-                                                            <div
-                                                                className="absolute left-1 right-1 h-0.5 bg-blue-400"
-                                                                style={{ animation: 'scanLine 1.8s ease-in-out infinite', top: '10%' }}
-                                                            />
+                                                {/* Idle / error cooldown: tap button */}
+                                                {!isVerifying && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setNativeScanOpen(true)}
+                                                        disabled={isVerifying}
+                                                        className="absolute inset-0 flex flex-col items-center justify-center w-full h-full gap-3 transition-colors bg-gray-950 hover:bg-gray-900 disabled:opacity-50"
+                                                    >
+                                                        <div className="flex items-center justify-center w-16 h-16 border-2 border-dashed rounded-full border-white/30">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-8 text-white/60">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+                                                            </svg>
                                                         </div>
-                                                    </div>
+                                                        <p className="text-sm font-semibold text-white">{__('Tap to Scan Barcode')}</p>
+                                                        <p className="text-xs text-white/40">{__('Opens camera to capture barcode')}</p>
+                                                    </button>
                                                 )}
 
+                                                {/* Verifying with API */}
                                                 {isVerifying && (
                                                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gray-950">
                                                         <svg className="w-9 h-9 text-white/60 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -511,6 +490,7 @@ const index = ({ order_no, order }) => {
                                                     </div>
                                                 )}
 
+                                                {/* Error cooldown overlay */}
                                                 {scanCooldown && !isVerifying && scanError && (
                                                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-5 bg-gray-950/95">
                                                         <div className="flex items-center justify-center border border-red-800 rounded-full w-11 h-11 bg-red-900/30">
@@ -522,15 +502,7 @@ const index = ({ order_no, order }) => {
                                                             <p className="text-sm font-semibold text-red-300">{__('Verification Failed')}</p>
                                                             <p className="mt-1 text-xs text-center text-white/40 max-w-[180px]">{scanError}</p>
                                                         </div>
-                                                        <p className="text-xs animate-pulse text-white/25">{__('Scanner restarting...')}</p>
-                                                    </div>
-                                                )}
-
-                                                {/* Flash ON badge */}
-                                                {torchOn && (
-                                                    <div className="absolute flex items-center gap-1 px-2 py-1 text-xs font-semibold text-gray-900 rounded-full pointer-events-none top-2 right-2 bg-yellow-400/90">
-                                                        <Flashlight className="size-3" />
-                                                        {__('Flash ON')}
+                                                        <p className="text-xs animate-pulse text-white/25">{__('Tap to try again...')}</p>
                                                     </div>
                                                 )}
                                             </div>
@@ -539,10 +511,12 @@ const index = ({ order_no, order }) => {
                                                 <div className="flex items-center gap-2">
                                                     <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
                                                     <span className="text-xs text-sub-text-light dark:text-sub-text-dark">
-                                                        {__('Scanner active - align barcode within the frame')}
+                                                        {__('Tap the box above to open camera')}
                                                     </span>
                                                 </div>
                                             )}
+
+
                                         </div>
                                     </div>
                                 </div>
@@ -751,6 +725,20 @@ const index = ({ order_no, order }) => {
 
                 </>
             )}
+            <NativeScannerPreview
+                isOpen={nativeScanOpen}
+                fieldLabel={__('Device Barcode')}
+                itemNumber={null}
+                onResult={(text) => {
+                    setNativeScanOpen(false);
+                    handleIMEIScan(text);
+                }}
+                onClose={() => setNativeScanOpen(false)}
+                scanBoxWidth={400}
+                scanBoxHeight={50}
+                bottomOffset={72}
+            />
+
         </MainLayout >
     );
 };

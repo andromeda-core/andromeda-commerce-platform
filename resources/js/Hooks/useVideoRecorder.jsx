@@ -9,18 +9,25 @@ export function useVideoRecorder() {
     const chunksRef = useRef([]);
     const timerRef = useRef(null);
 
+
+    const startTimeRef = useRef(null);
+    const totalPausedRef = useRef(0);
+    const pausedAtRef = useRef(null);
+
     const [isReady, setIsReady] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
+    const [isPaused, setIsPaused] = useState(false);
     const [recordedFile, setRecordedFile] = useState(null);
     const [recordedUrl, setRecordedUrl] = useState(null);
     const [cameraError, setCameraError] = useState(null);
-    const [elapsed, setElapsed] = useState(0); // seconds
+    const [elapsed, setElapsed] = useState(0);
 
     const startCamera = useCallback(async () => {
         setCameraError(null);
         setRecordedFile(null);
         setRecordedUrl(null);
         setElapsed(0);
+        setIsPaused(false);
 
         // Stop any existing stream first
         if (streamRef.current) {
@@ -28,7 +35,6 @@ export function useVideoRecorder() {
             streamRef.current = null;
         }
 
-        // Try strategies in order - broad to specific
         const strategies = [
             { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: true },
             { video: { facingMode: 'environment' }, audio: true },
@@ -76,23 +82,36 @@ export function useVideoRecorder() {
         clearInterval(timerRef.current);
         streamRef.current?.getTracks().forEach(t => t.stop());
         streamRef.current = null;
+
         if (videoRef.current) {
             videoRef.current.srcObject = null;
         }
+
         recorderRef.current = null;
         chunksRef.current = [];
+        startTimeRef.current = null;
+        totalPausedRef.current = 0;
+        pausedAtRef.current = null;
+
         setIsReady(false);
         setIsRecording(false);
+        setIsPaused(false);
         setElapsed(0);
     }, []);
 
     const startRecording = useCallback(() => {
         if (!streamRef.current) return;
 
+        // Reset everything
         chunksRef.current = [];
+        startTimeRef.current = Date.now();
+        totalPausedRef.current = 0;
+        pausedAtRef.current = null;
+
         setRecordedFile(null);
         setRecordedUrl(null);
         setElapsed(0);
+        setIsPaused(false);
 
         const mimeType = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4']
             .find(t => MediaRecorder.isTypeSupported(t)) || 'video/webm';
@@ -111,65 +130,123 @@ export function useVideoRecorder() {
             const file = new File([blob], `recording-${Date.now()}.webm`, { type: mimeType });
             setRecordedFile(file);
             setIsRecording(false);
-
+            setIsPaused(false);
             setTimeout(() => setRecordedUrl(url), 50);
         };
 
         recorder.start(500);
         setIsRecording(true);
 
-        // Elapsed timer
-        const startTime = Date.now();
         timerRef.current = setInterval(() => {
-            const secs = Math.floor((Date.now() - startTime) / 1000);
-            setElapsed(secs);
-            // Auto stop at 5 min
-            if (Date.now() - startTime >= MAX_DURATION_MS) {
-                recorder.stop();
+            const activeMs = Date.now() - startTimeRef.current - totalPausedRef.current;
+            setElapsed(Math.floor(activeMs / 1000));
+
+            // Auto-stop at 5 minutes of ACTIVE recording time
+            if (activeMs >= MAX_DURATION_MS) {
+                if (recorderRef.current?.state === 'recording' ||
+                    recorderRef.current?.state === 'paused') {
+                    recorderRef.current.stop();
+                }
                 clearInterval(timerRef.current);
             }
         }, 1000);
 
     }, []);
 
+
     const stopRecording = useCallback(() => {
-        if (recorderRef.current?.state === 'recording') {
+        clearInterval(timerRef.current);
+
+        const state = recorderRef.current?.state;
+        if (state === 'paused') {
+            recorderRef.current.resume();
+            recorderRef.current.stop();
+        } else if (state === 'recording') {
             recorderRef.current.stop();
         }
+    }, []);
+
+    const pauseRecording = useCallback(() => {
+        if (recorderRef.current?.state !== 'recording') return;
+
+        recorderRef.current.pause();
+        pausedAtRef.current = Date.now();
+
         clearInterval(timerRef.current);
+        setIsPaused(true);
+    }, []);
+
+
+    const resumeRecording = useCallback(() => {
+        if (recorderRef.current?.state !== 'paused') return;
+
+        // Accumulate the time we were paused
+        if (pausedAtRef.current !== null) {
+            totalPausedRef.current += Date.now() - pausedAtRef.current;
+            pausedAtRef.current = null;
+        }
+
+        recorderRef.current.resume();
+        setIsPaused(false);
+        timerRef.current = setInterval(() => {
+            const activeMs = Date.now() - startTimeRef.current - totalPausedRef.current;
+            setElapsed(Math.floor(activeMs / 1000));
+
+            if (activeMs >= MAX_DURATION_MS) {
+                if (recorderRef.current?.state === 'recording' ||
+                    recorderRef.current?.state === 'paused') {
+                    recorderRef.current.stop();
+                }
+                clearInterval(timerRef.current);
+            }
+        }, 1000);
     }, []);
 
     const retake = useCallback(() => {
+        clearInterval(timerRef.current);
+
         if (recordedUrl) URL.revokeObjectURL(recordedUrl);
+
+        startTimeRef.current = null;
+        totalPausedRef.current = 0;
+        pausedAtRef.current = null;
+
         setRecordedFile(null);
         setRecordedUrl(null);
         setElapsed(0);
-        // Camera already running, just reset
+        setIsPaused(false);
     }, [recordedUrl]);
-
-
     useEffect(() => {
         if (!streamRef.current || !videoRef.current || recordedUrl) return;
-
         if (videoRef.current.srcObject !== streamRef.current) {
             videoRef.current.srcObject = streamRef.current;
             videoRef.current.play().catch(() => { });
         }
     }, [isReady, isRecording, recordedUrl]);
+    useEffect(() => {
+        return () => {
+            clearInterval(timerRef.current);
+            streamRef.current?.getTracks().forEach(t => t.stop());
+            if (recordedUrl) URL.revokeObjectURL(recordedUrl);
+        };
+    }, []);
 
     return {
         recordingVideoRef: videoRef,
         isReady,
         isRecording,
+        isPaused,
         recordedFile,
-        setRecordedUrl,
         recordedUrl,
+        setRecordedUrl,
         cameraError,
         elapsed,
         startCamera,
         stopCamera,
         startRecording,
         stopRecording,
+        pauseRecording,
+        resumeRecording,
         retake,
     };
 }

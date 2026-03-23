@@ -83,7 +83,7 @@ export default function CustomerOrderInvoice({ order }) {
                 />
                 {auth?.user ? (
                     <>
-                        {auth?.user?.role === 'Admin' ? (
+                        {auth?.user?.role !== 'Customer' ? (
                             <PrimaryButton
                                 Text={'Back'}
                                 Action={() => router.get(route('dashboard.orders.show', order.id))}

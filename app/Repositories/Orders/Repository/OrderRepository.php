@@ -906,10 +906,6 @@ class OrderRepository implements IOrderRepository
                 throw new Exception('Invoice Not Found');
             }
 
-            if (! $request->user()->hasRole('Admin')) {
-                throw new Exception('You Are Not Allowed To View This Invoice');
-            }
-
             return [
                 'status' => true,
                 'message' => 'Invoice Found',

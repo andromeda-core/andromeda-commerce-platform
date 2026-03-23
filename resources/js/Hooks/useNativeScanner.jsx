@@ -1,27 +1,12 @@
 import { useRef, useCallback, useEffect, useState } from 'react';
 import beepSound from '../../assets/sounds/Beep.mp3';
 
-/**
- * Detect mobile/tablet devices that should use native camera
- */
 const isMobileDevice = () =>
     /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(
         navigator.userAgent,
     ) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-/**
- * useNativeScanner
- *
- * Two-step flow:
- *   1) captureImage()  - opens native rear camera / file picker, returns imageUrl
- *   2) decodeRegion()  - crops a region from that image and decodes barcode
- *
- * This lets the UI show a preview with a scan-box so the user can
- * position the desired barcode inside the box before decoding.
- *
- * Completely independent of useScanner. No WebRTC, no live video.
- */
 export function useNativeScanner() {
     const fileInputRef = useRef(null);
     const audioRef = useRef(null);
@@ -53,7 +38,11 @@ export function useNativeScanner() {
 
         const hints = new Map();
         hints.set(DecodeHintType.POSSIBLE_FORMATS, [
-            BarcodeFormat.CODE_128, BarcodeFormat.EAN_13, BarcodeFormat.QR_CODE,
+            BarcodeFormat.CODE_128, BarcodeFormat.CODE_39, BarcodeFormat.CODE_93,
+            BarcodeFormat.EAN_13, BarcodeFormat.EAN_8,
+            BarcodeFormat.UPC_A, BarcodeFormat.UPC_E,
+            BarcodeFormat.QR_CODE, BarcodeFormat.DATA_MATRIX,
+            BarcodeFormat.ITF, BarcodeFormat.PDF_417, BarcodeFormat.AZTEC,
         ]);
         hints.set(DecodeHintType.TRY_HARDER, true);
 
@@ -258,6 +247,8 @@ export function useNativeScanner() {
     const decodeRegion = useCallback(
         async (imageUrl, cropRect) => {
             setIsProcessing(true);
+
+
             try {
                 await new Promise((r) => setTimeout(r, 50));
                 const reader = await getReader();
@@ -285,19 +276,47 @@ export function useNativeScanner() {
                     return { success: false, text: null, error: 'Scan region is too small.' };
                 }
 
-                // Cut it out - nothing else remains
+                // No vertical expansion — use exact crop from scan box.
+                // Padding was causing upward shift into adjacent barcodes.
                 const cropped = document.createElement('canvas');
                 cropped.width = cw;
                 cropped.height = ch;
                 cropped.getContext('2d').drawImage(fullCanvas, cx, cy, cw, ch, 0, 0, cw, ch);
 
-                // Try at different scales - ZXing works best 400-800px wide
+                const rotateByAngle = (src, angleDeg) => {
+                    const rad = (angleDeg * Math.PI) / 180;
+                    const sin = Math.abs(Math.sin(rad));
+                    const cos = Math.abs(Math.cos(rad));
+                    const newW = Math.round(src.width * cos + src.height * sin);
+                    const newH = Math.round(src.width * sin + src.height * cos);
+                    const c = document.createElement('canvas');
+                    c.width = newW;
+                    c.height = newH;
+                    const ctx = c.getContext('2d');
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+                    ctx.translate(newW / 2, newH / 2);
+                    ctx.rotate(rad);
+                    ctx.drawImage(src, -src.width / 2, -src.height / 2);
+                    return c;
+                };
+
+                const tryAllProcessors = async (canvas) => {
+                    let r = await tryDecode(reader, canvas);
+                    if (r) return r;
+                    r = await tryDecode(reader, enhanceCanvas(canvas));
+                    if (r) return r;
+                    r = await tryDecode(reader, grayscaleCanvas(canvas));
+                    return r;
+                };
+
+
                 const sizes = [640, 500, 800, 400, 1000];
                 let found = null;
 
                 for (const targetW of sizes) {
                     const ratio = targetW / cw;
-                    const targetH = Math.max(20, Math.round(ch * ratio));
+                    const targetH = Math.max(20, Math.round(cropped.height * ratio));
 
                     const scaled = document.createElement('canvas');
                     scaled.width = targetW;
@@ -307,19 +326,156 @@ export function useNativeScanner() {
                     ctx.imageSmoothingQuality = 'high';
                     ctx.drawImage(cropped, 0, 0, targetW, targetH);
 
-                    // Try raw
-                    found = await tryDecode(reader, scaled);
-                    if (found) break;
-
-                    // Try with contrast boost
-                    found = await tryDecode(reader, enhanceCanvas(scaled));
-                    if (found) break;
-
-                    // Try grayscale
-                    found = await tryDecode(reader, grayscaleCanvas(scaled));
+                    found = await tryAllProcessors(scaled);
                     if (found) break;
 
                     await new Promise((r) => setTimeout(r, 0));
+                }
+
+                if (!found) {
+                    const fractions = [0.7, 0.5, 0.35];
+                    for (const frac of fractions) {
+                        const startY = Math.round(cropped.height * (1 - frac));
+                        const partH = cropped.height - startY;
+                        if (partH < 20) continue;
+
+                        const part = document.createElement('canvas');
+                        part.width = cw;
+                        part.height = partH;
+                        part.getContext('2d').drawImage(
+                            cropped, 0, startY, cw, partH, 0, 0, cw, partH
+                        );
+
+
+                        // Try at 640px wide
+                        const pW = 640;
+                        const pH = Math.max(20, Math.round(partH * (pW / cw)));
+                        const ps = document.createElement('canvas');
+                        ps.width = pW;
+                        ps.height = pH;
+                        const psCtx = ps.getContext('2d');
+                        psCtx.imageSmoothingEnabled = true;
+                        psCtx.imageSmoothingQuality = 'high';
+                        psCtx.drawImage(part, 0, 0, pW, pH);
+
+
+                        found = await tryAllProcessors(ps);
+                        if (found) break;
+
+                        // Also try at native width (no downscaling)
+                        found = await tryAllProcessors(part);
+                        if (found) break;
+
+                        await new Promise((r) => setTimeout(r, 0));
+                    }
+                }
+
+
+                if (!found) {
+                    const PROBE_W = 200;
+                    const PROBE_H = Math.max(20, Math.round(cropped.height * PROBE_W / cw));
+                    const PAD = 60;
+                    const probeW = PROBE_W + PAD * 2;
+                    const probeH = PROBE_H + PAD * 2;
+
+                    const probeC = document.createElement('canvas');
+                    probeC.width = probeW;
+                    probeC.height = probeH;
+                    const probeCtx = probeC.getContext('2d');
+
+                    let bestAngle = 0;
+                    let bestVariance = -1;
+
+
+                    for (let deg = -22; deg <= 22; deg += 2) {
+                        probeCtx.clearRect(0, 0, probeW, probeH);
+                        probeCtx.save();
+                        probeCtx.translate(probeW / 2, probeH / 2);
+                        probeCtx.rotate(deg * Math.PI / 180);
+                        probeCtx.drawImage(cropped, -PROBE_W / 2, -PROBE_H / 2, PROBE_W, PROBE_H);
+                        probeCtx.restore();
+
+                        const imgData = probeCtx.getImageData(0, 0, probeW, probeH);
+                        const d = imgData.data;
+
+
+                        let sumR = 0, sumR2 = 0;
+                        for (let y = 0; y < probeH; y++) {
+                            let rowDark = 0;
+                            for (let x = 0; x < probeW; x++) {
+                                const i = (y * probeW + x) * 4;
+                                const lum = (d[i] * 77 + d[i + 1] * 150 + d[i + 2] * 29) >> 8;
+                                if (lum < 128) rowDark++;
+                            }
+                            sumR += rowDark;
+                            sumR2 += rowDark * rowDark;
+                        }
+                        const variance = sumR2 / probeH - (sumR / probeH) ** 2;
+
+                        if (variance > bestVariance) {
+                            bestVariance = variance;
+                            bestAngle = deg;
+                        }
+                    }
+
+                    if (bestAngle !== 0) {
+
+
+                        const straightened = rotateByAngle(cropped, bestAngle);
+
+                        // Try at 640px
+                        const sW = 640;
+                        const sH = Math.max(20, Math.round(straightened.height * sW / straightened.width));
+                        const sC = document.createElement('canvas');
+                        sC.width = sW; sC.height = sH;
+                        const sCx = sC.getContext('2d');
+                        sCx.imageSmoothingEnabled = true;
+                        sCx.imageSmoothingQuality = 'high';
+                        sCx.drawImage(straightened, 0, 0, sW, sH);
+
+                        found = await tryAllProcessors(sC);
+
+                        if (!found) {
+                            found = await tryAllProcessors(straightened);
+                        }
+
+                        if (!found) {
+                            for (const fine of [bestAngle - 1, bestAngle + 1]) {
+                                const f = rotateByAngle(cropped, fine);
+                                const fW = 640;
+                                const fH = Math.max(20, Math.round(f.height * fW / f.width));
+                                const fC = document.createElement('canvas');
+                                fC.width = fW; fC.height = fH;
+                                fC.getContext('2d').drawImage(f, 0, 0, fW, fH);
+                                found = await tryAllProcessors(fC);
+                                if (found) break;
+                            }
+                        }
+
+                        if (!found) {
+                            for (const frac of [0.6, 0.4]) {
+                                const sY = Math.round(straightened.height * (1 - frac));
+                                const pH = straightened.height - sY;
+                                if (pH < 15) continue;
+                                const pC = document.createElement('canvas');
+                                pC.width = straightened.width;
+                                pC.height = pH;
+                                pC.getContext('2d').drawImage(straightened, 0, sY, straightened.width, pH, 0, 0, straightened.width, pH);
+                                const bW = 640;
+                                const bH = Math.max(20, Math.round(pH * bW / straightened.width));
+                                const bC = document.createElement('canvas');
+                                bC.width = bW; bC.height = bH;
+                                bC.getContext('2d').drawImage(pC, 0, 0, bW, bH);
+                                found = await tryAllProcessors(bC);
+                                if (found) break;
+                                await new Promise((r) => setTimeout(r, 0));
+                            }
+                        }
+                    }
+                }
+
+                if (!found) {
+                    found = await runAllStrategies(reader, cropped, cw, ch);
                 }
 
                 if (found) {
@@ -357,10 +513,10 @@ export function useNativeScanner() {
     }, []);
 
     return {
-        captureImage,   // () => Promise<{ cancelled, imageUrl }>
-        decodeRegion,   // (imageUrl, { x, y, width, height }) => Promise<{ success, text, error }>
-        releaseImage,   // (imageUrl) => void
-        isProcessing,   // boolean
+        captureImage,
+        decodeRegion,
+        releaseImage,
+        isProcessing,
         isMobile: isMobile.current,
     };
 }

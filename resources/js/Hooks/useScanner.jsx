@@ -626,7 +626,11 @@ export function useScanner({ active, onScan, sourceVideoRef = null, scanRegion =
 
             const hints = new Map();
             hints.set(DecodeHintType.POSSIBLE_FORMATS, [
-                BarcodeFormat.CODE_128, BarcodeFormat.EAN_13, BarcodeFormat.QR_CODE,
+                BarcodeFormat.CODE_128, BarcodeFormat.CODE_39, BarcodeFormat.CODE_93,
+                BarcodeFormat.EAN_13, BarcodeFormat.EAN_8,
+                BarcodeFormat.UPC_A, BarcodeFormat.UPC_E,
+                BarcodeFormat.QR_CODE, BarcodeFormat.DATA_MATRIX,
+                BarcodeFormat.ITF, BarcodeFormat.PDF_417, BarcodeFormat.AZTEC,
             ]);
             hints.set(DecodeHintType.TRY_HARDER, true);
 
