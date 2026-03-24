@@ -15,7 +15,6 @@ function NativeScannerPreview({
 }) {
     const { captureImage, decodeRegion, releaseImage, isProcessing } = useNativeScanner();
 
-
     const [imageUrl, setImageUrl] = useState(null);
     const [imgTransform, setImgTransform] = useState({ x: 0, y: 0, scale: 1 });
 
@@ -23,8 +22,12 @@ function NativeScannerPreview({
     const [boxHalfH, setBoxHalfH] = useState(scanBoxHeight / 2);
     const boxHalfWRef = useRef(boxHalfW);
     const boxHalfHRef = useRef(boxHalfH);
-    useEffect(() => { boxHalfWRef.current = boxHalfW; }, [boxHalfW]);
-    useEffect(() => { boxHalfHRef.current = boxHalfH; }, [boxHalfH]);
+    useEffect(() => {
+        boxHalfWRef.current = boxHalfW;
+    }, [boxHalfW]);
+    useEffect(() => {
+        boxHalfHRef.current = boxHalfH;
+    }, [boxHalfH]);
 
     // Reset box size when props change
     useEffect(() => {
@@ -41,10 +44,14 @@ function NativeScannerPreview({
     const imgTransformRef = useRef(imgTransform);
 
     const touchRef = useRef({
-        startX: 0, startY: 0, lastX: 0, lastY: 0,
+        startX: 0,
+        startY: 0,
+        lastX: 0,
+        lastY: 0,
         isPinching: false,
         lastPinchDist: 0,
-        lastPinchMidX: 0, lastPinchMidY: 0,
+        lastPinchMidX: 0,
+        lastPinchMidY: 0,
     });
 
     // Mouse drag state for pan
@@ -52,42 +59,75 @@ function NativeScannerPreview({
 
     // Corner resize state
     const cornerRef = useRef({
-        active: false, corner: null,
-        startX: 0, startY: 0,
-        startHalfW: 0, startHalfH: 0,
+        active: false,
+        corner: null,
+        startX: 0,
+        startY: 0,
+        startHalfW: 0,
+        startHalfH: 0,
     });
 
     const [errorMessage, setErrorMessage] = useState(null);
     const [showErrorMessage, setShowErrorMessage] = useState(false);
 
-    useEffect(() => { onResultRef.current = onResult; }, [onResult]);
-    useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
-    useEffect(() => { imageUrlRef.current = imageUrl; }, [imageUrl]);
-    useEffect(() => { isOpenRef.current = isOpen; }, [isOpen]);
-    useEffect(() => { imgTransformRef.current = imgTransform; }, [imgTransform]);
+    useEffect(() => {
+        onResultRef.current = onResult;
+    }, [onResult]);
+    useEffect(() => {
+        onCloseRef.current = onClose;
+    }, [onClose]);
+    useEffect(() => {
+        imageUrlRef.current = imageUrl;
+    }, [imageUrl]);
+    useEffect(() => {
+        isOpenRef.current = isOpen;
+    }, [isOpen]);
+    useEffect(() => {
+        imgTransformRef.current = imgTransform;
+    }, [imgTransform]);
 
     const cleanup = useCallback(() => {
-        if (imageUrlRef.current) { releaseImage(imageUrlRef.current); imageUrlRef.current = null; }
+        if (imageUrlRef.current) {
+            releaseImage(imageUrlRef.current);
+            imageUrlRef.current = null;
+        }
         setImageUrl(null);
         setImgTransform({ x: 0, y: 0, scale: 1 });
         isScanningRef.current = false;
     }, [releaseImage]);
 
     useEffect(() => {
-        if (!isOpen) { cleanup(); return; }
+        if (!isOpen) {
+            cleanup();
+            return;
+        }
         let cancelled = false;
         (async () => {
             const { cancelled: userCancelled, imageUrl: url } = await captureImage();
-            if (cancelled) { if (url) releaseImage(url); return; }
-            if (userCancelled) { onCloseRef.current?.(); return; }
+            if (cancelled) {
+                if (url) releaseImage(url);
+                return;
+            }
+            if (userCancelled) {
+                onCloseRef.current?.();
+                return;
+            }
             setImageUrl(url);
         })();
-        return () => { cancelled = true; };
+        return () => {
+            cancelled = true;
+        };
     }, [isOpen, captureImage, releaseImage, cleanup]);
 
-    useEffect(() => () => {
-        if (imageUrlRef.current) try { URL.revokeObjectURL(imageUrlRef.current); } catch { }
-    }, []);
+    useEffect(
+        () => () => {
+            if (imageUrlRef.current)
+                try {
+                    URL.revokeObjectURL(imageUrlRef.current);
+                } catch {}
+        },
+        [],
+    );
 
     const onPreviewImgLoad = useCallback((e) => {
         const img = e.target;
@@ -117,7 +157,8 @@ function NativeScannerPreview({
                 ...touchRef.current,
                 startX: e.touches[0].clientX,
                 startY: e.touches[0].clientY,
-                lastX: t.x, lastY: t.y,
+                lastX: t.x,
+                lastY: t.y,
                 isPinching: false,
             };
         } else if (e.touches.length === 2) {
@@ -125,7 +166,8 @@ function NativeScannerPreview({
                 ...touchRef.current,
                 isPinching: true,
                 lastPinchDist: getDistance(e.touches[0], e.touches[1]),
-                lastPinchMidX: (e.touches[0].clientX + e.touches[1].clientX) / 2 - (rect?.left ?? 0),
+                lastPinchMidX:
+                    (e.touches[0].clientX + e.touches[1].clientX) / 2 - (rect?.left ?? 0),
                 lastPinchMidY: (e.touches[0].clientY + e.touches[1].clientY) / 2 - (rect?.top ?? 0),
             };
         }
@@ -182,13 +224,16 @@ function NativeScannerPreview({
         }
     }, []);
 
-
-
-
     const handleMouseDown = useCallback((e) => {
         if (cornerRef.current.active) return;
         const t = imgTransformRef.current;
-        mouseDragRef.current = { dragging: true, startX: e.clientX, startY: e.clientY, lastX: t.x, lastY: t.y };
+        mouseDragRef.current = {
+            dragging: true,
+            startX: e.clientX,
+            startY: e.clientY,
+            lastX: t.x,
+            lastY: t.y,
+        };
     }, []);
 
     const handleMouseMove = useCallback((e) => {
@@ -234,12 +279,26 @@ function NativeScannerPreview({
     const applyCornerDelta = (corner, dx, dy) => {
         const sw = cornerRef.current.startHalfW;
         const sh = cornerRef.current.startHalfH;
-        const MIN_W = 30, MIN_H = 20;
-        let nw = sw, nh = sh;
-        if (corner === 'br') { nw = Math.max(MIN_W, sw + dx); nh = Math.max(MIN_H, sh + dy); }
-        if (corner === 'bl') { nw = Math.max(MIN_W, sw - dx); nh = Math.max(MIN_H, sh + dy); }
-        if (corner === 'tr') { nw = Math.max(MIN_W, sw + dx); nh = Math.max(MIN_H, sh - dy); }
-        if (corner === 'tl') { nw = Math.max(MIN_W, sw - dx); nh = Math.max(MIN_H, sh - dy); }
+        const MIN_W = 30,
+            MIN_H = 20;
+        let nw = sw,
+            nh = sh;
+        if (corner === 'br') {
+            nw = Math.max(MIN_W, sw + dx);
+            nh = Math.max(MIN_H, sh + dy);
+        }
+        if (corner === 'bl') {
+            nw = Math.max(MIN_W, sw - dx);
+            nh = Math.max(MIN_H, sh + dy);
+        }
+        if (corner === 'tr') {
+            nw = Math.max(MIN_W, sw + dx);
+            nh = Math.max(MIN_H, sh - dy);
+        }
+        if (corner === 'tl') {
+            nw = Math.max(MIN_W, sw - dx);
+            nh = Math.max(MIN_H, sh - dy);
+        }
         setBoxHalfW(nw);
         setBoxHalfH(nh);
         boxHalfWRef.current = nw;
@@ -248,25 +307,35 @@ function NativeScannerPreview({
 
     const startCornerDrag = useCallback((corner, clientX, clientY) => {
         cornerRef.current = {
-            active: true, corner,
-            startX: clientX, startY: clientY,
+            active: true,
+            corner,
+            startX: clientX,
+            startY: clientY,
             startHalfW: boxHalfWRef.current,
             startHalfH: boxHalfHRef.current,
         };
     }, []);
 
-    const handleCornerMouseDown = useCallback((e, corner) => {
-        e.stopPropagation(); e.preventDefault();
-        startCornerDrag(corner, e.clientX, e.clientY);
-    }, [startCornerDrag]);
+    const handleCornerMouseDown = useCallback(
+        (e, corner) => {
+            e.stopPropagation();
+            e.preventDefault();
+            startCornerDrag(corner, e.clientX, e.clientY);
+        },
+        [startCornerDrag],
+    );
 
-    const handleCornerTouchStart = useCallback((e, corner) => {
-        e.stopPropagation();
-        startCornerDrag(corner, e.touches[0].clientX, e.touches[0].clientY);
-    }, [startCornerDrag]);
+    const handleCornerTouchStart = useCallback(
+        (e, corner) => {
+            e.stopPropagation();
+            startCornerDrag(corner, e.touches[0].clientX, e.touches[0].clientY);
+        },
+        [startCornerDrag],
+    );
 
     const handleCornerTouchMove = useCallback((e) => {
-        e.stopPropagation(); e.preventDefault();
+        e.stopPropagation();
+        e.preventDefault();
         if (!cornerRef.current.active) return;
         const dx = e.touches[0].clientX - cornerRef.current.startX;
         const dy = e.touches[0].clientY - cornerRef.current.startY;
@@ -301,7 +370,10 @@ function NativeScannerPreview({
 
         const result = await decodeRegion(imageUrlRef.current, cropRect);
 
-        if (!isOpenRef.current) { isScanningRef.current = false; return; }
+        if (!isOpenRef.current) {
+            isScanningRef.current = false;
+            return;
+        }
 
         if (result.success) {
             const url = imageUrlRef.current;
@@ -309,15 +381,17 @@ function NativeScannerPreview({
             setImageUrl(null);
             isScanningRef.current = false;
             releaseImage(url);
-            onResultRef.current?.(result.text);
+            onResultRef.current?.(result.text, { fields: result.fields ?? null });
             onCloseRef.current?.();
         } else {
             isScanningRef.current = false;
             setShowErrorMessage(true);
-            setErrorMessage(result.error || 'Could not detect a barcode. Reposition the barcode inside the box and try again.');
+            setErrorMessage(
+                result.error ||
+                    'Could not detect a barcode. Reposition the barcode inside the box and try again.',
+            );
         }
     }, [decodeRegion, releaseImage]);
-
 
     const handleRetake = useCallback(async () => {
         if (imageUrlRef.current) releaseImage(imageUrlRef.current);
@@ -326,8 +400,14 @@ function NativeScannerPreview({
         setImgTransform({ x: 0, y: 0, scale: 1 });
 
         const { cancelled, imageUrl: newUrl } = await captureImage();
-        if (!isOpenRef.current) { if (newUrl) releaseImage(newUrl); return; }
-        if (cancelled) { onCloseRef.current?.(); return; }
+        if (!isOpenRef.current) {
+            if (newUrl) releaseImage(newUrl);
+            return;
+        }
+        if (cancelled) {
+            onCloseRef.current?.();
+            return;
+        }
         setImageUrl(newUrl);
         imageUrlRef.current = newUrl;
     }, [captureImage, releaseImage]);
@@ -352,7 +432,7 @@ function NativeScannerPreview({
         left: pos.includes('l') ? -H / 2 : undefined,
         right: pos.includes('r') ? -H / 2 : undefined,
         pointerEvents: 'auto',
-        cursor: (pos === 'tl' || pos === 'br') ? 'nwse-resize' : 'nesw-resize',
+        cursor: pos === 'tl' || pos === 'br' ? 'nwse-resize' : 'nesw-resize',
         display: 'flex',
         alignItems: pos.includes('t') ? 'flex-start' : 'flex-end',
         justifyContent: pos.includes('l') ? 'flex-start' : 'flex-end',
@@ -365,7 +445,14 @@ function NativeScannerPreview({
         borderBottom: pos.includes('b') ? '3px solid #60a5fa' : undefined,
         borderLeft: pos.includes('l') ? '3px solid #60a5fa' : undefined,
         borderRight: pos.includes('r') ? '3px solid #60a5fa' : undefined,
-        borderRadius: pos === 'tl' ? '2px 0 0 0' : pos === 'tr' ? '0 2px 0 0' : pos === 'bl' ? '0 0 0 2px' : '0 0 2px 0',
+        borderRadius:
+            pos === 'tl'
+                ? '2px 0 0 0'
+                : pos === 'tr'
+                  ? '0 2px 0 0'
+                  : pos === 'bl'
+                    ? '0 0 0 2px'
+                    : '0 0 2px 0',
     });
 
     return (
@@ -373,7 +460,10 @@ function NativeScannerPreview({
             {showErrorMessage && errorMessage !== null && (
                 <Toast
                     flash={{ info: errorMessage }}
-                    onClosed={() => { setShowErrorMessage(false); setErrorMessage(null); }}
+                    onClosed={() => {
+                        setShowErrorMessage(false);
+                        setErrorMessage(null);
+                    }}
                 />
             )}
 
@@ -382,23 +472,35 @@ function NativeScannerPreview({
                 style={{ paddingBottom: bottomOffset }}
             >
                 {/* ── Header ── */}
-                <div className="flex items-center justify-between flex-shrink-0 px-4 py-3 bg-black/80">
+                <div className="flex flex-shrink-0 items-center justify-between bg-black/80 px-4 py-3">
                     <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                        <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
                         <h3 className="text-sm font-semibold text-white">
                             Scan:{' '}
                             <span className="text-blue-400">
-                                {fieldLabel}{itemNumber ? ' — Item ' + itemNumber : ''}
+                                {fieldLabel}
+                                {itemNumber ? ' — Item ' + itemNumber : ''}
                             </span>
                         </h3>
                     </div>
                     <button
                         onClick={handleClose}
                         disabled={isProcessing}
-                        className="flex items-center justify-center w-8 h-8 text-gray-400 rounded-lg hover:text-white hover:bg-white/10 disabled:opacity-50"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-white/10 hover:text-white disabled:opacity-50"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-5">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={2}
+                            stroke="currentColor"
+                            className="size-5"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M6 18 18 6M6 6l12 12"
+                            />
                         </svg>
                     </button>
                 </div>
@@ -406,7 +508,7 @@ function NativeScannerPreview({
                 {/* ── Preview Area ── */}
                 <div
                     ref={previewContainerRef}
-                    className="relative flex-1 overflow-hidden select-none touch-none"
+                    className="relative flex-1 touch-none select-none overflow-hidden"
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
@@ -421,7 +523,7 @@ function NativeScannerPreview({
                         src={imageUrl}
                         alt="Captured photo for scanning"
                         onLoad={onPreviewImgLoad}
-                        className="absolute top-0 left-0 pointer-events-none"
+                        className="pointer-events-none absolute left-0 top-0"
                         draggable={false}
                         style={{
                             transformOrigin: '0 0',
@@ -432,9 +534,7 @@ function NativeScannerPreview({
                     />
 
                     {/* Scan box overlay — centered, resizable */}
-                    <div
-                        className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                    >
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                         <div
                             className="relative"
                             style={{
@@ -447,7 +547,10 @@ function NativeScannerPreview({
                             {/* Scan line */}
                             <div
                                 className="absolute left-1 right-1 h-0.5 bg-blue-400"
-                                style={{ animation: 'nativeScanLine 1.8s ease-in-out infinite', top: '10%' }}
+                                style={{
+                                    animation: 'nativeScanLine 1.8s ease-in-out infinite',
+                                    top: '10%',
+                                }}
                             />
 
                             {/* ── Corner handles ── */}
@@ -469,38 +572,52 @@ function NativeScannerPreview({
                     {/* Processing overlay */}
                     {isProcessing && (
                         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-black/60">
-                            <div className="w-10 h-10 border-4 rounded-full border-blue-400/30 border-t-blue-400 animate-spin" />
+                            <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-400/30 border-t-blue-400" />
                             <p className="text-sm font-medium text-white">Scanning barcode...</p>
                         </div>
                     )}
                 </div>
 
                 {/* ── Hint ── */}
-                <p className="flex-shrink-0 py-2 text-xs text-center text-gray-400">
+                <p className="flex-shrink-0 py-2 text-center text-xs text-gray-400">
                     Drag to pan · Pinch to zoom · Drag corners to resize box
                 </p>
 
-
                 {/* ── Buttons ── */}
-                <div className="flex items-center justify-center flex-shrink-0 gap-3 px-4 pt-2 pb-6">
+                <div className="flex flex-shrink-0 items-center justify-center gap-3 px-4 pb-6 pt-2">
                     <button
                         onClick={handleRetake}
                         disabled={isProcessing}
-                        className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-white/10 rounded-xl hover:bg-white/20 transition-colors disabled:opacity-50"
+                        className="flex items-center gap-2 rounded-xl bg-white/10 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-white/20 disabled:opacity-50"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="size-5"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z"
+                            />
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z"
+                            />
                         </svg>
                         Retake
                     </button>
                     <button
                         onClick={handleScan}
                         disabled={isProcessing}
-                        className="flex items-center gap-2 px-8 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-500 transition-colors disabled:opacity-50"
+                        className="flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-500 disabled:opacity-50"
                     >
                         {isProcessing ? (
-                            <div className="w-5 h-5 border-2 rounded-full border-white/30 border-t-white animate-spin" />
+                            <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                         ) : (
                             <QrCodeIcon className="size-5" />
                         )}

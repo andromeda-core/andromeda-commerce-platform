@@ -14,7 +14,6 @@ import { useScanner } from '@/Hooks/useScanner';
 import Textarea from '@/Components/Textarea';
 import NativeScannerPreview from '@/Components/NativeScannerPreview';
 
-
 export default function fulFillOrder({
     assignment,
     order,
@@ -26,9 +25,8 @@ export default function fulFillOrder({
     isEditMode = false,
     batchData = null,
     isAdmin,
-    isViewMode
+    isViewMode,
 }) {
-
     const [logMemo, setLogMemo] = useState('');
     const [logFile, setLogFile] = useState(null);
     const [logSubmitting, setLogSubmitting] = useState(false);
@@ -51,19 +49,16 @@ export default function fulFillOrder({
                     }
                 },
                 onFinish: () => setLogSubmitting(false),
-            }
+            },
         );
     };
-
 
     const [draftSaving, setDraftSaving] = useState(false);
     const [draftSaved, setDraftSaved] = useState(false);
     const [draftError, setDraftError] = useState(false);
 
-
     // Create Data Form Data
     const { data, setData, post, processing, errors, reset } = useForm({
-
         batch_name: '',
         base_purchase_unit_price: '',
         supplier_id: assignment?.supplier_id || '',
@@ -74,12 +69,10 @@ export default function fulFillOrder({
         supplier_assigned_order_id: assignment?.id || null,
         order_id: order?.id || null,
         is_invoice_removed: false,
-        is_edit_mode: isEditMode
-
+        is_edit_mode: isEditMode,
     });
 
     const draftInvoiceUrls = useMemo(() => {
-
         if ((isEditMode || isViewMode) && batchData?.invoices) {
             return Array.isArray(batchData.invoices) ? batchData.invoices : [];
         }
@@ -91,8 +84,6 @@ export default function fulFillOrder({
         return Array.isArray(arr) ? arr.map((inv) => inv?.url ?? inv) : [];
     }, [assignment?.id, isEditMode, batchData?.id]);
 
-
-
     const { currency } = usePage().props;
     const [file_error, setFileError] = useState(null);
 
@@ -102,7 +93,6 @@ export default function fulFillOrder({
             name: s?.model_name?.name ?? s?.name ?? `#${s?.id}`,
         }));
     }, [smartphones]);
-
 
     // Extra Cost Data Handling
     const [extraCosts, setExtraCosts] = useState([]);
@@ -166,7 +156,6 @@ export default function fulFillOrder({
         setInventoryItems(updatedInventoryItems);
     };
 
-
     // Edit Mode Data Population
     useEffect(() => {
         if (!batchData) return;
@@ -174,7 +163,8 @@ export default function fulFillOrder({
 
         if (batchData.batch_name) setData('batch_name', batchData.batch_name);
         if (batchData.vat) setData('vat', batchData.vat);
-        if (batchData.base_purchase_unit_price) setData('base_purchase_unit_price', batchData.base_purchase_unit_price);
+        if (batchData.base_purchase_unit_price)
+            setData('base_purchase_unit_price', batchData.base_purchase_unit_price);
 
         if (Array.isArray(batchData.extra_costs) && batchData.extra_costs.length > 0) {
             setExtraCosts(batchData.extra_costs);
@@ -182,7 +172,7 @@ export default function fulFillOrder({
         }
 
         if (Array.isArray(batchData.inventory_items) && batchData.inventory_items.length > 0) {
-            const normalized = batchData.inventory_items.map(item => ({
+            const normalized = batchData.inventory_items.map((item) => ({
                 id: item.id,
                 smartphone_id: item.smartphone_id || '',
                 storage_location_id: item.storage_location_id || '',
@@ -194,7 +184,6 @@ export default function fulFillOrder({
             setInventoryItems(normalized);
             setData('inventory_items', normalized);
         }
-
     }, [isEditMode, batchData?.id, isViewMode]);
 
     //  Auto-generate items based on required_items (1 entry = 1 stock)
@@ -224,16 +213,19 @@ export default function fulFillOrder({
         });
 
         // if nothing required, keep one empty row
-        const finalRows = rows.length > 0 ? rows : [
-            {
-                smartphone_id: '',
-                storage_location_id: '',
-                imei1: '',
-                imei2: '',
-                eid: '',
-                serial_no: '',
-            },
-        ];
+        const finalRows =
+            rows.length > 0
+                ? rows
+                : [
+                      {
+                          smartphone_id: '',
+                          storage_location_id: '',
+                          imei1: '',
+                          imei2: '',
+                          eid: '',
+                          serial_no: '',
+                      },
+                  ];
 
         setInventoryItems(finalRows);
         setData('inventory_items', finalRows);
@@ -241,7 +233,6 @@ export default function fulFillOrder({
         // set supplier_id if present
         if (assignment?.supplier_id) setData('supplier_id', assignment.supplier_id);
     }, [assignment?.id, order?.id, JSON.stringify(required_items)]);
-
 
     // Draft Restoring
     useEffect(() => {
@@ -260,23 +251,33 @@ export default function fulFillOrder({
                     rows.push({
                         smartphone_id: r?.smartphone_id || '',
                         storage_location_id: '',
-                        imei1: '', imei2: '', eid: '', serial_no: '',
+                        imei1: '',
+                        imei2: '',
+                        eid: '',
+                        serial_no: '',
                     });
                 }
             }
         });
 
-        const finalRows = rows.length > 0 ? rows : [{
-            smartphone_id: '', storage_location_id: '',
-            imei1: '', imei2: '', eid: '', serial_no: '',
-        }];
+        const finalRows =
+            rows.length > 0
+                ? rows
+                : [
+                      {
+                          smartphone_id: '',
+                          storage_location_id: '',
+                          imei1: '',
+                          imei2: '',
+                          eid: '',
+                          serial_no: '',
+                      },
+                  ];
 
         setInventoryItems(finalRows);
         setData('inventory_items', finalRows);
         if (assignment?.supplier_id) setData('supplier_id', assignment.supplier_id);
-
     }, [assignment?.id, order?.id, JSON.stringify(required_items)]);
-
 
     // Draft Restoring (with draft_data)
     useEffect(() => {
@@ -285,15 +286,17 @@ export default function fulFillOrder({
         if (!assignment?.draft_data) return;
 
         try {
-            const draft = typeof assignment.draft_data === 'string'
-                ? JSON.parse(assignment.draft_data)
-                : assignment.draft_data;
+            const draft =
+                typeof assignment.draft_data === 'string'
+                    ? JSON.parse(assignment.draft_data)
+                    : assignment.draft_data;
 
             if (!draft) return;
 
             if (draft.batch_name) setData('batch_name', draft.batch_name);
             if (draft.vat) setData('vat', draft.vat);
-            if (draft.base_purchase_unit_price) setData('base_purchase_unit_price', draft.base_purchase_unit_price);
+            if (draft.base_purchase_unit_price)
+                setData('base_purchase_unit_price', draft.base_purchase_unit_price);
 
             if (Array.isArray(draft.extra_costs) && draft.extra_costs.length > 0) {
                 setExtraCosts(draft.extra_costs);
@@ -301,24 +304,20 @@ export default function fulFillOrder({
             }
 
             if (Array.isArray(draft.inventory_items) && draft.inventory_items.length > 0) {
-                const normalized = draft.inventory_items.map(item => ({
+                const normalized = draft.inventory_items.map((item) => ({
                     smartphone_id: item.smartphone_id || '',
                     storage_location_id: item.storage_location_id || '',
                     imei1: item.imei1 || '',
                     imei2: item.imei2 || '',
                     eid: item.eid || '',
                     serial_no: item.serial_no || '',
-
                 }));
                 setInventoryItems(normalized);
                 setData('inventory_items', normalized);
             }
 
             if (draft?.invoices) setData('invoices', draft.invoices);
-
-        } catch (e) {
-
-        }
+        } catch (e) {}
     }, [assignment?.id]);
 
     const handleSaveDraft = () => {
@@ -335,7 +334,7 @@ export default function fulFillOrder({
                 extra_costs: extraCosts,
                 inventory_items: inventoryItems,
                 invoices: data.invoices,
-                is_invoice_removed: data.is_invoice_removed
+                is_invoice_removed: data.is_invoice_removed,
             },
             {
                 preserveScroll: true,
@@ -351,10 +350,9 @@ export default function fulFillOrder({
                 onFinish: () => {
                     setDraftSaving(false);
                 },
-            }
+            },
         );
     };
-
 
     const [showProgressModal, setShowProgressModal] = useState(false);
 
@@ -366,8 +364,9 @@ export default function fulFillOrder({
 
     const [nativeScan, setNativeScan] = useState(null);
 
-    const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
-        || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isMobileDevice =
+        /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
     const getFieldLabel = (field) => {
         const map = { imei1: 'IMEI 1', imei2: 'IMEI 2', eid: 'EID', serial_no: 'Serial No' };
@@ -382,7 +381,6 @@ export default function fulFillOrder({
         }
     };
 
-
     const openScanner = (field, index) => {
         setActiveScanner({ field, index });
     };
@@ -392,13 +390,15 @@ export default function fulFillOrder({
         setTorchOn(false);
     };
 
-
-    const { videoRef: scannerVideoRef, refocus, toggleTorch } = useScanner({
+    const {
+        videoRef: scannerVideoRef,
+        refocus,
+        toggleTorch,
+    } = useScanner({
         active: !!activeScanner,
         onScan: (text) => handleScanResult(text),
         scanRegion,
     });
-
 
     const handleTorchToggle = async () => {
         const result = await toggleTorch();
@@ -438,7 +438,6 @@ export default function fulFillOrder({
             const offsetX = (vRect.width - renderedW) / 2;
             const offsetY = (vRect.height - renderedH) / 2;
 
-
             const oRect = overlayEl.getBoundingClientRect();
             const relLeft = oRect.left - vRect.left;
             const relTop = oRect.top - vRect.top;
@@ -476,7 +475,6 @@ export default function fulFillOrder({
         };
     }, [activeScanner]);
 
-
     const handleScanResult = async (text) => {
         if (!activeScanner) return;
         const { field, index } = activeScanner;
@@ -507,17 +505,11 @@ export default function fulFillOrder({
         };
     }, [errors]);
 
-
     // Create Data Form Request
     const submit = (e) => {
         e.preventDefault();
         post(route('dashboard.supplier-assigned-orders.fulfill.store', assignment?.id));
     };
-
-
-
-
-
 
     return (
         <>
@@ -531,18 +523,13 @@ export default function fulFillOrder({
                     child={'FulFill Order'}
                 />
 
-
-
-
                 {/* Required Stock Summary */}
                 {(order || required_items?.length > 0) && (
-
-
                     <Card
                         Content={
                             <>
                                 {/* Header Row */}
-                                <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+                                <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                                     <div>
                                         <h3 className="text-base font-semibold text-gray-900 dark:text-white">
                                             Order Requirements Summary
@@ -554,10 +541,25 @@ export default function fulFillOrder({
 
                                     {/* Destination Country */}
                                     {order?.destination_country && (
-                                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800/40">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-violet-600 dark:text-violet-400">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                                        <div className="flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-3 py-1.5 dark:border-violet-800/40 dark:bg-violet-900/20">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.5}
+                                                stroke="currentColor"
+                                                className="h-4 w-4 text-violet-600 dark:text-violet-400"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                                                />
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                                                />
                                             </svg>
                                             <span className="text-xs font-semibold text-violet-700 dark:text-violet-300">
                                                 {order.destination_country}
@@ -567,18 +569,24 @@ export default function fulFillOrder({
                                 </div>
 
                                 {/* Stats Row */}
-                                <div className="grid grid-cols-2 gap-3 mb-5 md:grid-cols-3">
+                                <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-3">
                                     {[
                                         {
                                             label: 'Total Items Required',
-                                            value: required_items?.reduce((sum, r) => sum + Number(r?.missing_qty || 0), 0) ?? 0,
+                                            value:
+                                                required_items?.reduce(
+                                                    (sum, r) => sum + Number(r?.missing_qty || 0),
+                                                    0,
+                                                ) ?? 0,
                                             suffix: 'units',
                                             color: 'text-gray-900 dark:text-white',
                                             bg: 'bg-gray-50 dark:bg-zinc-900',
                                         },
                                         {
                                             label: 'Order Total',
-                                            value: order?.total_amount ? `${currency?.symbol ?? ''}${Number(order.total_amount).toLocaleString('en-US')}` : 'N/A',
+                                            value: order?.total_amount
+                                                ? `${currency?.symbol ?? ''}${Number(order.total_amount).toLocaleString('en-US')}`
+                                                : 'N/A',
                                             color: 'text-green-600 dark:text-green-400',
                                             bg: 'bg-green-50 dark:bg-green-900/10',
                                         },
@@ -592,10 +600,16 @@ export default function fulFillOrder({
                                         },
                                     ].map(({ label, value, suffix, color, bg }) => (
                                         <div key={label} className={`rounded-lg p-3 ${bg}`}>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                {label}
+                                            </p>
                                             <p className={`mt-1 text-lg font-bold ${color}`}>
                                                 {value}
-                                                {suffix && <span className="ml-1 text-xs font-normal text-gray-400">{suffix}</span>}
+                                                {suffix && (
+                                                    <span className="ml-1 text-xs font-normal text-gray-400">
+                                                        {suffix}
+                                                    </span>
+                                                )}
                                             </p>
                                         </div>
                                     ))}
@@ -603,17 +617,28 @@ export default function fulFillOrder({
 
                                 {/* Admin Memo */}
                                 {assignment?.note && (
-                                    <div className="flex gap-3 p-4 mb-5 border rounded-lg border-amber-200 bg-amber-50 dark:bg-amber-900/10 dark:border-amber-800/40">
+                                    <div className="mb-5 flex gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800/40 dark:bg-amber-900/10">
                                         <div className="mt-0.5 shrink-0">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-amber-600 dark:text-amber-400">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.5}
+                                                stroke="currentColor"
+                                                className="h-4 w-4 text-amber-600 dark:text-amber-400"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z"
+                                                />
                                             </svg>
                                         </div>
-                                        <div className="flex-1 min-w-0">
+                                        <div className="min-w-0 flex-1">
                                             <p className="mb-1 text-xs font-semibold text-amber-700 dark:text-amber-400">
                                                 Note from Administrator
                                             </p>
-                                            <p className="text-sm break-words text-amber-800 dark:text-amber-300">
+                                            <p className="break-words text-sm text-amber-800 dark:text-amber-300">
                                                 {assignment.note}
                                             </p>
                                         </div>
@@ -622,29 +647,44 @@ export default function fulFillOrder({
 
                                 {/* Per Item Breakdown Table */}
                                 {required_items?.length > 0 && (
-                                    <div className="overflow-x-auto border border-gray-200 rounded-lg dark:border-zinc-700">
+                                    <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-zinc-700">
                                         <table className="w-full text-sm">
                                             <thead className="bg-gray-100 dark:bg-zinc-800">
                                                 <tr>
-                                                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400">#</th>
-                                                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400">Model</th>
-                                                    <th className="px-4 py-2.5 text-center text-xs font-semibold text-gray-600 dark:text-gray-400">Ordered</th>
+                                                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                                        #
+                                                    </th>
+                                                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                                        Model
+                                                    </th>
+                                                    <th className="px-4 py-2.5 text-center text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                                        Ordered
+                                                    </th>
 
-                                                    <th className="px-4 py-2.5 text-center text-xs font-semibold text-gray-600 dark:text-gray-400">Missing</th>
-                                                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-gray-600 dark:text-gray-400">Unit Price</th>
+                                                    <th className="px-4 py-2.5 text-center text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                                        Missing
+                                                    </th>
+                                                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                                        Unit Price
+                                                    </th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-100 dark:divide-zinc-700">
                                                 {required_items.map((item, idx) => {
                                                     const missing = Number(item?.missing_qty || 0);
                                                     return (
-                                                        <tr key={idx} className="transition-colors bg-white dark:bg-zinc-900 hover:bg-gray-50 dark:hover:bg-zinc-800">
+                                                        <tr
+                                                            key={idx}
+                                                            className="bg-white transition-colors hover:bg-gray-50 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                                                        >
                                                             <td className="px-4 py-2.5 text-xs text-gray-500 dark:text-gray-400">
                                                                 {idx + 1}
                                                             </td>
                                                             <td className="px-4 py-2.5">
                                                                 <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                                                    {item?.model_name ?? item?.name ?? `Item #${idx + 1}`}
+                                                                    {item?.model_name ??
+                                                                        item?.name ??
+                                                                        `Item #${idx + 1}`}
                                                                 </span>
                                                             </td>
                                                             <td className="px-4 py-2.5 text-center">
@@ -655,26 +695,34 @@ export default function fulFillOrder({
 
                                                             <td className="px-4 py-2.5 text-center">
                                                                 <div className="flex flex-col items-center gap-1">
-                                                                    <span className={`inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-semibold ${missing > 0
-                                                                        ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                                                                        : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                                                        }`}>
-                                                                        {missing > 0 ? `${missing} still needed` : 'Fully Covered'}
+                                                                    <span
+                                                                        className={`inline-flex items-center justify-center rounded-full px-2 py-0.5 text-xs font-semibold ${
+                                                                            missing > 0
+                                                                                ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                                                                : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                                                        }`}
+                                                                    >
+                                                                        {missing > 0
+                                                                            ? `${missing} still needed`
+                                                                            : 'Fully Covered'}
                                                                     </span>
 
-                                                                    {item?.fulfilled_qty > 0 && missing > 0 && (
-                                                                        <span className="text-[10px] text-gray-400 dark:text-gray-500">
-                                                                            {item.fulfilled_qty} of {item.ordered_qty} assigned
-                                                                        </span>
-                                                                    )}
+                                                                    {item?.fulfilled_qty > 0 &&
+                                                                        missing > 0 && (
+                                                                            <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                                                                                {item.fulfilled_qty}{' '}
+                                                                                of{' '}
+                                                                                {item.ordered_qty}{' '}
+                                                                                assigned
+                                                                            </span>
+                                                                        )}
                                                                 </div>
                                                             </td>
                                                             <td className="px-4 py-2.5 text-right">
                                                                 <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
                                                                     {item?.unit_price
-                                                                        ? `${currency?.symbol ?? ''}${Number(item.unit_price).toLocaleString("en-US")}`
-                                                                        : 'N/A'
-                                                                    }
+                                                                        ? `${currency?.symbol ?? ''}${Number(item.unit_price).toLocaleString('en-US')}`
+                                                                        : 'N/A'}
                                                                 </span>
                                                             </td>
                                                         </tr>
@@ -684,22 +732,16 @@ export default function fulFillOrder({
                                         </table>
                                     </div>
                                 )}
-
                             </>
                         }
                     />
-
                 )}
-
-
-
-
 
                 {file_error != null && <Toast flash={{ info: file_error }} />}
                 <Card
                     Content={
                         <>
-                            <div className="flex flex-wrap justify-end my-3">
+                            <div className="my-3 flex flex-wrap justify-end">
                                 <LinkButton
                                     Text={'Back To Orders'}
                                     URL={route('dashboard.supplier-assigned-orders.index')}
@@ -798,7 +840,7 @@ export default function fulFillOrder({
                                                 />
                                             </div>
 
-                                            <div className="grid grid-cols-1 gap-4 mt-3">
+                                            <div className="mt-3 grid grid-cols-1 gap-4">
                                                 <FileUploaderInput
                                                     Label={
                                                         'Drag & Drop your Batch Invoice or <span class="filepond--label-action">Browse</span>'
@@ -892,15 +934,15 @@ export default function fulFillOrder({
 
                                                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                                                     <div className="flex items-center">
-
-
                                                                         {/* Smartphone */}
                                                                         <SelectInput
                                                                             key={`smartphone-${idx}-${item.smartphone_id}`}
                                                                             InputName="Smartphone"
                                                                             Id="smartphone_id"
                                                                             Name="smartphone_id"
-                                                                            items={smartphonesForSelect}
+                                                                            items={
+                                                                                smartphonesForSelect
+                                                                            }
                                                                             Value={
                                                                                 item.smartphone_id
                                                                             }
@@ -969,7 +1011,12 @@ export default function fulFillOrder({
                                                                                     />
                                                                                 </svg>
                                                                             }
-                                                                            Action={() => openScannerOrNative('imei1', idx)}
+                                                                            Action={() =>
+                                                                                openScannerOrNative(
+                                                                                    'imei1',
+                                                                                    idx,
+                                                                                )
+                                                                            }
                                                                             Disabled={isReadOnly}
                                                                         />
 
@@ -1022,7 +1069,12 @@ export default function fulFillOrder({
                                                                                     />
                                                                                 </svg>
                                                                             }
-                                                                            Action={() => openScannerOrNative('imei2', idx)}
+                                                                            Action={() =>
+                                                                                openScannerOrNative(
+                                                                                    'imei2',
+                                                                                    idx,
+                                                                                )
+                                                                            }
                                                                             Disabled={isReadOnly}
                                                                         />
 
@@ -1076,7 +1128,12 @@ export default function fulFillOrder({
                                                                                     />
                                                                                 </svg>
                                                                             }
-                                                                            Action={() => openScannerOrNative('eid', idx)}
+                                                                            Action={() =>
+                                                                                openScannerOrNative(
+                                                                                    'eid',
+                                                                                    idx,
+                                                                                )
+                                                                            }
                                                                         />
 
                                                                         {/* EID */}
@@ -1129,7 +1186,12 @@ export default function fulFillOrder({
                                                                                     />
                                                                                 </svg>
                                                                             }
-                                                                            Action={() => openScannerOrNative('serial_no', idx)}
+                                                                            Action={() =>
+                                                                                openScannerOrNative(
+                                                                                    'serial_no',
+                                                                                    idx,
+                                                                                )
+                                                                            }
                                                                         />
 
                                                                         {/* Serial No */}
@@ -1158,7 +1220,7 @@ export default function fulFillOrder({
                                             </div>
 
                                             {!isReadOnly && (
-                                                <div className="flex items-center justify-end w-full">
+                                                <div className="flex w-full items-center justify-end">
                                                     <PrimaryButton
                                                         Text={'Add Extra Cost'}
                                                         Type={'button'}
@@ -1187,16 +1249,19 @@ export default function fulFillOrder({
                                             )}
 
                                             {extraCosts.length > 0 && (
-                                                <div className="grid grid-cols-1 col-span-1 gap-5 overflow-x-auto scrollbar-thin dark:scrollbar-track-slate-900 dark:scrollbar-thumb-slate-700">
+                                                <div className="col-span-1 grid grid-cols-1 gap-5 overflow-x-auto scrollbar-thin dark:scrollbar-track-slate-900 dark:scrollbar-thumb-slate-700">
                                                     <table className="w-full border-collapse">
                                                         <thead>
                                                             <tr>
-                                                                <th colSpan={2} className="p-2 text-left text-gray-700 border dark:border-gray-700 dark:text-gray-400">
+                                                                <th
+                                                                    colSpan={2}
+                                                                    className="border p-2 text-left text-gray-700 dark:border-gray-700 dark:text-gray-400"
+                                                                >
                                                                     Extra Costs
                                                                 </th>
 
                                                                 {!isReadOnly && (
-                                                                    <th className="p-2 text-center text-gray-700 border dark:border-gray-700 dark:text-gray-400">
+                                                                    <th className="border p-2 text-center text-gray-700 dark:border-gray-700 dark:text-gray-400">
                                                                         Action
                                                                     </th>
                                                                 )}
@@ -1205,7 +1270,7 @@ export default function fulFillOrder({
                                                         <tbody>
                                                             {extraCosts.map((item, idx) => (
                                                                 <tr key={idx}>
-                                                                    <td className="p-2 border dark:border-gray-700">
+                                                                    <td className="border p-2 dark:border-gray-700">
                                                                         <Input
                                                                             InputName={'Cost Type'}
                                                                             Id={'cost_type'}
@@ -1213,7 +1278,7 @@ export default function fulFillOrder({
                                                                             Disabled={isReadOnly}
                                                                             Error={
                                                                                 errors[
-                                                                                `extra_costs.${idx}.cost_type`
+                                                                                    `extra_costs.${idx}.cost_type`
                                                                                 ]
                                                                             }
                                                                             Value={item.cost_type}
@@ -1231,7 +1296,7 @@ export default function fulFillOrder({
                                                                             }
                                                                         />
                                                                     </td>
-                                                                    <td className="p-2 border dark:border-gray-700">
+                                                                    <td className="border p-2 dark:border-gray-700">
                                                                         <Input
                                                                             InputName={'Amount'}
                                                                             Id={'amount'}
@@ -1239,7 +1304,7 @@ export default function fulFillOrder({
                                                                             Disabled={isReadOnly}
                                                                             Error={
                                                                                 errors[
-                                                                                `extra_costs.${idx}.amount`
+                                                                                    `extra_costs.${idx}.amount`
                                                                                 ]
                                                                             }
                                                                             Value={item.amount}
@@ -1259,7 +1324,7 @@ export default function fulFillOrder({
                                                                     </td>
 
                                                                     {!isReadOnly && (
-                                                                        <td className="p-2 border dark:border-gray-700">
+                                                                        <td className="border p-2 dark:border-gray-700">
                                                                             <div className="flex items-center justify-center">
                                                                                 <PrimaryButton
                                                                                     Type={'button'}
@@ -1303,17 +1368,31 @@ export default function fulFillOrder({
                                                 </div>
                                             )}
 
-                                            {assignment?.draft_data && !isEditMode && !isReadOnly && (
-                                                <div className="flex items-center gap-2 px-3 py-2 mb-3 text-xs text-blue-700 border border-blue-200 rounded-lg bg-blue-50 dark:bg-blue-900/10 dark:border-blue-800/40 dark:text-blue-400">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 shrink-0">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                                                    </svg>
-                                                    A previously saved draft has been restored. You can continue from where you left off.
-                                                </div>
-                                            )}
+                                            {assignment?.draft_data &&
+                                                !isEditMode &&
+                                                !isReadOnly && (
+                                                    <div className="mb-3 flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-700 dark:border-blue-800/40 dark:bg-blue-900/10 dark:text-blue-400">
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            strokeWidth={1.5}
+                                                            stroke="currentColor"
+                                                            className="h-4 w-4 shrink-0"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
+                                                            />
+                                                        </svg>
+                                                        A previously saved draft has been restored.
+                                                        You can continue from where you left off.
+                                                    </div>
+                                                )}
 
                                             {!isReadOnly && (
-                                                <div className="flex flex-wrap items-center gap-3 mt-2">
+                                                <div className="mt-2 flex flex-wrap items-center gap-3">
                                                     <PrimaryButton
                                                         Text={'FulFill Stock'}
                                                         Type={'submit'}
@@ -1335,7 +1414,8 @@ export default function fulFillOrder({
                                                             inventoryItems.some(
                                                                 (item) =>
                                                                     item.smartphone_id === '' ||
-                                                                    item.storage_location_id === '' ||
+                                                                    item.storage_location_id ===
+                                                                        '' ||
                                                                     item.imei1 === '',
                                                             )
                                                         }
@@ -1358,7 +1438,6 @@ export default function fulFillOrder({
                                                         }
                                                     />
 
-
                                                     {!isEditMode && (
                                                         <PrimaryButton
                                                             Text={'Save Progress'}
@@ -1368,14 +1447,23 @@ export default function fulFillOrder({
                                                             Spinner={draftSaving}
                                                             Action={handleSaveDraft}
                                                             Icon={
-                                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    fill="none"
+                                                                    viewBox="0 0 24 24"
+                                                                    strokeWidth={1.5}
+                                                                    stroke="currentColor"
+                                                                    className="h-4 w-4"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"
+                                                                    />
                                                                 </svg>
                                                             }
                                                         />
-
                                                     )}
-
 
                                                     {/* Error feedback */}
                                                     {draftError && (
@@ -1385,7 +1473,6 @@ export default function fulFillOrder({
                                                     )}
                                                 </div>
                                             )}
-
                                         </>
                                     }
                                 />
@@ -1413,20 +1500,22 @@ export default function fulFillOrder({
                                                     <div key={idx} className="flex gap-3">
                                                         {/* Line + dot */}
                                                         <div className="flex flex-col items-center">
-                                                            <div className="w-2 h-2 mt-1 bg-blue-500 rounded-full shrink-0" />
+                                                            <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-blue-500" />
                                                             {idx !== logs.length - 1 && (
-                                                                <div className="flex-1 w-px mt-1 bg-gray-200 dark:bg-zinc-700" />
+                                                                <div className="mt-1 w-px flex-1 bg-gray-200 dark:bg-zinc-700" />
                                                             )}
                                                         </div>
 
                                                         {/* Content */}
                                                         <div className="flex-1 pb-4">
-                                                            <div className="flex flex-wrap items-center gap-2 mb-1">
+                                                            <div className="mb-1 flex flex-wrap items-center gap-2">
                                                                 <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
                                                                     {log.author?.name ?? 'Supplier'}
                                                                 </span>
                                                                 <span className="text-xs text-gray-400 dark:text-gray-500">
-                                                                    {new Date(log.created_at).toLocaleString()}
+                                                                    {new Date(
+                                                                        log.created_at,
+                                                                    ).toLocaleString()}
                                                                 </span>
                                                             </div>
 
@@ -1440,10 +1529,21 @@ export default function fulFillOrder({
                                                                 <a
                                                                     href={log.file_path}
                                                                     target="_blank"
-                                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 border border-blue-200 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/10 dark:border-blue-800/40 dark:text-blue-400"
+                                                                    className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-100 dark:border-blue-800/40 dark:bg-blue-900/10 dark:text-blue-400"
                                                                 >
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" />
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        fill="none"
+                                                                        viewBox="0 0 24 24"
+                                                                        strokeWidth={1.5}
+                                                                        stroke="currentColor"
+                                                                        className="h-3.5 w-3.5"
+                                                                    >
+                                                                        <path
+                                                                            strokeLinecap="round"
+                                                                            strokeLinejoin="round"
+                                                                            d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13"
+                                                                        />
                                                                     </svg>
                                                                     {log.file_name}
                                                                 </a>
@@ -1454,7 +1554,7 @@ export default function fulFillOrder({
                                             </div>
 
                                             {/* Append new log */}
-                                            <div className="pt-4 mt-4 border-t border-gray-200 dark:border-zinc-700">
+                                            <div className="mt-4 border-t border-gray-200 pt-4 dark:border-zinc-700">
                                                 <p className="mb-3 text-xs font-semibold text-gray-600 dark:text-gray-400">
                                                     Add to Log
                                                 </p>
@@ -1462,10 +1562,8 @@ export default function fulFillOrder({
                                                     Action={(e) => setLogMemo(e.target.value)}
                                                     Value={logMemo}
                                                     Rows={3}
-                                                    Placeholder='Write a memo...'
-
+                                                    Placeholder="Write a memo..."
                                                 />
-
 
                                                 <FileUploaderInput
                                                     InputName="Attachment (optional)"
@@ -1473,32 +1571,51 @@ export default function fulFillOrder({
                                                         'Drag & Drop your Attachment or <span class="filepond--label-action">Browse</span>'
                                                     }
                                                     Id="log_attachment"
-                                                    acceptedFileTypes={['image/*', 'application/pdf', 'video/*']}
+                                                    acceptedFileTypes={[
+                                                        'image/*',
+                                                        'application/pdf',
+                                                        'video/*',
+                                                    ]}
                                                     MaxFileSize={'5MB'}
                                                     MaxFiles={1}
                                                     Multiple={false}
                                                     onUpdate={(files) => {
-                                                        setLogFile(files.length > 0 ? files[0].file : null);
+                                                        setLogFile(
+                                                            files.length > 0 ? files[0].file : null,
+                                                        );
                                                     }}
                                                 />
 
-                                                <div className="flex items-center gap-3 mt-3">
+                                                <div className="mt-3 flex items-center gap-3">
                                                     <PrimaryButton
-                                                        CustomClass={"w-[200px]"}
+                                                        CustomClass={'w-[200px]'}
                                                         Text={'Add to Log'}
                                                         Type={'button'}
-                                                        Disabled={logSubmitting || (!logMemo.trim() && !logFile)}
+                                                        Disabled={
+                                                            logSubmitting ||
+                                                            (!logMemo.trim() && !logFile)
+                                                        }
                                                         Spinner={logSubmitting}
                                                         Action={handleAddLog}
                                                         Icon={
-                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                strokeWidth={1.5}
+                                                                stroke="currentColor"
+                                                                className="h-4 w-4"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="M12 4.5v15m7.5-7.5h-15"
+                                                                />
                                                             </svg>
                                                         }
                                                     />
                                                 </div>
                                             </div>
-
                                         </>
                                     }
                                 />
@@ -1509,19 +1626,25 @@ export default function fulFillOrder({
 
                 {activeScanner && (
                     <>
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
+                        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
                             <div className="fixed inset-0 backdrop-blur-[32px]" />
-                            <div className="relative z-10 w-full max-w-md overflow-hidden bg-white shadow-2xl rounded-2xl dark:bg-deepcharcoal">
-                                <div className="flex items-center justify-between px-6 py-4 border-b dark:border-white/10">
+                            <div className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-deepcharcoal">
+                                <div className="flex items-center justify-between border-b px-6 py-4 dark:border-white/10">
                                     <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                                        <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
                                         <h3 className="text-sm font-semibold text-gray-800 dark:text-white">
-                                            Scanning: <span className="text-blue-600 capitalize dark:text-blue-400">
-                                                {activeScanner.field === 'smartphone' ? 'Smartphone'
-                                                    : activeScanner.field === 'imei1' ? 'IMEI 1'
-                                                        : activeScanner.field === 'imei2' ? 'IMEI 2'
-                                                            : activeScanner.field === 'eid' ? 'EID'
-                                                                : 'Serial No'} — Item #{activeScanner.index + 1}
+                                            Scanning:{' '}
+                                            <span className="capitalize text-blue-600 dark:text-blue-400">
+                                                {activeScanner.field === 'smartphone'
+                                                    ? 'Smartphone'
+                                                    : activeScanner.field === 'imei1'
+                                                      ? 'IMEI 1'
+                                                      : activeScanner.field === 'imei2'
+                                                        ? 'IMEI 2'
+                                                        : activeScanner.field === 'eid'
+                                                          ? 'EID'
+                                                          : 'Serial No'}{' '}
+                                                — Item #{activeScanner.index + 1}
                                             </span>
                                         </h3>
                                     </div>
@@ -1529,47 +1652,70 @@ export default function fulFillOrder({
                                         {/* Torch / Flashlight toggle */}
                                         <button
                                             onClick={handleTorchToggle}
-                                            title={torchOn ? 'Turn off flashlight' : 'Turn on flashlight'}
-                                            className={`flex items-center justify-center rounded-lg w-8 h-8 transition-colors
-                                                ${torchOn
+                                            title={
+                                                torchOn
+                                                    ? 'Turn off flashlight'
+                                                    : 'Turn on flashlight'
+                                            }
+                                            className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
+                                                torchOn
                                                     ? 'bg-yellow-400 text-gray-900 hover:bg-yellow-300'
-                                                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10'
-                                                }`}
+                                                    : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/10'
+                                            }`}
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                strokeWidth={1.8} stroke="currentColor" className="size-5">
-                                                <path strokeLinecap="round" strokeLinejoin="round"
-                                                    d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.8}
+                                                stroke="currentColor"
+                                                className="size-5"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"
+                                                />
                                             </svg>
                                         </button>
 
                                         {/* Close button */}
                                         <button
                                             onClick={closeScanner}
-                                            className="flex items-center justify-center text-gray-400 rounded-lg w-7 h-7 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10"
+                                            className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/10"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                strokeWidth={2} stroke="currentColor" className="size-4">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={2}
+                                                stroke="currentColor"
+                                                className="size-4"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M6 18 18 6M6 6l12 12"
+                                                />
                                             </svg>
                                         </button>
                                     </div>
                                 </div>
                                 <div className="p-6">
                                     <div
-                                        className="relative overflow-hidden bg-gray-950 rounded-xl"
+                                        className="relative overflow-hidden rounded-xl bg-gray-950"
                                         style={{ aspectRatio: '4/3' }}
                                     >
                                         <video
                                             ref={scannerVideoRef}
-                                            className="object-cover w-full h-full"
+                                            className="h-full w-full object-cover"
                                             muted
                                             playsInline
                                             onClick={refocus}
                                             onTouchStart={refocus}
                                         />
                                         {/* Dark vignette with bright scan hole — desktop */}
-                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                                             <div
                                                 ref={scanOverlayRef}
                                                 className="relative h-32 w-72"
@@ -1578,41 +1724,64 @@ export default function fulFillOrder({
                                                     borderRadius: '4px',
                                                 }}
                                             >
-                                                <span className="absolute w-5 h-5 border-t-[3px] border-l-[3px] border-blue-400 -top-px -left-px rounded-tl-sm" />
-                                                <span className="absolute w-5 h-5 border-t-[3px] border-r-[3px] border-blue-400 -top-px -right-px rounded-tr-sm" />
-                                                <span className="absolute w-5 h-5 border-b-[3px] border-l-[3px] border-blue-400 -bottom-px -left-px rounded-bl-sm" />
-                                                <span className="absolute w-5 h-5 border-b-[3px] border-r-[3px] border-blue-400 -bottom-px -right-px rounded-br-sm" />
+                                                <span className="absolute -left-px -top-px h-5 w-5 rounded-tl-sm border-l-[3px] border-t-[3px] border-blue-400" />
+                                                <span className="absolute -right-px -top-px h-5 w-5 rounded-tr-sm border-r-[3px] border-t-[3px] border-blue-400" />
+                                                <span className="absolute -bottom-px -left-px h-5 w-5 rounded-bl-sm border-b-[3px] border-l-[3px] border-blue-400" />
+                                                <span className="absolute -bottom-px -right-px h-5 w-5 rounded-br-sm border-b-[3px] border-r-[3px] border-blue-400" />
                                                 <div
                                                     className="absolute left-1 right-1 h-0.5 bg-blue-400"
-                                                    style={{ animation: 'scanLine 1.8s ease-in-out infinite', top: '10%' }}
+                                                    style={{
+                                                        animation:
+                                                            'scanLine 1.8s ease-in-out infinite',
+                                                        top: '10%',
+                                                    }}
                                                 />
                                             </div>
                                         </div>
 
-
                                         {/* Torch active indicator */}
                                         {torchOn && (
-                                            <div className="absolute flex items-center gap-1 px-2 py-1 text-xs font-semibold text-gray-900 rounded-full pointer-events-none top-2 right-2 bg-yellow-400/90">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                    strokeWidth={2} stroke="currentColor" className="size-3">
-                                                    <path strokeLinecap="round" strokeLinejoin="round"
-                                                        d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+                                            <div className="pointer-events-none absolute right-2 top-2 flex items-center gap-1 rounded-full bg-yellow-400/90 px-2 py-1 text-xs font-semibold text-gray-900">
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    strokeWidth={2}
+                                                    stroke="currentColor"
+                                                    className="size-3"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"
+                                                    />
                                                 </svg>
                                                 Flash ON
                                             </div>
                                         )}
                                     </div>
-                                    <p className="mt-3 text-xs text-center text-gray-400 dark:text-white/40">
+                                    <p className="mt-3 text-center text-xs text-gray-400 dark:text-white/40">
                                         Align barcode within the frame
                                     </p>
-                                    <div className="flex justify-center mt-3">
+                                    <div className="mt-3 flex justify-center">
                                         <PrimaryButton
                                             Action={closeScanner}
                                             Text={'Close Scanner'}
                                             Type={'button'}
                                             Icon={
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    strokeWidth={1.5}
+                                                    stroke="currentColor"
+                                                    className="size-5"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M6 18 18 6M6 6l12 12"
+                                                    />
                                                 </svg>
                                             }
                                         />
@@ -1633,13 +1802,18 @@ export default function fulFillOrder({
                     </>
                 )}
 
-
                 <NativeScannerPreview
                     isOpen={!!nativeScan}
                     fieldLabel={nativeScan ? getFieldLabel(nativeScan.field) : ''}
                     itemNumber={nativeScan ? nativeScan.index + 1 : 1}
-                    onResult={(text) => {
-                        if (nativeScan) {
+                    onResult={(text, meta) => {
+                        if (!nativeScan) return;
+
+                        if (meta?.fields) {
+                            Object.entries(meta.fields).forEach(([key, val]) => {
+                                handleInventoryChange(nativeScan.index, key, val);
+                            });
+                        } else {
                             handleInventoryChange(nativeScan.index, nativeScan.field, text);
                         }
                     }}
@@ -1647,21 +1821,21 @@ export default function fulFillOrder({
                 />
 
                 {showProgressModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
                         <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                         {/* Modal content */}
-                        <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
+                        <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
                             <div className="text-center">
                                 <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                     Please Wait While We Are Uploading Your Files
                                 </h2>
 
-                                <div className="flex items-center justify-center mt-5">
+                                <div className="mt-5 flex items-center justify-center">
                                     <div role="status">
                                         <svg
                                             aria-hidden="true"
-                                            className="w-8 h-8 text-gray-200 animate-spin fill-blue-600 dark:text-gray-600"
+                                            className="h-8 w-8 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"
                                             viewBox="0 0 100 101"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"

@@ -39,6 +39,7 @@ use App\Http\Controllers\Dashboard\UnsettledAccountController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\DeviceFingerPrintController;
 use App\Http\Controllers\MetaController;
+use App\Http\Controllers\OpenAiController;
 use App\Http\Controllers\Website\BookmarkController as WebsiteBookmarkController;
 use App\Http\Controllers\Website\CartController;
 use App\Http\Controllers\Website\CheckoutController;
@@ -887,5 +888,9 @@ Route::match(['get', 'post'], '/meta/webhook', [MetaController::class, 'webhook'
 
 // Device Finger Print
 Route::post('/device-fingerprint', DeviceFingerPrintController::class)->name('device-fingerprint.store');
+
+
+ Route::post('/scanner/ai-decode', [OpenAiController::class, 'aiDecode'])
+        ->name('scanner.ai-decode');
 
 require __DIR__.'/auth.php';

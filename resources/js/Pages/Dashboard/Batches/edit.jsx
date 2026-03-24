@@ -97,8 +97,6 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
         setInventoryItems(updatedInventoryItems);
     };
 
-
-
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState(false);
     const [showProgressModal, setShowProgressModal] = useState(false);
@@ -118,13 +116,15 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
         setTorchOn(false);
     };
 
-
-    const { videoRef: scannerVideoRef, refocus, toggleTorch } = useScanner({
+    const {
+        videoRef: scannerVideoRef,
+        refocus,
+        toggleTorch,
+    } = useScanner({
         active: !!activeScanner,
         onScan: (text) => handleScanResult(text),
         scanRegion,
     });
-
 
     const handleTorchToggle = async () => {
         const result = await toggleTorch();
@@ -164,7 +164,6 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
             const offsetX = (vRect.width - renderedW) / 2;
             const offsetY = (vRect.height - renderedH) / 2;
 
-
             const oRect = overlayEl.getBoundingClientRect();
             const relLeft = oRect.left - vRect.left;
             const relTop = oRect.top - vRect.top;
@@ -202,7 +201,6 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
         };
     }, [activeScanner]);
 
-
     const processScanText = async (text, field, index) => {
         if (field === 'smartphone') {
             try {
@@ -231,8 +229,9 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
 
     const [nativeScan, setNativeScan] = useState(null);
 
-    const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
-        || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isMobileDevice =
+        /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
     // Updated trigger
     const openScannerOrNative = (field, index) => {
@@ -243,13 +242,16 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
         }
     };
 
-
     const getFieldLabel = (field) => {
-        const map = { smartphone: 'Smartphone', imei1: 'IMEI 1', imei2: 'IMEI 2', eid: 'EID', serial_no: 'Serial No' };
+        const map = {
+            smartphone: 'Smartphone',
+            imei1: 'IMEI 1',
+            imei2: 'IMEI 2',
+            eid: 'EID',
+            serial_no: 'Serial No',
+        };
         return map[field] || field;
     };
-
-
 
     useEffect(() => {
         if (errors?.file_error) {
@@ -286,9 +288,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
         e.preventDefault();
 
         const deletedInvoices = getDeletedFiles(batch.invoices, data.invoices || []);
-        const newInvoices = (data.invoices || [])
-            .filter((f) => f.isNew)
-            .map((f) => f.file);
+        const newInvoices = (data.invoices || []).filter((f) => f.isNew).map((f) => f.file);
 
         const formData = {
             ...data,
@@ -334,7 +334,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                 <Card
                     Content={
                         <>
-                            <div className="flex flex-wrap justify-end my-3">
+                            <div className="my-3 flex flex-wrap justify-end">
                                 <LinkButton
                                     Text={'Back To Batches'}
                                     URL={route('dashboard.batches.index')}
@@ -446,9 +446,11 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                         'application/pdf',
                                                     ]}
                                                     MaxFileSize={'5MB'}
-
                                                     onUpdate={(files) => {
-                                                        setData('invoices', files.length > 0 ? files : []);
+                                                        setData(
+                                                            'invoices',
+                                                            files.length > 0 ? files : [],
+                                                        );
                                                     }}
                                                     MaxFiles={1}
                                                     Multiple={true}
@@ -456,7 +458,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                 />
                                             </div>
 
-                                            <div className="flex items-center justify-end w-full">
+                                            <div className="flex w-full items-center justify-end">
                                                 <PrimaryButton
                                                     Text={'Add More Items'}
                                                     Type={'button'}
@@ -546,7 +548,12 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                                     />
                                                                                 </svg>
                                                                             }
-                                                                            Action={() => openScannerOrNative('smartphone', idx)}
+                                                                            Action={() =>
+                                                                                openScannerOrNative(
+                                                                                    'smartphone',
+                                                                                    idx,
+                                                                                )
+                                                                            }
                                                                         />
 
                                                                         {/* Smartphone */}
@@ -621,7 +628,12 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                                     />
                                                                                 </svg>
                                                                             }
-                                                                            Action={() => openScannerOrNative('imei1', idx)}
+                                                                            Action={() =>
+                                                                                openScannerOrNative(
+                                                                                    'imei1',
+                                                                                    idx,
+                                                                                )
+                                                                            }
                                                                         />
 
                                                                         {/* IMEI 1 */}
@@ -672,8 +684,12 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                                     />
                                                                                 </svg>
                                                                             }
-                                                                            Action={() => openScannerOrNative('imei2', idx)}
-
+                                                                            Action={() =>
+                                                                                openScannerOrNative(
+                                                                                    'imei2',
+                                                                                    idx,
+                                                                                )
+                                                                            }
                                                                         />
 
                                                                         {/* IMEI 2 */}
@@ -724,7 +740,12 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                                     />
                                                                                 </svg>
                                                                             }
-                                                                            Action={() => openScannerOrNative('eid', idx)}
+                                                                            Action={() =>
+                                                                                openScannerOrNative(
+                                                                                    'eid',
+                                                                                    idx,
+                                                                                )
+                                                                            }
                                                                         />
 
                                                                         {/* EID */}
@@ -775,7 +796,12 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                                     />
                                                                                 </svg>
                                                                             }
-                                                                            Action={() => openScannerOrNative('serial_no', idx)}
+                                                                            Action={() =>
+                                                                                openScannerOrNative(
+                                                                                    'serial_no',
+                                                                                    idx,
+                                                                                )
+                                                                            }
                                                                         />
 
                                                                         {/* Serial No */}
@@ -802,7 +828,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                 ))}
                                             </div>
 
-                                            <div className="flex items-center justify-end w-full">
+                                            <div className="flex w-full items-center justify-end">
                                                 <PrimaryButton
                                                     Text={'Add Extra Cost'}
                                                     Type={'button'}
@@ -829,17 +855,17 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                             </div>
 
                                             {extraCosts.length > 0 && (
-                                                <div className="grid grid-cols-1 col-span-1 gap-5 overflow-x-auto scrollbar-thin dark:scrollbar-track-slate-900 dark:scrollbar-thumb-slate-700">
+                                                <div className="col-span-1 grid grid-cols-1 gap-5 overflow-x-auto scrollbar-thin dark:scrollbar-track-slate-900 dark:scrollbar-thumb-slate-700">
                                                     <table className="w-full border-collapse">
                                                         <thead>
                                                             <tr>
-                                                                <th className="p-2 text-left text-gray-700 border dark:border-gray-700 dark:text-gray-400">
+                                                                <th className="border p-2 text-left text-gray-700 dark:border-gray-700 dark:text-gray-400">
                                                                     Cost Type
                                                                 </th>
-                                                                <th className="p-2 text-left text-gray-700 border dark:border-gray-700 dark:text-gray-400">
+                                                                <th className="border p-2 text-left text-gray-700 dark:border-gray-700 dark:text-gray-400">
                                                                     Amount
                                                                 </th>
-                                                                <th className="p-2 text-center text-gray-700 border dark:border-gray-700 dark:text-gray-400">
+                                                                <th className="border p-2 text-center text-gray-700 dark:border-gray-700 dark:text-gray-400">
                                                                     Action
                                                                 </th>
                                                             </tr>
@@ -847,14 +873,14 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                         <tbody>
                                                             {extraCosts.map((item, idx) => (
                                                                 <tr key={idx}>
-                                                                    <td className="p-2 border dark:border-gray-700">
+                                                                    <td className="border p-2 dark:border-gray-700">
                                                                         <Input
                                                                             InputName={'Cost Type'}
                                                                             Id={'cost_type'}
                                                                             Name={'cost_type'}
                                                                             Error={
                                                                                 errors[
-                                                                                `extra_costs.${idx}.cost_type`
+                                                                                    `extra_costs.${idx}.cost_type`
                                                                                 ]
                                                                             }
                                                                             Value={item.cost_type}
@@ -872,14 +898,14 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                             }
                                                                         />
                                                                     </td>
-                                                                    <td className="p-2 border dark:border-gray-700">
+                                                                    <td className="border p-2 dark:border-gray-700">
                                                                         <Input
                                                                             InputName={'Amount'}
                                                                             Id={'amount'}
                                                                             Name={'amount'}
                                                                             Error={
                                                                                 errors[
-                                                                                `extra_costs.${idx}.amount`
+                                                                                    `extra_costs.${idx}.amount`
                                                                                 ]
                                                                             }
                                                                             Value={item.amount}
@@ -898,7 +924,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                                         />
                                                                     </td>
 
-                                                                    <td className="p-2 border dark:border-gray-700">
+                                                                    <td className="border p-2 dark:border-gray-700">
                                                                         <div className="flex items-center justify-center">
                                                                             <PrimaryButton
                                                                                 Type={'button'}
@@ -992,25 +1018,27 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                     }
                 />
 
-
                 {activeScanner && (
                     <>
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
+                        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
                             <div className="fixed inset-0 backdrop-blur-[32px]" />
-                            <div className="relative z-10 w-full max-w-md overflow-hidden bg-white shadow-2xl rounded-2xl dark:bg-deepcharcoal">
-
+                            <div className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-deepcharcoal">
                                 {/* Header */}
-                                <div className="flex items-center justify-between px-6 py-4 border-b dark:border-white/10">
+                                <div className="flex items-center justify-between border-b px-6 py-4 dark:border-white/10">
                                     <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                                        <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
                                         <h3 className="text-sm font-semibold text-gray-800 dark:text-white">
                                             Scanning:{' '}
-                                            <span className="text-blue-600 capitalize dark:text-blue-400">
-                                                {activeScanner.field === 'smartphone' ? 'Smartphone'
-                                                    : activeScanner.field === 'imei1' ? 'IMEI 1'
-                                                        : activeScanner.field === 'imei2' ? 'IMEI 2'
-                                                            : activeScanner.field === 'eid' ? 'EID'
-                                                                : 'Serial No'}{' '}
+                                            <span className="capitalize text-blue-600 dark:text-blue-400">
+                                                {activeScanner.field === 'smartphone'
+                                                    ? 'Smartphone'
+                                                    : activeScanner.field === 'imei1'
+                                                      ? 'IMEI 1'
+                                                      : activeScanner.field === 'imei2'
+                                                        ? 'IMEI 2'
+                                                        : activeScanner.field === 'eid'
+                                                          ? 'EID'
+                                                          : 'Serial No'}{' '}
                                                 — Item #{activeScanner.index + 1}
                                             </span>
                                         </h3>
@@ -1019,28 +1047,51 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                         {/* Torch / Flashlight toggle */}
                                         <button
                                             onClick={handleTorchToggle}
-                                            title={torchOn ? 'Turn off flashlight' : 'Turn on flashlight'}
-                                            className={`flex items-center justify-center rounded-lg w-8 h-8 transition-colors
-                                        ${torchOn
+                                            title={
+                                                torchOn
+                                                    ? 'Turn off flashlight'
+                                                    : 'Turn on flashlight'
+                                            }
+                                            className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
+                                                torchOn
                                                     ? 'bg-yellow-400 text-gray-900 hover:bg-yellow-300'
-                                                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10'
-                                                }`}
+                                                    : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/10'
+                                            }`}
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                strokeWidth={1.8} stroke="currentColor" className="size-5">
-                                                <path strokeLinecap="round" strokeLinejoin="round"
-                                                    d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.8}
+                                                stroke="currentColor"
+                                                className="size-5"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"
+                                                />
                                             </svg>
                                         </button>
 
                                         {/* Close button */}
                                         <button
                                             onClick={closeScanner}
-                                            className="flex items-center justify-center text-gray-400 rounded-lg w-7 h-7 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10"
+                                            className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/10"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                strokeWidth={2} stroke="currentColor" className="size-4">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={2}
+                                                stroke="currentColor"
+                                                className="size-4"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M6 18 18 6M6 6l12 12"
+                                                />
                                             </svg>
                                         </button>
                                     </div>
@@ -1049,12 +1100,12 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                 {/* Body */}
                                 <div className="p-6">
                                     <div
-                                        className="relative overflow-hidden bg-gray-950 rounded-xl"
+                                        className="relative overflow-hidden rounded-xl bg-gray-950"
                                         style={{ aspectRatio: '4/3' }}
                                     >
                                         <video
                                             ref={scannerVideoRef}
-                                            className="object-cover w-full h-full"
+                                            className="h-full w-full object-cover"
                                             muted
                                             playsInline
                                             onClick={refocus}
@@ -1062,7 +1113,7 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                         />
 
                                         {/* Scan overlay: dark vignette + bright scan hole */}
-                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                                             <div
                                                 ref={scanOverlayRef}
                                                 className="relative h-32 w-72"
@@ -1071,43 +1122,67 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                                                     borderRadius: '4px',
                                                 }}
                                             >
-                                                <span className="absolute w-5 h-5 border-t-[3px] border-l-[3px] border-blue-400 -top-px -left-px rounded-tl-sm" />
-                                                <span className="absolute w-5 h-5 border-t-[3px] border-r-[3px] border-blue-400 -top-px -right-px rounded-tr-sm" />
-                                                <span className="absolute w-5 h-5 border-b-[3px] border-l-[3px] border-blue-400 -bottom-px -left-px rounded-bl-sm" />
-                                                <span className="absolute w-5 h-5 border-b-[3px] border-r-[3px] border-blue-400 -bottom-px -right-px rounded-br-sm" />
+                                                <span className="absolute -left-px -top-px h-5 w-5 rounded-tl-sm border-l-[3px] border-t-[3px] border-blue-400" />
+                                                <span className="absolute -right-px -top-px h-5 w-5 rounded-tr-sm border-r-[3px] border-t-[3px] border-blue-400" />
+                                                <span className="absolute -bottom-px -left-px h-5 w-5 rounded-bl-sm border-b-[3px] border-l-[3px] border-blue-400" />
+                                                <span className="absolute -bottom-px -right-px h-5 w-5 rounded-br-sm border-b-[3px] border-r-[3px] border-blue-400" />
                                                 <div
                                                     className="absolute left-1 right-1 h-0.5 bg-blue-400"
-                                                    style={{ animation: 'scanLine 1.8s ease-in-out infinite', top: '10%' }}
+                                                    style={{
+                                                        animation:
+                                                            'scanLine 1.8s ease-in-out infinite',
+                                                        top: '10%',
+                                                    }}
                                                 />
                                             </div>
                                         </div>
 
                                         {/* Torch active indicator */}
                                         {torchOn && (
-                                            <div className="absolute flex items-center gap-1 px-2 py-1 text-xs font-semibold text-gray-900 rounded-full pointer-events-none top-2 right-2 bg-yellow-400/90">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                    strokeWidth={2} stroke="currentColor" className="size-3">
-                                                    <path strokeLinecap="round" strokeLinejoin="round"
-                                                        d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+                                            <div className="pointer-events-none absolute right-2 top-2 flex items-center gap-1 rounded-full bg-yellow-400/90 px-2 py-1 text-xs font-semibold text-gray-900">
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    strokeWidth={2}
+                                                    stroke="currentColor"
+                                                    className="size-3"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"
+                                                    />
                                                 </svg>
                                                 Flash ON
                                             </div>
                                         )}
                                     </div>
 
-                                    <p className="mt-3 text-xs text-center text-gray-400 dark:text-white/40">
-                                        Tap video to refocus · Tap <span className="text-yellow-500">💡</span> for flashlight
+                                    <p className="mt-3 text-center text-xs text-gray-400 dark:text-white/40">
+                                        Tap video to refocus · Tap{' '}
+                                        <span className="text-yellow-500">💡</span> for flashlight
                                     </p>
 
-                                    <div className="flex justify-center mt-3">
+                                    <div className="mt-3 flex justify-center">
                                         <PrimaryButton
                                             Action={closeScanner}
                                             Text={'Close Scanner'}
                                             Type={'button'}
                                             Icon={
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                    strokeWidth={1.5} stroke="currentColor" className="size-5">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    strokeWidth={1.5}
+                                                    stroke="currentColor"
+                                                    className="size-5"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M6 18 18 6M6 6l12 12"
+                                                    />
                                                 </svg>
                                             }
                                         />
@@ -1129,33 +1204,41 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                     </>
                 )}
 
-
                 <NativeScannerPreview
                     isOpen={!!nativeScan}
                     fieldLabel={nativeScan ? getFieldLabel(nativeScan.field) : ''}
-                    itemNumber={nativeScan ? nativeScan.index + 1 : 1}
-                    onResult={async (text) => {
-                        if (nativeScan) await processScanText(text, nativeScan.field, nativeScan.index);
+                    itemNumber={nativeScan ? nativeScan.index + 1 : ''}
+                    onResult={async (text, meta) => {
+                        if (!nativeScan) return;
+
+                        if (meta?.fields) {
+                            Object.entries(meta.fields).forEach(([key, val]) => {
+                                handleInventoryChange(nativeScan.index, key, val);
+                            });
+                            setNativeScan(null);
+                        } else {
+                            await processScanText(text, nativeScan.field, nativeScan.index);
+                        }
                     }}
                     onClose={() => setNativeScan(null)}
                 />
 
                 {showProgressModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
                         <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                         {/* Modal content */}
-                        <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
+                        <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
                             <div className="text-center">
                                 <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                     Please Wait While We Are Uploading Your Files
                                 </h2>
 
-                                <div className="flex items-center justify-center mt-5">
+                                <div className="mt-5 flex items-center justify-center">
                                     <div role="status">
                                         <svg
                                             aria-hidden="true"
-                                            className="w-8 h-8 text-gray-200 animate-spin fill-blue-600 dark:text-gray-600"
+                                            className="h-8 w-8 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"
                                             viewBox="0 0 100 101"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"

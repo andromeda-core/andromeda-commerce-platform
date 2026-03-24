@@ -2,9 +2,7 @@ import { useRef, useCallback, useEffect, useState } from 'react';
 import beepSound from '../../assets/sounds/Beep.mp3';
 
 const isMobileDevice = () =>
-    /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent,
-    ) ||
+    /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
 export function useNativeScanner() {
@@ -38,14 +36,11 @@ export function useNativeScanner() {
 
         const hints = new Map();
         hints.set(DecodeHintType.POSSIBLE_FORMATS, [
-            BarcodeFormat.CODE_128, BarcodeFormat.CODE_39, BarcodeFormat.CODE_93,
-            BarcodeFormat.EAN_13, BarcodeFormat.EAN_8,
-            BarcodeFormat.UPC_A, BarcodeFormat.UPC_E,
-            BarcodeFormat.QR_CODE, BarcodeFormat.DATA_MATRIX,
-            BarcodeFormat.ITF, BarcodeFormat.PDF_417, BarcodeFormat.AZTEC,
+            BarcodeFormat.CODE_128,
+            BarcodeFormat.EAN_13,
+            BarcodeFormat.QR_CODE,
         ]);
         hints.set(DecodeHintType.TRY_HARDER, true);
-
 
         readerRef.current = new BrowserMultiFormatReader(hints);
         return readerRef.current;
@@ -55,7 +50,7 @@ export function useNativeScanner() {
         try {
             const result = reader.decodeFromCanvas(canvas);
             if (result) return result.getText();
-        } catch { }
+        } catch {}
         return null;
     }, []);
 
@@ -194,7 +189,9 @@ export function useNativeScanner() {
     const captureImage = useCallback(() => {
         return new Promise((resolve) => {
             if (fileInputRef.current) {
-                try { document.body.removeChild(fileInputRef.current); } catch { }
+                try {
+                    document.body.removeChild(fileInputRef.current);
+                } catch {}
             }
 
             const input = document.createElement('input');
@@ -211,7 +208,9 @@ export function useNativeScanner() {
 
             const cleanup = () => {
                 window.removeEventListener('focus', handleFocus);
-                try { document.body.removeChild(input); } catch { }
+                try {
+                    document.body.removeChild(input);
+                } catch {}
                 if (fileInputRef.current === input) fileInputRef.current = null;
             };
 
@@ -243,11 +242,97 @@ export function useNativeScanner() {
         });
     }, []);
 
+    const aiDecode = useCallback(async (canvas) => {
+        return new Promise((resolve) => {
+            canvas.toBlob(
+                async (blob) => {
+                    if (!blob) {
+                        resolve(null);
+                        return;
+                    }
+
+                    const formData = new FormData();
+                    formData.append('image', blob, 'scan.jpg');
+
+                    try {
+                        const csrfToken =
+                            document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
+                        const response = await fetch(route('scanner.ai-decode'), {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken,
+                                Accept: 'application/json',
+                            },
+                            body: formData,
+                        });
+
+                        if (!response.ok) {
+                            resolve(null);
+                            return;
+                        }
+
+                        const data = await response.json();
+
+                        // Multiple barcodes in frame
+                        if (data.error === 'multiple_barcodes') {
+                            resolve({
+                                success: false,
+                                multiple: true,
+                                text: null,
+                                fields: null,
+                            });
+                            return;
+                        }
+
+                        if (!data.found) {
+                            resolve(null);
+                            return;
+                        }
+
+                        // Single value - iPhone IMEI, EID, UPC, Serial
+                        if (data.value) {
+                            resolve({
+                                success: true,
+                                text: data.value,
+                                fields: null,
+                            });
+                            return;
+                        }
+
+                        // Composite - Samsung (only populated fields returned)
+                        if (data.fields) {
+                            const primary =
+                                data.fields.imei1 ??
+                                data.fields.upc_ean ??
+                                data.fields.serial ??
+                                data.fields.eid ??
+                                data.fields.imei2 ??
+                                null;
+
+                            resolve({
+                                success: true,
+                                text: primary,
+                                fields: data.fields,
+                            });
+                            return;
+                        }
+
+                        resolve(null);
+                    } catch (err) {
+                        console.warn('[NativeScanner] AI fallback failed:', err);
+                        resolve(null);
+                    }
+                },
+                'image/jpeg',
+                0.92,
+            );
+        });
+    }, []);
 
     const decodeRegion = useCallback(
         async (imageUrl, cropRect) => {
             setIsProcessing(true);
-
 
             try {
                 await new Promise((r) => setTimeout(r, 50));
@@ -310,7 +395,6 @@ export function useNativeScanner() {
                     return r;
                 };
 
-
                 const sizes = [640, 500, 800, 400, 1000];
                 let found = null;
 
@@ -343,9 +427,16 @@ export function useNativeScanner() {
                         part.width = cw;
                         part.height = partH;
                         part.getContext('2d').drawImage(
-                            cropped, 0, startY, cw, partH, 0, 0, cw, partH
+                            cropped,
+                            0,
+                            startY,
+                            cw,
+                            partH,
+                            0,
+                            0,
+                            cw,
+                            partH,
                         );
-
 
                         // Try at 640px wide
                         const pW = 640;
@@ -358,7 +449,6 @@ export function useNativeScanner() {
                         psCtx.imageSmoothingQuality = 'high';
                         psCtx.drawImage(part, 0, 0, pW, pH);
 
-
                         found = await tryAllProcessors(ps);
                         if (found) break;
 
@@ -370,10 +460,9 @@ export function useNativeScanner() {
                     }
                 }
 
-
                 if (!found) {
                     const PROBE_W = 200;
-                    const PROBE_H = Math.max(20, Math.round(cropped.height * PROBE_W / cw));
+                    const PROBE_H = Math.max(20, Math.round((cropped.height * PROBE_W) / cw));
                     const PAD = 60;
                     const probeW = PROBE_W + PAD * 2;
                     const probeH = PROBE_H + PAD * 2;
@@ -386,20 +475,19 @@ export function useNativeScanner() {
                     let bestAngle = 0;
                     let bestVariance = -1;
 
-
                     for (let deg = -22; deg <= 22; deg += 2) {
                         probeCtx.clearRect(0, 0, probeW, probeH);
                         probeCtx.save();
                         probeCtx.translate(probeW / 2, probeH / 2);
-                        probeCtx.rotate(deg * Math.PI / 180);
+                        probeCtx.rotate((deg * Math.PI) / 180);
                         probeCtx.drawImage(cropped, -PROBE_W / 2, -PROBE_H / 2, PROBE_W, PROBE_H);
                         probeCtx.restore();
 
                         const imgData = probeCtx.getImageData(0, 0, probeW, probeH);
                         const d = imgData.data;
 
-
-                        let sumR = 0, sumR2 = 0;
+                        let sumR = 0,
+                            sumR2 = 0;
                         for (let y = 0; y < probeH; y++) {
                             let rowDark = 0;
                             for (let x = 0; x < probeW; x++) {
@@ -419,15 +507,17 @@ export function useNativeScanner() {
                     }
 
                     if (bestAngle !== 0) {
-
-
                         const straightened = rotateByAngle(cropped, bestAngle);
 
                         // Try at 640px
                         const sW = 640;
-                        const sH = Math.max(20, Math.round(straightened.height * sW / straightened.width));
+                        const sH = Math.max(
+                            20,
+                            Math.round((straightened.height * sW) / straightened.width),
+                        );
                         const sC = document.createElement('canvas');
-                        sC.width = sW; sC.height = sH;
+                        sC.width = sW;
+                        sC.height = sH;
                         const sCx = sC.getContext('2d');
                         sCx.imageSmoothingEnabled = true;
                         sCx.imageSmoothingQuality = 'high';
@@ -443,9 +533,10 @@ export function useNativeScanner() {
                             for (const fine of [bestAngle - 1, bestAngle + 1]) {
                                 const f = rotateByAngle(cropped, fine);
                                 const fW = 640;
-                                const fH = Math.max(20, Math.round(f.height * fW / f.width));
+                                const fH = Math.max(20, Math.round((f.height * fW) / f.width));
                                 const fC = document.createElement('canvas');
-                                fC.width = fW; fC.height = fH;
+                                fC.width = fW;
+                                fC.height = fH;
                                 fC.getContext('2d').drawImage(f, 0, 0, fW, fH);
                                 found = await tryAllProcessors(fC);
                                 if (found) break;
@@ -460,11 +551,22 @@ export function useNativeScanner() {
                                 const pC = document.createElement('canvas');
                                 pC.width = straightened.width;
                                 pC.height = pH;
-                                pC.getContext('2d').drawImage(straightened, 0, sY, straightened.width, pH, 0, 0, straightened.width, pH);
+                                pC.getContext('2d').drawImage(
+                                    straightened,
+                                    0,
+                                    sY,
+                                    straightened.width,
+                                    pH,
+                                    0,
+                                    0,
+                                    straightened.width,
+                                    pH,
+                                );
                                 const bW = 640;
-                                const bH = Math.max(20, Math.round(pH * bW / straightened.width));
+                                const bH = Math.max(20, Math.round((pH * bW) / straightened.width));
                                 const bC = document.createElement('canvas');
-                                bC.width = bW; bC.height = bH;
+                                bC.width = bW;
+                                bC.height = bH;
                                 bC.getContext('2d').drawImage(pC, 0, 0, bW, bH);
                                 found = await tryAllProcessors(bC);
                                 if (found) break;
@@ -478,15 +580,35 @@ export function useNativeScanner() {
                     found = await runAllStrategies(reader, cropped, cw, ch);
                 }
 
+                if (!found) {
+                    const aiResult = await aiDecode(cropped);
+
+                    if (aiResult?.success) {
+                        await playBeep();
+                        return {
+                            success: true,
+                            text: aiResult.text,
+                            fields: aiResult.fields,
+                            error: null,
+                        };
+                    }
+                }
+
                 if (found) {
                     await playBeep();
-                    return { success: true, text: found, error: null };
+                    return {
+                        success: true,
+                        text: found,
+                        fields: null,
+                        error: null,
+                    };
                 }
 
                 return {
                     success: false,
                     text: null,
-                    error: 'No barcode found. Make sure barcode is fully inside the box.',
+                    fields: null,
+                    error: 'No barcode found. Make sure the barcode is fully inside the box.',
                 };
             } catch (err) {
                 console.error('[NativeScanner] decodeRegion error:', err);
@@ -499,16 +621,23 @@ export function useNativeScanner() {
     );
 
     const releaseImage = useCallback((imageUrl) => {
-        if (imageUrl) try { URL.revokeObjectURL(imageUrl); } catch { }
+        if (imageUrl)
+            try {
+                URL.revokeObjectURL(imageUrl);
+            } catch {}
     }, []);
 
     useEffect(() => {
         return () => {
             if (fileInputRef.current) {
-                try { document.body.removeChild(fileInputRef.current); } catch { }
+                try {
+                    document.body.removeChild(fileInputRef.current);
+                } catch {}
                 fileInputRef.current = null;
             }
-            try { readerRef.current?.reset?.(); } catch { }
+            try {
+                readerRef.current?.reset?.();
+            } catch {}
         };
     }, []);
 

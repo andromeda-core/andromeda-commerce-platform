@@ -15,7 +15,20 @@ import Swal from 'sweetalert2';
 import { useScanner } from '@/Hooks/useScanner';
 import NativeScannerPreview from '@/Components/NativeScannerPreview';
 
-export default function create({ colors, model_names, capacities, shipping_policies, categories, conditions, countries, return_policies, courier_companies, addons, floors, googleMapSettings }) {
+export default function create({
+    colors,
+    model_names,
+    capacities,
+    shipping_policies,
+    categories,
+    conditions,
+    countries,
+    return_policies,
+    courier_companies,
+    addons,
+    floors,
+    googleMapSettings,
+}) {
     // Create Data Form Data
     const { data, setData, post, processing, errors } = useForm({
         model_name_id: '',
@@ -41,7 +54,6 @@ export default function create({ colors, model_names, capacities, shipping_polic
         longitude: '',
     });
 
-
     const [file_error, setFileError] = useState(null);
 
     // Product Details Data Handling
@@ -57,8 +69,9 @@ export default function create({ colors, model_names, capacities, shipping_polic
 
     const [nativeScan, setNativeScan] = useState(null);
 
-    const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
-        || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isMobileDevice =
+        /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
     const openScannerOrNative = (field) => {
         if (isMobileDevice) {
@@ -77,13 +90,15 @@ export default function create({ colors, model_names, capacities, shipping_polic
         setTorchOn(false);
     };
 
-
-    const { videoRef: scannerVideoRef, refocus, toggleTorch } = useScanner({
+    const {
+        videoRef: scannerVideoRef,
+        refocus,
+        toggleTorch,
+    } = useScanner({
         active: !!activeScanner,
         onScan: (text) => handleScanResult(text),
         scanRegion,
     });
-
 
     const handleTorchToggle = async () => {
         const result = await toggleTorch();
@@ -122,7 +137,6 @@ export default function create({ colors, model_names, capacities, shipping_polic
             // Offset — how much video extends beyond element edge (negative = cropped)
             const offsetX = (vRect.width - renderedW) / 2;
             const offsetY = (vRect.height - renderedH) / 2;
-
 
             const oRect = overlayEl.getBoundingClientRect();
             const relLeft = oRect.left - vRect.left;
@@ -168,7 +182,6 @@ export default function create({ colors, model_names, capacities, shipping_polic
         closeScanner();
     };
 
-
     const addProductDetails = () => {
         setProductDetails([...productDetails, { title: '', value: '' }]);
     };
@@ -190,8 +203,6 @@ export default function create({ colors, model_names, capacities, shipping_polic
         e.preventDefault();
         post(route('dashboard.smartphones.store'));
     };
-
-
 
     // Google Maps Logic
     // Location Get Success state
@@ -463,8 +474,6 @@ export default function create({ colors, model_names, capacities, shipping_polic
 
     // Google Maps Logic
 
-
-
     useEffect(() => {
         if (file_error != null) {
             setFileError(null);
@@ -476,7 +485,6 @@ export default function create({ colors, model_names, capacities, shipping_polic
             setFileError(errors.file_error);
         }
     }, [errors]);
-
 
     useEffect(() => {
         if ((data?.images?.length > 0 || data?.videos?.length > 0) && processing) {
@@ -505,7 +513,7 @@ export default function create({ colors, model_names, capacities, shipping_polic
                 <Card
                     Content={
                         <>
-                            <div className="flex flex-wrap justify-end my-3">
+                            <div className="my-3 flex flex-wrap justify-end">
                                 <LinkButton
                                     Text={'Back To Smart Phones'}
                                     URL={route('dashboard.smartphones.index')}
@@ -651,22 +659,21 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                     Required={false}
                                                 />
 
-
-
                                                 <Input
-                                                    InputName={'Approx Max Delivery Days (In No.s Like 1, 2, 3, 4, 5)'}
+                                                    InputName={
+                                                        'Approx Max Delivery Days (In No.s Like 1, 2, 3, 4, 5)'
+                                                    }
                                                     Error={errors.delivery_days}
                                                     Value={data.delivery_days}
-                                                    Action={(e) => setData('delivery_days', e.target.value)}
+                                                    Action={(e) =>
+                                                        setData('delivery_days', e.target.value)
+                                                    }
                                                     Placeholder={'Enter Delivery Days'}
                                                     Id={'delivery_days'}
                                                     Name={'delivery_days'}
                                                     Type={'number'}
                                                     Required={true}
                                                 />
-
-
-
 
                                                 <SelectInput
                                                     InputName={'Country/Region'}
@@ -685,8 +692,6 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                     }}
                                                 />
 
-
-
                                                 <SelectInput
                                                     InputName={'Condition'}
                                                     Id={'condition_id'}
@@ -703,10 +708,6 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                         setData('condition_id', value);
                                                     }}
                                                 />
-
-
-
-
 
                                                 <SelectInput
                                                     InputName={'Return Policy'}
@@ -725,7 +726,6 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                     }}
                                                 />
 
-
                                                 <SelectInput
                                                     InputName={'Shipping Policy'}
                                                     Id={'shipping_policy_id'}
@@ -742,7 +742,6 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                         setData('shipping_policy_id', value);
                                                     }}
                                                 />
-
 
                                                 <SelectInput
                                                     InputName={'Courier Company'}
@@ -761,7 +760,6 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                     }}
                                                 />
 
-
                                                 <SelectInput
                                                     InputName={'Addons'}
                                                     Id={'addon_ids'}
@@ -779,7 +777,6 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                     }}
                                                 />
 
-
                                                 <SelectInput
                                                     InputName={'Floor'}
                                                     Id={'floor_id'}
@@ -791,7 +788,6 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                     items={floors}
                                                     itemKey={'name'}
                                                 />
-
 
                                                 <SelectInput
                                                     InputName={'Location Detection Method'}
@@ -808,33 +804,53 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                     itemKey={'name'}
                                                 />
 
-
                                                 {(data.latitude || data.location_name) && (
-                                                    <div className="flex items-start gap-3 p-3 border border-green-300 rounded-lg bg-green-50 dark:bg-green-900/20 dark:border-green-700">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5 text-green-600 dark:text-green-400 mt-0.5 shrink-0">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                                                    <div className="flex items-start gap-3 rounded-lg border border-green-300 bg-green-50 p-3 dark:border-green-700 dark:bg-green-900/20">
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            strokeWidth={1.5}
+                                                            stroke="currentColor"
+                                                            className="mt-0.5 size-5 shrink-0 text-green-600 dark:text-green-400"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                                                            />
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                                                            />
                                                         </svg>
                                                         <div className="text-sm">
                                                             <p className="font-medium text-green-700 dark:text-green-400">
-                                                                {data.location_name || 'Location Selected'}
+                                                                {data.location_name ||
+                                                                    'Location Selected'}
                                                             </p>
                                                             {data.latitude && data.longitude && (
-                                                                <p className="text-green-600 dark:text-green-500 mt-0.5">
-                                                                    {Number(data.latitude).toFixed(6)}, {Number(data.longitude).toFixed(6)}
+                                                                <p className="mt-0.5 text-green-600 dark:text-green-500">
+                                                                    {Number(data.latitude).toFixed(
+                                                                        6,
+                                                                    )}
+                                                                    ,{' '}
+                                                                    {Number(data.longitude).toFixed(
+                                                                        6,
+                                                                    )}
                                                                 </p>
                                                             )}
                                                             <p className="mt-1 text-xs text-green-500 dark:text-green-600">
-                                                                Select the Location Detector Method from above to make changes.
+                                                                Select the Location Detector Method
+                                                                from above to make changes.
                                                             </p>
                                                         </div>
                                                     </div>
                                                 )}
-
-
                                             </div>
 
-                                            <div className="grid grid-cols-1 col-span-2 gap-4 mt-10 md:grid-cols-1">
+                                            <div className="col-span-2 mt-10 grid grid-cols-1 gap-4 md:grid-cols-1">
                                                 <FileUploaderInput
                                                     InputName={'Smart Phone Images'}
                                                     Id={'images'}
@@ -862,7 +878,6 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                 />
                                             </div>
 
-
                                             <FileUploaderInput
                                                 Label={
                                                     'Drag & Drop your Smart phone Video or <span class="filepond--label-action">Browse</span>'
@@ -888,8 +903,6 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                 Multiple={true}
                                             />
 
-
-
                                             <div className="grid grid-cols-1 gap-4">
                                                 <TipTapEditor
                                                     Label={'Content'}
@@ -905,8 +918,7 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                 />
                                             </div>
 
-
-                                            <div className="flex items-center justify-end w-full">
+                                            <div className="flex w-full items-center justify-end">
                                                 <PrimaryButton
                                                     Text={'Add Product Details'}
                                                     Type={'button'}
@@ -934,17 +946,17 @@ export default function create({ colors, model_names, capacities, shipping_polic
 
                                             <div className="grid grid-cols-1">
                                                 {productDetails.length > 0 && (
-                                                    <div className="grid grid-cols-1 col-span-1 gap-5 overflow-x-auto scrollbar-thin dark:scrollbar-track-slate-900 dark:scrollbar-thumb-slate-700">
+                                                    <div className="col-span-1 grid grid-cols-1 gap-5 overflow-x-auto scrollbar-thin dark:scrollbar-track-slate-900 dark:scrollbar-thumb-slate-700">
                                                         <table className="w-full border-collapse">
                                                             <thead>
                                                                 <tr>
-                                                                    <th className="p-2 text-left text-gray-700 border dark:border-gray-700 dark:text-gray-400">
+                                                                    <th className="border p-2 text-left text-gray-700 dark:border-gray-700 dark:text-gray-400">
                                                                         Title
                                                                     </th>
-                                                                    <th className="p-2 text-left text-gray-700 border dark:border-gray-700 dark:text-gray-400">
+                                                                    <th className="border p-2 text-left text-gray-700 dark:border-gray-700 dark:text-gray-400">
                                                                         Value
                                                                     </th>
-                                                                    <th className="p-2 text-center text-gray-700 border dark:border-gray-700 dark:text-gray-400">
+                                                                    <th className="border p-2 text-center text-gray-700 dark:border-gray-700 dark:text-gray-400">
                                                                         Action
                                                                     </th>
                                                                 </tr>
@@ -952,14 +964,14 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                             <tbody>
                                                                 {productDetails.map((item, idx) => (
                                                                     <tr key={idx}>
-                                                                        <td className="p-2 border dark:border-gray-700">
+                                                                        <td className="border p-2 dark:border-gray-700">
                                                                             <Input
                                                                                 InputName={'Title'}
                                                                                 Id={'title'}
                                                                                 Name={'title'}
                                                                                 Error={
                                                                                     errors[
-                                                                                    `product_details.${idx}.title`
+                                                                                        `product_details.${idx}.title`
                                                                                     ]
                                                                                 }
                                                                                 Value={item.title}
@@ -972,19 +984,20 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                                                     handleChangeProductDetails(
                                                                                         idx,
                                                                                         'title',
-                                                                                        e.target.value,
+                                                                                        e.target
+                                                                                            .value,
                                                                                     )
                                                                                 }
                                                                             />
                                                                         </td>
-                                                                        <td className="p-2 border dark:border-gray-700">
+                                                                        <td className="border p-2 dark:border-gray-700">
                                                                             <Input
                                                                                 InputName={'Value'}
                                                                                 Id={'value'}
                                                                                 Name={'value'}
                                                                                 Error={
                                                                                     errors[
-                                                                                    `product_details.${idx}.value`
+                                                                                        `product_details.${idx}.value`
                                                                                     ]
                                                                                 }
                                                                                 Value={item.value}
@@ -997,13 +1010,14 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                                                     handleChangeProductDetails(
                                                                                         idx,
                                                                                         'value',
-                                                                                        e.target.value,
+                                                                                        e.target
+                                                                                            .value,
                                                                                     )
                                                                                 }
                                                                             />
                                                                         </td>
 
-                                                                        <td className="p-2 border dark:border-gray-700">
+                                                                        <td className="border p-2 dark:border-gray-700">
                                                                             <div className="flex items-center justify-center">
                                                                                 <PrimaryButton
                                                                                     Type={'button'}
@@ -1069,7 +1083,7 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                         productDetails.some(
                                                             (detail) =>
                                                                 detail.title === '' ||
-                                                                detail.value === ''
+                                                                detail.value === '',
                                                         ))
                                                 }
                                                 Spinner={processing}
@@ -1098,14 +1112,15 @@ export default function create({ colors, model_names, capacities, shipping_polic
                             {/* Cam */}
                             {activeScanner && (
                                 <>
-                                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
+                                    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
                                         <div className="fixed inset-0 backdrop-blur-[32px]" />
-                                        <div className="relative z-10 w-full max-w-md overflow-hidden bg-white shadow-2xl rounded-2xl dark:bg-deepcharcoal">
-                                            <div className="flex items-center justify-between px-6 py-4 border-b dark:border-white/10">
+                                        <div className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-deepcharcoal">
+                                            <div className="flex items-center justify-between border-b px-6 py-4 dark:border-white/10">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                                                    <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
                                                     <h3 className="text-sm font-semibold text-gray-800 dark:text-white">
-                                                        Scanning: <span className="text-blue-600 capitalize dark:text-blue-400">
+                                                        Scanning:{' '}
+                                                        <span className="capitalize text-blue-600 dark:text-blue-400">
                                                             UPC/EAN
                                                         </span>
                                                     </h3>
@@ -1114,89 +1129,137 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                     {/* Torch / Flashlight toggle */}
                                                     <button
                                                         onClick={handleTorchToggle}
-                                                        title={torchOn ? 'Turn off flashlight' : 'Turn on flashlight'}
-                                                        className={`flex items-center justify-center rounded-lg w-8 h-8 transition-colors
-                                                ${torchOn
+                                                        title={
+                                                            torchOn
+                                                                ? 'Turn off flashlight'
+                                                                : 'Turn on flashlight'
+                                                        }
+                                                        className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
+                                                            torchOn
                                                                 ? 'bg-yellow-400 text-gray-900 hover:bg-yellow-300'
-                                                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10'
-                                                            }`}
+                                                                : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/10'
+                                                        }`}
                                                     >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                            strokeWidth={1.8} stroke="currentColor" className="size-5">
-                                                            <path strokeLinecap="round" strokeLinejoin="round"
-                                                                d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            strokeWidth={1.8}
+                                                            stroke="currentColor"
+                                                            className="size-5"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"
+                                                            />
                                                         </svg>
                                                     </button>
 
                                                     {/* Close button */}
                                                     <button
                                                         onClick={closeScanner}
-                                                        className="flex items-center justify-center text-gray-400 rounded-lg w-7 h-7 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10"
+                                                        className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/10"
                                                     >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                            strokeWidth={2} stroke="currentColor" className="size-4">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            strokeWidth={2}
+                                                            stroke="currentColor"
+                                                            className="size-4"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M6 18 18 6M6 6l12 12"
+                                                            />
                                                         </svg>
                                                     </button>
                                                 </div>
                                             </div>
                                             <div className="p-6">
                                                 <div
-                                                    className="relative overflow-hidden bg-gray-950 rounded-xl"
+                                                    className="relative overflow-hidden rounded-xl bg-gray-950"
                                                     style={{ aspectRatio: '4/3' }}
                                                 >
                                                     <video
                                                         ref={scannerVideoRef}
-                                                        className="object-cover w-full h-full"
+                                                        className="h-full w-full object-cover"
                                                         muted
                                                         playsInline
                                                         onClick={refocus}
                                                         onTouchStart={refocus}
                                                     />
                                                     {/* Dark vignette with bright scan hole — desktop */}
-                                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                                                         <div
                                                             ref={scanOverlayRef}
                                                             className="relative h-32 w-72"
                                                             style={{
-                                                                boxShadow: '0 0 0 9999px rgba(0,0,0,0.6)',
+                                                                boxShadow:
+                                                                    '0 0 0 9999px rgba(0,0,0,0.6)',
                                                                 borderRadius: '4px',
                                                             }}
                                                         >
-                                                            <span className="absolute w-5 h-5 border-t-[3px] border-l-[3px] border-blue-400 -top-px -left-px rounded-tl-sm" />
-                                                            <span className="absolute w-5 h-5 border-t-[3px] border-r-[3px] border-blue-400 -top-px -right-px rounded-tr-sm" />
-                                                            <span className="absolute w-5 h-5 border-b-[3px] border-l-[3px] border-blue-400 -bottom-px -left-px rounded-bl-sm" />
-                                                            <span className="absolute w-5 h-5 border-b-[3px] border-r-[3px] border-blue-400 -bottom-px -right-px rounded-br-sm" />
+                                                            <span className="absolute -left-px -top-px h-5 w-5 rounded-tl-sm border-l-[3px] border-t-[3px] border-blue-400" />
+                                                            <span className="absolute -right-px -top-px h-5 w-5 rounded-tr-sm border-r-[3px] border-t-[3px] border-blue-400" />
+                                                            <span className="absolute -bottom-px -left-px h-5 w-5 rounded-bl-sm border-b-[3px] border-l-[3px] border-blue-400" />
+                                                            <span className="absolute -bottom-px -right-px h-5 w-5 rounded-br-sm border-b-[3px] border-r-[3px] border-blue-400" />
                                                             <div
                                                                 className="absolute left-1 right-1 h-0.5 bg-blue-400"
-                                                                style={{ animation: 'scanLine 1.8s ease-in-out infinite', top: '10%' }}
+                                                                style={{
+                                                                    animation:
+                                                                        'scanLine 1.8s ease-in-out infinite',
+                                                                    top: '10%',
+                                                                }}
                                                             />
                                                         </div>
                                                     </div>
 
                                                     {/* Torch active indicator */}
                                                     {torchOn && (
-                                                        <div className="absolute flex items-center gap-1 px-2 py-1 text-xs font-semibold text-gray-900 rounded-full pointer-events-none top-2 right-2 bg-yellow-400/90">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                                strokeWidth={2} stroke="currentColor" className="size-3">
-                                                                <path strokeLinecap="round" strokeLinejoin="round"
-                                                                    d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+                                                        <div className="pointer-events-none absolute right-2 top-2 flex items-center gap-1 rounded-full bg-yellow-400/90 px-2 py-1 text-xs font-semibold text-gray-900">
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                strokeWidth={2}
+                                                                stroke="currentColor"
+                                                                className="size-3"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"
+                                                                />
                                                             </svg>
                                                             Flash ON
                                                         </div>
                                                     )}
                                                 </div>
-                                                <p className="mt-3 text-xs text-center text-gray-400 dark:text-white/40">
+                                                <p className="mt-3 text-center text-xs text-gray-400 dark:text-white/40">
                                                     Align barcode within the frame
                                                 </p>
-                                                <div className="flex justify-center mt-3">
+                                                <div className="mt-3 flex justify-center">
                                                     <PrimaryButton
                                                         Action={closeScanner}
                                                         Text={'Close Scanner'}
                                                         Type={'button'}
                                                         Icon={
-                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                strokeWidth={1.5}
+                                                                stroke="currentColor"
+                                                                className="size-5"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="M6 18 18 6M6 6l12 12"
+                                                                />
                                                             </svg>
                                                         }
                                                     />
@@ -1217,39 +1280,46 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                 </>
                             )}
 
-
                             <NativeScannerPreview
                                 isOpen={!!nativeScan}
                                 fieldLabel="UPC/EAN"
                                 itemNumber={null}
-                                onResult={async (text) => {
+                                onResult={async (text, meta) => {
                                     try {
-                                        setData('upc', text);
+                                        if (meta?.fields) {
+                                            Object.entries(meta.fields).forEach(([key, val]) => {
+                                                setData(key, val);
+                                            });
+                                        } else {
+                                            setData('upc', text);
+                                        }
                                     } catch (err) {
-                                        Swal.fire({ icon: 'error', title: 'Error', text: 'Could not find smartphone.' });
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Error',
+                                            text: 'Could not find smartphone.',
+                                        });
                                     }
                                 }}
                                 onClose={() => setNativeScan(null)}
                             />
 
-
-
                             {showProgressModal && (
-                                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
+                                <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
                                     <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                                     {/* Modal content */}
-                                    <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
+                                    <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
                                         <div className="text-center">
                                             <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                                 Please Wait While We Are Uploading Your Files
                                             </h2>
 
-                                            <div className="flex items-center justify-center mt-5">
+                                            <div className="mt-5 flex items-center justify-center">
                                                 <div role="status">
                                                     <svg
                                                         aria-hidden="true"
-                                                        className="w-8 h-8 text-gray-200 animate-spin fill-blue-600 dark:text-gray-600"
+                                                        className="h-8 w-8 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"
                                                         viewBox="0 0 100 101"
                                                         fill="none"
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -1272,7 +1342,7 @@ export default function create({ colors, model_names, capacities, shipping_polic
                             )}
 
                             {autoCompletionLocationModalOpen && (
-                                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
+                                <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
                                     <div
                                         className="fixed inset-0 backdrop-blur-[32px]"
                                         onClick={() => setAutoCompletionLocationModalOpen(false)}
@@ -1286,7 +1356,7 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                             </h2>
                                         </div>
 
-                                        <div className="grid grid-cols-1 gap-4 mt-5 md:grid-cols-1">
+                                        <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-1">
                                             <div className="relative">
                                                 <Input
                                                     InputName={'Location'}
@@ -1294,7 +1364,9 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                     Type="text"
                                                     Value={autoCompletionLocationSearch}
                                                     Action={(e) =>
-                                                        setAutoCompletionLocationSearch(e.target.value)
+                                                        setAutoCompletionLocationSearch(
+                                                            e.target.value,
+                                                        )
                                                     }
                                                     Required={true}
                                                     Error={autoCompletionInfoMessage}
@@ -1302,27 +1374,31 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                 />
 
                                                 {showDropdown && (
-                                                    <ul className="relative z-50 w-full mt-1 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-lg max-h-60 dark:border-gray-600 dark:bg-deepcharcoal">
+                                                    <ul className="relative z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-md border border-gray-300 bg-white shadow-lg dark:border-gray-600 dark:bg-deepcharcoal">
                                                         {autoCompletionLoading ? (
                                                             <li className="flex items-center justify-center px-4 py-4">
-                                                                <div className="w-5 h-5 border-2 border-blue-500 rounded-full animate-spin border-t-transparent"></div>
+                                                                <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"></div>
                                                             </li>
                                                         ) : (
-                                                            autoCompletionResults.map((item, index) => (
-                                                                <li
-                                                                    key={index}
-                                                                    className="px-4 py-2 text-sm text-gray-800 cursor-pointer hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-zinc-900/50"
-                                                                    onClick={() => {
-                                                                        setSelectedPlaceId(item.place_id);
-                                                                        setShowDropdown(false);
-                                                                        setAutoCompletionLocationSearch(
-                                                                            item.description,
-                                                                        );
-                                                                    }}
-                                                                >
-                                                                    {item.description}
-                                                                </li>
-                                                            ))
+                                                            autoCompletionResults.map(
+                                                                (item, index) => (
+                                                                    <li
+                                                                        key={index}
+                                                                        className="cursor-pointer px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-zinc-900/50"
+                                                                        onClick={() => {
+                                                                            setSelectedPlaceId(
+                                                                                item.place_id,
+                                                                            );
+                                                                            setShowDropdown(false);
+                                                                            setAutoCompletionLocationSearch(
+                                                                                item.description,
+                                                                            );
+                                                                        }}
+                                                                    >
+                                                                        {item.description}
+                                                                    </li>
+                                                                ),
+                                                            )
                                                         )}
                                                     </ul>
                                                 )}
@@ -1333,21 +1409,21 @@ export default function create({ colors, model_names, capacities, shipping_polic
                             )}
 
                             {fetchingLatlngProcessing && (
-                                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
+                                <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
                                     <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                                     {/* Modal content */}
-                                    <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
+                                    <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
                                         <div className="text-center">
                                             <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                                 Please Wait While We Are Setting up Location
                                             </h2>
 
-                                            <div className="flex items-center justify-center mt-5">
+                                            <div className="mt-5 flex items-center justify-center">
                                                 <div role="status">
                                                     <svg
                                                         aria-hidden="true"
-                                                        className="w-8 h-8 text-gray-200 animate-spin fill-blue-600 dark:text-gray-600"
+                                                        className="h-8 w-8 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"
                                                         viewBox="0 0 100 101"
                                                         fill="none"
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -1370,7 +1446,7 @@ export default function create({ colors, model_names, capacities, shipping_polic
                             )}
 
                             {googleMapLocatioModalOpen && (
-                                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
+                                <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
                                     {/* Backdrop */}
                                     <div
                                         className="fixed inset-0 backdrop-blur-[32px]"
@@ -1394,7 +1470,7 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                 type="text"
                                                 ref={mapSearchboxRef}
                                                 placeholder="Search a location"
-                                                className="w-full px-4 py-2 border rounded"
+                                                className="w-full rounded border px-4 py-2"
                                             />
 
                                             {/* Google Map */}
@@ -1425,7 +1501,9 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                                                     'Location Got Successfully',
                                                                 );
                                                                 setTimeout(() => {
-                                                                    setLocationGotSuccessMessage('');
+                                                                    setLocationGotSuccessMessage(
+                                                                        '',
+                                                                    );
                                                                 }, 1000);
                                                             }
                                                         });
@@ -1452,7 +1530,6 @@ export default function create({ colors, model_names, capacities, shipping_polic
                                     </div>
                                 </div>
                             )}
-
                         </>
                     }
                 />

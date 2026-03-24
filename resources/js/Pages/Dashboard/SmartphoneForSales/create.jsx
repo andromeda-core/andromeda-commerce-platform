@@ -24,8 +24,6 @@ export default function create({ smartphones, shipping_fee_lists, import_tax_lis
     // Extra Cost Data Handling
     const [additionalFees, setAdditionalFees] = useState(false);
 
-
-
     // Create Data Form Request
     const submit = (e) => {
         e.preventDefault();
@@ -33,18 +31,17 @@ export default function create({ smartphones, shipping_fee_lists, import_tax_lis
         post(route('dashboard.smartphone-for-sales.store'));
     };
 
-
     const scanOverlayRef = useRef(null);
     const [scanRegion, setScanRegion] = useState(null);
     const [torchOn, setTorchOn] = useState(false);
 
     const [activeScanner, setActiveScanner] = useState(null);
 
-
     const [nativeScan, setNativeScan] = useState(null);
 
-    const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
-        || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isMobileDevice =
+        /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
     const openScannerOrNative = (field) => {
         if (isMobileDevice) {
@@ -63,13 +60,15 @@ export default function create({ smartphones, shipping_fee_lists, import_tax_lis
         setTorchOn(false);
     };
 
-
-    const { videoRef: scannerVideoRef, refocus, toggleTorch } = useScanner({
+    const {
+        videoRef: scannerVideoRef,
+        refocus,
+        toggleTorch,
+    } = useScanner({
         active: !!activeScanner,
         onScan: (text) => handleScanResult(text),
         scanRegion,
     });
-
 
     const handleTorchToggle = async () => {
         const result = await toggleTorch();
@@ -108,7 +107,6 @@ export default function create({ smartphones, shipping_fee_lists, import_tax_lis
             // Offset — how much video extends beyond element edge (negative = cropped)
             const offsetX = (vRect.width - renderedW) / 2;
             const offsetY = (vRect.height - renderedH) / 2;
-
 
             const oRect = overlayEl.getBoundingClientRect();
             const relLeft = oRect.left - vRect.left;
@@ -153,23 +151,19 @@ export default function create({ smartphones, shipping_fee_lists, import_tax_lis
 
         try {
             const response = await axios.get(
-                route('dashboard.inventories.getsmartphonebyupc', text)
+                route('dashboard.inventories.getsmartphonebyupc', text),
             );
             if (response.data.status === false) {
                 Swal.fire({ icon: 'info', title: 'Oops...', text: response.data.message });
             } else {
-
                 setData(field, response.data.smartphone.id);
             }
-
         } catch (err) {
             Swal.fire({ icon: 'error', title: 'Error', text: 'Could not find smartphone.' });
         }
 
         closeScanner();
-
     };
-
 
     return (
         <>
@@ -186,7 +180,7 @@ export default function create({ smartphones, shipping_fee_lists, import_tax_lis
                 <Card
                     Content={
                         <>
-                            <div className="flex flex-wrap justify-end my-3">
+                            <div className="my-3 flex flex-wrap justify-end">
                                 <LinkButton
                                     Text={'Back To Smartphone For Sales'}
                                     URL={route('dashboard.smartphone-for-sales.index')}
@@ -213,7 +207,7 @@ export default function create({ smartphones, shipping_fee_lists, import_tax_lis
                                 <Card
                                     Content={
                                         <>
-                                            <div className="grid grid-cols-1 gap-4 mb-10 md:grid-cols-2">
+                                            <div className="mb-10 grid grid-cols-1 gap-4 md:grid-cols-2">
                                                 <div className="flex items-center">
                                                     <PrimaryButton
                                                         Type={'button'}
@@ -242,7 +236,9 @@ export default function create({ smartphones, shipping_fee_lists, import_tax_lis
                                                                 />
                                                             </svg>
                                                         }
-                                                        Action={() => openScannerOrNative('smartphone_id')}
+                                                        Action={() =>
+                                                            openScannerOrNative('smartphone_id')
+                                                        }
                                                     />
 
                                                     <SelectInput
@@ -287,7 +283,7 @@ export default function create({ smartphones, shipping_fee_lists, import_tax_lis
                                             </div>
 
                                             {!additionalFees && (
-                                                <div className="flex items-center justify-end w-full">
+                                                <div className="flex w-full items-center justify-end">
                                                     <PrimaryButton
                                                         Text={'Add Additional Fee'}
                                                         Type={'button'}
@@ -316,67 +312,58 @@ export default function create({ smartphones, shipping_fee_lists, import_tax_lis
 
                                             {additionalFees && (
                                                 <div
-                                                    className="grid grid-cols-1 col-span-1 gap-5 overflow-x-auto align-middle scrollbar-thin dark:scrollbar-track-slate-900 dark:scrollbar-thumb-slate-700"
+                                                    className="col-span-1 grid grid-cols-1 gap-5 overflow-x-auto align-middle scrollbar-thin dark:scrollbar-track-slate-900 dark:scrollbar-thumb-slate-700"
                                                     style={{ overflow: 'visible' }}
                                                 >
                                                     <table className="w-full border-collapse">
-
                                                         <tbody>
                                                             <tr>
-                                                                <td className="w-1/2 p-2 border dark:border-gray-700">
+                                                                <td className="w-1/2 border p-2 dark:border-gray-700">
                                                                     <SelectInput
-                                                                        InputName={
-                                                                            'Shipping Fee'
-                                                                        }
+                                                                        InputName={'Shipping Fee'}
                                                                         Id={'shipping_fee_id'}
                                                                         Name={'shipping_fee_id'}
                                                                         Value={data.shipping_fee_id}
-                                                                        items={
-                                                                            shipping_fee_lists
-                                                                        }
+                                                                        items={shipping_fee_lists}
                                                                         itemKey={'name'}
                                                                         customPlaceHolder={true}
-                                                                        Placeholder={"Select Shipping Fee"}
+                                                                        Placeholder={
+                                                                            'Select Shipping Fee'
+                                                                        }
                                                                         Action={(value) => {
                                                                             setData(
                                                                                 'shipping_fee_id',
                                                                                 value,
                                                                             );
-                                                                        }
-                                                                        }
+                                                                        }}
                                                                         Error={
                                                                             errors.shipping_fee_id
                                                                         }
                                                                     />
                                                                 </td>
-                                                                <td className="w-1/2 p-2 border dark:border-gray-700">
+                                                                <td className="w-1/2 border p-2 dark:border-gray-700">
                                                                     <SelectInput
-                                                                        InputName={
-                                                                            'Import Tax'
-                                                                        }
+                                                                        InputName={'Import Tax'}
                                                                         Id={'import_tax_id'}
                                                                         Name={'import_tax_id'}
                                                                         Value={data.import_tax_id}
-                                                                        items={
-                                                                            import_tax_lists
-                                                                        }
+                                                                        items={import_tax_lists}
                                                                         itemKey={'name'}
                                                                         customPlaceHolder={true}
-                                                                        Placeholder={"Select Import Tax"}
+                                                                        Placeholder={
+                                                                            'Select Import Tax'
+                                                                        }
                                                                         Action={(value) => {
                                                                             setData(
                                                                                 'import_tax_id',
                                                                                 value,
                                                                             );
-                                                                        }
-                                                                        }
-                                                                        Error={
-                                                                            errors.import_tax_id
-                                                                        }
+                                                                        }}
+                                                                        Error={errors.import_tax_id}
                                                                     />
                                                                 </td>
 
-                                                                <td className="p-2 border dark:border-gray-700">
+                                                                <td className="border p-2 dark:border-gray-700">
                                                                     <div className="flex items-center justify-center">
                                                                         <PrimaryButton
                                                                             Type={'button'}
@@ -385,12 +372,17 @@ export default function create({ smartphones, shipping_fee_lists, import_tax_lis
                                                                             }
                                                                             Action={() => {
                                                                                 setAdditionalFees(
-                                                                                    false
-                                                                                )
-                                                                                setData('shipping_fee_id', '');
-                                                                                setData('import_tax_id', '');
-                                                                            }
-                                                                            }
+                                                                                    false,
+                                                                                );
+                                                                                setData(
+                                                                                    'shipping_fee_id',
+                                                                                    '',
+                                                                                );
+                                                                                setData(
+                                                                                    'import_tax_id',
+                                                                                    '',
+                                                                                );
+                                                                            }}
                                                                             CustomClass={
                                                                                 'w-[50px] bg-red-500 hover:bg-red-600'
                                                                             }
@@ -430,10 +422,9 @@ export default function create({ smartphones, shipping_fee_lists, import_tax_lis
                                                     data.smartphone_id === '' ||
                                                     data.selling_price == 0 ||
                                                     data.selling_price === '' ||
-                                                    (additionalFees && (
+                                                    (additionalFees &&
                                                         data.shipping_fee_id === '' &&
-                                                        data.import_tax_id === ''
-                                                    ))
+                                                        data.import_tax_id === '')
                                                 }
                                                 Spinner={processing}
                                                 Icon={
@@ -463,14 +454,15 @@ export default function create({ smartphones, shipping_fee_lists, import_tax_lis
 
                 {activeScanner && (
                     <>
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
+                        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
                             <div className="fixed inset-0 backdrop-blur-[32px]" />
-                            <div className="relative z-10 w-full max-w-md overflow-hidden bg-white shadow-2xl rounded-2xl dark:bg-deepcharcoal">
-                                <div className="flex items-center justify-between px-6 py-4 border-b dark:border-white/10">
+                            <div className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-deepcharcoal">
+                                <div className="flex items-center justify-between border-b px-6 py-4 dark:border-white/10">
                                     <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                                        <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
                                         <h3 className="text-sm font-semibold text-gray-800 dark:text-white">
-                                            Scanning: <span className="text-blue-600 capitalize dark:text-blue-400">
+                                            Scanning:{' '}
+                                            <span className="capitalize text-blue-600 dark:text-blue-400">
                                                 UPC/EAN
                                             </span>
                                         </h3>
@@ -479,47 +471,70 @@ export default function create({ smartphones, shipping_fee_lists, import_tax_lis
                                         {/* Torch / Flashlight toggle */}
                                         <button
                                             onClick={handleTorchToggle}
-                                            title={torchOn ? 'Turn off flashlight' : 'Turn on flashlight'}
-                                            className={`flex items-center justify-center rounded-lg w-8 h-8 transition-colors
-                                ${torchOn
+                                            title={
+                                                torchOn
+                                                    ? 'Turn off flashlight'
+                                                    : 'Turn on flashlight'
+                                            }
+                                            className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
+                                                torchOn
                                                     ? 'bg-yellow-400 text-gray-900 hover:bg-yellow-300'
-                                                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10'
-                                                }`}
+                                                    : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/10'
+                                            }`}
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                strokeWidth={1.8} stroke="currentColor" className="size-5">
-                                                <path strokeLinecap="round" strokeLinejoin="round"
-                                                    d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.8}
+                                                stroke="currentColor"
+                                                className="size-5"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"
+                                                />
                                             </svg>
                                         </button>
 
                                         {/* Close button */}
                                         <button
                                             onClick={closeScanner}
-                                            className="flex items-center justify-center text-gray-400 rounded-lg w-7 h-7 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-white/10"
+                                            className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/10"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                strokeWidth={2} stroke="currentColor" className="size-4">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={2}
+                                                stroke="currentColor"
+                                                className="size-4"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M6 18 18 6M6 6l12 12"
+                                                />
                                             </svg>
                                         </button>
                                     </div>
                                 </div>
                                 <div className="p-6">
                                     <div
-                                        className="relative overflow-hidden bg-gray-950 rounded-xl"
+                                        className="relative overflow-hidden rounded-xl bg-gray-950"
                                         style={{ aspectRatio: '4/3' }}
                                     >
                                         <video
                                             ref={scannerVideoRef}
-                                            className="object-cover w-full h-full"
+                                            className="h-full w-full object-cover"
                                             muted
                                             playsInline
                                             onClick={refocus}
                                             onTouchStart={refocus}
                                         />
                                         {/* Dark vignette with bright scan hole — desktop */}
-                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                                             <div
                                                 ref={scanOverlayRef}
                                                 className="relative h-32 w-72"
@@ -528,40 +543,64 @@ export default function create({ smartphones, shipping_fee_lists, import_tax_lis
                                                     borderRadius: '4px',
                                                 }}
                                             >
-                                                <span className="absolute w-5 h-5 border-t-[3px] border-l-[3px] border-blue-400 -top-px -left-px rounded-tl-sm" />
-                                                <span className="absolute w-5 h-5 border-t-[3px] border-r-[3px] border-blue-400 -top-px -right-px rounded-tr-sm" />
-                                                <span className="absolute w-5 h-5 border-b-[3px] border-l-[3px] border-blue-400 -bottom-px -left-px rounded-bl-sm" />
-                                                <span className="absolute w-5 h-5 border-b-[3px] border-r-[3px] border-blue-400 -bottom-px -right-px rounded-br-sm" />
+                                                <span className="absolute -left-px -top-px h-5 w-5 rounded-tl-sm border-l-[3px] border-t-[3px] border-blue-400" />
+                                                <span className="absolute -right-px -top-px h-5 w-5 rounded-tr-sm border-r-[3px] border-t-[3px] border-blue-400" />
+                                                <span className="absolute -bottom-px -left-px h-5 w-5 rounded-bl-sm border-b-[3px] border-l-[3px] border-blue-400" />
+                                                <span className="absolute -bottom-px -right-px h-5 w-5 rounded-br-sm border-b-[3px] border-r-[3px] border-blue-400" />
                                                 <div
                                                     className="absolute left-1 right-1 h-0.5 bg-blue-400"
-                                                    style={{ animation: 'scanLine 1.8s ease-in-out infinite', top: '10%' }}
+                                                    style={{
+                                                        animation:
+                                                            'scanLine 1.8s ease-in-out infinite',
+                                                        top: '10%',
+                                                    }}
                                                 />
                                             </div>
                                         </div>
 
                                         {/* Torch active indicator */}
                                         {torchOn && (
-                                            <div className="absolute flex items-center gap-1 px-2 py-1 text-xs font-semibold text-gray-900 rounded-full pointer-events-none top-2 right-2 bg-yellow-400/90">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                                    strokeWidth={2} stroke="currentColor" className="size-3">
-                                                    <path strokeLinecap="round" strokeLinejoin="round"
-                                                        d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+                                            <div className="pointer-events-none absolute right-2 top-2 flex items-center gap-1 rounded-full bg-yellow-400/90 px-2 py-1 text-xs font-semibold text-gray-900">
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    strokeWidth={2}
+                                                    stroke="currentColor"
+                                                    className="size-3"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"
+                                                    />
                                                 </svg>
                                                 Flash ON
                                             </div>
                                         )}
                                     </div>
-                                    <p className="mt-3 text-xs text-center text-gray-400 dark:text-white/40">
+                                    <p className="mt-3 text-center text-xs text-gray-400 dark:text-white/40">
                                         Align barcode within the frame
                                     </p>
-                                    <div className="flex justify-center mt-3">
+                                    <div className="mt-3 flex justify-center">
                                         <PrimaryButton
                                             Action={closeScanner}
                                             Text={'Close Scanner'}
                                             Type={'button'}
                                             Icon={
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    strokeWidth={1.5}
+                                                    stroke="currentColor"
+                                                    className="size-5"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M6 18 18 6M6 6l12 12"
+                                                    />
                                                 </svg>
                                             }
                                         />
@@ -582,23 +621,30 @@ export default function create({ smartphones, shipping_fee_lists, import_tax_lis
                     </>
                 )}
 
-
                 <NativeScannerPreview
                     isOpen={!!nativeScan}
                     fieldLabel="UPC/EAN"
                     itemNumber={null}
-                    onResult={async (text) => {
+                    onResult={async (text, meta) => {
                         try {
                             const response = await axios.get(
-                                route('dashboard.inventories.getsmartphonebyupc', text)
+                                route('dashboard.inventories.getsmartphonebyupc', text),
                             );
                             if (response.data.status === false) {
-                                Swal.fire({ icon: 'info', title: 'Oops...', text: response.data.message });
+                                Swal.fire({
+                                    icon: 'info',
+                                    title: 'Oops...',
+                                    text: response.data.message,
+                                });
                             } else {
                                 setData('smartphone_id', response.data.smartphone.id);
                             }
                         } catch (err) {
-                            Swal.fire({ icon: 'error', title: 'Error', text: 'Could not find smartphone.' });
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Could not find smartphone.',
+                            });
                         }
                     }}
                     onClose={() => setNativeScan(null)}
