@@ -738,36 +738,60 @@ export default function edit({ batches, smartphones, storage_locations, inventor
                         const { field } = nativeScan;
 
                         if (meta?.fields) {
-                            Object.entries(meta.fields).forEach(([key, val]) => {
+                            Object.entries(meta.fields).forEach(async ([key, val]) => {
                                 setData(key, val);
+
+                                if (key === 'upc') {
+                                    try {
+                                        const response = await axios.get(
+                                            route('dashboard.inventories.getsmartphonebyupc', val),
+                                        );
+                                        if (response.data.status === false) {
+                                            Swal.fire({
+                                                icon: 'info',
+                                                title: 'Oops...',
+                                                text: response.data.message,
+                                            });
+                                        } else {
+                                            setData('smartphone_id', response.data.smartphone.id);
+                                        }
+                                    } catch (err) {
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Error',
+                                            text: err?.message || 'Could not find smartphone.',
+                                        });
+                                    }
+                                }
                             });
+
                             return;
                         }
 
-                        if (field === 'smartphone_id') {
-                            try {
-                                const response = await axios.get(
-                                    route('dashboard.inventories.getsmartphonebyupc', text),
-                                );
-                                if (response.data.status === false) {
-                                    Swal.fire({
-                                        icon: 'info',
-                                        title: 'Oops...',
-                                        text: response.data.message,
-                                    });
-                                } else {
-                                    setData('smartphone_id', response.data.smartphone.id);
-                                }
-                            } catch (err) {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Error',
-                                    text: 'Could not find smartphone.',
-                                });
-                            }
-                        } else {
-                            setData(field, text);
-                        }
+                        // if (field === 'smartphone_id') {
+                        //     try {
+                        //         const response = await axios.get(
+                        //             route('dashboard.inventories.getsmartphonebyupc', text),
+                        //         );
+                        //         if (response.data.status === false) {
+                        //             Swal.fire({
+                        //                 icon: 'info',
+                        //                 title: 'Oops...',
+                        //                 text: response.data.message,
+                        //             });
+                        //         } else {
+                        //             setData('smartphone_id', response.data.smartphone.id);
+                        //         }
+                        //     } catch (err) {
+                        //         Swal.fire({
+                        //             icon: 'error',
+                        //             title: 'Error',
+                        //             text: 'Could not find smartphone.',
+                        //         });
+                        //     }
+                        // } else {
+                        //     setData(field, text);
+                        // }
                     }}
                     onClose={() => setNativeScan(null)}
                 />

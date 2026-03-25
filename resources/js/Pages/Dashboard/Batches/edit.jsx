@@ -1214,6 +1214,10 @@ export default function edit({ batch, suppliers, smartphones, storage_locations 
                         if (meta?.fields) {
                             Object.entries(meta.fields).forEach(([key, val]) => {
                                 handleInventoryChange(nativeScan.index, key, val);
+
+                                if (key === 'upc') {
+                                    processScanText(val, 'smartphone', nativeScan.index);
+                                }
                             });
                             setNativeScan(null);
                         } else {
