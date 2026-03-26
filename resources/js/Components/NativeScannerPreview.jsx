@@ -124,7 +124,7 @@ function NativeScannerPreview({
             if (imageUrlRef.current)
                 try {
                     URL.revokeObjectURL(imageUrlRef.current);
-                } catch {}
+                } catch { }
         },
         [],
     );
@@ -388,7 +388,7 @@ function NativeScannerPreview({
             setShowErrorMessage(true);
             setErrorMessage(
                 result.error ||
-                    'Could not detect a barcode. Reposition the barcode inside the box and try again.',
+                'Could not detect a barcode. Reposition the barcode inside the box and try again.',
             );
         }
     }, [decodeRegion, releaseImage]);
@@ -449,10 +449,10 @@ function NativeScannerPreview({
             pos === 'tl'
                 ? '2px 0 0 0'
                 : pos === 'tr'
-                  ? '0 2px 0 0'
-                  : pos === 'bl'
-                    ? '0 0 0 2px'
-                    : '0 0 2px 0',
+                    ? '0 2px 0 0'
+                    : pos === 'bl'
+                        ? '0 0 0 2px'
+                        : '0 0 2px 0',
     });
 
     return (
@@ -472,9 +472,9 @@ function NativeScannerPreview({
                 style={{ paddingBottom: bottomOffset }}
             >
                 {/* ── Header ── */}
-                <div className="flex flex-shrink-0 items-center justify-between bg-black/80 px-4 py-3">
+                <div className="flex items-center justify-between flex-shrink-0 px-4 py-3 bg-black/80">
                     <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
+                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
                         <h3 className="text-sm font-semibold text-white">
                             Scan:{' '}
                             <span className="text-blue-400">
@@ -486,7 +486,7 @@ function NativeScannerPreview({
                     <button
                         onClick={handleClose}
                         disabled={isProcessing}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-white/10 hover:text-white disabled:opacity-50"
+                        className="flex items-center justify-center w-8 h-8 text-gray-400 rounded-lg lg:hover:bg-white/10 lg:hover:text-white disabled:opacity-50"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -508,7 +508,7 @@ function NativeScannerPreview({
                 {/* ── Preview Area ── */}
                 <div
                     ref={previewContainerRef}
-                    className="relative flex-1 touch-none select-none overflow-hidden"
+                    className="relative flex-1 overflow-hidden select-none touch-none"
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
@@ -523,7 +523,7 @@ function NativeScannerPreview({
                         src={imageUrl}
                         alt="Captured photo for scanning"
                         onLoad={onPreviewImgLoad}
-                        className="pointer-events-none absolute left-0 top-0"
+                        className="absolute top-0 left-0 pointer-events-none"
                         draggable={false}
                         style={{
                             transformOrigin: '0 0',
@@ -534,7 +534,7 @@ function NativeScannerPreview({
                     />
 
                     {/* Scan box overlay — centered, resizable */}
-                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                         <div
                             className="relative"
                             style={{
@@ -572,23 +572,23 @@ function NativeScannerPreview({
                     {/* Processing overlay */}
                     {isProcessing && (
                         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-black/60">
-                            <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-400/30 border-t-blue-400" />
+                            <div className="w-10 h-10 border-4 rounded-full animate-spin border-blue-400/30 border-t-blue-400" />
                             <p className="text-sm font-medium text-white">Scanning barcode...</p>
                         </div>
                     )}
                 </div>
 
                 {/* ── Hint ── */}
-                <p className="flex-shrink-0 py-2 text-center text-xs text-gray-400">
+                <p className="flex-shrink-0 py-2 text-xs text-center text-gray-400">
                     Drag to pan · Pinch to zoom · Drag corners to resize box
                 </p>
 
                 {/* ── Buttons ── */}
-                <div className="flex flex-shrink-0 items-center justify-center gap-3 px-4 pb-6 pt-2">
+                <div className="flex items-center justify-center flex-shrink-0 gap-3 px-4 pt-2 pb-6">
                     <button
                         onClick={handleRetake}
                         disabled={isProcessing}
-                        className="flex items-center gap-2 rounded-xl bg-white/10 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-white/20 disabled:opacity-50"
+                        className="flex items-center gap-2 rounded-xl bg-white/10 px-5 py-2.5 text-sm font-medium text-white transition-colors lg:hover:bg-white/20 disabled:opacity-50"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -614,10 +614,10 @@ function NativeScannerPreview({
                     <button
                         onClick={handleScan}
                         disabled={isProcessing}
-                        className="flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-500 disabled:opacity-50"
+                        className="flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-2.5 text-sm font-semibold text-white transition-colors lg:hover:bg-blue-500 disabled:opacity-50"
                     >
                         {isProcessing ? (
-                            <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                            <div className="w-5 h-5 border-2 rounded-full animate-spin border-white/30 border-t-white" />
                         ) : (
                             <QrCodeIcon className="size-5" />
                         )}
