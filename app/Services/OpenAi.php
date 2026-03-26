@@ -14,9 +14,9 @@ class OpenAi
         $this->key = config('app.openai_api_key');
     }
 
-  public function getScannedBarcodeResults(string $imageBase64, string $mimeType = 'image/jpeg'): array
-{
-   $prompt = <<<PROMPT
+    public function getScannedBarcodeResults(string $imageBase64, string $mimeType = 'image/jpeg'): array
+    {
+        $prompt = <<<'PROMPT'
 You are a barcode extraction assistant for a mobile device inventory system.
 
 This image is a photo of a phone box or label. It contains barcodes AND printed text labels next to them (like "IMEI", "IMEI2", "Serial No", "UPC", "EID").
@@ -70,95 +70,94 @@ CASE 3 — Nothing readable:
 Return ONLY the JSON object. No markdown, no code fences, no explanation.
 PROMPT;
 
-    try {
-        $response = Http::withToken($this->key)
-            ->timeout(25)
-            ->post('https://api.openai.com/v1/chat/completions', [
-                'model'      => 'gpt-4o',
-                'max_tokens' => 400,
-                'messages'   => [
-                    [
-                        'role'    => 'user',
-                        'content' => [
-                            [
-                                'type'      => 'image_url',
-                                'image_url' => [
-                                    'url'    => "data:{$mimeType};base64,{$imageBase64}",
-                                    'detail' => 'high',
+        try {
+            $response = Http::withToken($this->key)
+                ->timeout(25)
+                ->post('https://api.openai.com/v1/chat/completions', [
+                    'model' => 'gpt-4.1',
+                    'max_tokens' => 400,
+                    'messages' => [
+                        [
+                            'role' => 'user',
+                            'content' => [
+                                [
+                                    'type' => 'image_url',
+                                    'image_url' => [
+                                        'url' => "data:{$mimeType};base64,{$imageBase64}",
+                                        'detail' => 'high',
+                                    ],
                                 ],
-                            ],
-                            [
-                                'type' => 'text',
-                                'text' => $prompt,
+                                [
+                                    'type' => 'text',
+                                    'text' => $prompt,
+                                ],
                             ],
                         ],
                     ],
-                ],
-            ]);
+                ]);
 
-        if ($response->failed()) {
-            Log::error('[OpenAI Scanner] API request failed', [
-                'status' => $response->status(),
-                'body'   => $response->body(),
-            ]);
+            if ($response->failed()) {
+                Log::error('[OpenAI Scanner] API request failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+
+                return ['found' => false, 'error' => null];
+            }
+
+            $raw = $response->json('choices.0.message.content', '');
+            $cleaned = trim(preg_replace(['/^```(?:json)?\s*/i', '/\s*```$/'], '', trim($raw)));
+            $parsed = json_decode($cleaned, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE || ! is_array($parsed)) {
+                Log::warning('[OpenAI Scanner] Failed to parse JSON response', ['raw' => $raw]);
+
+                return ['found' => false, 'error' => null];
+            }
+
+            // No barcode found
+            if (empty($parsed['found'])) {
+                return ['found' => false, 'error' => null];
+            }
+
+            // CASE 1: Single barcode, single value
+            if (isset($parsed['value']) && ! empty(trim($parsed['value']))) {
+                return [
+                    'found' => true,
+                    'value' => trim($parsed['value']),
+                ];
+            }
+
+            // CASE 2: Multiple barcodes or composite — return populated fields only
+            if (! empty($parsed['fields']) && is_array($parsed['fields'])) {
+                $allowed = ['upc', 'imei1', 'imei2', 'serial_no', 'eid'];
+                $populated = array_filter(
+                    array_intersect_key($parsed['fields'], array_flip($allowed)),
+                    fn ($v) => is_string($v) && trim($v) !== ''
+                );
+
+                // Hard guard: never return imei2 if same as imei1
+                if (
+                    isset($populated['imei1'], $populated['imei2']) &&
+                    trim($populated['imei1']) === trim($populated['imei2'])
+                ) {
+                    unset($populated['imei2']);
+                }
+
+                if (! empty($populated)) {
+                    return [
+                        'found' => true,
+                        'fields' => $populated,
+                    ];
+                }
+            }
+
             return ['found' => false, 'error' => null];
+
+        } catch (\Throwable $e) {
+            Log::error('[OpenAI Scanner] Exception', ['message' => $e->getMessage()]);
+
+            return ['found' => false, 'error' => $e->getMessage() ?? null];
         }
-
-        $raw     = $response->json('choices.0.message.content', '');
-        $cleaned = trim(preg_replace(['/^```(?:json)?\s*/i', '/\s*```$/'], '', trim($raw)));
-        $parsed  = json_decode($cleaned, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE || !is_array($parsed)) {
-            Log::warning('[OpenAI Scanner] Failed to parse JSON response', ['raw' => $raw]);
-            return ['found' => false, 'error' => null];
-        }
-
-        // No barcode found
-        if (empty($parsed['found'])) {
-            return ['found' => false, 'error' => null];
-        }
-
-        // CASE 1: Single barcode, single value
-        if (isset($parsed['value']) && !empty(trim($parsed['value']))) {
-            return [
-                'found' => true,
-                'value' => trim($parsed['value']),
-            ];
-        }
-
-
-
-// CASE 2: Multiple barcodes or composite — return populated fields only
-if (!empty($parsed['fields']) && is_array($parsed['fields'])) {
-    $allowed   = ['upc', 'imei1', 'imei2', 'serial_no', 'eid'];
-    $populated = array_filter(
-        array_intersect_key($parsed['fields'], array_flip($allowed)),
-        fn($v) => is_string($v) && trim($v) !== ''
-    );
-
-    // Hard guard: never return imei2 if same as imei1
-    if (
-        isset($populated['imei1'], $populated['imei2']) &&
-        trim($populated['imei1']) === trim($populated['imei2'])
-    ) {
-        unset($populated['imei2']);
     }
-
-    if (!empty($populated)) {
-        return [
-            'found'  => true,
-            'fields' => $populated,
-        ];
-    }
-}
-
-
-
-        return ['found' => false, 'error' => null];
-
-    } catch (\Throwable $e) {
-        Log::error('[OpenAI Scanner] Exception', ['message' => $e->getMessage()]);
-        return ['found' => false, 'error' => $e->getMessage() ?? null];
-    }
-}
 }
