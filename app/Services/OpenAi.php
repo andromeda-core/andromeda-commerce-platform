@@ -32,7 +32,17 @@ The printed text below a barcode is the decoded value of that barcode — trust 
 - upc       : exactly 12 digits (UPC-A) or 13 digits (EAN-13)
 - imei1     : exactly 15 digits — labeled "IMEI" or "IMEI1" on the box
 - imei2     : exactly 15 digits — labeled "IMEI2" on the box (only if a DIFFERENT value than imei1)
-- serial_no : alphanumeric 10–15 characters — labeled "Serial", "S/N", "Serial No"
+- serial_no : An alphanumeric value (mix of letters and digits) found on the label that
+              does NOT match any other field format below.
+              Elimination rule — if a value is:
+                - NOT exactly 15 digits        (would be imei)
+                - NOT exactly 32 digits        (would be eid)
+                - NOT exactly 12 or 13 digits  (would be upc)
+                - NOT a pure model number      (e.g. SM-XXXXX)
+              ...then it IS the serial_no. Length: 6–20 characters.
+              Common patterns: starts with letters then digits (e.g. CSSDM0196940,
+              R5CNA0BCDEF, RFTXA1234), but ANY alphanumeric mix qualifies.
+              There is always exactly ONE serial_no per device label — find it.
 - eid       : exactly 32 digits, always starts with 89 — labeled "EID" or "eSIM"
 
 --- CLASSIFICATION RULES ---
@@ -54,6 +64,9 @@ The printed text below a barcode is the decoded value of that barcode — trust 
 - Samsung model numbers (e.g. SM-S918B) are NOT a field, skip them.
 - Discard any value that does not match a field definition.
 - Read every barcode and every printed number in the image.
+- There is always exactly ONE serial_no on every Samsung/Apple device label.
+  You MUST return it. If you cannot find it using labels, use elimination:
+  the only alphanumeric value that is not an IMEI, EID, or UPC is the serial_no.
 
 --- OUTPUT RULES ---
 
