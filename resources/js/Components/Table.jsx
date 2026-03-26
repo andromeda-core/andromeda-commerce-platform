@@ -469,7 +469,7 @@ export default function Table({
                                                                             : item.id,
                                                                     )
                                                                 }
-                                                                className="inline-flex items-center rounded-lg bg-indigo-700 px-5 py-2.5 text-sm font-medium text-white shadow-lg transition hover:bg-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-300 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10 dark:focus:ring-gray-800"
+                                                                className="inline-flex items-center rounded-lg bg-indigo-700 px-5 py-2.5 text-sm font-medium text-white shadow-lg transition lg:hover:bg-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-300 dark:bg-white/5 dark:text-white/90 dark:lg:hover:bg-white/10 dark:focus:ring-gray-800"
                                                             >
                                                                 Action
                                                                 <svg
@@ -541,7 +541,7 @@ export default function Table({
                                                                                                     className={`${(typeof action.show === 'function' ? Boolean(action.show(item)) : true)
                                                                                                         ? 'block'
                                                                                                         : 'hidden'
-                                                                                                        } w-full px-3 py-2 text-left transition-colors lg:hover:bg-gray-100 dark:lg:hover:bg-zinc-950/50 dark:hover:text-white`}
+                                                                                                        } w-full px-3 py-2 text-left transition-colors lg:hover:bg-gray-100 dark:lg:hover:bg-zinc-950/50 dark:lg:hover:text-white`}
                                                                                                 >
                                                                                                     {
                                                                                                         action.label
@@ -558,7 +558,7 @@ export default function Table({
                                                                                                     className={`${(typeof action.show === 'function' ? Boolean(action.show(item)) : true)
                                                                                                         ? 'block'
                                                                                                         : 'hidden'
-                                                                                                        } w-full px-3 py-2 text-left transition-colors lg:hover:bg-gray-100 dark:lg:hover:bg-zinc-950/50 dark:hover:text-white`}
+                                                                                                        } w-full px-3 py-2 text-left transition-colors lg:hover:bg-gray-100 dark:lg:hover:bg-zinc-950/50 dark:lg:hover:text-white`}
                                                                                                 >
                                                                                                     {
                                                                                                         action.label
@@ -666,7 +666,7 @@ export default function Table({
                                             disabled={!link.url || link.active}
                                             className={`text-theme-sm flex h-10 w-10 items-center justify-center rounded-lg font-medium ${link.active
                                                 ? 'bg-indigo-800/[0.08] text-indigo-500'
-                                                : 'text-gray-700 hover:bg-indigo-500/[0.08] hover:text-indigo-500 dark:text-gray-400 dark:hover:text-indigo-500'
+                                                : 'text-gray-700 lg:hover:bg-indigo-500/[0.08] lg:hover:text-indigo-500 dark:text-gray-400 dark:lg:hover:text-indigo-500'
                                                 }`}
                                         >
                                             {link.label}
@@ -760,7 +760,7 @@ export default function Table({
                                         Spinner={DeleteBulkSelectedProcessing}
                                         Disabled={DeleteBulkSelectedProcessing}
                                         Action={deleteSelectedBulkMethod}
-                                        CustomClass={'bg-red-500 hover:bg-red-600 w-full '}
+                                        CustomClass={'bg-red-500 lg:hover:bg-red-600 w-full '}
                                         Icon={
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -854,7 +854,7 @@ export default function Table({
                                                 />
                                             </svg>
                                         }
-                                        CustomClass={'bg-red-500 hover:bg-red-600 w-full '}
+                                        CustomClass={'bg-red-500 lg:hover:bg-red-600 w-full '}
                                     />
                                 </div>
                             </div>
