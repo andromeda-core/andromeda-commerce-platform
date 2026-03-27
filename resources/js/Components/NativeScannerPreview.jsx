@@ -22,18 +22,36 @@ function NativeScannerPreview({
     const [boxHalfH, setBoxHalfH] = useState(scanBoxHeight / 2);
     const boxHalfWRef = useRef(boxHalfW);
     const boxHalfHRef = useRef(boxHalfH);
-    useEffect(() => {
-        boxHalfWRef.current = boxHalfW;
-    }, [boxHalfW]);
-    useEffect(() => {
-        boxHalfHRef.current = boxHalfH;
-    }, [boxHalfH]);
+    useEffect(() => { boxHalfWRef.current = boxHalfW; }, [boxHalfW]);
+    useEffect(() => { boxHalfHRef.current = boxHalfH; }, [boxHalfH]);
 
-    // Reset box size when props change
     useEffect(() => {
         setBoxHalfW(scanBoxWidth / 2);
         setBoxHalfH(scanBoxHeight / 2);
     }, [scanBoxWidth, scanBoxHeight]);
+
+    // ── Tooltip state ──────────────────────────────────────────────
+    const [showTooltips, setShowTooltips] = useState(true);
+    const tooltipTimerRef = useRef(null);
+
+    const dismissTooltips = useCallback(() => {
+        setShowTooltips(false);
+        if (tooltipTimerRef.current) clearTimeout(tooltipTimerRef.current);
+    }, []);
+
+    // Auto-dismiss after 5s
+    useEffect(() => {
+        if (isOpen && imageUrl) {
+            tooltipTimerRef.current = setTimeout(() => setShowTooltips(false), 5000);
+        }
+        return () => { if (tooltipTimerRef.current) clearTimeout(tooltipTimerRef.current); };
+    }, [isOpen, imageUrl]);
+
+    // Reset tooltips on new image
+    useEffect(() => {
+        if (imageUrl) setShowTooltips(true);
+    }, [imageUrl]);
+    // ──────────────────────────────────────────────────────────────
 
     const onResultRef = useRef(onResult);
     const onCloseRef = useRef(onClose);
@@ -44,47 +62,25 @@ function NativeScannerPreview({
     const imgTransformRef = useRef(imgTransform);
 
     const touchRef = useRef({
-        startX: 0,
-        startY: 0,
-        lastX: 0,
-        lastY: 0,
-        isPinching: false,
-        lastPinchDist: 0,
-        lastPinchMidX: 0,
-        lastPinchMidY: 0,
+        startX: 0, startY: 0, lastX: 0, lastY: 0,
+        isPinching: false, lastPinchDist: 0, lastPinchMidX: 0, lastPinchMidY: 0,
     });
 
-    // Mouse drag state for pan
     const mouseDragRef = useRef({ dragging: false, startX: 0, startY: 0, lastX: 0, lastY: 0 });
 
-    // Corner resize state
     const cornerRef = useRef({
-        active: false,
-        corner: null,
-        startX: 0,
-        startY: 0,
-        startHalfW: 0,
-        startHalfH: 0,
+        active: false, corner: null,
+        startX: 0, startY: 0, startHalfW: 0, startHalfH: 0,
     });
 
     const [errorMessage, setErrorMessage] = useState(null);
     const [showErrorMessage, setShowErrorMessage] = useState(false);
 
-    useEffect(() => {
-        onResultRef.current = onResult;
-    }, [onResult]);
-    useEffect(() => {
-        onCloseRef.current = onClose;
-    }, [onClose]);
-    useEffect(() => {
-        imageUrlRef.current = imageUrl;
-    }, [imageUrl]);
-    useEffect(() => {
-        isOpenRef.current = isOpen;
-    }, [isOpen]);
-    useEffect(() => {
-        imgTransformRef.current = imgTransform;
-    }, [imgTransform]);
+    useEffect(() => { onResultRef.current = onResult; }, [onResult]);
+    useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
+    useEffect(() => { imageUrlRef.current = imageUrl; }, [imageUrl]);
+    useEffect(() => { isOpenRef.current = isOpen; }, [isOpen]);
+    useEffect(() => { imgTransformRef.current = imgTransform; }, [imgTransform]);
 
     const cleanup = useCallback(() => {
         if (imageUrlRef.current) {
@@ -97,37 +93,20 @@ function NativeScannerPreview({
     }, [releaseImage]);
 
     useEffect(() => {
-        if (!isOpen) {
-            cleanup();
-            return;
-        }
+        if (!isOpen) { cleanup(); return; }
         let cancelled = false;
         (async () => {
             const { cancelled: userCancelled, imageUrl: url } = await captureImage();
-            if (cancelled) {
-                if (url) releaseImage(url);
-                return;
-            }
-            if (userCancelled) {
-                onCloseRef.current?.();
-                return;
-            }
+            if (cancelled) { if (url) releaseImage(url); return; }
+            if (userCancelled) { onCloseRef.current?.(); return; }
             setImageUrl(url);
         })();
-        return () => {
-            cancelled = true;
-        };
+        return () => { cancelled = true; };
     }, [isOpen, captureImage, releaseImage, cleanup]);
 
-    useEffect(
-        () => () => {
-            if (imageUrlRef.current)
-                try {
-                    URL.revokeObjectURL(imageUrlRef.current);
-                } catch { }
-        },
-        [],
-    );
+    useEffect(() => () => {
+        if (imageUrlRef.current) try { URL.revokeObjectURL(imageUrlRef.current); } catch { }
+    }, []);
 
     const onPreviewImgLoad = useCallback((e) => {
         const img = e.target;
@@ -143,40 +122,41 @@ function NativeScannerPreview({
         };
         setImgTransform(newT);
         imgTransformRef.current = newT;
+
+        // Clamp box here — container fully measured, guaranteed safe
+        const mw = (cW / 2) - EDGE_PAD;
+        const mh = (cH / 2) - EDGE_PAD;
+        setBoxHalfW((prev) => Math.min(prev, Math.max(30, mw)));
+        setBoxHalfH((prev) => Math.min(prev, Math.max(20, mh)));
     }, []);
 
     const getDistance = (a, b) =>
         Math.sqrt((a.clientX - b.clientX) ** 2 + (a.clientY - b.clientY) ** 2);
 
     const handleTouchStart = useCallback((e) => {
+        dismissTooltips();
         if (cornerRef.current.active) return;
         const t = imgTransformRef.current;
         const rect = previewContainerRef.current?.getBoundingClientRect();
         if (e.touches.length === 1) {
             touchRef.current = {
                 ...touchRef.current,
-                startX: e.touches[0].clientX,
-                startY: e.touches[0].clientY,
-                lastX: t.x,
-                lastY: t.y,
-                isPinching: false,
+                startX: e.touches[0].clientX, startY: e.touches[0].clientY,
+                lastX: t.x, lastY: t.y, isPinching: false,
             };
         } else if (e.touches.length === 2) {
             touchRef.current = {
-                ...touchRef.current,
-                isPinching: true,
+                ...touchRef.current, isPinching: true,
                 lastPinchDist: getDistance(e.touches[0], e.touches[1]),
-                lastPinchMidX:
-                    (e.touches[0].clientX + e.touches[1].clientX) / 2 - (rect?.left ?? 0),
+                lastPinchMidX: (e.touches[0].clientX + e.touches[1].clientX) / 2 - (rect?.left ?? 0),
                 lastPinchMidY: (e.touches[0].clientY + e.touches[1].clientY) / 2 - (rect?.top ?? 0),
             };
         }
-    }, []);
+    }, [dismissTooltips]);
 
     const handleTouchMove = useCallback((e) => {
         e.preventDefault();
         if (cornerRef.current.active) return;
-
         if (e.touches.length === 1 && !touchRef.current.isPinching) {
             const dx = e.touches[0].clientX - touchRef.current.startX;
             const dy = e.touches[0].clientY - touchRef.current.startY;
@@ -192,18 +172,12 @@ function NativeScannerPreview({
             const newMidY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - (rect?.top ?? 0);
             const distRatio = newDist / touchRef.current.lastPinchDist;
             const t = imgTransformRef.current;
-
             const newScale = Math.max(0.05, Math.min(15, t.scale * distRatio));
-
-            // Incremental: scale around previous midpoint, then pan by midpoint delta
-            // Formula: newX = newMidX - (lastMidX - t.x) * distRatio
             const newX = newMidX - (touchRef.current.lastPinchMidX - t.x) * distRatio;
             const newY = newMidY - (touchRef.current.lastPinchMidY - t.y) * distRatio;
-
             const newT = { x: newX, y: newY, scale: newScale };
             setImgTransform(newT);
             imgTransformRef.current = newT;
-
             touchRef.current.lastPinchDist = newDist;
             touchRef.current.lastPinchMidX = newMidX;
             touchRef.current.lastPinchMidY = newMidY;
@@ -213,7 +187,6 @@ function NativeScannerPreview({
     const handleTouchEnd = useCallback((e) => {
         if (e.touches.length < 2) {
             touchRef.current.isPinching = false;
-
             if (e.touches.length === 1) {
                 const t = imgTransformRef.current;
                 touchRef.current.startX = e.touches[0].clientX;
@@ -225,16 +198,15 @@ function NativeScannerPreview({
     }, []);
 
     const handleMouseDown = useCallback((e) => {
+        dismissTooltips();
         if (cornerRef.current.active) return;
         const t = imgTransformRef.current;
         mouseDragRef.current = {
             dragging: true,
-            startX: e.clientX,
-            startY: e.clientY,
-            lastX: t.x,
-            lastY: t.y,
+            startX: e.clientX, startY: e.clientY,
+            lastX: t.x, lastY: t.y,
         };
-    }, []);
+    }, [dismissTooltips]);
 
     const handleMouseMove = useCallback((e) => {
         if (cornerRef.current.active) {
@@ -260,6 +232,7 @@ function NativeScannerPreview({
 
     const handleWheel = useCallback((e) => {
         e.preventDefault();
+        dismissTooltips();
         const factor = e.deltaY > 0 ? 0.9 : 1.1;
         const rect = previewContainerRef.current?.getBoundingClientRect();
         if (!rect) return;
@@ -268,74 +241,68 @@ function NativeScannerPreview({
         setImgTransform((prev) => {
             const newScale = Math.max(0.05, Math.min(15, prev.scale * factor));
             const sr = newScale / prev.scale;
-            return {
-                scale: newScale,
-                x: mx - (mx - prev.x) * sr,
-                y: my - (my - prev.y) * sr,
-            };
+            return { scale: newScale, x: mx - (mx - prev.x) * sr, y: my - (my - prev.y) * sr };
         });
+    }, [dismissTooltips]);
+
+    // ── Boundary-clamped corner resize ────────────────────────────
+    const EDGE_PAD = 40; // equal padding all 4 sides — defined once
+
+    const getMaxHalfW = useCallback(() => {
+        const c = previewContainerRef.current;
+        return c ? (c.clientWidth / 2) - EDGE_PAD : 9999;
+    }, []);
+
+    const getMaxHalfH = useCallback(() => {
+        const c = previewContainerRef.current;
+        return c ? (c.clientHeight / 2) - EDGE_PAD : 9999;
     }, []);
 
     const applyCornerDelta = (corner, dx, dy) => {
         const sw = cornerRef.current.startHalfW;
         const sh = cornerRef.current.startHalfH;
-        const MIN_W = 30,
-            MIN_H = 20;
-        let nw = sw,
-            nh = sh;
-        if (corner === 'br') {
-            nw = Math.max(MIN_W, sw + dx);
-            nh = Math.max(MIN_H, sh + dy);
-        }
-        if (corner === 'bl') {
-            nw = Math.max(MIN_W, sw - dx);
-            nh = Math.max(MIN_H, sh + dy);
-        }
-        if (corner === 'tr') {
-            nw = Math.max(MIN_W, sw + dx);
-            nh = Math.max(MIN_H, sh - dy);
-        }
-        if (corner === 'tl') {
-            nw = Math.max(MIN_W, sw - dx);
-            nh = Math.max(MIN_H, sh - dy);
-        }
+        const MIN_W = 30, MIN_H = 20;
+
+        const MAX_W = getMaxHalfW();
+        const MAX_H = getMaxHalfH();
+
+        let nw = sw, nh = sh;
+        if (corner === 'br') { nw = sw + dx; nh = sh + dy; }
+        if (corner === 'bl') { nw = sw - dx; nh = sh + dy; }
+        if (corner === 'tr') { nw = sw + dx; nh = sh - dy; }
+        if (corner === 'tl') { nw = sw - dx; nh = sh - dy; }
+
+        nw = Math.max(MIN_W, Math.min(MAX_W, nw));
+        nh = Math.max(MIN_H, Math.min(MAX_H, nh));
+
         setBoxHalfW(nw);
         setBoxHalfH(nh);
         boxHalfWRef.current = nw;
         boxHalfHRef.current = nh;
     };
+    // ─────────────────────────────────────────────────────────────
 
     const startCornerDrag = useCallback((corner, clientX, clientY) => {
+        dismissTooltips();
         cornerRef.current = {
-            active: true,
-            corner,
-            startX: clientX,
-            startY: clientY,
-            startHalfW: boxHalfWRef.current,
-            startHalfH: boxHalfHRef.current,
+            active: true, corner,
+            startX: clientX, startY: clientY,
+            startHalfW: boxHalfWRef.current, startHalfH: boxHalfHRef.current,
         };
-    }, []);
+    }, [dismissTooltips]);
 
-    const handleCornerMouseDown = useCallback(
-        (e, corner) => {
-            e.stopPropagation();
-            e.preventDefault();
-            startCornerDrag(corner, e.clientX, e.clientY);
-        },
-        [startCornerDrag],
-    );
+    const handleCornerMouseDown = useCallback((e, corner) => {
+        e.stopPropagation(); e.preventDefault();
+        startCornerDrag(corner, e.clientX, e.clientY);
+    }, [startCornerDrag]);
 
-    const handleCornerTouchStart = useCallback(
-        (e, corner) => {
-            e.stopPropagation();
-            startCornerDrag(corner, e.touches[0].clientX, e.touches[0].clientY);
-        },
-        [startCornerDrag],
-    );
+    const handleCornerTouchStart = useCallback((e, corner) => {
+        e.stopPropagation();
+        startCornerDrag(corner, e.touches[0].clientX, e.touches[0].clientY);
+    }, [startCornerDrag]);
 
     const handleCornerTouchMove = useCallback((e) => {
-        e.stopPropagation();
-        e.preventDefault();
+        e.stopPropagation(); e.preventDefault();
         if (!cornerRef.current.active) return;
         const dx = e.touches[0].clientX - cornerRef.current.startX;
         const dy = e.touches[0].clientY - cornerRef.current.startY;
@@ -350,6 +317,7 @@ function NativeScannerPreview({
     const handleScan = useCallback(async () => {
         if (!imageUrlRef.current || !previewContainerRef.current || isScanningRef.current) return;
         isScanningRef.current = true;
+        dismissTooltips();
 
         const container = previewContainerRef.current;
         const cW = container.clientWidth;
@@ -370,10 +338,7 @@ function NativeScannerPreview({
 
         const result = await decodeRegion(imageUrlRef.current, cropRect);
 
-        if (!isOpenRef.current) {
-            isScanningRef.current = false;
-            return;
-        }
+        if (!isOpenRef.current) { isScanningRef.current = false; return; }
 
         if (result.success) {
             const url = imageUrlRef.current;
@@ -387,27 +352,19 @@ function NativeScannerPreview({
             isScanningRef.current = false;
             setShowErrorMessage(true);
             setErrorMessage(
-                result.error ||
-                'Could not detect a barcode. Reposition the barcode inside the box and try again.',
+                result.error || 'Could not detect a barcode. Reposition the barcode inside the box and try again.',
             );
         }
-    }, [decodeRegion, releaseImage]);
+    }, [decodeRegion, releaseImage, dismissTooltips]);
 
     const handleRetake = useCallback(async () => {
         if (imageUrlRef.current) releaseImage(imageUrlRef.current);
         imageUrlRef.current = null;
         setImageUrl(null);
         setImgTransform({ x: 0, y: 0, scale: 1 });
-
         const { cancelled, imageUrl: newUrl } = await captureImage();
-        if (!isOpenRef.current) {
-            if (newUrl) releaseImage(newUrl);
-            return;
-        }
-        if (cancelled) {
-            onCloseRef.current?.();
-            return;
-        }
+        if (!isOpenRef.current) { if (newUrl) releaseImage(newUrl); return; }
+        if (cancelled) { onCloseRef.current?.(); return; }
         setImageUrl(newUrl);
         imageUrlRef.current = newUrl;
     }, [captureImage, releaseImage]);
@@ -425,8 +382,7 @@ function NativeScannerPreview({
 
     const cornerStyle = (pos) => ({
         position: 'absolute',
-        width: H,
-        height: H,
+        width: H, height: H,
         top: pos.includes('t') ? -H / 2 : undefined,
         bottom: pos.includes('b') ? -H / 2 : undefined,
         left: pos.includes('l') ? -H / 2 : undefined,
@@ -439,20 +395,14 @@ function NativeScannerPreview({
     });
 
     const borderStyle = (pos) => ({
-        width: 16,
-        height: 16,
+        width: 16, height: 16,
         borderTop: pos.includes('t') ? '3px solid #60a5fa' : undefined,
         borderBottom: pos.includes('b') ? '3px solid #60a5fa' : undefined,
         borderLeft: pos.includes('l') ? '3px solid #60a5fa' : undefined,
         borderRight: pos.includes('r') ? '3px solid #60a5fa' : undefined,
         borderRadius:
-            pos === 'tl'
-                ? '2px 0 0 0'
-                : pos === 'tr'
-                    ? '0 2px 0 0'
-                    : pos === 'bl'
-                        ? '0 0 0 2px'
-                        : '0 0 2px 0',
+            pos === 'tl' ? '2px 0 0 0' : pos === 'tr' ? '0 2px 0 0'
+                : pos === 'bl' ? '0 0 0 2px' : '0 0 2px 0',
     });
 
     return (
@@ -460,10 +410,7 @@ function NativeScannerPreview({
             {showErrorMessage && errorMessage !== null && (
                 <Toast
                     flash={{ info: errorMessage }}
-                    onClosed={() => {
-                        setShowErrorMessage(false);
-                        setErrorMessage(null);
-                    }}
+                    onClosed={() => { setShowErrorMessage(false); setErrorMessage(null); }}
                 />
             )}
 
@@ -478,8 +425,7 @@ function NativeScannerPreview({
                         <h3 className="text-sm font-semibold text-white">
                             Scan:{' '}
                             <span className="text-blue-400">
-                                {fieldLabel}
-                                {itemNumber ? ' — Item ' + itemNumber : ''}
+                                {fieldLabel}{itemNumber ? ' — Item ' + itemNumber : ''}
                             </span>
                         </h3>
                     </div>
@@ -488,19 +434,8 @@ function NativeScannerPreview({
                         disabled={isProcessing}
                         className="flex items-center justify-center w-8 h-8 text-gray-400 rounded-lg lg:hover:bg-white/10 lg:hover:text-white disabled:opacity-50"
                     >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={2}
-                            stroke="currentColor"
-                            className="size-5"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M6 18 18 6M6 6l12 12"
-                            />
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
@@ -518,7 +453,7 @@ function NativeScannerPreview({
                     onMouseLeave={handleMouseUp}
                     onWheel={handleWheel}
                 >
-                    {/* Zoomable/Pannable image */}
+                    {/* Zoomable / Pannable image */}
                     <img
                         src={imageUrl}
                         alt="Captured photo for scanning"
@@ -528,8 +463,7 @@ function NativeScannerPreview({
                         style={{
                             transformOrigin: '0 0',
                             transform: `translate(${imgTransform.x}px, ${imgTransform.y}px) scale(${imgTransform.scale})`,
-                            maxWidth: 'none',
-                            maxHeight: 'none',
+                            maxWidth: 'none', maxHeight: 'none',
                         }}
                     />
 
@@ -538,8 +472,7 @@ function NativeScannerPreview({
                         <div
                             className="relative"
                             style={{
-                                width: bW,
-                                height: bH,
+                                width: bW, height: bH,
                                 boxShadow: '0 0 0 9999px rgba(0,0,0,0.55)',
                                 borderRadius: '4px',
                             }}
@@ -547,13 +480,10 @@ function NativeScannerPreview({
                             {/* Scan line */}
                             <div
                                 className="absolute left-1 right-1 h-0.5 bg-blue-400"
-                                style={{
-                                    animation: 'nativeScanLine 1.8s ease-in-out infinite',
-                                    top: '10%',
-                                }}
+                                style={{ animation: 'nativeScanLine 1.8s ease-in-out infinite', top: '10%' }}
                             />
 
-                            {/* ── Corner handles ── */}
+                            {/* Corner handles */}
                             {['tl', 'tr', 'bl', 'br'].map((pos) => (
                                 <div
                                     key={pos}
@@ -568,6 +498,104 @@ function NativeScannerPreview({
                             ))}
                         </div>
                     </div>
+
+                    {/* ── Tooltips overlay ── */}
+                    {showTooltips && (
+                        <div
+                            className="absolute inset-0 z-10 pointer-events-none"
+                            style={{ animation: 'tooltipFadeIn 0.4s ease-out' }}
+                        >
+                            {/* Tooltip 1 — Image zoom/pan (bottom-left) */}
+                            <div
+                                className="absolute flex items-end gap-2"
+                                style={{ bottom: '30%', left: 16 }}
+                            >
+                                <div
+                                    className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-white"
+                                    style={{
+                                        background: 'rgba(0,0,0,0.72)',
+                                        border: '1px solid rgba(255,255,255,0.15)',
+                                        backdropFilter: 'blur(6px)',
+                                        maxWidth: 150,
+                                        lineHeight: 1.4,
+                                    }}
+                                >
+                                    {/* Arrow pointing right toward image */}
+                                    <div className="flex items-center gap-1.5 mb-1">
+                                        <span style={{ fontSize: 14 }}>🔍</span>
+                                        <span className="font-semibold text-blue-300">Photo</span>
+                                    </div>
+                                    Pinch to zoom · Drag to move photo
+                                    {/* Curved arrow pointing right */}
+                                    <div
+                                        style={{
+                                            position: 'absolute',
+                                            right: -18,
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            fontSize: 16,
+                                            filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.8))',
+                                        }}
+                                    >
+                                        ➜
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Tooltip 2 — Corner handles (top-right, pointing toward box corner) */}
+                            <div
+                                className="absolute flex items-start gap-2"
+                                style={{ top: '22%', right: 16 }}
+                            >
+                                <div
+                                    className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-white text-right"
+                                    style={{
+                                        background: 'rgba(0,0,0,0.72)',
+                                        border: '1px solid rgba(255,255,255,0.15)',
+                                        backdropFilter: 'blur(6px)',
+                                        maxWidth: 150,
+                                        lineHeight: 1.4,
+                                    }}
+                                >
+                                    {/* Arrow pointing left toward corner handle */}
+                                    <div
+                                        style={{
+                                            position: 'absolute',
+                                            left: -18,
+                                            top: '50%',
+                                            transform: 'translateY(-50%) scaleX(-1)',
+                                            fontSize: 16,
+                                            filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.8))',
+                                        }}
+                                    >
+                                        ➜
+                                    </div>
+                                    <div className="flex items-center justify-end gap-1.5 mb-1">
+                                        <span className="font-semibold text-blue-300">Scan Area</span>
+                                        <span style={{ fontSize: 14 }}>⤡</span>
+                                    </div>
+                                    Drag blue corners to resize scan box
+                                </div>
+                            </div>
+
+                            {/* Tap anywhere to dismiss */}
+                            <button
+                                className="absolute pointer-events-auto bottom-4 left-1/2"
+                                style={{
+                                    transform: 'translateX(-50%)',
+                                    background: 'rgba(0,0,0,0.6)',
+                                    border: '1px solid rgba(255,255,255,0.2)',
+                                    borderRadius: 20,
+                                    padding: '4px 14px',
+                                    color: 'rgba(255,255,255,0.5)',
+                                    fontSize: 11,
+                                }}
+                                onClick={dismissTooltips}
+                            >
+                                Tap to dismiss
+                            </button>
+                        </div>
+                    )}
 
                     {/* Processing overlay */}
                     {isProcessing && (
@@ -590,24 +618,9 @@ function NativeScannerPreview({
                         disabled={isProcessing}
                         className="flex items-center gap-2 rounded-xl bg-white/10 px-5 py-2.5 text-sm font-medium text-white transition-colors lg:hover:bg-white/20 disabled:opacity-50"
                     >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="size-5"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z"
-                            />
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z"
-                            />
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
                         </svg>
                         Retake
                     </button>
@@ -633,6 +646,10 @@ function NativeScannerPreview({
                         51%  { top: 10%; opacity: 0; }
                         55%  { top: 10%; opacity: 1; }
                         100% { top: 10%; opacity: 1; }
+                    }
+                    @keyframes tooltipFadeIn {
+                        from { opacity: 0; }
+                        to   { opacity: 1; }
                     }
                 `}</style>
             </div>
