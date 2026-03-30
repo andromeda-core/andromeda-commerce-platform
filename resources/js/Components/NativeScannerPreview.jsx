@@ -12,6 +12,7 @@ function NativeScannerPreview({
     scanBoxWidth = 400,
     scanBoxHeight = 50,
     bottomOffset = 0,
+    preloadedImageUrl = null,
 }) {
     const { captureImage, decodeRegion, releaseImage, isProcessing } = useNativeScanner();
 
@@ -94,6 +95,12 @@ function NativeScannerPreview({
 
     useEffect(() => {
         if (!isOpen) { cleanup(); return; }
+
+        if (preloadedImageUrl) {
+            setImageUrl(preloadedImageUrl);
+            return;
+        }
+
         let cancelled = false;
         (async () => {
             const { cancelled: userCancelled, imageUrl: url } = await captureImage();
@@ -102,7 +109,7 @@ function NativeScannerPreview({
             setImageUrl(url);
         })();
         return () => { cancelled = true; };
-    }, [isOpen, captureImage, releaseImage, cleanup]);
+    }, [isOpen, preloadedImageUrl, captureImage, releaseImage, cleanup]);
 
     useEffect(() => () => {
         if (imageUrlRef.current) try { URL.revokeObjectURL(imageUrlRef.current); } catch { }

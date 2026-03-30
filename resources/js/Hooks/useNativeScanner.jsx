@@ -188,56 +188,87 @@ export function useNativeScanner() {
 
     const captureImage = useCallback(() => {
         return new Promise((resolve) => {
+            // Cleanup any previous input
             if (fileInputRef.current) {
                 try {
+                    fileInputRef.current.onchange = null;
                     document.body.removeChild(fileInputRef.current);
                 } catch { }
+                fileInputRef.current = null;
             }
 
             const input = document.createElement('input');
             input.type = 'file';
-            input.style.display = 'none';
             input.setAttribute('accept', 'image/*');
+
+            // Off-screen - NOT display:none (iOS Safari bug)
+            input.style.cssText = [
+                'position:fixed',
+                'top:-9999px',
+                'left:-9999px',
+                'width:1px',
+                'height:1px',
+                'opacity:0',
+                'pointer-events:none',
+                'z-index:-1',
+            ].join(';');
+
             if (isMobile.current) {
                 input.setAttribute('capture', 'environment');
             }
 
             document.body.appendChild(input);
             fileInputRef.current = input;
-            let resolved = false;
 
-            const cleanup = () => {
-                window.removeEventListener('focus', handleFocus);
-                try {
-                    document.body.removeChild(input);
-                } catch { }
-                if (fileInputRef.current === input) fileInputRef.current = null;
+            let resolved = false;
+            let cameraOpened = false;
+            let fallbackTimer = null;
+
+            const onVisibilityChange = () => {
+                if (document.visibilityState === 'hidden') {
+                    cameraOpened = true;
+                    return;
+                }
+
+                if (cameraOpened && !resolved) {
+                    fallbackTimer = setTimeout(() => {
+                        if (!resolved) {
+                            resolved = true;
+                            cleanup();
+                            resolve({ cancelled: true, imageUrl: null });
+                        }
+                    }, 800);
+                }
             };
 
-            const handleFocus = () => {
-                setTimeout(() => {
-                    if (!resolved) {
-                        resolved = true;
-                        resolve({ cancelled: true, imageUrl: null });
-                        cleanup();
+            const cleanup = () => {
+                document.removeEventListener('visibilitychange', onVisibilityChange);
+                if (fallbackTimer) {
+                    clearTimeout(fallbackTimer);
+                    fallbackTimer = null;
+                }
+                try {
+                    if (fileInputRef.current === input) {
+                        document.body.removeChild(input);
+                        fileInputRef.current = null;
                     }
-                }, 500);
+                } catch { }
             };
 
             input.onchange = (e) => {
+                if (resolved) return;
                 resolved = true;
-                window.removeEventListener('focus', handleFocus);
+                cleanup();
                 const file = e.target.files?.[0];
                 if (!file) {
                     resolve({ cancelled: true, imageUrl: null });
-                    cleanup();
                     return;
                 }
                 resolve({ cancelled: false, imageUrl: URL.createObjectURL(file) });
-                cleanup();
             };
 
-            window.addEventListener('focus', handleFocus);
+            document.addEventListener('visibilitychange', onVisibilityChange);
+
             input.click();
         });
     }, []);

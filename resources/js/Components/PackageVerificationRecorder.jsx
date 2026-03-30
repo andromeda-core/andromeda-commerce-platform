@@ -1,6 +1,7 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useVideoRecorder } from '@/Hooks/useVideoRecorder';
 import { useScanner } from '@/Hooks/useScanner';
+import { useNativeScanner } from '@/Hooks/useNativeScanner';
 import NativeScannerPreview from '@/Components/NativeScannerPreview';
 import axios from 'axios';
 
@@ -23,6 +24,8 @@ const PackageVerificationRecorder = memo(
             retake,
         } = useVideoRecorder();
 
+
+
         const [torchOn, setTorchOn] = useState(false);
         const [nativeScan, setNativeScan] = useState(false);
         const [desktopScanActive, setDesktopScanActive] = useState(false);
@@ -44,6 +47,9 @@ const PackageVerificationRecorder = memo(
             active: false,
             onScan: () => { },
         });
+
+        const { captureImage } = useNativeScanner();
+        const [nativeScanImageUrl, setNativeScanImageUrl] = useState(null);
 
         const handleTorchToggle = useCallback(async () => {
             const result = await toggleTorch();
@@ -129,20 +135,24 @@ const PackageVerificationRecorder = memo(
             [orderNo, stopRecording, stopCamera, onClose, resumeRecording, onVerified],
         );
 
-        const handleSnapshot = useCallback(() => {
+        const handleSnapshot = useCallback(async () => {
             if (!isRecording || isScanningRef.current) return;
-
             setVerificationStatus(null);
             setVerificationMessage('');
             pauseRecording();
 
             if (isMobileDevice) {
-                // Mobile: native camera
+                const { cancelled, imageUrl } = await captureImage();
+                if (cancelled || !imageUrl) {
+                    resumeRecording();
+                    return;
+                }
+                setNativeScanImageUrl(imageUrl);
                 setNativeScan(true);
             } else {
                 setDesktopScanActive(true);
             }
-        }, [isRecording, isMobileDevice, pauseRecording]);
+        }, [isRecording, isMobileDevice, pauseRecording, resumeRecording, captureImage]);
         const handleCancelDesktopScan = useCallback(() => {
             setDesktopScanActive(false);
             resumeRecording();
@@ -157,6 +167,7 @@ const PackageVerificationRecorder = memo(
 
         const _doClose = useCallback(() => {
             setNativeScan(false);
+            setNativeScanImageUrl(null);
             setDesktopScanActive(false);
             setTorchOn(false);
             setVerificationStatus(null);
@@ -744,13 +755,16 @@ const PackageVerificationRecorder = memo(
                     isOpen={nativeScan}
                     fieldLabel="Order Code / Barcode"
                     itemNumber={null}
+                    preloadedImageUrl={nativeScanImageUrl}
                     onResult={async (text, meta) => {
                         setNativeScan(false);
+                        setNativeScanImageUrl(null);
                         const code = (meta?.fields ? Object.values(meta.fields)[0] : null) ?? text;
                         await handleScannedCode(code);
                     }}
                     onClose={() => {
                         setNativeScan(false);
+                        setNativeScanImageUrl(null);
                         resumeRecording();
                     }}
                     scanBoxWidth={400}
