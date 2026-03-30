@@ -143,8 +143,9 @@ const PackageVerificationRecorder = memo(
 
             if (isMobileDevice) {
                 const { cancelled, imageUrl } = await captureImage();
+
                 if (cancelled || !imageUrl) {
-                    resumeRecording();
+                    setTimeout(() => resumeRecording(), 200);
                     return;
                 }
                 setNativeScanImageUrl(imageUrl);

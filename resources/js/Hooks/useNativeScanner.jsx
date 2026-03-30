@@ -188,7 +188,6 @@ export function useNativeScanner() {
 
     const captureImage = useCallback(() => {
         return new Promise((resolve) => {
-            // Cleanup any previous input
             if (fileInputRef.current) {
                 try {
                     fileInputRef.current.onchange = null;
@@ -200,8 +199,6 @@ export function useNativeScanner() {
             const input = document.createElement('input');
             input.type = 'file';
             input.setAttribute('accept', 'image/*');
-
-            // Off-screen - NOT display:none (iOS Safari bug)
             input.style.cssText = [
                 'position:fixed',
                 'top:-9999px',
@@ -224,29 +221,41 @@ export function useNativeScanner() {
             let cameraOpened = false;
             let fallbackTimer = null;
 
+            const resolveCancel = () => {
+                if (!resolved) {
+                    resolved = true;
+                    cleanup();
+                    resolve({ cancelled: true, imageUrl: null });
+                }
+            };
+
+            // Strategy 1: visibilitychange (Android + some iOS)
             const onVisibilityChange = () => {
                 if (document.visibilityState === 'hidden') {
                     cameraOpened = true;
                     return;
                 }
-
                 if (cameraOpened && !resolved) {
-                    fallbackTimer = setTimeout(() => {
-                        if (!resolved) {
-                            resolved = true;
-                            cleanup();
-                            resolve({ cancelled: true, imageUrl: null });
-                        }
-                    }, 800);
+                    fallbackTimer = setTimeout(resolveCancel, 150);
+                }
+            };
+
+            // Strategy 2: window focus (iOS camera sheet dismiss)
+            // iOS fires focus when returning from system camera sheet
+            let focusIgnoreTimer = null;
+            const onFocus = () => {
+                // Ignore the immediate focus that fires when input.click() runs
+                if (!cameraOpened && !focusIgnoreTimer) return;
+                if (!resolved) {
+                    fallbackTimer = setTimeout(resolveCancel, 150);
                 }
             };
 
             const cleanup = () => {
                 document.removeEventListener('visibilitychange', onVisibilityChange);
-                if (fallbackTimer) {
-                    clearTimeout(fallbackTimer);
-                    fallbackTimer = null;
-                }
+                window.removeEventListener('focus', onFocus);
+                if (fallbackTimer) { clearTimeout(fallbackTimer); fallbackTimer = null; }
+                if (focusIgnoreTimer) { clearTimeout(focusIgnoreTimer); focusIgnoreTimer = null; }
                 try {
                     if (fileInputRef.current === input) {
                         document.body.removeChild(input);
@@ -268,8 +277,14 @@ export function useNativeScanner() {
             };
 
             document.addEventListener('visibilitychange', onVisibilityChange);
+            window.addEventListener('focus', onFocus);
 
             input.click();
+
+            focusIgnoreTimer = setTimeout(() => {
+                cameraOpened = true;
+                focusIgnoreTimer = null;
+            }, 500);
         });
     }, []);
 
