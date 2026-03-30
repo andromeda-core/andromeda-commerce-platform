@@ -343,8 +343,8 @@ const PackageVerificationRecorder = memo(
                                             torchOn ? 'Turn off flashlight' : 'Turn on flashlight'
                                         }
                                         className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${torchOn
-                                                ? 'bg-yellow-400 text-gray-900 lg:hover:bg-yellow-300'
-                                                : 'text-gray-400 lg:hover:bg-gray-100 lg:hover:text-gray-600 dark:lg:hover:bg-white/10'
+                                            ? 'bg-yellow-400 text-gray-900 lg:hover:bg-yellow-300'
+                                            : 'text-gray-400 lg:hover:bg-gray-100 lg:hover:text-gray-600 dark:lg:hover:bg-white/10'
                                             }`}
                                     >
                                         <svg
@@ -622,7 +622,7 @@ const PackageVerificationRecorder = memo(
                                         {desktopScanActive && (
                                             <button
                                                 onClick={handleCancelDesktopScan}
-                                                className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white transition-transform bg-gray-500 rounded-lg lg:hover:bg-gray-600 active:scale-95"
+                                                className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white transition-transform bg-gray-500 rounded-lg lg:hover:bg-gray-600 "
                                             >
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -649,7 +649,7 @@ const PackageVerificationRecorder = memo(
                                                 {isRecording && (
                                                     <button
                                                         onClick={handleSnapshot}
-                                                        className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white transition-transform rounded-lg bg-violet-600 lg:hover:bg-violet-700 active:scale-95"
+                                                        className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white transition-transform rounded-lg bg-violet-600 lg:hover:bg-violet-700"
                                                     >
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
@@ -678,7 +678,7 @@ const PackageVerificationRecorder = memo(
                                                 {isRecording && (
                                                     <button
                                                         onClick={handleStopRecording}
-                                                        className="px-5 py-2 text-sm font-medium text-white transition-transform bg-red-600 rounded-lg lg:hover:bg-red-700 active:scale-95"
+                                                        className="px-5 py-2 text-sm font-medium text-white transition-transform bg-red-600 rounded-lg lg:hover:bg-red-700 "
                                                     >
                                                         Stop Recording
                                                     </button>

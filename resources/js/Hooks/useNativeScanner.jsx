@@ -191,7 +191,7 @@ export function useNativeScanner() {
             if (fileInputRef.current) {
                 try {
                     document.body.removeChild(fileInputRef.current);
-                } catch {}
+                } catch { }
             }
 
             const input = document.createElement('input');
@@ -210,7 +210,7 @@ export function useNativeScanner() {
                 window.removeEventListener('focus', handleFocus);
                 try {
                     document.body.removeChild(input);
-                } catch {}
+                } catch { }
                 if (fileInputRef.current === input) fileInputRef.current = null;
             };
 
@@ -255,24 +255,21 @@ export function useNativeScanner() {
                     formData.append('image', blob, 'scan.jpg');
 
                     try {
-                        const csrfToken =
-                            document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 
-                        const response = await fetch(route('scanner.ai-decode'), {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': csrfToken,
-                                Accept: 'application/json',
-                            },
-                            body: formData,
-                        });
 
-                        if (!response.ok) {
-                            resolve(null);
-                            return;
-                        }
+                        const response = await axios.post(
+                            route('scanner.ai-decode'),
+                            formData,
+                            {
+                                headers: {
+                                    Accept: 'application/json',
+                                },
+                            }
+                        );
 
-                        const data = await response.json();
+
+
+                        const data = response.data;
 
                         if (!data.found) {
                             resolve(null);
@@ -309,7 +306,12 @@ export function useNativeScanner() {
 
                         resolve(null);
                     } catch (err) {
-                        console.warn('[NativeScanner] AI fallback failed:', err);
+                        // Differentiate network errors from 419/500 server errors
+                        if (err.response) {
+                            console.warn('[NativeScanner] AI fallback server error:', err.response.status, err.response.data);
+                        } else {
+                            console.warn('[NativeScanner] AI fallback network error:', err.message);
+                        }
                         resolve(null);
                     }
                 },
@@ -626,7 +628,7 @@ export function useNativeScanner() {
         if (imageUrl)
             try {
                 URL.revokeObjectURL(imageUrl);
-            } catch {}
+            } catch { }
     }, []);
 
     useEffect(() => {
@@ -634,12 +636,12 @@ export function useNativeScanner() {
             if (fileInputRef.current) {
                 try {
                     document.body.removeChild(fileInputRef.current);
-                } catch {}
+                } catch { }
                 fileInputRef.current = null;
             }
             try {
                 readerRef.current?.reset?.();
-            } catch {}
+            } catch { }
         };
     }, []);
 
