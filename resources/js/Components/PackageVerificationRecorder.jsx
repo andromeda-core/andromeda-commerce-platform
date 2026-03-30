@@ -330,14 +330,14 @@ const PackageVerificationRecorder = memo(
 
         return (
             <>
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+                <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6">
                     <div
-                        className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+                        className="fixed inset-0 hidden bg-black/60 sm:block"
                         onClick={isRecording || desktopScanActive ? undefined : handleClose}
                         style={isRecording || desktopScanActive ? { cursor: 'not-allowed' } : {}}
                     />
 
-                    <div className="relative z-10 w-full max-w-2xl text-gray-900 bg-white shadow-2xl rounded-2xl dark:bg-deepcharcoal dark:text-white/80">
+                    <div className="relative z-10 flex flex-col w-full h-full text-gray-900 bg-white dark:bg-deepcharcoal dark:text-white/80 sm:h-auto sm:flex-none sm:max-w-2xl sm:rounded-2xl sm:shadow-2xl">
                         {/* Header */}
                         <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b dark:border-white/10">
                             <h3 className="text-base font-semibold">
@@ -399,7 +399,7 @@ const PackageVerificationRecorder = memo(
                             </div>
                         </div>
 
-                        <div className="p-5">
+                        <div className="flex flex-col flex-1 gap-4 p-5 overflow-hidden">
                             {/* Camera Error */}
                             {cameraError && (
                                 <div className="p-3 mb-4 border border-red-200 rounded-lg bg-red-50 dark:border-red-800 dark:bg-red-900/20">
@@ -486,10 +486,7 @@ const PackageVerificationRecorder = memo(
                             )}
 
                             {/* Video Area */}
-                            <div
-                                className="relative overflow-hidden bg-black rounded-xl"
-                                style={{ aspectRatio: '16/9' }}
-                            >
+                            <div className="relative overflow-hidden bg-black rounded-xl flex-1 min-h-0 sm:flex-none sm:[aspect-ratio:16/9]">
                                 {/* Live Feed — always mounted, hidden during playback */}
                                 <video
                                     ref={recordingVideoRef}
@@ -626,7 +623,7 @@ const PackageVerificationRecorder = memo(
                             </div>
 
                             {/* Controls */}
-                            <div className="flex flex-wrap justify-center gap-3 mt-4">
+                            <div className="flex flex-shrink-0 flex-wrap justify-center gap-3 pb-[env(safe-area-inset-bottom)] sm:pb-0">
                                 {!recordedUrl ? (
                                     <>
                                         {/* Desktop scan active — show cancel */}
