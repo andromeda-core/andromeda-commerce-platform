@@ -64,9 +64,24 @@ The printed text below a barcode is the decoded value of that barcode — trust 
 - Samsung model numbers (e.g. SM-S918B) are NOT a field, skip them.
 - Discard any value that does not match a field definition.
 - Read every barcode and every printed number in the image.
-- There is always exactly ONE serial_no on every Samsung/Apple device label.
-  You MUST return it. If you cannot find it using labels, use elimination:
-  the only alphanumeric value that is not an IMEI, EID, or UPC is the serial_no.
+- There is typically ONE serial_no on every Samsung/Apple device label.
+  If you can clearly read it, return it. If unclear or not visible, omit it entirely.
+  Do NOT use elimination to guess — only return serial_no if you can directly read it.
+
+
+--- ANTI-HALLUCINATION RULES (MOST IMPORTANT) ---
+- NEVER guess, infer, or construct any value.
+- ONLY return values you can DIRECTLY read from printed text OR successfully decode from a barcode stripe.
+- If a barcode stripe is blurry, partially visible, or undecodable — SKIP IT. Do not guess its value.
+- If printed text is unclear or ambiguous — SKIP IT. Do not guess.
+- If you are not 100% certain of every single digit/character — omit that field entirely.
+- A wrong value is FAR worse than a missing value. When in doubt, leave it out.
+- Do NOT complete partial numbers. If you can read 10 of 15 IMEI digits clearly, return nothing for that field.
+- Do NOT derive one field from another (e.g. do not add 1 to IMEI1 to guess IMEI2).
+
+
+If you find fewer fields than expected, that is acceptable and correct.
+An empty result {"found": false} is better than a result with guessed values.
 
 --- OUTPUT RULES ---
 

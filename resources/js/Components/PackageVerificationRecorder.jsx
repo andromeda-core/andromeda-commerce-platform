@@ -4,6 +4,8 @@ import { useScanner } from '@/Hooks/useScanner';
 import { useNativeScanner } from '@/Hooks/useNativeScanner';
 import NativeScannerPreview from '@/Components/NativeScannerPreview';
 import axios from 'axios';
+import beepSound from '../../assets/sounds/Beep.mp3';
+
 
 const PackageVerificationRecorder = memo(
     ({ isOpen, onClose, onSave, orderNo, onVerified, onVerify }) => {
@@ -26,6 +28,8 @@ const PackageVerificationRecorder = memo(
 
 
 
+        const audioRef = useRef(null);
+
         const [torchOn, setTorchOn] = useState(false);
         const [nativeScan, setNativeScan] = useState(false);
         const [desktopScanActive, setDesktopScanActive] = useState(false);
@@ -34,6 +38,7 @@ const PackageVerificationRecorder = memo(
         const [isSaving, setIsSaving] = useState(false);
 
         const isVerifiedRef = useRef(false);
+        const verifiedCodesRef = useRef([]);
         const manualStopRef = useRef(false);
         const pendingCloseRef = useRef(false);
         const isScanningRef = useRef(false);
@@ -48,6 +53,22 @@ const PackageVerificationRecorder = memo(
             onScan: () => { },
         });
 
+        useEffect(() => {
+            audioRef.current = new Audio(beepSound);
+            audioRef.current.preload = 'auto';
+        }, []);
+
+
+        const playBeep = async () => {
+            try {
+                if (!audioRef.current) return;
+                audioRef.current.currentTime = 0;
+                await audioRef.current.play();
+            } catch (err) {
+                console.warn('[NativeScanner] Beep blocked:', err);
+            }
+        };
+
         const { captureImage } = useNativeScanner();
         const [nativeScanImageUrl, setNativeScanImageUrl] = useState(null);
 
@@ -58,8 +79,10 @@ const PackageVerificationRecorder = memo(
 
         const handleScannedCode = useCallback(
             async (text, meta) => {
-                if (isVerifiedRef.current || isScanningRef.current) return;
+                if (isScanningRef.current) return;
                 isScanningRef.current = true;
+
+                await playBeep();
 
                 const trimmed = text?.trim();
                 if (!trimmed) {
@@ -88,8 +111,10 @@ const PackageVerificationRecorder = memo(
                     }
 
                     if (isSuccess) {
+                        verifiedCodesRef.current = [...verifiedCodesRef.current, trimmed];
                         isVerifiedRef.current = true;
-                        stopRecording();
+                        // stopRecording();
+                        resumeRecording();
                         const msg =
                             responseMsg || `Verification successful. CODE ${trimmed} matched.`;
                         setVerificationStatus('success');
@@ -102,7 +127,8 @@ const PackageVerificationRecorder = memo(
                             // Upload stays locked, user can Retake or Close
                             setVerificationStatus('mismatch');
                             setVerificationMessage(msg);
-                            stopRecording();
+                            // stopRecording();
+                            resumeRecording();
                         } else {
                             // Default orders mismatch: fire page banner, close modal
                             onVerified?.('mismatch', msg);
@@ -160,6 +186,12 @@ const PackageVerificationRecorder = memo(
         }, [resumeRecording]);
 
         const handleStopRecording = useCallback(() => {
+
+            if (isVerifiedRef.current) {
+                stopRecording();
+                return;
+            }
+
             manualStopRef.current = true;
             setDesktopScanActive(false);
             setNativeScan(false);
@@ -207,6 +239,7 @@ const PackageVerificationRecorder = memo(
         const handleRetake = useCallback(() => {
             isVerifiedRef.current = false;
             manualStopRef.current = false;
+            verifiedCodesRef.current = [];
             isScanningRef.current = false;
             setDesktopScanActive(false);
             setNativeScan(false);
@@ -757,7 +790,7 @@ const PackageVerificationRecorder = memo(
                     onResult={async (text, meta) => {
                         setNativeScan(false);
                         setNativeScanImageUrl(null);
-                        const code = (meta?.fields ? Object.values(meta.fields)[0] : null) ?? text;
+                        const code = text ?? (meta?.fields ? Object.values(meta.fields)[0] : null);
                         await handleScannedCode(code);
                     }}
                     onClose={() => {
