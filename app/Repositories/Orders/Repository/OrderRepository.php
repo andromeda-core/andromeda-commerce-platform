@@ -3097,7 +3097,8 @@ class OrderRepository implements IOrderRepository
             broadcast(new OrderVerificationSuccess(
                 user_id: $request?->user()?->id,
                 code: $request->code,
-                message: $this->trans->get("Verification Successful For CODE $request->code")
+                message: $this->trans->get("Verification Successful For CODE $request->code"),
+                socket_id: $request->header('X-Socket-ID'),
             ))->toOthers();
 
             return [

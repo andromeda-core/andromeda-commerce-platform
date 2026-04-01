@@ -10,7 +10,8 @@ class OrderVerificationSuccess implements ShouldBroadcastNow
     public function __construct(
         public int $user_id,
         public string $code,
-        public string $message
+        public string $message,
+        public ?string $socket_id = null,
     ) {}
 
     public function broadcastOn(): PrivateChannel
